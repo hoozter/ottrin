@@ -1,0 +1,36 @@
+{
+  "test.msi": {
+    "19": "0",
+    "1": "1252",
+    "9": "b'{A797353A-9607-465F-A5BD-44119FBE0619}'",
+    "15": "10",
+    "3": "b'Name der Anwendung'",
+    "4": "b'Ihr Firmenname'",
+    "8": "b''",
+    "18": "b'Name der Anwendung (Evaluation Installer)'",
+    "7": "b';1031'",
+    "6": "b'Diese Datenbank ist korrekt und enth\\xe4lt n\\xf6tige Daten um Name der Anwendung zu installieren. (Evaluation Installer)'",
+    "2": "b'Installation Database'",
+    "5": "b'Installer, MSI, Database'",
+    "12": "13363188777",
+    "13": "13363188777",
+    "11": "13363188777",
+    "14": "450"
+  },
+  "Ottrin current": {
+    "1": "1252",
+    "2": "b'Installation Database'",
+    "3": "b'Ottrin file manager'",
+    "4": "b'hoozter'",
+    "5": "b'Installer'",
+    "6": "b'This installer database contains the logic and data required to install Ottrin.'",
+    "7": "b'x64;0'",
+    "9": "b'{A90EC97B-20EF-4563-967B-51BAAAEB1BEC}'",
+    "12": "13436495998",
+    "13": "13436495998",
+    "14": "500",
+    "15": "10",
+    "18": "b'WiX Toolset (5.0.2.0)'",
+    "19": "2"
+  }
+}

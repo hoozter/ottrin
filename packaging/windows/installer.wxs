@@ -78,8 +78,10 @@
         ExeCommand="&quot;[System64Folder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;[TempFolder]OttrinIndexRollback-[ProductCode].json.scripts\index-task-transaction.ps1&quot; -Phase Commit -Snapshot &quot;[TempFolder]OttrinIndexRollback-[ProductCode].json&quot;"
         Execute="commit" Impersonate="yes" Return="check" />
 
-    <!-- Uninstall snapshots precede all destructive standard actions. Rollback
-         runs after MSI has restored any removed helper files. -->
+    <!-- These snapshots precede payload removal. Windows Installer may already
+         unpublish product registration before the first deferred action runs;
+         task restoration cannot repair an engine registration rollback failure.
+         Rollback runs after MSI has restored any removed helper files. -->
     <CustomAction Id="RollbackRemovedIndex" Directory="System64Folder"
         ExeCommand="&quot;[System64Folder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;[#IndexTransactionScript]&quot; -Phase Rollback -Snapshot &quot;[TempFolder]OttrinIndexRollback-[ProductCode].json&quot;"
         Execute="rollback" Impersonate="yes" Return="check" />

@@ -2141,3 +2141,35 @@ MSI failed-transaction registration rollback is still unresolved. Current exact
 upgrade/repair, reboot/login persistence, interactive installer and broader GUI
 acceptance remain open; publishing a current local test build does not close the
 release-candidate gate.
+
+
+### MSI rollback authoring comparison — 2026-10-15
+
+Read-only inspection of the current MSI and the reference package attached to
+[WiX issue 8574](https://github.com/wixtoolset/issues/issues/8574) does not establish
+a repair. Both SummaryInformation WordCount values are 10 (compressed payload,
+no elevation required). Ottrin's Security value 2 is Microsoft's recommended
+read-only setting for installation databases; it is an editor flag, not proof of
+registry access. ProductLanguage 0 is valid for a neutral package. The reference
+sets EnableUserControl, which broadens public-property control; that is not an
+authorized or demonstrated rollback fix and is not copied into Ottrin. Primary
+references and compact package/property/action snapshots are retained in
+`.hermes/evidence/windows-20261011/MSI_AUTHORING_COMPARISON.json` and
+`MSI_SUMMARY_METADATA_COMPARISON.json`. External reference packages were inspected
+as data, never executed, and temporary downloads/parser files were removed.
+
+The retained native Ottrin failure log explicitly executes ProductUnregister and
+ProductUnpublish before CleanupBeforeUninstall. Source comments and the contract
+fixture now distinguish payload-removal ordering from engine-owned registration;
+a passing sequencing fixture does not prove registration rollback. The source
+contract passes, with no runtime/package change. A newer independent report in the
+same upstream issue reproduces failed-uninstall registration restoration on
+multiple Windows builds; it is corroboration, not a root-cause determination.
+
+The rollback gate remains open. Any proposed fix must preserve the non-elevated
+per-user contract and pass a real failed transaction after execution, original
+product/payload/task state restoration, and subsequent repair/removal. A failure
+before execution, changing registry ACLs, disabling rollback, or manually deleting
+the payload cannot substitute for that acceptance. Continue current reboot/login
+and GUI checks, plus other roadmap implementation, while this root cause remains
+unresolved.

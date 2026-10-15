@@ -1,0 +1,126 @@
+{
+  "source": "https://github.com/wixtoolset/issues/issues/8574",
+  "scope": "Read-only authoring comparison only; external reference MSI was not executed",
+  "reference": {
+    "sha256": "89d6b3a04206ffca5e8a558fc6154bfa9fc6daf23a2d9b84168df1d39ef71a5b",
+    "properties": {
+      "ProductCode": "{C4413B71-025B-4F34-94D0-ADF8B84D4884}",
+      "UpgradeCode": "{DA9DBB65-D812-4288-AE5B-CD9B0D44B31F}",
+      "ProductLanguage": "1031",
+      "ProductVersion": "1.0.0",
+      "EnableUserControl": "1",
+      "ALLUSERS": null,
+      "MSIINSTALLPERUSER": null,
+      "SecureCustomProperties": "OLDPRODUCTS;AI_NEWERPRODUCTFOUND"
+    },
+    "execute_sequence": [
+      {
+        "action": "InstallInitialize",
+        "condition": "",
+        "sequence": 1500
+      },
+      {
+        "action": "ProcessComponents",
+        "condition": "",
+        "sequence": 1600
+      },
+      {
+        "action": "UnpublishFeatures",
+        "condition": "",
+        "sequence": 1800
+      },
+      {
+        "action": "RegisterProduct",
+        "condition": "",
+        "sequence": 6100
+      },
+      {
+        "action": "PublishProduct",
+        "condition": "",
+        "sequence": 6400
+      },
+      {
+        "action": "InstallExecute",
+        "condition": "",
+        "sequence": 6500
+      },
+      {
+        "action": "InstallFinalize",
+        "condition": "",
+        "sequence": 6600
+      }
+    ]
+  },
+  "current": {
+    "sha256": "e527a129d6767484c259b181f8ca294a007899ae178de24542a34cbb88b9a778",
+    "properties": {
+      "ProductCode": "{CA0FBA61-E5FD-47A1-BE8A-A011B5B08420}",
+      "UpgradeCode": "{04304CE2-990E-4053-9EDA-AF3E69548C9D}",
+      "ProductLanguage": "0",
+      "ProductVersion": "0.1.0",
+      "EnableUserControl": null,
+      "ALLUSERS": null,
+      "MSIINSTALLPERUSER": null,
+      "SecureCustomProperties": "WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED"
+    },
+    "execute_sequence": [
+      {
+        "action": "InstallInitialize",
+        "condition": "",
+        "sequence": 1500
+      },
+      {
+        "action": "RollbackRemovedIndex",
+        "condition": "REMOVE~=\"ALL\" AND NOT UPGRADINGPRODUCTCODE",
+        "sequence": 1501
+      },
+      {
+        "action": "SnapshotRemovedIndex",
+        "condition": "REMOVE~=\"ALL\" AND NOT UPGRADINGPRODUCTCODE",
+        "sequence": 1502
+      },
+      {
+        "action": "CleanupBeforeUninstall",
+        "condition": "REMOVE~=\"ALL\" AND NOT UPGRADINGPRODUCTCODE",
+        "sequence": 1503
+      },
+      {
+        "action": "ProcessComponents",
+        "condition": "",
+        "sequence": 1600
+      },
+      {
+        "action": "UnpublishFeatures",
+        "condition": "",
+        "sequence": 1800
+      },
+      {
+        "action": "RegisterProduct",
+        "condition": "",
+        "sequence": 6100
+      },
+      {
+        "action": "PublishProduct",
+        "condition": "",
+        "sequence": 6400
+      },
+      {
+        "action": "InstallExecute",
+        "condition": "NOT Installed",
+        "sequence": 6500
+      },
+      {
+        "action": "InstallFinalize",
+        "condition": "",
+        "sequence": 6600
+      }
+    ]
+  },
+  "finding": "No established authoring fix. Both summary WordCount values are 10 (compressed, no elevation required); current neutral ProductLanguage 0 is documented as valid. Reference EnableUserControl broadens public-property control and is not adopted.",
+  "primary_documentation": [
+    "https://learn.microsoft.com/en-us/windows/win32/msi/word-count-summary",
+    "https://learn.microsoft.com/en-us/windows/win32/msi/security-summary",
+    "https://learn.microsoft.com/en-us/windows/win32/msi/localizing-a-windows-installer-package",
+    "https://learn.microsoft.com/en-us/windows/win32/msi/public-properties"
+  ]
+}

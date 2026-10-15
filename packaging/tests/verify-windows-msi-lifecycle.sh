@@ -22,8 +22,9 @@ require_literal() {
 [[ -f "$POWERSHELL_PACKAGER" ]] || { printf 'Native Windows MSI packager is missing: %s\n' "$POWERSHELL_PACKAGER" >&2; exit 1; }
 
 # The MSI is per-user and delegates lifecycle ownership to the installed app.
-# Cleanup runs before destructive standard actions and a nonzero result aborts uninstall,
-# scheduling task restoration. Native failure/retry checks must separately
+# Cleanup precedes payload removal; engine registration can be unpublished first.
+# A nonzero result aborts uninstall and schedules task restoration. Native checks
+# must not infer product-registration restoration from source sequencing. They separately
 # verify payload, process, data and Windows Installer registration restoration.
 require_literal "$SOURCE" 'Scope="perUser"'
 require_literal "$SOURCE" 'Schedule="afterInstallExecute"'
