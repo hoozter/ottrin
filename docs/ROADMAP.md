@@ -3103,3 +3103,32 @@ rollback boundary instead of obsolete checksum-only wording. The guard passes.
 No runtime rebuild was needed for these metadata/test corrections. Broader
 file-operation/daily-driver, Office, MSI rollback, graphics and signing gates
 remain open; user testing remains deferred.
+
+### Windows indexing blocked directory moves — source repair (2026-10-15)
+
+The exact `a7c189f` NSIS GUI fails a same-volume populated-directory Move with
+Access Denied. An ordinary-user control on the same tree fails with indexd
+running and succeeds, retaining all tree bytes/identities, after indexd stops.
+No permission changes are involved. Per-directory Windows watches held descendant
+handles, triggering NTFS ancestor-rename restrictions. The new strategy uses
+recursive configured-root watches, avoids dynamically adding descendant watches,
+filters events through the immutable plan before queuing work, preserves overflow
+recovery, and drops all old registrations when replacing a plan.
+
+The real-service native regression fails before the repair and passes afterward:
+existing/new trees move with indexing active, indexed paths follow both renames,
+excluded generated content stays out, and reconfiguration releases old watches.
+The callback-delivery regression also passes natively after correcting its temp
+path spelling. Linux search has 220 passing tests plus the new focused delivery
+test, and strict Linux/Windows all-target search Clippy passes. Full native Windows
+search remains an open gate: the pre-fix binary has 49 failures, the final binary
+has 48; the resolved failure is the directory regression. Shared failures include
+short-temp-path/canonical-root fixture mismatches and Windows-invalid test names.
+They are not waived by the focused pass. Raw logs, controls and comparison are in
+`.hermes/evidence/windows-tree-ui-current/`.
+
+Updated package construction and the twenty-case directory/mixed-batch GUI matrix
+are pending for this repair. Configured-root ancestors, junction isolation,
+physical storage, the remaining native test portability failures, Office, MSI
+rollback and wider release gates retain their separate scopes. User testing
+remains deferred.

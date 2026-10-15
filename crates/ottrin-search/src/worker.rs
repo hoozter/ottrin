@@ -684,6 +684,11 @@ fn watch_new_directory_subtrees(
     cancelled: &AtomicBool,
     mut visit: impl FnMut(&Path) -> Result<(), String>,
 ) -> Result<(), String> {
+    // Windows watches each configured root recursively. Opening watches on its
+    // descendants would prevent NTFS from renaming their populated ancestors.
+    if cfg!(windows) {
+        return Ok(());
+    }
     let candidates: &[PathBuf] = match kind {
         EventKind::Create(_) => paths,
         EventKind::Modify(ModifyKind::Name(RenameMode::Both)) if paths.len() >= 2 => {
@@ -711,6 +716,25 @@ fn watch_new_directory_subtrees(
     Ok(())
 }
 
+fn watch_plan_root(
+    plan: &ScanPlan,
+    root: &Path,
+    cancelled: &AtomicBool,
+    watcher: &mut RecommendedWatcher,
+) -> Result<(), String> {
+    if cfg!(windows) {
+        watcher
+            .watch(root, RecursiveMode::Recursive)
+            .map_err(|error| error.to_string())
+    } else {
+        walk_plan_watch_paths(plan, root, root, cancelled, |path| {
+            watcher
+                .watch(path, RecursiveMode::NonRecursive)
+                .map_err(|error| error.to_string())
+        })
+    }
+}
+
 fn included_watch_event_paths(plan: &ScanPlan, paths: Vec<PathBuf>) -> Vec<PathBuf> {
     paths
         .into_iter()
@@ -719,6 +743,37 @@ fn included_watch_event_paths(plan: &ScanPlan, paths: Vec<PathBuf>) -> Vec<PathB
             plan.included_event_path_for_root(&path, root)
         })
         .collect()
+}
+
+fn watcher_event_command(
+    plan: &ScanPlan,
+    result: notify::Result<notify::Event>,
+) -> Option<Command> {
+    match result {
+        Ok(event) if event.need_rescan() => Some(Command::WatchBackendError {
+            paths: Vec::new(),
+            error: "Filesystem watcher requested reconciliation".to_string(),
+        }),
+        Ok(event)
+            if matches!(
+                event.kind,
+                EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_)
+            ) =>
+        {
+            // Recursive Windows delivery includes excluded trees. Filter using
+            // this watch's immutable policy before waking the worker.
+            let paths = included_watch_event_paths(plan, event.paths);
+            (!paths.is_empty()).then_some(Command::FilesystemEvent {
+                kind: event.kind,
+                paths,
+            })
+        }
+        Ok(_) => None,
+        Err(error) => Some(Command::WatchBackendError {
+            paths: error.paths.clone(),
+            error: error.to_string(),
+        }),
+    }
 }
 
 fn watch_path_unavailable(path: &Path) -> bool {
@@ -738,12 +793,13 @@ fn watch_error_requires_recovery(paths: &[PathBuf]) -> bool {
 
 impl WorkerLoop {
     fn run(&mut self, receiver: mpsc::Receiver<Command>, watch_filesystem: bool) {
-        let mut watcher = watch_filesystem.then(|| self.make_watcher()).flatten();
+        let mut watcher = None;
         let mut watched_roots = Vec::new();
         let mut pending_commands = VecDeque::new();
         if !self.install_plan(
             &mut watcher,
             &mut watched_roots,
+            watch_filesystem,
             &receiver,
             &mut pending_commands,
         ) {
@@ -769,6 +825,7 @@ impl WorkerLoop {
                         && !self.install_plan(
                             &mut watcher,
                             &mut watched_roots,
+                            watch_filesystem,
                             &receiver,
                             &mut pending_commands,
                         )
@@ -888,30 +945,12 @@ impl WorkerLoop {
         }
     }
 
-    fn make_watcher(&self) -> Option<RecommendedWatcher> {
+    fn make_watcher(&self, plan: Arc<ScanPlan>) -> Option<RecommendedWatcher> {
         let commands = self.commands.clone();
         RecommendedWatcher::new(
-            move |result: notify::Result<notify::Event>| match result {
-                Ok(event)
-                    if matches!(
-                        event.kind,
-                        notify::EventKind::Create(_)
-                            | notify::EventKind::Modify(_)
-                            | notify::EventKind::Remove(_)
-                    ) =>
-                {
-                    let _ = commands.send(Command::FilesystemEvent {
-                        kind: event.kind,
-                        paths: event.paths,
-                    });
-                }
-                Ok(_) => {}
-                Err(error) => {
-                    let paths = error.paths.clone();
-                    let _ = commands.send(Command::WatchBackendError {
-                        paths,
-                        error: error.to_string(),
-                    });
+            move |result| {
+                if let Some(command) = watcher_event_command(&plan, result) {
+                    let _ = commands.send(command);
                 }
             },
             watcher_config(),
@@ -923,6 +962,7 @@ impl WorkerLoop {
         &mut self,
         watcher: &mut Option<RecommendedWatcher>,
         watched_roots: &mut Vec<PathBuf>,
+        watch_filesystem: bool,
         receiver: &mpsc::Receiver<Command>,
         pending_commands: &mut VecDeque<Command>,
     ) -> bool {
@@ -1001,7 +1041,14 @@ impl WorkerLoop {
                 false
             }
         };
-        if !self.configure_watcher(watcher, watched_roots, &plan, receiver, pending_commands) {
+        if !self.configure_watcher(
+            watcher,
+            watched_roots,
+            watch_filesystem,
+            &plan,
+            receiver,
+            pending_commands,
+        ) {
             return false;
         }
         if !loaded_snapshot {
@@ -1028,12 +1075,17 @@ impl WorkerLoop {
         &mut self,
         watcher: &mut Option<RecommendedWatcher>,
         watched_roots: &mut Vec<PathBuf>,
+        watch_filesystem: bool,
         plan: &Arc<ScanPlan>,
         receiver: &mpsc::Receiver<Command>,
         pending_commands: &mut VecDeque<Command>,
     ) -> bool {
-        let mut setup_watcher = watcher.take();
-        let mut setup_watched_roots = std::mem::take(watched_roots);
+        let previous_watcher = watcher.take();
+        watched_roots.clear();
+        let mut setup_watched_roots = Vec::new();
+        let mut setup_watcher = watch_filesystem
+            .then(|| self.make_watcher(Arc::clone(plan)))
+            .flatten();
         let roots = plan.roots().to_vec();
         let setup_plan = Arc::clone(plan);
         let watch_clock_started = self.watch_clock_started;
@@ -1048,11 +1100,10 @@ impl WorkerLoop {
             if setup_cancelled.load(Ordering::Acquire) {
                 return;
             }
-            if let Some(watcher) = setup_watcher.as_mut() {
-                for root in setup_watched_roots.drain(..) {
-                    let _ = watcher.unwatch(&root);
-                }
-            }
+            // Drop the entire old registration set, including per-directory
+            // watches installed after startup. Unwatching only its configured
+            // roots leaks descendant registrations across policy changes.
+            drop(previous_watcher);
             let mut registry =
                 WatchRegistry::new(roots.clone(), WATCH_RETRY_INITIAL, WATCH_RETRY_MAXIMUM);
             let mut unavailable_roots = Vec::new();
@@ -1070,27 +1121,19 @@ impl WorkerLoop {
                     continue;
                 }
                 match setup_watcher.as_mut() {
-                    Some(watcher) => match walk_plan_watch_paths(
-                        &setup_plan,
-                        root,
-                        root,
-                        &setup_cancelled,
-                        |path| {
-                            watcher
-                                .watch(path, RecursiveMode::NonRecursive)
-                                .map_err(|error| error.to_string())
-                        },
-                    ) {
-                        Ok(()) => {
-                            registry.record_watch_success(root);
-                            setup_watched_roots.push(root.clone());
+                    Some(watcher) => {
+                        match watch_plan_root(&setup_plan, root, &setup_cancelled, watcher) {
+                            Ok(()) => {
+                                registry.record_watch_success(root);
+                                setup_watched_roots.push(root.clone());
+                            }
+                            Err(error) => registry.record_watch_failure(
+                                root,
+                                watch_clock_started.elapsed(),
+                                &error,
+                            ),
                         }
-                        Err(error) => registry.record_watch_failure(
-                            root,
-                            watch_clock_started.elapsed(),
-                            &error,
-                        ),
-                    },
+                    }
                     None => registry.record_watch_failure(
                         root,
                         watch_clock_started.elapsed(),
@@ -1667,11 +1710,7 @@ impl WorkerLoop {
             }
             let result = match (watcher.as_mut(), self.current_plan.as_ref()) {
                 (Some(watcher), Some(plan)) => {
-                    walk_plan_watch_paths(plan, &root, &root, &self.shutdown, |path| {
-                        watcher
-                            .watch(path, RecursiveMode::NonRecursive)
-                            .map_err(|error| error.to_string())
-                    })
+                    watch_plan_root(plan, &root, &self.shutdown, watcher)
                 }
                 _ => Err("watch backend unavailable".to_string()),
             };
@@ -1884,6 +1923,38 @@ mod tests {
     #[test]
     fn watcher_membership_does_not_follow_directory_symlinks() {
         assert!(!watcher_config().follow_symlinks());
+    }
+
+    #[test]
+    fn watcher_delivery_filters_excluded_churn_without_losing_overflow_recovery() {
+        use notify::event::{CreateKind, Flag};
+        let root = std::env::temp_dir()
+            .canonicalize()
+            .expect("canonical temp directory")
+            .join("ottrin-watch-delivery-policy");
+        let plan = ScanPlan::new(&config(root.to_str().expect("utf8 root"))).expect("plan");
+        for path in ["node_modules/changed.js", "target/changed.o", ".git/index"] {
+            let event =
+                notify::Event::new(EventKind::Create(CreateKind::File)).add_path(root.join(path));
+            assert!(watcher_event_command(&plan, Ok(event)).is_none());
+        }
+        let kept = root.join("Documents/new.txt");
+        let event = notify::Event::new(EventKind::Create(CreateKind::File)).add_path(kept.clone());
+        assert!(matches!(
+            watcher_event_command(&plan, Ok(event)),
+            Some(Command::FilesystemEvent { paths, .. }) if paths == vec![kept]
+        ));
+        let overflow = notify::Event::new(EventKind::Other)
+            .add_path(root.join("target/ignored.o"))
+            .set_flag(Flag::Rescan);
+        assert!(matches!(
+            watcher_event_command(&plan, Ok(overflow)),
+            Some(Command::WatchBackendError { paths, .. }) if paths.is_empty()
+        ));
+        assert!(matches!(
+            watcher_event_command(&plan, Err(notify::Error::generic("backend failed"))),
+            Some(Command::WatchBackendError { paths, .. }) if paths.is_empty()
+        ));
     }
 
     #[cfg(unix)]

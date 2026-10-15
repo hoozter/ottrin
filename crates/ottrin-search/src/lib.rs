@@ -4901,6 +4901,80 @@ mod tests {
         assert!(predicate(), "condition was not met before timeout");
     }
 
+    #[cfg(windows)]
+    #[test]
+    fn windows_index_watches_allow_directory_moves_and_follow_new_subtrees() {
+        struct Fixture(PathBuf);
+        impl Drop for Fixture {
+            fn drop(&mut self) {
+                if let Err(error) = fs::remove_dir_all(&self.0) {
+                    eprintln!("Windows watch fixture cleanup failed: {error}");
+                    assert!(std::thread::panicking(), "watch fixture cleanup failed");
+                }
+            }
+        }
+        let fixture =
+            Fixture(temp_service_path("windows-directory-watch").with_extension("fixture"));
+        let root = fixture.0.join("root");
+        fs::create_dir_all(root.join("source/nested")).expect("create nested source");
+        let root = root.canonicalize().expect("canonical root");
+        fs::write(root.join("source/nested/original.txt"), b"original").expect("seed source");
+        let mut config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        // Declared after the fixture so panic unwinding stops all watches before cleanup.
+        let mut service =
+            SearchService::new_with_store_path(config.clone(), fixture.0.join("search.db"));
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("initial generation");
+        assert!(service.diagnostics().watcher_ready);
+        fs::rename(root.join("source"), root.join("moved"))
+            .expect("an active indexer must not prevent moving a populated directory");
+        wait_until(Duration::from_secs(5), || {
+            let response = service.query(query_by_name("original.txt"));
+            response.total == 1
+                && response.items.len() == 1
+                && response.items[0].path == root.join("moved/nested/original.txt")
+        });
+        fs::create_dir_all(root.join("new/deeper")).expect("create new subtree");
+        fs::write(root.join("new/deeper/created.txt"), b"created").expect("write new descendant");
+        wait_until(Duration::from_secs(5), || {
+            service.query(query_by_name("created.txt")).total == 1
+        });
+        fs::rename(root.join("new"), root.join("new-moved"))
+            .expect("new descendants must not acquire move-blocking watches");
+        wait_until(Duration::from_secs(5), || {
+            let response = service.query(query_by_name("created.txt"));
+            response.total == 1
+                && response.items.len() == 1
+                && response.items[0].path == root.join("new-moved/deeper/created.txt")
+        });
+        fs::create_dir(root.join("node_modules")).expect("create excluded subtree");
+        fs::write(root.join("node_modules/ignored-noise.txt"), b"excluded")
+            .expect("write excluded descendant");
+        fs::write(root.join("barrier.txt"), b"included").expect("write included barrier");
+        wait_until(Duration::from_secs(5), || {
+            service.query(query_by_name("barrier.txt")).total == 1
+        });
+        assert_eq!(service.query(query_by_name("ignored-noise.txt")).total, 0);
+        let replacement = fixture.0.join("replacement");
+        fs::create_dir(&replacement).expect("create replacement root");
+        config.include_roots = vec![replacement];
+        service.update_config(config);
+        service
+            .rebuild_index_blocking()
+            .expect("replacement generation");
+        fs::rename(root.join("moved"), root.join("after-config-change"))
+            .expect("reconfiguration must release every watch from the previous plan");
+        service.stop();
+    }
+
     fn mk_item(path: &str, name: &str, kind: EntryKind) -> SearchResultItem {
         let mut item = SearchResultItem {
             path: PathBuf::from(path),

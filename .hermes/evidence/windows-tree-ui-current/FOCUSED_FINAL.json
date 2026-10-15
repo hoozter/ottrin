@@ -1,0 +1,14 @@
+{
+  "red_sha256": "1AD7B1F0ABEF807F91B27BE2A241BA25153ED6C417BC1C6970941DF5BB4FD19A",
+  "binary_sha256": "559ABEFD7685CB91AFF7E5928F63B56B79D072D546BE10451BC84CC2263D1EF6",
+  "tests": [
+    {
+      "exit": 0,
+      "name": "tests::windows_index_watches_allow_directory_moves_and_follow_new_subtrees"
+    },
+    {
+      "exit": 0,
+      "name": "worker::tests::watcher_delivery_filters_excluded_churn_without_losing_overflow_recovery"
+    }
+  ]
+}

@@ -4,6 +4,11 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Windows indexing now watches configured roots recursively instead of holding
+  descendant directory handles that prevent ordinary populated-folder moves.
+  Excluded events are filtered before waking the worker, and configuration
+  replacement releases the full previous watch set.
+
 - Quick Inspector opens text read-only and requires **Edit text** before accepting edits. Arrow keys navigate files and Space closes a read-only Inspector. Its title bar now uses the same edge-aligned layout as Settings. Width-fitted PDF previews reserve a stable scrollbar gutter to prevent repeated page resizing at the overflow boundary.
 
 - Linux windows now identify as `org.ottrin.Ottrin`, matching the packaged desktop entry so Wayland desktops can resolve the Ottrin icon. All auxiliary windows share this identity; X11 desktop integration declares `StartupWMClass=ottrin`. Exact packaged verification is recorded in `dist/packages/DESKTOP_ICON_ACCEPTANCE.json`.

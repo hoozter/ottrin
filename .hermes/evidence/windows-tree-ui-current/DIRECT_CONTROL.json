@@ -1,0 +1,38 @@
+{
+  "forward": true,
+  "restored": true,
+  "scope": "Ordinary-user direct Directory.Move control after failed GUI operation and product teardown",
+  "before": [
+    {
+      "path": ".",
+      "kind": "directory",
+      "sha256": null,
+      "id": "0x0000000000000000002c0000000278cd"
+    },
+    {
+      "path": "empty",
+      "kind": "directory",
+      "sha256": null,
+      "id": "0x000000000000000000190000000278d0"
+    },
+    {
+      "path": "nested folder",
+      "kind": "directory",
+      "sha256": null,
+      "id": "0x000000000000000000150000000278ce"
+    },
+    {
+      "path": "root.txt",
+      "kind": "file",
+      "sha256": "BE5AD6E88AA613BE8A86C702CEBDA87C02536643A3411F21C0113081B905FA0A",
+      "id": "0x000000000000000000160000000278d1"
+    },
+    {
+      "path": "nested folder\\note\u00e9.txt",
+      "kind": "file",
+      "sha256": "43C3CCD105E1B9E97BDC8547D0D12F4A1780DC69564E12D7B7213915FEC37B95",
+      "id": "0x0000000000000000000d00000002793f"
+    }
+  ],
+  "status": "pass"
+}

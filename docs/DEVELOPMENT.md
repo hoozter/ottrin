@@ -147,6 +147,22 @@ profile directories were preserved by rename and restored, with generated state
 kept only in the disposable fixture (`index-lifecycle-final.log`). This verifies
 the per-user source lifecycle, not MSI/NSIS installation or uninstall integration.
 
+Windows uses one recursive native watch per configured index root. Do not open
+additional descendant watches: NTFS can deny renaming a populated ancestor while
+those handles are open, even when the watcher shares delete access. Linux keeps
+its filtered per-directory watch registration. Each replacement scan plan creates
+a fresh watcher and drops the entire previous registration set. Backend events
+use that watch's immutable scan policy before entering the worker queue; excluded
+generated churn is discarded, while overflow/rescan requests retain root recovery.
+
+The native `windows_index_watches_allow_directory_moves_and_follow_new_subtrees`
+search test starts a real service, moves existing and newly indexed trees, verifies
+their exact new query paths and excluded-content policy, then changes roots and
+checks that old registrations are released. Run it on Windows; cross-compilation
+alone does not validate native watch handle lifetimes. Configured-root ancestor
+moves and junction isolation require separate native acceptance. Microsoft documents
+the underlying [directory rename constraints](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information).
+
 ### Windows native video thumbnails
 
 The ignored `windows_native_thumbnail_decodes_and_preserves_admitted_source` test
