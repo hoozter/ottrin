@@ -1,0 +1,8 @@
+{
+  "owned_profile_processes": [],
+  "native_case_profiles_removed": true,
+  "private_displays_and_buses": "native harnesses waited for teardown on normal and failed exits",
+  "package_staging": "packager traps and payload-verifier context removed extraction/staging",
+  "superseded_windows_candidate_removed": true,
+  "original_qa_domains": " Id   Name                 State\n-------------------------------------\n -    ottrin-index-qa      shut off\n -    ottrin-qa-20261011   shut off\n -    win11ltsc            shut off\n\n"
+}

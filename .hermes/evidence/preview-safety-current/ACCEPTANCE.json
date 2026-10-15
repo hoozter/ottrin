@@ -1,0 +1,257 @@
+{
+  "status": "pass",
+  "date": "2026-10-15",
+  "artifact": {
+    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+    "revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
+    "sha256": "7e8a921e829b818ab81ccaca0f762a49391843361d98b81c90d8bfc0103f0b9a",
+    "built_from_tracked_clean_source": true
+  },
+  "source_checks": {
+    "ui_library": "376 passed, 1 ignored",
+    "strict_ui_all_targets_clippy": "pass",
+    "formatting": "pass",
+    "diff_validation": "pass",
+    "regressions": [
+      "Text load completion stays read-only; explicit edit retains drafts across preview refresh",
+      "Width-fit scrollbar-boundary page alternates318/325px before correction, settles after correction",
+      "Pending PDF metadata cannot initialize/persist Fit page instead of Fit width"
+    ]
+  },
+  "before": {
+    "artifact": {
+      "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+      "revision": "5849d38dd8974b9ad7fbeb1fd520f885639247a0",
+      "sha256": "611c8c579952ef3e03bc4ec033c75286d8a31329336c0957bb34c6e31b0d4168",
+      "built_from_tracked_clean_source": true
+    },
+    "native": "VCF arrows stay on same file and Space does not close; PDF changes bounding box repeatedly",
+    "distinct_settled_pdf_boxes": 12,
+    "rendered_log": "before-threshold-rendered.log"
+  },
+  "native_cases": {
+    "after-dark-1-1": {
+      "theme": "Dark",
+      "desktop_scale": 1.0,
+      "font_scale": 1.0,
+      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+      "header_edge_color": [
+        30,
+        34,
+        39
+      ],
+      "header_center_color": [
+        30,
+        34,
+        39
+      ],
+      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+      "space_closed": true,
+      "vcf_bytes_unchanged": true,
+      "settled_capture_count": 70,
+      "distinct_settled_boxes": 1,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": []
+      }
+    },
+    "after-light-1-1": {
+      "theme": "Light",
+      "desktop_scale": 1.0,
+      "font_scale": 1.0,
+      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+      "header_edge_color": [
+        255,
+        255,
+        255
+      ],
+      "header_center_color": [
+        255,
+        255,
+        255
+      ],
+      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+      "space_closed": true,
+      "vcf_bytes_unchanged": true,
+      "settled_capture_count": 70,
+      "distinct_settled_boxes": 1,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": []
+      }
+    },
+    "after-dark-1.5-1": {
+      "theme": "Dark",
+      "desktop_scale": 1.5,
+      "font_scale": 1.0,
+      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+      "header_edge_color": [
+        30,
+        34,
+        39
+      ],
+      "header_center_color": [
+        30,
+        34,
+        39
+      ],
+      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+      "space_closed": true,
+      "vcf_bytes_unchanged": true,
+      "settled_capture_count": 70,
+      "distinct_settled_boxes": 1,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": []
+      }
+    },
+    "after-light-1.5-1": {
+      "theme": "Light",
+      "desktop_scale": 1.5,
+      "font_scale": 1.0,
+      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+      "header_edge_color": [
+        255,
+        255,
+        255
+      ],
+      "header_center_color": [
+        255,
+        255,
+        255
+      ],
+      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+      "space_closed": true,
+      "vcf_bytes_unchanged": true,
+      "settled_capture_count": 70,
+      "distinct_settled_boxes": 1,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": []
+      }
+    },
+    "after-dark-1.5-1.35": {
+      "theme": "Dark",
+      "desktop_scale": 1.5,
+      "font_scale": 1.35,
+      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+      "header_edge_color": [
+        30,
+        32,
+        35
+      ],
+      "header_center_color": [
+        30,
+        32,
+        35
+      ],
+      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+      "space_closed": true,
+      "vcf_bytes_unchanged": true,
+      "settled_capture_count": 70,
+      "distinct_settled_boxes": 1,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": []
+      }
+    },
+    "after-explicit-edit": {
+      "theme": "Dark",
+      "desktop_scale": 1.0,
+      "font_scale": 1.0,
+      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+      "header_edge_color": [
+        30,
+        34,
+        39
+      ],
+      "header_center_color": [
+        30,
+        34,
+        39
+      ],
+      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+      "space_closed": true,
+      "vcf_bytes_unchanged": true,
+      "explicit_edit": {
+        "draft_kept_file_unchanged": true,
+        "explicit_save_published_marker": true
+      },
+      "settled_capture_count": 70,
+      "distinct_settled_boxes": 1,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": []
+      }
+    }
+  },
+  "native_scope": "Private Xvfb/X11 with software OpenGL; real bundled PDF previews and admitted ext4 VCF fixture; 100 captures per case. Pixel stability is asserted for Dark; Light checks navigation, source preservation and header geometry/color. Six cases include ordinary two-page PDF and explicit edit/save.",
+  "other_linux_packages": {
+    "date": "2026-10-15",
+    "package_source_revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
+    "binary_source_revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
+    "appimage": {
+      "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+      "revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
+      "sha256": "7e8a921e829b818ab81ccaca0f762a49391843361d98b81c90d8bfc0103f0b9a",
+      "built_from_tracked_clean_source": true
+    },
+    "packages": {
+      "portable": {
+        "artifact": "Ottrin-0.1.0-linux-x86_64-portable.tar.gz",
+        "sha256": "7a8c2ee3997f2cb374fc8e2fc92460c39fd8b3969292e167322163f209663284",
+        "binary_sha256": {
+          "libexec/ottrin/ottrin": "e338a22eabaa19b99b04c9b29f8b5a5ea15f083c67f5aa684707af6c2edcbaad",
+          "libexec/ottrin/ottrin-indexd": "862245c60c201490e3c8e09e21d98229d8a3c7b9032e02a5ae6c123935ea6dc4",
+          "libexec/ottrin/ottrin-media-playback": "5f0b7e52e2bb7c8b41a68b077dcd8eec99c7ade79ea2c3ceaeb952ab1864e601",
+          "libexec/ottrin/ottrin-legacy-doc-render": "441e885e3a9a63e9382dd55a218dee1ab13568c7f6c07ae6f358b4f3f66ea59f",
+          "bin/ottrin-priv-helper": "b044c12a7d1779bf69a8594773115de9a57fbcfc617741dce50a825f03f83279"
+        },
+        "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 0040b4419fcd2349c57161619d032e42e8bd948c\nWorking tree: clean\nTracked diff SHA-256: none\n",
+        "payload_identity": "whole-file match"
+      },
+      "deb": {
+        "artifact": "ottrin_0.1.0_amd64.deb",
+        "sha256": "b5e09a4dee61c36d6403d20c66d502656874ffa796c9ddb400e0004ffbdf0770",
+        "binary_sha256": {
+          "usr/bin/ottrin": "e338a22eabaa19b99b04c9b29f8b5a5ea15f083c67f5aa684707af6c2edcbaad",
+          "usr/bin/ottrin-indexd": "862245c60c201490e3c8e09e21d98229d8a3c7b9032e02a5ae6c123935ea6dc4",
+          "usr/bin/ottrin-media-playback": "5f0b7e52e2bb7c8b41a68b077dcd8eec99c7ade79ea2c3ceaeb952ab1864e601",
+          "usr/bin/ottrin-legacy-doc-render": "441e885e3a9a63e9382dd55a218dee1ab13568c7f6c07ae6f358b4f3f66ea59f",
+          "usr/libexec/ottrin/ottrin-priv-helper": "b044c12a7d1779bf69a8594773115de9a57fbcfc617741dce50a825f03f83279"
+        },
+        "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 0040b4419fcd2349c57161619d032e42e8bd948c\nTracked tree: clean\n",
+        "payload_identity": "whole-file match"
+      },
+      "rpm": {
+        "artifact": "ottrin-0.1.0-1.x86_64.rpm",
+        "sha256": "44288e8314335284783e226276c9f30fb462c979ce2afd207f16f6c926524f5f",
+        "binary_sha256": {
+          "usr/bin/ottrin": "645861e3fdb8215e87944d9eab1015479dd6f3bbb44dfe561520d1653ac39500",
+          "usr/bin/ottrin-indexd": "eec99618e7cd325dbc800f21fdd9230f035fe6960ba0c75942a6abf8eeb1af6a",
+          "usr/bin/ottrin-media-playback": "857dddafab5e075425e4f9085c61bc722d3c7b444932e624e12833681d13e65b",
+          "usr/bin/ottrin-legacy-doc-render": "5c2179e59d21896163e804b28506b598891b076a3d57b341c6e3a8710f3b7f7f",
+          "usr/libexec/ottrin/ottrin-priv-helper": "1ed3b1722950e87136331fb78e0a258b4be2cc9ed2a395226e815a175884576c"
+        },
+        "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 0040b4419fcd2349c57161619d032e42e8bd948c\nTracked tree: clean\n",
+        "payload_identity": ".text and .rodata match; standard RPM stripping changes whole-file hashes"
+      }
+    }
+  },
+  "limits": [
+    "Not native Windows/macOS acceptance or physical Wayland/GPU acceptance.",
+    "No broader roadmap or daily-driver completion claim."
+  ],
+  "fixture_sha256": {
+    "threshold.py": "a6feab42fa1fbd1fe352dbab45b045561d892f39cf6f694f8b355017f6642021",
+    "explicit-edit.py": "4cb69dabab263c946075d84ee943b2ba382661fb3dc7d38b75c65e7f4d626c6b",
+    "native.py": "7667a0719058c39fbcc8977e682829ffc74237153da4e312dbe72bd6279ac57d",
+    "verify-packages.py": "b14adacb72957888a8d9e72bb19f9f2530da8675a5f2fccbf2e9f2fae7290cff"
+  }
+}

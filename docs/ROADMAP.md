@@ -2986,3 +2986,31 @@ actor was not launched before this urgent user correction. Its disposable VM was
 shut down and discarded; inputs and handoff are retained at
 `.hermes/evidence/windows-init-package-current/`. The full roadmap goal remains
 active, including the independent MSI registration rollback gate.
+
+### Exact Linux preview correction package acceptance (2026-10-15)
+
+The stable AppImage now contains clean source `0040b4419fcd2349c57161619d032e42e8bd948c`,
+SHA-256 `7e8a921e829b818ab81ccaca0f762a49391843361d98b81c90d8bfc0103f0b9a`. Its actual
+executable matches the release binary. Native private Xvfb checks pass in
+Ottrin Dark/Light at 100%/150% plus enlarged text at 150%. VCF arrow navigation
+and Space close work without entering edit mode; source bytes stay unchanged.
+Header edge and interior colors match, and the title bar is visually confirmed
+flush with the themed window border. Dark overflow-boundary PDF captures have
+one unchanged page rectangle throughout the settled sample, replacing the
+shipped artifact's repeated changes. Light samples verify navigation, header
+and source preservation; pixel stability is asserted in Dark.
+
+A separate real two-page PDF/VCF run also passes. Clicking **Edit text** enables
+a draft without writing the file; only Ctrl+S publishes the fixture change,
+and a clean editor then closes. All test fixtures, saved-edit recovery data,
+profiles, processes, displays, buses and package extractions were removed.
+Portable/DEB/RPM outputs at `dist/packages/` share the same source revision and
+verified executable payloads (RPM `.text`/`.rodata` after standard stripping).
+The cached project RPM tool was used after the default PATH lacked rpmbuild.
+
+Receipt: `dist/packages/PREVIEW_SAFETY_ACCEPTANCE.json`, mirrored at
+`.hermes/evidence/preview-safety-current/ACCEPTANCE.json`; screenshots and before/after
+traces are alongside it. Superseded `3a3d72d` Windows construction output is
+removed after its compact receipts and deferred actor inputs were retained.
+Native Windows/macOS and physical Wayland/GPU acceptance remain separate;
+this does not close the wider roadmap or the MSI rollback gate.
