@@ -10,6 +10,14 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Linux delivery status
 
+The current local packages use clean source `d4ef8f9`, including the OS-appearance
+palette correction described at the end of this roadmap. AppImage SHA-256:
+`31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a`.
+All four stable Linux formats have current payload checks; exact AppImage GUI
+Dark100/Light150 menu/Move checks pass. These focused checks do not close the
+broader release gates. `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` identifies
+the current artifacts; older receipts retain their original revision scope.
+
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
 The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `.hermes/coordinator-worker-report.md`, with October 9 baseline evidence in `.hermes/evidence/takeover-20261009/REPORT.md`.
@@ -18,20 +26,19 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 
 ## Current Windows local delivery — 2026-10-15
 
-Portable, NSIS and MSI at the stable `dist/` paths now contain clean source
-`4a0c13b`, including continuous `ottrin-indexd`, session cleanup, visible Move
-completion and offline startup reconciliation. The refreshed exact NSIS passes
-standard-user install/reinstall, locked-cache uninstall retention and retry;
-the exact MSI passes standard-user install/uninstall, running scoped login task,
-query, product registration and 53-file payload checks. Preferences/source hashes
-remain unchanged. The private 10,000-file portable index acceptance is recorded
-below. Current hashes are authoritative in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`
+Portable, NSIS and MSI at the stable `dist/` paths use clean source `d4ef8f9`.
+Current NSIS native GUI acceptance verifies matching dark controls, one search
+result and the same scheduled daemon before/during/after normal window close,
+including live indexing afterward. Current MSI standard-user install/index/query/
+uninstall passes all 53 payload/helper hashes. The exact archives and installer
+payloads match. Current hashes and limits are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`
 and `.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
 
-These are local testing builds, not full release acceptance. Current MSI
-failed-transaction registration rollback, upgrade/repair, reboot persistence,
-interactive installer and broad GUI/device gates remain open. The October 11
-snapshot below is historical and does not describe the current published files.
+The preceding `4a0c13b` reboot, cleanup-failure/retry and populated-index CPU/offline
+results remain historical evidence for that revision. Current exact reboot/login,
+upgrade/repair, MSI failed-transaction registration rollback, interactive-installer
+breadth and physical GPU gates remain open. These are local test builds, not full
+release acceptance. The October 11 snapshot below is historical.
 
 ## Audited platform status — 2026-10-11
 
@@ -2236,3 +2243,47 @@ Rebuild and inspect the corrected native packages before claiming this delivered
 the published `4a0c13b` artifacts still contain the visual defect. This checkpoint
 closes focused installed-GUI daemon reuse/lifetime, not appearance coherence,
 MSI reboot/rollback or the remaining roadmap.
+
+
+### Palette correction delivered in all current local formats — 2026-10-15
+
+Clean source `d4ef8f9` replaces the preceding Linux and Windows artifacts at their
+stable paths. All seven published files were re-hashed after replacement. The
+AppImage is `31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a`;
+all format hashes and sizes are retained in
+`.hermes/evidence/windows-20261011/THEME_FIXED_PACKAGE_IDENTITIES.json`.
+
+Native standard-user Windows NSIS GUI captures now show the dark search input
+and sort control matching the resolved palette. One visible search result agrees
+with the CLI. The same scheduled daemon PID/InstanceGuid survives normal window
+open/close and indexes a subsequent file in 615.326 ms. Preferences change through
+normal GUI persistence and are restored by the actor; original fixture bytes stay
+unchanged. Exact MSI install/index/query/uninstall passes with all 53 payload/helper
+hashes. The Windows portable has 51 exact stage matches, NSIS has 51 matching
+embedded digests and MSI 53 including helpers. Receipts are
+`WINDOWS_THEME_FIXED_GUI_ACCEPTANCE.json` and `WINDOWS_THEME_FIXED_MSI_ACCEPTANCE.json`.
+The GUI and MSI harnesses use their `d4ef8f9` templates with only recorded digest/
+owned-directory substitutions, identified by executed-script hashes.
+
+Exact Linux AppImage main/View Options captures were inspected in Dark100 and
+Light150. Both Move fixtures completed with exact destination bytes, visible
+completion and normal exit. Private Xvfb/message-bus/app/index/profile fixtures
+were removed. Portable executable/PDFium bytes match AppImage; the production
+native verifier block passes DEB bytes, RPM code/readonly sections, embedded
+revision, GLIBC-derived dependencies and polkit bytes. A harness assumption that
+the portable launch script was the ELF was corrected to use its authoritative
+`libexec/ottrin` layout before acceptance; no package defect was inferred. Linux
+receipt: `.hermes/evidence/theme-os-transition-linux/ACCEPTANCE.json`.
+
+All disposable Windows actors, installed app/index/tasks, compiler/payload copies,
+one-shot sign-in and plaintext credential were removed. Guest/backing VMs are
+shut off with backing content mtime unchanged. Host preferences and index-service
+unit retain original hashes. Superseded packages, duplicate staging and task-owned
+temporary scripts/extractions were removed; shared caches and current deliverables
+remain. Cleanup: `THEME_FIXED_PUBLICATION_CLEANUP.json` beside the Windows receipts.
+
+This closes the delivered OS-appearance/control-palette defect and focused current
+GUI lifetime checks. Physical GPU/Wayland, full theme/state/scale acceptance,
+current exact reboot/upgrade/repair, MSI registration rollback and the remaining
+roadmap are not claimed complete. No new whole-home or CPU benchmark is inferred
+from this UI repair; prior performance receipts retain their original hashes.

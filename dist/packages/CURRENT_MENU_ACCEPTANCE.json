@@ -3,19 +3,19 @@
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
   "provenance": {
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "revision": "554591dc563a1d3b28199a8b0bf7323ddac65510",
-    "sha256": "3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55",
+    "revision": "d4ef8f92aa4d24e04d4bd9f4d2cd1b6c79095760",
+    "sha256": "31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a",
     "built_from_tracked_clean_source": true
   },
   "checks": [
-    "Exact packaged main/View Options menu screenshots visually inspected: complete icons and compact action spacing, Dark 100%/Light 150%",
-    "Both normal GUI exits and private process/profile teardown pass"
+    "Exact packaged main/View Options menu screenshots inspected: matching palette, complete icons, compact action spacing, Dark100/Light150",
+    "Both Move fixtures completed with exact bytes and normal GUI exit; private profiles/processes removed"
   ],
   "screenshots": [
-    ".hermes/evidence/index-populated-current/gui/dark-100-refined-main.png",
-    ".hermes/evidence/index-populated-current/gui/dark-100-refined-view.png",
-    ".hermes/evidence/index-populated-current/gui/light-150-refined-main.png",
-    ".hermes/evidence/index-populated-current/gui/light-150-refined-view.png"
+    ".hermes/evidence/theme-os-transition-linux/gui/dark-100-refined-main.png",
+    ".hermes/evidence/theme-os-transition-linux/gui/dark-100-refined-view.png",
+    ".hermes/evidence/theme-os-transition-linux/gui/light-150-refined-main.png",
+    ".hermes/evidence/theme-os-transition-linux/gui/light-150-refined-view.png"
   ],
   "scope": "Focused menu acceptance; no full appearance audit claimed"
 }

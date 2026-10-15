@@ -1,91 +1,20 @@
 {
   "date": "2026-10-15",
-  "source_revision": "554591dc563a1d3b28199a8b0bf7323ddac65510",
+  "source_revision": "d4ef8f92aa4d24e04d4bd9f4d2cd1b6c79095760",
   "artifacts": {
-    "Ottrin-0.1.0-x86_64.AppImage": "3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2438e900f031edbf34afa78d0252a2e60564337b718f3d6f39ef816cb2552dda",
-    "ottrin_0.1.0_amd64.deb": "daaa5e2704b97a1ac3fb7bebc98ffa8dd58015d83b7f63bb4b57e1061d406d1f",
-    "ottrin-0.1.0-1.x86_64.rpm": "6be5d60da9ed1ec6fd4103459434e02ac86d525ce48ed7965207ee657a21f0ad"
+    "ottrin-0.1.0-1.x86_64.rpm": "058b87ee17f9705845f478b56fa68fd0f84083af79256f27341d2d8fd48a6723",
+    "Ottrin-0.1.0-x86_64.AppImage": "31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "aa30f1511790472467fc8410dacfba80e0b6b17c380390d8ac0469cf9a38bb2c",
+    "ottrin_0.1.0_amd64.deb": "48499c8cade9cfef6e86f2073936640d246a440dd4f0b433ec65d97666d347f8"
   },
   "checks": [
-    "Exact packaged restart catches offline create/edit/rename/delete with periodic refresh disabled",
-    "Saved queries remain available while watcher setup is blocked: source regression",
-    "Quiet metadata CPU before burst, after burst and after restart validation stays below 0.5% of one core",
-    "Ordinary 2000-change burst remains incremental; all metadata and query results match",
-    "Dark 100%/Light 150% native packaged GUI Move and main/View menus pass; normal exits",
-    "Portable/DEB executable/PDFium bytes and RPM code/read-only sections match AppImage; embedded provenance/GLIBC/polkit metadata pass",
-    "Packaged cleanup failure/retry preserves source/settings; no-unit session daemon shutdown passes"
+    "Exact packaged Linux GUI Dark100/Light150 menus visually inspected; Move completed and normal exit/private cleanup pass",
+    "DEB bytes, RPM code/readonly sections, portable six payload bytes match AppImage; native metadata/provenance/GLIBC/polkit checks pass"
   ],
-  "metrics": {
-    "populated_idle": {
-      "seconds": 30.034,
-      "cpu_ticks": 1,
-      "cpu_percent_one_core": 0.033,
-      "rss_kib_at_end": 8600
-    },
-    "burst": {
-      "renamed": 500,
-      "deleted": 500,
-      "modified": 500,
-      "created": 500,
-      "mutation_ms": 49.11,
-      "all_metadata_and_query_results_match_ms": 3052.432,
-      "generation_unchanged": true,
-      "scan_started_unchanged": true
-    },
-    "after_burst_idle": {
-      "seconds": 30.033,
-      "cpu_ticks": 3,
-      "cpu_percent_one_core": 0.1,
-      "rss_kib_at_end": 11360
-    },
-    "restart": {
-      "ready_with_complete_metadata_and_query_results_ms": 508.305,
-      "generation_unchanged": false,
-      "startup_validation_completed": true,
-      "watcher_ready": true
-    },
-    "after_restart_idle": {
-      "seconds": 30.037,
-      "cpu_ticks": 2,
-      "cpu_percent_one_core": 0.067,
-      "rss_kib_at_end": 9024
-    }
-  },
-  "evidence": [
-    "OFFLINE_FIXED_PACKAGE.json",
-    "OFFLINE_BASELINE_FAILURE.json",
-    "OFFLINE_NATIVE_IDENTITY.json",
-    "OFFLINE_CLEANUP.json",
-    "gui/MOVE_RESULTS.json",
-    "gui/LATEST_CLEANUP.json"
-  ],
-  "host_preservation": {
-    "config": "/home/campbell/.config/ottrin/config.json",
-    "unit": "/home/campbell/.config/systemd/user/ottrin-index.service",
-    "config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
-    "unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
-    "daemon_pid": 1302,
-    "daemon_start_ticks": "804",
-    "daemon_exe": "/tmp/.mount_Ottrin9cltJR/usr/bin/ottrin-indexd"
-  },
-  "service_launcher": {
-    "path": "/home/campbell/.cache/ottrin/ottrin-index-appimage",
-    "sha256": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d",
-    "type": "shell wrapper",
-    "target": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
-    "next_start_uses_current_package": true,
-    "running_daemon_not_restarted": true
-  },
-  "cleanup": {
-    "private_processes": [],
-    "private_profiles_extractions_displays_buses_helpers_removed": true,
-    "candidates_moved_to_stable_dist": true
-  },
+  "gui_evidence": ".hermes/evidence/theme-os-transition-linux/gui",
+  "payload_evidence": ".hermes/evidence/windows-20261011/THEME_FIXED_PACKAGE_IDENTITIES.json",
   "limits": [
-    "Observed private 10000-file metadata-only timings, not guarantees or live-home/content-enabled performance",
-    "Installed current daemon remains previous version until next start",
-    "Windows source compiles/lints; Windows packages and native offline-change acceptance not refreshed",
-    "Fresh native install/upgrade, broad graphics/authentication and full daily-driver gates remain open"
+    "Focused GUI/payload acceptance only; previous offline/CPU/native-install receipts retain original revisions",
+    "Physical Wayland/GPU, full release and signing gates remain open"
   ]
 }

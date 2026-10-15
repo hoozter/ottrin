@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-15",
+  "source_revision": "d4ef8f92aa4d24e04d4bd9f4d2cd1b6c79095760",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": {
+      "sha256": "058b87ee17f9705845f478b56fa68fd0f84083af79256f27341d2d8fd48a6723",
+      "bytes": 24040429
+    },
+    "Ottrin-0.1.0-x86_64.AppImage": {
+      "sha256": "31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a",
+      "bytes": 28771520
+    },
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "sha256": "aa30f1511790472467fc8410dacfba80e0b6b17c380390d8ac0469cf9a38bb2c",
+      "bytes": 28449296
+    },
+    "ottrin_0.1.0_amd64.deb": {
+      "sha256": "48499c8cade9cfef6e86f2073936640d246a440dd4f0b433ec65d97666d347f8",
+      "bytes": 18585242
+    }
+  },
+  "gui_cases": [
+    "Dark 100%",
+    "Light 150%"
+  ],
+  "visual_review": "Main and View Options menu captures inspected in both cases; complete iconography, compact gutter and matching palette",
+  "moves": [
+    {
+      "theme": "Dark",
+      "scale": "1",
+      "capture_elapsed_ms": 679,
+      "settled_capture_elapsed_ms": 2794,
+      "source_removed": true,
+      "destination_bytes_match": true
+    },
+    {
+      "theme": "Light",
+      "scale": "1.5",
+      "capture_elapsed_ms": 729,
+      "settled_capture_elapsed_ms": 2894,
+      "source_removed": true,
+      "destination_bytes_match": true
+    }
+  ],
+  "cleanup": {
+    "profile_removed": true,
+    "private_processes": [],
+    "ownership": "HOME/XDG environment and uid"
+  },
+  "scope": "Focused packaged GUI and payload acceptance; physical Wayland/GPU, full appearance matrix and release gates remain separate",
+  "payload_evidence": ".hermes/evidence/windows-20261011/THEME_FIXED_PACKAGE_IDENTITIES.json"
+}

@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-15",
+  "owned_guest_actors_exited_zero": true,
+  "guest_app_index_tasks_compiler_and_payload_fixtures_removed": true,
+  "temporary_signin_and_plaintext_credential_removed": true,
+  "overlay_and_backing_guests": "shut off",
+  "backing_content_mtime": "1792007729.962647502",
+  "backing_content_mtime_unchanged": true,
+  "host_private_gui_profiles_and_processes_removed": true,
+  "superseded_packages_and_duplicate_staging_replaced": true,
+  "qa_preferences_restored": true,
+  "source_fixture_unchanged": true,
+  "host_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "host_service_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350"
+}
