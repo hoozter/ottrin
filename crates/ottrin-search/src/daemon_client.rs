@@ -128,6 +128,33 @@ impl SearchDaemonClient {
         if executable != expected && executable.as_os_str() != deleted {
             return Ok(false);
         }
+        // A container or private mount namespace can give an independent
+        // executable the same absolute name. Compare the installed entry in
+        // both filesystem views, not the running inode: a legitimate native
+        // daemon may still hold the preceding package's deleted executable.
+        use std::os::unix::fs::MetadataExt;
+        let relative = expected
+            .strip_prefix("/")
+            .map_err(|_| "Native package executable path must be absolute")?;
+        let installed = match std::fs::metadata(expected) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => return Err(format!("Cannot inspect native package executable: {error}")),
+        };
+        let peer_installed = match std::fs::metadata(
+            std::path::PathBuf::from(format!("/proc/{}/root", peer.pid)).join(relative),
+        ) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => return Err(format!("Cannot inspect daemon filesystem: {error}")),
+        };
+        if !installed.is_file()
+            || !peer_installed.is_file()
+            || installed.dev() != peer_installed.dev()
+            || installed.ino() != peer_installed.ino()
+        {
+            return Ok(false);
+        }
         match self.transact_stream(stream, DaemonRequest::PrepareUpgrade)? {
             DaemonResponse::Complete => (),
             response => return Err(unexpected_response(response)),

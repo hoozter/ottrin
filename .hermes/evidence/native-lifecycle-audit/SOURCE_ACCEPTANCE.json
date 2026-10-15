@@ -1,0 +1,26 @@
+{
+  "status": "source and actual release-binary regression pass; publication pending",
+  "parent_revision": "fb41acc",
+  "old_published_deb_sha256": "24653789d108ba0e5ed99aac8d98de8a03b6b7d0efb1d9c722516cb0bf2ad07c",
+  "checks": [
+    "Old published daemon fails only the independent private mount ownership case",
+    "Rebuilt daemon passes native private mount, foreign copied private mount and deleted native executable cases",
+    "All fixture processes reaped; SIGTERM with stopped child escalates safely and removes private profile/mount sources",
+    "220 regular search tests pass; 2 ignored",
+    "Strict Linux and Windows app/search all-target Clippy pass",
+    "Native packaging contract passes after dependency-order assumption corrected"
+  ],
+  "evidence": [
+    "NAMESPACE_RED.json",
+    "NAMESPACE_GREEN.json",
+    "CANCELLATION.json",
+    "search-tests.log",
+    "linux-clippy.log",
+    "windows-clippy.log",
+    "contract-after.log"
+  ],
+  "limits": [
+    "Fresh package/native distro acceptance and publication pending",
+    "Arbitrary custom runtime endpoints and offline XDG roots remain separate"
+  ]
+}

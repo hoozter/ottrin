@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "scope": "SIGTERM interrupts a namespace fixture whose owned child is deliberately stopped; finally escalates and reaps before removing temporary mount/profile sources",
+  "fixture_exit": -2,
+  "owned_child": 2295377,
+  "private_root_removed": true
+}

@@ -10,15 +10,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Linux delivery status
 
-The current local packages use clean source `41027a0`, including the OS-appearance
-palette correction, literal address-path preservation, and clickable breadcrumbs
-that reveal their destination file column. AppImage SHA-256:
-`681dfd741e3a1c7c51eca471246d8576fd4629300bda0f39acd12e678271fbb1`.
-All four stable Linux formats have current payload checks; exact AppImage GUI
-Dark100/Light150 menu/Move checks pass, including complete semantic menu icons
-and compact action-menu leading spacing. These focused checks do not close the
-broader release gates. `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` identifies
-the current artifacts; older receipts retain their original revision scope.
+The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. They include the saved appearance/view repairs, clickable address navigation, complete menu icons and compact action spacing, plus native index-service cleanup. Ubuntu and Fedora package lifecycle evidence is scoped to the exact candidates named in that receipt; a documentation-only repack is distinguished from a new native runtime test. These focused checks do not close the broader release gates below. Older receipts retain their original revision scope.
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
@@ -2420,3 +2412,10 @@ The corrected guide is now delivered in all four Linux formats built from clean 
 The final four payloads pass the production native verifier block, portable six-byte identities, source provenance, lifecycle helper/hooks/dependencies and current guide bytes. Relative to native-tested `2350b21`, source changes are docs/evidence only: Fedora runtime and GUI results retain the preceding candidate’s exact artifact scope, rather than being called fresh tests of the final repackaged documentation. Receipts: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`, `.hermes/evidence/deb-lifecycle-current/FINAL_PACKAGE_IDENTITIES.json`, `final-managed/result.json`, `final-session/result.json`, `REBOOT_ACCEPTANCE.json` and `PUBLICATION.json`. Windows outputs remain unchanged at `41027a0`.
 
 This closes native DPKG execution and correct-guide delivery for these hooks. Cross-version upgrade, full desktop integration, arbitrary XDG/runtime namespaces and production signing remain open. The native fixture processes are stopped and removed before the owned Ubuntu VM, disks, seed and SSH key are deleted. Existing Windows guests, host settings and operator service configuration are preserved; cleanup is recorded separately.
+
+
+### Native daemon filesystem ownership audit — 2026-10-15
+
+A real unprivileged private-mount fixture reproduced a cleanup ownership defect: an independent copied daemon also appears as `/usr/bin/ottrin-indexd` inside its own filesystem. The old internal cleanup stopped it solely because the path text matched. Cleanup now compares the installed file identity in the caller’s view with the entry reached through the connected peer’s `/proc/PEER/root`; a different installed entry is preserved. A private namespace using the actual native entry remains removable, as does a legitimate native daemon retaining its old deleted executable after replacement. The authenticated connection and captured pidfd remain authoritative for the shutdown request and exit observation.
+
+The repeatable actual-binary namespace regression passes all three cases and preserves private source/config bytes; the prior published binary fails only the independent-namespace case. All 220 regular search tests, Linux/Windows app/search strict Clippy, and the native packaging contract pass. The packaging contract now checks dependency membership rather than assuming libc is first, and verifies the lifecycle helper is executable. Evidence: `.hermes/evidence/native-lifecycle-audit/`. This closes the reproduced filesystem-view confusion; arbitrary custom endpoints, offline custom XDG roots and broad namespace races remain separate. Source acceptance is not yet publication of this runtime change.

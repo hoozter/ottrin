@@ -52,7 +52,8 @@ for executable in \
   usr/bin/ottrin-indexd \
   usr/bin/ottrin-legacy-doc-render \
   usr/bin/ottrin-media-playback \
-  usr/libexec/ottrin/ottrin-priv-helper; do
+  usr/libexec/ottrin/ottrin-priv-helper \
+  usr/libexec/ottrin/native-package-lifecycle; do
   test -x "$STAGE/$executable"
 done
 for payload in \
@@ -116,7 +117,9 @@ expected_libc="$(objdump -T /bin/true | sed -nE '/\*UND\*/s/.*\(GLIBC_([0-9]+(\.
 test -n "$expected_libc"
 OTTRIN_BUILD_DIR="$BIN" OTTRIN_SKIP_BUILD=1 OTTRIN_DIST_DIR="$TMP/dist" "$DEB"
 depends="$(dpkg-deb -f "$TMP/dist/ottrin_0.1.0_amd64.deb" Depends)"
-[[ "$depends" == "libc6 (>= $expected_libc),"* ]]
+for dependency in "libc6 (>= $expected_libc)" systemd util-linux; do
+  [[ ", $depends," == *", $dependency,"* ]]
+done
 [[ ", $depends," == *", pkexec,"* ]]
 [[ ", $depends," == *", polkitd,"* ]]
 [[ ", $depends," == *", libxkbcommon-x11-0,"* ]]
