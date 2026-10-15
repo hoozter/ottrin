@@ -2503,3 +2503,27 @@ MSI failed-transaction registration remains a rejected release gate. A productio
 The platform now separates cleanup admission from Undo admission. An original-journal-bound `RetainedCopyCleanupPlan` keeps its evidence private and validates complete recorded operation groups, unchanged central/local records, directory/mount/object identity, retained bytes and references from other Copy operations. It permits cleanup planning after legitimate visible-file edits or reuse following completed Undo, while refusing changed backup data, added private-stage entries, incomplete publication/Undo and externally referenced overwrite-chain data. Revalidation never adopts a newer journal. Registry metadata participates in dependency checks; visible-file inspection is not deletion authority. An I/O-counter regression verifies admission and revalidation do not reread a changed 4MiB visible publication. Nested directories, symlink entries/targets, stale journals, replaced stages and batch/dependency selections have focused tests. An ancestor-folder overwrite also retains private transactions belonging to older copies: a differential regression rejects cleanup even after the older visible publication was deleted. The first prototype admitted that unsafe selection; it was corrected before enabling any deletion path. Dependency checks now compare nested generation handles for parent directories, private transactions and live publications; possible ambiguous matches retain data.
 
 All 372 regular platform tests pass (one ignored), including seven new admission regressions. Strict Linux and Windows cross-target platform/UI all-target Clippy pass. This is source-level read-only admission, not implemented disk reclamation. Durable cleanup intent, per-entry recursive deletion with restart/retry progress, final journal/stage removal and Activity Clear/history eviction remain required. No UI cleanup action, automatic expiry or package delivery is claimed by this checkpoint; existing user transactions are untouched. Unknown/corrupt registry records refuse planning because their references cannot safely be excluded. Full lifecycle work remains open and is the next implementation stage.
+
+
+### Copy retained-payload reclamation — 2026-10-15
+
+The Linux platform now implements durable retained-payload reclamation behind the
+original-record-bound cleanup plan. It records intent before claims, revokes
+Undo, quarantines and validates each original node, unlinks descendants before
+empty directories and persists compact append-only progress. Resume refuses IDs
+without prior intent, reconciles canonical/local one-step journal lag and never
+adopts changed original evidence. Symlink targets, visible publication edits,
+unknown entries, namespace replacements, changed contents and cross-operation
+dependencies retain their existing protection. The scoped metadata watch avoids
+per-node full-journal/registry reads; active ledger replacement or in-place changes
+are refused before unlink.
+
+Focused checks include real child-process SIGKILL at seven durable boundaries,
+error-return/reopen recovery, one-sided journals, active metadata/ledger mutation,
+root symlinks, replaced ancestors and a 128-file metadata-read bound. Source-only
+completion is limited to retained payloads. Private stage/ledger/journal
+finalization, Activity background cleanup/retry and history eviction remain the
+next work; no UI cleanup, automatic expiry or updated package is claimed. Unowned
+pre-intent artifacts and torn writes remain conservative review cases, not
+implicitly recoverable deletion authority. Full lifecycle and physical-platform
+acceptance remain open.

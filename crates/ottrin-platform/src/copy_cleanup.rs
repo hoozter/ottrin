@@ -1,10 +1,857 @@
-//! Admission for the retained-data side of Copy's lifecycle. A changed visible
-//! publication is not evidence that its private backup may be deleted.
+//! Retained Copy cleanup, bound to original journals and object/content evidence.
 
 use super::*;
 use crate::move_recovery::LinuxJournalDirectory;
 use rustix::fs::{Mode, OFlags};
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
+use std::io::{Read, Write};
+use std::os::fd::AsRawFd;
+use std::os::unix::fs::{FileExt, MetadataExt};
+
+const LEDGER: &str = "copy-cleanup";
+const QUARANTINE: &str = "cleanup-entry";
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct CleanupIntent {
+    origin: CopyPhase,
+    identity: PathMoveIdentity,
+    handle: ObjectHandle,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Progress {
+    index: usize,
+    pending: bool,
+    previous: String,
+}
+
+struct Ledger {
+    file: std::fs::File,
+    state: Progress,
+    digest: String,
+    stamp: LedgerStamp,
+}
+
+/// Constant-size checks protect an active ledger without rereading its prefix.
+#[derive(PartialEq, Eq)]
+struct LedgerStamp {
+    device: u64,
+    inode: u64,
+    size: u64,
+    mode: u32,
+    uid: u32,
+    modified: (i64, i64),
+    changed: (i64, i64),
+}
+
+impl LedgerStamp {
+    fn read(file: &std::fs::File) -> Result<Self, PlatformError> {
+        let m = file.metadata().map_err(journal_error)?;
+        Ok(Self {
+            device: m.dev(),
+            inode: m.ino(),
+            size: m.len(),
+            mode: m.mode(),
+            uid: m.uid(),
+            modified: (m.mtime(), m.mtime_nsec()),
+            changed: (m.ctime(), m.ctime_nsec()),
+        })
+    }
+}
+
+struct Node {
+    relative: PathBuf,
+    content: SourceTreeSnapshot,
+    objects: Vec<TreeObject>,
+}
+
+pub(super) fn validate_progress(record: &CopyRecord) -> Result<(), PlatformError> {
+    match (record.phase, &record.cleanup) {
+        (CopyPhase::CleanupPending | CopyPhase::CleanupComplete, Some(intent))
+            if matches!(intent.origin, CopyPhase::Published | CopyPhase::Undone)
+                && intent.handle.valid() =>
+        {
+            Ok(())
+        }
+        (
+            CopyPhase::PublicationIntent
+            | CopyPhase::Published
+            | CopyPhase::UndoIntent
+            | CopyPhase::Undone,
+            None,
+        ) => Ok(()),
+        _ => Err(refusal("Copy cleanup intent does not match its phase")),
+    }
+}
+
+fn nodes(record: &CopyRecord) -> Result<Vec<Node>, PlatformError> {
+    let Some((content, objects)) = retained_evidence(record)? else {
+        return Ok(Vec::new());
+    };
+    let mut objects = objects
+        .iter()
+        .map(|object| Ok((object.path.decode().map_err(journal_error)?, object.clone())))
+        .collect::<Result<BTreeMap<_, _>, PlatformError>>()?;
+    let mut result = Vec::new();
+    for (relative, content) in content
+        .cleanup_nodes()
+        .map_err(journal_error)?
+        .into_iter()
+        .rev()
+    {
+        let mut object = objects
+            .remove(&relative)
+            .ok_or_else(|| refusal("Missing Copy cleanup object evidence"))?;
+        object.path = NativePath::encode(Path::new(""));
+        result.push(Node {
+            relative,
+            content,
+            objects: vec![object],
+        });
+    }
+    Ok(result)
+}
+
+fn digest(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
+}
+
+fn origin_digest(record: &CopyRecord) -> Result<String, PlatformError> {
+    let mut original = record.clone();
+    if let Some(intent) = original.cleanup.take() {
+        original.phase = intent.origin;
+    }
+    Ok(digest(
+        &serde_json::to_vec(&original).map_err(journal_error)?,
+    ))
+}
+
+fn mount(fd: &impl rustix::fd::AsFd) -> Result<u64, PlatformError> {
+    crate::local_storage::local_path_mount_identity(
+        &PathBuf::from(format!("/proc/self/fd/{}", fd.as_fd().as_raw_fd())),
+        true,
+    )
+    .map_err(journal_error)
+}
+
+impl Ledger {
+    fn create(
+        stage: &impl rustix::fd::AsFd,
+        record: &CopyRecord,
+    ) -> Result<(Self, CleanupIntent), PlatformError> {
+        let fd = rustix::fs::openat(
+            stage,
+            LEDGER,
+            OFlags::CREATE
+                | OFlags::EXCL
+                | OFlags::RDWR
+                | OFlags::APPEND
+                | OFlags::CLOEXEC
+                | OFlags::NOFOLLOW,
+            Mode::RUSR | Mode::WUSR,
+        )
+        .map_err(journal_error)?;
+        let metadata = rustix::fs::fstat(&fd).map_err(journal_error)?;
+        let handle = ObjectHandle::capture(&fd)
+            .map_err(journal_error)?
+            .ok_or_else(|| refusal("Cleanup ledger generation evidence is unavailable"))?;
+        let identity = PathMoveIdentity {
+            device: metadata.st_dev,
+            inode: metadata.st_ino,
+        };
+        let header = origin_digest(record)?;
+        let mut file = std::fs::File::from(fd);
+        file.write_all(format!("{header}\n").as_bytes())
+            .map_err(journal_error)?;
+        let stamp = LedgerStamp::read(&file)?;
+        let mut ledger = Self {
+            stamp,
+            file,
+            state: Progress {
+                index: 0,
+                pending: false,
+                previous: header.clone(),
+            },
+            digest: header,
+        };
+        ledger.append(0, false)?;
+        rustix::fs::fsync(stage).map_err(journal_error)?;
+        Ok((
+            ledger,
+            CleanupIntent {
+                origin: record.phase,
+                identity,
+                handle,
+            },
+        ))
+    }
+
+    fn open(stage: &impl rustix::fd::AsFd, record: &CopyRecord) -> Result<Self, PlatformError> {
+        let intent = record
+            .cleanup
+            .as_ref()
+            .ok_or_else(|| refusal("Copy has no cleanup intent"))?;
+        let fd = rustix::fs::openat(
+            stage,
+            LEDGER,
+            OFlags::RDWR | OFlags::APPEND | OFlags::CLOEXEC | OFlags::NOFOLLOW | OFlags::NONBLOCK,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?;
+        let stat = rustix::fs::fstat(&fd).map_err(journal_error)?;
+        if rustix::fs::FileType::from_raw_mode(stat.st_mode) != rustix::fs::FileType::RegularFile
+            || stat.st_uid != rustix::process::geteuid().as_raw()
+            || stat.st_mode & 0o777 != 0o600
+            || (stat.st_dev, stat.st_ino) != (intent.identity.device, intent.identity.inode)
+            || mount(&fd)? != record.transaction_mount
+            || ObjectHandle::capture(&fd).map_err(journal_error)?.as_ref() != Some(&intent.handle)
+        {
+            return Err(refusal(
+                "Cleanup ledger identity, permissions or mount changed",
+            ));
+        }
+        let mut file = std::fs::File::from(fd);
+        let stamp = LedgerStamp::read(&file)?;
+        let mut bytes = Vec::new();
+        file.read_to_end(&mut bytes).map_err(journal_error)?;
+        if LedgerStamp::read(&file)? != stamp {
+            return Err(refusal("Cleanup ledger changed while reading progress"));
+        }
+        if !bytes.ends_with(b"\n") {
+            return Err(refusal(
+                "Cleanup ledger has an incomplete write; retain it for review",
+            ));
+        }
+        let mut lines = bytes[..bytes.len() - 1].split(|byte| *byte == b'\n');
+        let header = origin_digest(record)?;
+        if lines.next() != Some(header.as_bytes()) {
+            return Err(refusal("Cleanup ledger belongs to another Copy record"));
+        }
+        let mut previous = header;
+        let mut state: Option<Progress> = None;
+        for line in lines {
+            let next: Progress = serde_json::from_slice(line).map_err(journal_error)?;
+            if next.previous != previous
+                || serde_json::to_vec(&next).map_err(journal_error)? != line
+            {
+                return Err(refusal("Cleanup ledger hash chain or encoding changed"));
+            }
+            let valid = match &state {
+                None => next.index == 0 && !next.pending,
+                Some(old) if !old.pending => next.index == old.index && next.pending,
+                Some(old) => {
+                    next.index
+                        == old
+                            .index
+                            .checked_add(1)
+                            .ok_or_else(|| refusal("Cleanup progress overflow"))?
+                        && !next.pending
+                }
+            };
+            if !valid {
+                return Err(refusal("Cleanup ledger progress is not consecutive"));
+            }
+            previous = digest(line);
+            state = Some(next);
+        }
+        let state = state.ok_or_else(|| refusal("Cleanup ledger has no durable progress"))?;
+        let count = nodes(record)?.len();
+        if state.index > count
+            || (state.pending && state.index == count)
+            || (record.phase == CopyPhase::CleanupComplete && state.index != count)
+        {
+            return Err(refusal("Cleanup ledger progress exceeds its original tree"));
+        }
+        Ok(Self {
+            file,
+            state,
+            digest: previous,
+            stamp,
+        })
+    }
+
+    fn validate_named(&self, stage: &std::fs::File) -> Result<(), PlatformError> {
+        let named = rustix::fs::openat(
+            stage,
+            LEDGER,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?;
+        if mount(&named)? != mount(stage)?
+            || LedgerStamp::read(&std::fs::File::from(named))? != self.stamp
+            || LedgerStamp::read(&self.file)? != self.stamp
+        {
+            return Err(refusal("Cleanup ledger changed during reclamation"));
+        }
+        Ok(())
+    }
+
+    fn append(&mut self, index: usize, pending: bool) -> Result<(), PlatformError> {
+        if LedgerStamp::read(&self.file)? != self.stamp {
+            return Err(refusal("Cleanup ledger changed before appending progress"));
+        }
+        let next = Progress {
+            index,
+            pending,
+            previous: self.digest.clone(),
+        };
+        let bytes = serde_json::to_vec(&next).map_err(journal_error)?;
+        self.file
+            .write_all(&bytes)
+            .and_then(|()| self.file.write_all(b"\n"))
+            .and_then(|()| self.file.sync_all())
+            .map_err(journal_error)?;
+        let stamp = LedgerStamp::read(&self.file)?;
+        let expected_size = self
+            .stamp
+            .size
+            .checked_add(bytes.len() as u64 + 1)
+            .ok_or_else(|| refusal("Cleanup ledger size overflow"))?;
+        let mut tail = vec![0; bytes.len() + 1];
+        self.file
+            .read_exact_at(&mut tail, self.stamp.size)
+            .map_err(journal_error)?;
+        if stamp.size != expected_size || tail[..bytes.len()] != bytes || tail[bytes.len()] != b'\n'
+        {
+            return Err(refusal("Cleanup progress append was changed"));
+        }
+        self.stamp = stamp;
+        self.digest = digest(&bytes);
+        self.state = next;
+        Ok(())
+    }
+}
+
+fn path_from_fd(fd: &impl rustix::fd::AsFd) -> PathBuf {
+    PathBuf::from(format!("/proc/self/fd/{}", fd.as_fd().as_raw_fd()))
+}
+
+fn node_source_path(stage: &impl rustix::fd::AsFd, relative: &Path) -> PathBuf {
+    let mut path = path_from_fd(stage).join(crate::copy_transaction::CANDIDATE);
+    // Joining an empty path appends a slash, which changes regular-file and
+    // symlink semantics. The root node is the candidate entry itself.
+    if !relative.as_os_str().is_empty() {
+        path.push(relative);
+    }
+    path
+}
+
+pub(super) fn validate_partial_data(
+    record: &CopyRecord,
+    stage: &impl rustix::fd::AsFd,
+) -> Result<(), PlatformError> {
+    let ledger = Ledger::open(stage, record)?;
+    validate_partial(record, stage, &ledger.state)
+}
+
+fn validate_partial(
+    record: &CopyRecord,
+    stage: &impl rustix::fd::AsFd,
+    state: &Progress,
+) -> Result<(), PlatformError> {
+    let entries = nodes(record)?;
+    let quarantine = path_from_fd(stage).join(QUARANTINE);
+    let quarantined = exists(&quarantine)?;
+    let mut removed = entries
+        .iter()
+        .take(state.index)
+        .map(|entry| entry.relative.clone())
+        .collect::<BTreeSet<_>>();
+    if quarantined {
+        if !state.pending {
+            return Err(refusal("Unexpected cleanup quarantine entry"));
+        }
+        let node = &entries[state.index];
+        record.validate_tree(&quarantine, &node.content, &node.objects)?;
+        removed.insert(node.relative.clone());
+    } else if state.pending {
+        // A completed unlink may precede its next durable ledger frame.
+        let node = &entries[state.index];
+        let candidate = node_source_path(stage, &node.relative);
+        match std::fs::symlink_metadata(candidate) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                removed.insert(node.relative.clone());
+            }
+            Err(error) => return Err(journal_error(error)),
+            Ok(_) => {}
+        }
+    }
+    let candidate = path_from_fd(stage).join(crate::copy_transaction::CANDIDATE);
+    if let Some((content, objects)) = retained_evidence(record)? {
+        if removed.contains(Path::new("")) {
+            match std::fs::symlink_metadata(&candidate) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(journal_error(error)),
+                Ok(_) => return Err(refusal("A completed cleanup pathname was reused")),
+            }
+        } else {
+            let content = content.excluding_paths(&removed).map_err(journal_error)?;
+            let objects = objects
+                .iter()
+                .filter_map(|object| match object.path.decode() {
+                    Ok(path) if !removed.contains(&path) => Some(Ok(object.clone())),
+                    Ok(_) => None,
+                    Err(error) => Some(Err(journal_error(error))),
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            record.validate_tree(&candidate, &content, &objects)?;
+        }
+    } else if exists(&candidate)? {
+        return Err(refusal(
+            "Cleanup has no authority for an unexpected candidate",
+        ));
+    }
+    Ok(())
+}
+
+fn exists(path: &Path) -> Result<bool, PlatformError> {
+    match std::fs::symlink_metadata(path) {
+        Ok(_) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(journal_error(error)),
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CleanupPoint {
+    IntentDurable,
+    EntryIntentDurable,
+    Claimed,
+    BeforeUnlink,
+    Unlinked,
+    ProgressDurable,
+    CompleteDurable,
+}
+
+fn original_record(record: &CopyRecord) -> CopyRecord {
+    let mut result = record.clone();
+    if let Some(intent) = result.cleanup.take() {
+        result.phase = intent.origin;
+    }
+    result
+}
+
+fn open_directories(record: &CopyRecord) -> Result<(std::fs::File, std::fs::File), PlatformError> {
+    record.require_object_evidence()?;
+    record.validate_namespace()?;
+    let transaction = record.transaction.decode().map_err(journal_error)?;
+    let flags = OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC;
+    let parent = std::fs::File::from(
+        rustix::fs::open(
+            transaction.parent().expect("validated parent"),
+            flags,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?,
+    );
+    let stage = std::fs::File::from(
+        rustix::fs::openat(
+            &parent,
+            transaction.file_name().expect("validated name"),
+            flags,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?,
+    );
+    record.validate_opened_directory(&parent, true)?;
+    record.validate_opened_directory(&stage, false)?;
+    Ok((parent, stage))
+}
+
+fn pair_matches(
+    central: &LinuxJournalDirectory,
+    local: &LinuxJournalDirectory,
+    record: &CopyRecord,
+) -> Result<(), PlatformError> {
+    let id = record.transaction_id()?;
+    if central.read_copy_record(&format!("{id}.journal"))? != *record
+        || local.read_copy_record("copy-journal")? != *record
+    {
+        return Err(refusal("Copy cleanup journals changed during mutation"));
+    }
+    Ok(())
+}
+
+fn reconcile_pair(
+    central: &LinuxJournalDirectory,
+    local: &LinuxJournalDirectory,
+    stage: &std::fs::File,
+    record: &CopyRecord,
+) -> Result<(), PlatformError> {
+    let previous = local.read_copy_record("copy-journal")?;
+    if previous == *record {
+        return pair_matches(central, local, record);
+    }
+    if original_record(&previous) != original_record(record) {
+        return Err(refusal(
+            "Copy cleanup journal pair has different original evidence",
+        ));
+    }
+    let forward = matches!(
+        (previous.phase, record.phase),
+        (
+            CopyPhase::Published | CopyPhase::Undone,
+            CopyPhase::CleanupPending
+        ) | (CopyPhase::CleanupPending, CopyPhase::CleanupComplete)
+    );
+    if !forward {
+        return Err(refusal(
+            "Copy cleanup journal pair is not one ordered forward transition",
+        ));
+    }
+    let ledger = Ledger::open(stage, record)?;
+    if record.phase == CopyPhase::CleanupPending
+        && (ledger.state.index != 0 || ledger.state.pending)
+    {
+        return Err(refusal(
+            "Cleanup data advanced before both intent journals were durable",
+        ));
+    }
+    validate_partial(record, stage, &ledger.state)?;
+    if central.read_copy_record(&format!("{}.journal", record.transaction_id()?))? != *record
+        || local.read_copy_record("copy-journal")? != previous
+    {
+        return Err(refusal(
+            "Cleanup journal pair changed before reconciliation",
+        ));
+    }
+    local.persist_copy_record(record).map_err(journal_error)?;
+    pair_matches(central, local, record)
+}
+
+fn mutation_boundary(
+    central: &LinuxJournalDirectory,
+    local: &LinuxJournalDirectory,
+    parent: &std::fs::File,
+    stage: &std::fs::File,
+    record: &CopyRecord,
+    selected: &BTreeSet<String>,
+) -> Result<(), PlatformError> {
+    pair_matches(central, local, record)?;
+    mutation_scope(central, parent, stage, record, selected)
+}
+
+fn mutation_scope(
+    central: &LinuxJournalDirectory,
+    parent: &std::fs::File,
+    stage: &std::fs::File,
+    record: &CopyRecord,
+    selected: &BTreeSet<String>,
+) -> Result<(), PlatformError> {
+    record.validate_namespace()?;
+    record.validate_opened_directory(parent, true)?;
+    record.validate_opened_directory(stage, false)?;
+    let all = registry_records(central)?;
+    for (id, other) in &all {
+        if other.operation.id == record.operation.id && !selected.contains(id) {
+            return Err(refusal("Copy operation membership changed during cleanup"));
+        }
+        if !selected.contains(id)
+            && let Some((_, objects)) = retained_evidence(record)?
+            && possible_reference(other, objects)?
+        {
+            return Err(refusal(
+                "Another Copy operation now references retained cleanup data",
+            ));
+        }
+    }
+    let mut entries = rustix::fs::Dir::read_from(stage).map_err(journal_error)?;
+    while let Some(entry) = entries.read() {
+        let entry = entry.map_err(journal_error)?;
+        if !matches!(
+            entry.file_name().to_bytes(),
+            b"." | b".." | b"candidate" | b"copy-journal" | b"copy-cleanup" | b"cleanup-entry"
+        ) {
+            return Err(refusal("An unknown entry appeared in the Copy transaction"));
+        }
+    }
+    Ok(())
+}
+
+/// A worker-scoped watch invalidates the initial journal/dependency proof on
+/// any metadata change. It never holds mounts while Activity is idle.
+struct CleanupMonitor {
+    events: rustix::fd::OwnedFd,
+    registry: rustix::fd::OwnedFd,
+    root: PathBuf,
+    registry_watch: i32,
+    stage_watch: i32,
+}
+
+impl CleanupMonitor {
+    fn new(
+        central: &LinuxJournalDirectory,
+        stage: &std::fs::File,
+        root: &Path,
+    ) -> Result<Self, PlatformError> {
+        use rustix::fs::inotify;
+        let registry = central.duplicate_copy_directory().map_err(journal_error)?;
+        let events = inotify::init(inotify::CreateFlags::NONBLOCK | inotify::CreateFlags::CLOEXEC)
+            .map_err(journal_error)?;
+        let mask = inotify::WatchFlags::CREATE
+            | inotify::WatchFlags::DELETE
+            | inotify::WatchFlags::MOVED_FROM
+            | inotify::WatchFlags::MOVED_TO
+            | inotify::WatchFlags::MODIFY
+            | inotify::WatchFlags::ATTRIB
+            | inotify::WatchFlags::DELETE_SELF
+            | inotify::WatchFlags::MOVE_SELF
+            | inotify::WatchFlags::ONLYDIR;
+        let registry_watch =
+            inotify::add_watch(&events, path_from_fd(&registry), mask).map_err(journal_error)?;
+        let stage_watch =
+            inotify::add_watch(&events, path_from_fd(stage), mask).map_err(journal_error)?;
+        Ok(Self {
+            events,
+            registry,
+            root: root.into(),
+            registry_watch,
+            stage_watch,
+        })
+    }
+
+    fn check(
+        &self,
+        record: &CopyRecord,
+        parent: &std::fs::File,
+        stage: &std::fs::File,
+    ) -> Result<(), PlatformError> {
+        use rustix::fs::inotify;
+        record.validate_namespace()?;
+        record.validate_opened_directory(parent, true)?;
+        record.validate_opened_directory(stage, false)?;
+        let named = rustix::fs::open(
+            &self.root,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?;
+        let original = rustix::fs::fstat(&self.registry).map_err(journal_error)?;
+        let current = rustix::fs::fstat(&named).map_err(journal_error)?;
+        if (original.st_dev, original.st_ino) != (current.st_dev, current.st_ino)
+            || mount(&named)? != mount(&self.registry)?
+        {
+            return Err(refusal("Copy cleanup registry namespace changed"));
+        }
+        let mut buffer = [std::mem::MaybeUninit::uninit(); 4096];
+        let mut reader = inotify::Reader::new(&self.events, &mut buffer);
+        loop {
+            let event = match reader.next() {
+                Ok(event) => event,
+                Err(rustix::io::Errno::WOULDBLOCK) => return Ok(()),
+                Err(rustix::io::Errno::INTR) => continue,
+                Err(error) => return Err(journal_error(error)),
+            };
+            let name = event.file_name().map(|name| name.to_bytes());
+            let expected_payload_event = event.wd() == self.stage_watch
+                && matches!(name, Some(b"candidate" | b"cleanup-entry"));
+            // Appends are checked against the pinned ledger's size and stamps;
+            // replacing, chmodding or removing its name is never our append.
+            let expected_ledger_append = event.wd() == self.stage_watch
+                && name == Some(LEDGER.as_bytes())
+                && event.events() == inotify::ReadFlags::MODIFY;
+            if event.wd() == self.registry_watch
+                || (!expected_payload_event && !expected_ledger_append)
+                || event.events().contains(inotify::ReadFlags::QUEUE_OVERFLOW)
+            {
+                return Err(refusal(
+                    "Copy cleanup metadata changed; revalidation is required",
+                ));
+            }
+        }
+    }
+}
+
+fn source_parent(
+    stage: &std::fs::File,
+    relative: &Path,
+    original: &BTreeMap<PathBuf, TreeObject>,
+) -> Result<(rustix::fd::OwnedFd, std::ffi::OsString), PlatformError> {
+    let mut full = PathBuf::from(crate::copy_transaction::CANDIDATE);
+    if !relative.as_os_str().is_empty() {
+        full.push(relative);
+    }
+    let name = full
+        .file_name()
+        .ok_or_else(|| refusal("Cleanup node has no name"))?
+        .to_owned();
+    let mut directory = rustix::io::fcntl_dupfd_cloexec(stage, 0).map_err(journal_error)?;
+    let mut logical = PathBuf::new();
+    for (index, part) in full
+        .parent()
+        .expect("candidate parent")
+        .components()
+        .enumerate()
+    {
+        let Component::Normal(part) = part else {
+            return Err(refusal("Invalid cleanup node parent"));
+        };
+        directory = rustix::fs::openat(
+            &directory,
+            part,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?;
+        if index > 0 {
+            logical.push(part);
+        }
+        let expected = original
+            .get(&logical)
+            .ok_or_else(|| refusal("Cleanup ancestor has no original evidence"))?;
+        if mount(&directory)? != expected.mount
+            || ObjectHandle::capture(&directory).map_err(journal_error)? != expected.handle
+        {
+            return Err(refusal("Cleanup ancestor directory or mount was replaced"));
+        }
+    }
+    Ok((directory, name))
+}
+
+fn reclaim_payload(
+    root: &Path,
+    expected: &CopyRecord,
+    selected: &BTreeSet<String>,
+    hook: &mut impl FnMut(CleanupPoint) -> Result<(), PlatformError>,
+) -> Result<CopyRecord, PlatformError> {
+    let central = LinuxJournalDirectory::open_copy_registry(root, false).map_err(journal_error)?;
+    let mut record =
+        central.read_copy_record(&format!("{}.journal", expected.transaction_id()?))?;
+    if original_record(&record) != original_record(expected) {
+        return Err(refusal("Copy original evidence changed before cleanup"));
+    }
+    let (parent, stage) = open_directories(&record)?;
+    let local = LinuxJournalDirectory::for_copy_stage(&stage).map_err(journal_error)?;
+    let mut lock = local.try_lock_recovery().map_err(journal_error)?;
+    let mut ledger = if record.cleanup.is_none() {
+        pair_matches(&central, &local, &record)?;
+        if exists(&path_from_fd(&stage).join(LEDGER))?
+            || exists(&path_from_fd(&stage).join(QUARANTINE))?
+        {
+            return Err(refusal("Copy transaction contains unowned cleanup state"));
+        }
+        match record.phase {
+            CopyPhase::Published => record.validate_retained_backup(&stage)?,
+            CopyPhase::Undone => record.validate_completed_data()?,
+            _ => return Err(refusal("Copy is not ready for cleanup")),
+        }
+        mutation_boundary(&central, &local, &parent, &stage, &record, selected)?;
+        let (ledger, intent) = Ledger::create(&stage, &record)?;
+        record.phase = CopyPhase::CleanupPending;
+        record.cleanup = Some(intent);
+        lock.persist_copy_in_registry(&central, &record)
+            .map_err(journal_error)?;
+        hook(CleanupPoint::IntentDurable)?;
+        ledger
+    } else {
+        reconcile_pair(&central, &local, &stage, &record)?;
+        Ledger::open(&stage, &record)?
+    };
+    let monitor = CleanupMonitor::new(&central, &stage, root)?;
+    ledger.validate_named(&stage)?;
+    validate_partial(&record, &stage, &ledger.state)?;
+    mutation_boundary(&central, &local, &parent, &stage, &record, selected)?;
+    monitor.check(&record, &parent, &stage)?;
+    if record.phase == CopyPhase::CleanupComplete {
+        return Ok(record);
+    }
+    let nodes = nodes(&record)?;
+    let original = nodes
+        .iter()
+        .map(|node| (node.relative.clone(), node.objects[0].clone()))
+        .collect();
+    while ledger.state.index < nodes.len() {
+        let node = &nodes[ledger.state.index];
+        if !ledger.state.pending {
+            ledger.append(ledger.state.index, true)?;
+            hook(CleanupPoint::EntryIntentDurable)?;
+        }
+        ledger.validate_named(&stage)?;
+        monitor.check(&record, &parent, &stage)?;
+        let quarantine = path_from_fd(&stage).join(QUARANTINE);
+        if !exists(&quarantine)? {
+            let source = node_source_path(&stage, &node.relative);
+            if exists(&source)? {
+                record.validate_tree(&source, &node.content, &node.objects)?;
+                let (directory, name) = source_parent(&stage, &node.relative, &original)?;
+                rustix::fs::renameat_with(
+                    &directory,
+                    &name,
+                    &stage,
+                    QUARANTINE,
+                    rustix::fs::RenameFlags::NOREPLACE,
+                )
+                .map_err(journal_error)?;
+                rustix::fs::fsync(&directory).map_err(journal_error)?;
+                rustix::fs::fsync(&stage).map_err(journal_error)?;
+                hook(CleanupPoint::Claimed)?;
+            }
+        }
+        if exists(&quarantine)? {
+            hook(CleanupPoint::BeforeUnlink)?;
+            ledger.validate_named(&stage)?;
+            monitor.check(&record, &parent, &stage)?;
+            // Reopen every named ancestor after claim as well. A matching leaf
+            // hard link inside a replacement directory is not the old namespace.
+            source_parent(&stage, &node.relative, &original)?;
+            record.validate_tree(&quarantine, &node.content, &node.objects)?;
+            let pinned = rustix::fs::openat(
+                &stage,
+                QUARANTINE,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(journal_error)?;
+            if ObjectHandle::capture(&pinned).map_err(journal_error)? != node.objects[0].handle
+                || mount(&pinned)? != record.transaction_mount
+            {
+                return Err(refusal(
+                    "Cleanup quarantine object or mount changed before unlink",
+                ));
+            }
+            let stat = rustix::fs::fstat(&pinned).map_err(journal_error)?;
+            let named =
+                rustix::fs::statat(&stage, QUARANTINE, rustix::fs::AtFlags::SYMLINK_NOFOLLOW)
+                    .map_err(journal_error)?;
+            if (stat.st_dev, stat.st_ino, stat.st_mode)
+                != (named.st_dev, named.st_ino, named.st_mode)
+            {
+                return Err(refusal(
+                    "Cleanup quarantine pathname was replaced before unlink",
+                ));
+            }
+            let flags = if rustix::fs::FileType::from_raw_mode(stat.st_mode)
+                == rustix::fs::FileType::Directory
+            {
+                rustix::fs::AtFlags::REMOVEDIR
+            } else {
+                rustix::fs::AtFlags::empty()
+            };
+            // Content verification may have taken time. Poll again immediately
+            // before unlink so new dependencies or replaced metadata invalidate it.
+            ledger.validate_named(&stage)?;
+            monitor.check(&record, &parent, &stage)?;
+            rustix::fs::unlinkat(&stage, QUARANTINE, flags).map_err(journal_error)?;
+            rustix::fs::fsync(&stage).map_err(journal_error)?;
+            hook(CleanupPoint::Unlinked)?;
+        }
+        ledger.append(ledger.state.index + 1, false)?;
+        hook(CleanupPoint::ProgressDurable)?;
+    }
+    ledger.validate_named(&stage)?;
+    validate_partial(&record, &stage, &ledger.state)?;
+    mutation_boundary(&central, &local, &parent, &stage, &record, selected)?;
+    monitor.check(&record, &parent, &stage)?;
+    record.phase = CopyPhase::CleanupComplete;
+    lock.persist_copy_in_registry(&central, &record)
+        .map_err(journal_error)?;
+    hook(CleanupPoint::CompleteDurable)?;
+    Ok(record)
+}
 
 /// Original-record-bound cleanup selection. No handles are kept between calls,
 /// so inspecting cleanup eligibility does not prevent ordinary unmount.
@@ -13,11 +860,51 @@ use std::collections::{BTreeMap, BTreeSet};
 pub struct RetainedCopyCleanupPlan {
     root: PathBuf,
     records: BTreeMap<String, CopyRecord>,
+    pending: BTreeSet<String>,
 }
 
 impl RetainedCopyCleanupPlan {
     pub fn transaction_ids(&self) -> Vec<&str> {
         self.records.keys().map(String::as_str).collect()
+    }
+
+    /// Transactions still requiring payload validation/reclamation or journal
+    /// reconciliation in this worker, including completed records on reopen.
+    pub fn remaining_payloads(&self) -> usize {
+        self.pending.len()
+    }
+
+    /// Reclaims one transaction's retained payload, with compact durable
+    /// per-entry progress. Journals and the private stage remain until final
+    /// history cleanup. A retry resumes only this plan's original evidence.
+    pub fn reclaim_payload_next(&mut self) -> Result<bool, PlatformError> {
+        self.reclaim_payload_next_with_hook(&mut |_| Ok(()))
+    }
+
+    fn reclaim_payload_next_with_hook(
+        &mut self,
+        hook: &mut impl FnMut(CleanupPoint) -> Result<(), PlatformError>,
+    ) -> Result<bool, PlatformError> {
+        let Some(id) = self.pending.first().cloned() else {
+            return Ok(false);
+        };
+        let expected = &self.records[&id];
+        let selected = self.records.keys().cloned().collect();
+        let updated = reclaim_payload(&self.root, expected, &selected, hook).map_err(|error| {
+            PlatformError::CleanupPending {
+                transaction: expected
+                    .transaction
+                    .decode()
+                    .map(|p| p.display().to_string())
+                    .unwrap_or_else(|_| id.clone()),
+                message: format!(
+                    "Copy cleanup is incomplete; preserve its data and progress: {error}"
+                ),
+            }
+        })?;
+        self.pending.remove(&id);
+        self.records.insert(id, updated);
+        Ok(true)
     }
 
     /// Rechecks original records, complete operation membership, dependencies,
@@ -55,6 +942,76 @@ impl RetainedCopyCleanupPlan {
         }
         Ok(())
     }
+}
+
+/// Resume already-authorised cleanup. IDs alone cannot start cleanup: every
+/// selected record must carry an existing durable intent and original evidence.
+pub fn resume_cleanup(ids: &[String]) -> Result<RetainedCopyCleanupPlan, PlatformError> {
+    if ids.is_empty() {
+        return Err(refusal("No pending Copy cleanup was selected"));
+    }
+    let root = configured_root()?;
+    let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
+    let all = registry_records(&central)?;
+    let mut records = BTreeMap::new();
+    for id in ids {
+        let record = all
+            .get(id)
+            .ok_or_else(|| refusal("Pending Copy cleanup record is missing"))?;
+        if !matches!(
+            record.phase,
+            CopyPhase::CleanupPending | CopyPhase::CleanupComplete
+        ) || record.cleanup.is_none()
+        {
+            return Err(refusal("Copy record has no prior cleanup intent"));
+        }
+        if records.insert(id.clone(), record.clone()).is_some() {
+            return Err(refusal("Copy cleanup ID selected more than once"));
+        }
+    }
+    for (id, record) in &records {
+        let (parent, stage) = open_directories(record)?;
+        let local = LinuxJournalDirectory::for_copy_stage(&stage).map_err(journal_error)?;
+        let _lock = local.try_lock_recovery().map_err(journal_error)?;
+        // Admission only classifies a possible one-step lag. Mutation owns the
+        // actual reconciliation, so merely opening a retry does not write.
+        let previous = local.read_copy_record("copy-journal")?;
+        if previous != *record {
+            let forward = matches!(
+                (previous.phase, record.phase),
+                (
+                    CopyPhase::Published | CopyPhase::Undone,
+                    CopyPhase::CleanupPending
+                ) | (CopyPhase::CleanupPending, CopyPhase::CleanupComplete)
+            );
+            if !forward || original_record(&previous) != original_record(record) {
+                return Err(refusal(
+                    "Pending Copy cleanup journals do not have one original owner",
+                ));
+            }
+        }
+        validate_partial_data(record, &stage)?;
+        mutation_scope(
+            &central,
+            &parent,
+            &stage,
+            record,
+            &records.keys().cloned().collect(),
+        )?;
+        if local.read_copy_record("copy-journal")? != previous {
+            return Err(refusal(
+                "Pending Copy cleanup local journal changed during admission",
+            ));
+        }
+        if central.read_copy_record(&format!("{id}.journal"))? != *record {
+            return Err(refusal("Pending Copy cleanup changed during admission"));
+        }
+    }
+    Ok(RetainedCopyCleanupPlan {
+        root,
+        pending: records.keys().cloned().collect(),
+        records,
+    })
 }
 
 fn possible_reference(owner: &CopyRecord, retained: &[TreeObject]) -> Result<bool, PlatformError> {
@@ -135,6 +1092,7 @@ pub fn plan_cleanup(
     }
     let plan = RetainedCopyCleanupPlan {
         root: configured_root()?,
+        pending: records.keys().cloned().collect(),
         records,
     };
     plan.revalidate()?;
@@ -165,19 +1123,30 @@ fn registry_records(
 fn retained_evidence(
     record: &CopyRecord,
 ) -> Result<Option<(&SourceTreeSnapshot, &[TreeObject])>, PlatformError> {
-    match record.phase {
-        CopyPhase::Published => Ok(record
+    let phase = record
+        .cleanup
+        .as_ref()
+        .map_or(record.phase, |intent| intent.origin);
+    let evidence: Option<(&SourceTreeSnapshot, &[TreeObject])> = match phase {
+        CopyPhase::Published => record
             .displaced_content
             .as_ref()
-            .zip(record.displaced_objects.as_deref())),
-        CopyPhase::Undone => Ok(Some((
-            &record.publication_content,
-            &record.publication_objects,
-        ))),
-        CopyPhase::PublicationIntent | CopyPhase::UndoIntent => Err(refusal(
-            "Interrupted Copy publication or Undo must be reconciled before cleanup",
-        )),
+            .zip(record.displaced_objects.as_deref()),
+        CopyPhase::Undone => Some((&record.publication_content, &record.publication_objects)),
+        _ => {
+            return Err(refusal(
+                "Interrupted Copy publication or Undo must be reconciled before cleanup",
+            ));
+        }
+    };
+    if evidence.is_some_and(|(_, objects)| {
+        objects
+            .iter()
+            .any(|object| object.mount != record.transaction_mount)
+    }) {
+        return Err(refusal("Retained Copy cleanup crosses a mount boundary"));
     }
+    Ok(evidence)
 }
 
 fn validate_retained(
@@ -218,14 +1187,25 @@ fn validate_retained(
         let entry = entry.map_err(journal_error)?;
         if !matches!(
             entry.file_name().to_bytes(),
-            b"." | b".." | b"candidate" | b"copy-journal"
+            b"." | b".." | b"candidate" | b"copy-journal" | b"copy-cleanup" | b"cleanup-entry"
         ) {
             return Err(refusal(
                 "Copy transaction contains an unrecognized retained entry",
             ));
         }
+        if record.cleanup.is_none()
+            && matches!(
+                entry.file_name().to_bytes(),
+                b"copy-cleanup" | b"cleanup-entry"
+            )
+        {
+            return Err(refusal("Copy transaction contains unowned cleanup state"));
+        }
     }
     match record.phase {
+        CopyPhase::CleanupPending | CopyPhase::CleanupComplete => {
+            validate_partial_data(record, &stage)?
+        }
         CopyPhase::Published => record.validate_retained_backup(&stage)?,
         CopyPhase::Undone => record.validate_completed_data()?,
         _ => return Err(refusal("Copy transaction is not ready for cleanup")),
@@ -559,5 +1539,442 @@ mod tests {
             assert_eq!(std::fs::read(nested_backup).unwrap(), b"before first copy");
             assert_eq!(std::fs::read(outer.join("new")).unwrap(), b"second copy");
         }
+    }
+
+    #[test]
+    fn payload_reclamation_preserves_visible_edits_and_revokes_undo() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("item"), "old backup").unwrap();
+        let receipt = copy(root.path(), "new");
+        std::fs::write(destination.join("item"), "later visible edit").unwrap();
+        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        assert!(plan.reclaim_payload_next().unwrap());
+        assert_eq!(plan.remaining_payloads(), 0);
+        assert!(!plan.reclaim_payload_next().unwrap());
+        assert!(!receipt.before_path().exists());
+        assert_eq!(
+            std::fs::read(destination.join("item")).unwrap(),
+            b"later visible edit"
+        );
+        assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+        let observed = statuses(root.path());
+        assert_eq!(observed[0].phase, Some(CopyPhase::CleanupComplete));
+        assert_eq!(observed[0].evidence, CopyRecoveryEvidence::CleanupComplete);
+        plan.revalidate().unwrap();
+        assert!(stage(&receipt).join("copy-journal").exists());
+        assert!(stage(&receipt).join(LEDGER).exists());
+    }
+
+    fn directory_backup(root: &Path) -> crate::PathMoveUndoReceipt {
+        let destination = root.join("destination");
+        std::fs::create_dir_all(destination.join("item/nested/deeper")).unwrap();
+        std::fs::write(destination.join("item/nested/deeper/a"), "retained a").unwrap();
+        std::fs::write(destination.join("item/z"), "retained z").unwrap();
+        let outside = root.join("outside");
+        std::fs::write(&outside, "outside user data").unwrap();
+        std::os::unix::fs::symlink(&outside, destination.join("item/link")).unwrap();
+        copy(root, "new")
+    }
+
+    #[test]
+    fn recursive_payload_cleanup_uses_compact_progress_and_never_follows_symlinks() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let receipt = directory_backup(root.path());
+        let captured = statuses(root.path());
+        let original = captured[0].observation.as_ref().unwrap().record.clone();
+        let count = nodes(&original).unwrap().len();
+        let mut plan = plan_cleanup(&captured).unwrap();
+        assert!(plan.reclaim_payload_next().unwrap());
+        assert!(!receipt.before_path().exists());
+        assert_eq!(
+            std::fs::read(root.path().join("outside")).unwrap(),
+            b"outside user data"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("destination/item")).unwrap(),
+            b"new"
+        );
+        let observed = statuses(root.path());
+        let finished = &observed[0].observation.as_ref().unwrap().record;
+        assert_eq!(original_record(finished), original);
+        let ledger = std::fs::read(stage(&receipt).join(LEDGER)).unwrap();
+        assert!(
+            ledger.len() < 4096 + count * 256,
+            "Progress repeatedly wrote the full tree: {} bytes",
+            ledger.len()
+        );
+    }
+
+    #[test]
+    fn payload_cleanup_restarts_at_each_durable_boundary_without_repeating_unlinks() {
+        for point in [
+            CleanupPoint::IntentDurable,
+            CleanupPoint::EntryIntentDurable,
+            CleanupPoint::Claimed,
+            CleanupPoint::BeforeUnlink,
+            CleanupPoint::Unlinked,
+            CleanupPoint::ProgressDurable,
+            CleanupPoint::CompleteDurable,
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let receipt = directory_backup(root.path());
+            let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+            let ids = plan
+                .transaction_ids()
+                .into_iter()
+                .map(str::to_owned)
+                .collect::<Vec<_>>();
+            let mut stopped = false;
+            assert!(
+                plan.reclaim_payload_next_with_hook(&mut |observed| {
+                    if observed == point && !stopped {
+                        stopped = true;
+                        return Err(refusal("owned interruption"));
+                    }
+                    Ok(())
+                })
+                .is_err()
+            );
+            assert!(stopped);
+            drop(plan);
+            let ledger_before = std::fs::read(stage(&receipt).join(LEDGER)).unwrap();
+            let mut resumed = resume_cleanup(&ids).unwrap();
+            assert_eq!(
+                std::fs::read(stage(&receipt).join(LEDGER)).unwrap(),
+                ledger_before,
+                "Read-only resume modified progress"
+            );
+            while resumed.reclaim_payload_next().unwrap() {}
+            assert!(!receipt.before_path().exists(), "{point:?}");
+            assert_eq!(
+                std::fs::read(root.path().join("outside")).unwrap(),
+                b"outside user data"
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("destination/item")).unwrap(),
+                b"new"
+            );
+            resumed.revalidate().unwrap();
+        }
+    }
+
+    #[test]
+    fn changed_quarantine_and_ledger_are_retained_instead_of_deleted() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("item"), "original backup").unwrap();
+        let receipt = copy(root.path(), "new");
+        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        let ids = plan
+            .transaction_ids()
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        assert!(
+            plan.reclaim_payload_next_with_hook(&mut |point| {
+                if point == CleanupPoint::BeforeUnlink {
+                    std::fs::write(stage(&receipt).join(QUARANTINE), "changed backup").unwrap();
+                }
+                Ok(())
+            })
+            .is_err()
+        );
+        assert_eq!(
+            std::fs::read(stage(&receipt).join(QUARANTINE)).unwrap(),
+            b"changed backup"
+        );
+        assert!(resume_cleanup(&ids).is_err());
+        std::fs::write(stage(&receipt).join(QUARANTINE), "original backup").unwrap();
+        let original = std::fs::read(stage(&receipt).join(LEDGER)).unwrap();
+        let mut damaged = original.clone();
+        damaged.extend_from_slice(b"partial frame");
+        std::fs::write(stage(&receipt).join(LEDGER), &damaged).unwrap();
+        assert!(resume_cleanup(&ids).is_err());
+        assert_eq!(
+            std::fs::read(stage(&receipt).join(LEDGER)).unwrap(),
+            damaged
+        );
+        assert_eq!(
+            std::fs::read(stage(&receipt).join(QUARANTINE)).unwrap(),
+            b"original backup"
+        );
+    }
+
+    #[test]
+    fn payload_cleanup_reconciles_one_sided_intent_and_completion_journals() {
+        for point in [CleanupPoint::IntentDurable, CleanupPoint::CompleteDurable] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let receipt = directory_backup(root.path());
+            let local_path = stage(&receipt).join("copy-journal");
+            let mut previous = std::fs::read(&local_path).unwrap();
+            let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+            let ids = plan
+                .transaction_ids()
+                .into_iter()
+                .map(str::to_owned)
+                .collect::<Vec<_>>();
+            assert!(
+                plan.reclaim_payload_next_with_hook(&mut |observed| {
+                    if observed == CleanupPoint::IntentDurable
+                        && point == CleanupPoint::CompleteDurable
+                    {
+                        previous = std::fs::read(&local_path).unwrap();
+                    }
+                    if observed == point {
+                        // Canonical writer is first. Restore the preceding local
+                        // record to model termination between the two writes.
+                        std::fs::write(&local_path, &previous).unwrap();
+                        return Err(refusal("one-sided durable write"));
+                    }
+                    Ok(())
+                })
+                .is_err()
+            );
+            let mut resumed = resume_cleanup(&ids).unwrap();
+            assert_eq!(std::fs::read(&local_path).unwrap(), previous);
+            while resumed.reclaim_payload_next().unwrap() {}
+            resumed.revalidate().unwrap();
+            assert!(!receipt.before_path().exists());
+            assert_eq!(
+                std::fs::read(root.path().join("destination/item")).unwrap(),
+                b"new"
+            );
+        }
+    }
+
+    #[test]
+    fn large_tree_cleanup_does_not_reread_full_journals_for_every_entry() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let destination = root.path().join("destination/item");
+        std::fs::create_dir_all(&destination).unwrap();
+        for index in 0..128 {
+            std::fs::write(
+                destination.join(format!("entry-{index:03}")),
+                "small retained data",
+            )
+            .unwrap();
+        }
+        let receipt = copy(root.path(), "new");
+        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        let journal_size = std::fs::metadata(stage(&receipt).join("copy-journal"))
+            .unwrap()
+            .len();
+        let read_chars = || {
+            std::fs::read_to_string("/proc/thread-self/io")
+                .unwrap()
+                .lines()
+                .find_map(|line| {
+                    line.strip_prefix("rchar: ")
+                        .map(|n| n.parse::<u64>().unwrap())
+                })
+                .unwrap()
+        };
+        let before = read_chars();
+        plan.reclaim_payload_next().unwrap();
+        let reads = read_chars() - before;
+        assert!(
+            reads < journal_size * 20 + 512 * 1024,
+            "Cleanup repeatedly read full-tree journals: {reads} bytes for {journal_size}-byte record"
+        );
+        assert!(!receipt.before_path().exists());
+    }
+
+    #[test]
+    fn active_cleanup_refuses_ledger_and_metadata_mutation_before_unlink() {
+        for attack in [
+            "ledger-write",
+            "ledger-replace",
+            "local-journal",
+            "registry-entry",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let receipt = directory_backup(root.path());
+            let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+            let mut attacked = false;
+            let result = plan.reclaim_payload_next_with_hook(&mut |point| {
+                if point == CleanupPoint::BeforeUnlink && !attacked {
+                    attacked = true;
+                    let private = stage(&receipt);
+                    match attack {
+                        "ledger-write" => {
+                            let ledger = private.join(LEDGER);
+                            let mut bytes = std::fs::read(&ledger).unwrap();
+                            bytes[0] ^= 1;
+                            std::fs::write(ledger, bytes).unwrap();
+                        }
+                        "ledger-replace" => {
+                            let ledger = private.join(LEDGER);
+                            let bytes = std::fs::read(&ledger).unwrap();
+                            std::fs::rename(&ledger, root.path().join("old-ledger")).unwrap();
+                            std::fs::write(ledger, bytes).unwrap();
+                        }
+                        "local-journal" => {
+                            let journal = private.join("copy-journal");
+                            let bytes = std::fs::read(&journal).unwrap();
+                            // Even rewriting identical bytes invalidates the active proof.
+                            std::fs::write(journal, bytes).unwrap();
+                        }
+                        "registry-entry" => {
+                            std::fs::write(root.path().join("copies/unknown"), "foreign").unwrap();
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+                Ok(())
+            });
+            assert!(attacked);
+            assert!(result.is_err(), "{attack}");
+            assert_eq!(
+                std::fs::read(stage(&receipt).join(QUARANTINE)).unwrap(),
+                b"retained z"
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("destination/item")).unwrap(),
+                b"new"
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("outside")).unwrap(),
+                b"outside user data"
+            );
+        }
+    }
+
+    #[test]
+    fn cleanup_sigkill_child() {
+        let Some(root) = std::env::var_os("OTTRIN_CLEANUP_KILL_ROOT") else {
+            return;
+        };
+        let root = PathBuf::from(root);
+        let point = std::env::var("OTTRIN_CLEANUP_KILL_POINT").unwrap();
+        let _registry = Registry::new(&root);
+        let mut plan = plan_cleanup(&statuses(&root)).unwrap();
+        plan.reclaim_payload_next_with_hook(&mut |observed| {
+            if format!("{observed:?}") == point {
+                // This runs only in the dedicated subprocess and bypasses Drop,
+                // proving durable progress rather than error-return recovery.
+                unsafe {
+                    libc::kill(libc::getpid(), libc::SIGKILL);
+                }
+                unreachable!("SIGKILL returned");
+            }
+            Ok(())
+        })
+        .unwrap();
+        panic!("Child did not reach requested cleanup boundary");
+    }
+
+    #[test]
+    fn fresh_process_resumes_payload_after_sigkill_at_durable_boundaries() {
+        use std::os::unix::process::ExitStatusExt;
+        for point in [
+            CleanupPoint::IntentDurable,
+            CleanupPoint::EntryIntentDurable,
+            CleanupPoint::Claimed,
+            CleanupPoint::BeforeUnlink,
+            CleanupPoint::Unlinked,
+            CleanupPoint::ProgressDurable,
+            CleanupPoint::CompleteDurable,
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let receipt = directory_backup(root.path());
+            let ids = statuses(root.path())
+                .into_iter()
+                .map(|entry| entry.transaction_id)
+                .collect::<Vec<_>>();
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "copy_recovery::cleanup::tests::cleanup_sigkill_child",
+                ])
+                .env("OTTRIN_CLEANUP_KILL_ROOT", root.path())
+                .env("OTTRIN_CLEANUP_KILL_POINT", format!("{point:?}"))
+                .stdout(std::process::Stdio::null())
+                .status()
+                .unwrap();
+            assert_eq!(status.signal(), Some(libc::SIGKILL), "{point:?}");
+            let mut plan = resume_cleanup(&ids).unwrap();
+            while plan.reclaim_payload_next().unwrap() {}
+            plan.revalidate().unwrap();
+            assert!(!receipt.before_path().exists());
+            assert_eq!(
+                std::fs::read(root.path().join("outside")).unwrap(),
+                b"outside user data"
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("destination/item")).unwrap(),
+                b"new"
+            );
+        }
+    }
+
+    #[test]
+    fn root_symlink_cleanup_removes_only_the_link_entry() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let destination = root.path().join("destination");
+        let outside = root.path().join("outside");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::create_dir(&outside).unwrap();
+        std::fs::write(outside.join("user-file"), "outside data").unwrap();
+        std::os::unix::fs::symlink(&outside, destination.join("item")).unwrap();
+        let receipt = copy(root.path(), "new");
+        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        plan.reclaim_payload_next().unwrap();
+        assert!(std::fs::symlink_metadata(receipt.before_path()).is_err());
+        assert_eq!(
+            std::fs::read(outside.join("user-file")).unwrap(),
+            b"outside data"
+        );
+        assert_eq!(std::fs::read(destination.join("item")).unwrap(), b"new");
+    }
+
+    #[test]
+    fn ancestor_replacement_after_claim_preserves_quarantined_data() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let receipt = directory_backup(root.path());
+        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        let moved = root.path().join("moved-original");
+        let mut replaced = false;
+        assert!(
+            plan.reclaim_payload_next_with_hook(&mut |point| {
+                if point == CleanupPoint::Claimed && !replaced {
+                    replaced = true;
+                    std::fs::rename(receipt.before_path(), &moved).unwrap();
+                    std::fs::create_dir(receipt.before_path()).unwrap();
+                    std::fs::hard_link(
+                        moved.join("nested/deeper/a"),
+                        receipt.before_path().join("alias"),
+                    )
+                    .unwrap();
+                }
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(replaced);
+        assert_eq!(
+            std::fs::read(stage(&receipt).join(QUARANTINE)).unwrap(),
+            b"retained z"
+        );
+        assert_eq!(
+            std::fs::read(receipt.before_path().join("alias")).unwrap(),
+            b"retained a"
+        );
+        assert_eq!(
+            std::fs::read(moved.join("nested/deeper/a")).unwrap(),
+            b"retained a"
+        );
     }
 }

@@ -11,7 +11,7 @@ use std::path::{Component, Path, PathBuf};
 
 #[path = "copy_cleanup.rs"]
 mod cleanup;
-pub use cleanup::{RetainedCopyCleanupPlan, plan_cleanup};
+pub use cleanup::{RetainedCopyCleanupPlan, plan_cleanup, resume_cleanup};
 
 /// Identity-only filesystem evidence, scoped by the record's boot and unique
 /// mount IDs. Its filesystem-defined identifier can distinguish reused inode
@@ -156,6 +156,8 @@ pub enum CopyPhase {
     Published,
     UndoIntent,
     Undone,
+    CleanupPending,
+    CleanupComplete,
 }
 
 /// Durable grouping and original ordering for a Copy operation. Missing item
@@ -209,6 +211,8 @@ pub(super) struct CopyRecord {
     publication_objects: Vec<TreeObject>,
     displaced_content: Option<SourceTreeSnapshot>,
     displaced_objects: Option<Vec<TreeObject>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    cleanup: Option<cleanup::CleanupIntent>,
 }
 
 pub(super) type CopyRegistryEntry = (String, Result<CopyRecord, PlatformError>);
@@ -344,6 +348,7 @@ impl CopyRecord {
             publication_objects: publication_evidence.1,
             displaced_content: None,
             displaced_objects: None,
+            cleanup: None,
         })
     }
 
@@ -389,6 +394,7 @@ impl CopyRecord {
         let publication = self.publication.decode().map_err(journal_error)?;
         let transaction = self.transaction.decode().map_err(journal_error)?;
         self.operation.validate()?;
+        cleanup::validate_progress(self)?;
         if self.schema != 4
             || !valid_objects(&self.publication_content, &self.publication_objects)
             || self.displaced_content.is_some() != self.displaced_objects.is_some()
@@ -510,6 +516,9 @@ fn restore_bound_receipt(
         }
         CopyPhase::Undone => {
             return Err(PlatformError::NotAvailable("Copy Undo is already complete"));
+        }
+        CopyPhase::CleanupPending | CopyPhase::CleanupComplete => {
+            return Err(PlatformError::NotAvailable("Copy cleanup has revoked Undo"));
         }
     }
     record.validate_namespace()?;
@@ -664,6 +673,9 @@ fn undo_bound_with_hook(
     record.validate_opened_directory(parent, true)?;
     record.validate_opened_directory(stage, false)?;
     let topology = match record.phase {
+        CopyPhase::CleanupPending | CopyPhase::CleanupComplete => {
+            return Err(PlatformError::NotAvailable("Copy cleanup has revoked Undo"));
+        }
         CopyPhase::PublicationIntent => {
             return Err(PlatformError::InvalidPathMoveUndoReceipt(
                 "Copy publication has not been durably completed".into(),
@@ -758,6 +770,8 @@ pub enum CopyRecoveryEvidence {
     UndoReadyToWithdraw,
     UndoWithdrawalMatches,
     UndoneRetainedObjectsAndContentsMatch,
+    CleanupPending,
+    CleanupComplete,
     NeedsReview {
         reason: String,
     },
@@ -1070,6 +1084,14 @@ fn discover_entries(
                 record.validate_namespace()?;
                 let evidence = (|| {
                     Ok(match record.phase {
+                        CopyPhase::CleanupPending | CopyPhase::CleanupComplete => {
+                            cleanup::validate_partial_data(&record, &fd)?;
+                            if record.phase == CopyPhase::CleanupComplete {
+                                CopyRecoveryEvidence::CleanupComplete
+                            } else {
+                                CopyRecoveryEvidence::CleanupPending
+                            }
+                        }
                         CopyPhase::Published => {
                             record.validate_published_data(&fd)?;
                             CopyRecoveryEvidence::PublishedObjectsAndContentsMatch

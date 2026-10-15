@@ -1127,6 +1127,8 @@ fn group_retained_copy_activity(
                 },
                 CopyRecoveryEvidence::NeedsReview { reason: error } => reason = Some(error.clone()),
                 CopyRecoveryEvidence::MatchingJournals => reason = Some("Copy publication was interrupted and needs reconciliation".into()),
+                CopyRecoveryEvidence::CleanupPending => reason = Some("Copy cleanup is in progress; Undo is no longer available".into()),
+                CopyRecoveryEvidence::CleanupComplete => reason = Some("Retained Copy data was reclaimed; history finalization is pending".into()),
             }
         }
         let detail = match expected {

@@ -697,35 +697,45 @@ identities, retained contents and cross-operation references, including an older
 private transaction nested inside an ancestor-folder overwrite. A changed visible
 publication does not block discarding an otherwise unchanged retained backup;
 changed retained data, unexpected stage entries and interrupted publication/Undo
-are refused. Plans hold no directory descriptors between calls and grant no
-deletion authority. Registry records are read for dependencies, but unrelated
+are refused. Plans hold no directory descriptors between calls; admission alone is not
+standing deletion authority. Registry records are read for dependencies, but unrelated
 visible file contents are not read. Unknown/corrupt registry records and unavailable dependency object evidence
 currently refuse admission because references cannot be proven absent. Possible
 generation-handle matches across namespaces conservatively retain data; those
 matches never grant mutation authority.
 
-The mutation stage must persist cleanup intent before its first deletion and
-revoke Undo for that transaction. Every claimed entry needs an original-record
-binding and a durable pending-name mapping before quarantine, so interruption
-cannot turn an owned entry into an unclassified temporary file. Recursive
-cleanup must refuse changed contents, replacements, unknown children and mount
-changes; a directory name or a prior eligibility result cannot authorize an
-unlink. Partial progress and uncertain journal writes must retain ownership for
-revalidation/retry. Journal/stage finalization is part of successful cleanup,
-and Activity may discard a receipt only after the worker confirms it. Keep
-worker handles short-lived; plans and idle history must not pin mounts.
+The platform payload worker persists `CleanupPending` before its first claim and
+revokes Undo for that transaction. Each retained node has an immutable original
+path, content and object binding. A compact append-only, hash-chained progress
+ledger records a pending node before it is moved to the private quarantine;
+revalidation checks every ancestor, the quarantined object and its contents
+before unlink. Descendants precede directories; symlink targets are never
+followed. Completed payload reclamation persists `CleanupComplete` in both
+journals. Journal updates are canonical-first, and a one-step local lag can be
+reconciled against the same original evidence. `resume_retained_copy_cleanup`
+only reopens existing durable intent; transaction IDs cannot start cleanup.
 
-This is the admission part only. Durable cleanup intent, per-entry deletion,
-interruption recovery, journal/stage finalization and Activity Clear/eviction
-integration remain unfinished; no automatic cleanup or expiry is enabled.
+The worker uses a scoped metadata watch so it need not reread full-tree journals
+and registry dependencies for each entry. Registry or journal changes, unknown
+stage entries, queue overflow and watch failures invalidate the initial proof.
+The active ledger is checked by its pinned identity, mount, size and modification
+stamps, including immediately before unlink. Original namespace/object and
+content checks remain mandatory; watch events alone never authorize deletion.
+Plans and idle history hold no directory descriptors, so they do not pin mounts.
 
-This guards session ownership but does not reclaim retained transaction data.
-History eviction/Clear, durable cleanup intent and recursive mutation still need
-one explicit lifecycle with content revalidation at every deletion. Never replace
-that work with deletion by transaction name or age. Native physical removable
-acceptance remains separate from the passing private mount test. Exact rebuilt
-AppImage acceptance is recorded in
-`dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json`.
+Payload recovery has focused error/drop/reopen and real subprocess SIGKILL tests
+at seven durable boundaries, one-sided journal recovery, active-ledger/journal
+mutation refusal, replaced ancestors, root symlinks and a metadata-read bound for
+128 retained files. These are source/private-fixture checks. Torn ledger writes,
+unowned pre-intent artifacts and uncertain evidence are retained for review;
+these tests do not establish arbitrary power-loss or physical-removable acceptance.
+
+Journal/stage finalization and Activity Clear/history eviction are still required
+before the complete lifecycle is usable. Activity may discard a receipt only
+after the worker confirms finalization. No UI cleanup, automatic expiry or newly
+packaged release is enabled by the payload API. Never substitute deletion by name
+or age. Prior exact AppImage directory-ownership acceptance remains recorded in
+`dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json` at its original scope.
 
 Run the mount fixture only inside an explicitly owned child namespace:
 

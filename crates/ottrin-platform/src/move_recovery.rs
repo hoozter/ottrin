@@ -76,6 +76,37 @@ impl SourceTreeSnapshotEntry {
 
 #[cfg(target_os = "linux")]
 impl SourceTreeSnapshot {
+    /// Immutable, rebased evidence for individual cleanup nodes.
+    pub(super) fn cleanup_nodes(&self) -> Result<Vec<(PathBuf, Self)>, JournalError> {
+        self.entries
+            .iter()
+            .map(|entry| {
+                let path = entry.path.decode()?;
+                let mut root = entry.clone();
+                root.path = NativePath::encode(Path::new(""));
+                Ok((
+                    path,
+                    Self {
+                        entries: vec![root],
+                    },
+                ))
+            })
+            .collect()
+    }
+
+    pub(super) fn excluding_paths(
+        &self,
+        paths: &std::collections::BTreeSet<PathBuf>,
+    ) -> Result<Self, JournalError> {
+        let mut entries = Vec::new();
+        for entry in &self.entries {
+            if !paths.contains(&entry.path.decode()?) {
+                entries.push(entry.clone());
+            }
+        }
+        Ok(Self { entries })
+    }
+
     pub(super) fn root_matches_path_identity(&self, identity: &super::PathMoveIdentity) -> bool {
         self.root_path_identity().as_ref() == Some(identity)
     }
@@ -2185,6 +2216,11 @@ impl LinuxJournalDirectory {
         let directory = rustix::io::fcntl_dupfd_cloexec(directory, 0)
             .map_err(|error| JournalError::Io(error.to_string()))?;
         Ok(Self { directory })
+    }
+
+    pub(super) fn duplicate_copy_directory(&self) -> Result<OwnedFd, JournalError> {
+        rustix::io::fcntl_dupfd_cloexec(&self.directory, 0)
+            .map_err(|error| JournalError::Io(error.to_string()))
     }
 
     pub(super) fn persist_copy_record(

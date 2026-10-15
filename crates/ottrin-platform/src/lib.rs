@@ -61,6 +61,13 @@ pub fn plan_retained_copy_cleanup(
 ) -> Result<RetainedCopyCleanupPlan, PlatformError> {
     copy_recovery::plan_cleanup(captured)
 }
+/// Reopens existing durable cleanup intent; never starts deletion from IDs alone.
+#[cfg(target_os = "linux")]
+pub fn resume_retained_copy_cleanup(
+    transaction_ids: &[String],
+) -> Result<RetainedCopyCleanupPlan, PlatformError> {
+    copy_recovery::resume_cleanup(transaction_ids)
+}
 mod copy_transaction;
 #[cfg(target_os = "linux")]
 mod directory_watch;
