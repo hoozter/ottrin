@@ -1,0 +1,20 @@
+{
+  "domain": "ottrin-init-move-ui",
+  "root": "C:\\OttrinMoveUIQA",
+  "account": "OttrinMoveUIQA",
+  "source_revision": "a7c189f87172c73791493af0ac9e9579f73201f8",
+  "installer_sha256": "225e8c2dc3c454c9f7449f565353e3500c5d6509e689e3c87cc37aa934f429a0",
+  "volume": "C:\\OttrinMoveUIQA\\move.vhd",
+  "drive": "R:",
+  "label": "OTTRIN_MOVE_QA",
+  "scope": "Owned disposable child overlay, not original guest; original user settings and installation hashes retained for comparison; exact owned VHD and overlay removed after native checks.",
+  "harness_corrections": [
+    "Initial focus check failed before any keyboard input; standard uninstall teardown completed.",
+    "Initial actor clicked title bar before every key, dismissing address editing and pasting back to source. Screenshot proves this test-input defect. Discarded as Move acceptance.",
+    "Final actor preserves existing foreground/focus; new fixtures prevent inference from earlier trial state.",
+    "Source withdrawal can precede final publication. A post-failure ordinary-user inspection proves exact destination bytes and published journal. Corrected wait checks both source withdrawal and published payload.",
+    "Earlier run reused content markers; retained lookup now matches the exact recorded source path as well as displaced bytes and original file identity.",
+    "A malformed PowerShell Where-Object enumeration was corrected; accepted earlier cases remain separate from the failed enumeration.",
+    "All five same-volume cases passed. Cross-volume destination handle admission failed with AccessDenied under read-only backing-image access. Modified only the owned VHD backing file permission for the owned account, then scheduled only affected cross-volume cases with a fresh fixture root."
+  ]
+}

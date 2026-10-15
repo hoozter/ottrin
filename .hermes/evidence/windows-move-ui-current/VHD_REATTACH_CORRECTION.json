@@ -1,0 +1,9 @@
+{
+  "scope": "Full Control only on owned backing file; NTFS destination permissions remain Modify",
+  "destination_root_sddl": "O:SYG:SYD:AI(A;OICIIO;SDGXGWGR;;;AU)(A;;0x1301bf;;;AU)(A;OICIIO;GA;;;SY)(A;;FA;;;SY)(A;OICIIO;GA;;;BA)(A;;FA;;;BA)(A;OICIIO;GXGR;;;BU)(A;;0x1200a9;;;BU)(A;OICI;0x1301bf;;;S-1-5-21-3183210791-1673105385-3262580894-1031)",
+  "path": "C:\\OttrinMoveUIQA\\move.vhd",
+  "after": "O:BAG:SYD:AI(A;;FA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;S-1-5-21-3183210791-1673105385-3262580894-1031)",
+  "before": "O:BAG:SYD:AI(A;;0x1301bf;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;S-1-5-21-3183210791-1673105385-3262580894-1031)",
+  "reattached": true,
+  "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031"
+}

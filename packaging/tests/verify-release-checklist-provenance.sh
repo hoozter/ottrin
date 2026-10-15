@@ -69,8 +69,8 @@ require_document_line "$RELEASE_NOTES" 'exact rebuilt portable ZIP and installer
 require_document_line "$RELEASE_NOTES" 'Automatic compatibility paths' 'the renderer acceptance contract'
 
 require_document_line "$USER_GUIDE" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'
-require_document_line "$USER_GUIDE" 'Exact-current Windows portable and NSIS artifacts have automated checksum' 'the automated exact-artifact evidence boundary'
-require_document_line "$USER_GUIDE" 'Automated payload/provenance checks pass' 'the automated payload evidence boundary'
+require_document_line "$USER_GUIDE" 'Recorded MSI/NSIS candidates have scoped ordinary-user native installation, upgrade, indexing and uninstall checks.' 'the scoped native-candidate evidence boundary'
+require_document_line "$USER_GUIDE" 'MSI acceptance is blocked; the broader installer matrix remains incomplete.' 'the failed-rollback and incomplete installer boundary'
 require_document_line "$USER_GUIDE" 'Automatic selection, persisted preferences, diagnostic override behavior' 'the renderer acceptance contract'
 
 require_document_line "$ROADMAP" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'

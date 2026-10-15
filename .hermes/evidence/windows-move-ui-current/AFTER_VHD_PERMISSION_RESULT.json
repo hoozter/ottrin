@@ -1,0 +1,8 @@
+{
+  "error": "Move publication did not settle: cross-unoccupied : ",
+  "phase": "verify-cross-unoccupied",
+  "scope": "Exact current NSIS, ordinary user, real GUI Cut/Paste and conflict choices on owned NTFS volumes",
+  "stack": "at Assert, C:\\OttrinMoveUIQA\\actor.ps1: line 5\r\nat <ScriptBlock>, C:\\OttrinMoveUIQA\\actor.ps1: line 71",
+  "status": "fail",
+  "cases": []
+}

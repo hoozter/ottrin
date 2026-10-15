@@ -1,0 +1,234 @@
+{
+  "installer_sha256": "225e8c2dc3c454c9f7449f565353e3500c5d6509e689e3c87cc37aa934f429a0",
+  "phase": "accepted",
+  "scope": "Exact current NSIS, ordinary user, real GUI Cut/Paste and conflict choices on owned NTFS volumes",
+  "status": "pass",
+  "cases": [
+    {
+      "retained": null,
+      "name": "cross-unoccupied",
+      "destination_original_id": null,
+      "renamed": null,
+      "source_id": "0x0000000000000000001c000000027907",
+      "status": "pass",
+      "source_removed": true
+    },
+    {
+      "retained": {
+        "record": {
+          "schema_major": 2,
+          "schema_minor": 0,
+          "transaction_id": "e2d9de08ab502c5357a43d13af15394b",
+          "phase": "published",
+          "source": {
+            "encoding": "windows-utf16-le",
+            "units_hex": "005c005c003f005c0043003a005c00550073006500720073005c004f0074007400720069006e004d006f007600650055004900510041005c004d006f00760065005100410038005c00630072006f00730073002d007200650070006c006100630065005c0073005c007000610079006c006f00610064002e007400780074"
+          },
+          "source_parent_identity": {
+            "volume_serial_number": 11426905405696362349,
+            "file_id": [
+              20,
+              121,
+              2,
+              0,
+              0,
+              0,
+              20,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "reparse_tag": null,
+            "file_type": "directory"
+          },
+          "source_identity": {
+            "volume_serial_number": 11426905405696362349,
+            "file_id": [
+              24,
+              121,
+              2,
+              0,
+              0,
+              0,
+              20,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "reparse_tag": null,
+            "file_type": "file"
+          },
+          "source_kind": "file",
+          "source_size": 20,
+          "source_sha256": "637fc2060ef6166899abb7997c2ba113a442f12a9ce6f0ec3a8d7bde0b6ba3f9",
+          "source_link_target": null,
+          "source_link_is_directory": null,
+          "source_manifest": [],
+          "destination_parent": {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0052003a005c004d006f00760065005100410038005c00630072006f00730073002d007200650070006c006100630065005c0064"
+          },
+          "destination_parent_identity": {
+            "volume_serial_number": 4227314442891676871,
+            "file_id": [
+              58,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "reparse_tag": null,
+            "file_type": "directory"
+          },
+          "destination_identity": {
+            "volume_serial_number": 4227314442891676871,
+            "file_id": [
+              60,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "reparse_tag": null,
+            "file_type": "file"
+          },
+          "destination_manifest": [],
+          "conflict": "Overwrite",
+          "target_candidates": [
+            {
+              "encoding": "windows-utf16-le",
+              "units_hex": "0052003a005c004d006f00760065005100410038005c00630072006f00730073002d007200650070006c006100630065005c0064005c007000610079006c006f00610064002e007400780074"
+            }
+          ],
+          "transaction_directory": {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0052003a005c004d006f00760065005100410038005c00630072006f00730073002d007200650070006c006100630065005c0064005c002e006f0074007400720069006e002d006d006f00760065002d00650032006400390064006500300038006100620035003000320063003500330035003700610034003300640031003300610066003100350033003900340062"
+          },
+          "transaction_directory_identity": {
+            "volume_serial_number": 4227314442891676871,
+            "file_id": [
+              61,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "reparse_tag": null,
+            "file_type": "directory"
+          },
+          "candidate": {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0052003a005c004d006f00760065005100410038005c00630072006f00730073002d007200650070006c006100630065005c0064005c002e006f0074007400720069006e002d006d006f00760065002d00650032006400390064006500300038006100620035003000320063003500330035003700610034003300640031003300610066003100350033003900340062005c00630061006e006400690064006100740065"
+          },
+          "candidate_identity": {
+            "volume_serial_number": 4227314442891676871,
+            "file_id": [
+              63,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "reparse_tag": null,
+            "file_type": "file"
+          },
+          "retained_displaced": {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0052003a005c004d006f00760065005100410038005c00630072006f00730073002d007200650070006c006100630065005c0064005c002e006f0074007400720069006e002d006d006f00760065002d00650032006400390064006500300038006100620035003000320063003500330035003700610034003300640031003300610066003100350033003900340062005c00720065007400610069006e00650064002d0064006900730070006c0061006300650064"
+          }
+        },
+        "path": "R:\\MoveQA8\\cross-replace\\d\\.ottrin-move-e2d9de08ab502c5357a43d13af15394b\\retained-displaced",
+        "journal": "C:\\Users\\OttrinMoveUIQA\\AppData\\Local\\Ottrin\\State\\moves\\e2d9de08ab502c5357a43d13af15394b.cross-journal"
+      },
+      "name": "cross-replace",
+      "destination_original_id": "0x0000000000000000000200000000003c",
+      "renamed": null,
+      "source_id": "0x00000000000000000014000000027918",
+      "status": "pass",
+      "source_removed": true
+    },
+    {
+      "retained": null,
+      "name": "cross-rename",
+      "destination_original_id": "0x00000000000000000001000000000042",
+      "renamed": "payload (1).txt",
+      "source_id": "0x00000000000000000007000000027b34",
+      "status": "pass",
+      "source_removed": true
+    },
+    {
+      "retained": null,
+      "name": "cross-skip",
+      "destination_original_id": "0x00000000000000000003000000000046",
+      "renamed": null,
+      "source_id": "0x00000000000000000006000000027b49",
+      "status": "pass",
+      "source_removed": false
+    },
+    {
+      "retained": null,
+      "name": "cross-cancel",
+      "destination_original_id": "0x00000000000000000001000000000049",
+      "renamed": null,
+      "source_id": "0x00000000000000000003000000027b58",
+      "status": "pass",
+      "source_removed": false
+    }
+  ]
+}

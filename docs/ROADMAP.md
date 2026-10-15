@@ -10,46 +10,54 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Linux delivery status
 
-The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. They include the saved appearance/view repairs, clickable address navigation, complete menu icons and compact action spacing, plus native index-service cleanup. Ubuntu and Fedora package lifecycle evidence is scoped to the exact candidates named in that receipt; a documentation-only repack is distinguished from a new native runtime test. These focused checks do not close the broader release gates below. Older receipts retain their original revision scope.
+The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. The current `0040b44` cohort includes the saved appearance/view repairs, clickable address navigation, complete menu icons and compact action spacing, native index-service cleanup, read-only Inspector entry and stable PDF fitting. Ubuntu and Fedora package lifecycle evidence is scoped to the exact candidates named in that receipt; a documentation-only repack is distinguished from a new native runtime test. These focused checks do not close the broader release gates below. Older receipts retain their original revision scope.
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
-The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `.hermes/coordinator-worker-report.md`, with October 9 baseline evidence in `.hermes/evidence/takeover-20261009/REPORT.md`.
+The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and `PREVIEW_SAFETY_ACCEPTANCE.json`. `.hermes/coordinator-worker-report.md` and `.hermes/evidence/takeover-20261009/REPORT.md` are historical takeover evidence.
 
 These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
 
 ## Current Windows local delivery — 2026-10-15
 
-Portable, NSIS and MSI at the stable `dist/` paths use clean source `41027a0`.
-Newer coherent candidates from clean `fcf00aa` are staged under
-`.hermes/packaging-tmp/windows-current/`. Their exact hashes and native scopes are
-in that directory's `CANDIDATE_ACCEPTANCE.json`. The exact NSIS passes fresh
-installation/removal, running-daemon replacement, enabled/disabled running/idle
-intent preservation, concurrent-setup refusal and corrupt-journal refusal. The
-exact MSI passes fresh installation/removal, published-to-candidate upgrade with
-a running daemon, and all four repair-intent cases without requiring reboot.
-Failed-transaction MSI registration rollback remains rejected, including
-independent file-only controls, so these candidates remain unpublished. Broader
-current GUI/DPI, login/reboot, Office, NSIS full payload rollback and signing gates
-remain separate. The native acceptance described next retains its published
-`41027a0` scope.
+Public portable, NSIS and MSI at the stable `dist/` paths still use clean source
+`41027a0`; their exact identities are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`.
+The newer coherent internal cohort at `.hermes/packaging-tmp/windows-current/`
+uses clean source `a7c189f`. Its `CANDIDATE_ACCEPTANCE.json` records exact hashes,
+all 51 payload identities and the accepted scopes; do not infer current acceptance
+from older receipts below.
 
-Current installed NSIS native GUI acceptance verifies readable drive breadcrumbs,
-actual drive-root navigation with its full file column visible, exact address
-submission to a real trailing-space directory, return navigation, search, and the
-same scheduled daemon before/during/after normal window close and subsequent
-file watching. Current MSI standard-user installation verifies all 51 installed
-files, index registration/query, uninstall and preference/source preservation.
-Archive/NSIS payloads match all 51 stage files; MSI embedded data additionally
-matches both authoritative installer helper scripts. Current hashes and limits
-are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json` and
+The current NSIS passes six pre-journal interruption/retry cases, including fresh
+installs and all four configured login/runtime combinations with real indexing.
+Task XML/security, typed registration, saved index and original/published payload
+identities are preserved where applicable. The exact MSI passes fresh ordinary-user
+install/uninstall and payload verification. Current installed NSIS GUI acceptance
+covers VCF/PDF arrow navigation and Space close without editing source files,
+a flush themed Inspector title bar, and one persistent scheduled daemon across
+GUI launch and close. These GUI checks use Dark, 96 DPI and Automatic graphics
+in an isolated Windows VM.
+
+The same exact NSIS also passes ten ordinary-user GUI Cut/Paste regular-file
+cases: unoccupied, Replace, Keep Both, Skip and Cancel on the same NTFS volume
+and across two NTFS volumes. Post-close/uninstall verification confirms exact
+bytes and identities, empty completed-source parents, retained displaced files
+and paired published journals. This is a bounded file-workflow check; directory
+trees, batches, Undo, interruption and physical storage remain separate. Receipt:
+`.hermes/evidence/windows-move-ui-current/ACCEPTANCE.json`.
+
+Failed-transaction MSI registration rollback remains an open release gate. The
+rejected `3ddb1bf` package and its early-execution prototype reproduce advertised
+product state and access-denied registration rollback; a newer positive install
+check does not close that failure. Current exact upgrade/repair, reboot/login,
+broader GUI/DPI, file-operation, Office, graphics/media, storage and signing gates
+remain separate. Internal candidates stay unpublished. Detailed current evidence:
+`.hermes/evidence/windows-init-integration-current/ACCEPTANCE.json`.
+
+The `41027a0` public candidate's native drive navigation/address/search and daemon
+lifetime evidence remains in
 `.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
-
-The preceding `4a0c13b` reboot, cleanup-failure/retry and populated-index CPU/offline
-results remain historical evidence for that revision. Current exact reboot/login,
-MSI failed-transaction registration rollback, interactive-installer
-breadth and physical GPU gates remain open. These are local test builds, not full
-release acceptance. The October 11 snapshot below is historical.
+The October 11 snapshot below is historical, including its package revisions and
+then-open tasks; subsequent dated entries retain their own exact scope.
 
 ## Audited platform status — 2026-10-11
 
@@ -3051,3 +3059,47 @@ packages and the instrumented QA installer were removed. Public Windows packages
 remain unchanged: failed-registration MSI rollback is still an open release
 gate. Physical GPU, wider DPI/theme coverage, temporal Windows PDF stability,
 explicit Windows edit/save, Office and other roadmap gates remain separate.
+
+### Current Windows GUI regular-file Move acceptance (2026-10-15)
+
+The exact internal NSIS from clean `a7c189f` (SHA-256
+`225e8c2dc3c454c9f7449f565353e3500c5d6509e689e3c87cc37aa934f429a0`)
+passes all five regular-file choices on the same volume and across C:/R:
+unoccupied, Replace, Keep Both, Skip and Cancel. A fresh non-administrator
+interactive account drives the installed GUI with ordinary Cut/Paste, Tab/Enter
+conflict activation and Escape cancellation; all 51 installed payload hashes
+match the candidate. Dark and Automatic graphics are requested.
+
+All ten outcomes are independently rechecked after normal window close and
+uninstall. Completed source parents contain no original or claimed data;
+Skip/Cancel preserve source and destination bytes/identities; Keep Both preserves
+the existing destination; Replace preserves its exact displaced file identity
+and bytes with matching published central/local journals. Non-overwrite stages
+are absent and the installed index task is removed.
+
+Initial automation defects (focus changes, a publication-observation race,
+retained-record matching and PowerShell enumeration) are retained separately.
+Five same-volume cases passed before a cross-volume fixture refusal. The owned
+VHD backing image needed Full Control for its user plus detach/reattach, as the
+earlier native VHD fixture already established; Modify alone was insufficient.
+That correction changes only this disposable backing file. The inner NTFS
+destination retains Modify permissions, production code/ACLs are unchanged,
+and all five affected cross-volume cases pass on rerun.
+
+The original guest's preference/installation hashes remain unchanged. After
+the final checks, the VHD is detached normally; the child guest is shut down
+normally and its exact overlay, NVRAM and TPM are removed. Original guests and
+backing storage are preserved and shut off. Compact receipts, actor inputs and
+selected native screenshots are in
+`.hermes/evidence/windows-move-ui-current/`; its acceptance is linked from the
+stable internal cohort receipt. Public Windows packages remain unchanged.
+
+The stale Linux delivery overview now names the four actual `0040b44` artifacts,
+with every artifact hash and checksum sidecar verified against preview-safety
+acceptance. Earlier Copy/distro evidence keeps its original revision scope.
+The roadmap's Windows overview now names the actual `a7c189f` cohort; its guide
+provenance guard requires scoped native evidence and the explicit failed-MSI
+rollback boundary instead of obsolete checksum-only wording. The guard passes.
+No runtime rebuild was needed for these metadata/test corrections. Broader
+file-operation/daily-driver, Office, MSI rollback, graphics and signing gates
+remain open; user testing remains deferred.

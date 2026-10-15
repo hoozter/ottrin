@@ -1,28 +1,35 @@
 {
   "date": "2026-10-15",
-  "source_revision": "5849d38dd8974b9ad7fbeb1fd520f885639247a0",
+  "source_revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "74a221ec38590251dad68de3ea3f885d361184589c50317f4ea72b7c25282cc7",
-    "Ottrin-0.1.0-x86_64.AppImage": "611c8c579952ef3e03bc4ec033c75286d8a31329336c0957bb34c6e31b0d4168",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "020fdde7aebc6625e14ad7250822d82872917b660e1953872ecd64462a95bfbd",
-    "ottrin_0.1.0_amd64.deb": "0d981cc7b8b0f06121e8ec47f60ec2a9dd6598a76382978d5467c89e3651c334"
+    "Ottrin-0.1.0-x86_64.AppImage": "7e8a921e829b818ab81ccaca0f762a49391843361d98b81c90d8bfc0103f0b9a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7a8c2ee3997f2cb374fc8e2fc92460c39fd8b3969292e167322163f209663284",
+    "ottrin_0.1.0_amd64.deb": "b5e09a4dee61c36d6403d20c66d502656874ffa796c9ddb400e0004ffbdf0770",
+    "ottrin-0.1.0-1.x86_64.rpm": "44288e8314335284783e226276c9f30fb462c979ce2afd207f16f6c926524f5f"
   },
   "checks": [
-    "411 regular platform tests pass; all 3 separately gated cases pass, including payload and finalization private mount guards and multi-size resource profile",
-    "Strict Linux platform all-target Clippy and rebuilt private-process Activity worker tests pass",
-    "Exact AppImage Dark100/Light150 cleanup/cancel/refusal/retry and main/View menus pass with normal exit",
-    "All four package payload/document/source identities and current AppImage/RPM daemon namespace ownership checks pass"
+    "All four current artifact SHA-256 values and sidecars verified against preview-safety acceptance",
+    "Exact AppImage read-only navigation, flush themed title bar, explicit edit/save and PDF width stability accepted in documented Linux Xvfb scopes",
+    "Portable/DEB/RPM executable payload identities verified; RPM standard stripped code/data identities verified"
   ],
-  "gui_evidence": ".hermes/evidence/copy-payload-current",
-  "package_content_evidence": ".hermes/evidence/copy-payload-current/FINAL_PACKAGE_IDENTITIES.json",
-  "native_scope": "Current daemon bytes differ from prior native-tested source723. Current namespace-ownership and package-content checks pass; no new distro install/upgrade/reboot lifecycle claim. Prior lifecycle receipts retain their original source/artifact scope.",
+  "current_evidence": ".hermes/evidence/preview-safety-current/ACCEPTANCE.json",
+  "gui_evidence": ".hermes/evidence/preview-safety-current/",
+  "package_content_evidence": ".hermes/evidence/preview-safety-current/ACCEPTANCE.json",
+  "native_scope": "Preview/UI and package identity only. Prior native distro lifecycle and Copy workflow receipts retain their original source/artifact scope.",
+  "previous_revision_acceptance": {
+    "source_revision": "5849d38dd8974b9ad7fbeb1fd520f885639247a0",
+    "artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "74a221ec38590251dad68de3ea3f885d361184589c50317f4ea72b7c25282cc7",
+      "Ottrin-0.1.0-x86_64.AppImage": "611c8c579952ef3e03bc4ec033c75286d8a31329336c0957bb34c6e31b0d4168",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "020fdde7aebc6625e14ad7250822d82872917b660e1953872ecd64462a95bfbd",
+      "ottrin_0.1.0_amd64.deb": "0d981cc7b8b0f06121e8ec47f60ec2a9dd6598a76382978d5467c89e3651c334"
+    },
+    "evidence": ".hermes/evidence/copy-payload-current"
+  },
   "limits": [
-    "Automatic expiry is disabled; ordinary capacity trimming continues to retain owned recovery receipts until an explicit supported cleanup",
-    "Other operation kinds retain their existing ownership and recovery limits; this work implements Linux Copy cleanup",
-    "Private Xvfb/software rendering does not prove physical Wayland/GPU, every theme/text-size, or native Windows cleanup acceptance",
-    "Large-operation resource profiling, arbitrary power loss and final syscall-race boundaries retain their separate scopes; torn/unknown evidence remains for review",
-    "Current namespace and package-content checks do not replace fresh distro package-manager install/upgrade/reboot acceptance. Prior distro receipts remain historical.",
-    "Windows stable packages are unchanged; MSI failed-registration rollback and remaining Windows gates are still open",
-    "No operator retained Copy data was reclaimed and no host service was changed or restarted"
+    "Not native Windows/macOS acceptance or physical Wayland/GPU acceptance.",
+    "No broader roadmap or daily-driver completion claim.",
+    "No fresh distro install/upgrade/reboot lifecycle acceptance for this revision.",
+    "Windows and broader release gates remain separate."
   ]
 }

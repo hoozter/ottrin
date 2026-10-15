@@ -1,0 +1,172 @@
+{
+  "status": "pass for ten exact-package ordinary-user GUI file Move cases",
+  "date": "2026-10-15",
+  "source_revision": "a7c189f87172c73791493af0ac9e9579f73201f8",
+  "artifact": {
+    "path": ".hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-setup.exe",
+    "sha256": "225e8c2dc3c454c9f7449f565353e3500c5d6509e689e3c87cc37aa934f429a0"
+  },
+  "environment": "Owned network-isolated Windows child VM; fresh non-administrator interactive account; Dark theme and Automatic graphics request; C: and owned NTFS VHD R:",
+  "payload_identity": "All 51 installed files checked against current candidate manifest in each accepted run",
+  "cases": [
+    {
+      "name": "same-unoccupied",
+      "status": "pass",
+      "source_id": "0x0000000000000000000c0000000278ef",
+      "destination_original_id": null,
+      "renamed": null,
+      "source_removed": true
+    },
+    {
+      "name": "same-replace",
+      "status": "pass",
+      "source_id": "0x000000000000000000040000000279a7",
+      "destination_original_id": "0x000000000000000000040000000279a8",
+      "renamed": null,
+      "source_removed": true
+    },
+    {
+      "name": "same-rename",
+      "status": "pass",
+      "source_id": "0x000000000000000000090000000279d1",
+      "destination_original_id": "0x000000000000000000050000000279d3",
+      "renamed": "payload (1).txt",
+      "source_removed": true
+    },
+    {
+      "name": "same-skip",
+      "status": "pass",
+      "source_id": "0x000000000000000000030000000279dd",
+      "destination_original_id": "0x000000000000000000030000000279df",
+      "renamed": null,
+      "source_removed": false
+    },
+    {
+      "name": "same-cancel",
+      "status": "pass",
+      "source_id": "0x000000000000000000030000000279f9",
+      "destination_original_id": "0x000000000000000000030000000279fa",
+      "renamed": null,
+      "source_removed": false
+    },
+    {
+      "name": "cross-unoccupied",
+      "status": "pass",
+      "source_id": "0x0000000000000000001c000000027907",
+      "destination_original_id": null,
+      "renamed": null,
+      "source_removed": true
+    },
+    {
+      "name": "cross-replace",
+      "status": "pass",
+      "source_id": "0x00000000000000000014000000027918",
+      "destination_original_id": "0x0000000000000000000200000000003c",
+      "renamed": null,
+      "source_removed": true
+    },
+    {
+      "name": "cross-rename",
+      "status": "pass",
+      "source_id": "0x00000000000000000007000000027b34",
+      "destination_original_id": "0x00000000000000000001000000000042",
+      "renamed": "payload (1).txt",
+      "source_removed": true
+    },
+    {
+      "name": "cross-skip",
+      "status": "pass",
+      "source_id": "0x00000000000000000006000000027b49",
+      "destination_original_id": "0x00000000000000000003000000000046",
+      "renamed": null,
+      "source_removed": false
+    },
+    {
+      "name": "cross-cancel",
+      "status": "pass",
+      "source_id": "0x00000000000000000003000000027b58",
+      "destination_original_id": "0x00000000000000000001000000000049",
+      "renamed": null,
+      "source_removed": false
+    }
+  ],
+  "native_reports": {
+    "same": "SAME_ACCEPTANCE.json: five accepted cases before cross-volume fixture refusal",
+    "cross": "CROSS_ACCEPTANCE.json: all five affected cases rerun after exact owned backing-file fixture correction",
+    "post_close_and_uninstall": "FINAL_FILE_STATE.json: all ten persisted outcomes independently rechecked"
+  },
+  "scope": [
+    "Actual installed GUI Cut/Paste; Tab/Enter conflict activation and Escape cancellation, without private Move overrides",
+    "Exact bytes and identities; Keep Both preserves original destination; Skip and Cancel preserve both entries",
+    "Replace retains exact displaced file and matching published central/local journals",
+    "Completed source parents empty; no non-overwrite private stages; normal app close/uninstall preserve results; own index task absent"
+  ],
+  "fixture_corrections": [
+    "Initial focus check failed before any keyboard input; standard uninstall teardown completed.",
+    "Initial actor clicked title bar before every key, dismissing address editing and pasting back to source. Screenshot proves this test-input defect. Discarded as Move acceptance.",
+    "Final actor preserves existing foreground/focus; new fixtures prevent inference from earlier trial state.",
+    "Source withdrawal can precede final publication. A post-failure ordinary-user inspection proves exact destination bytes and published journal. Corrected wait checks both source withdrawal and published payload.",
+    "Earlier run reused content markers; retained lookup now matches the exact recorded source path as well as displaced bytes and original file identity.",
+    "A malformed PowerShell Where-Object enumeration was corrected; accepted earlier cases remain separate from the failed enumeration.",
+    "All five same-volume cases passed. Cross-volume destination handle admission failed with AccessDenied under read-only backing-image access. Modified only the owned VHD backing file permission for the owned account, then scheduled only affected cross-volume cases with a fresh fixture root.",
+    "Modify access on the VHD backing file alone was insufficient. Earlier native fixture receipt identified Full Control plus detach/reattach. That exact correction passes; inner destination permissions remain Modify. Production code/ACLs unchanged."
+  ],
+  "checks": {
+    "release_checklist_provenance": "pass after updating stale guide expectations to scoped native acceptance plus explicit failed-MSI rollback gate",
+    "linux_manifest": "all four current package hashes and checksum sidecars verified; stale current metadata corrected"
+  },
+  "limits": [
+    "Small regular-file cases only; directory trees, batches, Undo, interruptions/power loss, physical removable/network storage and broader daily-driver acceptance remain separate.",
+    "No product repair or new runtime build was required in this turn.",
+    "MSI registration rollback, Windows Office and remaining platform/signing gates stay open; public Windows artifacts unchanged."
+  ],
+  "input_sha256": {
+    "actor.ps1": "52862a984d9fc99448cbe31a04b7875712efc2d91ae4884c2f2fbfc5144a1522",
+    "final-file-state.ps1": "6d0294b3b9fbc7d62b4b8f759f156527874dee731be2d05d4a2601e695afae00",
+    "dispose.py": "0704d48d3d57c06c8c7addfd5d4d27bd38d2e27ad6bbe92151c2b2dd764448ad"
+  },
+  "screenshots_sha256": {
+    "MOVE-same-rename-choice-focus.png": "006440a1e1c9bfbb0a4a45283bdcf3f538d4e7ab00b54f2ddacebf3820cbef6e",
+    "MOVE-cross-cancel-before-choice.png": "243712c05f65d655c511597ad2ddac91b56954c5acb1ed6a42f9aa6c000d39db",
+    "MOVE-same-unoccupied-before-choice.png": "e2eef6c8f74c6ee857adadc91ff875e1335a298c532fc6155c3df51eef9466f0",
+    "MOVE-cross-rename-after.png": "9c0ac1278258ddaaea93604461065dabb3c9ab1e96e299ec3ff0d2522b708fde",
+    "MOVE-same-skip-choice-focus.png": "40172205fd78af96ef465b14a202c8dcafdd860c9343a75ba24d21a7a8cd46fa",
+    "MOVE-cross-skip-choice-focus.png": "135e2202c9d0b3049c444329156abcd7df3c43b6b43b07adb30a9bb97aed23df",
+    "MOVE-same-cancel-after.png": "f46668c419361bd81bd9f154368d9e78f34a592181f0a2db3a2370cc16ad8f04",
+    "MOVE-cross-rename-choice-focus.png": "8eb4af834a3d5a16e675c7a14e463462ba1ecc03f8583c2749715189ca1dcc7a",
+    "MOVE-cross-unoccupied-before-choice.png": "7076ba90f7986acf5984c3b7170296f793fb38afef9a0056c50cd4039a996527",
+    "MOVE-cross-skip-after.png": "810fabf4751e9537c01a124e2630fa3fc0192004aaaf913fcde2ce033699065c",
+    "MOVE-cross-replace-choice-focus.png": "6555ec356d2a4ac41bbb738ddb5d75048f21b77344ab8ed8e88f7ad9073b0e9b",
+    "MOVE-same-skip-after.png": "be9144c39f4c6b64f29c6a3631fa1ea7d4e6f5709d3721ccf65ca02bef878c13",
+    "MOVE-cross-cancel-after.png": "50b5f6403add3ffed1081e30850c61827ea3cc8724dc422576767afea3da71ab",
+    "MOVE-same-unoccupied-after.png": "e2eef6c8f74c6ee857adadc91ff875e1335a298c532fc6155c3df51eef9466f0",
+    "MOVE-same-replace-choice-focus.png": "50f5c8646c91354add367cb002263e4989cbf823008360a0faca2cc8481919c6",
+    "MOVE-same-rename-after.png": "99483bb3f297e35ed6e83c10438ee4967f58abeda9691a994b2934dd2c133169",
+    "MOVE-cross-unoccupied-after.png": "7076ba90f7986acf5984c3b7170296f793fb38afef9a0056c50cd4039a996527",
+    "MOVE-same-replace-after.png": "80ebfb54111a07867102e15c420d385dad68f7ffb9789c3d3ae9389a96cacdee",
+    "MOVE-same-cancel-before-choice.png": "ef54a930e9f59d22696821f5cc67533147e5732ce263f909a29c5cb70bb7e071",
+    "MOVE-cross-replace-after.png": "69b2da185d52374ade2bba9d87663e1672ae00e1e04502cf2c9d80b9e2cd2f52"
+  },
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "guest_preservation": {
+    "actor_state": "Ready",
+    "actor_result": 0,
+    "owned_product_processes": 0,
+    "original_profile_and_installation": "unchanged"
+  },
+  "volume_cleanup": {
+    "attached": false,
+    "status": "pass",
+    "all_ten_final_cases_verified": true,
+    "owned_image": "C:\\OttrinMoveUIQA\\move.vhd"
+  }
+}

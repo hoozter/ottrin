@@ -1,0 +1,75 @@
+{
+  "cases": [
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "same-unoccupied",
+      "source_parent_entries": 0
+    },
+    {
+      "pair": {
+        "central_sha256": "944099D27192C95EE8E160B3F11BAE20512BDC1E6AA69D1CCA5938B9F19DBDCB",
+        "retained_id": "0x000000000000000000040000000279a8",
+        "local_sha256": "944099D27192C95EE8E160B3F11BAE20512BDC1E6AA69D1CCA5938B9F19DBDCB"
+      },
+      "final_destination_verified": true,
+      "name": "same-replace",
+      "source_parent_entries": 0
+    },
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "same-rename",
+      "source_parent_entries": 0
+    },
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "same-skip",
+      "source_parent_entries": 1
+    },
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "same-cancel",
+      "source_parent_entries": 1
+    },
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "cross-unoccupied",
+      "source_parent_entries": 0
+    },
+    {
+      "pair": {
+        "central_sha256": "9AFB1859C7C01B5D9148A1C0359106B6EED554DA7BD4A83DE003971CB52FA5E1",
+        "retained_id": "0x0000000000000000000200000000003c",
+        "local_sha256": "9AFB1859C7C01B5D9148A1C0359106B6EED554DA7BD4A83DE003971CB52FA5E1"
+      },
+      "final_destination_verified": true,
+      "name": "cross-replace",
+      "source_parent_entries": 0
+    },
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "cross-rename",
+      "source_parent_entries": 0
+    },
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "cross-skip",
+      "source_parent_entries": 1
+    },
+    {
+      "pair": null,
+      "final_destination_verified": true,
+      "name": "cross-cancel",
+      "source_parent_entries": 1
+    }
+  ],
+  "status": "pass",
+  "scope": "Post-GUI-close and normal-uninstall bytes/identities, empty moved-source parents, no non-overwrite stages, and exact paired published overwrite journals",
+  "index_task_absent": true
+}
