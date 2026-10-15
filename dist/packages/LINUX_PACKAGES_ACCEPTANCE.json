@@ -35,5 +35,71 @@
     "Earlier preview/UI and distro lifecycle receipts retain original artifact scopes",
     "Independent saved-content roots and background watcher coverage remain required",
     "Windows and broader release gates remain separate"
-  ]
+  ],
+  "preview_recheck": {
+    "date": "2026-10-16",
+    "status": "pass",
+    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+    "sha256": "9de4701132ec0bafc0a2a6a3ed5616e261319d8bc8ebc0e2024a84142faa9907",
+    "cases": {
+      "current-appimage-recheck": {
+        "theme": "Dark",
+        "desktop_scale": 1.0,
+        "font_scale": 1.0,
+        "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+        "header_edge_color": [
+          30,
+          34,
+          39
+        ],
+        "header_center_color": [
+          30,
+          34,
+          39
+        ],
+        "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+        "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+        "space_closed": true,
+        "vcf_bytes_unchanged": true,
+        "settled_capture_count": 70,
+        "distinct_settled_boxes": 1,
+        "cleanup": {
+          "profile_removed": true,
+          "private_processes": []
+        }
+      },
+      "current-edit-recheck": {
+        "theme": "Dark",
+        "desktop_scale": 1.0,
+        "font_scale": 1.0,
+        "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+        "header_edge_color": [
+          30,
+          34,
+          39
+        ],
+        "header_center_color": [
+          30,
+          34,
+          39
+        ],
+        "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+        "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+        "space_closed": true,
+        "vcf_bytes_unchanged": true,
+        "explicit_edit": {
+          "draft_kept_file_unchanged": true,
+          "explicit_save_published_marker": true
+        },
+        "settled_capture_count": 70,
+        "distinct_settled_boxes": 1,
+        "cleanup": {
+          "profile_removed": true,
+          "private_processes": []
+        }
+      }
+    },
+    "scope": "Exact current AppImage in private Xvfb/X11 and software OpenGL, Dark at 100 percent scale. Real rendered PDF sizing, VCF keyboard navigation and source preservation, edge-aligned title bar, explicit Edit and Save. Not physical Wayland/GPU or Windows acceptance.",
+    "evidence": ".hermes/evidence/preview-safety-current"
+  }
 }
