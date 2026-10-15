@@ -2920,3 +2920,11 @@ loss, pre-journal initialization, hostile namespace races or the full state/faul
 cross-product. Stable public packages are unchanged. MSI registration rollback
 is the next installer gate; Office, wider GUI/DPI, reboot/login, signing and
 full daily-driver acceptance remain separate.
+
+### Current MSI early-execution hypothesis rejected (2026-10-15)
+
+The exact unpublished `3ddb1bf` MSI (`717890c74af6e259005b37ae057bf5eb273e6bafea58a2c15d9fb139e0e138be`) reproduces the failed-registration rollback gate under a fresh interactive non-administrator. Cleanup refuses a locked owned preview-cache file before touching the daemon. PID/instance, task XML/security, all 51 payload files, preferences, source data and saved-index identity remain intact. Windows Installer nevertheless records 79 skipped registration rollback errors, leaves advertised product state 1, and fails an ordinary uninstall retry with 1603.
+
+A private prototype executes the queued cleanup before `ProcessComponents`, retains transaction rollback, and uses `InstallExecuteAgain` for late upgrade removal. Its log proves `InstallExecute` fails before `ProcessComponents` starts, yet it produces the identical registration failure and retry result. The hypothesis is rejected; production MSI authoring is unchanged. This does not establish the underlying engine/compiler/environment cause. No elevation, ACL/policy change, rollback disabling or manual MSI registry repair was applied. Current exact-MSI upgrade/repair follow-on did not run after corruption.
+
+Evidence: `.hermes/evidence/windows-msi-execution-current/ACCEPTANCE.json`. All three private VM domains, their thin overlay disks, private NVRAM/TPM and the rejected package were removed after guest shutdown and daemon teardown. Original QA machines remain off and preserved. Stable public packages are unchanged; the current candidate receipt now records this exact-artifact rejection. The MSI promotion gate remains open while other actionable roadmap work continues.
