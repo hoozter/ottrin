@@ -1,0 +1,26 @@
+{
+  "status": "verified staged candidate",
+  "source_revision": "16625571eddc908868ecfa08271f7a53e0e6aefe",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "057cfb501ed255a638cc85e7a55bc57a819e4838fc74fcc1f610e32d2dad931e",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "733b03ead20c2e6e71011cc19260d9d18fb6c4daf8437a3e9063f2139a0c9222",
+    "Ottrin-0.1.0-windows-x64.msi": "d48c007ef26ea987e58fca23e76a0b847c3d01a53d5127a690213d9392c3fc42"
+  },
+  "checks": [
+    "All51 portable and NSIS payload files match source stage",
+    "All53 native MSI administrative-extraction payload files match source stage and installer scripts",
+    "MSI produced by pinned native Windows WiX5.0.2 and .NET8.0.32 through authoritative packager",
+    "Exact portable native SYSTEM/private-profile cold CLI EOF, daemon reuse, watcher discovery and persisted restart pass",
+    "Bounded quiet8-second CPU sample; both daemon/profile lifetimes cleaned"
+  ],
+  "native_runtime": "NATIVE_RUNTIME.json",
+  "msi_content": "MSI_NATIVE_EXTRACTION.json",
+  "package_content": "ARCHIVE_CONTENTS.json",
+  "publication": "Stable public Windows files unchanged at41027a0 pending refreshed ordinary-user lifecycle/UI acceptance",
+  "limits": [
+    "Current ordinary-user NSIS/MSI install/uninstall and GUI acceptance pending",
+    "Known per-user MSI failed-transaction registration rollback remains open",
+    "Current real login/reboot, cross-version upgrade, Office format/provider and production signing gates remain open",
+    "Private SYSTEM single-root tests do not prove user-session behavior or sustained/large-index performance"
+  ]
+}

@@ -21,6 +21,8 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 ## Current Windows local delivery — 2026-10-15
 
 Portable, NSIS and MSI at the stable `dist/` paths use clean source `41027a0`.
+A newer coherent candidate from clean `1662557` is staged under `.hermes/packaging-tmp/windows-current/`. It fixes the reproduced cold Windows CLI output-handle leak. All 51 portable/NSIS files and 53 natively extracted MSI files match the stage/source; native SYSTEM/private-profile CLI EOF, daemon reuse, watcher changes and persisted restart pass. Current ordinary-user installer and GUI acceptance are still required before publication. Exact candidate hashes and limits: `.hermes/evidence/windows-package-current/CANDIDATE_ACCEPTANCE.json`. The native acceptance described next retains its published `41027a0` scope.
+
 Current installed NSIS native GUI acceptance verifies readable drive breadcrumbs,
 actual drive-root navigation with its full file column visible, exact address
 submission to a real trailing-space directory, return navigation, search, and the

@@ -1,0 +1,26 @@
+{
+  "daemon_reused_pid": 2108,
+  "cleanup_profile_absent": true,
+  "scope": "Exact portable payload native SYSTEM/private-profile CLI, watcher, persistence and bounded quiet-idle acceptance; not interactive-user service or UI acceptance",
+  "persisted_restart_files": 2,
+  "cleanup_processes_absent": true,
+  "restart_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 81920,\n  \"detail\": \"Ready -+ 2 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 2,\n  \"last_completed_indexed_items\": 2,\n  \"last_progress_unix_secs\": 1792042168,\n  \"last_scan_completed_unix_secs\": 1792042168,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792042168,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 20632,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "cold_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready -+ 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792042156,\n  \"last_scan_completed_unix_secs\": 1792042156,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792042156,\n  \"snapshot_revision\": 1,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "restarted_pid": 656,
+  "watcher_added_file": true,
+  "repeated_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready -+ 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792042157,\n  \"last_scan_completed_unix_secs\": 1792042157,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792042157,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "status": "pass",
+  "quiet_idle": {
+    "one_core_percent": 0.5849876993466483,
+    "wall_ms": 8012.9890000000005,
+    "cpu_ms": 46.875,
+    "working_set_bytes": 8790016
+  },
+  "cold_update_ms": 5192,
+  "source_revision": "16625571eddc908868ecfa08271f7a53e0e6aefe",
+  "portable_sha256": "057cfb501ed255a638cc85e7a55bc57a819e4838fc74fcc1f610e32d2dad931e",
+  "tested_executable_sha256": {
+    "bin/ottrin.exe": "40747535204d679f13aae8d8c75f05e85ecdb46c171a0b1c3d3b416e1abe2b49",
+    "bin/ottrin-indexd.exe": "93c94567f961e621bb7b8628fd60d5172c94cd3cf49c19ab0989d88d5e37a286"
+  }
+}
