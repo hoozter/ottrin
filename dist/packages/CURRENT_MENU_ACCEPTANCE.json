@@ -3,8 +3,8 @@
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
   "provenance": {
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "revision": "6f1a0a2432717ce64c01a73cc96e4cc9e8168e77",
-    "sha256": "124ce5e9552868894d6414e500211cb972ee01c8b9e01ea470acc9adc2dfc6b5",
+    "revision": "939325b3f1aa61d6d90cb83a715af68d6337d65d",
+    "sha256": "73aef62246b851144c570e8149789222b450684cd896f3f48758a9b461495906",
     "built_from_tracked_clean_source": true
   },
   "checks": [
@@ -13,10 +13,10 @@
     "Name header and direction icons visible; enabled/disabled menu rows preserve their icon geometry"
   ],
   "screenshots": [
-    ".hermes/evidence/copy-finalization-read-current/dark100/main-menu-current.png",
-    ".hermes/evidence/copy-finalization-read-current/dark100/view-menu-current.png",
-    ".hermes/evidence/copy-finalization-read-current/light150/main-menu-current.png",
-    ".hermes/evidence/copy-finalization-read-current/light150/view-menu-current.png"
+    ".hermes/evidence/copy-namespace-current/dark100/main-menu-current.png",
+    ".hermes/evidence/copy-namespace-current/dark100/view-menu-current.png",
+    ".hermes/evidence/copy-namespace-current/light150/main-menu-current.png",
+    ".hermes/evidence/copy-namespace-current/light150/view-menu-current.png"
   ],
   "requirement": "docs/DEVELOPMENT.md UI consistency requirements",
   "scope": "Focused actual-package menu appearance. No new sorting-operation, full appearance or physical-desktop acceptance claim."

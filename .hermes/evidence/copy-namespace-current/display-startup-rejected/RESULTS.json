@@ -1,0 +1,9 @@
+{
+  "artifact_sha256": "73aef62246b851144c570e8149789222b450684cd896f3f48758a9b461495906",
+  "theme": "Dark",
+  "scale": "1",
+  "status": "incomplete",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 939325b3f1aa61d6d90cb83a715af68d6337d65d\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "normal_app_exit": false,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

@@ -1,0 +1,13 @@
+{
+  "profiles_absent": [
+    "/tmp/ottrin-tabs-hln6gvwr",
+    "/tmp/ottrin-tabs-tmkhxker"
+  ],
+  "matching_live_processes": [],
+  "normal_gui_exits": true,
+  "staging_removed": true,
+  "operator_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "operator_service_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+  "host_service_changed": false,
+  "rejected_display_attempt": "display-startup-rejected/RESULTS.json reports scoped teardown; no accepted app run"
+}

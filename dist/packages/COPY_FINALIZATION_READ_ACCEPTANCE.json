@@ -39,5 +39,6 @@
     "No significant wall-clock speedup established; repeated namespace/dependency CPU scaling remains open",
     "No fresh native distro install/upgrade/reboot, physical desktop or Windows acceptance; Windows packages unchanged",
     "Automatic expiry remains disabled; no operator Copy data reclaimed or host service changed"
-  ]
+  ],
+  "current_delivery": "superseded by COPY_NAMESPACE_ACCEPTANCE.json; measurements and checks here retain source6f1a0a2/artifact124ce5 scope"
 }

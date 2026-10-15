@@ -1,0 +1,41 @@
+{
+  "source_revision": "939325b3f1aa61d6d90cb83a715af68d6337d65d",
+  "platform_tests": "402 passed, 1 ignored",
+  "strict_linux_platform_all_target_clippy": "pass",
+  "benchmark": {
+    "before": {
+      "binary_sha256": "b4b7cc7556990d5840dd78ed8a588bbf361c5be21d2108764d42ea9ae5b224ba",
+      "elapsed_ms": [
+        329,
+        308,
+        311,
+        316,
+        315
+      ]
+    },
+    "after": {
+      "binary_sha256": "6c1c70090b44f35aac22fedd03d6a64f157e52c5bbf14094c778f9a3a47ab848",
+      "elapsed_ms": [
+        223,
+        229,
+        225,
+        224,
+        224
+      ]
+    },
+    "medians_ms": {
+      "before": 315,
+      "after": 224
+    }
+  },
+  "whole_fixture_statx_calls": {
+    "before": 130497,
+    "after": 97185
+  },
+  "interpretation": "29 percent lower median finalization wall time in five local optimized-test-build samples; 33312 fewer statx calls across entire fixture including setup/reclamation. Not a linear-scaling or universal-speed claim.",
+  "checks": [
+    "opened symlink and followed-target identities on separate mounts, including unlinked and removed objects",
+    "all generation, alias, replacement, namespace, ownership, crash/retry and data preservation platform regressions pass"
+  ],
+  "delivery": "release build pending; prior stable packages remain in place"
+}

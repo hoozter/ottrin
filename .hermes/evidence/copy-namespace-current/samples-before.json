@@ -1,0 +1,10 @@
+{
+  "binary_sha256": "b4b7cc7556990d5840dd78ed8a588bbf361c5be21d2108764d42ea9ae5b224ba",
+  "runs": [
+    "\nrunning 1 test\ntest copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 401 filtered out; finished in 0.93s\n\nFinalization: records=32 metadata_bytes=554543 read_bytes=1805095 elapsed_ms=329\n",
+    "\nrunning 1 test\ntest copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 401 filtered out; finished in 0.92s\n\nFinalization: records=32 metadata_bytes=554543 read_bytes=1805044 elapsed_ms=308\n",
+    "\nrunning 1 test\ntest copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 401 filtered out; finished in 0.92s\n\nFinalization: records=32 metadata_bytes=554223 read_bytes=1804307 elapsed_ms=311\n",
+    "\nrunning 1 test\ntest copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 401 filtered out; finished in 0.95s\n\nFinalization: records=32 metadata_bytes=554214 read_bytes=1804292 elapsed_ms=316\n",
+    "\nrunning 1 test\ntest copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 401 filtered out; finished in 0.94s\n\nFinalization: records=32 metadata_bytes=554307 read_bytes=1804544 elapsed_ms=315\n"
+  ]
+}

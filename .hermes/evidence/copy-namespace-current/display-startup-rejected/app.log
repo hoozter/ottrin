@@ -1,0 +1,1 @@
+ottrin: winit EventLoopError: os error at /home/campbell/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winit-0.30.12/src/platform_impl/linux/mod.rs:788: Failed to open connection to X server

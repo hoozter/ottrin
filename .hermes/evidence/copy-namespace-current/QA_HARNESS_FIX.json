@@ -1,0 +1,8 @@
+{
+  "rejected_run": "display-startup-rejected",
+  "artifact_changed_for_retry": false,
+  "first_causal_log": "Xvfb: Cannot write display number to fd4; Ottrin subsequently could not connect to X",
+  "runner_defect": "The single read closed the readiness pipe without requiring the complete newline-terminated display number. A partial read could close it before Xvfb finished writing.",
+  "fix": "Read bounded chunks until newline under a deadline, reject EOF/invalid display/dead server, then close the pipe",
+  "subsequent_checks": "Same candidate passes Dark100 and Light150 real GUI cleanup/menu checks, normal exit and private teardown"
+}

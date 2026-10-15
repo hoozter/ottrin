@@ -1,20 +1,20 @@
 {
   "date": "2026-10-15",
-  "source_revision": "6f1a0a2432717ce64c01a73cc96e4cc9e8168e77",
+  "source_revision": "939325b3f1aa61d6d90cb83a715af68d6337d65d",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "1da2ea38f34bc63427e03b598641d20f5aeb226cd6c3dc14c20d429812b7b3c3",
-    "Ottrin-0.1.0-x86_64.AppImage": "124ce5e9552868894d6414e500211cb972ee01c8b9e01ea470acc9adc2dfc6b5",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "44c20007ca828e782f2fec636bb4fee47092102c586a521cfe3cfde7f32f9881",
-    "ottrin_0.1.0_amd64.deb": "53b30d37948d5fbb6ea14fbd5748bb4e8eafff49555de2c21677b23b29056460"
+    "ottrin-0.1.0-1.x86_64.rpm": "9d369564bb6655cc04f4c45fec538674fe3cc84b59fc8ddfaadd775ad133a3bd",
+    "Ottrin-0.1.0-x86_64.AppImage": "73aef62246b851144c570e8149789222b450684cd896f3f48758a9b461495906",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a59b84fa5b6604636527548c9e1a6b1da22c6c0870b1a51ae93d04515430dba2",
+    "ottrin_0.1.0_amd64.deb": "ad37531b6906786efaf56820558b7309f0cf49dacc1208a18e333737153529a6"
   },
   "checks": [
-    "401 regular platform tests pass, 1 ignored; strict Linux platform all-target Clippy passes",
+    "402 regular platform tests pass, 1 ignored; strict Linux platform all-target Clippy passes",
     "Current rebuilt private-process Activity worker success/retry/chain/finalization tests pass",
     "Exact AppImage Dark100/Light150 cleanup/cancel/refusal/retry and main/View menus pass with normal exit",
     "All four package payload/document/source identities and current AppImage/RPM daemon namespace ownership checks pass"
   ],
-  "gui_evidence": ".hermes/evidence/copy-finalization-read-current",
-  "package_content_evidence": ".hermes/evidence/copy-finalization-read-current/FINAL_PACKAGE_IDENTITIES.json",
+  "gui_evidence": ".hermes/evidence/copy-namespace-current",
+  "package_content_evidence": ".hermes/evidence/copy-namespace-current/FINAL_PACKAGE_IDENTITIES.json",
   "native_scope": "Current daemon bytes differ from prior native-tested source723. Current namespace-ownership and package-content checks pass; no new distro install/upgrade/reboot lifecycle claim. Prior lifecycle receipts retain their original source/artifact scope.",
   "limits": [
     "Automatic expiry is disabled; ordinary capacity trimming continues to retain owned recovery receipts until an explicit supported cleanup",

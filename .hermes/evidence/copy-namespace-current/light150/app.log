@@ -1,0 +1,29 @@
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.0' (uid=1000 pid=4082882 comm="/tmp/ottrin-tabs-tmkhxker/squashfs-root/usr/bin/ot" label="unconfined")
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=4083077 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.portal.Documents' requested by ':1.2' (uid=1000 pid=4083087 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.3' (uid=1000 pid=4083100 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Successfully activated service 'org.freedesktop.portal.Documents'
+Ignoring invalid max threads value 4294967295 > max (100000).
+
+(/usr/libexec/xdg-desktop-portal:4083087): xdg-desktop-portal-WARNING **: 13:26:52.439: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+
+(/usr/libexec/xdg-desktop-portal:4083087): xdg-desktop-portal-WARNING **: 13:26:52.439: The preferred method to match portal implementations to desktop environments is to use the portals.conf(5) configuration file
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.2' (uid=1000 pid=4083087 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+
+(xdg-desktop-portal-gtk:4083125): Gtk-WARNING **: 13:26:52.465: cannot open display: :1
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activated service 'org.freedesktop.impl.portal.desktop.gtk' failed: Process org.freedesktop.impl.portal.desktop.gtk exited with status 1
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.impl.portal.desktop.kde' requested by ':1.2' (uid=1000 pid=4083087 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Successfully activated service 'org.freedesktop.impl.portal.desktop.kde'
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.2' (uid=1000 pid=4083087 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+
+(xdg-desktop-portal-gtk:4083208): Gtk-WARNING **: 13:26:52.722: cannot open display: :1
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activated service 'org.freedesktop.impl.portal.desktop.gtk' failed: Process org.freedesktop.impl.portal.desktop.gtk exited with status 1
+
+(/usr/libexec/xdg-desktop-portal:4083087): xdg-desktop-portal-WARNING **: 13:26:52.727: Failed to create settings proxy: Error calling StartServiceByName for org.freedesktop.impl.portal.desktop.gtk: Process org.freedesktop.impl.portal.desktop.gtk exited with status 1
+
+(/usr/libexec/xdg-desktop-portal:4083087): xdg-desktop-portal-WARNING **: 13:26:52.757: Failed connect to PipeWire: Couldn't connect to PipeWire
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Activating service name='org.freedesktop.impl.portal.desktop.kwallet' requested by ':1.2' (uid=1000 pid=4083087 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Successfully activated service 'org.freedesktop.impl.portal.desktop.kwallet'
+dbus-daemon[4082881]: [session uid=1000 pid=4082881] Successfully activated service 'org.freedesktop.portal.Desktop'

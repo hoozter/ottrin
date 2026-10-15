@@ -1,15 +1,16 @@
 {
   "status": "implemented, tested and published in all four current Linux packages; user acceptance deferred",
-  "source_revision": "6f1a0a2432717ce64c01a73cc96e4cc9e8168e77",
+  "source_revision": "939325b3f1aa61d6d90cb83a715af68d6337d65d",
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
-  "artifact_sha256": "124ce5e9552868894d6414e500211cb972ee01c8b9e01ea470acc9adc2dfc6b5",
+  "artifact_sha256": "73aef62246b851144c570e8149789222b450684cd896f3f48758a9b461495906",
   "source_sha256": {
-    "crates/ottrin-platform/src/copy_cleanup.rs": "fe687a515d67dc05e7840cc04b7d5149fb12ecbb1665050a7fb85ca36a3afc3f",
-    "crates/ottrin-platform/src/copy_recovery.rs": "7a363db94207a7462d77aa922f1a0a0d7cdd6b1c964add081cca80492853512f",
+    "crates/ottrin-platform/src/copy_cleanup.rs": "e4f9752e906680b705b8449a93bc11cbfcf4ba8dd265a117a69fc7add8f9f10a",
+    "crates/ottrin-platform/src/copy_recovery.rs": "6a6e596210b02c3e989e076e981831dbe57122bb03a4fe9dfa86985ddec99ead",
     "crates/ottrin-platform/src/copy_finalization.rs": "f1f6d277e8ca9a937ec95059279e2c68abf001682014e9673d1e23119b63e700",
     "crates/ottrin-platform/src/lib.rs": "6a6735584ddba180944c9befcf35de41a5c65764261dc1ce48aabe166dc5ddb5",
     "crates/ottrin-ui/src/copy_activity_cleanup.rs": "6e05de48feb24732610f6c81ee87cdf8eb8382312b1362f1471b7436abb74657",
-    "crates/ottrin-ui/src/lib.rs": "7e4f04ea50aed2d6e873267157584ed5af22533f6cad7d60fdade9073c91eaf6"
+    "crates/ottrin-ui/src/lib.rs": "7e4f04ea50aed2d6e873267157584ed5af22533f6cad7d60fdade9073c91eaf6",
+    "crates/ottrin-platform/src/local_storage.rs": "7291958ab3845e98e1dedba6f80299dceecc68547565d27c10a0ba76e86fe395"
   },
   "behavior": [
     "Explicit per-entry and bulk Activity Clear ask before discarding retained Copy undo versions",
@@ -22,15 +23,15 @@
     "Correct success/error notification styling, concise failure status and no duplicated error detail"
   ],
   "checks": {
-    "platform_library": "401 passed; 1 ignored",
+    "platform_library": "402 passed; 1 ignored",
     "strict_linux_platform_all_targets_clippy": "pass",
     "private_async_process_cases": "current rebuilt success, changed-backup retry, overwrite chain and restored partial finalization pass",
     "packaged_gui": [
-      "Dark100 per-entry Clear and Light150 bulk Clear: cancel, refusal, retry, source/publication preservation and full private metadata removal",
+      "Dark100 per-entry Clear and Light150 bulk Clear: cancel, changed-data refusal, authorized retry, source/publication preservation and full private metadata removal",
       "Both main/View menu visuals inspected; normal exits and scoped teardown"
     ],
     "package_contents": "all four current payload/document/source identities; current AppImage/RPM namespace ownership tests pass",
-    "io_scaling": "96.9 percent fewer read bytes in this fixture; no significant wall-clock speedup established. Repeated metadata/syscall CPU scaling remains open."
+    "namespace_performance": "See COPY_NAMESPACE_ACCEPTANCE.json for optimized-test-build benchmark scope"
   },
   "limits": [
     "Automatic expiry is disabled; ordinary capacity trimming continues to retain owned recovery receipts until an explicit supported cleanup",
@@ -55,6 +56,6 @@
     "Interrupted Undo cleanup observation unnecessarily hashed visible data; the failing I/O regression and guarded passing full suite are retained"
   ],
   "cleanup": "GUI sessions exited normally; all task-owned app groups, private daemon peers, buses, displays, profiles and extraction fixtures exited/removed. Verified package candidates moved to stable paths and empty staging removed. Diagnostic logs moved here or discarded when superseded.",
-  "current_evidence": ".hermes/evidence/copy-finalization-read-current",
+  "current_evidence": ".hermes/evidence/copy-namespace-current",
   "preceding_broader_check_scope": ".hermes/evidence/copy-activity-current/ACCEPTANCE.json; preceding full UI and Windows cross-target checks retain that source scope"
 }

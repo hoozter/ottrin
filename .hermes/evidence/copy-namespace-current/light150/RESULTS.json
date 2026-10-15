@@ -1,0 +1,17 @@
+{
+  "artifact_sha256": "73aef62246b851144c570e8149789222b450684cd896f3f48758a9b461495906",
+  "theme": "Light",
+  "scale": "1.5",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 939325b3f1aa61d6d90cb83a715af68d6337d65d\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "cancel_preserved_backup": true,
+  "changed_backup": "/tmp/ottrin-tabs-tmkhxker/destination/.ottrin-txn-377077a054359b21126f1f3b094c006b/candidate",
+  "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+  "visual_checks": [
+    "Light150 actual-package bulk Clear cancellation, changed-backup refusal, authorized retry and full cleanup pass",
+    "Source/publication preservation, success/error ink, persistent refusal and usable retry pass",
+    "Main/View menus retain complete semantic icons, compact action gutter and separate checks"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}
