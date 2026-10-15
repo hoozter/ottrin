@@ -1,0 +1,7 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-ae68b2dc04dbe44d)
+
+running 1 test
+test copy_recovery::cleanup::finalization::tests::mount_rebinding_invalidates_finalization_before_any_metadata_is_removed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 410 filtered out; finished in 0.03s

@@ -1,0 +1,77 @@
+{
+  "source_revision": "57f2264113c9493276953630ba466d30daed7f04",
+  "platform_tests": "408 passed, 3 ignored",
+  "explicit_ignored_cases_executed": [
+    "finalization_scaling_profile",
+    "mount_rebinding_invalidates_finalization_before_any_metadata_is_removed",
+    "copy_receipt_does_not_pin_mount_and_refuses_after_unmount_and_replacement"
+  ],
+  "strict_linux_platform_all_targets_clippy": "pass",
+  "measurements": {
+    "before": [
+      {
+        "records": 8,
+        "metadata_bytes": 138675,
+        "read_bytes": 415705,
+        "elapsed_ms": 20,
+        "cpu_us": 20246
+      },
+      {
+        "records": 32,
+        "metadata_bytes": 554494,
+        "read_bytes": 1804928,
+        "elapsed_ms": 229,
+        "cpu_us": 228739
+      },
+      {
+        "records": 128,
+        "metadata_bytes": 2218129,
+        "read_bytes": 9493551,
+        "elapsed_ms": 3330,
+        "cpu_us": 3324118
+      }
+    ],
+    "after": [
+      {
+        "records": 8,
+        "metadata_bytes": 139064,
+        "read_bytes": 480410,
+        "elapsed_ms": 14,
+        "cpu_us": 10383,
+        "read_calls": 694,
+        "monitored": "true"
+      },
+      {
+        "records": 32,
+        "metadata_bytes": 555772,
+        "read_bytes": 1920403,
+        "elapsed_ms": 42,
+        "cpu_us": 38090,
+        "read_calls": 2733,
+        "monitored": "true"
+      },
+      {
+        "records": 128,
+        "metadata_bytes": 2220886,
+        "read_bytes": 7675941,
+        "elapsed_ms": 149,
+        "cpu_us": 149277,
+        "read_calls": 10893,
+        "monitored": "true"
+      }
+    ]
+  },
+  "interpretation": "128-record metadata finalization wall time3330 to149ms in this local optimized-test-build fixture; monitored read-call counts scale approximately with record count. Not a universal or exact-package timing claim.",
+  "guards": [
+    "fresh admission and phase-boundary full verification",
+    "all selected/unselected canonical inodes and owned metadata watched for alias writes",
+    "registry, stages and lexical directory ancestry monitored; exact expected own deletions consumed",
+    "mount namespace identity and mount-table event polling; private same-inode bind-mount refusal verified before first metadata unlink",
+    "symlink-ancestor fallback uses full validation and preserves all visible data",
+    "all earlier SIGKILL/partial finalization/retry/tampering cases pass",
+    "Original gated receipt case also passes in a disposable private user/mount namespace: unmount succeeds with live receipt, replacement and bind rebinding are refused"
+  ],
+  "delivery": "candidate package construction pending; prior stable packages remain authoritative",
+  "baseline_production_revision": "939325b3f1aa61d6d90cb83a715af68d6337d65d",
+  "baseline_fixture": "Same test-only count/CPU instrumentation over preceding production code; 16 retained leaf files per overwritten directory. Timings exclude setup and payload reclamation."
+}

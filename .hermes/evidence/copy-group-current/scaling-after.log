@@ -1,0 +1,10 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.15s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-ae68b2dc04dbe44d)
+
+running 1 test
+Finalization: records=8 metadata_bytes=139064 read_bytes=480410 elapsed_ms=14 cpu_us=10383 read_calls=694 monitored=true
+Finalization: records=32 metadata_bytes=555772 read_bytes=1920403 elapsed_ms=42 cpu_us=38090 read_calls=2733 monitored=true
+Finalization: records=128 metadata_bytes=2220886 read_bytes=7675941 elapsed_ms=149 cpu_us=149277 read_calls=10893 monitored=true
+test copy_recovery::cleanup::finalization::tests::finalization_scaling_profile ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 410 filtered out; finished in 5.31s

@@ -1,20 +1,20 @@
 {
   "date": "2026-10-15",
-  "source_revision": "939325b3f1aa61d6d90cb83a715af68d6337d65d",
+  "source_revision": "57f2264113c9493276953630ba466d30daed7f04",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "9d369564bb6655cc04f4c45fec538674fe3cc84b59fc8ddfaadd775ad133a3bd",
-    "Ottrin-0.1.0-x86_64.AppImage": "73aef62246b851144c570e8149789222b450684cd896f3f48758a9b461495906",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a59b84fa5b6604636527548c9e1a6b1da22c6c0870b1a51ae93d04515430dba2",
-    "ottrin_0.1.0_amd64.deb": "ad37531b6906786efaf56820558b7309f0cf49dacc1208a18e333737153529a6"
+    "ottrin-0.1.0-1.x86_64.rpm": "099c89b392aee36b61e0d41faf396162cbdaef8283a27ba6a46807336af82a61",
+    "Ottrin-0.1.0-x86_64.AppImage": "b1d0409c57ed48b3e6eab4bc7138395957dcd47eacdff563186bc5a26028c46f",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "28b811bc3a03be9e6164e98cac0c31d5ae70551d4986560dd61405c806506e85",
+    "ottrin_0.1.0_amd64.deb": "c252859756777e2727b05a5756a980c2a17be29a9305de747fabfb477487e43f"
   },
   "checks": [
-    "402 regular platform tests pass, 1 ignored; strict Linux platform all-target Clippy passes",
-    "Current rebuilt private-process Activity worker success/retry/chain/finalization tests pass",
+    "408 regular platform tests pass; all3 separately gated cases pass, including private namespace bind/unmount checks and multi-size resource profile",
+    "Strict Linux platform all-target Clippy and rebuilt private-process Activity worker tests pass",
     "Exact AppImage Dark100/Light150 cleanup/cancel/refusal/retry and main/View menus pass with normal exit",
     "All four package payload/document/source identities and current AppImage/RPM daemon namespace ownership checks pass"
   ],
-  "gui_evidence": ".hermes/evidence/copy-namespace-current",
-  "package_content_evidence": ".hermes/evidence/copy-namespace-current/FINAL_PACKAGE_IDENTITIES.json",
+  "gui_evidence": ".hermes/evidence/copy-group-current",
+  "package_content_evidence": ".hermes/evidence/copy-group-current/FINAL_PACKAGE_IDENTITIES.json",
   "native_scope": "Current daemon bytes differ from prior native-tested source723. Current namespace-ownership and package-content checks pass; no new distro install/upgrade/reboot lifecycle claim. Prior lifecycle receipts retain their original source/artifact scope.",
   "limits": [
     "Automatic expiry is disabled; ordinary capacity trimming continues to retain owned recovery receipts until an explicit supported cleanup",
