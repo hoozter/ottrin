@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "scope": "Clean DEB native package lifecycle; multi-user Ubuntu 24.04",
+  "source_revision": "723ac7c0aa3c83ba932f3948f224da57b841d397",
+  "deb_sha256": "0133d194f2decd5edf3932ac491046eb7788f155ee9ddcc3bac0649829561847",
+  "same_version_reinstall": {
+    "status": "pass",
+    "before": {
+      "ottrinqa": 2522,
+      "secondqa": 2540,
+      "portableqa": 2560
+    },
+    "after": {
+      "ottrinqa": 2934,
+      "secondqa": 2958,
+      "portableqa": 2560
+    },
+    "administrator_restarted": true,
+    "offline_registration_preserved": true,
+    "portable_preserved": true
+  },
+  "ambiguous_offline_override": "refused before any native or portable daemon stopped",
+  "direct_remove": "pass; active native users, offline registration and Administrator service removed; portable unit/PID and all preferences/source preserved"
+}

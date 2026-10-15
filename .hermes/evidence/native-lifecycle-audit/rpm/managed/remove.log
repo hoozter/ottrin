@@ -1,0 +1,19 @@
+Package Arch   Version   Repository        Size
+Removing:
+ ottrin x86_64 0:0.1.0-1 @commandline  53.8 MiB
+
+Transaction Summary:
+ Removing:           1 package
+
+After this operation, 54 MiB will be freed (install 0 B, remove 54 MiB).
+Running transaction
+[1/2] Prepare transaction               100% |   0.0   B/s |   1.0   B |  00m03s
+>>> Running %preun scriptlet: ottrin-0:0.1.0-1.x86_64
+>>> Finished %preun scriptlet: ottrin-0:0.1.0-1.x86_64
+>>> Scriptlet output:
+>>> Removed '/home/ottrinqa/.config/systemd/user/default.target.wants/ottrin-index.service'.
+>>> Removed '/home/secondqa/.config/systemd/user/default.target.wants/ottrin-index.service'.
+>>> Removed '/etc/systemd/system/multi-user.target.wants/ottrin-administrator-index.service'.
+>>>
+[2/2] Removing ottrin-0:0.1.0-1.x86_64  100% | 254.0   B/s |  53.0   B |  00m00s
+Complete!

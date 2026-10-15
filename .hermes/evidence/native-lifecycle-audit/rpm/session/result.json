@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "scope": "Native session daemon and foreign session daemon without service registration",
+  "source_revision": "723ac7c0aa3c83ba932f3948f224da57b841d397",
+  "candidate_sha256": "06a1704e5db618ce7d4b7eda372ddf39ae8fb7af25cffd0f951fbcfd7de15552",
+  "helper_sha256": "2555a6281fb68fce83a78b071425dba5596eeb325694ca5dd0caa743bee1b8fc",
+  "previous_deleted_daemon": {
+    "before": {
+      "3491": "/usr/bin/ottrin-indexd (deleted)"
+    },
+    "stopped": true
+  },
+  "native_session_remove": {
+    "pid": 3508,
+    "status": "pass"
+  },
+  "foreign_session_preserved": {
+    "pid": 4298,
+    "status": "pass"
+  },
+  "remaining_primary_daemons": {}
+}

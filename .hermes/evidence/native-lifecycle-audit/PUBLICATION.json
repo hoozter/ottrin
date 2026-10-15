@@ -1,0 +1,18 @@
+{
+  "status": "published",
+  "source_revision": "723ac7c0aa3c83ba932f3948f224da57b841d397",
+  "previous_artifacts": {
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "624b6395403a65a4963e7e450a50d11a585f09776115161003f9d409ba3d458e",
+    "Ottrin-0.1.0-x86_64.AppImage": "af1801906c80ddc06af86f22c8f9be517aa38b48ac648f75c2a91409680207a6",
+    "ottrin_0.1.0_amd64.deb": "24653789d108ba0e5ed99aac8d98de8a03b6b7d0efb1d9c722516cb0bf2ad07c",
+    "ottrin-0.1.0-1.x86_64.rpm": "61892b65f09c7cf424d64639e991b4229e87007468d4d25c062fa602cc125893"
+  },
+  "current_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "06a1704e5db618ce7d4b7eda372ddf39ae8fb7af25cffd0f951fbcfd7de15552",
+    "Ottrin-0.1.0-x86_64.AppImage": "b0d9d942f7149b1fb7cff105704199fd571f357c80edc4bbc8fbdf27e88a97b9",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "86a092d247578b1a5abdbe54e0138e415fdeb60ffd3a8070275acc0699390ace",
+    "ottrin_0.1.0_amd64.deb": "0133d194f2decd5edf3932ac491046eb7788f155ee9ddcc3bac0649829561847"
+  },
+  "windows": "unchanged",
+  "method": "All candidate bytes and native results verified before destination-local copies and per-file atomic replacement"
+}

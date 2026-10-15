@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "removed_domains": [
+    "ottrin-ownership-deb-qa",
+    "ottrin-ownership-rpm-qa"
+  ],
+  "removed_volumes": [
+    "ottrin-owner-deb-base.qcow2",
+    "ottrin-owner-deb-work.qcow2",
+    "ottrin-owner-deb-seed.iso",
+    "ottrin-owner-rpm-base.qcow2",
+    "ottrin-owner-rpm-work.qcow2",
+    "ottrin-owner-rpm-seed.iso"
+  ],
+  "removed_owned_paths": [
+    ".hermes/qa/native-lifecycle-audit",
+    ".hermes/packaging-tmp/linux-current"
+  ],
+  "retained": "Stable public packages, compact receipts, signed Ubuntu/Fedora shared base caches and active shared compiler output",
+  "operator_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "operator_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+  "existing_domains": " Id   Name                 State\n-------------------------------------\n -    ottrin-index-qa      shut off\n -    ottrin-qa-20261011   shut off\n -    win11ltsc            shut off\n\n"
+}

@@ -1,0 +1,12 @@
+{
+  "domain": "ottrin-ownership-rpm-qa",
+  "volumes": [
+    "ottrin-owner-rpm-base.qcow2",
+    "ottrin-owner-rpm-work.qcow2",
+    "ottrin-owner-rpm-seed.iso"
+  ],
+  "qa_path": ".hermes/qa/native-lifecycle-audit/rpm",
+  "mac": "52:54:00:6f:74:48",
+  "image_sha256": "28680fe5b371a5a82ebf43a31926e086a168e59949d03969c5093e7071f90b7f",
+  "image_signature": "Signed cached distribution image; initial signature evidence in .hermes/evidence/fedora-rpm-current/"
+}
