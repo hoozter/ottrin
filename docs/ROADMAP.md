@@ -64,8 +64,7 @@ packages are removed after their compact receipts are retained.
 Failed-transaction MSI registration rollback remains open: the rejected
 `3ddb1bf` package and early-execution prototype reproduced advertised product
 state and access-denied rollback. Positive install checks do not close that gate.
-Independent saved-content roots and watcher coverage also remain required; live
-content fallback does not substitute for that outcome. Configured-root ancestors,
+Independent saved-content roots and watcher coverage are implemented in the current source checkpoint below; the published packages above still predate that work. Exact positive-content totals/pagination remain required: sampled FTS/live candidates must not be presented as a proven complete total. Configured-root ancestors,
 junction isolation, physical storage, Undo/interruption, current exact upgrade/
 repair and reboot/login, broader GUI/DPI, Office, graphics/media and signing gates
 remain open. Internal candidates stay unpublished; user testing is deferred.
@@ -3273,3 +3272,25 @@ acceptance retain their prior exact artifact scopes. Public Windows artifacts
 remain unchanged because the independent MSI registration rollback gate remains
 open. Saved-content persistence/watch coverage outside filename roots is the
 next required indexing outcome; the full roadmap goal remains active.
+
+### Independent saved-content folders — source checkpoint (2026-10-16)
+
+The scan/watch plan now admits enabled content folders independently of metadata
+locations and exclusions, including a profile with zero metadata roots. Canonical
+rows record filename membership; filename FTS and streamed queries use the same
+completed membership. Content-only structural directories support bounded
+subtree deltas without leaking files into native filename results. Filename
+postings bind canonical rowids to prevent deleted/recreated paths from joining
+stale postings. Older derived cache layouts are rebuilt once; preferences and
+source documents are preserved.
+
+Missing/access-denied content-only folders leave healthy metadata usable and
+report watcher failure. A real missing-folder fixture verifies reattachment on
+the unchanged 60-second initial retry and subsequent watched edits. Retry
+backoff, blocked network filesystem calls and configured-root ancestor/junction
+isolation retain their separate acceptance requirements.
+
+The full Linux search suite passes 232 tests (2 ignored); strict Linux and Windows
+app/search all-target Clippy passes. Native Windows and exact rebuilt package
+checks are in progress. Current stable deliverables remain the accepted cohort
+listed above until replacement packages pass their checks.

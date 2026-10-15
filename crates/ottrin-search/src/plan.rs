@@ -4,7 +4,7 @@ use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
 const FILTER_POLICY_VERSION: u32 = 4;
-const CONTENT_POLICY_VERSION: u32 = 2;
+const CONTENT_POLICY_VERSION: u32 = 3;
 const FOLLOW_LINKS: bool = false;
 const SAME_FILE_SYSTEM: bool = true;
 
@@ -15,6 +15,7 @@ const SAME_FILE_SYSTEM: bool = true;
 #[derive(Debug)]
 pub(crate) struct ScanPlan {
     roots: Vec<PathBuf>,
+    metadata_roots: Vec<PathBuf>,
     excluded_roots: Vec<PathBuf>,
     include_hidden_system: bool,
     content_indexing_enabled: bool,
@@ -41,7 +42,23 @@ impl ScanPlan {
         config: &SearchConfig,
         resolve_roots: impl FnOnce() -> Vec<PathBuf>,
     ) -> Result<Self, String> {
-        let mut roots = resolve_roots();
+        let mut metadata_roots = resolve_roots();
+        dedup_paths(&mut metadata_roots);
+        let mut roots = metadata_roots.clone();
+        if config.content_indexing_enabled && !config.content_file_groups.is_empty() {
+            roots.extend(
+                config
+                    .content_include_roots
+                    .iter()
+                    .filter(|root| {
+                        !config
+                            .content_exclude_roots
+                            .iter()
+                            .any(|excluded| root.starts_with(excluded))
+                    })
+                    .cloned(),
+            );
+        }
         dedup_paths(&mut roots);
         let mut excluded_roots = config.exclude_roots.clone();
         dedup_paths(&mut excluded_roots);
@@ -59,7 +76,7 @@ impl ScanPlan {
         exclude_globs.dedup();
 
         let identity = canonical_identity(
-            &roots,
+            &metadata_roots,
             &excluded_roots,
             config.include_hidden_system,
             ContentPolicy {
@@ -74,6 +91,7 @@ impl ScanPlan {
         );
         Ok(Self {
             roots,
+            metadata_roots,
             excluded_roots,
             include_hidden_system: config.include_hidden_system,
             content_indexing_enabled: config.content_indexing_enabled,
@@ -89,6 +107,12 @@ impl ScanPlan {
 
     pub(crate) fn roots(&self) -> &[PathBuf] {
         &self.roots
+    }
+
+    pub(crate) fn is_metadata_root(&self, root: &Path) -> bool {
+        self.metadata_roots
+            .iter()
+            .any(|candidate| candidate == root)
     }
 
     pub(crate) fn identity(&self) -> &str {
@@ -118,44 +142,65 @@ impl ScanPlan {
     }
 
     pub(crate) fn includes_path_for_root(&self, path: &Path, root: &Path) -> bool {
-        if !self.passes_base_filters(path, root) {
-            return false;
+        self.root_for(path) == Some(root)
+            && (path == root
+                || self.indexes_metadata_for(path)
+                || self.content_includes_path(path, true))
+    }
+
+    /// Normalize generated-output events to their boundary so stale rows can be removed.
+    pub(crate) fn included_event_path_for_root(&self, path: &Path, root: &Path) -> Option<PathBuf> {
+        if self.root_for(path) != Some(root) {
+            return None;
         }
-        if marker_backed_generated_root(path, root).is_some() {
-            return false;
+        if path != root
+            && !self.metadata_includes_path(path, false)
+            && !self.content_includes_path(path, false)
+        {
+            return None;
         }
+        Some(marker_backed_generated_root(path, root).unwrap_or_else(|| path.to_path_buf()))
+    }
+
+    pub(crate) fn indexes_metadata_for(&self, path: &Path) -> bool {
+        self.metadata_includes_path(path, true)
+    }
+
+    fn metadata_includes_path(&self, path: &Path, check_generated: bool) -> bool {
+        let Some(root) = most_specific_root(&self.metadata_roots, path) else {
+            return false;
+        };
         if path == root {
-            return true;
+            return false;
+        }
+        if self
+            .excluded_roots
+            .iter()
+            .any(|excluded| path.starts_with(excluded))
+            || !self.passes_common_filters(path, root, check_generated)
+        {
+            return false;
         }
         let relative = crate::normalized_rel_path(path, root);
         !self.exclude.is_match(&relative) || self.include.is_match(&relative)
     }
 
-    /// Normalize an event inside newly generated output to the output boundary,
-    /// allowing the delta path to remove rows indexed before its marker appeared.
-    pub(crate) fn included_event_path_for_root(&self, path: &Path, root: &Path) -> Option<PathBuf> {
-        if !self.passes_base_filters(path, root) {
-            return None;
-        }
-        marker_backed_generated_root(path, root).or_else(|| {
-            self.includes_path_for_root(path, root)
-                .then(|| path.to_path_buf())
-        })
+    fn content_includes_path(&self, path: &Path, check_generated: bool) -> bool {
+        self.content_indexing_enabled
+            && !self.content_file_groups.is_empty()
+            && most_specific_root(&self.content_include_roots, path).is_some_and(|root| {
+                !self
+                    .content_exclude_roots
+                    .iter()
+                    .any(|excluded| path.starts_with(excluded))
+                    && self.passes_common_filters(path, root, check_generated)
+            })
     }
 
-    fn passes_base_filters(&self, path: &Path, root: &Path) -> bool {
-        if self.root_for(path) != Some(root) {
-            return false;
-        }
-        if path == root {
-            return true;
-        }
-        !self
-            .excluded_roots
-            .iter()
-            .any(|excluded| path.starts_with(excluded))
-            && (self.include_hidden_system || !crate::path_has_hidden_component(path, root))
+    fn passes_common_filters(&self, path: &Path, root: &Path, check_generated: bool) -> bool {
+        (self.include_hidden_system || !crate::path_has_hidden_component(path, root))
             && !crate::path_has_builtin_excluded_component(path, root)
+            && (!check_generated || marker_backed_generated_root(path, root).is_none())
     }
 
     pub(crate) fn includes_item_name(&self, name: &str) -> bool {
@@ -167,15 +212,7 @@ impl ScanPlan {
     }
 
     pub(crate) fn indexes_content_for(&self, path: &Path) -> bool {
-        self.content_indexing_enabled
-            && self
-                .content_include_roots
-                .iter()
-                .any(|root| path.starts_with(root))
-            && !self
-                .content_exclude_roots
-                .iter()
-                .any(|root| path.starts_with(root))
+        self.content_includes_path(path, true)
             && self
                 .content_file_groups
                 .iter()
@@ -205,6 +242,14 @@ fn marker_backed_generated_root(path: &Path, root: &Path) -> Option<PathBuf> {
         container_child_pending = is_container;
     }
     None
+}
+
+fn most_specific_root<'a>(roots: &'a [PathBuf], path: &Path) -> Option<&'a Path> {
+    roots
+        .iter()
+        .filter(|root| path.starts_with(root))
+        .max_by_key(|root| root.components().count())
+        .map(PathBuf::as_path)
 }
 
 fn normalized_patterns(patterns: &[String]) -> Vec<String> {
@@ -381,10 +426,27 @@ mod tests {
     }
 
     #[test]
+    fn content_watch_roots_require_enabled_admitted_policy() {
+        let mut config = SearchConfig {
+            include_roots: vec![PathBuf::from("/metadata")],
+            content_include_roots: vec![PathBuf::from("/content")],
+            ..SearchConfig::default()
+        };
+        assert_eq!(ScanPlan::new(&config).unwrap().roots().len(), 1);
+        config.content_indexing_enabled = true;
+        assert_eq!(ScanPlan::new(&config).unwrap().roots().len(), 2);
+        config.content_exclude_roots = vec![PathBuf::from("/content")];
+        assert_eq!(ScanPlan::new(&config).unwrap().roots().len(), 1);
+        config.content_exclude_roots.clear();
+        config.content_file_groups.clear();
+        assert_eq!(ScanPlan::new(&config).unwrap().roots().len(), 1);
+    }
+
+    #[test]
     fn identity_invalidates_indexes_created_before_content_policy() {
         let identity = ScanPlan::new(&config()).expect("valid plan");
         assert!(identity.identity().contains("filter=4;"));
-        assert!(identity.identity().contains("content-policy=2;"));
+        assert!(identity.identity().contains("content-policy=3;"));
         assert!(identity.identity().contains("content-groups="));
         assert!(identity.identity().contains("content=false;"));
     }

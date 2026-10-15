@@ -787,10 +787,7 @@ impl SearchHandle {
                     target_hits,
                     Duration::from_millis(140),
                 )
-            } else if matches!(status, SearchIndexStatus::Ready)
-                && items.is_empty()
-                && self.store_path.exists()
-            {
+            } else if matches!(status, SearchIndexStatus::Ready) && self.store_path.exists() {
                 let plan = match plan::ScanPlan::new(&cfg) {
                     Ok(plan) => plan,
                     Err(error) => {
@@ -840,8 +837,7 @@ impl SearchHandle {
                     let mut exact_total = 0usize;
                     let stream_result =
                         stream_generation_items(self.store_path.as_ref(), &plan, None, |item| {
-                            if !root_is_indexed(&item.path, &cfg)
-                                || !scope_match(&query, &item)
+                            if !scope_match(&query, &item)
                                 || (!query.include_hidden_system && item.name.starts_with('.'))
                             {
                                 return;
@@ -997,13 +993,13 @@ impl SearchHandle {
         // disabled, avoid both indexed payloads and the live ripgrep fallback.
         let mut live_content_error = None;
         if query.content_search && cfg.content_indexing_enabled && query.text.trim().len() >= 2 {
+            let mut seen: HashSet<PathBuf> =
+                matched.iter().map(|(_, item)| item.path.clone()).collect();
             let fts_query = fts_content_match(&expr);
             if matches!(status, SearchIndexStatus::Ready)
                 && let Some(fts_query) = fts_query.as_deref()
                 && let Ok(plan) = plan::ScanPlan::new(&cfg)
             {
-                let mut seen: HashSet<PathBuf> =
-                    matched.iter().map(|(_, item)| item.path.clone()).collect();
                 let desired_hits = query.offset.saturating_add(query.limit).max(1);
                 let mut accepted_hits = 0;
                 let mut fts_offset = 0;
@@ -1021,7 +1017,7 @@ impl SearchHandle {
                     let fetched = fts_hits.len();
                     for hit in fts_hits {
                         let mut item = hit.item;
-                        let filename_match = eval_expr(&expr, &item);
+                        let filename_match = hit.metadata_indexed && eval_expr(&expr, &item);
                         // Evaluate against the bounded indexed content, not the short
                         // display snippet: boolean and negated terms can occur on a
                         // different line than the snippet selected for presentation.
@@ -1075,13 +1071,30 @@ impl SearchHandle {
                 live_content_error = Some(error);
                 Vec::new()
             });
-            let mut seen: HashSet<PathBuf> =
-                matched.iter().map(|(_, item)| item.path.clone()).collect();
-            for item in rg_items {
+            let filename_memberships = if streamed_index && !rg_items.is_empty() {
+                let paths = rg_items
+                    .iter()
+                    .map(|item| item.path.clone())
+                    .collect::<Vec<_>>();
+                plan::ScanPlan::new(&cfg)
+                    .and_then(|plan| {
+                        active_generation_contains_paths(self.store_path.as_ref(), &plan, &paths)
+                            .map_err(|error| error.to_string())
+                    })
+                    .unwrap_or_else(|error| {
+                        live_content_error = Some(format!(
+                            "Content search could not verify filename membership: {error}"
+                        ));
+                        vec![false; rg_items.len()]
+                    })
+            } else {
+                vec![false; rg_items.len()]
+            };
+            for (item, filename_indexed) in rg_items.into_iter().zip(filename_memberships) {
                 if scope_match(&query, &item) && seen.insert(item.path.clone()) {
                     let mut filename_item = item.clone();
                     filename_item.content_snippet = None;
-                    let filename_match = eval_expr(&expr, &filename_item);
+                    let filename_match = filename_indexed && eval_expr(&expr, &filename_item);
                     // Content matches get a high base score — they are strong signals.
                     push_bounded_result(&mut matched, (8_000, item), result_capacity, query.sort);
                     if !filename_match {
@@ -4118,6 +4131,13 @@ fn query_content_ripgrep(
     for term in &terms {
         let mut term_paths = HashSet::new();
         for traversal in &traversal_plan {
+            let root = std::fs::metadata(&traversal.root).map_err(|error| format!("Content folder '{}' is unavailable: {error}. Reconnect it or change the folder in Settings → Search.", traversal.root.display()))?;
+            if !root.is_dir() {
+                return Err(format!(
+                    "Content folder '{}' is not a directory. Change it in Settings → Search.",
+                    traversal.root.display()
+                ));
+            }
             let mut cmd = internal_command(program);
             cmd.current_dir(&traversal.root)
                 .arg("--no-config")
@@ -4144,7 +4164,7 @@ fn query_content_ripgrep(
             }
             cmd.arg("-e").arg(term).arg("--").arg(".");
             let file_output = cmd.output().map_err(|error| {
-                format!("Live content search could not start: {error}. Repair or reinstall Ottrin.")
+                format!("Live content search could not start: {error}. Check access to the selected folders or repair Ottrin.")
             })?;
             if !file_output.status.success() && file_output.status.code() != Some(1) {
                 let detail = String::from_utf8_lossy(&file_output.stderr)
@@ -6199,7 +6219,7 @@ mod tests {
             missing.as_os_str(),
         )
         .expect_err("missing provider must report a failure");
-        assert!(error.contains("Repair or reinstall Ottrin"));
+        assert!(error.contains("repair Ottrin"));
 
         // A real executable that rejects the search-provider arguments exercises
         // nonzero process exit handling on both Unix and Windows.
@@ -6783,6 +6803,381 @@ mod tests {
         assert_eq!(matches, vec![PathBuf::from(".").join("included.txt")]);
 
         let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_total_counts_filename_shaped_hits_outside_metadata() {
+        let root = crate::test_temp_dir().join("live-content-total");
+        fs::create_dir_all(&root).unwrap();
+        let file = root.join("needle.txt");
+        fs::write(&file, "needle").unwrap();
+        let service = SearchService::new_with_store_path(
+            SearchConfig {
+                include_roots: Vec::new(),
+                content_indexing_enabled: true,
+                content_include_roots: vec![root.clone()],
+                use_system_locate: false,
+                ..SearchConfig::default()
+            },
+            root.join("unused.db"),
+        );
+        let answer = service.query(SearchQuery {
+            text: "needle".into(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        assert!(answer.error.is_none(), "{:?}", answer.error);
+        assert_eq!(answer.total, 1);
+        assert_eq!(answer.items.len(), 1);
+        assert_eq!(
+            fs::canonicalize(&answer.items[0].path).unwrap(),
+            fs::canonicalize(file).unwrap()
+        );
+    }
+
+    #[test]
+    fn indexed_and_live_content_merge_never_counts_a_path_twice() {
+        let root = crate::test_temp_dir().join("content-page-dedupe");
+        fs::create_dir_all(&root).unwrap();
+        let bodies = root.join("bodies");
+        fs::create_dir(&bodies).unwrap();
+        for index in 0..70 {
+            fs::write(bodies.join(format!("document-{index}.txt")), "bodyneedle").unwrap();
+        }
+        let config = SearchConfig {
+            include_roots: Vec::new(),
+            content_indexing_enabled: true,
+            content_include_roots: vec![bodies],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        };
+        let store = root.join("search.db");
+        let mut service = SearchService::new_with_store_path(config.clone(), store.clone());
+        service.start();
+        service.rebuild_index_blocking().unwrap();
+        service.stop();
+        let loaded = SearchService::load_persisted(config, store).unwrap();
+        let answer = loaded.query(SearchQuery {
+            text: "bodyneedle".into(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        assert!(answer.error.is_none(), "{:?}", answer.error);
+        assert_eq!(answer.items.len(), 20);
+        assert!(
+            answer.total >= 20 && answer.total <= 70,
+            "{} results for 70 paths",
+            answer.total
+        );
+    }
+
+    #[test]
+    fn filename_query_paths_share_completed_metadata_membership() {
+        let root = crate::test_temp_dir().join("metadata-snapshot-membership");
+        let native = root.join("native");
+        let build = native.join("build");
+        fs::create_dir_all(&build).unwrap();
+        let file = build.join("logged.txt");
+        fs::write(&file, "original").unwrap();
+        let config = SearchConfig {
+            include_roots: vec![native],
+            use_system_locate: false,
+            manage_locate_db: false,
+            ..SearchConfig::default()
+        };
+        let store = root.join("search.db");
+        let mut service = SearchService::new_with_store_path(config.clone(), store.clone());
+        service.start();
+        service.rebuild_index_blocking().unwrap();
+        service.stop();
+        fs::write(build.join("build.ninja"), "new generated-output marker").unwrap();
+        let loaded = SearchService::load_persisted(config, store).unwrap();
+        for text in ["logged", "logged name:logged"] {
+            let response = loaded.query(SearchQuery {
+                text: text.into(),
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Relevance,
+                limit: 20,
+                offset: 0,
+                content_search: false,
+            });
+            assert!(response.error.is_none(), "{:?}", response.error);
+            assert_eq!(
+                response.total, 1,
+                "query {text} must use the same completed membership"
+            );
+            assert_eq!(response.items[0].path, file);
+        }
+    }
+
+    #[test]
+    fn independent_content_roots_persist_without_filename_membership() {
+        for (label, nested, no_metadata) in [
+            ("disjoint", false, false),
+            ("excluded-nested", true, false),
+            ("content-only", false, true),
+        ] {
+            let root = crate::test_temp_dir().join(format!("saved-content-{label}"));
+            let metadata = root.join("native");
+            let bodies = if nested {
+                metadata.join("bodies")
+            } else {
+                root.join("bodies")
+            };
+            fs::create_dir_all(&metadata).unwrap();
+            fs::create_dir_all(&bodies).unwrap();
+            fs::write(
+                metadata.join("catalog-only.txt"),
+                "metadata body is not admitted",
+            )
+            .unwrap();
+            let file = bodies.join("needle.txt");
+            fs::write(&file, "needle persisted content").unwrap();
+            fs::write(bodies.join("unsupported.bin"), "needle not admitted").unwrap();
+            let config = SearchConfig {
+                include_roots: if no_metadata {
+                    Vec::new()
+                } else {
+                    vec![metadata]
+                },
+                exclude_roots: vec![bodies.clone()],
+                content_indexing_enabled: true,
+                content_include_roots: vec![bodies.clone()],
+                content_file_groups: vec![ottrin_core::ContentFileGroup::TextDocuments],
+                use_system_locate: false,
+                manage_locate_db: false,
+                refresh_interval_hours: 0,
+                ..SearchConfig::default()
+            };
+            let store = root.join("search.db");
+            let mut service = SearchService::new_with_store_path(config.clone(), store.clone());
+            service.start();
+            service.rebuild_index_blocking().unwrap();
+            service.stop();
+            // A read-only reload with the source absent proves saved extraction,
+            // rather than the live provider, supplies this hit.
+            fs::remove_file(&file).unwrap();
+            let loaded = SearchService::load_persisted(config.clone(), store).unwrap();
+            let query = |text: &str, content_search| SearchQuery {
+                text: text.into(),
+                content_search,
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Relevance,
+                limit: 20,
+                offset: 0,
+            };
+            for text in ["needle", "needle name:needle"] {
+                let names = loaded.query(query(text, false));
+                assert!(names.error.is_none(), "{label}: {:?}", names.error);
+                assert_eq!(names.total, 0, "content-only metadata leaked: {label}");
+            }
+            let content = loaded.query(query("needle", true));
+            assert!(content.error.is_none(), "{label}: {:?}", content.error);
+            assert_eq!(content.total, 1, "content hit total: {label}");
+            assert_eq!(content.items.len(), 1, "content hit count: {label}");
+            assert_eq!(content.items[0].path, file, "{label}");
+            assert!(
+                content.items[0]
+                    .content_snippet
+                    .as_ref()
+                    .unwrap()
+                    .contains("persisted")
+            );
+            let plan = plan::ScanPlan::new(&config).unwrap();
+            let mut paths = Vec::new();
+            db::stream_generation_items(loaded.store_path.as_ref(), &plan, None, |item| {
+                paths.push(item.path)
+            })
+            .unwrap();
+            assert!(
+                !paths.iter().any(|path| path.starts_with(&bodies)),
+                "{label}"
+            );
+            assert_eq!(paths.len(), usize::from(!no_metadata));
+        }
+    }
+
+    #[test]
+    fn nested_content_root_keeps_its_metadata_directory_and_unique_rows() {
+        let root = crate::test_temp_dir().join("shared-nested-content");
+        let bodies = root.join("bodies");
+        fs::create_dir_all(&bodies).unwrap();
+        fs::write(bodies.join("needle.txt"), "needle").unwrap();
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            content_indexing_enabled: true,
+            content_include_roots: vec![bodies.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            ..SearchConfig::default()
+        };
+        let plan = plan::ScanPlan::new(&config).unwrap();
+        let scanned = scanner::scan(&plan, &AtomicBool::new(false), |_| {}).unwrap();
+        let scanner::ScanOutcome::Completed(items) = scanned else {
+            panic!("scan incomplete");
+        };
+        assert_eq!(items.len(), 2);
+        assert!(items.iter().any(|item| item.item().path == bodies));
+        assert_eq!(
+            items
+                .iter()
+                .filter(|item| item.item().name == "needle.txt")
+                .count(),
+            1
+        );
+    }
+
+    #[test]
+    fn unavailable_content_root_keeps_metadata_usable_and_recovers_its_watch() {
+        let root = crate::test_temp_dir().join("content-root-availability");
+        let native = root.join("native");
+        let bodies = root.join("content-return");
+        fs::create_dir_all(&native).unwrap();
+        let catalog = native.join("catalog.txt");
+        fs::write(&catalog, "metadata").unwrap();
+        let config = SearchConfig {
+            include_roots: vec![native],
+            content_indexing_enabled: true,
+            content_include_roots: vec![bodies.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let store = root.join("search.db");
+        let mut service = SearchService::new_with_store_path(config.clone(), store.clone());
+        service.start();
+        service.rebuild_index_blocking().unwrap();
+        let answer = service.query(SearchQuery {
+            text: "catalog".into(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Name,
+            limit: 20,
+            offset: 0,
+            content_search: false,
+        });
+        assert!(answer.error.is_none(), "{:?}", answer.error);
+        assert_eq!(answer.items.len(), 1);
+        assert_eq!(answer.items[0].path, catalog);
+        let diagnostics = service.diagnostics();
+        assert!(!diagnostics.watcher_ready);
+        assert!(diagnostics.watcher_last_error.is_some());
+        fs::create_dir(&bodies).unwrap();
+        let file = bodies.join("document.txt");
+        fs::write(&file, "returnneedle").unwrap();
+        let plan = plan::ScanPlan::new(&config).unwrap();
+        // Preserve the production 60-second registration backoff.
+        let until = Instant::now() + Duration::from_secs(75);
+        loop {
+            let hits =
+                db::query_indexed_content_page(&store, &plan, "returnneedle", 20, 0).unwrap();
+            if hits.len() == 1 && service.diagnostics().watcher_ready {
+                assert_eq!(hits[0].item.path, file);
+                break;
+            }
+            assert!(
+                Instant::now() < until,
+                "returning folder did not recover: {:?}; hits {}",
+                service.diagnostics(),
+                hits.len()
+            );
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        fs::write(&file, "afterreturnneedle").unwrap();
+        let until = Instant::now() + Duration::from_secs(10);
+        loop {
+            if db::query_indexed_content_page(&store, &plan, "afterreturnneedle", 20, 0)
+                .unwrap()
+                .len()
+                == 1
+            {
+                break;
+            }
+            assert!(
+                Instant::now() < until,
+                "reattached watch misses later writes"
+            );
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        service.stop();
+    }
+
+    #[test]
+    fn content_only_watcher_updates_moves_deletes_and_detaches_when_disabled() {
+        let root = crate::test_temp_dir().join("content-only-live-watcher");
+        let bodies = root.join("bodies");
+        fs::create_dir_all(&bodies).unwrap();
+        let mut config = SearchConfig {
+            include_roots: Vec::new(),
+            content_indexing_enabled: true,
+            content_include_roots: vec![bodies.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let store = root.join("search.db");
+        let mut service = SearchService::new_with_store_path(config.clone(), store.clone());
+        service.start();
+        service.rebuild_index_blocking().unwrap();
+        let wait = |term: &str, expected: &[PathBuf]| {
+            let plan = plan::ScanPlan::new(&config).unwrap();
+            let deadline = Instant::now() + Duration::from_secs(10);
+            loop {
+                let hits = db::query_indexed_content_page(&store, &plan, term, 20, 0).unwrap();
+                let got = hits
+                    .into_iter()
+                    .map(|hit| hit.item.path)
+                    .collect::<Vec<_>>();
+                if got == expected {
+                    break;
+                }
+                assert!(
+                    Instant::now() < deadline,
+                    "saved watcher misses {term}: {got:?}, expected {expected:?}"
+                );
+                std::thread::sleep(Duration::from_millis(30));
+            }
+        };
+        let directory = bodies.join("new");
+        fs::create_dir(&directory).unwrap();
+        let file = directory.join("document.txt");
+        fs::write(&file, "olderneedle").unwrap();
+        wait("olderneedle", std::slice::from_ref(&file));
+        fs::write(&file, "freshneedle").unwrap();
+        wait("freshneedle", std::slice::from_ref(&file));
+        wait("olderneedle", &[]);
+        let moved = bodies.join("moved");
+        fs::rename(&directory, &moved).unwrap();
+        wait("freshneedle", &[moved.join("document.txt")]);
+        fs::remove_dir_all(&moved).unwrap();
+        wait("freshneedle", &[]);
+        let revision = service.diagnostics().snapshot_revision;
+        config.content_indexing_enabled = false;
+        service.update_config(config.clone());
+        service.rebuild_index_blocking().unwrap();
+        let diagnostics = service.diagnostics();
+        assert!(diagnostics.snapshot_revision > revision);
+        assert_eq!(diagnostics.configured_root_count, 0);
+        assert_eq!(diagnostics.watched_root_count, 0);
+        assert_eq!(diagnostics.last_completed_indexed_items, Some(0));
+        service.stop();
     }
 
     #[test]

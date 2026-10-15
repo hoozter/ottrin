@@ -20871,7 +20871,7 @@ impl OttrinApp {
 
                                                 ui.label(RichText::new("3  Optional content").color(c.text).size(11.8 * c.font_scale).strong());
                                                 ui.label(RichText::new(
-                                                    "Full-text search only inside explicit content folders, using the file groups and size limit below. Off by default."
+                                                    "Saved content and live search use these folders independently of filename locations, with the file groups and size limit below. Off by default."
                                                 ).color(c.text_muted).size(10.5 * c.font_scale));
                                                 let before = self.state.config.search.content_indexing_enabled;
                                                 ui.checkbox(
@@ -21331,7 +21331,7 @@ impl OttrinApp {
                                     });
 
                                     ui.add_space(12.0);
-                                    settings_section_icon(ui, c, MI_DESCRIPTION, "Content indexing (optional)", "Choose which folders can be scanned for file contents.", |ui| {
+                                    settings_section_icon(ui, c, MI_DESCRIPTION, "Content indexing (optional)", "Choose content folders independently of filename indexing. Use the separate exclusions below to keep file contents out of search.", |ui| {
                                         let before = self.state.config.search.content_indexing_enabled;
                                         ui.checkbox(
                                             &mut self.state.config.search.content_indexing_enabled,
@@ -21615,18 +21615,22 @@ impl OttrinApp {
                                                 );
                                                 health_row(
                                                     ui,
-                                                    Some(diag.watcher_ready || matches!(diag.status, SearchIndexStatus::Indexing)),
+                                                    Some(diag.watcher_ready || (matches!(diag.status, SearchIndexStatus::Indexing) && diag.watcher_last_error.is_none())),
                                                     "File watcher",
-                                                    if diag.watcher_ready {
+                                                    if diag.configured_root_count == 0 {
+                                                        "idle; no filename or content folders selected"
+                                                    } else if diag.watcher_ready {
                                                         if persistent_index_daemon {
                                                             "active in the per-user index daemon"
                                                         } else {
                                                             "active while Ottrin is running"
                                                         }
+                                                    } else if let Some(error) = diag.watcher_last_error.as_deref() {
+                                                        error
                                                     } else if matches!(diag.status, SearchIndexStatus::Indexing) {
                                                         "starts after the first index is ready"
                                                     } else {
-                                                        "not active; changes may need a rebuild"
+                                                        diag.watcher_last_error.as_deref().unwrap_or("Selected folders are unavailable; Ottrin retries automatically.")
                                                     },
                                                 );
                                                 let sqlite_schedule_detail = if sqlite_sched.enabled {

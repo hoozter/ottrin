@@ -92,6 +92,17 @@ pub(crate) fn scan_batched(
             return Ok(BatchedScanOutcome::Cancelled);
         }
         if let Err(error) = std::fs::symlink_metadata(root) {
+            if !plan.is_metadata_root(root) && walk_error_is_skippable(1, Some(error.kind())) {
+                on_progress(ScanProgress {
+                    message: format!("Content folder unavailable: {}: {error}", root.display()),
+                    active_root: root.clone(),
+                    active_root_index: root_index + 1,
+                    total_roots,
+                    indexed_items,
+                    last_indexed_path: None,
+                });
+                continue;
+            }
             return Err(format!(
                 "configured root is unavailable: {}: {error}",
                 root.display()
@@ -110,7 +121,11 @@ pub(crate) fn scan_batched(
                 Ok(entry) => entry,
                 Err(error)
                     if walk_error_is_skippable(
-                        error.depth(),
+                        if plan.is_metadata_root(root) {
+                            error.depth()
+                        } else {
+                            error.depth().max(1)
+                        },
                         error.io_error().map(std::io::Error::kind),
                     ) =>
                 {
@@ -118,7 +133,7 @@ pub(crate) fn scan_batched(
                 }
                 Err(error) => return Err(error.to_string()),
             };
-            if entry.path() == root {
+            if entry.path() == root && !plan.indexes_metadata_for(root) {
                 continue;
             }
             let Some(item) = candidate_for_path(plan, entry.path())? else {
@@ -169,9 +184,12 @@ pub(crate) fn scan_root(
             root.display()
         ));
     }
-    if !root.exists() {
+    if let Err(error) = std::fs::symlink_metadata(root) {
+        if !plan.is_metadata_root(root) && walk_error_is_skippable(1, Some(error.kind())) {
+            return Ok(ScanOutcome::Completed(Vec::new()));
+        }
         return Err(format!(
-            "configured root is unavailable: {}",
+            "configured root is unavailable: {}: {error}",
             root.display()
         ));
     }
@@ -189,7 +207,11 @@ pub(crate) fn scan_root(
             Ok(entry) => entry,
             Err(error)
                 if walk_error_is_skippable(
-                    error.depth(),
+                    if plan.is_metadata_root(root) {
+                        error.depth()
+                    } else {
+                        error.depth().max(1)
+                    },
                     error.io_error().map(std::io::Error::kind),
                 ) =>
             {
@@ -197,7 +219,7 @@ pub(crate) fn scan_root(
             }
             Err(error) => return Err(error.to_string()),
         };
-        if entry.path() == root {
+        if entry.path() == root && !plan.indexes_metadata_for(root) {
             continue;
         }
         if let Some(item) = candidate_for_path(plan, entry.path())? {
@@ -215,7 +237,9 @@ pub(crate) fn candidate_for_path(
     let Some(root) = plan.root_for(path) else {
         return Ok(None);
     };
-    if path == root || !plan.includes_path_for_root(path, root) {
+    if (path == root && !plan.indexes_metadata_for(path))
+        || !plan.includes_path_for_root(path, root)
+    {
         return Ok(None);
     }
     let Some(name) = path
@@ -247,6 +271,12 @@ pub(crate) fn candidate_for_path(
     } else {
         EntryKind::Other
     };
+    if !(plan.indexes_metadata_for(path)
+        || matches!(kind, EntryKind::Directory)
+        || (matches!(kind, EntryKind::File) && plan.indexes_content_for(path)))
+    {
+        return Ok(None);
+    }
     let mut item = SearchResultItem {
         path: path.to_path_buf(),
         parent_path: path.parent().map(Path::to_path_buf).unwrap_or_default(),
@@ -271,6 +301,19 @@ pub(crate) fn candidate_for_path(
 
 /// Classify a notify path and, when it is a directory, its complete current subtree.
 pub(crate) fn candidates_for_path(plan: &ScanPlan, path: &Path) -> Result<Vec<OwnedItem>, String> {
+    if plan.roots().iter().any(|root| root == path) {
+        let cancelled = AtomicBool::new(false);
+        let mut items = Vec::new();
+        // Root entries need not be records. Reconcile all configured owners
+        // below this boundary, including independently selected mounted roots.
+        for root in plan.roots().iter().filter(|root| root.starts_with(path)) {
+            match scan_root(plan, root, &cancelled)? {
+                ScanOutcome::Completed(scanned) => items.extend(scanned),
+                _ => return Err("Configured-root reconciliation did not complete".into()),
+            }
+        }
+        return Ok(items);
+    }
     let Some(candidate) = candidate_for_path(plan, path)? else {
         return Ok(Vec::new());
     };

@@ -4,6 +4,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Saved content indexing and file watching now cover selected folders independently of filename-index roots, including configurations with no metadata roots. Content-only files stay out of global native filename results, and disabling content releases its watches. Missing content-only folders no longer prevent healthy filename indexing; watcher status reports the failure and retries automatically. This update rebuilds the derived search cache once; saved preferences and source files are preserved.
+
 - Linux and Windows packages include the pinned live-content search provider. Provider failures are reported with repair/access guidance instead of silently returning empty matches. `ottrin search QUERY --content [--json]` uses the configured content policy, including content folders outside the native metadata roots and terminal current-folder scope.
 
 - Windows cross-volume Replace batches now move their nonconflicting files and

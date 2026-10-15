@@ -2,22 +2,16 @@ use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation, OwnedI
 use crate::plan::ScanPlan;
 use ottrin_core::{EntryKind, SearchResultItem, SearchSort};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
-#[cfg(test)]
-use std::cell::Cell;
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 
-#[cfg(test)]
-thread_local! {
-    static PATH_FTS_DELETE_COUNT: Cell<usize> = const { Cell::new(0) };
-}
 use thiserror::Error;
 
 /// Schema version for the on-disk search database.
-pub const SEARCH_DB_VERSION: u32 = 9;
+pub const SEARCH_DB_VERSION: u32 = 10;
 
 const GENERATION_SCHEMA: &str = r#"
 CREATE TABLE IF NOT EXISTS search_generations (
@@ -38,6 +32,7 @@ CREATE TABLE IF NOT EXISTS search_generation_items (
     modified_unix_secs INTEGER,
     is_executable INTEGER NOT NULL,
     symlink_target_is_dir INTEGER,
+    metadata_indexed INTEGER NOT NULL CHECK (metadata_indexed IN (0, 1)),
     PRIMARY KEY (generation_id, path),
     FOREIGN KEY (generation_id) REFERENCES search_generations(id) ON DELETE CASCADE
 );
@@ -108,6 +103,7 @@ pub(crate) struct IndexedContentHit {
     /// FTS5 ranks stronger matches with more-negative values. Convert that
     /// ordering into a bounded positive relevance contribution for the UI.
     pub(crate) relevance: i64,
+    pub(crate) metadata_indexed: bool,
 }
 
 pub(crate) struct GenerationContentItem {
@@ -124,7 +120,7 @@ impl SearchStore {
         }
         let mut conn = Connection::open(&path)?;
         configure_writer_connection(&conn)?;
-        let migrated = migrate(&mut conn, &path)?;
+        let migrated = migrate(&mut conn)?;
         let removed_incomplete = cleanup_incomplete_generations(&mut conn, &path)?;
         if migrated || removed_incomplete {
             let _: (u64, u64, u64) =
@@ -313,7 +309,7 @@ impl SearchStore {
                     "cannot append to a completed generation".to_string(),
                 ));
             }
-            insert_generation_items(&tx, generation, items, false)?;
+            insert_generation_items(&tx, generation, items, plan)?;
             insert_generation_content(&tx, generation, items, plan)?;
             tx.commit()?;
             Ok(())
@@ -353,7 +349,7 @@ impl SearchStore {
         expected_epoch: u64,
         after_commit: impl FnOnce(usize),
     ) -> Result<usize, SearchDbError> {
-        validate_generation_content_db(&self.path, generation, expected_count)?;
+        validate_generation_content_db(&self.conn, &self.path, generation, expected_count)?;
         let activation_guard = fence.lock();
         if !activation_guard.matches(expected_epoch) {
             return Err(SearchDbError::ActivationCancelled);
@@ -555,28 +551,8 @@ impl SearchStore {
                 .into_values()
                 .collect::<Vec<_>>();
             let deleted_count = delete_generation_subtrees(&tx, generation, remove_trees)?;
-            let new_upserts = {
-                let mut exists = tx.prepare_cached(
-                    "SELECT EXISTS(
-                        SELECT 1 FROM search_generation_items
-                        WHERE generation_id = ?1 AND path = ?2
-                     )",
-                )?;
-                let mut new_upserts = Vec::new();
-                for item in &normalized_upserts {
-                    let present = exists
-                        .query_row(params![generation, encode_path(&item.item().path)], |row| {
-                            row.get::<_, bool>(0)
-                        })?;
-                    if !present {
-                        new_upserts.push(item.clone());
-                    }
-                }
-                new_upserts
-            };
-            let inserted_count = new_upserts.len();
-            upsert_generation_item_rows(&tx, generation, &normalized_upserts)?;
-            insert_generation_path_rows(&tx, generation, &new_upserts, false)?;
+            let inserted_count =
+                upsert_incremental_items(&tx, generation, &normalized_upserts, plan)?;
             delete_generation_content(&tx, generation, &normalized_upserts)?;
             insert_generation_content(&tx, generation, &normalized_upserts, plan)?;
             let stored_item_count = usize::try_from(stored_item_count).map_err(|_| {
@@ -703,7 +679,7 @@ impl SearchStore {
                     "INSERT INTO search_generations (id, plan_identity, completed, item_count) VALUES (?1, ?2, 0, ?3)",
                     params![content_generation, plan.identity(), candidate.items().len() as i64],
                 )?;
-                insert_generation_items(&tx, content_generation, candidate.items(), true)?;
+                insert_generation_items(&tx, content_generation, candidate.items(), plan)?;
                 insert_generation_content(&tx, content_generation, candidate.items(), plan)?;
                 tx.execute(
                     "UPDATE search_generations SET completed = 1 WHERE id = ?1",
@@ -909,6 +885,43 @@ fn incremental_content_refresh_items(mutation: &IndexMutation) -> Vec<OwnedItem>
         .collect()
 }
 
+fn upsert_incremental_items(
+    tx: &Transaction<'_>,
+    generation: i64,
+    items: &[OwnedItem],
+    plan: &ScanPlan,
+) -> Result<usize, SearchDbError> {
+    let previous_memberships = {
+        let mut exists = tx.prepare_cached(
+        "SELECT metadata_indexed FROM search_generation_items WHERE generation_id = ?1 AND path = ?2",
+    )?;
+        let mut memberships = Vec::with_capacity(items.len());
+        for item in items {
+            memberships.push(
+                exists
+                    .query_row(params![generation, encode_path(&item.item().path)], |row| {
+                        row.get::<_, bool>(0)
+                    })
+                    .optional()?,
+            );
+        }
+        memberships
+    };
+    let inserted_count = previous_memberships
+        .iter()
+        .filter(|value| value.is_none())
+        .count();
+    let memberships = upsert_generation_item_rows(tx, generation, items, plan)?;
+    let mut added = Vec::new();
+    for ((item, previous), current) in items.iter().zip(previous_memberships).zip(memberships) {
+        if current && previous != Some(true) {
+            added.push(item.clone());
+        }
+    }
+    insert_generation_path_rows(tx, generation, &added)?;
+    Ok(inserted_count)
+}
+
 fn apply_incremental_mutation(
     tx: &Transaction<'_>,
     generation: i64,
@@ -938,7 +951,14 @@ fn apply_incremental_mutation(
         })
         .collect::<Vec<_>>();
     delete_generation_items(tx, generation, &removed)?;
-    insert_generation_items(tx, generation, &changed, true)?;
+    let refreshed = changed
+        .into_iter()
+        .chain(authoritative_content_refresh.iter().cloned())
+        .map(|item| (item.item().path.clone(), item))
+        .collect::<BTreeMap<_, _>>()
+        .into_values()
+        .collect::<Vec<_>>();
+    upsert_incremental_items(tx, generation, &refreshed, plan)?;
     delete_generation_content(tx, generation, authoritative_content_refresh)?;
     insert_generation_content(tx, generation, authoritative_content_refresh, plan)?;
     Ok(())
@@ -969,15 +989,11 @@ fn delete_generation_items(
     items: &[OwnedItem],
 ) -> Result<(), SearchDbError> {
     delete_generation_content(tx, generation, items)?;
-    let mut paths = tx.prepare_cached(
-        "DELETE FROM content_store.search_generation_paths WHERE generation_id = ?1 AND path = ?2",
-    )?;
     let mut rows = tx.prepare_cached(
         "DELETE FROM search_generation_items WHERE generation_id = ?1 AND path = ?2",
     )?;
     for item in items {
         let path = encode_path(&item.item().path);
-        paths.execute(params![generation, &path])?;
         rows.execute(params![generation, path])?;
     }
     Ok(())
@@ -1036,12 +1052,13 @@ fn upsert_generation_item_rows(
     tx: &Transaction<'_>,
     generation: i64,
     items: &[OwnedItem],
-) -> Result<(), SearchDbError> {
+    plan: &ScanPlan,
+) -> Result<Vec<bool>, SearchDbError> {
     let mut stmt = tx.prepare_cached(
         "INSERT INTO search_generation_items
          (generation_id, path, parent_path, root_path, name, kind, size_bytes,
-          modified_unix_secs, is_executable, symlink_target_is_dir)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+          modified_unix_secs, is_executable, symlink_target_is_dir, metadata_indexed)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
          ON CONFLICT(generation_id, path) DO UPDATE SET
             parent_path = excluded.parent_path,
             root_path = excluded.root_path,
@@ -1050,10 +1067,14 @@ fn upsert_generation_item_rows(
             size_bytes = excluded.size_bytes,
             modified_unix_secs = excluded.modified_unix_secs,
             is_executable = excluded.is_executable,
-            symlink_target_is_dir = excluded.symlink_target_is_dir",
+            symlink_target_is_dir = excluded.symlink_target_is_dir,
+            metadata_indexed = excluded.metadata_indexed",
     )?;
+    let mut memberships = Vec::with_capacity(items.len());
     for owned in items {
         let item = owned.item();
+        let metadata_indexed = plan.indexes_metadata_for(&item.path);
+        memberships.push(metadata_indexed);
         stmt.execute(params![
             generation,
             encode_path(&item.path),
@@ -1065,31 +1086,25 @@ fn upsert_generation_item_rows(
             item.modified_unix_secs,
             i64::from(item.is_executable),
             item.symlink_target_is_dir.map(i64::from),
+            i64::from(metadata_indexed),
         ])?;
     }
-    Ok(())
+    Ok(memberships)
 }
 
 fn insert_generation_path_rows(
     tx: &Transaction<'_>,
     generation: i64,
     items: &[OwnedItem],
-    replace_existing_paths: bool,
 ) -> Result<(), SearchDbError> {
-    let mut path_delete = tx.prepare_cached(
-        "DELETE FROM content_store.search_generation_paths WHERE generation_id = ?1 AND path = ?2",
-    )?;
     let mut path_insert = tx.prepare_cached(
-        "INSERT INTO content_store.search_generation_paths (generation_id, path, path_text) VALUES (?1, ?2, ?3)",
+        "INSERT OR REPLACE INTO content_store.search_generation_paths (rowid, generation_id, path, path_text)
+         SELECT rowid, generation_id, path, ?3 FROM search_generation_items
+         WHERE generation_id = ?1 AND path = ?2 AND metadata_indexed = 1",
     )?;
     for owned in items {
         let item = owned.item();
         let encoded_path = encode_path(&item.path);
-        if replace_existing_paths {
-            #[cfg(test)]
-            PATH_FTS_DELETE_COUNT.with(|count| count.set(count.get() + 1));
-            path_delete.execute(params![generation, &encoded_path])?;
-        }
         path_insert.execute(params![
             generation,
             encoded_path,
@@ -1103,10 +1118,10 @@ fn insert_generation_items(
     tx: &Transaction<'_>,
     generation: i64,
     items: &[OwnedItem],
-    replace_existing_paths: bool,
+    plan: &ScanPlan,
 ) -> Result<(), SearchDbError> {
-    upsert_generation_item_rows(tx, generation, items)?;
-    insert_generation_path_rows(tx, generation, items, replace_existing_paths)
+    upsert_generation_item_rows(tx, generation, items, plan)?;
+    insert_generation_path_rows(tx, generation, items)
 }
 
 fn cleanup_incomplete_generations(
@@ -1190,7 +1205,7 @@ fn query_indexed_content_page_then(
         "SELECT i.path, i.name, i.kind, i.size_bytes, i.modified_unix_secs,
                 i.is_executable, i.symlink_target_is_dir,
                 snippet(search_generation_content, 2, '', '', '…', 20),
-                f.content, rank
+                f.content, rank, i.metadata_indexed
          FROM content_store.search_generation_content f
          JOIN search_store_state s ON s.singleton = 1 AND s.active_generation_id = f.generation_id
          JOIN search_generations g ON g.id = f.generation_id
@@ -1223,6 +1238,7 @@ fn query_indexed_content_page_then(
                 snippet: content_snippet_line(&raw_snippet, &fts_query_terms(fts_query)),
                 content: row.get(8)?,
                 relevance: fts_rank_relevance(row.get(9)?),
+                metadata_indexed: row.get(10)?,
             })
         },
     )?;
@@ -1280,7 +1296,7 @@ pub(crate) fn active_generation_contains_paths(
     let mut statement = tx.prepare(
         "SELECT EXISTS(
              SELECT 1 FROM search_generation_items
-             WHERE generation_id = ?1 AND path = ?2
+             WHERE generation_id = ?1 AND path = ?2 AND metadata_indexed = 1
          )",
     )?;
     let mut present = Vec::with_capacity(candidates.len());
@@ -1339,8 +1355,8 @@ fn query_simple_term_page_then(
          JOIN search_store_state s ON s.singleton = 1 AND s.active_generation_id = f.generation_id
          JOIN search_generations g ON g.id = f.generation_id
          JOIN search_generation_items i
-           ON i.generation_id = f.generation_id AND i.path = f.path
-         WHERE g.completed = 1 AND g.plan_identity = ?1
+           ON i.generation_id = f.generation_id AND i.path = f.path AND i.rowid = f.rowid
+         WHERE g.completed = 1 AND g.plan_identity = ?1 AND i.metadata_indexed = 1
            AND search_generation_paths MATCH ?2
            AND (?3 = 1 OR substr(i.name, 1, 1) <> '.')",
         params![plan.identity(), match_query, hidden],
@@ -1369,8 +1385,8 @@ fn query_simple_term_page_then(
          JOIN search_store_state s ON s.singleton = 1 AND s.active_generation_id = f.generation_id
          JOIN search_generations g ON g.id = f.generation_id
          JOIN search_generation_items i
-           ON i.generation_id = f.generation_id AND i.path = f.path
-         WHERE g.completed = 1 AND g.plan_identity = ?1
+           ON i.generation_id = f.generation_id AND i.path = f.path AND i.rowid = f.rowid
+         WHERE g.completed = 1 AND g.plan_identity = ?1 AND i.metadata_indexed = 1
            AND search_generation_paths MATCH ?2
            AND (?3 = 1 OR substr(i.name, 1, 1) <> '.')
          ORDER BY {order}
@@ -1431,7 +1447,7 @@ pub(crate) fn stream_generation_items(
          FROM search_store_state s
          JOIN search_generations g ON g.id = s.active_generation_id
          JOIN search_generation_items i ON i.generation_id = g.id
-         WHERE s.singleton = 1 AND g.completed = 1 AND g.plan_identity = ?1
+         WHERE s.singleton = 1 AND g.completed = 1 AND g.plan_identity = ?1 AND i.metadata_indexed = 1
          ORDER BY i.path",
     )?;
     let mut rows = stmt.query([plan.identity()])?;
@@ -1819,6 +1835,7 @@ fn create_generation_content_db(path: &Path, generation: i64) -> Result<(), Sear
 }
 
 fn validate_generation_content_db(
+    conn: &Connection,
     path: &Path,
     generation: i64,
     expected_count: usize,
@@ -1830,29 +1847,27 @@ fn validate_generation_content_db(
             content_path.display()
         )));
     }
-    let conn = Connection::open_with_flags(
-        &content_path,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
-    )?;
-    let (content_state_count, path_count) = conn
-        .query_row(
+    attach_generation_content_db(conn, &content_path)?;
+    let result = (|| {
+        let (states, paths, expected_paths, invalid_paths) = conn.query_row(
             "SELECT
-                (SELECT COUNT(*) FROM search_generation_content_state WHERE generation_id = ?1),
-                (SELECT COUNT(*) FROM search_generation_paths WHERE generation_id = ?1)",
-            [generation],
-            |row| Ok((row.get::<_, usize>(0)?, row.get::<_, usize>(1)?)),
-        )
-        .map_err(|error| {
-            SearchDbError::InvalidGeneration(format!(
-                "derived index is invalid for generation {generation}: {error}"
-            ))
-        })?;
-    if content_state_count != expected_count || path_count != expected_count {
-        return Err(SearchDbError::InvalidGeneration(format!(
-            "staged generation expected {expected_count} content states and paths but contains {content_state_count} content states and {path_count} paths"
-        )));
-    }
-    Ok(())
+              (SELECT COUNT(*) FROM content_store.search_generation_content_state WHERE generation_id = ?1),
+              (SELECT COUNT(*) FROM content_store.search_generation_paths WHERE generation_id = ?1),
+              (SELECT COUNT(*) FROM search_generation_items WHERE generation_id = ?1 AND metadata_indexed = 1),
+              (SELECT COUNT(*) FROM content_store.search_generation_paths f
+               LEFT JOIN search_generation_items i ON i.rowid = f.rowid AND i.path = f.path AND i.generation_id = f.generation_id AND i.metadata_indexed = 1
+               WHERE f.generation_id = ?1 AND i.rowid IS NULL)", [generation],
+            |row| Ok((row.get::<_, usize>(0)?, row.get::<_, usize>(1)?, row.get::<_, usize>(2)?, row.get::<_, usize>(3)?)),
+        )?;
+        if states != expected_count || paths != expected_paths || invalid_paths != 0 {
+            return Err(SearchDbError::InvalidGeneration(format!(
+                "staged generation expected {expected_count} content states and {expected_paths} filename paths, got {states} states, {paths} paths and {invalid_paths} invalid filename memberships"
+            )));
+        }
+        Ok(())
+    })();
+    detach_generation_content_db(conn);
+    result
 }
 
 fn attach_generation_content_db(
@@ -1892,241 +1907,32 @@ fn remove_sqlite_database(path: &Path) -> Result<(), SearchDbError> {
     Ok(())
 }
 
-fn prepare_v7_content_database(
-    conn: &Connection,
-    db_path: &Path,
-) -> Result<Option<i64>, SearchDbError> {
-    let Some((generation, completed, expected_count)) = conn
-        .query_row(
-            "SELECT g.id, g.completed, g.item_count
-             FROM search_store_state s
-             JOIN search_generations g ON g.id = s.active_generation_id
-             WHERE s.singleton = 1",
-            [],
-            |row| {
-                Ok((
-                    row.get::<_, i64>(0)?,
-                    row.get::<_, i64>(1)?,
-                    row.get::<_, i64>(2)?,
-                ))
-            },
-        )
-        .optional()?
-    else {
-        return Ok(None);
-    };
-    let actual_count = conn.query_row(
-        "SELECT COUNT(*) FROM search_generation_items WHERE generation_id = ?1",
-        [generation],
-        |row| row.get::<_, i64>(0),
-    )?;
-    if completed != 1 || expected_count < 0 || actual_count != expected_count {
-        return Ok(None);
-    }
-
-    let content_path = generation_content_db_path(db_path, generation);
-    remove_sqlite_database(&content_path)?;
-    create_generation_content_db(db_path, generation)?;
-    let mut content = Connection::open(&content_path)?;
-    content.execute_batch("PRAGMA synchronous = FULL; PRAGMA busy_timeout = 250;")?;
-    content.execute(
-        "ATTACH DATABASE ?1 AS legacy_store",
-        [db_path.to_string_lossy().as_ref()],
-    )?;
-    let copy_result = (|| {
-        let tx = content.transaction()?;
-        tx.execute(
-            "INSERT INTO search_generation_paths (generation_id, path, path_text)
-             SELECT generation_id, path, path_text
-             FROM legacy_store.search_generation_paths
-             WHERE generation_id = ?1",
-            [generation],
-        )?;
-        tx.execute(
-            "INSERT INTO search_generation_content_state (generation_id, path, state, content)
-             SELECT generation_id, path, state, content
-             FROM legacy_store.search_generation_content_state
-             WHERE generation_id = ?1",
-            [generation],
-        )?;
-        tx.execute(
-            "INSERT INTO search_generation_content (generation_id, path, content)
-             SELECT generation_id, path, content
-             FROM legacy_store.search_generation_content
-             WHERE generation_id = ?1",
-            [generation],
-        )?;
-        tx.commit()?;
-        Ok::<(), SearchDbError>(())
-    })();
-    let _ = content.execute_batch("DETACH DATABASE legacy_store");
-    if let Err(error) = copy_result {
-        drop(content);
-        let _ = remove_sqlite_database(&content_path);
-        return Err(error);
-    }
-    drop(content);
-    validate_generation_content_db(db_path, generation, expected_count as usize)?;
-    Ok(Some(generation))
-}
-
-fn prepare_v8_path_database(
-    conn: &Connection,
-    db_path: &Path,
-) -> Result<Option<i64>, SearchDbError> {
-    let Some((generation, completed, expected_count)) = conn
-        .query_row(
-            "SELECT g.id, g.completed, g.item_count
-             FROM search_store_state s
-             JOIN search_generations g ON g.id = s.active_generation_id
-             WHERE s.singleton = 1",
-            [],
-            |row| {
-                Ok((
-                    row.get::<_, i64>(0)?,
-                    row.get::<_, i64>(1)?,
-                    row.get::<_, i64>(2)?,
-                ))
-            },
-        )
-        .optional()?
-    else {
-        return Ok(None);
-    };
-    let actual_count = conn.query_row(
-        "SELECT COUNT(*) FROM search_generation_items WHERE generation_id = ?1",
-        [generation],
-        |row| row.get::<_, i64>(0),
-    )?;
-    if completed != 1 || expected_count < 0 || actual_count != expected_count {
-        return Ok(None);
-    }
-
-    let content_path = generation_content_db_path(db_path, generation);
-    if !content_path.is_file() {
-        return Ok(None);
-    }
-    let mut content = Connection::open(&content_path)?;
-    content.execute_batch("PRAGMA synchronous = FULL; PRAGMA busy_timeout = 250;")?;
-    // Rebuilding this derived table is restart-safe while user_version remains
-    // v8: old readers continue using the untouched canonical path FTS.
-    content.execute_batch("DROP TABLE IF EXISTS search_generation_paths;")?;
-    content.execute_batch(CONTENT_FTS_SCHEMA)?;
-    content.execute(
-        "ATTACH DATABASE ?1 AS legacy_store",
-        [db_path.to_string_lossy().as_ref()],
-    )?;
-    let copy_result = (|| {
-        let tx = content.transaction()?;
-        {
-            let mut canonical_paths = tx.prepare(
-                "SELECT path
-                 FROM legacy_store.search_generation_items
-                 WHERE generation_id = ?1",
-            )?;
-            let mut paths = canonical_paths.query([generation])?;
-            let mut insert_path = tx.prepare(
-                "INSERT INTO search_generation_paths (generation_id, path, path_text)
-                 VALUES (?1, ?2, ?3)",
-            )?;
-            while let Some(row) = paths.next()? {
-                let encoded_path = row.get::<_, Vec<u8>>(0)?;
-                let path_text = decode_path(encoded_path.clone())?
-                    .to_string_lossy()
-                    .into_owned();
-                insert_path.execute(params![generation, encoded_path, path_text])?;
-            }
-        }
-        tx.commit()?;
-        Ok::<(), SearchDbError>(())
-    })();
-    let _ = content.execute_batch("DETACH DATABASE legacy_store");
-    copy_result?;
-    drop(content);
-    validate_generation_content_db(db_path, generation, expected_count as usize)?;
-    Ok(Some(generation))
-}
-
-fn migrate(conn: &mut Connection, db_path: &Path) -> Result<bool, SearchDbError> {
+fn migrate(conn: &mut Connection) -> Result<bool, SearchDbError> {
     let version: u32 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
     if version == SEARCH_DB_VERSION {
         conn.execute_batch(GENERATION_SCHEMA)?;
         return Ok(false);
     }
-
-    // A v7 active generation remains canonical and searchable until its derived
-    // content database is complete and durable. Publishing v8 then changes only
-    // the content-storage location; metadata, paths, and active authority remain.
-    let prepared_v7_generation = if version == 7 {
-        prepare_v7_content_database(conn, db_path)?
-    } else {
-        None
-    };
-    let prepared_v8_generation = if version == 8 {
-        prepare_v8_path_database(conn, db_path)?
-    } else {
-        None
-    };
-    let tx = conn.transaction()?;
-    match version {
-        0..=4 => {
-            tx.execute_batch(GENERATION_SCHEMA)?;
-            tx.execute_batch(
-                "DROP TABLE IF EXISTS scan_state;
-                 DROP TABLE IF EXISTS roots;
-                 DROP TABLE IF EXISTS files;
-                 DROP TABLE IF EXISTS meta;",
-            )?;
-        }
-        5..=6 => {
-            // Old generations either lack completeness records or own their FTS
-            // inside search.db. Force the normal rebuild path rather than mix
-            // incompatible storage authorities.
-            tx.execute_batch(
-                "DROP TABLE IF EXISTS search_generation_content;
-                 DROP TABLE IF EXISTS search_generation_paths;
-                 DROP TABLE IF EXISTS search_generation_content_state;
-                 DROP TABLE IF EXISTS search_generation_items;
-                 DROP TABLE IF EXISTS search_store_state;
-                 DROP TABLE IF EXISTS search_generations;",
-            )?;
-            tx.execute_batch(GENERATION_SCHEMA)?;
-        }
-        7 if prepared_v7_generation.is_some() => {
-            tx.execute_batch(
-                "DROP TABLE IF EXISTS search_generation_content;
-                 DROP TABLE IF EXISTS search_generation_content_state;
-                 DROP TABLE IF EXISTS search_generation_paths;",
-            )?;
-            tx.execute_batch(GENERATION_SCHEMA)?;
-        }
-        7 => {
-            tx.execute_batch(
-                "DROP TABLE IF EXISTS search_generation_content;
-                 DROP TABLE IF EXISTS search_generation_paths;
-                 DROP TABLE IF EXISTS search_generation_content_state;
-                 DROP TABLE IF EXISTS search_generation_items;
-                 DROP TABLE IF EXISTS search_store_state;
-                 DROP TABLE IF EXISTS search_generations;",
-            )?;
-            tx.execute_batch(GENERATION_SCHEMA)?;
-        }
-        8 if prepared_v8_generation.is_some() => {
-            tx.execute_batch("DROP TABLE IF EXISTS search_generation_paths;")?;
-            tx.execute_batch(GENERATION_SCHEMA)?;
-        }
-        8 => {
-            tx.execute_batch(
-                "DROP TABLE IF EXISTS search_generation_paths;
-                 DROP TABLE IF EXISTS search_generation_items;
-                 DROP TABLE IF EXISTS search_store_state;
-                 DROP TABLE IF EXISTS search_generations;",
-            )?;
-            tx.execute_batch(GENERATION_SCHEMA)?;
-        }
-        other => return Err(SearchDbError::UnsupportedVersion(other)),
+    if version > SEARCH_DB_VERSION {
+        return Err(SearchDbError::UnsupportedVersion(version));
     }
-    tx.execute("PRAGMA user_version = 9", [])?;
+    // Search data is rebuildable. Older cache formats cannot prove independent
+    // metadata membership or the canonical rowid binding of derived postings.
+    let tx = conn.transaction()?;
+    tx.execute_batch(
+        "DROP TABLE IF EXISTS search_generation_content;
+        DROP TABLE IF EXISTS search_generation_paths;
+        DROP TABLE IF EXISTS search_generation_content_state;
+        DROP TABLE IF EXISTS search_generation_items;
+        DROP TABLE IF EXISTS search_store_state;
+        DROP TABLE IF EXISTS search_generations;
+        DROP TABLE IF EXISTS scan_state;
+        DROP TABLE IF EXISTS roots;
+        DROP TABLE IF EXISTS files;
+        DROP TABLE IF EXISTS meta;",
+    )?;
+    tx.execute_batch(GENERATION_SCHEMA)?;
+    tx.pragma_update(None, "user_version", SEARCH_DB_VERSION)?;
     tx.commit()?;
     Ok(true)
 }
@@ -2211,6 +2017,77 @@ mod tests {
     }
 
     #[test]
+    fn older_cache_formats_reset_once_without_promoting_legacy_rows() {
+        for version in 0..SEARCH_DB_VERSION {
+            let db_path = temp_db_path(&format!("reset-format-{version}"));
+            let conn = Connection::open(&db_path).unwrap();
+            conn.execute_batch("CREATE TABLE files(path TEXT); INSERT INTO files VALUES('legacy'); CREATE TABLE search_generation_items(path BLOB); INSERT INTO search_generation_items VALUES(X'0102');").unwrap();
+            conn.pragma_update(None, "user_version", version).unwrap();
+            drop(conn);
+            let derived = generation_content_db_path(&db_path, 77);
+            create_generation_content_db(&db_path, 77).unwrap();
+            drop(SearchStore::open(db_path.clone()).unwrap());
+            drop(SearchStore::open(db_path.clone()).unwrap());
+            let conn = Connection::open(&db_path).unwrap();
+            assert_eq!(
+                conn.query_row("PRAGMA user_version", [], |row| row.get::<_, u32>(0))
+                    .unwrap(),
+                SEARCH_DB_VERSION
+            );
+            assert_eq!(
+                conn.query_row("SELECT COUNT(*) FROM search_generation_items", [], |row| {
+                    row.get::<_, usize>(0)
+                })
+                .unwrap(),
+                0
+            );
+            assert_eq!(
+                conn.query_row(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE name='files'",
+                    [],
+                    |row| row.get::<_, usize>(0)
+                )
+                .unwrap(),
+                0
+            );
+            assert!(
+                conn.prepare("SELECT metadata_indexed FROM search_generation_items")
+                    .is_ok()
+            );
+            assert!(!derived.exists());
+        }
+    }
+
+    #[test]
+    fn future_cache_formats_are_refused_without_removing_their_rows() {
+        let path = temp_db_path("future-format");
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch(
+            "CREATE TABLE future_data(value TEXT); INSERT INTO future_data VALUES('keep');",
+        )
+        .unwrap();
+        conn.pragma_update(None, "user_version", SEARCH_DB_VERSION + 1)
+            .unwrap();
+        drop(conn);
+        assert!(matches!(
+            SearchStore::open(path.clone()),
+            Err(SearchDbError::UnsupportedVersion(_))
+        ));
+        let conn = Connection::open(path).unwrap();
+        assert_eq!(
+            conn.query_row("PRAGMA user_version", [], |row| row.get::<_, u32>(0))
+                .unwrap(),
+            SEARCH_DB_VERSION + 1
+        );
+        assert_eq!(
+            conn.query_row("SELECT value FROM future_data", [], |row| row
+                .get::<_, String>(0))
+                .unwrap(),
+            "keep"
+        );
+    }
+
+    #[test]
     fn path_and_content_fts_are_stored_in_a_disposable_generation_database() {
         let db_path = temp_db_path("separate-fts-schema");
         let root = db_path.with_extension("root");
@@ -2262,96 +2139,6 @@ mod tests {
         drop(store);
         let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(content_path);
-        let _ = std::fs::remove_file(db_path);
-    }
-
-    #[test]
-    fn v5_database_is_reset_before_completeness_state_is_required() {
-        let db_path = temp_db_path("v5-completeness-reset");
-        let conn = Connection::open(&db_path).expect("open old database");
-        conn.execute_batch(
-            "CREATE TABLE search_generations (id INTEGER PRIMARY KEY, plan_identity TEXT NOT NULL, completed INTEGER NOT NULL, item_count INTEGER NOT NULL);
-             CREATE TABLE search_generation_items (generation_id INTEGER NOT NULL, path BLOB NOT NULL, parent_path BLOB NOT NULL, root_path BLOB NOT NULL, name TEXT NOT NULL, kind INTEGER NOT NULL, size_bytes INTEGER, modified_unix_secs INTEGER, is_executable INTEGER NOT NULL, symlink_target_is_dir INTEGER, PRIMARY KEY (generation_id, path));
-             CREATE TABLE search_store_state (singleton INTEGER PRIMARY KEY, active_generation_id INTEGER NOT NULL);
-             CREATE VIRTUAL TABLE search_generation_content USING fts5(generation_id UNINDEXED, path UNINDEXED, content);
-             INSERT INTO search_generations VALUES (1, 'old-plan', 1, 1);
-             INSERT INTO search_store_state VALUES (1, 1);
-             PRAGMA user_version = 5;",
-        )
-        .expect("seed v5 schema");
-        drop(conn);
-
-        let _store = SearchStore::open(db_path.clone()).expect("migrate v5 database");
-        let conn = Connection::open(&db_path).expect("reopen migrated database");
-        let active_count: i64 = conn
-            .query_row("SELECT COUNT(*) FROM search_store_state", [], |row| {
-                row.get(0)
-            })
-            .expect("count active generation");
-        let state_table_count: i64 = conn
-            .query_row(
-                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'search_generation_content_state'",
-                [],
-                |row| row.get(0),
-            )
-            .expect("inspect completeness schema");
-        assert_eq!(active_count, 0, "v5 rows cannot prove content completeness");
-        assert_eq!(
-            state_table_count, 0,
-            "completeness state is derived content and must not remain in canonical metadata"
-        );
-        assert_eq!(
-            conn.query_row("PRAGMA user_version", [], |row| row.get::<_, u32>(0))
-                .expect("schema version"),
-            SEARCH_DB_VERSION
-        );
-        let _ = std::fs::remove_file(db_path);
-    }
-
-    #[test]
-    fn v6_canonical_content_layout_is_reset_once_for_separate_fts_rebuild() {
-        let db_path = temp_db_path("v6-separate-fts-reset");
-        let conn = Connection::open(&db_path).expect("open old database");
-        conn.execute_batch(GENERATION_SCHEMA)
-            .expect("seed generation schema");
-        conn.execute_batch(
-            "INSERT INTO search_generations VALUES (1, 'plan', 1, 1);
-             INSERT INTO search_generation_items
-               (generation_id, path, parent_path, root_path, name, kind,
-                size_bytes, modified_unix_secs, is_executable, symlink_target_is_dir)
-             VALUES (1, X'2F726F6F742F6E6565646C652E747874', X'2F726F6F74', X'2F726F6F74',
-                     'needle.txt', 0, 1, 1, 0, NULL);
-             INSERT INTO search_store_state VALUES (1, 1);
-             PRAGMA user_version = 6;",
-        )
-        .expect("seed v6 database");
-        drop(conn);
-
-        drop(SearchStore::open(db_path.clone()).expect("migrate v6 database"));
-        drop(SearchStore::open(db_path.clone()).expect("reopen v7 database"));
-        let conn = Connection::open(&db_path).expect("inspect migrated database");
-        assert_eq!(
-            conn.query_row("PRAGMA user_version", [], |row| row.get::<_, u32>(0))
-                .expect("schema version"),
-            SEARCH_DB_VERSION
-        );
-        assert_eq!(
-            conn.query_row(
-                "SELECT COUNT(*) FROM sqlite_master WHERE name = 'search_generation_paths'",
-                [],
-                |row| row.get::<_, usize>(0),
-            )
-            .expect("canonical path table count"),
-            0,
-            "derived path FTS must not be recreated in canonical metadata"
-        );
-        assert_eq!(
-            conn.query_row("SELECT COUNT(*) FROM search_store_state", [], |row| {
-                row.get::<_, usize>(0)
-            })
-            .expect("active generation count"),
-            0
-        );
         let _ = std::fs::remove_file(db_path);
     }
 
@@ -2474,311 +2261,6 @@ mod generation_tests {
     }
 
     #[test]
-    fn v7_migration_preserves_active_filename_path_and_content_queries_across_reopen() {
-        let db_path = temp_db_path("v7-online-migration");
-        let root = db_path.with_extension("root");
-        let scan_plan = plan(&root);
-        let legacy_item = owned(&root, "path-only-parent/legacy-needle.txt", 19);
-        let item = legacy_item.item();
-        let generation = 7_i64;
-        let conn = Connection::open(&db_path).expect("open v7 database");
-        conn.execute_batch(GENERATION_SCHEMA)
-            .expect("seed canonical generation schema");
-        conn.execute_batch(CONTENT_FTS_SCHEMA)
-            .expect("seed canonical content schema");
-        conn.execute(
-            "INSERT INTO search_generations (id, plan_identity, completed, item_count)
-             VALUES (?1, ?2, 1, 1)",
-            params![generation, scan_plan.identity()],
-        )
-        .expect("seed completed generation");
-        conn.execute(
-            "INSERT INTO search_generation_items
-             (generation_id, path, parent_path, root_path, name, kind, size_bytes,
-              modified_unix_secs, is_executable, symlink_target_is_dir)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
-            params![
-                generation,
-                encode_path(&item.path),
-                encode_path(&item.parent_path),
-                encode_path(legacy_item.root()),
-                item.name,
-                entry_kind_to_i64(item.kind),
-                item.size_bytes,
-                item.modified_unix_secs,
-                i64::from(item.is_executable),
-                item.symlink_target_is_dir.map(i64::from),
-            ],
-        )
-        .expect("seed canonical item");
-        conn.execute(
-            "INSERT INTO search_generation_paths (generation_id, path, path_text)
-             VALUES (?1, ?2, ?3)",
-            params![
-                generation,
-                encode_path(&item.path),
-                item.path.to_string_lossy()
-            ],
-        )
-        .expect("seed path accelerator");
-        conn.execute(
-            "INSERT INTO search_generation_content_state (generation_id, path, state, content)
-             VALUES (?1, ?2, 0, 'legacy body needle')",
-            params![generation, encode_path(&item.path)],
-        )
-        .expect("seed content completeness");
-        conn.execute(
-            "INSERT INTO search_generation_content (generation_id, path, content)
-             VALUES (?1, ?2, 'legacy body needle')",
-            params![generation, encode_path(&item.path)],
-        )
-        .expect("seed canonical content FTS");
-        conn.execute(
-            "INSERT INTO search_store_state (singleton, active_generation_id) VALUES (1, ?1)",
-            [generation],
-        )
-        .expect("seed active pointer");
-        conn.execute("PRAGMA user_version = 7", [])
-            .expect("set v7 schema version");
-        drop(conn);
-
-        for reopen in 0..2 {
-            let mut store = SearchStore::open(db_path.clone()).expect("open migrated database");
-            let active = store
-                .load(&scan_plan)
-                .expect("load migrated generation")
-                .expect("active generation survives migration");
-            assert_eq!(active.generation(), generation);
-            assert_eq!(active.items(), std::slice::from_ref(&legacy_item));
-            assert_eq!(
-                store
-                    .conn
-                    .query_row(
-                        "SELECT active_generation_id FROM search_store_state WHERE singleton = 1",
-                        [],
-                        |row| row.get::<_, i64>(0),
-                    )
-                    .expect("read active pointer"),
-                generation
-            );
-            drop(store);
-
-            let (paths, total) = query_simple_term_page(
-                &db_path,
-                &scan_plan,
-                SimpleTermPage {
-                    term: "legacy-needle",
-                    include_hidden: true,
-                    sort: SearchSort::Relevance,
-                    limit: 10,
-                    offset: 0,
-                },
-            )
-            .expect("query migrated path index");
-            assert_eq!(total, 1, "reopen {reopen}");
-            assert_eq!(paths[0].path, item.path, "reopen {reopen}");
-            let (parent_paths, parent_total) = query_simple_term_page(
-                &db_path,
-                &scan_plan,
-                SimpleTermPage {
-                    term: "path-only-parent",
-                    include_hidden: true,
-                    sort: SearchSort::Relevance,
-                    limit: 10,
-                    offset: 0,
-                },
-            )
-            .expect("query migrated parent path");
-            assert_eq!(parent_total, 1, "reopen {reopen}");
-            assert_eq!(parent_paths[0].path, item.path, "reopen {reopen}");
-            let hits = query_indexed_content_page(&db_path, &scan_plan, "needle", 10, 0)
-                .expect("query migrated content index");
-            assert_eq!(hits.len(), 1, "reopen {reopen}");
-            assert_eq!(hits[0].item.path, item.path, "reopen {reopen}");
-        }
-
-        for content_path in generation_content_db_paths(&db_path) {
-            let _ = remove_sqlite_database(&content_path);
-        }
-        let _ = remove_sqlite_database(&db_path);
-    }
-
-    #[test]
-    fn v8_migration_rebuilds_paths_from_canonical_items_when_accelerator_has_stale_duplicates() {
-        let db_path = temp_db_path("v8-online-path-migration");
-        let root = db_path.with_extension("root");
-        let scan_plan = plan(&root);
-        let item = owned(&root, "parent-segment/migration-needle.txt", 1);
-        std::fs::create_dir_all(item.item().parent_path.clone()).expect("create content parent");
-        std::fs::write(&item.item().path, "preserved body needle").expect("write indexed content");
-        let generation = {
-            let mut store = SearchStore::open(db_path.clone()).expect("open current store");
-            store
-                .commit(&scan_plan, IndexMutation::ReplaceAll(vec![item.clone()]))
-                .expect("seed active generation")
-                .generation()
-        };
-        let derived_path = generation_content_db_path(&db_path, generation);
-
-        let canonical = Connection::open(&db_path).expect("open canonical database");
-        canonical
-            .execute_batch(
-                "CREATE VIRTUAL TABLE search_generation_paths USING fts5(
-                    generation_id UNINDEXED, path UNINDEXED, path_text,
-                    tokenize = 'trigram'
-                 );",
-            )
-            .expect("create v8 canonical path FTS");
-        canonical
-            .execute(
-                "ATTACH DATABASE ?1 AS derived_store",
-                [derived_path.to_string_lossy().as_ref()],
-            )
-            .expect("attach current derived database");
-        canonical
-            .execute(
-                "INSERT INTO search_generation_paths (generation_id, path, path_text)
-                 SELECT generation_id, path, path_text
-                 FROM derived_store.search_generation_paths",
-                [],
-            )
-            .expect("copy path FTS to v8 canonical location");
-        canonical
-            .execute(
-                "INSERT INTO search_generation_paths (generation_id, path, path_text)
-                 VALUES (?1, ?2, ?3), (?1, ?4, ?5)",
-                params![
-                    generation,
-                    encode_path(&item.item().path),
-                    item.item().path.to_string_lossy(),
-                    encode_path(&root.join("retired-parent/stale-needle.txt")),
-                    root.join("retired-parent/stale-needle.txt")
-                        .to_string_lossy(),
-                ],
-            )
-            .expect("seed duplicate current and stale deleted accelerator rows");
-        canonical
-            .execute_batch("DETACH DATABASE derived_store; PRAGMA user_version = 8;")
-            .expect("finish v8 fixture");
-        drop(canonical);
-        Connection::open(&derived_path)
-            .expect("open derived database")
-            .execute_batch("DROP TABLE search_generation_paths;")
-            .expect("remove path FTS absent from v8 derived schema");
-
-        for reopen in 0..2 {
-            let mut store =
-                SearchStore::open(db_path.clone()).expect("migrate or reopen v8 database");
-            let active = store
-                .load(&scan_plan)
-                .expect("load migrated generation")
-                .expect("active generation survives migration");
-            assert_eq!(active.generation(), generation, "reopen {reopen}");
-            assert_eq!(
-                active.items(),
-                std::slice::from_ref(&item),
-                "reopen {reopen}"
-            );
-        }
-
-        let canonical = Connection::open(&db_path).expect("inspect migrated canonical database");
-        assert_eq!(
-            canonical
-                .query_row("PRAGMA user_version", [], |row| row.get::<_, u32>(0))
-                .expect("schema version"),
-            SEARCH_DB_VERSION
-        );
-        assert_eq!(
-            canonical
-                .query_row(
-                    "SELECT COUNT(*) FROM sqlite_master WHERE name = 'search_generation_paths'",
-                    [],
-                    |row| row.get::<_, usize>(0),
-                )
-                .expect("canonical path table count"),
-            0
-        );
-        let (results, total) = query_simple_term_page(
-            &db_path,
-            &scan_plan,
-            SimpleTermPage {
-                term: "migration-needle",
-                include_hidden: true,
-                sort: SearchSort::Relevance,
-                limit: 10,
-                offset: 0,
-            },
-        )
-        .expect("query migrated path FTS");
-        assert_eq!(total, 1);
-        assert_eq!(results[0].path, item.item().path);
-        let (parent_results, parent_total) = query_simple_term_page(
-            &db_path,
-            &scan_plan,
-            SimpleTermPage {
-                term: "parent-segment",
-                include_hidden: true,
-                sort: SearchSort::Relevance,
-                limit: 10,
-                offset: 0,
-            },
-        )
-        .expect("query migrated parent path");
-        assert_eq!(parent_total, 1);
-        assert_eq!(parent_results[0].path, item.item().path);
-        let (_, stale_total) = query_simple_term_page(
-            &db_path,
-            &scan_plan,
-            SimpleTermPage {
-                term: "stale-needle",
-                include_hidden: true,
-                sort: SearchSort::Relevance,
-                limit: 10,
-                offset: 0,
-            },
-        )
-        .expect("query retired path posting");
-        assert_eq!(stale_total, 0);
-        let content_hits = query_indexed_content_page(&db_path, &scan_plan, "preserved", 10, 0)
-            .expect("query migrated content FTS");
-        assert_eq!(content_hits.len(), 1);
-        assert_eq!(content_hits[0].item.path, item.item().path);
-        let derived = Connection::open(&derived_path).expect("inspect migrated derived database");
-        let canonical_item_count = canonical
-            .query_row(
-                "SELECT COUNT(*) FROM search_generation_items WHERE generation_id = ?1",
-                [generation],
-                |row| row.get::<_, usize>(0),
-            )
-            .expect("count canonical items");
-        let derived_path_count = derived
-            .query_row("SELECT COUNT(*) FROM search_generation_paths", [], |row| {
-                row.get::<_, usize>(0)
-            })
-            .expect("count rebuilt paths");
-        let derived_state_count = derived
-            .query_row(
-                "SELECT COUNT(*) FROM search_generation_content_state",
-                [],
-                |row| row.get::<_, usize>(0),
-            )
-            .expect("count retained content states");
-        assert_eq!(
-            (
-                canonical_item_count,
-                derived_path_count,
-                derived_state_count
-            ),
-            (1, 1, 1),
-            "migration must retain exactly one canonical item, path, and content state"
-        );
-
-        let _ = std::fs::remove_dir_all(root);
-        let _ = remove_sqlite_database(&derived_path);
-        let _ = remove_sqlite_database(&db_path);
-    }
-
-    #[test]
     fn staged_batches_remain_inactive_until_atomic_activation() {
         let db_path = temp_db_path("generation-staged-batches");
         let root = PathBuf::from("root");
@@ -2823,6 +2305,141 @@ mod generation_tests {
     }
 
     #[test]
+    fn staged_activation_checks_content_only_rows_and_canonical_filename_bindings() {
+        for metadata in [false, true] {
+            let root = crate::test_temp_dir().join(format!("staged-layer-membership-{metadata}"));
+            std::fs::create_dir_all(&root).unwrap();
+            std::fs::write(root.join("needle.txt"), "needle").unwrap();
+            let plan = ScanPlan::new(&SearchConfig {
+                include_roots: if metadata {
+                    vec![root.clone()]
+                } else {
+                    Vec::new()
+                },
+                content_indexing_enabled: true,
+                content_include_roots: vec![root.clone()],
+                ..SearchConfig::default()
+            })
+            .unwrap();
+            let path = temp_db_path("staged-layer-membership");
+            let mut store = SearchStore::open(path.clone()).unwrap();
+            let fence = ActivationFence::new();
+            let generation = store.begin_staged_generation(&plan).unwrap();
+            store
+                .append_staged_generation(&plan, generation, &[owned(&root, "needle.txt", 6)])
+                .unwrap();
+            assert_eq!(
+                store
+                    .activate_staged_generation(&plan, generation, 1, &fence, fence.capture())
+                    .unwrap(),
+                1
+            );
+            assert_eq!(
+                query_indexed_content_page(&path, &plan, "needle", 10, 0)
+                    .unwrap()
+                    .len(),
+                1
+            );
+            if metadata {
+                let bad = store.begin_staged_generation(&plan).unwrap();
+                store
+                    .append_staged_generation(&plan, bad, &[owned(&root, "needle.txt", 6)])
+                    .unwrap();
+                let derived = Connection::open(generation_content_db_path(&path, bad)).unwrap();
+                derived
+                    .execute("UPDATE search_generation_paths SET rowid=rowid+100000", [])
+                    .unwrap();
+                drop(derived);
+                assert!(matches!(
+                    store.activate_staged_generation(&plan, bad, 1, &fence, fence.capture()),
+                    Err(SearchDbError::InvalidGeneration(_))
+                ));
+                assert_eq!(store.load(&plan).unwrap().unwrap().generation(), generation);
+            }
+        }
+    }
+
+    #[test]
+    fn direct_delta_updates_metadata_membership_without_duplicate_path_postings() {
+        let root = crate::test_temp_dir().join("delta-metadata-membership");
+        let build = root.join("build");
+        std::fs::create_dir_all(&build).unwrap();
+        let marker = build.join("build.ninja");
+        std::fs::write(&marker, "generated").unwrap();
+        std::fs::write(build.join("needle.txt"), "needle").unwrap();
+        let plan = ScanPlan::new(&SearchConfig {
+            include_roots: vec![root],
+            content_indexing_enabled: true,
+            content_include_roots: vec![build.clone()],
+            ..SearchConfig::default()
+        })
+        .unwrap();
+        let path = temp_db_path("delta-metadata-membership");
+        let mut store = SearchStore::open(path.clone()).unwrap();
+        let item = owned(&build, "needle.txt", 6);
+        store
+            .commit(&plan, IndexMutation::ReplaceAll(vec![item.clone()]))
+            .unwrap();
+        let fence = ActivationFence::new();
+        let count = || {
+            query_simple_term_page(
+                &path,
+                &plan,
+                SimpleTermPage {
+                    term: "needle",
+                    include_hidden: true,
+                    sort: SearchSort::Name,
+                    limit: 20,
+                    offset: 0,
+                },
+            )
+            .unwrap()
+            .1
+        };
+        assert_eq!(count(), 0);
+        for expected in [1, 0, 1] {
+            if expected == 1 {
+                std::fs::remove_file(&marker).unwrap();
+            } else {
+                std::fs::write(&marker, "generated").unwrap();
+            }
+            store
+                .commit_delta_guarded_then(
+                    &plan,
+                    std::slice::from_ref(&item),
+                    &[],
+                    &fence,
+                    fence.capture(),
+                    |_| {},
+                )
+                .unwrap();
+            assert_eq!(count(), expected);
+        }
+        store
+            .commit_delta_guarded_then(
+                &plan,
+                &[],
+                &[item.item().path.clone()],
+                &fence,
+                fence.capture(),
+                |_| {},
+            )
+            .unwrap();
+        assert_eq!(count(), 0);
+        store
+            .commit_delta_guarded_then(
+                &plan,
+                std::slice::from_ref(&item),
+                &[],
+                &fence,
+                fence.capture(),
+                |_| {},
+            )
+            .unwrap();
+        assert_eq!(count(), 1);
+    }
+
+    #[test]
     fn staged_activation_rejects_a_missing_disposable_content_database() {
         let db_path = temp_db_path("generation-missing-content-store");
         let root = PathBuf::from("root");
@@ -2844,7 +2461,7 @@ mod generation_tests {
     }
 
     #[test]
-    fn staged_append_cost_does_not_scale_with_the_active_path_fts() {
+    fn staged_append_keeps_the_active_path_index_unchanged() {
         let db_path = temp_db_path("generation-staged-append-cost");
         let root = PathBuf::from("root");
         let plan = plan(&root);
@@ -2855,20 +2472,17 @@ mod generation_tests {
         store
             .commit(&plan, IndexMutation::ReplaceAll(active))
             .expect("seed active generation");
+        let active_content = generation_content_db_paths(&db_path).pop().unwrap();
+        let active_bytes = std::fs::read(&active_content).unwrap();
         let staged = store
             .begin_staged_generation(&plan)
             .expect("begin staged generation");
-        PATH_FTS_DELETE_COUNT.with(|count| count.set(0));
 
         store
             .append_staged_generation(&plan, staged, &[owned(&root, "new.txt", 1000)])
             .expect("append one staged item");
+        assert_eq!(std::fs::read(&active_content).unwrap(), active_bytes);
 
-        assert_eq!(
-            PATH_FTS_DELETE_COUNT.with(Cell::get),
-            0,
-            "new staged rows must not run replacement deletes against the unrelated active FTS"
-        );
         let _ = std::fs::remove_file(db_path);
     }
 
@@ -3150,7 +2764,6 @@ mod generation_tests {
 
         let fence = ActivationFence::new();
         let expected_epoch = fence.capture();
-        PATH_FTS_DELETE_COUNT.with(|count| count.set(0));
         store
             .commit_delta_guarded_then(
                 &plan,
@@ -3164,11 +2777,6 @@ mod generation_tests {
                 |_| {},
             )
             .expect("direct delta");
-        assert_eq!(
-            PATH_FTS_DELETE_COUNT.with(Cell::get),
-            0,
-            "direct upserts must not scan the full path FTS before publication"
-        );
         let active_generation: i64 = store
             .conn
             .query_row(
@@ -4623,7 +4231,7 @@ mod generation_tests {
         .expect("generation");
         let root = Path::new("root");
         let mut insert = conn
-            .prepare("INSERT INTO search_generation_items VALUES (1, ?1, ?2, ?3, 'item', 0, NULL, NULL, 0, NULL)")
+            .prepare("INSERT INTO search_generation_items VALUES (1, ?1, ?2, ?3, 'item', 0, NULL, NULL, 0, NULL, 1)")
             .expect("insert");
         let affected = [
             "tree",
@@ -4810,33 +4418,5 @@ mod generation_tests {
 
         let path = PathBuf::from(OsString::from_vec(vec![b'r', b'o', b'o', b't', b'/', 0xff]));
         assert_eq!(decode_path(encode_path(&path)).expect("decode path"), path);
-    }
-
-    #[test]
-    fn v2_database_is_not_promoted_and_legacy_rows_are_dropped() {
-        let db_path = temp_db_path("legacy-v2");
-        let root = PathBuf::from("root");
-        let plan = plan(&root);
-        let conn = Connection::open(&db_path).expect("open legacy database");
-        conn.execute_batch(
-            "CREATE TABLE files (path TEXT PRIMARY KEY);
-             INSERT INTO files(path) VALUES ('legacy.txt');
-             PRAGMA user_version = 2;",
-        )
-        .expect("create v2 schema");
-        drop(conn);
-
-        let mut store = SearchStore::open(db_path.clone()).expect("migrate store");
-        assert_eq!(store.load(&plan).expect("load"), None);
-        let legacy_tables: i64 = Connection::open(&db_path)
-            .expect("open migrated database")
-            .query_row(
-                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'files'",
-                [],
-                |row| row.get(0),
-            )
-            .expect("inspect legacy schema");
-        assert_eq!(legacy_tables, 0);
-        let _ = std::fs::remove_file(db_path);
     }
 }

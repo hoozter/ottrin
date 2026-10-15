@@ -890,3 +890,18 @@ filename results already found remain available with the error. The public
 `search --content` CLI exercises this same query route, including daemon IPC.
 Exact-package QA must use a clean PATH, verify content-only roots and folder
 scope, and check missing/damaged provider errors without reading operator data.
+
+
+Content scan coverage is the union of admitted metadata and enabled content roots.
+`ScanPlan` retains the separate metadata roots and records metadata membership
+in each canonical file row. Filename FTS and streamed queries share that completed
+membership rather than rechecking filesystem filters at query time; content-only directories are kept
+only as structural records for bounded subtree deltas. Unsupported content-only
+files are omitted. Nested scan roots retain most-specific ownership, including a
+content-root directory that remains a normal metadata item in its parent scope.
+Metadata exclusions do not override explicit content selections; content has its
+own exclusions, supported groups and size limit. Disabled/fully excluded content
+roots and empty group selections create no content-only watch. Content policy
+version 3 and cache schema 10 rebuild prior derived data rather than preserve
+older cache layouts. Filename postings bind canonical rowids, so stale postings
+cannot rejoin a later entry that reuses a pathname.

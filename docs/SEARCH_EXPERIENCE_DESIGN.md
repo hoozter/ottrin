@@ -61,6 +61,8 @@ Enabling it requires explicit content roots. A user may index native metadata fo
 - clear notice that indexing is slower and the database becomes larger;
 - measured database size and rebuild status once available.
 
+Missing or access-denied content-only folders do not invalidate healthy metadata indexing. Watcher health reports the failure and retries registration/extraction when they return. Retries start at 60 seconds and back off after repeated failures; reconnection is not immediate. This does not establish isolation from blocked network filesystem calls.
+
 Protected or system-wide content is not extracted merely because plocate can name a path. Filename/path discovery and content privacy remain separate boundaries.
 
 ## Query composition
@@ -73,7 +75,7 @@ native SQLite results ----\
 system plocate results ---/
 ```
 
-Native rows carry richer metadata and live freshness. System rows extend coverage. Content search adds matches only from explicitly admitted native content roots.
+Native rows carry richer metadata and live freshness. System rows extend coverage. Content search adds matches only from explicitly selected content roots, including roots outside native metadata locations. Saved extraction and watcher deltas cover those roots independently. Their shared file records do not become global native filename results unless the metadata policy also admits them.
 
 Result details may identify `Live index`, `System filename index`, or `Content match`, but the main list remains unified rather than split into separate result screens.
 
