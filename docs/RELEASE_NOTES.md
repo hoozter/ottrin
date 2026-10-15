@@ -4,6 +4,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Linux and Windows packages include the pinned live-content search provider. Provider failures are reported with repair/access guidance instead of silently returning empty matches. `ottrin search QUERY --content [--json]` uses the configured content policy, including content folders outside the native metadata roots and terminal current-folder scope.
+
 - Windows cross-volume Replace batches now move their nonconflicting files and
   folders using non-replacing transactions. Existing conflicting destinations
   retain the full identity-bound replacement/recovery checks. The current internal

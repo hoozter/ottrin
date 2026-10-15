@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/package-lifecycle.sh"
+source "$ROOT/packaging/package-search-runtime.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 TARGET="${OTTRIN_TARGET:-x86_64-pc-windows-gnu}"
 BUILD_DIR="$ROOT/target/$TARGET/release"
@@ -137,6 +138,7 @@ cp "$BUILD_DIR/ottrin-legacy-doc-render.exe" "$STAGE/bin/ottrin-legacy-doc-rende
 cp "$BUILD_DIR/ottrin-priv-helper.exe" "$STAGE/bin/ottrin-priv-helper.exe"
 download_verify_and_package_pdfium "$STAGE/bin/pdfium"
 package_graphics_compatibility_runtime "$STAGE/bin" "$STAGE/third-party-notices"
+package_search_runtime windows-x86_64 "$STAGE/bin" "$STAGE/third-party-notices/ripgrep"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/icon.ico" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/README.md" "$STAGE/"
 cp "$ROOT/LICENSE" "$STAGE/"

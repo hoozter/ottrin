@@ -32,6 +32,12 @@ required=(
   bin/libGLESv2.dll
   bin/libgallium_wgl.dll
   bin/dxil.dll
+  bin/rg.exe
+  third-party-notices/ripgrep/MANIFEST.txt
+  third-party-notices/ripgrep/COPYING
+  third-party-notices/ripgrep/LICENSE-MIT
+  third-party-notices/ripgrep/UNLICENSE
+  third-party-notices/ripgrep/PCRE2-10.45-LICENCE.md
   third-party-notices/MANIFEST.txt
   SOURCE_REVISION.txt
   LICENSE

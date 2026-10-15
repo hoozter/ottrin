@@ -3212,3 +3212,30 @@ The Windows package lacks the live-content provider used by the passing tests.
 Shipping that provider, checking Linux delivery, reporting provider failures and
 clean-PATH packaged acceptance are required work, recorded in
 `.hermes/evidence/windows-search-portability-current/PACKAGE_DEPENDENCY_GAP.json`.
+
+
+### Live-content provider delivery — source checkpoint (2026-10-15)
+
+One shared manifest now pins Linux static-musl and Windows provider archives,
+binary identities and notices. All Linux stages and both Windows portable builders
+include it; installer guards require it. The PowerShell builder also builds/copies
+the two Office helpers already present in the Bash cohort, with build-exit checks,
+and its downloader interpolation is corrected. Actual PowerShell staging and
+checksum rejection pass with offline transport of the verified official archive.
+
+Live content queries report provider failures, use NUL-delimited native filenames,
+disable external tool configuration, and enforce size/type/exclusion policy in
+the provider invocation. The explicit `search --content` CLI uses the same policy
+and IPC route. Live content roots are independent from metadata roots; folder
+scope limits live traversal before searching. This does not establish background
+saved-content coverage for content-only roots outside the native scan plan; that
+independent-layer persistence/watcher outcome remains required work.
+
+Linux has 225 passing search tests with two measurement exclusions, strict
+Linux/Windows app/search Clippy passes, and the CLI parse check passes. Source
+staging checks match the pinned bytes/notices. The ordinary-user Windows run passes 209 tests with six specialized exclusions;
+its temporary namespace is empty afterward. The native test executable predates
+only the final private-provider-before-sibling lookup ordering; exact package QA
+will exercise that ordering. Exact rebuilt package, clean-PATH, provider failure
+and lifecycle checks remain pending at this source checkpoint; existing
+deliverables keep their prior provenance until replaced and verified.

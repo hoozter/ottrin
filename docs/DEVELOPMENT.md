@@ -869,3 +869,24 @@ fixtures and processes. This helper-level test does not replace full NSIS
 package/daemon/scheduler interruption acceptance. A journal-free transaction may
 reclaim only its empty root or empty `new` child, using nonrecursive removal;
 partial journals, unexpected entries and reparse points must remain refused.
+
+
+### Live-content provider delivery
+
+`packaging/search-runtime.json` is the shared source of pinned provider archives,
+binary hashes and license inputs. Bash package builders use
+`packaging/package-search-runtime.sh` (Python 3 reads the manifest); Windows
+PowerShell uses `packaging/package-search-runtime.ps1`. The Linux static-musl
+provider lives in the artifact's private libexec directory; Windows places
+`rg.exe` beside the app and daemon. The resolver prefers private libexec before a
+sibling executable, then uses PATH for development/CI. Required-file checks reject
+incomplete Windows installer stages. Notices include the upstream ripgrep texts
+and the pinned PCRE2 notice for the included library.
+
+Live queries pass literal arguments with no ripgrep user-config loading, apply
+file-size/type/exclusion policy before scanning, and parse NUL-delimited native
+paths. Provider start, exit and output errors propagate through SearchResponse;
+filename results already found remain available with the error. The public
+`search --content` CLI exercises this same query route, including daemon IPC.
+Exact-package QA must use a clean PATH, verify content-only roots and folder
+scope, and check missing/damaged provider errors without reading operator data.

@@ -15,6 +15,7 @@ APPIMAGE="$DIST_DIR/Ottrin-$VERSION-x86_64.AppImage"
 APPIMAGETOOL="${APPIMAGETOOL:-$ROOT/dist/appimagetool-x86_64.AppImage}"
 APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2}"
 source "$ROOT/packaging/linux/package-pdfium.sh"
+source "$ROOT/packaging/package-search-runtime.sh"
 
 cd "$ROOT"
 if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
@@ -40,6 +41,7 @@ install -m 0755 "$ROOT/target/release/ottrin-media-playback" "$APPDIR/usr/bin/ot
 install -m 0755 "$ROOT/target/release/ottrin-indexd" "$APPDIR/usr/bin/ottrin-indexd"
 install -m 0755 "$ROOT/target/release/ottrin-priv-helper" "$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
 package_linux_pdfium "$APPDIR/usr/bin/pdfium"
+package_search_runtime linux-x86_64 "$APPDIR/usr/libexec/ottrin" "$APPDIR/usr/share/doc/ottrin/third-party-notices/ripgrep"
 install -m 0644 "$ROOT/assets/icon.svg" "$APPDIR/usr/share/icons/hicolor/scalable/apps/ottrin.svg"
 install -m 0644 "$ROOT/assets/icon.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/ottrin.png"
 install -m 0644 "$ROOT/packaging/linux/ottrin.appdata.xml" "$APPDIR/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml"

@@ -1,0 +1,13 @@
+{
+  "status": "source checks pass; package acceptance pending",
+  "linux_search": "225 passed, 2 ignored",
+  "windows_search": "209 passed, 6 ignored",
+  "windows_temporary_entries": 0,
+  "checks": [
+    "Linux and Windows strict all-target app/search Clippy",
+    "CLI argument test",
+    "Bash provider staging both platforms",
+    "PowerShell real staging and bad-checksum rejection with offline archive transport"
+  ],
+  "limit": "Windows library executable precedes final provider lookup ordering; package QA still required"
+}

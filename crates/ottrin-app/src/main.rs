@@ -3,7 +3,7 @@
 use eframe::{NativeOptions, egui};
 use ottrin_core::{
     ConflictAction, FileCommand, GraphicsEvidence, GraphicsRendererChoice, GraphicsRuntimeStatus,
-    SearchIndexStatus, SearchQuery, format_size, select_graphics_renderer,
+    SearchIndexStatus, SearchQuery, SearchScope, format_size, select_graphics_renderer,
 };
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
 use ottrin_ui::{
@@ -36,14 +36,24 @@ enum GuiLaunchTarget {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum HeadlessAction {
-    IndexUpdate { json: bool },
-    IndexStatus { json: bool },
-    IndexRebuild { json: bool },
+    IndexUpdate {
+        json: bool,
+    },
+    IndexStatus {
+        json: bool,
+    },
+    IndexRebuild {
+        json: bool,
+    },
     IndexServiceInstall,
     IndexServiceStatus,
     IndexServiceRestart,
     IndexServiceRemove,
-    Search { query: String, json: bool },
+    Search {
+        query: String,
+        json: bool,
+        content: bool,
+    },
     Preview(PathBuf),
     OpenPath(PathBuf),
     SelectPath(PathBuf),
@@ -522,6 +532,7 @@ fn print_cli_help() {
     println!("  ottrin <DIRECTORY>             Open the file manager in that directory");
     println!("  ottrin --select <FILE>         Open the parent folder with the file selected");
     println!("  ottrin search <QUERY> [--json] Search indexed files (-s)");
+    println!("                       [--content] Also search the configured content folders");
     println!("  ottrin index [update] [--json]");
     println!("                                 Update the configured search index");
     println!("  ottrin index status [--json]   Show persisted index status without starting it");
@@ -543,14 +554,16 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
     match command {
         "search" | "-s" => {
             let json = args[1..].iter().any(|arg| arg == "--json");
+            let content = args[1..].iter().any(|arg| arg == "--content");
             let values = args[1..]
                 .iter()
-                .filter(|arg| arg.as_str() != "--json")
+                .filter(|arg| !matches!(arg.as_str(), "--json" | "--content"))
                 .collect::<Vec<_>>();
             match values.as_slice() {
                 [query] if !query.is_empty() => Some(HeadlessAction::Search {
                     query: (*query).clone(),
                     json,
+                    content,
                 }),
                 [] => Some(HeadlessAction::Invalid(
                     "search requires a query".to_string(),
@@ -850,17 +863,34 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                 ottrin_search::SearchService::load_persisted_default(configured_search_config())?;
             print_index_diagnostics(&snapshot.diagnostics(), json)
         }
-        HeadlessAction::Search { query, json } => {
+        HeadlessAction::Search {
+            query,
+            json,
+            content,
+        } => {
             let config = configured_search_config();
+            if content
+                && (!config.content_indexing_enabled || config.content_include_roots.is_empty())
+            {
+                return Err("Content search is disabled or has no selected folders. Configure it in Settings → Search.".into());
+            }
+            let root_path = if config.default_scope == SearchScope::CurrentFolder {
+                Some(
+                    std::env::current_dir()
+                        .map_err(|error| format!("Cannot search the current folder: {error}"))?,
+                )
+            } else {
+                None
+            };
             let query = SearchQuery {
                 text: query,
                 scope: config.default_scope,
-                root_path: None,
+                root_path,
                 include_hidden_system: config.include_hidden_system,
                 sort: config.default_sort,
                 limit: config.result_limit.max(1),
                 offset: 0,
-                content_search: false,
+                content_search: content,
             };
             #[cfg(any(unix, target_os = "windows"))]
             if let Some(client) = connected_index_daemon() {
@@ -1470,6 +1500,7 @@ mod tests {
                 Some(HeadlessAction::Search {
                     query: "invoice".into(),
                     json: false,
+                    content: false,
                 })
             );
         }
@@ -1478,6 +1509,20 @@ mod tests {
             Some(HeadlessAction::Search {
                 query: "invoice".into(),
                 json: true,
+                content: false,
+            })
+        );
+        assert_eq!(
+            cli_headless_action(&[
+                "search".into(),
+                "--content".into(),
+                "invoice".into(),
+                "--json".into()
+            ]),
+            Some(HeadlessAction::Search {
+                query: "invoice".into(),
+                json: true,
+                content: true
             })
         );
         assert_eq!(

@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+. (Join-Path $Root "packaging\package-search-runtime.ps1")
 $CargoToml = Get-Content (Join-Path $Root "Cargo.toml")
 $VersionLine = $CargoToml | Where-Object { $_ -match '^version = ' } | Select-Object -First 1
 $Version = if ($env:OTTRIN_VERSION) { $env:OTTRIN_VERSION } else { ($VersionLine -replace 'version = "([^"]+)"', '$1') }
@@ -42,7 +43,7 @@ function Get-VerifiedFile {
     }
     $actual = (Get-FileHash -Algorithm SHA256 $Destination).Hash.ToLowerInvariant()
     if ($actual -ne $ExpectedSha256.ToLowerInvariant()) {
-        throw "Checksum mismatch for $Url: expected $ExpectedSha256, got $actual"
+        throw "Checksum mismatch for ${Url}: expected $ExpectedSha256, got $actual"
     }
 }
 
@@ -151,16 +152,22 @@ Included Mesa DLLs: opengl32.dll, libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
 
 Set-Location $Root
 cargo build --release --target $Target -p ottrin-app -p ottrin-platform -p ottrin-search
+if ($LASTEXITCODE -ne 0) { throw "Windows application build failed." }
+cargo build --release --target $Target -p ottrin-preview --features windows-office --bin ottrin-legacy-doc-render --bin ottrin-office-render
+if ($LASTEXITCODE -ne 0) { throw "Windows Office preview helper build failed." }
 
 New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
 Remove-Item -Recurse -Force $StageRoot -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path "$Stage\bin", "$Stage\assets", "$Stage\docs", "$Stage\third-party-notices" | Out-Null
 
 Copy-Item "$BuildDir\ottrin-app.exe" "$Stage\bin\ottrin.exe"
+Copy-Item "$BuildDir\ottrin-office-render.exe" "$Stage\bin\ottrin-office-render.exe"
+Copy-Item "$BuildDir\ottrin-legacy-doc-render.exe" "$Stage\bin\ottrin-legacy-doc-render.exe"
 Copy-Item "$BuildDir\ottrin-indexd.exe" "$Stage\bin\ottrin-indexd.exe"
 Copy-Item "$BuildDir\ottrin-priv-helper.exe" "$Stage\bin\ottrin-priv-helper.exe"
 Resolve-PdfiumRuntime (Join-Path $Stage "bin\pdfium")
 Resolve-GraphicsCompatibilityRuntime (Join-Path $Stage "bin") (Join-Path $Stage "third-party-notices")
+Resolve-SearchRuntime (Join-Path $Stage "bin") (Join-Path $Stage "third-party-notices\ripgrep")
 Copy-Item "$Root\assets\icon.svg", "$Root\assets\icon.png", "$Root\assets\icon.ico", "$Root\assets\logo.svg" "$Stage\assets\"
 Copy-Item "$Root\README.md" "$Stage\"
 Copy-Item "$Root\LICENSE" "$Stage\"

@@ -1,0 +1,9 @@
+﻿{
+    "exit":  0,
+    "filter":  "",
+    "child_working_directory":  "C:\\WINDOWS\\System32",
+    "temporary_entries_after_tests":  0,
+    "scope":  "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+    "ripgrep_available":  false,
+    "status":  "pass"
+}

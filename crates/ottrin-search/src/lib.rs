@@ -995,6 +995,7 @@ impl SearchHandle {
         // ── Content search pass: query the active FTS generation first. ───────
         // The config is a privacy boundary, not a persistence preference: when
         // disabled, avoid both indexed payloads and the live ripgrep fallback.
+        let mut live_content_error = None;
         if query.content_search && cfg.content_indexing_enabled && query.text.trim().len() >= 2 {
             let fts_query = fts_content_match(&expr);
             if matches!(status, SearchIndexStatus::Ready)
@@ -1057,7 +1058,10 @@ impl SearchHandle {
                     fts_offset = fts_offset.saturating_add(fetched);
                 }
             }
-            let roots = ordered_query_roots(&query, &cfg);
+            let roots = match query.scope {
+                SearchScope::Global => cfg.content_include_roots.clone(),
+                SearchScope::CurrentFolder => query.root_path.iter().cloned().collect(),
+            };
             let content_limit = query.limit.max(50);
             let rg_items = query_content_ripgrep(
                 &expr,
@@ -1065,7 +1069,12 @@ impl SearchHandle {
                 &cfg,
                 query.include_hidden_system,
                 content_limit,
-            );
+                &content_search_program(),
+            )
+            .unwrap_or_else(|error| {
+                live_content_error = Some(error);
+                Vec::new()
+            });
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
             for item in rg_items {
@@ -1103,7 +1112,7 @@ impl SearchHandle {
             items,
             total,
             status,
-            error: None,
+            error: live_content_error,
         }
     }
 
@@ -1532,7 +1541,7 @@ fn internal_command_creation_flags(is_windows: bool) -> u32 {
     if is_windows { 0x0800_0000 } else { 0 }
 }
 
-fn internal_command(program: &str) -> std::process::Command {
+fn internal_command(program: impl AsRef<std::ffi::OsStr>) -> std::process::Command {
     #[cfg(target_os = "windows")]
     {
         use std::os::windows::process::CommandExt;
@@ -1544,6 +1553,26 @@ fn internal_command(program: &str) -> std::process::Command {
     {
         std::process::Command::new(program)
     }
+}
+
+fn content_search_program() -> std::ffi::OsString {
+    let binary = if cfg!(windows) { "rg.exe" } else { "rg" };
+    if let Ok(executable) = std::env::current_exe()
+        && let Some(parent) = executable.parent()
+    {
+        // Windows and portable Linux keep the provider beside the real app.
+        // Native Linux and AppImage layouts use the private libexec directory.
+        for candidate in [
+            parent.join("../libexec/ottrin").join(binary),
+            parent.join(binary),
+        ] {
+            if candidate.is_file() {
+                return candidate.into_os_string();
+            }
+        }
+    }
+    // Development and CI can use their explicitly installed test dependency.
+    "rg".into()
 }
 
 fn command_exists(name: &str) -> bool {
@@ -4068,37 +4097,39 @@ fn query_content_ripgrep(
     config: &SearchConfig,
     include_hidden: bool,
     limit: usize,
-) -> Vec<SearchResultItem> {
+    program: &std::ffi::OsStr,
+) -> Result<Vec<SearchResultItem>, String> {
     if roots.is_empty() {
-        return Vec::new();
+        return Ok(Vec::new());
     }
 
     let mut terms = Vec::new();
     let mut seen_terms = HashSet::new();
     collect_positive_content_literals(expr, false, &mut terms, &mut seen_terms);
     if terms.is_empty() {
-        return Vec::new();
+        return Ok(Vec::new());
     }
     let traversal_plan = content_ripgrep_traversal_plan(roots, config);
     if traversal_plan.is_empty() {
-        return Vec::new();
+        return Ok(Vec::new());
     }
 
     let mut matching_paths: Option<HashSet<PathBuf>> = None;
     for term in &terms {
         let mut term_paths = HashSet::new();
         for traversal in &traversal_plan {
-            let mut cmd = internal_command("rg");
+            let mut cmd = internal_command(program);
             cmd.current_dir(&traversal.root)
+                .arg("--no-config")
                 .arg("--files-with-matches")
+                .arg("--null")
                 .arg("--fixed-strings")
                 .arg("--ignore-case")
-                .arg("--max-count=1");
+                .arg("--max-count=1")
+                .arg("--max-filesize")
+                .arg(config.content_max_file_size_bytes.to_string());
             if include_hidden {
                 cmd.arg("--hidden");
-            }
-            for glob in &traversal.exclude_globs {
-                cmd.arg("--glob").arg(glob);
             }
             for extension in config
                 .content_file_groups
@@ -4107,32 +4138,72 @@ fn query_content_ripgrep(
             {
                 cmd.arg("--glob").arg(format!("*.{extension}"));
             }
+            // Explicit exclusions take priority over positive type globs.
+            for glob in &traversal.exclude_globs {
+                cmd.arg("--glob").arg(glob);
+            }
             cmd.arg("-e").arg(term).arg("--").arg(".");
-            let file_output = match cmd.output() {
-                Ok(output) if output.status.success() || !output.stdout.is_empty() => output,
-                _ => continue,
-            };
-            term_paths.extend(
-                std::str::from_utf8(&file_output.stdout)
-                    .unwrap_or("")
-                    .lines()
-                    .filter(|line| !line.is_empty())
-                    .map(|line| traversal.root.join(line))
-                    // Defense in depth: command planning keeps excluded paths out
-                    // of traversal, and this preserves the result boundary if the
-                    // filesystem changes while ripgrep is running.
-                    .filter(|path| content_indexing_allows_path(config, path)),
-            );
+            let file_output = cmd.output().map_err(|error| {
+                format!("Live content search could not start: {error}. Repair or reinstall Ottrin.")
+            })?;
+            if !file_output.status.success() && file_output.status.code() != Some(1) {
+                let detail = String::from_utf8_lossy(&file_output.stderr)
+                    .trim()
+                    .chars()
+                    .take(300)
+                    .collect::<String>();
+                return Err(format!(
+                    "Live content search could not finish ({}): {detail}. Check access to the selected folders or repair Ottrin.",
+                    file_output.status
+                ));
+            }
+            if (file_output.status.success() && file_output.stdout.is_empty())
+                || (!file_output.stdout.is_empty() && file_output.stdout.last() != Some(&0))
+            {
+                return Err(
+                    "Live content search returned invalid output. Repair or reinstall Ottrin."
+                        .into(),
+                );
+            }
+            for bytes in file_output
+                .stdout
+                .split(|byte| *byte == 0)
+                .filter(|path| !path.is_empty())
+            {
+                #[cfg(unix)]
+                let relative = {
+                    use std::os::unix::ffi::OsStrExt;
+                    Path::new(std::ffi::OsStr::from_bytes(bytes))
+                };
+                #[cfg(not(unix))]
+                let relative = Path::new(std::str::from_utf8(bytes).map_err(|_| {
+                    "Live content search returned an invalid filename. Repair or reinstall Ottrin.".to_string()
+                })?);
+                if relative.components().any(|part| {
+                    matches!(
+                        part,
+                        std::path::Component::Prefix(_)
+                            | std::path::Component::RootDir
+                            | std::path::Component::ParentDir
+                    )
+                }) {
+                    return Err("Live content search returned a path outside the selected folder. Repair or reinstall Ottrin.".into());
+                }
+                let path = traversal.root.join(relative);
+                if content_indexing_allows_path(config, &path) {
+                    term_paths.insert(path);
+                }
+            }
         }
         if term_paths.is_empty() {
-            return Vec::new();
+            return Ok(Vec::new());
         }
         matching_paths = Some(match matching_paths.take() {
             Some(existing) => existing.intersection(&term_paths).cloned().collect(),
             None => term_paths,
         });
         if matching_paths.as_ref().is_none_or(|set| set.is_empty()) {
-            return Vec::new();
+            return Ok(Vec::new());
         }
     }
 
@@ -4205,7 +4276,7 @@ fn query_content_ripgrep(
         })
         .collect();
     items.truncate(limit);
-    items
+    Ok(items)
 }
 
 fn content_indexing_allows_path(config: &SearchConfig, path: &Path) -> bool {
@@ -6108,6 +6179,156 @@ mod tests {
     }
 
     #[test]
+    fn live_content_provider_failures_are_not_empty_matches() {
+        let root = crate::test_temp_dir().join("provider-errors");
+        fs::create_dir(&root).unwrap();
+        fs::write(root.join("document.txt"), b"provider-needle").unwrap();
+        let mut config = SearchConfig {
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            ..SearchConfig::default()
+        };
+        let expr = parse_query("provider-needle").unwrap();
+        let missing = root.join("missing-provider");
+        let error = query_content_ripgrep(
+            &expr,
+            std::slice::from_ref(&root),
+            &config,
+            false,
+            10,
+            missing.as_os_str(),
+        )
+        .expect_err("missing provider must report a failure");
+        assert!(error.contains("Repair or reinstall Ottrin"));
+
+        // A real executable that rejects the search-provider arguments exercises
+        // nonzero process exit handling on both Unix and Windows.
+        let other_program = std::env::current_exe().unwrap();
+        let error = query_content_ripgrep(
+            &expr,
+            std::slice::from_ref(&root),
+            &config,
+            false,
+            10,
+            other_program.as_os_str(),
+        )
+        .expect_err("failed provider must report a failure");
+        assert!(error.contains("could not finish"));
+
+        // Disabled content search must never try to start even a missing tool.
+        config.content_indexing_enabled = false;
+        assert!(
+            query_content_ripgrep(
+                &expr,
+                std::slice::from_ref(&root),
+                &config,
+                false,
+                10,
+                missing.as_os_str(),
+            )
+            .unwrap()
+            .is_empty()
+        );
+    }
+
+    #[test]
+    fn live_content_roots_are_independent_of_metadata_roots_and_honor_folder_scope() {
+        let root = crate::test_temp_dir();
+        let content_root = root.join("content");
+        let other_folder = root.join("other");
+        fs::create_dir(&content_root).unwrap();
+        fs::create_dir(&other_folder).unwrap();
+        fs::write(content_root.join("document.txt"), b"independent-body-probe").unwrap();
+        let service = SearchService::new(SearchConfig {
+            include_roots: Vec::new(),
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![content_root.clone()],
+            ..SearchConfig::default()
+        });
+        let mut query = query_by_name("independent-body-probe");
+        query.content_search = true;
+        let global = service.query(query.clone());
+        assert!(global.error.is_none(), "{:?}", global.error);
+        assert_eq!(global.items.len(), 1);
+        assert_eq!(global.items[0].path, content_root.join("document.txt"));
+        query.scope = SearchScope::CurrentFolder;
+        query.root_path = Some(other_folder);
+        let local = service.query(query);
+        assert!(local.error.is_none());
+        assert!(local.items.is_empty());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn live_content_provider_preserves_newlines_and_non_utf8_filenames() {
+        use std::os::unix::ffi::OsStringExt;
+        let root = crate::test_temp_dir().join("provider-filenames");
+        fs::create_dir(&root).unwrap();
+        let names = [
+            std::ffi::OsString::from("two\nlines.txt"),
+            std::ffi::OsString::from_vec(b"non-utf8-\xff.txt".to_vec()),
+        ];
+        for name in &names {
+            fs::write(root.join(name), b"filename-probe").unwrap();
+        }
+        let config = SearchConfig {
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            ..SearchConfig::default()
+        };
+        let expr = parse_query("filename-probe").unwrap();
+        let results = query_content_ripgrep(
+            &expr,
+            std::slice::from_ref(&root),
+            &config,
+            false,
+            10,
+            &content_search_program(),
+        )
+        .unwrap();
+        assert_eq!(results.len(), 2);
+        for name in names {
+            assert!(results.iter().any(|item| item.path == root.join(&name)));
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn live_content_provider_exclusions_override_file_types_before_reading() {
+        use std::os::unix::fs::PermissionsExt;
+        if unsafe { libc::geteuid() } == 0 {
+            return;
+        }
+        let root = crate::test_temp_dir().join("provider-exclusions");
+        fs::create_dir(&root).unwrap();
+        let private = root.join("private.txt");
+        fs::write(&private, b"privacy-probe").unwrap();
+        fs::set_permissions(&private, fs::Permissions::from_mode(0o0)).unwrap();
+        fs::write(root.join("included.txt"), b"privacy-probe").unwrap();
+        let config = SearchConfig {
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![private],
+            ..SearchConfig::default()
+        };
+        let expr = parse_query("privacy-probe").unwrap();
+        // Opening the excluded body would make the real provider fail with
+        // Permission Denied, even if a later result filter hid that pathname.
+        let results = query_content_ripgrep(
+            &expr,
+            std::slice::from_ref(&root),
+            &config,
+            false,
+            10,
+            &content_search_program(),
+        )
+        .unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].path, root.join("included.txt"));
+    }
+
+    #[test]
     fn content_fallback_honors_selected_file_groups() {
         let root = crate::test_temp_dir().join(format!(
             "ottrin-content-groups-search-{}-{}",
@@ -7200,7 +7421,15 @@ mod tests {
             content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         };
-        let results = query_content_ripgrep(&expr, std::slice::from_ref(&root), &config, false, 10);
+        let results = query_content_ripgrep(
+            &expr,
+            std::slice::from_ref(&root),
+            &config,
+            false,
+            10,
+            &content_search_program(),
+        )
+        .expect("live content search");
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].path, file_path);

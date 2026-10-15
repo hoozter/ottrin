@@ -14,6 +14,7 @@ STAGE="$WORK/Ottrin-$VERSION-linux-x86_64"
 ARCHIVE="$DIST_DIR/Ottrin-$VERSION-linux-x86_64-portable.tar.gz"
 
 source "$ROOT/packaging/linux/package-pdfium.sh"
+source "$ROOT/packaging/package-search-runtime.sh"
 
 cd "$ROOT"
 if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
@@ -43,6 +44,7 @@ exec "$OTTRIN_REAL_ELF" "$@"
 EOF
 chmod 0755 "$STAGE/bin/ottrin"
 package_linux_pdfium "$STAGE/libexec/ottrin/pdfium"
+package_search_runtime linux-x86_64 "$STAGE/libexec/ottrin" "$STAGE/third-party-notices/ripgrep"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
   "$ROOT/packaging/linux/ottrin.appdata.xml" \

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VERSION="$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')"
-STAGE="${1:-$ROOT/dist/Ottrin-$VERSION-windows-x64}"
+STAGE="${1:-${OTTRIN_DIST_DIR:-$ROOT/dist}/windows-payload/Ottrin-$VERSION-windows-x64}"
 EXPECTED_OPENGL32_SHA256="52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e"
 
 binary="$STAGE/bin/ottrin.exe"

@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "scope": "Full Linux search-library suite, serial, with private TMPDIR",
+  "owned_process_group": 2264042,
+  "exit": 0,
+  "passed": 225,
+  "failed": 0,
+  "ignored": 2,
+  "cleanup": "Owned process group stopped before private TMPDIR removal"
+}
