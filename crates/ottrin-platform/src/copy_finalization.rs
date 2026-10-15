@@ -54,13 +54,13 @@ struct MetadataReads {
     events: Option<OwnedFd>,
     changed: BTreeSet<i32>,
     guard: Option<NamespaceGuard>,
+    parsed: CopyRecordCache,
 }
 struct CachedMetadata {
     stamp: LedgerStamp,
     watch: i32,
     proof: FileProof,
     bytes: std::sync::Arc<[u8]>,
-    record: Option<CopyRecord>,
 }
 
 impl MetadataReads {
@@ -100,21 +100,9 @@ impl MetadataReads {
         registry: &OwnedFd,
         name: &str,
         expected_mount: u64,
-    ) -> Result<CopyRecord, PlatformError> {
-        let (_, proof, bytes) =
-            FileProof::capture_with_reads(registry, name, expected_mount, self)?;
-        if let Some(cached) = self
-            .files
-            .get_mut(&(proof.identity.device, proof.identity.inode))
-        {
-            if let Some(record) = &cached.record {
-                return Ok(record.clone());
-            }
-            let record = CopyRecord::parse(&bytes)?;
-            cached.record = Some(record.clone());
-            return Ok(record);
-        }
-        CopyRecord::parse(&bytes)
+    ) -> Result<std::sync::Arc<CopyRecord>, PlatformError> {
+        let (_, _, bytes) = FileProof::capture_with_reads(registry, name, expected_mount, self)?;
+        self.parsed.parse(name, bytes)
     }
 
     fn check_guard(&mut self) -> Result<(), PlatformError> {
@@ -124,19 +112,10 @@ impl MetadataReads {
         self.drain()
     }
 
-    fn notifications_supported(file: &impl rustix::fd::AsFd) -> bool {
-        rustix::fs::fstatfs(file).is_ok_and(|stat| {
-            matches!(
-                stat.f_type as u64,
-                0xef53 | 0x9123683e | 0x58465342 | 0x01021994
-            )
-        })
-    }
-
     fn watch(&mut self, file: &std::fs::File) -> Option<i32> {
         use rustix::fs::inotify;
         // Remote/userspace filesystems retain full rereads and group checks.
-        if !Self::notifications_supported(file) {
+        if !crate::local_storage::supports_local_inode_notifications(file) {
             return None;
         }
         if self.events.is_none() {
@@ -258,7 +237,6 @@ impl FileProof {
                     watch,
                     proof: proof.clone(),
                     bytes: bytes.clone(),
-                    record: None,
                 },
             );
         }
@@ -697,7 +675,7 @@ impl RetainedCopyFinalization {
             let record = &entry.record;
             record.require_object_evidence()?;
             match all.get(id) {
-                Some(current) if current == record => {
+                Some(current) if current.as_ref() == record => {
                     entry.canonical.open_exact_with_reads(
                         registry,
                         &format!("{id}.journal"),
@@ -1142,15 +1120,55 @@ mod tests {
             std::fs::write(new.join("new"), "visible source").unwrap();
             sources.push(new);
         }
+        let phase = std::time::Instant::now();
         let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
             &sources,
             &destination,
             ConflictAction::Overwrite,
         );
         assert!(batch.error.is_none(), "{:?}", batch.error);
-        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        eprintln!(
+            "Cleanup phase: records={count} phase=copy elapsed_ms={}",
+            phase.elapsed().as_millis()
+        );
+        let selected: Vec<_> = batch
+            .undo_receipts
+            .iter()
+            .map(|receipt| {
+                stage(receipt)
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .strip_prefix(".ottrin-txn-")
+                    .unwrap()
+                    .to_string()
+            })
+            .collect();
+        let phase = std::time::Instant::now();
+        let observed = crate::observe_retained_copy_cleanup(&selected).unwrap();
+        eprintln!(
+            "Cleanup phase: records={count} phase=observe elapsed_ms={}",
+            phase.elapsed().as_millis()
+        );
+        let phase = std::time::Instant::now();
+        let mut plan = plan_cleanup(&observed).unwrap();
+        eprintln!(
+            "Cleanup phase: records={count} phase=plan elapsed_ms={}",
+            phase.elapsed().as_millis()
+        );
+        let phase = std::time::Instant::now();
         while plan.reclaim_payload_next().unwrap() {}
+        eprintln!(
+            "Cleanup phase: records={count} phase=reclaim elapsed_ms={}",
+            phase.elapsed().as_millis()
+        );
+        let phase = std::time::Instant::now();
         let finalization = plan.begin_finalization().unwrap();
+        eprintln!(
+            "Cleanup phase: records={count} phase=manifest elapsed_ms={}",
+            phase.elapsed().as_millis()
+        );
         let metadata_size = std::fs::read_dir(root.path().join("copies"))
             .unwrap()
             .map(|entry| {
@@ -1503,6 +1521,16 @@ mod tests {
         );
         assert_eq!(unsafe { libc::getppid() } as u32, parent);
         let root = PathBuf::from(root);
+        assert_ne!(
+            std::fs::read_link("/proc/self/ns/mnt")
+                .unwrap()
+                .to_string_lossy(),
+            std::env::var("OTTRIN_FINALIZATION_MOUNT_NAMESPACE").unwrap()
+        );
+        if std::env::var("OTTRIN_FINALIZATION_MOUNT_MODE").as_deref() == Ok("payload") {
+            super::super::tests::payload_dependency_change_fixture(&root, true);
+            return;
+        }
         let _registry = Registry::new(&root);
         let (finalization, _) = completed_group(&root);
         require_monitor(&finalization);
@@ -1549,59 +1577,66 @@ mod tests {
     #[test]
     #[ignore = "requires unprivileged private mount namespaces"]
     fn mount_rebinding_invalidates_finalization_before_any_metadata_is_removed() {
-        let root = tempfile::tempdir().unwrap();
-        struct OwnedChild(Option<std::process::Child>);
-        impl Drop for OwnedChild {
-            fn drop(&mut self) {
-                if let Some(child) = &mut self.0 {
-                    let _ = child.kill();
-                    let _ = child.wait();
+        for mode in ["finalization", "payload"] {
+            let root = tempfile::tempdir().unwrap();
+            struct OwnedChild(Option<std::process::Child>);
+            impl Drop for OwnedChild {
+                fn drop(&mut self) {
+                    if let Some(child) = &mut self.0 {
+                        let _ = child.kill();
+                        let _ = child.wait();
+                    }
                 }
             }
-        }
-        let mut child = OwnedChild(Some(
-            std::process::Command::new("unshare")
-                .args([
-                    "--user",
-                    "--map-root-user",
-                    "--mount",
-                    "--propagation",
-                    "private",
-                ])
-                .arg(std::env::current_exe().unwrap())
-                .args([
-                    "--exact",
-                    "copy_recovery::cleanup::finalization::tests::mount_guard_private_child",
-                    "--nocapture",
-                ])
-                .env("OTTRIN_FINALIZATION_MOUNT_ROOT", root.path())
-                .env(
-                    "OTTRIN_FINALIZATION_MOUNT_PARENT",
-                    std::process::id().to_string(),
-                )
-                .stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::piped())
-                .spawn()
-                .unwrap(),
-        ));
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
-        loop {
-            if child.0.as_mut().unwrap().try_wait().unwrap().is_some() {
-                break;
+            let mut child = OwnedChild(Some(
+                std::process::Command::new("unshare")
+                    .args([
+                        "--user",
+                        "--map-root-user",
+                        "--mount",
+                        "--propagation",
+                        "private",
+                    ])
+                    .arg(std::env::current_exe().unwrap())
+                    .args([
+                        "--exact",
+                        "copy_recovery::cleanup::finalization::tests::mount_guard_private_child",
+                        "--nocapture",
+                    ])
+                    .env("OTTRIN_FINALIZATION_MOUNT_ROOT", root.path())
+                    .env("OTTRIN_FINALIZATION_MOUNT_MODE", mode)
+                    .env(
+                        "OTTRIN_FINALIZATION_MOUNT_NAMESPACE",
+                        std::fs::read_link("/proc/self/ns/mnt").unwrap(),
+                    )
+                    .env(
+                        "OTTRIN_FINALIZATION_MOUNT_PARENT",
+                        std::process::id().to_string(),
+                    )
+                    .stdout(std::process::Stdio::piped())
+                    .stderr(std::process::Stdio::piped())
+                    .spawn()
+                    .unwrap(),
+            ));
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+            loop {
+                if child.0.as_mut().unwrap().try_wait().unwrap().is_some() {
+                    break;
+                }
+                assert!(
+                    std::time::Instant::now() < deadline,
+                    "private mount child timed out"
+                );
+                std::thread::sleep(std::time::Duration::from_millis(10));
             }
+            let output = child.0.take().unwrap().wait_with_output().unwrap();
             assert!(
-                std::time::Instant::now() < deadline,
-                "private mount child timed out"
+                output.status.success(),
+                "{}\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
             );
-            std::thread::sleep(std::time::Duration::from_millis(10));
         }
-        let output = child.0.take().unwrap().wait_with_output().unwrap();
-        assert!(
-            output.status.success(),
-            "{}\n{}",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
     }
 
     #[test]

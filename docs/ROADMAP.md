@@ -2660,3 +2660,41 @@ this fixture. Setup, payload reclamation, unrelated-registry scaling, unsupporte
 notification topologies, arbitrary power loss and physical/native platform gates
 retain their separate scopes. Exact-package delivery is recorded in
 `dist/packages/COPY_GROUP_SCALING_ACCEPTANCE.json` when promoted.
+
+
+### Copy payload decoding and metadata invalidation — 2026-10-15
+
+The resource fixture now follows the production cleanup-observation API and
+reports copy, observation, planning, payload reclamation, manifest creation and
+finalization separately. The retained-data phase was the remaining dominant
+cost: 73/440/3961 ms for 8/32/128 overwritten directories with 16 retained leaves.
+
+A shared bounded CopyRecord decoding memo now serves payload validation and
+finalization. Every payload registry file is still opened and read through the
+existing reader. Only exact byte equality reuses an immutable parsed record;
+changed bytes go through the authoritative schema validator. Same-length edits,
+invalid schema changes and restored bytes are covered. The memo retains at most
+16 MiB of encoded contents and4096 entries, contains no descriptors, and is freed
+when the last payload completes. Ownership, directory, mount, dependency and
+fresh-byte checks remain in place. Registry reads and watch setup still have
+separate larger-group scaling costs; this does not claim linear reclamation.
+
+The review reproduced a payload-monitor gap: an outside hard-link edit of an
+unselected dependency journal was detected after the claimed retained object
+had already been unlinked. The regression fails before the inode-watch repair
+and now preserves that exact object before refusal. Payload monitoring watches
+all canonical journal inodes and its local journal, in addition to their parent
+directories. Payload and finalization share one mount-namespace invalidation
+implementation; a same-inode bind change is refused before unlink. Unknown or
+remote notification semantics and failed inode-watch admission force full
+scope/pair checks at each monitored boundary; a no-event regression verifies
+that fallback still sees changed dependencies.
+
+All411 regular platform tests pass (three gated cases), as does strict Linux
+platform all-target Clippy. The explicit private namespace gate now exercises
+both payload and metadata finalization. The final local optimized-test-build
+profile measured90/413/2173 ms for retained-data reclamation; the128-entry case
+is about45 percent faster than3961 ms, with stronger monitoring. Finalization
+remains approximately linear in the monitored fixture. Native receipt-unmount,
+exact package workflow, broad resource and platform gates retain their recorded
+scopes; delivery is recorded in `dist/packages/COPY_PAYLOAD_ACCEPTANCE.json`.

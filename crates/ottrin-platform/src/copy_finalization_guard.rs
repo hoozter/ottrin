@@ -18,8 +18,7 @@ pub(super) struct NamespaceGuard {
     file_wds: BTreeSet<i32>,
     retired_files: BTreeSet<i32>,
     expected_deletes: BTreeSet<(i32, Vec<u8>)>,
-    mounts: std::fs::File,
-    namespace: (u64, u64),
+    mounts: crate::local_storage::MountNamespaceGuard,
 }
 
 impl NamespaceGuard {
@@ -30,8 +29,7 @@ impl NamespaceGuard {
         manifest_name: &str,
         entries: &BTreeMap<String, Entry>,
     ) -> Result<Self, PlatformError> {
-        let mounts = std::fs::File::open("/proc/thread-self/mounts").map_err(journal_error)?;
-        let ns = std::fs::metadata("/proc/thread-self/ns/mnt").map_err(journal_error)?;
+        let mounts = crate::local_storage::MountNamespaceGuard::new().map_err(journal_error)?;
         let mut guard = Self {
             directories: BTreeMap::new(),
             directory_ids: BTreeMap::new(),
@@ -40,7 +38,6 @@ impl NamespaceGuard {
             retired_files: BTreeSet::new(),
             expected_deletes: BTreeSet::new(),
             mounts,
-            namespace: (ns.dev(), ns.ino()),
         };
         reads.events = Some(
             inotify::init(inotify::CreateFlags::NONBLOCK | inotify::CreateFlags::CLOEXEC)
@@ -126,7 +123,7 @@ impl NamespaceGuard {
             Mode::empty(),
         )
         .map_err(journal_error)?;
-        if !MetadataReads::notifications_supported(&fd) {
+        if !crate::local_storage::supports_local_inode_notifications(&fd) {
             return Err(refusal(
                 "Finalization directory notifications are unavailable",
             ));
@@ -190,21 +187,7 @@ impl NamespaceGuard {
     }
 
     pub(super) fn check_mounts(&self) -> Result<(), PlatformError> {
-        let ns = std::fs::metadata("/proc/thread-self/ns/mnt").map_err(journal_error)?;
-        let mut poll = libc::pollfd {
-            fd: self.mounts.as_raw_fd(),
-            events: libc::POLLPRI | libc::POLLERR,
-            revents: 0,
-        };
-        // SAFETY: poll points to one initialized descriptor and never blocks.
-        let ready = unsafe { libc::poll(&mut poll, 1, 0) };
-        if ready < 0 {
-            return Err(journal_error(std::io::Error::last_os_error()));
-        }
-        if ready != 0 || self.namespace != (ns.dev(), ns.ino()) {
-            return Err(refusal("Copy finalization mount namespace changed"));
-        }
-        Ok(())
+        self.mounts.validate().map_err(journal_error)
     }
 
     /// Returns true for an event governed by this namespace proof.

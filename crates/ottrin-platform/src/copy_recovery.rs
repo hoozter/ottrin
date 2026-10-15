@@ -10,6 +10,10 @@ use rustix::fs::{Mode, OFlags};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
 
+#[path = "copy_record_cache.rs"]
+mod record_cache;
+use record_cache::CopyRecordCache;
+
 #[path = "copy_cleanup.rs"]
 mod cleanup;
 pub use cleanup::{
@@ -219,7 +223,7 @@ pub(super) struct CopyRecord {
     cleanup: Option<cleanup::CleanupIntent>,
 }
 
-pub(super) type CopyRegistryEntry = (String, Result<CopyRecord, PlatformError>);
+pub(super) type CopyRegistryEntry<T = CopyRecord> = (String, Result<T, PlatformError>);
 
 impl CopyRecord {
     fn validate_opened_directory(

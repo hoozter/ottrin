@@ -2234,10 +2234,15 @@ impl LinuxJournalDirectory {
         &self,
         name: &str,
     ) -> Result<super::copy_recovery::CopyRecord, super::PlatformError> {
-        let encoded = self
-            .read_named(name)
-            .map_err(|error| super::PlatformError::Io(error.to_string()))?;
-        super::copy_recovery::CopyRecord::parse(&encoded)
+        super::copy_recovery::CopyRecord::parse(&self.read_copy_record_bytes(name)?)
+    }
+
+    pub(super) fn read_copy_record_bytes(
+        &self,
+        name: &str,
+    ) -> Result<Vec<u8>, super::PlatformError> {
+        self.read_named(name)
+            .map_err(|error| super::PlatformError::Io(error.to_string()))
     }
 
     pub(super) fn discover_copy_records(
@@ -2246,10 +2251,10 @@ impl LinuxJournalDirectory {
         self.discover_copy_records_with(|name| self.read_copy_record(name))
     }
 
-    pub(super) fn discover_copy_records_with(
+    pub(super) fn discover_copy_records_with<T>(
         &self,
-        mut read: impl FnMut(&str) -> Result<super::copy_recovery::CopyRecord, super::PlatformError>,
-    ) -> Result<Vec<super::copy_recovery::CopyRegistryEntry>, JournalError> {
+        mut read: impl FnMut(&str) -> Result<T, super::PlatformError>,
+    ) -> Result<Vec<super::copy_recovery::CopyRegistryEntry<T>>, JournalError> {
         let mut directory = rustix::fs::Dir::read_from(&self.directory)
             .map_err(|error| JournalError::Io(error.to_string()))?;
         let mut records = Vec::new();

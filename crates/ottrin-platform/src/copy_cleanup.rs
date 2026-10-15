@@ -553,9 +553,10 @@ fn mutation_boundary(
     stage: &std::fs::File,
     record: &CopyRecord,
     selected: &BTreeSet<String>,
+    parsed: &mut CopyRecordCache,
 ) -> Result<(), PlatformError> {
     pair_matches(central, local, record)?;
-    mutation_scope(central, parent, stage, record, selected)
+    mutation_scope(central, parent, stage, record, selected, parsed)
 }
 
 fn mutation_scope(
@@ -564,11 +565,12 @@ fn mutation_scope(
     stage: &std::fs::File,
     record: &CopyRecord,
     selected: &BTreeSet<String>,
+    parsed: &mut CopyRecordCache,
 ) -> Result<(), PlatformError> {
     record.validate_namespace()?;
     record.validate_opened_directory(parent, true)?;
     record.validate_opened_directory(stage, false)?;
-    let all = registry_records(central)?;
+    let all = registry_records_cached(central, parsed)?;
     for (id, other) in &all {
         if other.operation.id == record.operation.id && !selected.contains(id) {
             return Err(refusal("Copy operation membership changed during cleanup"));
@@ -603,6 +605,9 @@ struct CleanupMonitor {
     root: PathBuf,
     registry_watch: i32,
     stage_watch: i32,
+    mounts: crate::local_storage::MountNamespaceGuard,
+    full_revalidation: bool,
+    selected: BTreeSet<String>,
 }
 
 impl CleanupMonitor {
@@ -610,8 +615,10 @@ impl CleanupMonitor {
         central: &LinuxJournalDirectory,
         stage: &std::fs::File,
         root: &Path,
+        selected: &BTreeSet<String>,
     ) -> Result<Self, PlatformError> {
         use rustix::fs::inotify;
+        let mounts = crate::local_storage::MountNamespaceGuard::new().map_err(journal_error)?;
         let registry = central.duplicate_copy_directory().map_err(journal_error)?;
         let events = inotify::init(inotify::CreateFlags::NONBLOCK | inotify::CreateFlags::CLOEXEC)
             .map_err(journal_error)?;
@@ -628,7 +635,43 @@ impl CleanupMonitor {
             inotify::add_watch(&events, path_from_fd(&registry), mask).map_err(journal_error)?;
         let stage_watch =
             inotify::add_watch(&events, path_from_fd(stage), mask).map_err(journal_error)?;
+        let mut full_revalidation =
+            !crate::local_storage::supports_local_inode_notifications(&registry)
+                || !crate::local_storage::supports_local_inode_notifications(stage);
+        let file_mask = mask & !inotify::WatchFlags::ONLYDIR;
+        let mut watch_file =
+            |directory: &dyn rustix::fd::AsFd, name: &str| -> Result<(), PlatformError> {
+                let fd = rustix::fs::openat(
+                    directory,
+                    name,
+                    OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                    Mode::empty(),
+                )
+                .map_err(journal_error)?;
+                let stat = rustix::fs::fstat(&fd).map_err(journal_error)?;
+                if rustix::fs::FileType::from_raw_mode(stat.st_mode)
+                    != rustix::fs::FileType::RegularFile
+                {
+                    return Err(refusal("Copy cleanup journal is not a regular file"));
+                }
+                full_revalidation |= !crate::local_storage::supports_local_inode_notifications(&fd);
+                // Directory watches miss writes through hard links outside the
+                // registry/stage. Any event from a journal inode is unexpected.
+                if inotify::add_watch(&events, path_from_fd(&fd), file_mask).is_err() {
+                    full_revalidation = true;
+                }
+                Ok(())
+            };
+        central
+            .discover_copy_records_with(|name| watch_file(&registry, name))
+            .map_err(journal_error)?
+            .into_iter()
+            .try_for_each(|(_, result)| result)?;
+        watch_file(stage, "copy-journal")?;
         Ok(Self {
+            mounts,
+            full_revalidation,
+            selected: selected.clone(),
             events,
             registry,
             root: root.into(),
@@ -644,6 +687,21 @@ impl CleanupMonitor {
         stage: &std::fs::File,
     ) -> Result<(), PlatformError> {
         use rustix::fs::inotify;
+        self.mounts.validate().map_err(journal_error)?;
+        if self.full_revalidation {
+            let central =
+                LinuxJournalDirectory::for_copy_stage(&self.registry).map_err(journal_error)?;
+            let local = LinuxJournalDirectory::for_copy_stage(stage).map_err(journal_error)?;
+            mutation_boundary(
+                &central,
+                &local,
+                parent,
+                stage,
+                record,
+                &self.selected,
+                &mut CopyRecordCache::uncached(),
+            )?;
+        }
         record.validate_namespace()?;
         record.validate_opened_directory(parent, true)?;
         record.validate_opened_directory(stage, false)?;
@@ -740,6 +798,7 @@ fn reclaim_payload(
     expected: &CopyRecord,
     selected: &BTreeSet<String>,
     hook: &mut impl FnMut(CleanupPoint) -> Result<(), PlatformError>,
+    parsed: &mut CopyRecordCache,
 ) -> Result<CopyRecord, PlatformError> {
     let central = LinuxJournalDirectory::open_copy_registry(root, false).map_err(journal_error)?;
     let mut record =
@@ -762,7 +821,7 @@ fn reclaim_payload(
             CopyPhase::Undone => record.validate_completed_data()?,
             _ => return Err(refusal("Copy is not ready for cleanup")),
         }
-        mutation_boundary(&central, &local, &parent, &stage, &record, selected)?;
+        mutation_boundary(&central, &local, &parent, &stage, &record, selected, parsed)?;
         let (ledger, intent) = Ledger::create(&stage, &record)?;
         record.phase = CopyPhase::CleanupPending;
         record.cleanup = Some(intent);
@@ -774,10 +833,10 @@ fn reclaim_payload(
         reconcile_pair(&central, &local, &stage, &record)?;
         Ledger::open(&stage, &record)?
     };
-    let monitor = CleanupMonitor::new(&central, &stage, root)?;
+    let monitor = CleanupMonitor::new(&central, &stage, root, selected)?;
     ledger.validate_named(&stage)?;
     validate_partial(&record, &stage, &ledger.state)?;
-    mutation_boundary(&central, &local, &parent, &stage, &record, selected)?;
+    mutation_boundary(&central, &local, &parent, &stage, &record, selected, parsed)?;
     monitor.check(&record, &parent, &stage)?;
     if record.phase == CopyPhase::CleanupComplete {
         return Ok(record);
@@ -867,7 +926,7 @@ fn reclaim_payload(
     }
     ledger.validate_named(&stage)?;
     validate_partial(&record, &stage, &ledger.state)?;
-    mutation_boundary(&central, &local, &parent, &stage, &record, selected)?;
+    mutation_boundary(&central, &local, &parent, &stage, &record, selected, parsed)?;
     monitor.check(&record, &parent, &stage)?;
     record.phase = CopyPhase::CleanupComplete;
     lock.persist_copy_in_registry(&central, &record)
@@ -884,6 +943,7 @@ pub struct RetainedCopyCleanupPlan {
     root: PathBuf,
     records: BTreeMap<String, CopyRecord>,
     pending: BTreeSet<String>,
+    parsed: CopyRecordCache,
 }
 
 impl RetainedCopyCleanupPlan {
@@ -913,8 +973,8 @@ impl RetainedCopyCleanupPlan {
         };
         let expected = &self.records[&id];
         let selected = self.records.keys().cloned().collect();
-        let updated = reclaim_payload(&self.root, expected, &selected, hook).map_err(|error| {
-            PlatformError::CleanupPending {
+        let updated = reclaim_payload(&self.root, expected, &selected, hook, &mut self.parsed)
+            .map_err(|error| PlatformError::CleanupPending {
                 transaction: expected
                     .transaction
                     .decode()
@@ -923,10 +983,13 @@ impl RetainedCopyCleanupPlan {
                 message: format!(
                     "Copy cleanup is incomplete; preserve its data and progress: {error}"
                 ),
-            }
-        })?;
+            })?;
         self.pending.remove(&id);
         self.records.insert(id, updated);
+        if self.pending.is_empty() {
+            // Finalization uses the owned records, not the decoding memo.
+            self.parsed = CopyRecordCache::default();
+        }
         Ok(true)
     }
 
@@ -983,6 +1046,7 @@ pub fn resume_cleanup(ids: &[String]) -> Result<RetainedCopyCleanupPlan, Platfor
     let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
     let all = registry_records(&central)?;
     let mut records = BTreeMap::new();
+    let mut parsed = CopyRecordCache::default();
     for id in ids {
         let record = all
             .get(id)
@@ -1026,6 +1090,7 @@ pub fn resume_cleanup(ids: &[String]) -> Result<RetainedCopyCleanupPlan, Platfor
             &stage,
             record,
             &records.keys().cloned().collect(),
+            &mut parsed,
         )?;
         if local.read_copy_record("copy-journal")? != previous {
             return Err(refusal(
@@ -1037,6 +1102,7 @@ pub fn resume_cleanup(ids: &[String]) -> Result<RetainedCopyCleanupPlan, Platfor
         }
     }
     Ok(RetainedCopyCleanupPlan {
+        parsed,
         root,
         pending: records.keys().cloned().collect(),
         records,
@@ -1120,6 +1186,7 @@ pub fn plan_cleanup(
         }
     }
     let plan = RetainedCopyCleanupPlan {
+        parsed: CopyRecordCache::default(),
         root: configured_root()?,
         pending: records.keys().cloned().collect(),
         records,
@@ -1135,8 +1202,23 @@ fn refusal(message: &str) -> PlatformError {
 pub(super) fn registry_records(
     central: &LinuxJournalDirectory,
 ) -> Result<BTreeMap<String, CopyRecord>, PlatformError> {
+    Ok(
+        registry_records_cached(central, &mut CopyRecordCache::uncached())?
+            .into_iter()
+            .map(|(id, record)| (id, std::sync::Arc::unwrap_or_clone(record)))
+            .collect(),
+    )
+}
+
+fn registry_records_cached(
+    central: &LinuxJournalDirectory,
+    parsed: &mut CopyRecordCache,
+) -> Result<BTreeMap<String, std::sync::Arc<CopyRecord>>, PlatformError> {
     central
-        .discover_copy_records()
+        .discover_copy_records_with(|name| {
+            // Fresh bytes and the existing read_named checks are never skipped.
+            parsed.parse(name, central.read_copy_record_bytes(name)?.into())
+        })
         .map_err(journal_error)?
         .into_iter()
         .map(|(id, record)| {
@@ -1285,6 +1367,108 @@ mod tests {
 
     pub(super) fn stage(receipt: &crate::PathMoveUndoReceipt) -> PathBuf {
         receipt.before_path().parent().unwrap().to_path_buf()
+    }
+
+    #[test]
+    fn cached_registry_reads_reject_changed_and_invalid_bytes_without_reusing_old_values() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let _receipt = copy(root.path(), "cached");
+        let central =
+            LinuxJournalDirectory::open_copy_registry(&root.path().join("copies"), false).unwrap();
+        let mut cache = CopyRecordCache::default();
+        let first = registry_records_cached(&central, &mut cache).unwrap();
+        let (id, original) = first.iter().next().unwrap();
+        let path = root.path().join("copies").join(format!("{id}.journal"));
+        let bytes = std::fs::read(&path).unwrap();
+        let mut changed = original.as_ref().clone();
+        changed.operation.item_count += 1;
+        let encoded = serde_json::to_vec(&changed).unwrap();
+        assert_eq!(
+            encoded.len(),
+            bytes.len(),
+            "same-length mutation must not hit the old decoded value"
+        );
+        std::fs::write(&path, encoded).unwrap();
+        assert_eq!(
+            registry_records_cached(&central, &mut cache).unwrap()[id]
+                .operation
+                .item_count,
+            2
+        );
+        changed.schema = 0;
+        std::fs::write(&path, serde_json::to_vec(&changed).unwrap()).unwrap();
+        assert!(registry_records_cached(&central, &mut cache).is_err());
+        std::fs::write(&path, bytes).unwrap();
+        assert_eq!(
+            registry_records_cached(&central, &mut cache).unwrap()[id].as_ref(),
+            original.as_ref()
+        );
+    }
+
+    #[test]
+    fn payload_monitor_fallback_rechecks_dependencies_without_notifications() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let receipt = directory_backup(root.path());
+        let selected = statuses(root.path())[0]
+            .observation
+            .as_ref()
+            .unwrap()
+            .record
+            .clone();
+        let source = root.path().join("unrelated-source");
+        let destination = root.path().join("unrelated-destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(source.join("item"), "unrelated").unwrap();
+        let unrelated = DefaultPlatform
+            .execute_copy_with_undo_receipt(
+                &source.join("item"),
+                &destination,
+                ConflictAction::Overwrite,
+            )
+            .unwrap()
+            .unwrap();
+        let other =
+            CopyRecord::parse(&std::fs::read(stage(&unrelated).join("copy-journal")).unwrap())
+                .unwrap();
+        let canonical = root
+            .path()
+            .join("copies")
+            .join(format!("{}.journal", other.transaction_id().unwrap()));
+        let central =
+            LinuxJournalDirectory::open_copy_registry(&root.path().join("copies"), false).unwrap();
+        let (parent, directory) = open_directories(&selected).unwrap();
+        let mut monitor = CleanupMonitor::new(
+            &central,
+            &directory,
+            &root.path().join("copies"),
+            &BTreeSet::from([selected.transaction_id().unwrap()]),
+        )
+        .unwrap();
+        monitor.full_revalidation = true;
+        let mut value: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&canonical).unwrap()).unwrap();
+        value["parent_handle"] =
+            serde_json::to_value(&selected.displaced_objects.as_ref().unwrap()[0].handle).unwrap();
+        std::fs::write(&canonical, serde_json::to_vec(&value).unwrap()).unwrap();
+        // Model remote writes that do not generate local notification events.
+        let mut buffer = [0u8; 4096];
+        loop {
+            match rustix::io::read(&monitor.events, &mut buffer) {
+                Ok(_) => {}
+                Err(rustix::io::Errno::WOULDBLOCK) => break,
+                Err(rustix::io::Errno::INTR) => continue,
+                Err(error) => panic!("{error}"),
+            }
+        }
+        assert!(monitor.check(&selected, &parent, &directory).is_err());
+        assert!(receipt.before_path().join("nested/deeper/a").exists());
+        assert_eq!(
+            std::fs::read(root.path().join("destination/item")).unwrap(),
+            b"new"
+        );
     }
 
     #[test]
@@ -1760,6 +1944,115 @@ mod tests {
         std::fs::write(&outside, "outside user data").unwrap();
         std::os::unix::fs::symlink(&outside, destination.join("item/link")).unwrap();
         copy(root, "new")
+    }
+
+    #[test]
+    fn payload_cleanup_refuses_dependency_changes_through_an_outside_journal_alias_before_unlink() {
+        let root = tempfile::tempdir().unwrap();
+        payload_dependency_change_fixture(root.path(), false);
+    }
+
+    pub(super) fn payload_dependency_change_fixture(root: &Path, bind: bool) {
+        let _registry = Registry::new(root);
+        let receipt = directory_backup(root);
+        let captured = statuses(root);
+        let selected = &captured[0].observation.as_ref().unwrap().record;
+        let reference = selected.displaced_objects.as_ref().unwrap()[0]
+            .handle
+            .clone();
+        let mut plan = plan_cleanup(&captured).unwrap();
+        let source = root.join("unrelated-source");
+        let destination = root.join("unrelated-destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(source.join("item"), "unrelated").unwrap();
+        let unrelated = DefaultPlatform
+            .execute_copy_with_undo_receipt(
+                &source.join("item"),
+                &destination,
+                ConflictAction::Overwrite,
+            )
+            .unwrap()
+            .unwrap();
+        let record =
+            CopyRecord::parse(&std::fs::read(stage(&unrelated).join("copy-journal")).unwrap())
+                .unwrap();
+        let canonical = root
+            .join("copies")
+            .join(format!("{}.journal", record.transaction_id().unwrap()));
+        let alias = root.join("outside-journal-alias");
+        std::fs::hard_link(&canonical, &alias).unwrap();
+        let original = std::fs::read(&canonical).unwrap();
+        let mut changed: serde_json::Value = serde_json::from_slice(&original).unwrap();
+        changed["parent_handle"] = serde_json::to_value(reference).unwrap();
+        let bytes = serde_json::to_vec(&changed).unwrap();
+        let quarantine = stage(&receipt).join(QUARANTINE);
+        let mut attacked = false;
+        let mut inode = 0;
+        assert!(
+            plan.reclaim_payload_next_with_hook(&mut |point| {
+                if !attacked && point == CleanupPoint::BeforeUnlink {
+                    inode = std::fs::symlink_metadata(&quarantine).unwrap().ino();
+                    attacked = true;
+                    if bind {
+                        let path = std::ffi::CString::new(std::os::unix::ffi::OsStrExt::as_bytes(
+                            canonical.as_os_str(),
+                        ))
+                        .unwrap();
+                        // Dedicated private mount-namespace child only.
+                        assert_eq!(
+                            unsafe {
+                                libc::mount(
+                                    path.as_ptr(),
+                                    path.as_ptr(),
+                                    std::ptr::null(),
+                                    libc::MS_BIND,
+                                    std::ptr::null(),
+                                )
+                            },
+                            0
+                        );
+                    } else {
+                        std::fs::write(&alias, &bytes).unwrap();
+                    }
+                }
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(attacked);
+        assert_eq!(
+            std::fs::symlink_metadata(&quarantine)
+                .expect(
+                    "changed dependency must be refused before deleting the claimed retained object"
+                )
+                .ino(),
+            inode
+        );
+        assert_eq!(
+            std::fs::read(&canonical).unwrap(),
+            if bind { original } else { bytes }
+        );
+        if bind {
+            let path = std::ffi::CString::new(std::os::unix::ffi::OsStrExt::as_bytes(
+                canonical.as_os_str(),
+            ))
+            .unwrap();
+            assert_eq!(unsafe { libc::umount2(path.as_ptr(), libc::MNT_DETACH) }, 0);
+        }
+        assert_eq!(
+            std::fs::read(root.join("outside")).unwrap(),
+            b"outside user data"
+        );
+        assert_eq!(
+            std::fs::read(root.join("destination/item")).unwrap(),
+            b"new"
+        );
+        assert_eq!(std::fs::read(source.join("item")).unwrap(), b"unrelated");
+        assert_eq!(
+            std::fs::read(destination.join("item")).unwrap(),
+            b"unrelated"
+        );
     }
 
     #[test]

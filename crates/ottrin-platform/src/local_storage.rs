@@ -7,11 +7,59 @@ use std::io;
 use std::mem::MaybeUninit;
 use std::os::fd::{AsFd, AsRawFd};
 use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
 // Linux 6.8 statx ABI; unlike STATX_MNT_ID, this ID is not reused during boot.
 // libc's existing statx layout contains stx_mnt_id but not this mask constant.
 const STATX_MNT_ID_UNIQUE: u32 = 0x4000;
+
+/// Notifications on these local inode implementations can invalidate a cached
+/// namespace proof. Unknown/remote filesystems require fresh full checks.
+pub(crate) fn supports_local_inode_notifications(fd: &impl AsFd) -> bool {
+    rustix::fs::fstatfs(fd).is_ok_and(|stat| {
+        matches!(
+            stat.f_type as u64,
+            0xef53 | 0x9123683e | 0x58465342 | 0x01021994
+        )
+    })
+}
+
+/// Worker-scoped mount-table invalidation, including same-inode bind mounts.
+/// Holding this proc file does not retain handles to an operation's filesystem.
+pub(crate) struct MountNamespaceGuard {
+    mounts: std::fs::File,
+    namespace: (u64, u64),
+}
+
+impl MountNamespaceGuard {
+    pub(crate) fn new() -> io::Result<Self> {
+        let mounts = std::fs::File::open("/proc/thread-self/mounts")?;
+        let namespace = std::fs::metadata("/proc/thread-self/ns/mnt")?;
+        Ok(Self {
+            mounts,
+            namespace: (namespace.dev(), namespace.ino()),
+        })
+    }
+
+    pub(crate) fn validate(&self) -> io::Result<()> {
+        let namespace = std::fs::metadata("/proc/thread-self/ns/mnt")?;
+        let mut poll = libc::pollfd {
+            fd: self.mounts.as_raw_fd(),
+            events: libc::POLLPRI | libc::POLLERR,
+            revents: 0,
+        };
+        // SAFETY: poll addresses one initialized descriptor and never blocks.
+        let ready = unsafe { libc::poll(&mut poll, 1, 0) };
+        if ready < 0 {
+            return Err(io::Error::last_os_error());
+        }
+        if ready != 0 || self.namespace != (namespace.dev(), namespace.ino()) {
+            return Err(io::Error::other("mount namespace changed"));
+        }
+        Ok(())
+    }
+}
 
 /// Queries the opened object itself, including an unlinked file or an O_PATH
 /// symlink, without resolving /proc/self/fd or requiring a surviving pathname.
