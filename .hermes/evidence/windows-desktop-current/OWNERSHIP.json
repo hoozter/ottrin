@@ -1,0 +1,13 @@
+{
+  "domain": "ottrin-index-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinDesktopQA",
+  "account": "OttrinDesktopQA",
+  "purpose": "Current candidate standard-user installer and GUI acceptance",
+  "restore": "Exact nonsecret Winlogon values, remove owned password/account/profile/task/root; preserve campbell profile/installation; shut off domain",
+  "candidates": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "057cfb501ed255a638cc85e7a55bc57a819e4838fc74fcc1f610e32d2dad931e",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "733b03ead20c2e6e71011cc19260d9d18fb6c4daf8437a3e9063f2139a0c9222",
+    "Ottrin-0.1.0-windows-x64.msi": "d48c007ef26ea987e58fca23e76a0b847c3d01a53d5127a690213d9392c3fc42"
+  }
+}

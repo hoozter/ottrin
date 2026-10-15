@@ -1,0 +1,17 @@
+   Compiling windows-sys v0.61.2
+   Compiling winapi-util v0.1.11
+   Compiling normpath v1.5.0
+   Compiling eframe v0.33.3
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
+   Compiling opener v0.8.4
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling syntect v5.3.0
+   Compiling notify v8.2.0
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+   Compiling egui_extras v0.33.3
+   Compiling two-face v0.5.2+bat-0.26.1
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 2m 11s

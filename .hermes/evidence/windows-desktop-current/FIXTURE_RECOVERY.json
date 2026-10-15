@@ -1,0 +1,5 @@
+{
+  "profile": "OttrinDesktopQA",
+  "status": "pass",
+  "operation": "Normal per-user uninstall after test-script return-value failure"
+}

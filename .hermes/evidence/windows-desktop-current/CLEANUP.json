@@ -1,0 +1,16 @@
+{
+  "domain": "ottrin-index-qa",
+  "existing_installation_uninstaller_hash": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+  "login_values_restored_exactly": true,
+  "temporary_password_removed": true,
+  "owned_index_task_removed": true,
+  "owned_account_removed": true,
+  "actor_tasks_removed": true,
+  "status": "pass",
+  "owned_profile_removed": true,
+  "existing_preference_hash": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+  "guest_root_removed": true,
+  "domain_restored_state": "shut off",
+  "host_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "host_user_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350"
+}

@@ -1,0 +1,19 @@
+{
+  "work_area": {
+    "left": 0,
+    "right": 1280,
+    "bottom": 752,
+    "top": 0
+  },
+  "normal_gui_exit": true,
+  "scope": "Source-built Windows main executable over current166 MSI runtime; standard user, 1280x800 primary desktop; not a newly packaged build",
+  "cleanup_exit": 0,
+  "status": "pass",
+  "window": {
+    "left": 128,
+    "right": 1152,
+    "bottom": 716,
+    "top": 36
+  },
+  "executable_sha256": "59597b492b8828e949a3b6fd5e0cc9e8d36b2e21fc4aced1c9f9a66ab9d7f4b8"
+}

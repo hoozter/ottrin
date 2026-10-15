@@ -1,0 +1,961 @@
+=== Verbose logging started: 2026-10-15  07:47:37  Build type: SHIP UNICODE 5.00.10011.00  Calling process: C:\WINDOWS\system32\msiexec.exe ===
+MSI (c) (FC:08) [07:47:37:228]: Resetting cached policy values
+MSI (c) (FC:08) [07:47:37:228]: Machine policy value 'Debug' is 0
+MSI (c) (FC:08) [07:47:37:228]: ******* RunEngine:
+           ******* Product: C:\OttrinDesktopQA\baseline.msi
+           ******* Action:
+           ******* CommandLine: **********
+MSI (c) (FC:08) [07:47:37:230]: Client-side and UI is none or basic: Running entire install on the server.
+MSI (c) (FC:08) [07:47:37:230]: Grabbed execution mutex.
+MSI (c) (FC:08) [07:47:37:242]: Cloaking enabled.
+MSI (c) (FC:08) [07:47:37:242]: Attempting to enable all disabled privileges before calling Install on Server
+MSI (c) (FC:08) [07:47:37:250]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (7C:74) [07:47:37:258]: Running installation inside multi-package transaction C:\OttrinDesktopQA\baseline.msi
+MSI (s) (7C:74) [07:47:37:258]: Grabbed execution mutex.
+MSI (s) (7C:88) [07:47:37:262]: Resetting cached policy values
+MSI (s) (7C:88) [07:47:37:262]: Machine policy value 'Debug' is 0
+MSI (s) (7C:88) [07:47:37:262]: ******* RunEngine:
+           ******* Product: C:\OttrinDesktopQA\baseline.msi
+           ******* Action:
+           ******* CommandLine: **********
+MSI (s) (7C:88) [07:47:37:262]: Machine policy value 'DisableUserInstalls' is 0
+MSI (s) (7C:88) [07:47:37:266]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (7C:88) [07:47:37:266]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (7C:88) [07:47:37:268]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2
+MSI (s) (7C:88) [07:47:37:268]: Access database with Impersonation
+MSI (s) (7C:88) [07:47:37:270]: File will have security applied from OpCode.
+MSI (s) (7C:88) [07:47:37:312]: SOFTWARE RESTRICTION POLICY: Verifying package --> 'C:\OttrinDesktopQA\baseline.msi' against software restriction policy
+MSI (s) (7C:88) [07:47:37:312]: Note: 1: 2262 2: DigitalSignature 3: -2147287038
+MSI (s) (7C:88) [07:47:37:312]: SOFTWARE RESTRICTION POLICY: C:\OttrinDesktopQA\baseline.msi is not digitally signed
+MSI (s) (7C:88) [07:47:37:312]: SOFTWARE RESTRICTION POLICY: C:\OttrinDesktopQA\baseline.msi is permitted to run at the 'unrestricted' authorization level.
+MSI (s) (7C:88) [07:47:37:312]: MSCOREE not loaded loading copy from system32
+MSI (s) (7C:88) [07:47:37:318]: End dialog not enabled
+MSI (s) (7C:88) [07:47:37:318]: Original package ==> C:\OttrinDesktopQA\baseline.msi
+MSI (s) (7C:88) [07:47:37:318]: Package we're running from ==> C:\WINDOWS\Installer\72c5c.msi
+MSI (s) (7C:88) [07:47:37:320]: APPCOMPAT: Compatibility mode property overrides found.
+MSI (s) (7C:88) [07:47:37:320]: APPCOMPAT: looking for appcompat database entry with ProductCode '{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}'.
+MSI (s) (7C:88) [07:47:37:322]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (7C:88) [07:47:37:342]: Machine policy value 'TransformsSecure' is 0
+MSI (s) (7C:88) [07:47:37:342]: User policy value 'TransformsAtSource' is 0
+MSI (s) (7C:88) [07:47:37:344]: Machine policy value 'DisablePatch' is 0
+MSI (s) (7C:88) [07:47:37:344]: Machine policy value 'AllowLockdownPatch' is 0
+MSI (s) (7C:88) [07:47:37:344]: Machine policy value 'DisableMsi' is 0
+MSI (s) (7C:88) [07:47:37:344]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:344]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:344]: Running product '{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}' with user privileges: It's not assigned.
+MSI (s) (7C:88) [07:47:37:344]: Machine policy value 'DisableLUAPatching' is 0
+MSI (s) (7C:88) [07:47:37:344]: Machine policy value 'DisableFlyWeightPatching' is 0
+MSI (s) (7C:88) [07:47:37:346]: APPCOMPAT: looking for appcompat database entry with ProductCode '{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}'.
+MSI (s) (7C:88) [07:47:37:346]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (7C:88) [07:47:37:348]: Transforms are not secure.
+MSI (s) (7C:88) [07:47:37:348]: Note: 1: 2205 2:  3: Control
+MSI (s) (7C:88) [07:47:37:348]: PROPERTY CHANGE: Adding MsiLogFileLocation property. Its value is 'C:\OttrinDesktopQA\results\baseline-install.log'.
+MSI (s) (7C:88) [07:47:37:348]: Command Line: REBOOT=ReallySuppress CURRENTDIRECTORY=C:\WINDOWS\system32 CLIENTUILEVEL=3 CLIENTPROCESSID=1276
+MSI (s) (7C:88) [07:47:37:348]: PROPERTY CHANGE: Adding PackageCode property. Its value is '{5AC9B394-CCC1-4E2B-B6EB-4D70DA0322AD}'.
+MSI (s) (7C:88) [07:47:37:350]: Product Code passed to Engine.Initialize:           ''
+MSI (s) (7C:88) [07:47:37:350]: Product Code from property table before transforms: '{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}'
+MSI (s) (7C:88) [07:47:37:350]: Product Code from property table after transforms:  '{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}'
+MSI (s) (7C:88) [07:47:37:350]: Product not registered: beginning first-time install
+MSI (s) (7C:88) [07:47:37:350]: Product {DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B} is not managed.
+MSI (s) (7C:88) [07:47:37:350]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:350]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:350]: MSI_LUA: Package is marked as LUA installation capable with no elevation required
+MSI (s) (7C:88) [07:47:37:350]: PROPERTY CHANGE: Adding ProductState property. Its value is '-1'.
+MSI (s) (7C:88) [07:47:37:350]: Entering CMsiConfigurationManager::SetLastUsedSource.
+MSI (s) (7C:88) [07:47:37:350]: User policy value 'SearchOrder' is 'nmu'
+MSI (s) (7C:88) [07:47:37:350]: Adding new sources is allowed.
+MSI (s) (7C:88) [07:47:37:350]: PROPERTY CHANGE: Adding PackagecodeChanging property. Its value is '1'.
+MSI (s) (7C:88) [07:47:37:350]: Package name extracted from package path: 'baseline.msi'
+MSI (s) (7C:88) [07:47:37:350]: Package to be registered: 'baseline.msi'
+MSI (s) (7C:88) [07:47:37:350]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:37:354]: Note: 1: 2262 2: AdminProperties 3: -2147287038
+MSI (s) (7C:88) [07:47:37:354]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:354]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:354]: Running product '{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}' with user privileges: It's not assigned.
+MSI (s) (7C:88) [07:47:37:354]: PROPERTY CHANGE: Adding REBOOT property. Its value is 'ReallySuppress'.
+MSI (s) (7C:88) [07:47:37:354]: PROPERTY CHANGE: Adding CURRENTDIRECTORY property. Its value is 'C:\WINDOWS\system32'.
+MSI (s) (7C:88) [07:47:37:354]: PROPERTY CHANGE: Adding CLIENTUILEVEL property. Its value is '3'.
+MSI (s) (7C:88) [07:47:37:354]: PROPERTY CHANGE: Adding CLIENTPROCESSID property. Its value is '1276'.
+MSI (s) (7C:88) [07:47:37:354]: Machine policy value 'DisableAutomaticApplicationShutdown' is 0
+MSI (s) (7C:88) [07:47:37:354]: PROPERTY CHANGE: Adding MsiRestartManagerSessionKey property. Its value is '7d9711efef2be947872a047762e6a7c0'.
+MSI (s) (7C:88) [07:47:37:354]: RESTART MANAGER: Session opened.
+MSI (s) (7C:88) [07:47:37:354]: TRANSFORMS property is now:
+MSI (s) (7C:88) [07:47:37:354]: PROPERTY CHANGE: Adding VersionDatabase property. Its value is '500'.
+MSI (s) (7C:88) [07:47:37:356]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:37:358]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Favorites
+MSI (s) (7C:88) [07:47:37:358]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Network Shortcuts
+MSI (s) (7C:88) [07:47:37:360]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Documents
+MSI (s) (7C:88) [07:47:37:362]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Printer Shortcuts
+MSI (s) (7C:88) [07:47:37:364]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Recent
+MSI (s) (7C:88) [07:47:37:364]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\SendTo
+MSI (s) (7C:88) [07:47:37:366]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Templates
+MSI (s) (7C:88) [07:47:37:366]: SHELL32::SHGetFolderPath returned: C:\ProgramData
+MSI (s) (7C:88) [07:47:37:368]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Local
+MSI (s) (7C:88) [07:47:37:368]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Pictures
+MSI (s) (7C:88) [07:47:37:372]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (7C:88) [07:47:37:374]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (7C:88) [07:47:37:374]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+MSI (s) (7C:88) [07:47:37:376]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu
+MSI (s) (7C:88) [07:47:37:378]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Desktop
+MSI (s) (7C:88) [07:47:37:380]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (7C:88) [07:47:37:380]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (7C:88) [07:47:37:382]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+MSI (s) (7C:88) [07:47:37:384]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu
+MSI (s) (7C:88) [07:47:37:386]: SHELL32::SHGetFolderPath returned: C:\Users\Public\Desktop
+MSI (s) (7C:88) [07:47:37:386]: SHELL32::SHGetFolderPath returned: C:\WINDOWS\Fonts
+MSI (s) (7C:88) [07:47:37:386]: Note: 1: 2898 2: MS Sans Serif 3: MS Sans Serif 4: 0 5: 16
+MSI (s) (7C:88) [07:47:37:405]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2
+MSI (s) (7C:88) [07:47:37:405]: PROPERTY CHANGE: Adding USERNAME property. Its value is 'campbell'.
+MSI (s) (7C:88) [07:47:37:405]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2
+MSI (s) (7C:88) [07:47:37:405]: PROPERTY CHANGE: Adding DATABASE property. Its value is 'C:\WINDOWS\Installer\72c5c.msi'.
+MSI (s) (7C:88) [07:47:37:405]: PROPERTY CHANGE: Adding OriginalDatabase property. Its value is 'C:\OttrinDesktopQA\baseline.msi'.
+MSI (s) (7C:88) [07:47:37:405]: Machine policy value 'MsiDisableEmbeddedUI' is 0
+MSI (s) (7C:88) [07:47:37:405]: EEUI - Disabling MsiEmbeddedUI for service because it's not a quiet/basic install
+MSI (s) (7C:88) [07:47:37:408]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (7C:88) [07:47:37:408]: Machine policy value 'DisableRollback' is 0
+MSI (s) (7C:88) [07:47:37:408]: User policy value 'DisableRollback' is 0
+MSI (s) (7C:88) [07:47:37:408]: PROPERTY CHANGE: Adding UILevel property. Its value is '2'.
+=== Logging started: 2026-10-15  07:47:37 ===
+MSI (s) (7C:88) [07:47:37:408]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (7C:88) [07:47:37:408]: APPCOMPAT: [DetectVersionLaunchCondition] Launch condition already passes.
+MSI (s) (7C:88) [07:47:37:430]: PROPERTY CHANGE: Adding ACTION property. Its value is 'INSTALL'.
+MSI (s) (7C:88) [07:47:37:430]: Doing action: INSTALL
+MSI (s) (7C:88) [07:47:37:430]: Note: 1: 2205 2:  3: ActionText
+Action start 07:47:37: INSTALL.
+MSI (s) (7C:88) [07:47:37:432]: Running ExecuteSequence
+MSI (s) (7C:88) [07:47:37:432]: Doing action: FindRelatedProducts
+MSI (s) (7C:88) [07:47:37:432]: Note: 1: 2205 2:  3: ActionText
+Action start 07:47:37: FindRelatedProducts.
+MSI (s) (7C:88) [07:47:37:434]: Doing action: LaunchConditions
+MSI (s) (7C:88) [07:47:37:434]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: FindRelatedProducts. Return value 1.
+Action start 07:47:37: LaunchConditions.
+MSI (s) (7C:88) [07:47:37:435]: Doing action: ValidateProductID
+MSI (s) (7C:88) [07:47:37:435]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: LaunchConditions. Return value 1.
+Action start 07:47:37: ValidateProductID.
+MSI (s) (7C:88) [07:47:37:437]: Doing action: CostInitialize
+MSI (s) (7C:88) [07:47:37:437]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: ValidateProductID. Return value 1.
+MSI (s) (7C:88) [07:47:37:439]: Machine policy value 'MaxPatchCacheSize' is 10
+MSI (s) (7C:88) [07:47:37:439]: PROPERTY CHANGE: Adding ROOTDRIVE property. Its value is 'C:\'.
+MSI (s) (7C:88) [07:47:37:439]: PROPERTY CHANGE: Adding CostingComplete property. Its value is '0'.
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2205 2:  3: Patch
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2205 2:  3: MsiPatchHeaders
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2205 2:  3: __MsiPatchFileList
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2228 2:  3: PatchPackage 4: SELECT `DiskId`, `PatchId`, `LastSequence` FROM `Media`, `PatchPackage` WHERE `Media`.`DiskId`=`PatchPackage`.`Media_` ORDER BY `DiskId`
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2205 2:  3: Patch
+Action start 07:47:37: CostInitialize.
+MSI (s) (7C:88) [07:47:37:442]: Doing action: FileCost
+MSI (s) (7C:88) [07:47:37:442]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: CostInitialize. Return value 1.
+MSI (s) (7C:88) [07:47:37:444]: Note: 1: 2205 2:  3: MsiAssembly
+MSI (s) (7C:88) [07:47:37:444]: Note: 1: 2205 2:  3: Class
+MSI (s) (7C:88) [07:47:37:444]: Note: 1: 2205 2:  3: Extension
+MSI (s) (7C:88) [07:47:37:444]: Note: 1: 2205 2:  3: TypeLib
+Action start 07:47:37: FileCost.
+MSI (s) (7C:88) [07:47:37:444]: Doing action: CostFinalize
+MSI (s) (7C:88) [07:47:37:444]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: FileCost. Return value 1.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding OutOfDiskSpace property. Its value is '0'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding OutOfNoRbDiskSpace property. Its value is '0'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceAvailable property. Its value is '0'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRequired property. Its value is '0'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRemaining property. Its value is '0'.
+MSI (s) (7C:88) [07:47:37:446]: Note: 1: 2205 2:  3: Patch
+MSI (s) (7C:88) [07:47:37:446]: Note: 1: 2205 2:  3: Condition
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding TARGETDIR property. Its value is 'C:\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding OttrinProgramMenuFolder property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding ProgramsFolder property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding INSTALLFOLDER property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dKlNTx_FNRtGPIc1yN5FSjNnSq0o property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding d1aMKBYakpeHigRQUYF0B8iJEAP0 property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dLUkJbpjstbOHi6.8vdP3Zi7wgxo property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding d7.2MW0tjqQJvzMj9gk50FPZwvfg property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dN_kwZFmId13TyskwoOeucYFGuv0 property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding d7by2ua02ym.a3GUBsFb3YUdY4gs property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dPNflk_4aOYVKo3ZPc8cTz2n7r0Y property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dKuX5xjNESgOVxU1WHSJFvghTrNw property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dhuWcOUKYThzfMwsTQDFI31Lw5Ok property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dhJxUVfdQ0cl.WUkznCLAjT2gzFA property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dn32F_8EtPmtoACQpTPiLDsMMxTU property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dTzIUDEdB9rSr7wS4lPVox5hKT.I property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dhhl6QFuQFTY7VU2uD_d2S_M70_8 property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding dmzbjdDiB3W0FrOGXQNfyu.Blzhw property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\'.
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding BinFolder property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (7C:88) [07:47:37:446]: Target path resolution complete. Dumping Directory table...
+MSI (s) (7C:88) [07:47:37:446]: Note: target paths subject to change (via custom actions or browsing)
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: TARGETDIR	, Object: C:\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: WindowsFolder	, Object: C:\WINDOWS\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: System64Folder	, Object: C:\WINDOWS\system32\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: ProgramMenuFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: OttrinProgramMenuFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: LocalAppDataFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Local\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: ProgramsFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: INSTALLFOLDER	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dKlNTx_FNRtGPIc1yN5FSjNnSq0o	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: d1aMKBYakpeHigRQUYF0B8iJEAP0	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dLUkJbpjstbOHi6.8vdP3Zi7wgxo	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: d7.2MW0tjqQJvzMj9gk50FPZwvfg	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dN_kwZFmId13TyskwoOeucYFGuv0	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: d7by2ua02ym.a3GUBsFb3YUdY4gs	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dPNflk_4aOYVKo3ZPc8cTz2n7r0Y	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dKuX5xjNESgOVxU1WHSJFvghTrNw	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dhuWcOUKYThzfMwsTQDFI31Lw5Ok	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dhJxUVfdQ0cl.WUkznCLAjT2gzFA	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dn32F_8EtPmtoACQpTPiLDsMMxTU	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dTzIUDEdB9rSr7wS4lPVox5hKT.I	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dhhl6QFuQFTY7VU2uD_d2S_M70_8	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: dmzbjdDiB3W0FrOGXQNfyu.Blzhw	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\
+MSI (s) (7C:88) [07:47:37:446]: Dir (target): Key: BinFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (7C:88) [07:47:37:446]: PROPERTY CHANGE: Adding INSTALLLEVEL property. Its value is '1'.
+MSI (s) (7C:88) [07:47:37:446]: Note: 1: 2205 2:  3: MsiAssembly
+MSI (s) (7C:88) [07:47:37:446]: Note: 1: 2228 2:  3: MsiAssembly 4:  SELECT `MsiAssembly`.`Attributes`, `MsiAssembly`.`File_Application`, `MsiAssembly`.`File_Manifest`,  `Component`.`KeyPath` FROM `MsiAssembly`, `Component` WHERE  `MsiAssembly`.`Component_` = `Component`.`Component` AND `MsiAssembly`.`Component_` = ?
+Action start 07:47:37: CostFinalize.
+MSI (s) (7C:88) [07:47:37:448]: Doing action: MigrateFeatureStates
+MSI (s) (7C:88) [07:47:37:448]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: CostFinalize. Return value 1.
+Action start 07:47:37: MigrateFeatureStates.
+MSI (s) (7C:88) [07:47:37:451]: Doing action: InstallValidate
+MSI (s) (7C:88) [07:47:37:451]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: MigrateFeatureStates. Return value 0.
+MSI (s) (7C:88) [07:47:37:453]: PROPERTY CHANGE: Deleting MsiRestartManagerSessionKey property. Its current value is '7d9711efef2be947872a047762e6a7c0'.
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: Dialog
+MSI (s) (7C:88) [07:47:37:453]: Feature: MainFeature; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: StartMenuComponent; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: MainExecutableComponent; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: IndexTransactionComponent; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: IndexIdentityComponent; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsZc32FZODtW6b6NO6fzkp81ZDd8A; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsRNhaMHscOhp.l05dI4VGk3qQ_XY; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsIxV6crlvxifgZDN2HWFvxzvSHqs; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls7HBQddGBhspWWaHoS3OU2RYJTAo; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsg4RLgrh.v26uyGgIfNdoumQ1U1o; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsOWrIrTIp6j4UNnXUWTzQNKnBeg4; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls826Xmx1bYye73tb8BcY9HcKSVS0; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flswJyYalMCkontqvr3WKJBu8kKrqA; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsdKYvTGfXzFAsH8hjS47Hvk1kX7A; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls10lq__Xrvf4KApIOuXi1crEVd_Y; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flst02CQ3HYNLiLf5b_1GoZWnIddkA; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flswaIFQK0b.WVSy3f8BK7xeHtqVtI; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsJ99jFqEEvG4pAcUSORPa8VfSmmw; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsrnR0CTjRWGxqX5ntnPrfl0ob8JQ; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flswRWUZ_tzjJhb6KWPZYz3oDOKaE8; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsmMWtAKWqL7VGNDJ_8HDBITM1QvI; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flszOA9Y3vHcmXT6QAiCNUTOdsRzj0; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls2lW2GbeeywRPOQBryx9jkamJl2M; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsh4_V94sFI75gBFX8X17OdkPmt80; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsvcrUA26LJrg5I0H389dkn1Iudwg; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls8fm4FrBbmgvGAAjxD4GPnMfNRxY; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flskt9tsQwxwZNZAMt9wipYGaAxc.k; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsyiuiLxaMkHemJ1ojh8cILO5V.jI; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsdCAvLkpzrof8WILjS04mVVUS9mc; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flslhRMia5Z9HxCzpcsEMj3aCz7X0c; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls1AiWwP0XKjtxzJfS7IJ.Gexf2qY; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsGl2aYODhnYulOwdrRWY7u8D1FaY; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsXeh73ocsqjgZsONNouw2BulFCyM; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsWdgHG2nUnBhlNJ4fS8gf4oJkI1o; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsOQ81YSXjs6w9URGCqnnRbZuekQ0; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsyKMYUZUw7miouXIPxUnICwm0AM0; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsdU57opLm1LzppPEQRyTXU59yj.8; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls63mwVQOMWPYt7L5hXH.YH0VT5sk; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsTqor3sCEJyanvkljGljmqeXtbGs; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls6e5Ak60ws6ai7jvhTxZiTuKETkw; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsS_2yib0Ubq9rImrQd_29kiZj2Rw; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsbpQu3H1JtL0I9OgR9u5eb2D8DUo; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsUrjbkbvFSPCSNg1trp1GfQhYPpA; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsfEluz9FpOGdyAgk.auRt..Nsa1o; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsYzbaHaykdLDieaEUvz7ijM_lCz8; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls2uGT3MNvcCKS80WWQb5gERM3rSE; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls.8vsInPsKTcQrJt.KvNmdoEH9fc; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsyNlLl33YQT4R1ziYwMnbNyQd6J0; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsacoG0dlqKLpCpBPPhZMWOdlH4TI; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsM6ssNGS55HjhTDdSuhQl05scfdI; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsXr7rgln3yB_L3i.4SAUi3dYnHYA; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls94RokVx_IxBvQn5YlN110VZR1UI; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsuv7gbOD0jLH4hWhE_kdXSDog_0U; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: fls5s_KDQcgyiRb7bGNxpaKaVtF_d4; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: flsIVYwMtPBiphiTO1Cvs0NgQOPnmQ; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Component: __StartMenuComponent65; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: BindImage
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: ProgId
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: PublishComponent
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: SelfReg
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: Extension
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: Font
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: Class
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: TypeLib
+Action start 07:47:37: InstallValidate.
+MSI (s) (7C:88) [07:47:37:453]: Note: 1: 2205 2:  3: _RemoveFilePath
+MSI (s) (7C:88) [07:47:37:478]: PROPERTY CHANGE: Modifying CostingComplete property. Its current value is '0'. Its new value: '1'.
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: BindImage
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: ProgId
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: PublishComponent
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: SelfReg
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: Extension
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: Font
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: Class
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: TypeLib
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2727 2:
+MSI (s) (7C:88) [07:47:37:478]: Note: 1: 2205 2:  3: FilesInUse
+MSI (s) (7C:88) [07:47:37:486]: Note: 1: 2727 2:
+MSI (s) (7C:88) [07:47:37:486]: Doing action: InstallInitialize
+MSI (s) (7C:88) [07:47:37:486]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: InstallValidate. Return value 1.
+MSI (s) (7C:88) [07:47:37:488]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:488]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (7C:88) [07:47:37:488]: BeginTransaction: Locking Server
+MSI (s) (7C:88) [07:47:37:488]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (7C:88) [07:47:37:488]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (7C:88) [07:47:37:488]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (7C:88) [07:47:37:488]: Server not locked: locking for product {DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}
+Action start 07:47:37: InstallInitialize.
+MSI (s) (7C:88) [07:47:37:494]: Skipping action: RollbackRemovedIndex (condition is false)
+MSI (s) (7C:88) [07:47:37:494]: Skipping action: SnapshotRemovedIndex (condition is false)
+MSI (s) (7C:88) [07:47:37:494]: Skipping action: CleanupBeforeUninstall (condition is false)
+MSI (s) (7C:88) [07:47:37:494]: Doing action: ProcessComponents
+MSI (s) (7C:88) [07:47:37:494]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: InstallInitialize. Return value 1.
+MSI (s) (7C:88) [07:47:37:496]: Note: 1: 2205 2:  3: MsiPatchCertificate
+MSI (s) (7C:88) [07:47:37:496]: LUA patching is disabled: missing MsiPatchCertificate table
+MSI (s) (7C:88) [07:47:37:496]: Resolving source.
+MSI (s) (7C:88) [07:47:37:496]: Resolving source to launched-from source.
+MSI (s) (7C:88) [07:47:37:496]: Setting launched-from source as last-used.
+MSI (s) (7C:88) [07:47:37:496]: PROPERTY CHANGE: Adding SourceDir property. Its value is 'C:\OttrinDesktopQA\'.
+MSI (s) (7C:88) [07:47:37:496]: PROPERTY CHANGE: Adding SOURCEDIR property. Its value is 'C:\OttrinDesktopQA\'.
+MSI (s) (7C:88) [07:47:37:496]: PROPERTY CHANGE: Adding SourcedirProduct property. Its value is '{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}'.
+MSI (s) (7C:88) [07:47:37:496]: SOURCEDIR ==> C:\OttrinDesktopQA\
+MSI (s) (7C:88) [07:47:37:496]: SOURCEDIR product ==> {DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}
+MSI (s) (7C:88) [07:47:37:496]: Determining source type
+MSI (s) (7C:88) [07:47:37:496]: Source type from package 'baseline.msi': 10
+MSI (s) (7C:88) [07:47:37:496]: SECREPAIR: Hash Database: C:\WINDOWS\Installer\SourceHash{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}
+MSI (s) (7C:88) [07:47:37:498]: Note: 1: 2262 2: SourceHash 3: -2147287038
+MSI (s) (7C:88) [07:47:37:502]: SECREPAIR: New Hash Database creation complete.
+Action start 07:47:37: ProcessComponents.
+MSI (s) (7C:88) [07:47:37:592]: Source path resolution complete. Dumping Directory table...
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: TARGETDIR	, Object: C:\OttrinDesktopQA\	, LongSubPath: 	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: WindowsFolder	, Object: C:\OttrinDesktopQA\	, LongSubPath: 	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: System64Folder	, Object: C:\OttrinDesktopQA\	, LongSubPath: System64\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: ProgramMenuFolder	, Object: C:\OttrinDesktopQA\	, LongSubPath: PMenu\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: OttrinProgramMenuFolder	, Object: C:\OttrinDesktopQA\	, LongSubPath: PMenu\Ottrin\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: LocalAppDataFolder	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: ProgramsFolder	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: INSTALLFOLDER	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: dKlNTx_FNRtGPIc1yN5FSjNnSq0o	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\third-party-notices\	, ShortSubPath: LocalApp\Programs\Ottrin\uhhkb-h2\
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: d1aMKBYakpeHigRQUYF0B8iJEAP0	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\	, ShortSubPath: LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\
+MSI (s) (7C:88) [07:47:37:592]: Dir (source): Key: dLUkJbpjstbOHi6.8vdP3Zi7wgxo	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\	, ShortSubPath: LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\licenses\
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: d7.2MW0tjqQJvzMj9gk50FPZwvfg	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\	, ShortSubPath: LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\licenses\j8pe_dip\
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dN_kwZFmId13TyskwoOeucYFGuv0	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\	, ShortSubPath: LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\licenses\
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: d7by2ua02ym.a3GUBsFb3YUdY4gs	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\	, ShortSubPath: LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\docs\
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dPNflk_4aOYVKo3ZPc8cTz2n7r0Y	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\bin\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dKuX5xjNESgOVxU1WHSJFvghTrNw	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\bin\pdfium\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dhuWcOUKYThzfMwsTQDFI31Lw5Ok	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\bin\pdfium\licenses\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dhJxUVfdQ0cl.WUkznCLAjT2gzFA	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\bin\pdfium\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dn32F_8EtPmtoACQpTPiLDsMMxTU	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\third-party-notices\	, ShortSubPath: LocalApp\Programs\Ottrin\uhhkb-h2\
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dTzIUDEdB9rSr7wS4lPVox5hKT.I	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\docs\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dhhl6QFuQFTY7VU2uD_d2S_M70_8	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\bin\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: dmzbjdDiB3W0FrOGXQNfyu.Blzhw	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\assets\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Dir (source): Key: BinFolder	, Object: C:\OttrinDesktopQA\	, LongSubPath: LocalApp\Programs\Ottrin\bin\	, ShortSubPath:
+MSI (s) (7C:88) [07:47:37:594]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (7C:88) [07:47:37:594]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (7C:88) [07:47:37:596]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (7C:88) [07:47:37:616]: Doing action: UnpublishFeatures
+MSI (s) (7C:88) [07:47:37:616]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: ProcessComponents. Return value 1.
+Action start 07:47:37: UnpublishFeatures.
+MSI (s) (7C:88) [07:47:37:620]: Doing action: RemoveRegistryValues
+MSI (s) (7C:88) [07:47:37:620]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: UnpublishFeatures. Return value 1.
+Action start 07:47:37: RemoveRegistryValues.
+MSI (s) (7C:88) [07:47:37:620]: Doing action: RemoveShortcuts
+MSI (s) (7C:88) [07:47:37:620]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: RemoveRegistryValues. Return value 1.
+Action start 07:47:37: RemoveShortcuts.
+MSI (s) (7C:88) [07:47:37:622]: Doing action: RemoveFiles
+MSI (s) (7C:88) [07:47:37:622]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: RemoveShortcuts. Return value 1.
+Action start 07:47:37: RemoveFiles.
+MSI (s) (7C:88) [07:47:37:624]: Doing action: RemoveFolders
+MSI (s) (7C:88) [07:47:37:624]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: RemoveFiles. Return value 1.
+Action start 07:47:37: RemoveFolders.
+MSI (s) (7C:88) [07:47:37:626]: Doing action: CreateFolders
+MSI (s) (7C:88) [07:47:37:626]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: RemoveFolders. Return value 0.
+Action start 07:47:37: CreateFolders.
+MSI (s) (7C:88) [07:47:37:628]: Doing action: InstallFiles
+MSI (s) (7C:88) [07:47:37:628]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: CreateFolders. Return value 0.
+Action start 07:47:37: InstallFiles.
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2205 2:  3: Patch
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2228 2:  3: Patch 4: SELECT `Patch`.`File_`, `Patch`.`Header`, `Patch`.`Attributes`, `Patch`.`Sequence`, `Patch`.`StreamRef_` FROM `Patch` WHERE `Patch`.`File_` = ? AND `Patch`.`#_MsiActive`=? ORDER BY `Patch`.`Sequence`
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1302
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2205 2:  3: MsiSFCBypass
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2228 2:  3: MsiSFCBypass 4: SELECT `File_` FROM `MsiSFCBypass` WHERE `File_` = ?
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2205 2:  3: MsiPatchHeaders
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2228 2:  3: MsiPatchHeaders 4: SELECT `Header` FROM `MsiPatchHeaders` WHERE `StreamRef` = ?
+MSI (s) (7C:88) [07:47:37:632]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (7C:88) [07:47:37:634]: Note: 1: 2205 2:  3: MsiPatchHeaders
+MSI (s) (7C:88) [07:47:37:634]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (7C:88) [07:47:37:662]: Doing action: RollbackBackgroundIndex
+MSI (s) (7C:88) [07:47:37:662]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: InstallFiles. Return value 1.
+Action start 07:47:37: RollbackBackgroundIndex.
+MSI (s) (7C:88) [07:47:37:664]: Doing action: SnapshotBackgroundIndex
+MSI (s) (7C:88) [07:47:37:664]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: RollbackBackgroundIndex. Return value 1.
+Action start 07:47:37: SnapshotBackgroundIndex.
+MSI (s) (7C:88) [07:47:37:668]: Doing action: InstallBackgroundIndex
+MSI (s) (7C:88) [07:47:37:668]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: SnapshotBackgroundIndex. Return value 1.
+Action start 07:47:37: InstallBackgroundIndex.
+MSI (s) (7C:88) [07:47:37:670]: Doing action: CreateShortcuts
+MSI (s) (7C:88) [07:47:37:670]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: InstallBackgroundIndex. Return value 1.
+Action start 07:47:37: CreateShortcuts.
+MSI (s) (7C:88) [07:47:37:674]: Note: 1: 2205 2:  3: MsiShortcutProperty
+MSI (s) (7C:88) [07:47:37:676]: Note: 1: 2205 2:  3: MsiShortcutProperty
+MSI (s) (7C:88) [07:47:37:676]: Doing action: WriteRegistryValues
+MSI (s) (7C:88) [07:47:37:678]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: CreateShortcuts. Return value 1.
+Action start 07:47:37: WriteRegistryValues.
+MSI (s) (7C:88) [07:47:37:680]: Doing action: RegisterUser
+MSI (s) (7C:88) [07:47:37:680]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: WriteRegistryValues. Return value 1.
+Action start 07:47:37: RegisterUser.
+MSI (s) (7C:88) [07:47:37:684]: Doing action: RegisterProduct
+MSI (s) (7C:88) [07:47:37:684]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: RegisterUser. Return value 1.
+MSI (s) (7C:88) [07:47:37:686]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:37:686]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1302
+Action start 07:47:37: RegisterProduct.
+MSI (s) (7C:88) [07:47:37:688]: PROPERTY CHANGE: Adding ProductToBeRegistered property. Its value is '1'.
+MSI (s) (7C:88) [07:47:37:690]: Doing action: PublishFeatures
+MSI (s) (7C:88) [07:47:37:690]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: RegisterProduct. Return value 1.
+Action start 07:47:37: PublishFeatures.
+MSI (s) (7C:88) [07:47:37:694]: Doing action: PublishProduct
+MSI (s) (7C:88) [07:47:37:694]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: PublishFeatures. Return value 1.
+Action start 07:47:37: PublishProduct.
+MSI (s) (7C:88) [07:47:37:700]: Doing action: InstallExecute
+MSI (s) (7C:88) [07:47:37:700]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:37: PublishProduct. Return value 1.
+MSI (s) (7C:88) [07:47:37:700]: Running Script: C:\WINDOWS\Installer\MSI1F52.tmp
+MSI (s) (7C:88) [07:47:37:700]: PROPERTY CHANGE: Adding UpdateStarted property. Its value is '1'.
+MSI (s) (7C:88) [07:47:37:704]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (7C:88) [07:47:37:704]: Machine policy value 'DisableRollback' is 0
+MSI (s) (7C:88) [07:47:37:706]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:37:708]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:37:710]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (7C:88) [07:47:37:710]: Executing op: Header(Signature=1397708873,Version=500,Timestamp=1565474291,LangId=0,Platform=589824,ScriptType=1,ScriptMajorVersion=21,ScriptMinorVersion=4,ScriptAttributes=0)
+Action start 07:47:37: InstallExecute.
+MSI (s) (7C:88) [07:47:37:710]: Executing op: ProductInfo(ProductKey={DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B},ProductName=Ottrin,PackageName=baseline.msi,Language=0,Version=65536,Assignment=0,ObsoleteArg=0,ProductIcon=OttrinApp.ico,,PackageCode={5AC9B394-CCC1-4E2B-B6EB-4D70DA0322AD},,,InstanceType=0,LUASetting=0,RemoteURTInstalls=0,ProductDeploymentFlags=2)
+MSI (s) (7C:88) [07:47:37:712]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:37:714]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:37:716]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:37:719]: Executing op: DialogInfo(Type=0,Argument=0)
+MSI (s) (7C:88) [07:47:37:721]: Executing op: DialogInfo(Type=1,Argument=Ottrin)
+MSI (s) (7C:88) [07:47:37:721]: Executing op: RollbackInfo(,RollbackAction=Rollback,RollbackDescription=Rolling back action: [1],,CleanupAction=RollbackCleanup,CleanupDescription=Removing backup files File: [1],)
+MSI (s) (7C:88) [07:47:37:721]: Executing op: SetBaseline(Baseline=0,)
+MSI (s) (7C:88) [07:47:37:721]: Executing op: SetBaseline(Baseline=1,)
+MSI (s) (7C:88) [07:47:37:721]: Executing op: ActionStart(Name=ProcessComponents,Description=Updating component registration,)
+MSI (s) (7C:88) [07:47:37:721]: Executing op: ProgressTotal(Total=54,Type=1,ByteEquivalent=24000)
+MSI (s) (7C:88) [07:47:37:721]: Executing op: ComponentRegister(ComponentId={D81AB516-553E-5C56-9201-CC1F353A2ED3},KeyPath=21:\Software\Ottrin\MSI\StartMenuInstalled,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:724]: Executing op: ComponentRegister(ComponentId={4E854875-1887-54B3-8F18-12545E471D9E},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:724]: Executing op: ComponentRegister(ComponentId={9C4F2E87-D61D-56D5-8064-5084C2B9CBF6},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\index-task-transaction.ps1,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:726]: Executing op: ComponentRegister(ComponentId={F70B0D0F-EFE2-50BE-B4A1-13C25791A00B},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\windows-index-identity.ps1,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:728]: Executing op: ComponentRegister(ComponentId={493D7630-064F-5A36-8057-A8521ED62C3A},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\LICENSE,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:728]: Executing op: ComponentRegister(ComponentId={B41D0305-5EFC-5E4E-974A-7635A7C5EABF},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\README.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:730]: Executing op: ComponentRegister(ComponentId={B4C0F32C-03BC-5648-BDFA-69BC45982169},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\RUNNING.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:732]: Executing op: ComponentRegister(ComponentId={F9109C9D-CDCA-5E08-9AA6-12F0563F6EF6},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\SOURCE_REVISION.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:732]: Executing op: ComponentRegister(ComponentId={63D661B2-EB3B-520B-AC74-0BF760A9E614},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\icon.ico,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:734]: Executing op: ComponentRegister(ComponentId={C78C024F-FB03-5F49-A57F-B3853EB68E0F},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\icon.png,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:736]: Executing op: ComponentRegister(ComponentId={B710F7ED-F019-5FBA-B08F-CEECB945467E},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\icon.svg,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:736]: Executing op: ComponentRegister(ComponentId={5C135F4C-3FF4-5608-BE61-B3E186F5026D},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\logo.svg,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:738]: Executing op: ComponentRegister(ComponentId={72C6E8BF-B8C6-5C2D-9BAF-93714DCC4B31},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\dxil.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:740]: Executing op: ComponentRegister(ComponentId={B3EFF1EA-48FA-5C13-8D8C-69D7B21C2AF2},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\libEGL.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:742]: Executing op: ComponentRegister(ComponentId={C5935208-3C6B-5A11-9535-D7458282CF86},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\libgallium_wgl.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:742]: Executing op: ComponentRegister(ComponentId={7F89E803-455C-5F62-8CE0-E8C37E7AFE85},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\libGLESv2.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:744]: Executing op: ComponentRegister(ComponentId={5622D9AE-522F-591B-8735-67D1C65EE279},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\opengl32.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:744]: Executing op: ComponentRegister(ComponentId={F9FB5F52-155A-5578-BFDF-3FBC9485F177},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-indexd.exe,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:746]: Executing op: ComponentRegister(ComponentId={1AC196AD-1972-55E9-80EE-1F5F42215502},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-legacy-doc-render.exe,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:748]: Executing op: ComponentRegister(ComponentId={D04B5A13-8767-575C-AFAB-CA44D35E23EB},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-office-render.exe,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:748]: Executing op: ComponentRegister(ComponentId={46F320FD-A0A7-5473-B3BB-6F7BDC88545E},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-priv-helper.exe,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:750]: Executing op: ComponentRegister(ComponentId={29903665-FA7D-5253-867D-F4891D868DBB},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\DEVELOPMENT.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:750]: Executing op: ComponentRegister(ComponentId={29B1D534-6012-58E2-9BE7-E15AEA7C28BE},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\RELEASE_CHECKLIST.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:752]: Executing op: ComponentRegister(ComponentId={1F64DBBB-986C-5154-BE76-4E437BE14DD4},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\RELEASE_NOTES.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:754]: Executing op: ComponentRegister(ComponentId={785AA3D4-0E3C-5C19-9746-4F6E5454D853},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\ROADMAP.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:754]: Executing op: ComponentRegister(ComponentId={F36F48CF-9F00-5C0A-846B-5BE60ABE8806},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\USER_GUIDE.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:756]: Executing op: ComponentRegister(ComponentId={DEF30BD4-88A4-5A77-8459-3566FBCB5193},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\MANIFEST.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:756]: Executing op: ComponentRegister(ComponentId={B55A3599-0A18-5B99-A2C0-6F43876F822E},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\Microsoft-DXC-LICENSE-MS.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:758]: Executing op: ComponentRegister(ComponentId={4BFA69D0-2B4D-55FF-B19C-864CA48FD47A},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\pal1000-LICENSE.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:760]: Executing op: ComponentRegister(ComponentId={E3121301-18A9-5412-8541-3069AD8B4C7E},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\LICENSE,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:760]: Executing op: ComponentRegister(ComponentId={3CD85970-4AA3-5976-B70A-E980C6D49762},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\pdfium.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:762]: Executing op: ComponentRegister(ComponentId={AE7078EA-C061-5F47-96BD-85B50B9C782A},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\abseil.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:762]: Executing op: ComponentRegister(ComponentId={45904AF4-B3A0-51A2-BABE-68EA0128F96B},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\agg23.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:764]: Executing op: ComponentRegister(ComponentId={549FC552-B2B0-55DA-BBDD-21EA37F67678},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\fast_float.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:764]: Executing op: ComponentRegister(ComponentId={20839051-27B7-5E99-A250-45D2C82E8558},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\freetype.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:766]: Executing op: ComponentRegister(ComponentId={2B55CE69-0D65-5874-AC8A-4ECA9CAE31CB},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\icu.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:768]: Executing op: ComponentRegister(ComponentId={BF589076-A861-52CA-A366-B11B26918592},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\lcms.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:768]: Executing op: ComponentRegister(ComponentId={AA0C2DEB-FB77-5ACF-A492-C66431A0B0F0},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libjpeg_turbo.ijg,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:770]: Executing op: ComponentRegister(ComponentId={534E1D6C-D255-5F6D-B996-BC03239153F1},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libjpeg_turbo.md,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:772]: Executing op: ComponentRegister(ComponentId={5CE7141B-B527-56DF-9251-1EA0C5B5761C},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libopenjpeg.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:774]: Executing op: ComponentRegister(ComponentId={8F4919AF-0204-5C0A-ACC8-75B015D1288F},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libpng.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:774]: Executing op: ComponentRegister(ComponentId={C70BBDEC-8BC2-57AF-A615-737C1AB7E328},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libtiff.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:776]: Executing op: ComponentRegister(ComponentId={2C2E822A-799B-5AAA-9580-D1E94856FBD9},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\llvm-libc.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:776]: Executing op: ComponentRegister(ComponentId={9D764E0D-1A3B-542B-8589-A68A1722F266},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\pdfium.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:778]: Executing op: ComponentRegister(ComponentId={09F736E0-3EBC-5610-B1DF-E636AB1426AB},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\simdutf.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:778]: Executing op: ComponentRegister(ComponentId={777A76B6-0790-5F05-AC41-CEDAE6023509},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\zlib.txt,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:780]: Executing op: ComponentRegister(ComponentId={565FD30C-41DA-5626-8EF4-F0C928379B25},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\license.rst,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:780]: Executing op: ComponentRegister(ComponentId={4949097F-881C-5FD9-9D18-E74AB0DDB490},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\Apache-2.0,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:782]: Executing op: ComponentRegister(ComponentId={D3CB88B6-AC12-52BF-8FC9-0114AF05265C},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\BSL-1.0,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:782]: Executing op: ComponentRegister(ComponentId={720A6523-24D2-5740-A6E5-C29B3F0EBACF},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\GPL-1.0-or-later,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:784]: Executing op: ComponentRegister(ComponentId={41C95DAF-7977-5AAA-97D9-CF67F31B1AF2},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\GPL-2.0-only,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:784]: Executing op: ComponentRegister(ComponentId={D251D243-F875-56E3-B482-EA1E4314B8BD},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\MIT,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:786]: Executing op: ComponentRegister(ComponentId={E31D8E8F-F2EC-55F8-AFE3-1E2064CA8AB5},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\SGI-B-2.0,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:786]: Executing op: ComponentRegister(ComponentId={089A9083-642F-5346-806A-B229C5A211CC},KeyPath=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\Linux-Syscall-Note,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (7C:88) [07:47:37:788]: Executing op: ActionStart(Name=InstallFiles,Description=Copying new files File: [1],  Directory: [9],  Size: [6],)
+MSI (s) (7C:88) [07:47:37:788]: Executing op: ProgressTotal(Total=127564864,Type=0,ByteEquivalent=1)
+MSI (s) (7C:88) [07:47:37:790]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\)
+MSI (s) (7C:88) [07:47:37:790]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\)
+MSI (s) (7C:88) [07:47:37:790]: Executing op: ChangeMedia(,MediaPrompt=Please insert the disk: ,MediaCabinet=cab1.cab,BytesPerTick=65536,CopierType=2,ModuleFileName=C:\WINDOWS\Installer\72c5c.msi,,,,,IsFirstPhysicalMedia=1)
+MSI (s) (7C:88) [07:47:37:790]: Executing op: FileCopy(SourceName=LICENSE,SourceCabKey=flsZc32FZODtW6b6NO6fzkp81ZDd8A,DestName=LICENSE,Attributes=512,FileSize=1064,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1278194335,HashPart2=2015275898,HashPart3=1364849293,HashPart4=1159391407,,)
+MSI (s) (7C:88) [07:47:37:790]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\LICENSE;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:790]: Source for file 'flsZc32FZODtW6b6NO6fzkp81ZDd8A' is compressed
+MSI (s) (7C:88) [07:47:37:796]: Executing op: FileCopy(SourceName=README.md,SourceCabKey=flsRNhaMHscOhp.l05dI4VGk3qQ_XY,DestName=README.md,Attributes=512,FileSize=7914,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1175457418,HashPart2=1985050330,HashPart3=-794787372,HashPart4=322837819,,)
+MSI (s) (7C:88) [07:47:37:796]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\README.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:796]: Source for file 'flsRNhaMHscOhp.l05dI4VGk3qQ_XY' is compressed
+MSI (s) (7C:88) [07:47:37:798]: Executing op: FileCopy(SourceName=RUNNING.md,SourceCabKey=flsIxV6crlvxifgZDN2HWFvxzvSHqs,DestName=RUNNING.md,Attributes=512,FileSize=658,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-213149041,HashPart2=755921186,HashPart3=1943277268,HashPart4=1056146247,,)
+MSI (s) (7C:88) [07:47:37:798]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\RUNNING.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:798]: Source for file 'flsIxV6crlvxifgZDN2HWFvxzvSHqs' is compressed
+MSI (s) (7C:88) [07:47:37:800]: Executing op: FileCopy(SourceName=xaqmkjd7.txt|SOURCE_REVISION.txt,SourceCabKey=fls7HBQddGBhspWWaHoS3OU2RYJTAo,DestName=SOURCE_REVISION.txt,Attributes=512,FileSize=140,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-489781176,HashPart2=-1743157523,HashPart3=369353499,HashPart4=-1049049047,,)
+MSI (s) (7C:88) [07:47:37:800]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\SOURCE_REVISION.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:800]: Source for file 'fls7HBQddGBhspWWaHoS3OU2RYJTAo' is compressed
+MSI (s) (7C:88) [07:47:37:804]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\)
+MSI (s) (7C:88) [07:47:37:804]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\assets\)
+MSI (s) (7C:88) [07:47:37:804]: Executing op: FileCopy(SourceName=icon.ico,SourceCabKey=flsg4RLgrh.v26uyGgIfNdoumQ1U1o,DestName=icon.ico,Attributes=512,FileSize=21142,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-531660117,HashPart2=1752786096,HashPart3=-1656724844,HashPart4=1703663620,,)
+MSI (s) (7C:88) [07:47:37:804]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\icon.ico;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:804]: Source for file 'flsg4RLgrh.v26uyGgIfNdoumQ1U1o' is compressed
+MSI (s) (7C:88) [07:47:37:808]: Executing op: FileCopy(SourceName=icon.png,SourceCabKey=flsOWrIrTIp6j4UNnXUWTzQNKnBeg4,DestName=icon.png,Attributes=512,FileSize=8217,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=581676473,HashPart2=-710623669,HashPart3=-518129872,HashPart4=-203598344,,)
+MSI (s) (7C:88) [07:47:37:808]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\icon.png;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:808]: Source for file 'flsOWrIrTIp6j4UNnXUWTzQNKnBeg4' is compressed
+MSI (s) (7C:88) [07:47:37:812]: Executing op: FileCopy(SourceName=icon.svg,SourceCabKey=fls826Xmx1bYye73tb8BcY9HcKSVS0,DestName=icon.svg,Attributes=512,FileSize=1829,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1714889340,HashPart2=114504205,HashPart3=-457432469,HashPart4=701240645,,)
+MSI (s) (7C:88) [07:47:37:812]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\icon.svg;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:812]: Source for file 'fls826Xmx1bYye73tb8BcY9HcKSVS0' is compressed
+MSI (s) (7C:88) [07:47:37:816]: Executing op: FileCopy(SourceName=logo.svg,SourceCabKey=flswJyYalMCkontqvr3WKJBu8kKrqA,DestName=logo.svg,Attributes=512,FileSize=5045,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=180336299,HashPart2=1694003200,HashPart3=1443603781,HashPart4=470606711,,)
+MSI (s) (7C:88) [07:47:37:816]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\logo.svg;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:816]: Source for file 'flswJyYalMCkontqvr3WKJBu8kKrqA' is compressed
+MSI (s) (7C:88) [07:47:37:818]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:37:818]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:37:818]: Executing op: FileCopy(SourceName=dxil.dll,SourceCabKey=flsdKYvTGfXzFAsH8hjS47Hvk1kX7A,DestName=dxil.dll,Attributes=512,FileSize=1503072,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.9.2602.24,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (7C:88) [07:47:37:818]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\dxil.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:818]: Source for file 'flsdKYvTGfXzFAsH8hjS47Hvk1kX7A' is compressed
+MSI (s) (7C:88) [07:47:37:836]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:37:836]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:37:836]: Executing op: FileCopy(SourceName=fhg9ccro.ps1|index-task-transaction.ps1,SourceCabKey=IndexTransactionScript,DestName=index-task-transaction.ps1,Attributes=512,FileSize=3637,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=764537542,HashPart2=-1117962296,HashPart3=743856248,HashPart4=143085939,,)
+MSI (s) (7C:88) [07:47:37:836]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\index-task-transaction.ps1;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:836]: Source for file 'IndexTransactionScript' is compressed
+MSI (s) (7C:88) [07:47:37:838]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:37:840]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:37:840]: Executing op: FileCopy(SourceName=libEGL.dll,SourceCabKey=fls10lq__Xrvf4KApIOuXi1crEVd_Y,DestName=libEGL.dll,Attributes=512,FileSize=184320,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (7C:88) [07:47:37:840]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\libEGL.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:840]: Source for file 'fls10lq__Xrvf4KApIOuXi1crEVd_Y' is compressed
+MSI (s) (7C:88) [07:47:37:844]: Executing op: FileCopy(SourceName=h0ezw7fl.dll|libGLESv2.dll,SourceCabKey=flswaIFQK0b.WVSy3f8BK7xeHtqVtI,DestName=libGLESv2.dll,Attributes=512,FileSize=50176,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (7C:88) [07:47:37:844]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\libGLESv2.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:844]: Source for file 'flswaIFQK0b.WVSy3f8BK7xeHtqVtI' is compressed
+MSI (s) (7C:88) [07:47:37:846]: Executing op: FileCopy(SourceName=fu6imoyo.dll|libgallium_wgl.dll,SourceCabKey=flst02CQ3HYNLiLf5b_1GoZWnIddkA,DestName=libgallium_wgl.dll,Attributes=512,FileSize=76270592,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (7C:88) [07:47:37:846]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\libgallium_wgl.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:37:846]: Source for file 'flst02CQ3HYNLiLf5b_1GoZWnIddkA' is compressed
+MSI (s) (7C:88) [07:47:38:801]: Executing op: FileCopy(SourceName=opengl32.dll,SourceCabKey=flsJ99jFqEEvG4pAcUSORPa8VfSmmw,DestName=opengl32.dll,Attributes=512,FileSize=123904,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (7C:88) [07:47:38:801]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\opengl32.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:38:801]: Source for file 'flsJ99jFqEEvG4pAcUSORPa8VfSmmw' is compressed
+MSI (s) (7C:88) [07:47:38:813]: Executing op: FileCopy(SourceName=z4ivgyyi.exe|ottrin-indexd.exe,SourceCabKey=flsrnR0CTjRWGxqX5ntnPrfl0ob8JQ,DestName=ottrin-indexd.exe,Attributes=512,FileSize=5772022,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-619259991,HashPart2=896396698,HashPart3=3144225,HashPart4=69548309,,)
+MSI (s) (7C:88) [07:47:38:813]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-indexd.exe;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:38:813]: Source for file 'flsrnR0CTjRWGxqX5ntnPrfl0ob8JQ' is compressed
+MSI (s) (7C:88) [07:47:38:978]: Executing op: FileCopy(SourceName=y0uiaria.exe|ottrin-legacy-doc-render.exe,SourceCabKey=flswRWUZ_tzjJhb6KWPZYz3oDOKaE8,DestName=ottrin-legacy-doc-render.exe,Attributes=512,FileSize=5527129,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1875319156,HashPart2=-745387155,HashPart3=1395539357,HashPart4=-1581724072,,)
+MSI (s) (7C:88) [07:47:38:978]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-legacy-doc-render.exe;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:38:978]: Source for file 'flswRWUZ_tzjJhb6KWPZYz3oDOKaE8' is compressed
+MSI (s) (7C:88) [07:47:39:018]: Executing op: FileCopy(SourceName=ba_6gxym.exe|ottrin-office-render.exe,SourceCabKey=flsmMWtAKWqL7VGNDJ_8HDBITM1QvI,DestName=ottrin-office-render.exe,Attributes=512,FileSize=414579,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1751355947,HashPart2=2063332531,HashPart3=-1756253796,HashPart4=1856764632,,)
+MSI (s) (7C:88) [07:47:39:020]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-office-render.exe;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:020]: Source for file 'flsmMWtAKWqL7VGNDJ_8HDBITM1QvI' is compressed
+MSI (s) (7C:88) [07:47:39:024]: Executing op: FileCopy(SourceName=4c3w8sun.exe|ottrin-priv-helper.exe,SourceCabKey=flszOA9Y3vHcmXT6QAiCNUTOdsRzj0,DestName=ottrin-priv-helper.exe,Attributes=512,FileSize=1274843,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1899096098,HashPart2=1254554547,HashPart3=1277525038,HashPart4=1333599811,,)
+MSI (s) (7C:88) [07:47:39:026]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-priv-helper.exe;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:026]: Source for file 'flszOA9Y3vHcmXT6QAiCNUTOdsRzj0' is compressed
+MSI (s) (7C:88) [07:47:39:036]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:39:036]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\bin\)
+MSI (s) (7C:88) [07:47:39:036]: Executing op: FileCopy(SourceName=ottrin.exe,SourceCabKey=MainExecutable,DestName=ottrin.exe,Attributes=512,FileSize=28670743,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-469224267,HashPart2=2130485428,HashPart3=-647394945,HashPart4=254342171,,)
+MSI (s) (7C:88) [07:47:39:038]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:038]: Source for file 'MainExecutable' is compressed
+MSI (s) (7C:88) [07:47:39:288]: Executing op: FileCopy(SourceName=x6mrf8pe.ps1|windows-index-identity.ps1,SourceCabKey=IndexIdentityScript,DestName=windows-index-identity.ps1,Attributes=512,FileSize=5044,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1576273477,HashPart2=557303274,HashPart3=800088906,HashPart4=1220270261,,)
+MSI (s) (7C:88) [07:47:39:288]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\windows-index-identity.ps1;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:288]: Source for file 'IndexIdentityScript' is compressed
+MSI (s) (7C:88) [07:47:39:290]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\)
+MSI (s) (7C:88) [07:47:39:292]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\bin\pdfium\)
+MSI (s) (7C:88) [07:47:39:292]: Executing op: FileCopy(SourceName=LICENSE,SourceCabKey=fls1AiWwP0XKjtxzJfS7IJ.Gexf2qY,DestName=LICENSE,Attributes=512,FileSize=1184,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=2052335921,HashPart2=391030701,HashPart3=-1222180575,HashPart4=1609216406,,)
+MSI (s) (7C:88) [07:47:39:292]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\LICENSE;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:292]: Source for file 'fls1AiWwP0XKjtxzJfS7IJ.Gexf2qY' is compressed
+MSI (s) (7C:88) [07:47:39:296]: Executing op: FileCopy(SourceName=pdfium.dll,SourceCabKey=flsGl2aYODhnYulOwdrRWY7u8D1FaY,DestName=pdfium.dll,Attributes=512,FileSize=7220736,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=152.0.7961.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (7C:88) [07:47:39:296]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\pdfium.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:296]: Source for file 'flsGl2aYODhnYulOwdrRWY7u8D1FaY' is compressed
+MSI (s) (7C:88) [07:47:39:368]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\)
+MSI (s) (7C:88) [07:47:39:368]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\bin\pdfium\licenses\)
+MSI (s) (7C:88) [07:47:39:368]: Executing op: FileCopy(SourceName=abseil.txt,SourceCabKey=flsXeh73ocsqjgZsONNouw2BulFCyM,DestName=abseil.txt,Attributes=512,FileSize=11564,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=117530863,HashPart2=9939514,HashPart3=-1582858517,HashPart4=1028711568,,)
+MSI (s) (7C:88) [07:47:39:368]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\abseil.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:368]: Source for file 'flsXeh73ocsqjgZsONNouw2BulFCyM' is compressed
+MSI (s) (7C:88) [07:47:39:372]: Executing op: FileCopy(SourceName=agg23.txt,SourceCabKey=flsWdgHG2nUnBhlNJ4fS8gf4oJkI1o,DestName=agg23.txt,Attributes=512,FileSize=725,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1417485623,HashPart2=1274569062,HashPart3=587274716,HashPart4=-499976405,,)
+MSI (s) (7C:88) [07:47:39:372]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\agg23.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:372]: Source for file 'flsWdgHG2nUnBhlNJ4fS8gf4oJkI1o' is compressed
+MSI (s) (7C:88) [07:47:39:374]: Executing op: FileCopy(SourceName=xphsn1hw.txt|fast_float.txt,SourceCabKey=flsOQ81YSXjs6w9URGCqnnRbZuekQ0,DestName=fast_float.txt,Attributes=512,FileSize=1106,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1368976272,HashPart2=-962214526,HashPart3=20640089,HashPart4=-1236941305,,)
+MSI (s) (7C:88) [07:47:39:374]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\fast_float.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:374]: Source for file 'flsOQ81YSXjs6w9URGCqnnRbZuekQ0' is compressed
+MSI (s) (7C:88) [07:47:39:376]: Executing op: FileCopy(SourceName=freetype.txt,SourceCabKey=flsyKMYUZUw7miouXIPxUnICwm0AM0,DestName=freetype.txt,Attributes=512,FileSize=6741,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=937982420,HashPart2=-23464297,HashPart3=-633848953,HashPart4=1288507357,,)
+MSI (s) (7C:88) [07:47:39:376]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\freetype.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:376]: Source for file 'flsyKMYUZUw7miouXIPxUnICwm0AM0' is compressed
+MSI (s) (7C:88) [07:47:39:378]: Executing op: FileCopy(SourceName=icu.txt,SourceCabKey=flsdU57opLm1LzppPEQRyTXU59yj.8,DestName=icu.txt,Attributes=512,FileSize=28286,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=748568020,HashPart2=88344946,HashPart3=1701222937,HashPart4=-1995598095,,)
+MSI (s) (7C:88) [07:47:39:380]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\icu.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:380]: Source for file 'flsdU57opLm1LzppPEQRyTXU59yj.8' is compressed
+MSI (s) (7C:88) [07:47:39:382]: Executing op: FileCopy(SourceName=lcms.txt,SourceCabKey=fls63mwVQOMWPYt7L5hXH.YH0VT5sk,DestName=lcms.txt,Attributes=512,FileSize=1353,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-622972265,HashPart2=-1283609292,HashPart3=681251018,HashPart4=-1177914958,,)
+MSI (s) (7C:88) [07:47:39:382]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\lcms.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:382]: Source for file 'fls63mwVQOMWPYt7L5hXH.YH0VT5sk' is compressed
+MSI (s) (7C:88) [07:47:39:384]: Executing op: FileCopy(SourceName=-bmfqqqf.ijg|libjpeg_turbo.ijg,SourceCabKey=flsTqor3sCEJyanvkljGljmqeXtbGs,DestName=libjpeg_turbo.ijg,Attributes=512,FileSize=13059,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-459577221,HashPart2=-941706914,HashPart3=1095075185,HashPart4=742681015,,)
+MSI (s) (7C:88) [07:47:39:384]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libjpeg_turbo.ijg;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:384]: Source for file 'flsTqor3sCEJyanvkljGljmqeXtbGs' is compressed
+MSI (s) (7C:88) [07:47:39:386]: Executing op: FileCopy(SourceName=bauquxez.md|libjpeg_turbo.md,SourceCabKey=fls6e5Ak60ws6ai7jvhTxZiTuKETkw,DestName=libjpeg_turbo.md,Attributes=512,FileSize=5755,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-2107036290,HashPart2=-272461776,HashPart3=1542719190,HashPart4=-1970137392,,)
+MSI (s) (7C:88) [07:47:39:386]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libjpeg_turbo.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:386]: Source for file 'fls6e5Ak60ws6ai7jvhTxZiTuKETkw' is compressed
+MSI (s) (7C:88) [07:47:39:388]: Executing op: FileCopy(SourceName=nem3xgjl.txt|libopenjpeg.txt,SourceCabKey=flsS_2yib0Ubq9rImrQd_29kiZj2Rw,DestName=libopenjpeg.txt,Attributes=512,FileSize=1794,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1721831870,HashPart2=470745322,HashPart3=907966349,HashPart4=-1590201475,,)
+MSI (s) (7C:88) [07:47:39:388]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libopenjpeg.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:388]: Source for file 'flsS_2yib0Ubq9rImrQd_29kiZj2Rw' is compressed
+MSI (s) (7C:88) [07:47:39:390]: Executing op: FileCopy(SourceName=libpng.txt,SourceCabKey=flsbpQu3H1JtL0I9OgR9u5eb2D8DUo,DestName=libpng.txt,Attributes=512,FileSize=5479,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-403033144,HashPart2=1748366046,HashPart3=2040166905,HashPart4=2065612265,,)
+MSI (s) (7C:88) [07:47:39:390]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libpng.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:390]: Source for file 'flsbpQu3H1JtL0I9OgR9u5eb2D8DUo' is compressed
+MSI (s) (7C:88) [07:47:39:394]: Executing op: FileCopy(SourceName=libtiff.txt,SourceCabKey=flsUrjbkbvFSPCSNg1trp1GfQhYPpA,DestName=libtiff.txt,Attributes=512,FileSize=1139,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-233798638,HashPart2=41635075,HashPart3=-910993048,HashPart4=880462929,,)
+MSI (s) (7C:88) [07:47:39:394]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\libtiff.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:394]: Source for file 'flsUrjbkbvFSPCSNg1trp1GfQhYPpA' is compressed
+MSI (s) (7C:88) [07:47:39:396]: Executing op: FileCopy(SourceName=270iqb-k.txt|llvm-libc.txt,SourceCabKey=flsfEluz9FpOGdyAgk.auRt..Nsa1o,DestName=llvm-libc.txt,Attributes=512,FileSize=15418,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1611961147,HashPart2=2143118535,HashPart3=83256093,HashPart4=1934828855,,)
+MSI (s) (7C:88) [07:47:39:396]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\llvm-libc.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:396]: Source for file 'flsfEluz9FpOGdyAgk.auRt..Nsa1o' is compressed
+MSI (s) (7C:88) [07:47:39:398]: Executing op: FileCopy(SourceName=pdfium.txt,SourceCabKey=flsYzbaHaykdLDieaEUvz7ijM_lCz8,DestName=pdfium.txt,Attributes=512,FileSize=12818,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1112301416,HashPart2=1485513884,HashPart3=1546513072,HashPart4=-33482968,,)
+MSI (s) (7C:88) [07:47:39:398]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\pdfium.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:398]: Source for file 'flsYzbaHaykdLDieaEUvz7ijM_lCz8' is compressed
+MSI (s) (7C:88) [07:47:39:400]: Executing op: FileCopy(SourceName=simdutf.txt,SourceCabKey=fls2uGT3MNvcCKS80WWQb5gERM3rSE,DestName=simdutf.txt,Attributes=512,FileSize=1077,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=539000785,HashPart2=-12631063,HashPart3=1922714809,HashPart4=-656355797,,)
+MSI (s) (7C:88) [07:47:39:400]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\simdutf.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:400]: Source for file 'fls2uGT3MNvcCKS80WWQb5gERM3rSE' is compressed
+MSI (s) (7C:88) [07:47:39:402]: Executing op: FileCopy(SourceName=zlib.txt,SourceCabKey=fls.8vsInPsKTcQrJt.KvNmdoEH9fc,DestName=zlib.txt,Attributes=512,FileSize=1332,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1667662187,HashPart2=-728149742,HashPart3=-1890642438,HashPart4=1639707163,,)
+MSI (s) (7C:88) [07:47:39:404]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\zlib.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:404]: Source for file 'fls.8vsInPsKTcQrJt.KvNmdoEH9fc' is compressed
+MSI (s) (7C:88) [07:47:39:406]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\)
+MSI (s) (7C:88) [07:47:39:406]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\docs\)
+MSI (s) (7C:88) [07:47:39:406]: Executing op: FileCopy(SourceName=yri8hovy.md|DEVELOPMENT.md,SourceCabKey=fls2lW2GbeeywRPOQBryx9jkamJl2M,DestName=DEVELOPMENT.md,Attributes=512,FileSize=46578,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=602652173,HashPart2=-420431159,HashPart3=-374842561,HashPart4=1659355999,,)
+MSI (s) (7C:88) [07:47:39:406]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\DEVELOPMENT.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:406]: Source for file 'fls2lW2GbeeywRPOQBryx9jkamJl2M' is compressed
+MSI (s) (7C:88) [07:47:39:408]: Executing op: FileCopy(SourceName=63ysvbpt.md|RELEASE_CHECKLIST.md,SourceCabKey=flsh4_V94sFI75gBFX8X17OdkPmt80,DestName=RELEASE_CHECKLIST.md,Attributes=512,FileSize=9175,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1616320097,HashPart2=1970208137,HashPart3=-1114028090,HashPart4=-803599538,,)
+MSI (s) (7C:88) [07:47:39:408]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\RELEASE_CHECKLIST.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:408]: Source for file 'flsh4_V94sFI75gBFX8X17OdkPmt80' is compressed
+MSI (s) (7C:88) [07:47:39:410]: Executing op: FileCopy(SourceName=y6ux3-c2.md|RELEASE_NOTES.md,SourceCabKey=flsvcrUA26LJrg5I0H389dkn1Iudwg,DestName=RELEASE_NOTES.md,Attributes=512,FileSize=10640,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=217641519,HashPart2=-462530060,HashPart3=-236375422,HashPart4=1187529214,,)
+MSI (s) (7C:88) [07:47:39:412]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\RELEASE_NOTES.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:412]: Source for file 'flsvcrUA26LJrg5I0H389dkn1Iudwg' is compressed
+MSI (s) (7C:88) [07:47:39:412]: Executing op: FileCopy(SourceName=ROADMAP.md,SourceCabKey=fls8fm4FrBbmgvGAAjxD4GPnMfNRxY,DestName=ROADMAP.md,Attributes=512,FileSize=225352,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1134869146,HashPart2=-329793935,HashPart3=813537123,HashPart4=452771200,,)
+MSI (s) (7C:88) [07:47:39:414]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\ROADMAP.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:414]: Source for file 'fls8fm4FrBbmgvGAAjxD4GPnMfNRxY' is compressed
+MSI (s) (7C:88) [07:47:39:416]: Executing op: FileCopy(SourceName=pzj5u5jo.md|USER_GUIDE.md,SourceCabKey=flskt9tsQwxwZNZAMt9wipYGaAxc.k,DestName=USER_GUIDE.md,Attributes=512,FileSize=32341,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-560596675,HashPart2=-1821363041,HashPart3=1567194763,HashPart4=680707261,,)
+MSI (s) (7C:88) [07:47:39:418]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\USER_GUIDE.md;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:418]: Source for file 'flskt9tsQwxwZNZAMt9wipYGaAxc.k' is compressed
+MSI (s) (7C:88) [07:47:39:420]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\)
+MSI (s) (7C:88) [07:47:39:420]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\uhhkb-h2\|LocalApp\Programs\Ottrin\third-party-notices\)
+MSI (s) (7C:88) [07:47:39:420]: Executing op: FileCopy(SourceName=MANIFEST.txt,SourceCabKey=flsyiuiLxaMkHemJ1ojh8cILO5V.jI,DestName=MANIFEST.txt,Attributes=512,FileSize=1457,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-93155996,HashPart2=1407120568,HashPart3=1067869833,HashPart4=85702534,,)
+MSI (s) (7C:88) [07:47:39:420]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\MANIFEST.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:420]: Source for file 'flsyiuiLxaMkHemJ1ojh8cILO5V.jI' is compressed
+MSI (s) (7C:88) [07:47:39:424]: Executing op: FileCopy(SourceName=cumprkgi.txt|Microsoft-DXC-LICENSE-MS.txt,SourceCabKey=flsdCAvLkpzrof8WILjS04mVVUS9mc,DestName=Microsoft-DXC-LICENSE-MS.txt,Attributes=512,FileSize=13163,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1467392268,HashPart2=79168469,HashPart3=-1492285049,HashPart4=1040458944,,)
+MSI (s) (7C:88) [07:47:39:424]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\Microsoft-DXC-LICENSE-MS.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:424]: Source for file 'flsdCAvLkpzrof8WILjS04mVVUS9mc' is compressed
+MSI (s) (7C:88) [07:47:39:426]: Executing op: FileCopy(SourceName=l5_dwn6p.txt|pal1000-LICENSE.txt,SourceCabKey=flslhRMia5Z9HxCzpcsEMj3aCz7X0c,DestName=pal1000-LICENSE.txt,Attributes=512,FileSize=1090,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=304888597,HashPart2=-580982129,HashPart3=890521123,HashPart4=1780031365,,)
+MSI (s) (7C:88) [07:47:39:426]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\pal1000-LICENSE.txt;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:426]: Source for file 'flslhRMia5Z9HxCzpcsEMj3aCz7X0c' is compressed
+MSI (s) (7C:88) [07:47:39:430]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\)
+MSI (s) (7C:88) [07:47:39:430]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\docs\|LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\)
+MSI (s) (7C:88) [07:47:39:430]: Executing op: FileCopy(SourceName=license.rst,SourceCabKey=flsyNlLl33YQT4R1ziYwMnbNyQd6J0,DestName=license.rst,Attributes=512,FileSize=1816,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1417209599,HashPart2=-1221115027,HashPart3=584175410,HashPart4=296740450,,)
+MSI (s) (7C:88) [07:47:39:430]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\license.rst;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:430]: Source for file 'flsyNlLl33YQT4R1ziYwMnbNyQd6J0' is compressed
+MSI (s) (7C:88) [07:47:39:432]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\)
+MSI (s) (7C:88) [07:47:39:434]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\licenses\|LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\)
+MSI (s) (7C:88) [07:47:39:434]: Executing op: FileCopy(SourceName=Apache-2.0,SourceCabKey=flsacoG0dlqKLpCpBPPhZMWOdlH4TI,DestName=Apache-2.0,Attributes=512,FileSize=10045,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1733728549,HashPart2=-1110255996,HashPart3=1906204605,HashPart4=-956383263,,)
+MSI (s) (7C:88) [07:47:39:434]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\Apache-2.0;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:434]: Source for file 'flsacoG0dlqKLpCpBPPhZMWOdlH4TI' is compressed
+MSI (s) (7C:88) [07:47:39:438]: Executing op: FileCopy(SourceName=BSL-1.0,SourceCabKey=flsM6ssNGS55HjhTDdSuhQl05scfdI,DestName=BSL-1.0,Attributes=512,FileSize=1649,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-255520698,HashPart2=-2025346548,HashPart3=-1799124700,HashPart4=-928244931,,)
+MSI (s) (7C:88) [07:47:39:438]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\BSL-1.0;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:438]: Source for file 'flsM6ssNGS55HjhTDdSuhQl05scfdI' is compressed
+MSI (s) (7C:88) [07:47:39:442]: Executing op: FileCopy(SourceName=lbjfse83.0-o|GPL-1.0-or-later,SourceCabKey=flsXr7rgln3yB_L3i.4SAUi3dYnHYA,DestName=GPL-1.0-or-later,Attributes=512,FileSize=13047,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1739007391,HashPart2=-176072725,HashPart3=432813283,HashPart4=-1120903750,,)
+MSI (s) (7C:88) [07:47:39:442]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\GPL-1.0-or-later;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:442]: Source for file 'flsXr7rgln3yB_L3i.4SAUi3dYnHYA' is compressed
+MSI (s) (7C:88) [07:47:39:444]: Executing op: FileCopy(SourceName=esqkrise.0-o|GPL-2.0-only,SourceCabKey=fls94RokVx_IxBvQn5YlN110VZR1UI,DestName=GPL-2.0-only,Attributes=512,FileSize=18424,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1227511006,HashPart2=626464450,HashPart3=1361488271,HashPart4=659935792,,)
+MSI (s) (7C:88) [07:47:39:444]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\GPL-2.0-only;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:444]: Source for file 'fls94RokVx_IxBvQn5YlN110VZR1UI' is compressed
+MSI (s) (7C:88) [07:47:39:446]: Executing op: FileCopy(SourceName=MIT,SourceCabKey=flsuv7gbOD0jLH4hWhE_kdXSDog_0U,DestName=MIT,Attributes=512,FileSize=1372,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-797051416,HashPart2=428269896,HashPart3=750662548,HashPart4=1832762689,,)
+MSI (s) (7C:88) [07:47:39:448]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\MIT;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:448]: Source for file 'flsuv7gbOD0jLH4hWhE_kdXSDog_0U' is compressed
+MSI (s) (7C:88) [07:47:39:450]: Executing op: FileCopy(SourceName=SGI-B-2.0,SourceCabKey=fls5s_KDQcgyiRb7bGNxpaKaVtF_d4,DestName=SGI-B-2.0,Attributes=512,FileSize=1822,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-812455953,HashPart2=2050811990,HashPart3=1426999208,HashPart4=1060351807,,)
+MSI (s) (7C:88) [07:47:39:450]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\SGI-B-2.0;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:450]: Source for file 'fls5s_KDQcgyiRb7bGNxpaKaVtF_d4' is compressed
+MSI (s) (7C:88) [07:47:39:454]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\)
+MSI (s) (7C:88) [07:47:39:454]: Executing op: SetSourceFolder(Folder=1\LocalApp\Programs\Ottrin\uhhkb-h2\zjuuwkfp\licenses\j8pe_dip\|LocalApp\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\)
+MSI (s) (7C:88) [07:47:39:454]: Executing op: FileCopy(SourceName=n7ffxki9|Linux-Syscall-Note,SourceCabKey=flsIVYwMtPBiphiTO1Cvs0NgQOPnmQ,DestName=Linux-Syscall-Note,Attributes=512,FileSize=1257,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-2089966523,HashPart2=770833355,HashPart3=1726864922,HashPart4=-1103954099,,)
+MSI (s) (7C:88) [07:47:39:454]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\Linux-Syscall-Note;	To be installed;	Won't patch;	No existing file
+MSI (s) (7C:88) [07:47:39:454]: Source for file 'flsIVYwMtPBiphiTO1Cvs0NgQOPnmQ' is compressed
+MSI (s) (7C:88) [07:47:39:458]: Executing op: CacheSizeFlush(,)
+MSI (s) (7C:88) [07:47:39:458]: Executing op: ActionStart(Name=RollbackBackgroundIndex,,)
+MSI (s) (7C:88) [07:47:39:516]: Executing op: CustomActionSchedule(Action=RollbackBackgroundIndex,ActionType=1314,Source=C:\WINDOWS\system32\,Target="C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\index-task-transaction.ps1" -Phase Rollback -Snapshot "C:\Users\OTTRIN~2\AppData\Local\Temp\OttrinIndexRollback-{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}.json",)
+MSI (s) (7C:88) [07:47:39:516]: Executing op: ActionStart(Name=SnapshotBackgroundIndex,,)
+MSI (s) (7C:88) [07:47:39:516]: Executing op: CustomActionSchedule(Action=SnapshotBackgroundIndex,ActionType=1058,Source=C:\WINDOWS\system32\,Target="C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\index-task-transaction.ps1" -Phase Snapshot -Snapshot "C:\Users\OTTRIN~2\AppData\Local\Temp\OttrinIndexRollback-{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}.json",)
+MSI (s) (7C:88) [07:47:40:406]: Executing op: ActionStart(Name=InstallBackgroundIndex,,)
+MSI (s) (7C:88) [07:47:40:406]: Executing op: CustomActionSchedule(Action=InstallBackgroundIndex,ActionType=1042,Source=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe,Target=index service-install,)
+MSI (s) (7C:88) [07:47:43:706]: Executing op: ActionStart(Name=CreateShortcuts,Description=Creating shortcuts Shortcut: [1],)
+MSI (s) (7C:88) [07:47:43:706]: Executing op: IconCreate(Icon=OttrinApp.ico,Data=BinaryData)
+MSI (s) (7C:88) [07:47:43:708]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:43:710]: Executing op: SetTargetFolder(Folder=2\Ottrin\)
+MSI (s) (7C:88) [07:47:43:714]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+MSI (s) (7C:88) [07:47:43:714]: Executing op: ShortcutCreate(Name=Ottrin,,,FileName=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe,,WorkingDir=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\,Icon=OttrinApp.ico,IconIndex=0,,,,,,,)
+MSI (s) (7C:88) [07:47:43:798]: Executing op: ShortcutCreate(Name=nmpezywv|Uninstall Ottrin,,,FileName=C:\WINDOWS\system32\msiexec.exe,Arguments=/x {DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B},WorkingDir=C:\WINDOWS\system32\,Icon=OttrinApp.ico,IconIndex=0,,,,,,,)
+MSI (s) (7C:88) [07:47:43:836]: Executing op: ActionStart(Name=WriteRegistryValues,Description=Writing system registry values Key: [1], Name: [2], Value: [3],)
+MSI (s) (7C:88) [07:47:43:836]: Executing op: ProgressTotal(Total=1,Type=1,ByteEquivalent=13200)
+MSI (s) (7C:88) [07:47:43:836]: Executing op: RegOpenKey(Root=-2147483647,Key=Software\Ottrin\MSI,,BinaryType=1,,)
+MSI (s) (7C:88) [07:47:43:836]: Executing op: RegAddValue(Name=StartMenuInstalled,Value=#1,)
+MSI (s) (7C:88) [07:47:43:838]: Executing op: ActionStart(Name=RegisterProduct,Description=Registering product [1],)
+MSI (s) (7C:88) [07:47:43:838]: Executing op: ChangeMedia(,MediaPrompt=Please insert the disk: ,MediaCabinet=cab1.cab,BytesPerTick=0,CopierType=2,ModuleFileName=C:\WINDOWS\Installer\72c5c.msi,,,,,IsFirstPhysicalMedia=1)
+MSI (s) (7C:88) [07:47:43:838]: Executing op: DatabaseCopy(DatabasePath=C:\WINDOWS\Installer\72c5c.msi,ProductCode={DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B},,,)
+MSI (s) (7C:88) [07:47:43:838]: Note: 1: 1402 2: UNKNOWN\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\InstallProperties 3: 2
+MSI (s) (7C:88) [07:47:43:846]: Note: 1: 2318 2: C:\WINDOWS\Installer\72c5f.msi
+MSI (s) (7C:88) [07:47:43:846]: File will have security applied from OpCode.
+MSI (s) (7C:88) [07:47:43:874]: Executing op: ProductRegister(UpgradeCode={04304CE2-990E-4053-9EDA-AF3E69548C9D},VersionString=0.1.0,,,,InstallSource=C:\OttrinDesktopQA\,Publisher=hoozter,,,,,,,,,,,,EstimatedSize=124669,,,,)
+MSI (s) (7C:88) [07:47:43:878]: Executing op: ProductCPDisplayInfoRegister()
+MSI (s) (7C:88) [07:47:43:880]: Executing op: ActionStart(Name=PublishFeatures,Description=Publishing Product Features Feature: [1],)
+MSI (s) (7C:88) [07:47:43:880]: Executing op: FeaturePublish(Feature=MainFeature,,Absent=2,Component=81gNnoqVbERj`6-Dc6sle8+8A{Lu6C2'f$C0DSnZuj48ZHj8vC36bTRh$4CxGLyIx`KtyAT_zGgh^_g&U8pU?dYO~DPb,XB)q?d6W8Rtb+qDBFa[T35@mzbfi?~*c,E,gC]8=We7r(lIm)3'y~nv6Fm]T1vy+65xw*N*HWmKGBL+~Ix(I~e)y)J.i{-4^F,@X{Rf*$!(&C2pcLg8jFzbA,uAkbYPCPJZEfyA`C.}tUqjI)&K`DYtL,Q6^EyZlRLjgep3SNcob+cIZE)5o7nj_aov,4VRh7tUyDfK{M=)PsCSsG6~P2Ok`FB&&{gPJX(S$80cCt9A_DtDaAlT2h2O{T7Eyf9wOCoBjReVIfVNHhyZ+HI}[CledXF4Jfh!]VGykvT])D9YB,=jheXt&k=m=4g-0C(V0bO@i~BF!OOF1FM,OBU7kDTkVg?ecK'J1&f6XD9am5EwIv,fC0`*-!xq.BDog^9Rvv7mttxbN9%$[EohUNKR(WyBN4G8w)+PYEZ^+&s%~R+%+0g`p~lN)ELg6qH%V[EW]NE@c?oEME=k@b9{$Zy2SH_K@KYD_CI*[Z@V$ZPO-$C}qP'f$C.q^mI'cEZP]m6W77L!iDTLcLQi[NcGU`Q(aFvy]FcB~DcsO=`191JF=qJ48BJwlDtbGedJ00p4CgiMZCy~79tElzeNXj8N-T4CJF.!GYlRI?ND2trw1h!NLDypl$jq2&BjGZFRfOyj[BT$Vu+M%n*WMRS`_q*u3E1m)IHFXHFvSFmjBs7$bF4z)5$xWjWvFm~qE7BAwCv{9O[2iZ0,u7J'V?UJYEo&dearIz!VP[e{h!WP3D$'o~O[k'01*U~42Bst.EO&a0tGn$(oBic[ZRsH'Ci8kWTf.G*I@G95&0P1aC'wq_5eVZ!`GN$JNzcoUFk!UCoOmTz%iB`iCl.ScCgymuiHpF*0C8)W?[8SmFf'=)@Qq6SV]X!)mNA[ZBADXL)`_I]E(HO`Lb'Z&Di@7(ZU[r
+MSI (s) (7C:88) [07:47:43:882]: Executing op: ActionStart(Name=PublishProduct,Description=Publishing product information,)
+MSI (s) (7C:88) [07:47:43:882]: Executing op: CleanupConfigData()
+MSI (s) (7C:88) [07:47:43:882]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1030\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\Patches 3: 2
+MSI (s) (7C:88) [07:47:43:882]: Executing op: RegisterPatchOrder(Continue=0,SequenceType=1,Remove=0)
+MSI (s) (7C:88) [07:47:43:882]: Note: 1: 1402 2: UNKNOWN\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\Patches 3: 2
+MSI (s) (7C:88) [07:47:43:882]: Executing op: ProductPublish(PackageKey={5AC9B394-CCC1-4E2B-B6EB-4D70DA0322AD})
+MSI (s) (7C:88) [07:47:43:884]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2
+MSI (s) (7C:88) [07:47:43:885]: Executing op: UpgradeCodePublish(UpgradeCode={04304CE2-990E-4053-9EDA-AF3E69548C9D})
+MSI (s) (7C:88) [07:47:43:885]: Executing op: SourceListPublish(,,,,NumberOfDisks=1)
+MSI (s) (7C:88) [07:47:43:885]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\SourceList 3: 2
+MSI (s) (7C:88) [07:47:43:887]: Executing op: ProductPublishClient(,,)
+MSI (s) (7C:88) [07:47:43:887]: Executing op: SourceListRegisterLastUsed(SourceProduct={DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B},LastUsedSource=C:\OttrinDesktopQA\)
+MSI (s) (7C:88) [07:47:43:887]: Entering CMsiConfigurationManager::SetLastUsedSource.
+MSI (s) (7C:88) [07:47:43:887]: Specifed source is already in a list.
+MSI (s) (7C:88) [07:47:43:887]: User policy value 'SearchOrder' is 'nmu'
+MSI (s) (7C:88) [07:47:43:887]: Adding new sources is allowed.
+MSI (s) (7C:88) [07:47:43:887]: Set LastUsedSource to: C:\OttrinDesktopQA\.
+MSI (s) (7C:88) [07:47:43:887]: Set LastUsedType to: n.
+MSI (s) (7C:88) [07:47:43:887]: Set LastUsedIndex to: 1.
+MSI (s) (7C:88) [07:47:43:887]: Executing op: End(Checksum=0,ProgressTotalHDWord=0,ProgressTotalLDWord=171464272)
+MSI (s) (7C:88) [07:47:43:897]: Doing action: RemoveExistingProducts
+MSI (s) (7C:88) [07:47:43:897]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:43: InstallExecute. Return value 1.
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 22
+Action start 07:47:43: RemoveExistingProducts.
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 23
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 16
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:43:900]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 21
+MSI (s) (7C:88) [07:47:43:901]: Doing action: CommitBackgroundIndex
+MSI (s) (7C:88) [07:47:43:901]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:43: RemoveExistingProducts. Return value 1.
+MSI (s) (7C:88) [07:47:43:901]: Note: 1: 2205 2:  3: MsiPatchCertificate
+MSI (s) (7C:88) [07:47:43:901]: LUA patching is disabled: missing MsiPatchCertificate table
+MSI (s) (7C:88) [07:47:43:903]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (7C:88) [07:47:43:903]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (7C:88) [07:47:43:905]: Note: 1: 2205 2:  3: ActionText
+Action start 07:47:43: CommitBackgroundIndex.
+MSI (s) (7C:88) [07:47:43:905]: Doing action: InstallFinalize
+MSI (s) (7C:88) [07:47:43:905]: Note: 1: 2205 2:  3: ActionText
+Action ended 07:47:43: CommitBackgroundIndex. Return value 1.
+MSI (s) (7C:88) [07:47:43:907]: Running Script: C:\WINDOWS\Installer\MSI37FB.tmp
+MSI (s) (7C:88) [07:47:43:909]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (7C:88) [07:47:43:909]: User policy value 'DisableRollback' is 0
+MSI (s) (7C:88) [07:47:43:909]: Machine policy value 'DisableRollback' is 0
+MSI (s) (7C:88) [07:47:43:911]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:43:911]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:43:911]: Executing op: Header(Signature=1397708873,Version=500,Timestamp=1565474294,LangId=0,Platform=589824,ScriptType=1,ScriptMajorVersion=21,ScriptMinorVersion=4,ScriptAttributes=0)
+Action start 07:47:43: InstallFinalize.
+MSI (s) (7C:88) [07:47:43:913]: Executing op: ProductInfo(ProductKey={DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B},ProductName=Ottrin,PackageName=baseline.msi,Language=0,Version=65536,Assignment=0,ObsoleteArg=0,ProductIcon=OttrinApp.ico,,PackageCode={5AC9B394-CCC1-4E2B-B6EB-4D70DA0322AD},,,InstanceType=0,LUASetting=0,RemoteURTInstalls=0,ProductDeploymentFlags=2)
+MSI (s) (7C:88) [07:47:43:915]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:43:917]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:43:919]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (7C:88) [07:47:43:919]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:43:919]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:43:923]: Executing op: DialogInfo(Type=0,Argument=0)
+MSI (s) (7C:88) [07:47:43:923]: Executing op: DialogInfo(Type=1,Argument=Ottrin)
+MSI (s) (7C:88) [07:47:43:923]: Executing op: RollbackInfo(,RollbackAction=Rollback,RollbackDescription=Rolling back action: [1],,CleanupAction=RollbackCleanup,CleanupDescription=Removing backup files File: [1],)
+MSI (s) (7C:88) [07:47:43:923]: Executing op: SetBaseline(Baseline=0,)
+MSI (s) (7C:88) [07:47:43:923]: Executing op: SetBaseline(Baseline=1,)
+MSI (s) (7C:88) [07:47:43:923]: Executing op: ActionStart(Name=CommitBackgroundIndex,,)
+MSI (s) (7C:88) [07:47:43:923]: Executing op: CustomActionSchedule(Action=CommitBackgroundIndex,ActionType=1570,Source=C:\WINDOWS\system32\,Target="C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "C:\Users\OTTRIN~2\AppData\Local\Temp\OttrinIndexRollback-{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}.json.scripts\index-task-transaction.ps1" -Phase Commit -Snapshot "C:\Users\OTTRIN~2\AppData\Local\Temp\OttrinIndexRollback-{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}.json",)
+MSI (s) (7C:88) [07:47:43:923]: Executing op: End(Checksum=0,ProgressTotalHDWord=0,ProgressTotalLDWord=0)
+MSI (s) (7C:88) [07:47:43:929]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (7C:88) [07:47:43:929]: User policy value 'DisableRollback' is 0
+MSI (s) (7C:88) [07:47:43:929]: Machine policy value 'DisableRollback' is 0
+MSI (s) (7C:88) [07:47:43:931]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (7C:88) [07:47:44:415]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:44:417]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:44:419]: Note: 1: 2318 2:
+MSI (s) (7C:88) [07:47:44:421]: No System Restore sequence number for this installation.
+MSI (s) (7C:88) [07:47:44:421]: Unlocking Server
+MSI (s) (7C:88) [07:47:44:433]: PROPERTY CHANGE: Deleting UpdateStarted property. Its current value is '1'.
+Action ended 07:47:44: InstallFinalize. Return value 1.
+Action ended 07:47:44: INSTALL. Return value 1.
+Property(S): UpgradeCode = {04304CE2-990E-4053-9EDA-AF3E69548C9D}
+Property(S): ARPPRODUCTICON = OttrinApp.ico
+Property(S): Manufacturer = hoozter
+Property(S): ProductCode = {DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}
+Property(S): ProductLanguage = 0
+Property(S): ProductName = Ottrin
+Property(S): ProductVersion = 0.1.0
+Property(S): SecureCustomProperties = WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+Property(S): BinFolder = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): INSTALLFOLDER = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\
+Property(S): ProgramsFolder = C:\Users\OttrinDesktopQA\AppData\Local\Programs\
+Property(S): LocalAppDataFolder = C:\Users\OttrinDesktopQA\AppData\Local\
+Property(S): OttrinProgramMenuFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+Property(S): ProgramMenuFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
+Property(S): dmzbjdDiB3W0FrOGXQNfyu.Blzhw = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\
+Property(S): dhhl6QFuQFTY7VU2uD_d2S_M70_8 = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): dTzIUDEdB9rSr7wS4lPVox5hKT.I = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\
+Property(S): dn32F_8EtPmtoACQpTPiLDsMMxTU = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+Property(S): dPNflk_4aOYVKo3ZPc8cTz2n7r0Y = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): dhJxUVfdQ0cl.WUkznCLAjT2gzFA = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+Property(S): dKuX5xjNESgOVxU1WHSJFvghTrNw = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+Property(S): dhuWcOUKYThzfMwsTQDFI31Lw5Ok = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\
+Property(S): dKlNTx_FNRtGPIc1yN5FSjNnSq0o = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+Property(S): d1aMKBYakpeHigRQUYF0B8iJEAP0 = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\
+Property(S): d7by2ua02ym.a3GUBsFb3YUdY4gs = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\
+Property(S): dN_kwZFmId13TyskwoOeucYFGuv0 = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+Property(S): dLUkJbpjstbOHi6.8vdP3Zi7wgxo = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+Property(S): d7.2MW0tjqQJvzMj9gk50FPZwvfg = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\
+Property(S): TARGETDIR = C:\
+Property(S): SourceDir = C:\OttrinDesktopQA\
+Property(S): System64Folder = C:\WINDOWS\system32\
+Property(S): MsiLogFileLocation = C:\OttrinDesktopQA\results\baseline-install.log
+Property(S): PackageCode = {5AC9B394-CCC1-4E2B-B6EB-4D70DA0322AD}
+Property(S): ProductState = -1
+Property(S): PackagecodeChanging = 1
+Property(S): REBOOT = ReallySuppress
+Property(S): CURRENTDIRECTORY = C:\WINDOWS\system32
+Property(S): CLIENTUILEVEL = 3
+Property(S): CLIENTPROCESSID = 1276
+Property(S): VersionDatabase = 500
+Property(S): VersionMsi = 5.00
+Property(S): VersionNT = 603
+Property(S): VersionNT64 = 603
+Property(S): WindowsBuild = 9600
+Property(S): ServicePackLevel = 0
+Property(S): ServicePackLevelMinor = 0
+Property(S): MsiNTProductType = 1
+Property(S): WindowsFolder = C:\WINDOWS\
+Property(S): WindowsVolume = C:\
+Property(S): SystemFolder = C:\WINDOWS\SysWOW64\
+Property(S): RemoteAdminTS = 1
+Property(S): TempFolder = C:\Users\OTTRIN~2\AppData\Local\Temp\
+Property(S): ProgramFilesFolder = C:\Program Files (x86)\
+Property(S): CommonFilesFolder = C:\Program Files (x86)\Common Files\
+Property(S): ProgramFiles64Folder = C:\Program Files\
+Property(S): CommonFiles64Folder = C:\Program Files\Common Files\
+Property(S): AppDataFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\
+Property(S): FavoritesFolder = C:\Users\OttrinDesktopQA\Favorites\
+Property(S): NetHoodFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Network Shortcuts\
+Property(S): PersonalFolder = C:\Users\OttrinDesktopQA\Documents\
+Property(S): PrintHoodFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Printer Shortcuts\
+Property(S): RecentFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Recent\
+Property(S): SendToFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\SendTo\
+Property(S): TemplateFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Templates\
+Property(S): CommonAppDataFolder = C:\ProgramData\
+Property(S): MyPicturesFolder = C:\Users\OttrinDesktopQA\Pictures\
+Property(S): AdminToolsFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools\
+Property(S): StartupFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\
+Property(S): StartMenuFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\
+Property(S): DesktopFolder = C:\Users\OttrinDesktopQA\Desktop\
+Property(S): FontsFolder = C:\WINDOWS\Fonts\
+Property(S): GPTSupport = 1
+Property(S): OLEAdvtSupport = 1
+Property(S): ShellAdvtSupport = 1
+Property(S): MsiAMD64 = 25
+Property(S): Msix64 = 25
+Property(S): Intel = 25
+Property(S): PhysicalMemory = 4077
+Property(S): VirtualMemory = 2902
+Property(S): LogonUser = OttrinDesktopQA
+Property(S): UserSID = S-1-5-21-3183210791-1673105385-3262580894-1030
+Property(S): UserLanguageID = 8192
+Property(S): ComputerName = DESKTOP-81GHP8U
+Property(S): SystemLanguageID = 1033
+Property(S): ScreenX = 1024
+Property(S): ScreenY = 768
+Property(S): CaptionHeight = 23
+Property(S): BorderTop = 1
+Property(S): BorderSide = 1
+Property(S): TextHeight = 16
+Property(S): TextInternalLeading = 3
+Property(S): ColorBits = 32
+Property(S): TTCSupport = 1
+Property(S): Time = 07:47:44
+Property(S): Date = 2026-10-15
+Property(S): MsiNetAssemblySupport = 4.8.9032.0
+Property(S): MsiWin32AssemblySupport = 6.3.26100.8972
+Property(S): RedirectedDllSupport = 2
+Property(S): USERNAME = campbell
+Property(S): DATABASE = C:\WINDOWS\Installer\72c5c.msi
+Property(S): OriginalDatabase = C:\OttrinDesktopQA\baseline.msi
+Property(S): UILevel = 2
+Property(S): ACTION = INSTALL
+Property(S): ROOTDRIVE = C:\
+Property(S): CostingComplete = 1
+Property(S): OutOfDiskSpace = 0
+Property(S): OutOfNoRbDiskSpace = 0
+Property(S): PrimaryVolumeSpaceAvailable = 0
+Property(S): PrimaryVolumeSpaceRequired = 0
+Property(S): PrimaryVolumeSpaceRemaining = 0
+Property(S): INSTALLLEVEL = 1
+Property(S): SOURCEDIR = C:\OttrinDesktopQA\
+Property(S): SourcedirProduct = {DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}
+Property(S): ProductToBeRegistered = 1
+MSI (s) (7C:88) [07:47:44:465]: Note: 1: 1707
+MSI (s) (7C:88) [07:47:44:465]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:44:465]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1707
+MSI (s) (7C:88) [07:47:44:465]: Note: 1: 2205 2:  3: Error
+MSI (s) (7C:88) [07:47:44:465]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1709
+MSI (s) (7C:88) [07:47:44:465]: Product: Ottrin -- Installation completed successfully.
+MSI (s) (7C:88) [07:47:44:467]: Windows Installer installed the product. Product Name: Ottrin. Product Version: 0.1.0. Product Language: 0. Manufacturer: hoozter. Installation success or error status: 0.
+MSI (s) (7C:88) [07:47:44:473]: Deferring clean up of packages/files, if any exist
+MSI (s) (7C:88) [07:47:44:473]: MainEngineThread is returning 0
+MSI (s) (7C:74) [07:47:44:475]: RESTART MANAGER: Session closed.
+MSI (s) (7C:74) [07:47:44:475]: No System Restore sequence number for this installation.
+=== Logging stopped: 2026-10-15  07:47:44 ===
+MSI (s) (7C:74) [07:47:44:479]: User policy value 'DisableRollback' is 0
+MSI (s) (7C:74) [07:47:44:479]: Machine policy value 'DisableRollback' is 0
+MSI (s) (7C:74) [07:47:44:479]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (7C:74) [07:47:44:479]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (7C:74) [07:47:44:481]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (7C:74) [07:47:44:481]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (7C:74) [07:47:44:483]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (c) (FC:08) [07:47:44:483]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (c) (FC:08) [07:47:44:485]: MainEngineThread is returning 0
+=== Verbose logging stopped: 2026-10-15  07:47:44 ===

@@ -1,0 +1,22 @@
+{
+  "nsis_payload_files": 51,
+  "scope": "Current native standard interactive user; silent installer lifecycle, same-version MSI upgrade, installed OpenGL GUI",
+  "session_id": 1,
+  "phase": "nsis-gui",
+  "before_gui": {
+    "task_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin continuous background index service</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1030</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1030</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <LogonTrigger>\r\n      <UserId>DESKTOP-81GHP8U\\OttrinDesktopQA</UserId>\r\n    </LogonTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinDesktopQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-daemon</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+    "instance": "{20E10EFD-BC0E-4DA2-A437-B907B09237E1}",
+    "pid": 820
+  },
+  "account_sid": "S-1-5-21-3183210791-1673105385-3262580894-1030",
+  "stack": "at Assert, C:\\OttrinDesktopQA\\actor.ps1: line 5\r\nat <ScriptBlock>, C:\\OttrinDesktopQA\\actor.ps1: line 80",
+  "remaining_install_kind": "nsis",
+  "index_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready -+ 2 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 2,\n  \"last_completed_indexed_items\": 2,\n  \"last_progress_unix_secs\": 1792042681,\n  \"last_scan_completed_unix_secs\": 1792042681,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792042681,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "nsis_install": 0,
+  "error": "Window not foreground",
+  "failure_cleanup_attempted": true,
+  "status": "fail",
+  "initial_preference_hash": "2E75434C2260B8E3EAAE039F2556D43E34C8D1D878B7945BC26B4E06B56E32F4",
+  "window_title": "Ottrin",
+  "source_hash": "DCD818FC6586A9C9146A5ABBFC720E276A98F43AA0A984080694F05ACA130945"
+}

@@ -1,0 +1,5 @@
+MSI (s) (7C:5C) [07:47:46:560]: File: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-indexd.exe;	Overwrite;	Won't patch;	Existing file is unversioned and unmodified - hash doesn't match source file
+MSI (s) (7C:5C) [07:47:47:608]: Product: Ottrin. The file C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-indexd.exe is being used by the following process: Name: ottrin-indexd , Id 7536.
+Info 1603.The file C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin-indexd.exe is being held in use.  Close that application and retry.
+MSI (s) (7C:5C) [07:47:54:101]: MainEngineThread is returning 3010
+MSI (c) (D4:B4) [07:47:54:127]: MainEngineThread is returning 3010

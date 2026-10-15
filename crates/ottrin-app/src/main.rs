@@ -60,6 +60,75 @@ fn renderer_for_selection(is_windows: bool, choice: GraphicsRendererChoice) -> e
     }
 }
 
+/// Fit the initial main window to usable desktop space, excluding taskbars.
+/// An explicit position is left to the caller/window manager.
+#[cfg(any(target_os = "windows", test))]
+fn fit_initial_viewport(
+    mut viewport: egui::ViewportBuilder,
+    work_area: egui::Rect,
+) -> egui::ViewportBuilder {
+    if viewport.position.is_some() {
+        return viewport;
+    }
+    let available = work_area.size();
+    let requested = viewport.inner_size.unwrap_or(egui::vec2(1024.0, 680.0));
+    let minimum = viewport
+        .min_inner_size
+        .unwrap_or(egui::Vec2::ZERO)
+        .min(available);
+    let size = requested.max(minimum).min(available);
+    if viewport.min_inner_size.is_some() {
+        viewport.min_inner_size = Some(minimum);
+    }
+    viewport
+        .with_inner_size(size)
+        .with_position(work_area.min + (available - size) * 0.5)
+}
+
+#[cfg(target_os = "windows")]
+fn windows_initial_window_options(
+    mut options: NativeOptions,
+    standalone_inspector: bool,
+) -> NativeOptions {
+    if !standalone_inspector {
+        options.window_builder = Some(Box::new(|viewport| {
+            use windows_sys::Win32::Foundation::POINT;
+            use windows_sys::Win32::Graphics::Gdi::{
+                GetMonitorInfoW, MONITOR_DEFAULTTOPRIMARY, MONITORINFO, MonitorFromPoint,
+            };
+            use windows_sys::Win32::UI::HiDpi::GetDpiForSystem;
+            // Eframe invokes this hook after Winit establishes DPI awareness.
+            // SAFETY: monitor lookup has no pointer inputs or ownership transfer.
+            let monitor =
+                unsafe { MonitorFromPoint(POINT { x: 0, y: 0 }, MONITOR_DEFAULTTOPRIMARY) };
+            // SAFETY: MONITORINFO permits zero initialization; cbSize is required.
+            let mut info: MONITORINFO = unsafe { std::mem::zeroed() };
+            info.cbSize = std::mem::size_of::<MONITORINFO>() as u32;
+            // SAFETY: info is a writable, correctly sized structure.
+            if unsafe { GetMonitorInfoW(monitor, &mut info) } == 0 {
+                eprintln!(
+                    "ottrin: Cannot read desktop work area: {}",
+                    std::io::Error::last_os_error()
+                );
+                return viewport;
+            }
+            // SAFETY: querying the current system DPI has no preconditions.
+            let scale = unsafe { GetDpiForSystem() } as f32 / 96.0;
+            let r = info.rcWork;
+            if scale <= 0.0 || r.right <= r.left || r.bottom <= r.top {
+                eprintln!("ottrin: Invalid desktop work area or DPI; using native placement");
+                return viewport;
+            }
+            let work_area = egui::Rect::from_min_max(
+                egui::pos2(r.left as f32 / scale, r.top as f32 / scale),
+                egui::pos2(r.right as f32 / scale, r.bottom as f32 / scale),
+            );
+            fit_initial_viewport(viewport, work_area)
+        }));
+    }
+    options
+}
+
 fn main_viewport_transparent(is_windows: bool) -> bool {
     !is_windows
 }
@@ -273,6 +342,8 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>) -> eframe::Result<()> {
             .with_icon(load_window_icon()),
         ..Default::default()
     };
+    #[cfg(target_os = "windows")]
+    let options = windows_initial_window_options(options, standalone_inspector);
     eframe::run_native(
         &window_title,
         options,
@@ -1196,6 +1267,53 @@ fn cargo_helper_artifact_from_messages(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn initial_viewport_fits_taskbar_work_area_at_normal_and_scaled_dpi() {
+        for scale in [1.0, 1.5, 2.0] {
+            for pixels in [egui::vec2(1280.0, 752.0), egui::vec2(1280.0, 672.0)] {
+                let work = egui::Rect::from_min_size(
+                    egui::pos2(48.0 / scale, 24.0 / scale),
+                    pixels / scale,
+                );
+                let viewport = fit_initial_viewport(
+                    egui::ViewportBuilder::default()
+                        .with_inner_size([1024.0, 680.0])
+                        .with_min_inner_size([800.0, 500.0]),
+                    work,
+                );
+                let rect = egui::Rect::from_min_size(
+                    viewport.position.unwrap(),
+                    viewport.inner_size.unwrap(),
+                );
+                assert!(work.contains_rect(rect), "{scale}: {work:?} / {rect:?}");
+                assert!((rect.center() - work.center()).length() < 0.001);
+                assert!(viewport.min_inner_size.unwrap().x <= work.width());
+                assert!(viewport.min_inner_size.unwrap().y <= work.height());
+            }
+        }
+        let work = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1280.0, 752.0));
+        for requested in [[100.0, 100.0], [2048.0, 1400.0]] {
+            let viewport = fit_initial_viewport(
+                egui::ViewportBuilder::default()
+                    .with_inner_size(requested)
+                    .with_min_inner_size([800.0, 500.0]),
+                work,
+            );
+            let size = viewport.inner_size.unwrap();
+            assert!(size.x >= 800.0 && size.y >= 500.0);
+            assert!(
+                work.contains_rect(egui::Rect::from_min_size(viewport.position.unwrap(), size))
+            );
+        }
+        let positioned = egui::ViewportBuilder::default().with_position([12.0, 25.0]);
+        let unchanged = fit_initial_viewport(
+            positioned,
+            egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1920.0, 1040.0)),
+        );
+        assert_eq!(unchanged.position, Some(egui::pos2(12.0, 25.0)));
+    }
 
     #[cfg(unix)]
     #[test]

@@ -1,0 +1,86 @@
+{
+  "tested_package_source": "16625571eddc908868ecfa08271f7a53e0e6aefe",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "057cfb501ed255a638cc85e7a55bc57a819e4838fc74fcc1f610e32d2dad931e",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "733b03ead20c2e6e71011cc19260d9d18fb6c4daf8437a3e9063f2139a0c9222",
+    "Ottrin-0.1.0-windows-x64.msi": "d48c007ef26ea987e58fca23e76a0b847c3d01a53d5127a690213d9392c3fc42"
+  },
+  "account": "Dedicated ordinary interactive user; principal RunLevel0; isolated VM",
+  "nsis": {
+    "status": "pass scoped to NSIS portion of full actor",
+    "payload_files": 51,
+    "install_exit": 0,
+    "uninstall_exit": 0,
+    "checks": [
+      "Saved configuration preserved during installation and after uninstall",
+      "Actual Dark100 main/View menus, address replacement without extra Ctrl+A and GUI search inspected",
+      "Same scheduled daemon PID/InstanceGuid before/during/after normal GUI close",
+      "Watcher discovers file created after window closes",
+      "Payload, index/task, Start-menu and installed folder removal; source/preference preservation"
+    ],
+    "raw_result": "BASELINE166_result.json",
+    "raw_run_limit": "Full combined actor later fails its upgrade gate; this scope does not convert the full run into a pass"
+  },
+  "msi_fresh": {
+    "status": "pass",
+    "payload_files": 53,
+    "install_exit": 0,
+    "uninstall_exit": 0,
+    "checks": [
+      "ProductState5 after install and -1 after uninstall",
+      "All53 payload files equal candidate/source manifests",
+      "Running least-privilege login task, live index query, source/preference preservation",
+      "Installed directory, generated database, Start-menu and index task removed"
+    ],
+    "raw_result": "MSI_FRESH_RAW.json",
+    "raw_field_note": "FreshMsiOnly mode uses the original generic msi_upgrade result field for the install exit; no upgrade acceptance is inferred",
+    "log": "msi-fresh-install.log"
+  },
+  "running_msi_upgrade": {
+    "status": "incomplete; reboot required",
+    "exit": 3010,
+    "cause": "InstallFiles encounters the running ottrin-indexd.exe before the installer quiesces its integration",
+    "raw_result": "BASELINE166_result.json",
+    "log": "running-upgrade.log",
+    "remaining": "Quiesce current authenticated daemon before replacing executable; preserve task/login state and saved index, and restore original running intent on rollback"
+  },
+  "work_area_source_fix": {
+    "status": "native source pass; packaging pending",
+    "before": {
+      "left": 26,
+      "right": 1050,
+      "bottom": 706,
+      "top": 26
+    },
+    "work_area": {
+      "left": 0,
+      "right": 1280,
+      "bottom": 752,
+      "top": 0
+    },
+    "after": {
+      "left": 128,
+      "right": 1152,
+      "bottom": 716,
+      "top": 36
+    },
+    "binary_sha256": "59597b492b8828e949a3b6fd5e0cc9e8d36b2e21fc4aced1c9f9a66ab9d7f4b8",
+    "raw_result": "GEOMETRY_SOURCE.json",
+    "checks": [
+      "Fresh root fits usable primary desktop rather than OS cascade position",
+      "Requested size and minimum limited to work area; DPI converted in native startup hook",
+      "Native standard-user normal close and index cleanup succeed"
+    ],
+    "limits": [
+      "Actual native display100%;150/200% geometry verified in focused tests, not native high-DPI desktop",
+      "Native probe precedes final test-only additions; production placement code unchanged",
+      "Secondary viewport and multiple-monitor acceptance remain separate"
+    ]
+  },
+  "publication": "Windows public downloads unchanged; staged166 packages predate source work-area fix and retain running-upgrade gate",
+  "other_open_gates": [
+    "MSI failed-transaction registration rollback",
+    "Production signing; broader lifecycle/GUI/Office/physical-platform gates"
+  ],
+  "log_format": "Windows MSI UTF-16 text normalized to readable UTF-8; separate fresh-install and upgrade logs retained"
+}

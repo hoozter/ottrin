@@ -1,0 +1,17 @@
+{
+  "DefaultDomainName": {
+    "kind": "String",
+    "value": "DESKTOP-81GHP8U",
+    "present": true
+  },
+  "AutoAdminLogon": {
+    "kind": "String",
+    "value": "0",
+    "present": true
+  },
+  "DefaultUserName": {
+    "kind": "String",
+    "value": "OttrinIndexQA",
+    "present": true
+  }
+}
