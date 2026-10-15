@@ -1,0 +1,113 @@
+{
+  "package_sha256": "e7e018f47406f30868e27e1edd2b5b2aeb97f37488fb1c6034e1eea12d8fcaf0",
+  "offline_freshness_ms": 1806.7088,
+  "initial_pid": 1188,
+  "phase": "all assertions passed",
+  "restart_pid": 5924,
+  "stop_output": "Session indexing stopped; no background Ottrin index task was installed.\n",
+  "cleanup_output": "Removed thumbnail cache: 0 B\nSession indexing stopped; no background Ottrin index task was installed.\nRemoved search storage: 26.5 MB\nNo terminal launcher was installed.\nSaved preferences kept. Use --uninstall --purge-config to remove them too.\nCleanup freed 26.5 MB.\n",
+  "stopped_exit": 0,
+  "initial_query_total": 10000,
+  "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 4a0c13b084080fccf18d839bbd43bac80b66a399\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "before_idle": {
+    "cpu_percent_one_core": 0.20817725035810486,
+    "seconds": 15.006640099999998
+  },
+  "after_idle": {
+    "cpu_percent_one_core": 0.31243712307043914,
+    "seconds": 15.0029954
+  },
+  "status": "pass",
+  "index_status": {
+    "active_root": null,
+    "active_root_index": 0,
+    "configured_roots": 1,
+    "database_bytes": 19628032,
+    "detail": "Ready \u00b7 10100 indexed",
+    "error": null,
+    "estimated_total_items": null,
+    "freelist_bytes": 0,
+    "freelist_pages": 0,
+    "indexed_items": 10100,
+    "last_completed_indexed_items": 10100,
+    "last_progress_unix_secs": 1792023918,
+    "last_scan_completed_unix_secs": 1792023918,
+    "last_scan_duration_ms": null,
+    "last_scan_started_unix_secs": 1792023917,
+    "snapshot_revision": 2,
+    "status": "ready",
+    "total_roots": 1,
+    "wal_bytes": 4152,
+    "watched_roots": 1,
+    "watcher_error": null,
+    "watcher_ready": true
+  },
+  "offline_queries": {
+    "renamed": {
+      "items": [
+        {
+          "path": "\\\\?\\C:\\OttrinQA-20261011\\index-offline-current\\corpus\\bucket-030\\renamed-offline.txt",
+          "parent_path": "\\\\?\\C:\\OttrinQA-20261011\\index-offline-current\\corpus\\bucket-030",
+          "name": "renamed-offline.txt",
+          "kind": "File",
+          "is_executable": false,
+          "symlink_target_is_dir": null,
+          "size_bytes": 16,
+          "modified_unix_secs": 1792023892,
+          "content_snippet": null
+        }
+      ],
+      "total": 1,
+      "status": "Ready",
+      "error": null
+    },
+    "created": {
+      "items": [
+        {
+          "path": "\\\\?\\C:\\OttrinQA-20261011\\index-offline-current\\corpus\\bucket-099\\born-offline.txt",
+          "parent_path": "\\\\?\\C:\\OttrinQA-20261011\\index-offline-current\\corpus\\bucket-099",
+          "name": "born-offline.txt",
+          "kind": "File",
+          "is_executable": false,
+          "symlink_target_is_dir": null,
+          "size_bytes": 15,
+          "modified_unix_secs": 1792023917,
+          "content_snippet": null
+        }
+      ],
+      "total": 1,
+      "status": "Ready",
+      "error": null
+    },
+    "old_name": {
+      "items": [],
+      "total": 0,
+      "status": "Ready",
+      "error": null
+    },
+    "deleted": {
+      "items": [],
+      "total": 0,
+      "status": "Ready",
+      "error": null
+    },
+    "modified": {
+      "items": [
+        {
+          "path": "\\\\?\\C:\\OttrinQA-20261011\\index-offline-current\\corpus\\bucket-020\\seed-02000.txt",
+          "parent_path": "\\\\?\\C:\\OttrinQA-20261011\\index-offline-current\\corpus\\bucket-020",
+          "name": "seed-02000.txt",
+          "kind": "File",
+          "is_executable": false,
+          "symlink_target_is_dir": null,
+          "size_bytes": 57,
+          "modified_unix_secs": 1792023917,
+          "content_snippet": null
+        }
+      ],
+      "total": 1,
+      "status": "Ready",
+      "error": null
+    }
+  }
+}

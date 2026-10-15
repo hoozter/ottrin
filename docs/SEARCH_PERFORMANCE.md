@@ -295,3 +295,42 @@ the earlier no-scan criterion. `--quiet-seconds 0` skips CPU samples for a focus
 correctness repro and must not be treated as resource acceptance. Shutdown and
 failure cleanup release owned processes and disposable profiles. Larger corpus,
 content-enabled, live-home and native Windows acceptance remain separate gates.
+
+
+## Windows current portable offline freshness — 2026-10-15
+
+The candidate from clean revision `4a0c13b084080fccf18d839bbd43bac80b66a399`
+contains the startup reconciliation repair. Portable SHA-256:
+`e7e018f47406f30868e27e1edd2b5b2aeb97f37488fb1c6034e1eea12d8fcaf0`.
+A native, non-administrator interactive Windows account indexed a private corpus
+of 10,000 files in 100 directories, with content indexing disabled and scheduled
+refresh disabled. The directly started `ottrin-indexd.exe` remained the daemon
+used by the CLI; no background task was installed.
+
+| Measurement | Result |
+|---|---:|
+| Quiet CPU before stop, 15 seconds | 0.208% of one core |
+| Create/edit/rename/delete while stopped, visible after restart | 1,806.709 ms |
+| Quiet CPU after startup reconciliation, 15 seconds | 0.312% of one core |
+
+Stopping session indexing exited zero and retained the database. After offline
+mutations, read-only queries found the created and renamed entries, excluded the
+old/deleted names and returned the modified file's new size, without a manual
+update. Watches were ready and the startup scan completed. Packaged cleanup
+stopped the restarted daemon, exited zero and removed the private database.
+
+Raw results, payload identity and teardown are recorded in
+`.hermes/evidence/windows-20261011/WINDOWS_OFFLINE_INDEX_ACCEPTANCE.json`,
+`WINDOWS_OFFLINE_CANDIDATE_PAYLOAD.json` and `WINDOWS_OFFLINE_INDEX_CLEANUP.json`.
+The test task exited zero; its fixtures, extracted packages and compiler runtime
+were removed, account preferences/source hashes were preserved, and the owned
+VM was shut down with backing-image content mtime unchanged. An earlier harness
+stall came from deep PowerShell serialization of extended string metadata;
+plain .NET file reads allowed the same test to complete. Timed-out attempts were
+not accepted.
+
+This is private metadata-only portable acceptance, not whole-home or
+content-enabled performance acceptance. Current MSI/NSIS native lifecycle,
+login/reboot persistence and GUI acceptance remain separate. All three candidate
+formats were rebuilt and their embedded payloads checked; public Windows
+downloads have not been replaced.

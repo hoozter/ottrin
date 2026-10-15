@@ -2070,3 +2070,30 @@ extra cached-binary mutation is required. Its next start gets the repair. Existi
 running code remains the preceding version until that start. Windows source
 compile/lint passes, but Windows package refresh/native offline-change, current
 native install/upgrade and wider resource/platform acceptance remain open.
+
+
+### Windows offline index freshness — current candidate acceptance, 2026-10-15
+
+Clean revision `4a0c13b` candidates now contain startup reconciliation of cached
+indexes. Native standard-user portable acceptance passes a private 10,000-file
+metadata-only index with refresh disabled: offline create/edit/rename/delete
+becomes visible after restart in 1.807 seconds, with ready watches and completed
+startup validation. Quiet 15-second samples measured 0.208% and 0.312% of one
+core before stop and after restart. Session stop preserves the database;
+packaged cleanup stops the daemon and removes its private database. No scheduled
+background task is installed for this fixture, so login/reboot persistence is
+not accepted by it.
+
+All three current candidate formats were rebuilt from that clean source:
+portable payload 51 files, NSIS embedded payload 51 matching digests, MSI 53
+matching payload/helper digests with multiplicity. Exact hashes and scoped
+native results are in
+`.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+The preceding `43cfa62` candidate receipt is retained as
+`WINDOWS_43CFA62_CANDIDATE_ACCEPTANCE.json`; its native lifecycle/GUI evidence
+does not accept the replacement artifacts. Public Windows downloads remain
+unchanged until current native installer acceptance. Current MSI/NSIS lifecycle,
+MSI failed-transaction registration recovery, login/reboot and GUI gates remain
+open. Owned guest fixtures/compiler copies and the QA task were removed; the
+owned VM and both backing guests are shut off, with source/preferences and
+backing content mtime preserved.

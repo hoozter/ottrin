@@ -1,58 +1,63 @@
 {
   "date": "2026-10-15",
-  "source_revision": "43cfa62459601489dca3393af196012aef536793",
+  "source_revision": "4a0c13b084080fccf18d839bbd43bac80b66a399",
   "tracked_clean_source": true,
   "stage": ".hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "d0ea7bbd3853afb6cffb1fe6bd95767848c9813d97790decbf99e55e838a8683",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "0599eea892a8be8022d3e1d77d7100f7911b15d0a40edbbbc797feef89caf810",
-    "Ottrin-0.1.0-windows-x64.msi": "cca6eca82112f06501b26bdeeab6861fcbb939a57fc6532ffcd656d87ce4a79d"
+    "Ottrin-0.1.0-windows-x64-portable.zip": {
+      "sha256": "e7e018f47406f30868e27e1edd2b5b2aeb97f37488fb1c6034e1eea12d8fcaf0",
+      "bytes": 50456658,
+      "exact_payload_files": 51
+    },
+    "Ottrin-0.1.0-windows-x64-setup.exe": {
+      "sha256": "78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d",
+      "bytes": 36158559,
+      "embedded_digest_multiset_files": 51
+    },
+    "Ottrin-0.1.0-windows-x64.msi": {
+      "sha256": "e527a129d6767484c259b181f8ca294a007899ae178de24542a34cbb88b9a778",
+      "bytes": 42577920,
+      "embedded_digest_multiset_files": 53
+    }
   },
   "checks": {
     "portable_exact_payload_match": 51,
     "nsis_embedded_payload_digest_presence": 51,
-    "public_cross_volume_regular_file_move": "pass",
-    "first_visible_destination_capture_ms": 647,
-    "source_removed_at_first_capture": true,
-    "destination_hash_matches_source": true,
-    "native_gui_exit": 0,
-    "packaged_portable_cleanup": "pass; no owned app/index process or private index files remain",
-    "runtime": "Native Windows standard-user session, packaged Mesa modules",
     "msi_embedded_payload_helper_digest_multiset_presence": 53,
-    "nsis_native_lifecycle": "pass; WINDOWS_NSIS_COMPLETION_LIFECYCLE_ACCEPTANCE.json"
+    "native_portable_metadata_index_offline_freshness": "pass",
+    "native_standard_user": true,
+    "populated_files": 10000,
+    "refresh_interval_hours": 0,
+    "offline_create_edit_rename_delete_ms": 1806.7088,
+    "before_idle_one_core_percent": 0.20817725035810486,
+    "after_restart_idle_one_core_percent": 0.31243712307043914,
+    "idle_sample_seconds": 15,
+    "session_stop_preserves_database": true,
+    "cleanup_stops_daemon_and_removes_private_database": true
   },
   "evidence": [
-    "windows-move-wake-Launch.json",
-    "windows-move-wake-Move.json",
-    "windows-move-wake-Finish.json",
-    "windows-move-wake-before.png",
-    "windows-move-wake-after.png",
-    "windows-move-wake-settled.png",
-    "windows-move-wake-cleanup.json",
-    "WINDOWS_NSIS_COMPLETION_LIFECYCLE_ACCEPTANCE.json",
-    "windows-nsis-msi-completion-cleanup.json"
+    "WINDOWS_OFFLINE_CANDIDATE_PAYLOAD.json",
+    "WINDOWS_OFFLINE_INDEX_ACCEPTANCE.json",
+    "WINDOWS_OFFLINE_INDEX_CLEANUP.json"
   ],
   "cleanup": {
-    "guest_fixtures_removed": true,
-    "qa_tasks_removed": true,
-    "owned_virtual_disk_detached_and_removed": true,
-    "account_preferences_and_source_preserved": true,
+    "task_exit": 0,
+    "qa_task_removed": true,
+    "no_ottrin_processes": true,
+    "owned_guest_corpus_profiles_packages_and_compiler_removed": true,
     "overlay_state": "shut off",
+    "base_guests_state": "shut off",
+    "backing_content_mtime": "1792007729.962647502",
     "backing_content_mtime_unchanged": true,
-    "superseded_candidate_msi_removed": true
+    "account_preferences_sha256": "2103659f5a0f491aca2e012358e26b739c0c04fe9fa0418f7f537330cd839793",
+    "account_source_sha256": "26f0da9e473f8ed2b6a04c9fcc381d606d914a1e19b61195b43b9bdb63c8ba50"
   },
   "limits": [
-    "647 ms is one observed end-to-end capture, not a guaranteed latency bound or comparative benchmark",
-    "Public dist downloads unchanged; all three candidate formats refreshed",
-    "Overwrite, directory and recovery Move scenarios remain separate",
-    "Raw Windows verbatim path prefixes remain a UI formatting follow-up",
-    "Current MSI native lifecycle, MSI rollback and exact NSIS login/reboot and GUI acceptance remain open"
+    "Public dist Windows packages unchanged; these are current candidates",
+    "Current candidate MSI/NSIS native install, login/reboot, GUI and rollback acceptance remain open; previous revision lifecycle evidence is historical",
+    "Private 10000-file metadata-only fixture; not whole-home, content-enabled indexing or a universal latency/CPU guarantee",
+    "Scheduled background service persistence not exercised by this unregistered session-daemon test"
   ],
-  "build": {
-    "msi": "Authoritative shell packager in disposable clean detached 43cfa62 source checkout; native WiX QA adapter",
-    "compiler": "WiX 5.0.2+aa65968c, retained .NET 8.0.31 bundle",
-    "compiler_bundle_sha256": "e46a63c661f7144994eddb1f7447f868e806f7b5d6d4bdc2a09df20519100afd",
-    "temporary_checkout_removed": true,
-    "guest_compiler_and_payload_removed": true
-  }
+  "historical_candidate_receipt": "WINDOWS_43CFA62_CANDIDATE_ACCEPTANCE.json",
+  "harness_note": "Deep Windows PowerShell JSON serialization of Get-Content extended string metadata prevented final receipts in earlier attempts. Plain .NET ReadAllText strings resolve the harness stall; failed attempts were not accepted."
 }

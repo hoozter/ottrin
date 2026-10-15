@@ -1,0 +1,21 @@
+{
+  "stage_files": 51,
+  "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 4a0c13b084080fccf18d839bbd43bac80b66a399\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": {
+      "sha256": "e7e018f47406f30868e27e1edd2b5b2aeb97f37488fb1c6034e1eea12d8fcaf0",
+      "bytes": 50456658,
+      "exact_payload_files": 51
+    },
+    "Ottrin-0.1.0-windows-x64-setup.exe": {
+      "sha256": "78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d",
+      "bytes": 36158559,
+      "embedded_digest_multiset_files": 51
+    },
+    "Ottrin-0.1.0-windows-x64.msi": {
+      "sha256": "e527a129d6767484c259b181f8ca294a007899ae178de24542a34cbb88b9a778",
+      "bytes": 42577920,
+      "embedded_digest_multiset_files": 53
+    }
+  }
+}
