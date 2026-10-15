@@ -40,5 +40,5 @@
     "No fresh native distro install/upgrade/reboot, physical desktop or Windows acceptance; Windows packages unchanged",
     "Automatic expiry remains disabled; no operator Copy data reclaimed or host service changed"
   ],
-  "current_delivery": "Superseded by COPY_GROUP_SCALING_ACCEPTANCE.json; measurements/checks in this receipt retain their original recorded source/artifact scope"
+  "current_delivery": "Superseded by COPY_PAYLOAD_ACCEPTANCE.json; measurements and checks retain their original recorded source/artifact scope"
 }

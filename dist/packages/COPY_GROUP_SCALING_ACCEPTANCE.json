@@ -98,5 +98,6 @@
     "Symlink ancestry, unknown/remote filesystems and watch-resource exhaustion retain full per-item group validation",
     "No fresh native distro lifecycle, physical desktop or Windows acceptance; Windows stable packages unchanged",
     "Automatic expiry remains disabled; no operator Copy data reclaimed or host service changed"
-  ]
+  ],
+  "current_delivery": "Superseded by COPY_PAYLOAD_ACCEPTANCE.json; measurements and checks retain their original recorded source/artifact scope"
 }

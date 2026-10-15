@@ -1,0 +1,19 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 31.28s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-ae68b2dc04dbe44d)
+
+running 1 test
+
+thread 'copy_recovery::cleanup::tests::payload_cleanup_refuses_dependency_changes_through_an_outside_journal_alias_before_unlink' (183700) panicked at crates/ottrin-platform/src/copy_cleanup.rs:1841:18:
+changed dependency must be refused before deleting the claimed retained object: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test copy_recovery::cleanup::tests::payload_cleanup_refuses_dependency_changes_through_an_outside_journal_alias_before_unlink ... FAILED
+
+failures:
+
+failures:
+    copy_recovery::cleanup::tests::payload_cleanup_refuses_dependency_changes_through_an_outside_journal_alias_before_unlink
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 411 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-platform --lib`

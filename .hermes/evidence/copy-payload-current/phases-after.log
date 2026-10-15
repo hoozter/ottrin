@@ -1,0 +1,25 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-ae68b2dc04dbe44d)
+
+running 1 test
+Cleanup phase: records=8 phase=copy elapsed_ms=8
+Cleanup phase: records=8 phase=observe elapsed_ms=4
+Cleanup phase: records=8 phase=plan elapsed_ms=6
+Cleanup phase: records=8 phase=reclaim elapsed_ms=90
+Cleanup phase: records=8 phase=manifest elapsed_ms=9
+Finalization: records=8 metadata_bytes=139130 read_bytes=480620 elapsed_ms=11 cpu_us=9107 read_calls=694 monitored=true
+Cleanup phase: records=32 phase=copy elapsed_ms=32
+Cleanup phase: records=32 phase=observe elapsed_ms=18
+Cleanup phase: records=32 phase=plan elapsed_ms=25
+Cleanup phase: records=32 phase=reclaim elapsed_ms=413
+Cleanup phase: records=32 phase=manifest elapsed_ms=32
+Finalization: records=32 metadata_bytes=555930 read_bytes=1920875 elapsed_ms=41 cpu_us=37252 read_calls=2733 monitored=true
+Cleanup phase: records=128 phase=copy elapsed_ms=129
+Cleanup phase: records=128 phase=observe elapsed_ms=72
+Cleanup phase: records=128 phase=plan elapsed_ms=99
+Cleanup phase: records=128 phase=reclaim elapsed_ms=2173
+Cleanup phase: records=128 phase=manifest elapsed_ms=146
+Finalization: records=128 metadata_bytes=2223919 read_bytes=7684233 elapsed_ms=154 cpu_us=153123 read_calls=10893 monitored=true
+test copy_recovery::cleanup::finalization::tests::finalization_scaling_profile ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 3.55s

@@ -1,0 +1,26 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 30.45s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-ae68b2dc04dbe44d)
+
+running 1 test
+Cleanup phase: records=8 phase=copy elapsed_ms=9
+Cleanup phase: records=8 phase=observe elapsed_ms=4
+Cleanup phase: records=8 phase=plan elapsed_ms=6
+Cleanup phase: records=8 phase=reclaim elapsed_ms=73
+Cleanup phase: records=8 phase=manifest elapsed_ms=8
+Finalization: records=8 metadata_bytes=138731 read_bytes=479444 elapsed_ms=15 cpu_us=10483 read_calls=694 monitored=true
+Cleanup phase: records=32 phase=copy elapsed_ms=33
+Cleanup phase: records=32 phase=observe elapsed_ms=19
+Cleanup phase: records=32 phase=plan elapsed_ms=25
+Cleanup phase: records=32 phase=reclaim elapsed_ms=440
+Cleanup phase: records=32 phase=manifest elapsed_ms=34
+Finalization: records=32 metadata_bytes=554428 read_bytes=1916453 elapsed_ms=39 cpu_us=38513 read_calls=2733 monitored=true
+Cleanup phase: records=128 phase=copy elapsed_ms=135
+Cleanup phase: records=128 phase=observe elapsed_ms=73
+Cleanup phase: records=128 phase=plan elapsed_ms=100
+Cleanup phase: records=128 phase=reclaim elapsed_ms=3961
+Cleanup phase: records=128 phase=manifest elapsed_ms=140
+Finalization: records=128 metadata_bytes=2218321 read_bytes=7667891 elapsed_ms=153 cpu_us=152190 read_calls=10893 monitored=true
+test copy_recovery::cleanup::finalization::tests::finalization_scaling_profile ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 410 filtered out; finished in 5.35s

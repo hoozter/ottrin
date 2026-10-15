@@ -1,0 +1,231 @@
+{
+  "platform_tests": "411 passed, 3 ignored",
+  "explicit_private_mount_gate": "both payload and finalization scenarios pass",
+  "strict_linux_platform_all_target_clippy": "pass",
+  "measurements": {
+    "before": [
+      {
+        "records": 8,
+        "phase": "copy",
+        "elapsed_ms": 9
+      },
+      {
+        "records": 8,
+        "phase": "observe",
+        "elapsed_ms": 4
+      },
+      {
+        "records": 8,
+        "phase": "plan",
+        "elapsed_ms": 6
+      },
+      {
+        "records": 8,
+        "phase": "reclaim",
+        "elapsed_ms": 73
+      },
+      {
+        "records": 8,
+        "phase": "manifest",
+        "elapsed_ms": 8
+      },
+      {
+        "records": 8,
+        "metadata_bytes": 138731,
+        "read_bytes": 479444,
+        "elapsed_ms": 15,
+        "cpu_us": 10483,
+        "read_calls": 694,
+        "monitored": "true"
+      },
+      {
+        "records": 32,
+        "phase": "copy",
+        "elapsed_ms": 33
+      },
+      {
+        "records": 32,
+        "phase": "observe",
+        "elapsed_ms": 19
+      },
+      {
+        "records": 32,
+        "phase": "plan",
+        "elapsed_ms": 25
+      },
+      {
+        "records": 32,
+        "phase": "reclaim",
+        "elapsed_ms": 440
+      },
+      {
+        "records": 32,
+        "phase": "manifest",
+        "elapsed_ms": 34
+      },
+      {
+        "records": 32,
+        "metadata_bytes": 554428,
+        "read_bytes": 1916453,
+        "elapsed_ms": 39,
+        "cpu_us": 38513,
+        "read_calls": 2733,
+        "monitored": "true"
+      },
+      {
+        "records": 128,
+        "phase": "copy",
+        "elapsed_ms": 135
+      },
+      {
+        "records": 128,
+        "phase": "observe",
+        "elapsed_ms": 73
+      },
+      {
+        "records": 128,
+        "phase": "plan",
+        "elapsed_ms": 100
+      },
+      {
+        "records": 128,
+        "phase": "reclaim",
+        "elapsed_ms": 3961
+      },
+      {
+        "records": 128,
+        "phase": "manifest",
+        "elapsed_ms": 140
+      },
+      {
+        "records": 128,
+        "metadata_bytes": 2218321,
+        "read_bytes": 7667891,
+        "elapsed_ms": 153,
+        "cpu_us": 152190,
+        "read_calls": 10893,
+        "monitored": "true"
+      }
+    ],
+    "after": [
+      {
+        "records": 8,
+        "phase": "copy",
+        "elapsed_ms": 8
+      },
+      {
+        "records": 8,
+        "phase": "observe",
+        "elapsed_ms": 4
+      },
+      {
+        "records": 8,
+        "phase": "plan",
+        "elapsed_ms": 6
+      },
+      {
+        "records": 8,
+        "phase": "reclaim",
+        "elapsed_ms": 90
+      },
+      {
+        "records": 8,
+        "phase": "manifest",
+        "elapsed_ms": 9
+      },
+      {
+        "records": 8,
+        "metadata_bytes": 139130,
+        "read_bytes": 480620,
+        "elapsed_ms": 11,
+        "cpu_us": 9107,
+        "read_calls": 694,
+        "monitored": "true"
+      },
+      {
+        "records": 32,
+        "phase": "copy",
+        "elapsed_ms": 32
+      },
+      {
+        "records": 32,
+        "phase": "observe",
+        "elapsed_ms": 18
+      },
+      {
+        "records": 32,
+        "phase": "plan",
+        "elapsed_ms": 25
+      },
+      {
+        "records": 32,
+        "phase": "reclaim",
+        "elapsed_ms": 413
+      },
+      {
+        "records": 32,
+        "phase": "manifest",
+        "elapsed_ms": 32
+      },
+      {
+        "records": 32,
+        "metadata_bytes": 555930,
+        "read_bytes": 1920875,
+        "elapsed_ms": 41,
+        "cpu_us": 37252,
+        "read_calls": 2733,
+        "monitored": "true"
+      },
+      {
+        "records": 128,
+        "phase": "copy",
+        "elapsed_ms": 129
+      },
+      {
+        "records": 128,
+        "phase": "observe",
+        "elapsed_ms": 72
+      },
+      {
+        "records": 128,
+        "phase": "plan",
+        "elapsed_ms": 99
+      },
+      {
+        "records": 128,
+        "phase": "reclaim",
+        "elapsed_ms": 2173
+      },
+      {
+        "records": 128,
+        "phase": "manifest",
+        "elapsed_ms": 146
+      },
+      {
+        "records": 128,
+        "metadata_bytes": 2223919,
+        "read_bytes": 7684233,
+        "elapsed_ms": 154,
+        "cpu_us": 153123,
+        "read_calls": 10893,
+        "monitored": "true"
+      }
+    ]
+  },
+  "interpretation": "128-entry retained-data reclamation3961 to2173ms; phase timings are local optimized-test-build fixtures, not exact packaged timings or universal scaling claims",
+  "alias_regression": "Directory-only watcher failed: a dependency edit through an outside hard link was refused only after retained data unlink. Inode watches now refuse before unlink and preserve the same claimed object. Baseline included the pure decoder memo, before the watcher repair.",
+  "checks": [
+    "same-length changed canonical bytes refresh decoded values; invalid schemas are refused; restored bytes decode correctly",
+    "unreliable-notification fallback rechecks fresh dependencies with notification queue deliberately empty",
+    "mount namespace guard shared between payload and finalization; same-inode binds refused before deletion",
+    "memo contains no descriptors and is dropped when all payloads complete"
+  ],
+  "delivery": "Published in all four stable Linux packages after exact AppImage Dark100/Light150 GUI checks",
+  "source_revision": "5849d38dd8974b9ad7fbeb1fd520f885639247a0",
+  "baseline_production_revision": "57f2264113c9493276953630ba466d30daed7f04",
+  "gated_cases_executed": [
+    "multi-size resource profile",
+    "payload and finalization same-inode bind tests in private namespaces",
+    "receipt unmount/replacement/bind test in a namespace-owned /tmp"
+  ]
+}

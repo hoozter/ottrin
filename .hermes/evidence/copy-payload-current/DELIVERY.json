@@ -1,0 +1,39 @@
+{
+  "status": "implemented, tested, packaged; user acceptance deferred",
+  "source_revision": "5849d38dd8974b9ad7fbeb1fd520f885639247a0",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "74a221ec38590251dad68de3ea3f885d361184589c50317f4ea72b7c25282cc7",
+    "Ottrin-0.1.0-x86_64.AppImage": "611c8c579952ef3e03bc4ec033c75286d8a31329336c0957bb34c6e31b0d4168",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "020fdde7aebc6625e14ad7250822d82872917b660e1953872ecd64462a95bfbd",
+    "ottrin_0.1.0_amd64.deb": "0d981cc7b8b0f06121e8ec47f60ec2a9dd6598a76382978d5467c89e3651c334"
+  },
+  "evidence": ".hermes/evidence/copy-payload-current",
+  "checks": [
+    "same-length changed canonical bytes refresh decoded values; invalid schemas are refused; restored bytes decode correctly",
+    "unreliable-notification fallback rechecks fresh dependencies with notification queue deliberately empty",
+    "mount namespace guard shared between payload and finalization; same-inode binds refused before deletion",
+    "memo contains no descriptors and is dropped when all payloads complete"
+  ],
+  "tests": {
+    "platform": "411 regular passed; all 3 gated cases explicitly passed",
+    "clippy": "strict Linux platform all targets passed",
+    "ui_worker": "private-process cleanup success, changed backup retry, overwrite chain and interrupted finalization passed",
+    "package": "four package content identities and AppImage/RPM namespace ownership passed",
+    "gui": "exact AppImage Dark100 per-entry and Light150 bulk cancellation/refusal/retry; source and publication preserved; main/View menus inspected; normal exits and teardown"
+  },
+  "performance": {
+    "fixture": "local optimized-test build, 128 records, retained-data reclamation interval",
+    "before_ms": 3961,
+    "after_ms": 2173,
+    "scope": "Registry reads and watch setup remain quadratic; no linear whole-cleanup or exact package timing claim"
+  },
+  "limits": [
+    "Automatic expiry is disabled; ordinary capacity trimming continues to retain owned recovery receipts until an explicit supported cleanup",
+    "Other operation kinds retain their existing ownership and recovery limits; this work implements Linux Copy cleanup",
+    "Private Xvfb/software rendering does not prove physical Wayland/GPU, every theme/text-size, or native Windows cleanup acceptance",
+    "Large-operation resource profiling, arbitrary power loss and final syscall-race boundaries retain their separate scopes; torn/unknown evidence remains for review",
+    "Current namespace and package-content checks do not replace fresh distro package-manager install/upgrade/reboot acceptance. Prior distro receipts remain historical.",
+    "Windows stable packages are unchanged; MSI failed-registration rollback and remaining Windows gates are still open",
+    "No operator retained Copy data was reclaimed and no host service was changed or restarted"
+  ]
+}

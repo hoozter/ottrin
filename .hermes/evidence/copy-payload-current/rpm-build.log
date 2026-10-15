@@ -1,0 +1,51 @@
+/tmp/tmp.zT6rXSpHs0/pdfium.tgz: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/SOURCES/stage
+Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.ucJdC7
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.2IdbC1
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.kEXZ0m
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ /bin/mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILDROOT
++ /bin/mkdir /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ cp -a /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/SOURCES/stage/. /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-compress /usr
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-elfperms
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-static-archive /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-remove-la-files
+Processing files: ottrin-0.1.0-1.x86_64
+Provides: application() application(org.ottrin.Ottrin.desktop) libpdfium.so()(64bit) metainfo() metainfo(org.ottrin.Ottrin.appdata.xml) ottrin = 0.1.0-1 ottrin(x86-64) = 0.1.0-1
+Requires(interp): /bin/sh /bin/sh
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+Requires(preun): /bin/sh
+Requires(posttrans): /bin/sh
+Requires: /bin/sh ld-linux-x86-64.so.2()(64bit) ld-linux-x86-64.so.2(GLIBC_2.3)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.10)(64bit) libc.so.6(GLIBC_2.11)(64bit) libc.so.6(GLIBC_2.14)(64bit) libc.so.6(GLIBC_2.15)(64bit) libc.so.6(GLIBC_2.16)(64bit) libc.so.6(GLIBC_2.17)(64bit) libc.so.6(GLIBC_2.18)(64bit) libc.so.6(GLIBC_2.2.5)(64bit) libc.so.6(GLIBC_2.25)(64bit) libc.so.6(GLIBC_2.27)(64bit) libc.so.6(GLIBC_2.28)(64bit) libc.so.6(GLIBC_2.29)(64bit) libc.so.6(GLIBC_2.3)(64bit) libc.so.6(GLIBC_2.3.2)(64bit) libc.so.6(GLIBC_2.3.4)(64bit) libc.so.6(GLIBC_2.30)(64bit) libc.so.6(GLIBC_2.32)(64bit) libc.so.6(GLIBC_2.33)(64bit) libc.so.6(GLIBC_2.34)(64bit) libc.so.6(GLIBC_2.39)(64bit) libc.so.6(GLIBC_2.4)(64bit) libc.so.6(GLIBC_2.5)(64bit) libc.so.6(GLIBC_2.7)(64bit) libc.so.6(GLIBC_2.9)(64bit) libfontconfig.so.1()(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libgcc_s.so.1(GCC_3.3)(64bit) libgcc_s.so.1(GCC_4.2.0)(64bit) libgio-2.0.so.0()(64bit) libglib-2.0.so.0()(64bit) libgobject-2.0.so.0()(64bit) libgstapp-1.0.so.0()(64bit) libgstbase-1.0.so.0()(64bit) libgstreamer-1.0.so.0()(64bit) libm.so.6()(64bit) libm.so.6(GLIBC_2.2.5)(64bit) libm.so.6(GLIBC_2.27)(64bit) libm.so.6(GLIBC_2.29)(64bit) libm.so.6(GLIBC_2.35)(64bit) libpthread.so.0()(64bit) libpthread.so.0(GLIBC_2.2.5)(64bit) libpthread.so.0(GLIBC_2.3.2)(64bit) rtld(GNU_HASH)
+Checking for unpackaged file(s): /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/check-files /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
+Wrote: /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/RPMS/x86_64/ottrin-0.1.0-1.x86_64.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.zzVRc5
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(rmbuild): /bin/sh -e /var/tmp/rpm-tmp.hVVWKr
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/.rpm.w1pjTB/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-current/ottrin-0.1.0-1.x86_64.rpm
