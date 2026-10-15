@@ -17,6 +17,7 @@ Every item must be checked against the exact artifact intended for release. A so
 - [ ] Linux, Windows, and macOS CI are green for the release commit.
 - [ ] Exact release artifact checksums verify after rebuilding from the current release commit.
 - [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.
+- [ ] Live-content search works in exact installed and standalone artifacts without a preinstalled ripgrep. Required provider binaries/notices are delivered or installed as declared dependencies; missing/damaged providers produce an actionable error instead of empty content matches.
 - [ ] Native DEB/RPM checksums, source revision, helper policy and executable code match the release AppImage; generated dependencies include the payload-derived minimum libc and administrator authentication runtime.
 - [ ] Both exact rebuilt Windows artifacts contain the checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus complete notices; Automatic selection, persisted preference, explicit overrides, and loaded-DLL provenance pass acceptance.
 

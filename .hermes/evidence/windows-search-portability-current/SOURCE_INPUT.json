@@ -1,0 +1,13 @@
+{
+  "parent_revision": "abff5eb72d8cc9210e1c30ac1aa25aea5a108702",
+  "sha256": {
+    "Cargo.lock": "774c6a99872bbfe137ba3623f274fcff1ebd5f6585671ea50bd9ddce0907e21a",
+    "crates/ottrin-search/Cargo.toml": "5e87d68b240b1664d5c6444204ed05f44c1166e52484b951bfed2220327fddc1",
+    "crates/ottrin-search/src/lib.rs": "285a1613869589ff954bbbf70699914a7739bda66db4b4431e7df5befe17ceb6",
+    "crates/ottrin-search/src/db.rs": "15f119205da4ecd41b2bec56434a5cf043d29e6f041b88f4abd2e06f13b8d0f1",
+    "crates/ottrin-search/src/worker.rs": "8a7e43b4e65e17955efe90318f477a13f0a9c57bd63b150d5424d366d5ec3ff5",
+    "crates/ottrin-search/src/scanner.rs": "942f13aa648eb5fd8de1b544a7d74b9412c2ce0f5f0df9c6f7dc10be2c769160",
+    "crates/ottrin-search/src/plan.rs": "2e2125eb2d07fe711f2f18e2471b925db60768cf7634faae20d92fbe05c0b395"
+  },
+  "scope": "Rust implementation changes are cfg(test) fixtures; tempfile is a dev dependency using its existing lockfile version; production search implementation and packages unchanged"
+}

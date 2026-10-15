@@ -1,0 +1,129 @@
+{
+  "source_creator": "db::generation_tests::wal_allows_generation_commit_while_a_snapshot_reader_is_open",
+  "reason": "Obsolete test-only sidecars/content stores whose primary database is absent; regular same-user files; fuser reports no consumers; metadata unchanged during validation",
+  "removed": [
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792096865305921351.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "2db74ad4fb43e79e192a0896fa215da9a6f47d45fe72da942bd6d20987e0853a"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792096865305921351.db-shm",
+      "bytes": 32768,
+      "sha256": "b05353d9fb06b279ba3820e8e1122528a619175aa26ae60d0215074fcb98a8b5"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792096865305921351.db-wal",
+      "bytes": 20632,
+      "sha256": "fe2c8ac5ddf4cd8f204e343db4b6c2cc81261239dbff0703307cf4476fc8b6a8"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792096774305789089.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "8e0dc4431b5b26a590f0b979ac38cba8a32c332d44f19046b64db2181dfc2cae"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792096774305789089.db-shm",
+      "bytes": 32768,
+      "sha256": "fefaab0437d5bc816908c8cd4968cc4e76a1965c9e4b5e16024d375591a1f95d"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792096774305789089.db-wal",
+      "bytes": 20632,
+      "sha256": "9b9015f56cb91434f7c1788b0eb0895dfd65d2325134e4ec43ae26e0f452d355"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792092876159415230.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "5f702c15abd69735f3e62de5d27845f8a5060c6ce7a747c0636da4684d615f00"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792092876159415230.db-shm",
+      "bytes": 32768,
+      "sha256": "5079bf43648ec356d4a956a7183270448e7d8f1980fabcc66f4563f08118072b"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792092876159415230.db-wal",
+      "bytes": 20632,
+      "sha256": "1359c28db4150d19c043bb0478bea364a822c9eaca3500e6a73fc922e1200438"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792037394856573140.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "37f743beba10bed1afb23e2059d672d13b71a2b8e8c6181e488289c7eb9abd95"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792037394856573140.db-shm",
+      "bytes": 32768,
+      "sha256": "fe33cb84c3df55b895b472748d071696e16ca612879c2de7415277f1bb2677a2"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792037394856573140.db-wal",
+      "bytes": 20632,
+      "sha256": "40cf1018725891e69b3a4ceb36e898642c9103675340dffaea8251344142766f"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792032835485619939.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "d8cb18d37bca7070f86d0ec77709e4290b761ceb0903f02b98783c6b30a9f370"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792032835485619939.db-shm",
+      "bytes": 32768,
+      "sha256": "f70a4a8af92f668fcff9c6c25cd6bcab95bcff7edb512b43b338ea33d87d7b26"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792032835485619939.db-wal",
+      "bytes": 20632,
+      "sha256": "ca39c6c40a0f1697a0c1a9a53ee9b2017bbc24405b5b1e2a96501d888769f545"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792006106354913093.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "5c482047221761a0820619191efca0f691f734d9a74fc4ead9f18f1d179a9c82"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792006106354913093.db-shm",
+      "bytes": 32768,
+      "sha256": "1ec4fbef60ade9b04fddbbc8ef332179e26d61abfd4972e5a80b5bbc2fc04b95"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792006106354913093.db-wal",
+      "bytes": 20632,
+      "sha256": "04172b68c4c07f46bd3f7bd747daaedbcbda8f138e3d817f3ea3ae67c204d8a2"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792002494362191726.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "b965614c249404d35354c3082b27b2381ba7a57e285e5159dc09b6363c77d92d"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792002494362191726.db-shm",
+      "bytes": 32768,
+      "sha256": "e81db6311829073774f6c2fe3ed15c890af204341b40b905f66fbd4c38ef97fc"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792002494362191726.db-wal",
+      "bytes": 20632,
+      "sha256": "6e6e1c2c3984813db5d46b8c6f94194f7159893f0e7549cc4e65e3cc8a9f39f2"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792001689241178917.db.content-2.db",
+      "bytes": 53248,
+      "sha256": "49e2f50fdcf2ccd1c2c56fb8a36a37133608dc50098cb8aad4aca6022d5942f2"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792001689241178917.db-shm",
+      "bytes": 32768,
+      "sha256": "7a5695cda0fcb151504943b42bc726b91fbb72e9290ce5217e1f88234d360fdf"
+    },
+    {
+      "path": "/tmp/ottrin-wal-snapshot-writer-1792001689241178917.db-wal",
+      "bytes": 20632,
+      "sha256": "edcaa8c0d45a2ec62ff39d1fce126557894296478a50f6fd294a7b877666ee4b"
+    }
+  ],
+  "bytes_removed": 853184,
+  "kept": [],
+  "scope": "One verified test-artifact family only; no broad /tmp sweep"
+}

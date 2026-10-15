@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-search-ui",
+  "guest_root": "C:\\OttrinSearchQA",
+  "account": "OttrinSearchQA",
+  "purpose": "Full native Windows search tests in a disposable ordinary-user profile",
+  "restore": "Normal child shutdown; remove only owned domain, volume, NVRAM and TPM; preserve original campbell installation/profile and original stopped domains"
+}

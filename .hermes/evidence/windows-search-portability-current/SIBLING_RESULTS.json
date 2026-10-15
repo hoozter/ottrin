@@ -1,0 +1,9 @@
+{
+  "exit": 0,
+  "filter": "tests::content_search_returns_content_matches_with_snippets",
+  "child_working_directory": "C:\\WINDOWS\\System32",
+  "temporary_entries_after_tests": 0,
+  "scope": "Selected native search-library regression as ordinary user",
+  "ripgrep_available": false,
+  "status": "pass"
+}

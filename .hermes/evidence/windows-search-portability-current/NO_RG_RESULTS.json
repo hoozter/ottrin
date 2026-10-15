@@ -1,0 +1,6 @@
+{
+  "scope": "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+  "status": "fail",
+  "ripgrep_available": false,
+  "exit": 101
+}

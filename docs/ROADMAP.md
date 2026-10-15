@@ -55,9 +55,19 @@ compact receipts were retained; the owned VM, VHD and test processes were remove
 Failed-transaction MSI registration rollback remains an open release gate. The
 rejected `3ddb1bf` package and its early-execution prototype reproduce advertised
 product state and access-denied registration rollback; positive install checks
-do not close that failure. The Windows search suite retains 48 unchanged baseline
-failures, with focused watcher/batch regressions passing. Configured-root
-ancestors, junction isolation, physical storage, Undo/interruption, current exact
+do not close that failure. The native search library now passes 207 tests with six specialized exclusions
+when its declared ripgrep test dependency is supplied; all 48 earlier failures are
+resolved by portable, owned fixtures. Exact results and controls are recorded in
+`.hermes/evidence/windows-search-portability-current/ACCEPTANCE.json`. Shipping
+live-content fallback remains open: the current 51-file Windows payload omits
+ripgrep. The real library returns no content hit without it and returns the
+expected hit when `rg.exe` sits beside the executable, without PATH changes and
+with System32 as the working directory. Deliver the provider, expose provider
+failures, and verify actual packaged content search on a clean PATH; audit Linux
+provider delivery at the same time. The package receipt's prior 48-failure note
+retains its original source/test scope.
+
+Configured-root ancestors, junction isolation, physical storage, Undo/interruption, current exact
 upgrade/repair and reboot/login, broader GUI/DPI, Office, graphics/media and signing
 gates remain open. Internal candidates stay unpublished; user testing is deferred.
 
@@ -3175,3 +3185,30 @@ records the artifacts, scopes, historical controls and remaining gates. Normal
 VM shutdown/owned-volume removal preserved the original profile, installation,
 backing image and three original stopped domains. The source/library and broader
 roadmap gates remain active as described in the current delivery overview.
+
+
+### Portable, owned search-library fixtures (2026-10-15)
+
+The 48 native Windows search failures are cleared without changing production
+search behavior or weakening assertions. Tests use one canonical, thread-owned
+temporary root, legal timestamp/metacharacter filenames, native path comparison,
+a resolved Home expectation, and matching native/system-result paths. The storage
+cleanup fixture preserves live SQLite WAL/SHM mappings instead of truncating them.
+The existing workspace tempfile crate is a search dev dependency; no new package
+versions were added. Thread exit removes leftover test stores. A disposable native
+namespace is empty after the full run and an intentionally failing content test.
+
+The final ordinary-user Windows run passes 207 tests with six specialized tests
+excluded; Linux passes 221 with two storage measurements excluded in a private,
+serial full run. Both strict all-target search Clippy targets and formatting
+checks pass. The first parallel Linux run exceeded the unchanged 250ms benchmark
+budget at 301ms; an isolated recheck took 145ms, and the final serial run passes.
+The temporary VM and profile were removed after normal shutdown, preserving the
+original profile, installed app and stopped domains. Existing packages retain their
+recorded identities because these changes affect test fixtures only.
+
+This separates library correctness from a newly verified shipping dependency gap.
+The Windows package lacks the live-content provider used by the passing tests.
+Shipping that provider, checking Linux delivery, reporting provider failures and
+clean-PATH packaged acceptance are required work, recorded in
+`.hermes/evidence/windows-search-portability-current/PACKAGE_DEPENDENCY_GAP.json`.

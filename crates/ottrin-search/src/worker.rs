@@ -1928,10 +1928,7 @@ mod tests {
     #[test]
     fn watcher_delivery_filters_excluded_churn_without_losing_overflow_recovery() {
         use notify::event::{CreateKind, Flag};
-        let root = std::env::temp_dir()
-            .canonicalize()
-            .expect("canonical temp directory")
-            .join("ottrin-watch-delivery-policy");
+        let root = crate::test_temp_dir().join("ottrin-watch-delivery-policy");
         let plan = ScanPlan::new(&config(root.to_str().expect("utf8 root"))).expect("plan");
         for path in ["node_modules/changed.js", "target/changed.o", ".git/index"] {
             let event =
@@ -1963,7 +1960,7 @@ mod tests {
         use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
         use std::os::unix::fs::symlink;
 
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-event-watch-discovery-{}",
             std::process::id()
         ));
@@ -2079,7 +2076,7 @@ mod tests {
     #[test]
     fn watch_directory_walk_matches_scan_membership() {
         let root =
-            std::env::temp_dir().join(format!("ottrin-watch-membership-{}", std::process::id()));
+            crate::test_temp_dir().join(format!("ottrin-watch-membership-{}", std::process::id()));
         let normal = root.join("Documents").join("nested");
         let hidden = root.join(".cache").join("churn");
         let generated = root.join("Projects").join("Ottrin").join("target");
@@ -2180,7 +2177,7 @@ mod tests {
     fn unreadable_watch_descendant_does_not_invalidate_the_accessible_index() {
         use std::os::unix::fs::PermissionsExt;
 
-        let path = std::env::temp_dir().join(format!(
+        let path = crate::test_temp_dir().join(format!(
             "ottrin-unreadable-watch-path-{}",
             std::process::id()
         ));
@@ -2211,8 +2208,8 @@ mod tests {
 
     #[test]
     fn disappearing_watch_descendant_does_not_trigger_root_recovery() {
-        let root =
-            std::env::temp_dir().join(format!("ottrin-disappearing-watch-{}", std::process::id()));
+        let root = crate::test_temp_dir()
+            .join(format!("ottrin-disappearing-watch-{}", std::process::id()));
         let child = root.join("short-lived");
         std::fs::create_dir_all(&child).expect("create descendant");
         let _cleanup = WatchTestRoot(root.clone());
@@ -2238,7 +2235,7 @@ mod tests {
 
     #[test]
     fn watch_registration_failure_on_existing_directory_is_preserved() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-existing-watch-failure-{}",
             std::process::id()
         ));
@@ -3376,8 +3373,8 @@ mod tests {
 
     #[test]
     fn directory_metadata_changes_preserve_children_without_scanning_them() {
-        let root =
-            std::env::temp_dir().join(format!("ottrin-directory-metadata-{}", std::process::id()));
+        let root = crate::test_temp_dir()
+            .join(format!("ottrin-directory-metadata-{}", std::process::id()));
         let directory = root.join("busy");
         std::fs::create_dir_all(&directory).expect("create fixture");
         let _cleanup = WatchTestRoot(root.clone());
@@ -3452,10 +3449,13 @@ mod tests {
 
     #[test]
     fn notify_burst_commits_one_transactional_delta_generation() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-delta-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-delta-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create root");
         std::fs::write(root.join("new.txt"), b"new").expect("write event path");
@@ -3499,10 +3499,13 @@ mod tests {
 
     #[test]
     fn large_notify_burst_drains_without_a_full_scan_or_lost_changes() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-large-burst-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-large-burst-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create root");
         let count = MAX_INCREMENTAL_PATHS_PER_BATCH * 2 + 1;
@@ -3558,10 +3561,13 @@ mod tests {
 
     #[test]
     fn continuous_events_do_not_starve_incremental_updates() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-continuous-events-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-continuous-events-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create root");
         let path = root.join("busy.txt");
@@ -3600,10 +3606,13 @@ mod tests {
 
     #[test]
     fn filtered_rename_event_removes_previously_indexed_path() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-filtered-rename-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-filtered-rename-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create root");
         let old_path = root.join("visible.txt");
@@ -3644,10 +3653,13 @@ mod tests {
 
     #[test]
     fn directory_notify_event_indexes_descendants_transactionally() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-directory-event-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-directory-event-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         let moved = root.join("moved");
         std::fs::create_dir_all(&moved).expect("create moved directory");
@@ -3721,10 +3733,13 @@ mod tests {
 
     #[test]
     fn failed_large_burst_delta_keeps_changes_queued_until_commit_succeeds() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-large-burst-retry-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-large-burst-retry-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create root");
         let cfg = config(&root.to_string_lossy());
@@ -3785,10 +3800,13 @@ mod tests {
 
     #[test]
     fn notify_delta_is_durable_before_memory_publication() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-order-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-order-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create root");
         std::fs::write(root.join("new.txt"), b"new").expect("write new");
@@ -3856,10 +3874,13 @@ mod tests {
 
     #[test]
     fn recovered_root_commits_replace_root_before_queued_delta() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-recover-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-worker-recover-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create root");
         std::fs::write(root.join("scanned.txt"), b"scan").expect("write scan item");

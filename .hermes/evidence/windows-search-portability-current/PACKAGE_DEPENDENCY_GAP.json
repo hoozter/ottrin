@@ -1,0 +1,31 @@
+{
+  "status": "open; dependency omission and real library behavior verified; exact packaged UI test still required",
+  "package_source_revision": "3d24d47bc2239be00ee910eff5f6361dbd54cf27",
+  "windows_setup_sha256": "af9d568f5673334819874f17fe8d7231cd1fd06a7966e9889e801fa44c79ad02",
+  "payload_files": 51,
+  "bundled_ripgrep": false,
+  "missing_provider_control": {
+    "exit": 101,
+    "filter": "tests::content_search_returns_content_matches_with_snippets",
+    "temporary_entries_after_tests": 0,
+    "scope": "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+    "ripgrep_available": false,
+    "status": "fail"
+  },
+  "sibling_provider_control": {
+    "exit": 0,
+    "filter": "tests::content_search_returns_content_matches_with_snippets",
+    "child_working_directory": "C:\\WINDOWS\\System32",
+    "temporary_entries_after_tests": 0,
+    "scope": "Selected native search-library regression as ordinary user",
+    "ripgrep_available": false,
+    "status": "pass"
+  },
+  "same_native_binary_sha256": "8b7f258e0379b56d99501aaa7af13cf004f559888e3b98302f8499edf1a43ecf",
+  "finding": "Live content query returns zero hits without the external program. A sibling rg.exe restores the expected hit without PATH changes, with the child working directory set to System32.",
+  "next_work": [
+    "Ship the live-content provider in Windows deliverables and audit Linux deliverables for the same dependency",
+    "Expose provider startup/search failures instead of silently treating them as empty content matches",
+    "Verify the repaired installed/portable artifacts with no system ripgrep on PATH"
+  ]
+}

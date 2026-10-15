@@ -2172,7 +2172,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_nanos())
             .unwrap_or(0);
-        std::env::temp_dir().join(format!("ottrin-{name}-{nonce}.db"))
+        crate::test_temp_dir().join(format!("ottrin-{name}-{nonce}.db"))
     }
 
     #[test]
@@ -2379,7 +2379,7 @@ mod generation_tests {
             .duration_since(UNIX_EPOCH)
             .map(|duration| duration.as_nanos())
             .unwrap_or(0);
-        std::env::temp_dir().join(format!("ottrin-{name}-{nonce}.db"))
+        crate::test_temp_dir().join(format!("ottrin-{name}-{nonce}.db"))
     }
 
     fn plan(root: &Path) -> ScanPlan {
@@ -3280,7 +3280,7 @@ mod generation_tests {
     #[test]
     fn wal_allows_generation_commit_while_a_snapshot_reader_is_open() {
         let db_path = temp_db_path("wal-snapshot-writer");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-wal-snapshot-reader-{}-{}",
             std::process::id(),
             SystemTime::now()
@@ -3464,7 +3464,7 @@ mod generation_tests {
     #[test]
     fn committed_generation_indexes_bounded_utf8_content_and_replaces_stale_hits() {
         let db_path = temp_db_path("generation-fts-content");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-generation-fts-content-{}",
             std::process::id()
         ));
@@ -3605,7 +3605,7 @@ mod generation_tests {
         const CONTENT_BYTES: usize = 256 * 1024;
 
         let db_path = temp_db_path("fts-replacement-measurement");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-fts-replacement-measurement-{}-{}",
             std::process::id(),
             SystemTime::now()
@@ -3706,7 +3706,7 @@ mod generation_tests {
     #[test]
     fn metadata_equal_incremental_upserts_refresh_content() {
         let db_path = temp_db_path("delta-authoritative-content-refresh");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-delta-authoritative-content-refresh-{}-{}",
             std::process::id(),
             SystemTime::now()
@@ -3884,7 +3884,7 @@ mod generation_tests {
     #[test]
     fn generation_content_skips_binary_and_oversized_files() {
         let db_path = temp_db_path("generation-fts-bounds");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-generation-fts-bounds-{}",
             std::process::id()
         ));
@@ -3951,7 +3951,7 @@ mod generation_tests {
     #[test]
     fn cancelled_content_stream_releases_its_snapshot_reader() {
         let db_path = temp_db_path("generation-content-cancel-releases-reader");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-cancel-reader-{}-{}",
             std::process::id(),
             SystemTime::now()
@@ -4487,7 +4487,7 @@ mod generation_tests {
     #[test]
     fn content_policy_controls_payloads_and_invalidates_prior_generations() {
         let db_path = temp_db_path("content-policy");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-policy-{}-{}",
             std::process::id(),
             SystemTime::now()

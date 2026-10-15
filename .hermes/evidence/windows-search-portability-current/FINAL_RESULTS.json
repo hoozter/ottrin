@@ -1,0 +1,8 @@
+{
+  "exit": 0,
+  "ripgrep": "C:\\OttrinSearchQA\\ripgrep\\ripgrep-15.2.0-x86_64-pc-windows-msvc\\rg.exe",
+  "temporary_entries_after_tests": 0,
+  "scope": "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+  "ripgrep_available": true,
+  "status": "pass"
+}

@@ -1,0 +1,6 @@
+
+thread 'tests::content_ripgrep_exclude_globs_keep_exact_files_and_descendants_out_of_rg' (7904) panicked at crates/ottrin-search/src/lib.rs:6550:9:
+assertion `left == right` failed
+  left: ".\\included.txt\n"
+ right: "./included.txt\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

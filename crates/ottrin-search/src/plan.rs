@@ -478,10 +478,13 @@ mod tests {
         let _guard = crate::SEARCH_SERVICE_TEST_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-plan-recovery-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-plan-recovery-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         std::fs::create_dir_all(&root).expect("create plan recovery root");
         let mut service = SearchService::new(SearchConfig {

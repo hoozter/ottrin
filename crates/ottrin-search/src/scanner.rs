@@ -319,7 +319,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("clock after epoch")
             .as_nanos();
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-scanner-{label}-{}-{nonce}",
             std::process::id()
         ));

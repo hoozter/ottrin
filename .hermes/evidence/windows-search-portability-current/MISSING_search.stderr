@@ -1,0 +1,6 @@
+
+thread 'tests::content_search_returns_content_matches_with_snippets' (6256) panicked at crates/ottrin-search/src/lib.rs:6100:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

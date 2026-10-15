@@ -59,12 +59,26 @@ use db::{
 static SEARCH_SERVICE_TEST_LOCK: Mutex<()> = Mutex::new(());
 
 #[cfg(test)]
+fn test_temp_dir() -> PathBuf {
+    thread_local! {
+        static ROOT: tempfile::TempDir = tempfile::Builder::new()
+            .prefix("ottrin-test-")
+            .tempdir()
+            .expect("private search test directory");
+    }
+    // Windows TEMP can use an 8.3 alias. Hand-built indexed rows and scan plans
+    // must use the same filesystem spelling when testing path ownership. The
+    // test thread owns the directory and removes remaining stores on exit.
+    ROOT.with(|root| std::fs::canonicalize(root.path()).expect("resolve test temporary directory"))
+}
+
+#[cfg(test)]
 fn default_search_store_path() -> PathBuf {
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_nanos())
         .unwrap_or_default();
-    std::env::temp_dir().join(format!(
+    crate::test_temp_dir().join(format!(
         "ottrin-search-test-{}-{unique}.db",
         std::process::id()
     ))
@@ -4314,7 +4328,7 @@ mod tests {
     fn administrator_index_configuration_is_private_and_metadata_only_by_default() {
         use std::os::unix::fs::PermissionsExt as _;
 
-        let directory = std::env::temp_dir().join(format!(
+        let directory = crate::test_temp_dir().join(format!(
             "ottrin-administrator-config-{}",
             std::process::id()
         ));
@@ -4347,7 +4361,7 @@ mod tests {
     fn administrator_index_configuration_refuses_a_symlink_namespace() {
         use std::os::unix::fs::symlink;
 
-        let directory = std::env::temp_dir().join(format!(
+        let directory = crate::test_temp_dir().join(format!(
             "ottrin-administrator-config-symlink-{}",
             std::process::id()
         ));
@@ -4371,7 +4385,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn administrator_index_install_writes_owned_files_before_enabling_service() {
-        let directory = std::env::temp_dir().join(format!(
+        let directory = crate::test_temp_dir().join(format!(
             "ottrin-administrator-install-{}",
             std::process::id()
         ));
@@ -4420,7 +4434,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn administrator_index_removal_stops_service_before_optional_purge() {
-        let directory = std::env::temp_dir().join(format!(
+        let directory = crate::test_temp_dir().join(format!(
             "ottrin-administrator-remove-{}",
             std::process::id()
         ));
@@ -4840,7 +4854,7 @@ mod tests {
     }
 
     fn temp_service_path(name: &str) -> PathBuf {
-        std::env::temp_dir().join(format!(
+        crate::test_temp_dir().join(format!(
             "ottrin-search-service-{name}-{}-{}.db",
             std::process::id(),
             SystemTime::now()
@@ -5012,7 +5026,7 @@ mod tests {
     #[test]
     fn persisted_simple_term_no_match_does_not_fall_back_to_generation_wide_fuzzy_results() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-persisted-simple-term-no-fuzzy-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -5065,7 +5079,7 @@ mod tests {
 
     #[test]
     fn persisted_snapshot_can_be_read_without_starting_or_locking_a_writer() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-read-only-status-root-{}",
             std::process::id()
         ));
@@ -5120,7 +5134,7 @@ mod tests {
     fn persisted_queries_preserve_component_non_utf8_scope_and_ascii_case_semantics() {
         use std::os::unix::ffi::OsStringExt;
 
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-persisted-scope-root-{}",
             std::process::id()
         ));
@@ -5480,7 +5494,11 @@ mod tests {
             let mut path = db_path.as_os_str().to_os_string();
             path.push(suffix);
             let path = PathBuf::from(path);
-            fs::write(&path, b"stale sqlite sidecar").expect("create sidecar");
+            // A running SQLite owner may already map its real WAL/SHM files.
+            // Seed only missing orphan sidecars; never truncate live storage.
+            if !path.exists() {
+                fs::write(&path, b"stale sqlite sidecar").expect("create sidecar");
+            }
             path
         });
         let mut content_name = db_path.as_os_str().to_os_string();
@@ -5597,10 +5615,10 @@ mod tests {
 
     #[test]
     fn default_index_roots_remain_home_only() {
-        assert_eq!(
-            effective_roots(&SearchConfig::default()),
-            vec![ottrin_core::default_home_dir()]
-        );
+        let home = ottrin_core::default_home_dir();
+        #[cfg(target_os = "windows")]
+        let home = path_identity::resolved_index_path(&home);
+        assert_eq!(effective_roots(&SearchConfig::default()), vec![home]);
     }
 
     #[test]
@@ -5637,10 +5655,13 @@ mod tests {
         let _guard = SEARCH_SERVICE_TEST_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-search-handle-owner-{}-{:?}",
+        let root = crate::test_temp_dir().join(format!(
+            "ottrin-search-handle-owner-{}-{}",
             std::process::id(),
             SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
         ));
         fs::create_dir_all(&root).expect("create handle ownership root");
         fs::write(root.join("initial.txt"), b"initial").expect("create initial file");
@@ -5778,6 +5799,13 @@ mod tests {
 
     #[test]
     fn persisted_native_rows_deduplicate_system_results_outside_the_loaded_page() {
+        fn native_root() -> PathBuf {
+            crate::test_temp_dir().join(format!(
+                "ottrin-persisted-locate-dedupe-{}",
+                std::process::id()
+            ))
+        }
+
         fn duplicate_system_result(
             _text: &str,
             _scope_root: Option<&Path>,
@@ -5785,13 +5813,16 @@ mod tests {
             _limit: usize,
         ) -> Vec<SearchResultItem> {
             vec![mk_item(
-                "/tmp/ottrin-persisted-locate-dedupe/z-needle.txt",
+                native_root()
+                    .join("z-needle.txt")
+                    .to_str()
+                    .expect("test path is UTF-8"),
                 "z-needle.txt",
                 EntryKind::Other,
             )]
         }
 
-        let root = PathBuf::from("/tmp/ottrin-persisted-locate-dedupe");
+        let root = native_root();
         let db_path = temp_service_path("persisted-locate-dedupe");
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).expect("create native root");
@@ -5896,7 +5927,8 @@ mod tests {
 
     #[test]
     fn fallback_walk_respects_scope_and_query() {
-        let root = std::env::temp_dir().join(format!("ottrin-search-test-{}", std::process::id()));
+        let root =
+            crate::test_temp_dir().join(format!("ottrin-search-test-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(root.join("sub")).expect("create test dirs");
         fs::write(root.join("sub/needle.txt"), b"ok").expect("create test file");
@@ -5923,9 +5955,9 @@ mod tests {
     #[test]
     fn current_folder_outside_index_uses_fallback_even_when_index_ready() {
         let indexed_root =
-            std::env::temp_dir().join(format!("ottrin-indexed-{}", std::process::id()));
+            crate::test_temp_dir().join(format!("ottrin-indexed-{}", std::process::id()));
         let outside_root =
-            std::env::temp_dir().join(format!("ottrin-outside-{}", std::process::id()));
+            crate::test_temp_dir().join(format!("ottrin-outside-{}", std::process::id()));
         let _ = fs::remove_dir_all(&indexed_root);
         let _ = fs::remove_dir_all(&outside_root);
         fs::create_dir_all(&indexed_root).expect("create indexed root");
@@ -5966,7 +5998,7 @@ mod tests {
     #[test]
     fn global_fallback_prioritizes_active_folder_hint() {
         let home_like =
-            std::env::temp_dir().join(format!("ottrin-search-home-{}", std::process::id()));
+            crate::test_temp_dir().join(format!("ottrin-search-home-{}", std::process::id()));
         let preferred = home_like.join("pcloud");
         let _ = fs::remove_dir_all(&home_like);
         fs::create_dir_all(preferred.join("docs")).expect("create preferred dirs");
@@ -6017,7 +6049,7 @@ mod tests {
     #[test]
     fn content_search_returns_content_matches_with_snippets() {
         let root =
-            std::env::temp_dir().join(format!("ottrin-content-search-{}", std::process::id()));
+            crate::test_temp_dir().join(format!("ottrin-content-search-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).expect("create test root");
 
@@ -6077,7 +6109,7 @@ mod tests {
 
     #[test]
     fn content_fallback_honors_selected_file_groups() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-groups-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6120,7 +6152,7 @@ mod tests {
 
     #[test]
     fn content_fallback_honors_configured_extraction_size_limit() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-limit-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6159,7 +6191,7 @@ mod tests {
 
     #[test]
     fn disabled_content_indexing_never_searches_file_bodies() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-disabled-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6198,7 +6230,7 @@ mod tests {
 
     #[test]
     fn live_content_search_excludes_content_policy_roots() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-policy-live-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6243,7 +6275,7 @@ mod tests {
 
     #[test]
     fn live_content_search_excludes_a_configured_directory_after_it_becomes_a_file() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-policy-replaced-root-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6288,7 +6320,7 @@ mod tests {
 
     #[test]
     fn live_content_search_excludes_hidden_policy_roots_when_hidden_search_is_enabled() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-policy-hidden-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6333,7 +6365,7 @@ mod tests {
 
     #[test]
     fn live_content_search_honors_nested_include_and_exclude_roots() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-policy-nested-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6381,7 +6413,7 @@ mod tests {
 
     #[test]
     fn live_content_search_skips_a_scope_beneath_an_excluded_ancestor() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-policy-ancestor-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6424,7 +6456,7 @@ mod tests {
 
     #[test]
     fn live_content_search_does_not_cross_disjoint_query_and_content_roots() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-policy-disjoint-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6469,13 +6501,16 @@ mod tests {
 
     #[test]
     fn content_ripgrep_exclude_globs_keep_exact_files_and_descendants_out_of_rg() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-ripgrep-globs-{}-{}",
             std::process::id(),
             current_unix_secs()
         ));
         let excluded_file = root.join("private.txt");
+        #[cfg(unix)]
         let excluded_metachar_file = root.join("private[?]*!.txt");
+        #[cfg(windows)]
+        let excluded_metachar_file = root.join("private[!]file.txt");
         let excluded_dir = root.join("private-dir");
         let plan = content_ripgrep_traversal_plan(
             std::slice::from_ref(&root),
@@ -6519,10 +6554,12 @@ mod tests {
             .output()
             .expect("run ripgrep");
         assert!(output.status.success());
-        assert_eq!(
-            std::str::from_utf8(&output.stdout).expect("ripgrep stdout"),
-            "./included.txt\n"
-        );
+        let matches = std::str::from_utf8(&output.stdout)
+            .expect("ripgrep stdout")
+            .lines()
+            .map(PathBuf::from)
+            .collect::<Vec<_>>();
+        assert_eq!(matches, vec![PathBuf::from(".").join("included.txt")]);
 
         let _ = fs::remove_dir_all(root);
     }
@@ -6530,7 +6567,7 @@ mod tests {
     #[test]
     fn content_search_uses_active_fts_generation_before_ripgrep_fallback() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-fts-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6579,7 +6616,7 @@ mod tests {
     #[test]
     fn indexed_content_search_applies_name_filters_without_querying_them_as_content() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-fts-filtered-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6627,7 +6664,7 @@ mod tests {
     #[test]
     fn indexed_content_search_keeps_multi_word_matches_when_terms_are_on_separate_lines() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-fts-multiword-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6672,7 +6709,7 @@ mod tests {
     #[test]
     fn indexed_content_search_merges_fts_evidence_into_filename_matches() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-fts-merge-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6755,7 +6792,7 @@ mod tests {
 
     #[test]
     fn negated_filename_filter_keeps_content_fallback_available_while_indexing() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-negated-name-content-fallback-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6797,7 +6834,7 @@ mod tests {
     #[test]
     fn quoted_negated_content_is_treated_as_a_literal_not_fts_syntax() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-negated-content-literal-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6847,7 +6884,7 @@ mod tests {
         use crate::mutation::{IndexMutation, OwnedItem};
         use crate::plan::ScanPlan;
 
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-negated-fts-completeness-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -6995,7 +7032,7 @@ mod tests {
     #[test]
     fn indexed_content_search_preserves_or_branch_filters() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-fts-or-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -7049,7 +7086,7 @@ mod tests {
     #[test]
     fn indexed_content_search_pages_past_rejected_fts_candidates() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-fts-paged-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
@@ -7096,7 +7133,7 @@ mod tests {
 
     #[test]
     fn content_search_matches_multi_word_queries() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-search-multiword-{}",
             std::process::id()
         ));
@@ -7143,7 +7180,7 @@ mod tests {
 
     #[test]
     fn content_search_snippets_handle_colons_in_paths() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-search-colons-{}",
             std::process::id()
         ));
@@ -7177,7 +7214,7 @@ mod tests {
 
     #[test]
     fn content_search_honors_query_filters() {
-        let root = std::env::temp_dir().join(format!(
+        let root = crate::test_temp_dir().join(format!(
             "ottrin-content-search-filters-{}",
             std::process::id()
         ));

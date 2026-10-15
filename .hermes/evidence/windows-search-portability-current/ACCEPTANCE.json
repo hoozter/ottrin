@@ -1,0 +1,106 @@
+{
+  "status": "full search library passes with declared test dependency; runtime packaging gap remains open",
+  "date": "2026-10-15",
+  "source": {
+    "parent_revision": "abff5eb72d8cc9210e1c30ac1aa25aea5a108702",
+    "sha256": {
+      "Cargo.lock": "774c6a99872bbfe137ba3623f274fcff1ebd5f6585671ea50bd9ddce0907e21a",
+      "crates/ottrin-search/Cargo.toml": "5e87d68b240b1664d5c6444204ed05f44c1166e52484b951bfed2220327fddc1",
+      "crates/ottrin-search/src/lib.rs": "285a1613869589ff954bbbf70699914a7739bda66db4b4431e7df5befe17ceb6",
+      "crates/ottrin-search/src/db.rs": "15f119205da4ecd41b2bec56434a5cf043d29e6f041b88f4abd2e06f13b8d0f1",
+      "crates/ottrin-search/src/worker.rs": "8a7e43b4e65e17955efe90318f477a13f0a9c57bd63b150d5424d366d5ec3ff5",
+      "crates/ottrin-search/src/scanner.rs": "942f13aa648eb5fd8de1b544a7d74b9412c2ce0f5f0df9c6f7dc10be2c769160",
+      "crates/ottrin-search/src/plan.rs": "2e2125eb2d07fe711f2f18e2471b925db60768cf7634faae20d92fbe05c0b395"
+    },
+    "scope": "Rust implementation changes are cfg(test) fixtures; tempfile is a dev dependency using its existing lockfile version; production search implementation and packages unchanged"
+  },
+  "native_test_binary": {
+    "sha256": "8b7f258e0379b56d99501aaa7af13cf004f559888e3b98302f8499edf1a43ecf",
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-baeb8ec95f6d2cd8.exe",
+    "parent_revision": "abff5eb",
+    "scope": "Final native test executable with portable owned fixtures"
+  },
+  "windows": {
+    "exit": 0,
+    "ripgrep": "C:\\OttrinSearchQA\\ripgrep\\ripgrep-15.2.0-x86_64-pc-windows-msvc\\rg.exe",
+    "temporary_entries_after_tests": 0,
+    "scope": "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+    "ripgrep_available": true,
+    "status": "pass"
+  },
+  "windows_summary": {
+    "passed": 207,
+    "failed": 0,
+    "ignored": 6,
+    "test_threads": 1,
+    "resolved_prior_failures": 48,
+    "temporary_entries_after_success": 0,
+    "temporary_entries_after_expected_failure": 0
+  },
+  "linux": {
+    "status": "pass",
+    "scope": "Full Linux search-library suite, serial, with private TMPDIR",
+    "owned_process_group": 2148002,
+    "exit": 0,
+    "passed": 221,
+    "failed": 0,
+    "ignored": 2,
+    "cleanup": "Owned process group stopped before private TMPDIR removal"
+  },
+  "checks": [
+    "Strict Linux and Windows all-target search Clippy passed",
+    "cargo fmt --all --check and git diff --check passed",
+    "Source assertions retain privacy, ownership, content, generation and lifecycle checks; no performance budget changed"
+  ],
+  "linux_initial_timing_failure": {
+    "parallel_full_suite": "220 passed; one existing benchmark failed at 301ms against 250ms",
+    "isolated_recheck_ms": 145,
+    "final_full_serial": "221 passed; 0 failed; 2 ignored"
+  },
+  "dependency": {
+    "release": "https://github.com/BurntSushi/ripgrep/releases/tag/15.2.0",
+    "asset": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
+    "sha256": "71b2fef860abe467217a538ff31de02f5258807c0129f771846f87bd029aafc5",
+    "purpose": "Private native QA test dependency matching CI requirement; no host or user installation",
+    "binary_sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680"
+  },
+  "controlled_missing_provider": {
+    "exit": 101,
+    "filter": "tests::content_search_returns_content_matches_with_snippets",
+    "temporary_entries_after_tests": 0,
+    "scope": "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+    "ripgrep_available": false,
+    "status": "fail"
+  },
+  "controlled_sibling_provider": {
+    "exit": 0,
+    "filter": "tests::content_search_returns_content_matches_with_snippets",
+    "child_working_directory": "C:\\WINDOWS\\System32",
+    "temporary_entries_after_tests": 0,
+    "scope": "Selected native search-library regression as ordinary user",
+    "ripgrep_available": false,
+    "status": "pass"
+  },
+  "runtime_gap": ".hermes/evidence/windows-search-portability-current/PACKAGE_DEPENDENCY_GAP.json",
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "limits": [
+    "Native source/library evidence only; existing Linux and Windows packages are unchanged",
+    "The supplied QA ripgrep dependency is outside the shipping payload; installed/portable live-content delivery and missing-provider diagnostics remain open",
+    "Six Windows exclusions comprise two storage measurements and four coordinated cross-user security probes; no fresh acceptance for those probes is claimed",
+    "Serial suite execution does not establish parallel CI or broad runtime/release acceptance; original profile and installed app preserved"
+  ],
+  "orphan_cleanup": {
+    "receipt": ".hermes/evidence/windows-search-portability-current/ORPHAN_FIXTURE_CLEANUP.json",
+    "files": 24,
+    "bytes": 853184
+  }
+}

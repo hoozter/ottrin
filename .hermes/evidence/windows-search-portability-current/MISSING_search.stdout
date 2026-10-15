@@ -1,0 +1,10 @@
+
+running 1 test
+test tests::content_search_returns_content_matches_with_snippets ... FAILED
+
+failures:
+
+failures:
+    tests::content_search_returns_content_matches_with_snippets
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 212 filtered out; finished in 0.01s

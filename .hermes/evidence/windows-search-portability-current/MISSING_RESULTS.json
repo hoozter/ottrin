@@ -1,0 +1,8 @@
+{
+  "exit": 101,
+  "filter": "tests::content_search_returns_content_matches_with_snippets",
+  "temporary_entries_after_tests": 0,
+  "scope": "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+  "ripgrep_available": false,
+  "status": "fail"
+}
