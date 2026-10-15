@@ -14,7 +14,7 @@ def pull(name,source=None,encoding='utf-8-sig'):
  text=data.decode(encoding)
  if name.endswith('.json'):
   value=json.loads(text);(out/name).write_text(json.dumps(value,indent=2)+'\n');return value
- (out/name).write_text(text.replace('\r\n','\n'))
+ (out/name).write_text('\n'.join(line.rstrip() for line in text.splitlines()).rstrip()+'\n')
 r=pull('RESULTS.json');u=pull('USER_CLEANUP.json');pull('RESET_REMAINING.json')
 expected={'staging','publishing','old-moved','candidate-moved','published','integrating','rollback-candidate-moved','rollback-old-restored','rolled-back','committed','cleanup-leaf','cleanup-tree','fresh-published','fresh-committed','foreign-target','foreign-staged','torn-journal','missing-snapshot','root-extra','final-receipt','final-empty','foreign-completed'}
 assert r['status']==u['status']=='pass'

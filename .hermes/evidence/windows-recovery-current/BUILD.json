@@ -14,7 +14,7 @@
     "reset-all.ps1": "2b27d5b3fc3305181e5149e6dd348edfc61d62ff0b271ed03cfbe34c2cecc848",
     "reset-remaining.ps1": "b09fa872a4cf9a14053ab774297d28e08f0109721db7c34df9903a3b694d8461",
     "mock.c": "6cdeb6a7f013367d6c05a89823efc7f5991bd6efa386cf5f719af91b786d0f7c",
-    "collect-cleanup.py": "6030d64a98ea1e35d74bb10143d3e44a386f5a23ccd53ac74be19e71c3884410",
+    "collect-cleanup.py": "2ca1677e740d5829ff593d1320764d2dcb2c6cb236a21e1d92bbbe3ebad72f1b",
     "actor-initial.ps1": "029f161e72127ed98eda402b2c8bc2823e1a57d3c6a0abaed01dcb63e3fa3817",
     "build.py": "58fc2d1343893f415d25858e2543c0b0ef8a82d30a3430e7989e74a7f3b7dc6d"
   },
