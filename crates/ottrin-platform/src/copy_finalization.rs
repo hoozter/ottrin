@@ -1,0 +1,1128 @@
+//! Group-wide retirement after retained payloads have been reclaimed.
+use super::*;
+use rustix::fd::OwnedFd;
+use rustix::fs::{AtFlags, FlockOperation, flock};
+
+const PREFIX: &str = "copy-finalize-";
+const SUFFIX: &str = ".cleanup";
+
+struct PinnedFile {
+    file: std::fs::File,
+    stamp: LedgerStamp,
+    locked: bool,
+}
+
+impl PinnedFile {
+    fn lock(file: std::fs::File) -> Result<Self, PlatformError> {
+        let stamp = LedgerStamp::read(&file)?;
+        let mut pinned = Self {
+            file,
+            stamp,
+            locked: false,
+        };
+        flock(&pinned.file, FlockOperation::NonBlockingLockExclusive).map_err(journal_error)?;
+        pinned.locked = true;
+        Ok(pinned)
+    }
+}
+
+impl Drop for PinnedFile {
+    fn drop(&mut self) {
+        if self.locked {
+            // An unrelated thread may fork while this descriptor is open.
+            // Explicit unlock releases the shared OFD lock before its inherited
+            // copy reaches exec; waiting for the last close can spuriously block
+            // an immediate retry in this process.
+            let _ = flock(&self.file, FlockOperation::Unlock);
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FileProof {
+    identity: PathMoveIdentity,
+    handle: ObjectHandle,
+    length: u64,
+    digest: String,
+}
+
+impl FileProof {
+    fn capture(
+        directory: &impl rustix::fd::AsFd,
+        name: &str,
+        expected_mount: u64,
+    ) -> Result<(PinnedFile, Self, Vec<u8>), PlatformError> {
+        let fd = rustix::fs::openat(
+            directory,
+            name,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?;
+        let mut file = std::fs::File::from(fd);
+        let stat = rustix::fs::fstat(&file).map_err(journal_error)?;
+        if rustix::fs::FileType::from_raw_mode(stat.st_mode) != rustix::fs::FileType::RegularFile
+            || stat.st_uid != rustix::process::geteuid().as_raw()
+            || stat.st_mode & 0o777 != 0o600
+            || mount(&file)? != expected_mount
+        {
+            return Err(refusal(
+                "Copy finalization metadata type, owner, mode or mount changed",
+            ));
+        }
+        let handle = ObjectHandle::capture(&file)
+            .map_err(journal_error)?
+            .ok_or_else(|| refusal("Copy finalization file generation is unavailable"))?;
+        let before = LedgerStamp::read(&file)?;
+        let mut bytes = Vec::new();
+        file.read_to_end(&mut bytes).map_err(journal_error)?;
+        if LedgerStamp::read(&file)? != before || before.size != bytes.len() as u64 {
+            return Err(refusal("Copy finalization metadata changed while reading"));
+        }
+        let proof = Self {
+            identity: PathMoveIdentity {
+                device: stat.st_dev,
+                inode: stat.st_ino,
+            },
+            handle,
+            length: bytes.len() as u64,
+            digest: digest(&bytes),
+        };
+        Ok((
+            PinnedFile {
+                file,
+                stamp: before,
+                locked: false,
+            },
+            proof,
+            bytes,
+        ))
+    }
+
+    fn open_exact(
+        &self,
+        directory: &impl rustix::fd::AsFd,
+        name: &str,
+        expected_mount: u64,
+    ) -> Result<PinnedFile, PlatformError> {
+        let (file, current, _) = Self::capture(directory, name, expected_mount)?;
+        if current != *self {
+            return Err(refusal(
+                "Copy finalization file identity or contents changed",
+            ));
+        }
+        Ok(file)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Entry {
+    record: CopyRecord,
+    local: FileProof,
+    ledger: FileProof,
+    canonical: FileProof,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Manifest {
+    schema: u32,
+    registry_identity: PathMoveIdentity,
+    registry_handle: ObjectHandle,
+    registry_mount: u64,
+    entries: BTreeMap<String, Entry>,
+}
+
+impl Manifest {
+    fn bytes(&self) -> Result<Vec<u8>, PlatformError> {
+        serde_json::to_vec(self).map_err(journal_error)
+    }
+    fn id(&self) -> Result<String, PlatformError> {
+        Ok(digest(&self.bytes()?))
+    }
+    fn validate(&self) -> Result<(), PlatformError> {
+        if self.schema != 1 || self.entries.is_empty() || !self.registry_handle.valid() {
+            return Err(refusal("Invalid Copy finalization manifest"));
+        }
+        for (id, entry) in &self.entries {
+            entry.record.validate()?;
+            if entry.record.phase != CopyPhase::CleanupComplete
+                || entry.record.transaction_id()? != *id
+                || !entry.local.handle.valid()
+                || !entry.ledger.handle.valid()
+                || !entry.canonical.handle.valid()
+            {
+                return Err(refusal(
+                    "Finalization is not bound to completed Copy payloads",
+                ));
+            }
+            let intent = entry
+                .record
+                .cleanup
+                .as_ref()
+                .expect("validated complete intent");
+            if entry.ledger.identity != intent.identity || entry.ledger.handle != intent.handle {
+                return Err(refusal(
+                    "Finalization ledger does not match durable cleanup intent",
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+/// Restartable authority for retiring the private metadata of a complete Copy
+/// group. Holds no descriptors between calls; its on-disk manifest is removed last.
+#[derive(Debug)]
+pub struct RetainedCopyFinalization {
+    root: PathBuf,
+    id: String,
+    manifest: Manifest,
+}
+
+impl RetainedCopyFinalization {
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+    pub fn transaction_ids(&self) -> Vec<&str> {
+        self.manifest.entries.keys().map(String::as_str).collect()
+    }
+
+    /// Success means all selected private stages, their journals and the group
+    /// manifest are durably absent. On error retain ownership and reopen the ID.
+    pub fn finish(&self) -> Result<(), PlatformError> {
+        self.finish_with_hook(&mut |_| Ok(()))
+    }
+
+    fn finish_with_hook(
+        &self,
+        hook: &mut impl FnMut(FinalizationPoint) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let result = self.finish_inner(hook);
+        result.map_err(|error| PlatformError::CleanupPending {
+            transaction: self.root.join(filename(&self.id)).display().to_string(),
+            message: format!("Copy finalization is incomplete; retain its manifest: {error}"),
+        })
+    }
+
+    fn finish_inner(
+        &self,
+        hook: &mut impl FnMut(FinalizationPoint) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let central =
+            LinuxJournalDirectory::open_copy_registry(&self.root, false).map_err(journal_error)?;
+        let registry = central.duplicate_copy_directory().map_err(journal_error)?;
+        if !exists(&path_from_fd(&registry).join(filename(&self.id)))? {
+            // An unlink can succeed before its final fsync reports failure.
+            // Only this original in-memory authority can finish that last sync;
+            // IDs alone cannot reconstruct a missing manifest.
+            self.validate_state(&central, &registry)?;
+            self.require_absent_stages()?;
+            for id in self.manifest.entries.keys() {
+                if exists(&path_from_fd(&registry).join(format!("{id}.journal")))? {
+                    return Err(refusal(
+                        "Copy finalization manifest is missing before retirement completed",
+                    ));
+                }
+            }
+            rustix::fs::fsync(&registry).map_err(journal_error)?;
+            return Ok(());
+        }
+        let (manifest_file, _, manifest) = load(&registry, &self.id)?;
+        if manifest != self.manifest {
+            return Err(refusal("Copy finalization manifest changed"));
+        }
+        // The manifest lock serializes finalizers, and local locks serialize
+        // stage mutation against the existing Copy/Undo workers.
+        self.validate_state(&central, &registry)?;
+        for entry in self.manifest.entries.values() {
+            let record = &entry.record;
+            let transaction = record.transaction.decode().map_err(journal_error)?;
+            if !exists(&transaction)? {
+                continue;
+            }
+            let (parent, stage) = open_directories(record)?;
+            let local = LinuxJournalDirectory::for_copy_stage(&stage).map_err(journal_error)?;
+            let _lock = local.try_lock_recovery().map_err(journal_error)?;
+            self.validate_state(&central, &registry)?;
+            for (name, proof, point) in [
+                (LEDGER, &entry.ledger, FinalizationPoint::LedgerRemoved),
+                (
+                    "copy-journal",
+                    &entry.local,
+                    FinalizationPoint::LocalJournalRemoved,
+                ),
+            ] {
+                if exists(&path_from_fd(&stage).join(name))? {
+                    let pinned = proof.open_exact(&stage, name, record.transaction_mount)?;
+                    record.validate_namespace()?;
+                    self.check_registry(&registry)?;
+                    self.check_manifest(&registry, &manifest_file)?;
+                    hook(FinalizationPoint::BeforeMetadataUnlink)?;
+                    self.check_registry(&registry)?;
+                    self.check_manifest(&registry, &manifest_file)?;
+                    record.validate_namespace()?;
+                    unlink_pinned(&stage, name, &pinned)?;
+                    rustix::fs::fsync(&stage).map_err(journal_error)?;
+                    hook(point)?;
+                }
+            }
+            // rmdir alone is the authority to remove an empty original stage.
+            // Unknown children, aliases and replaced names can never be recursed.
+            record.validate_namespace()?;
+            record.validate_opened_directory(&parent, true)?;
+            record.validate_opened_directory(&stage, false)?;
+            self.validate_state(&central, &registry)?;
+            self.check_manifest(&registry, &manifest_file)?;
+            hook(FinalizationPoint::BeforeStageRemove)?;
+            self.check_registry(&registry)?;
+            self.check_manifest(&registry, &manifest_file)?;
+            record.validate_namespace()?;
+            record.validate_opened_directory(&stage, false)?;
+            rustix::fs::unlinkat(
+                &parent,
+                transaction.file_name().expect("validated stage"),
+                AtFlags::REMOVEDIR,
+            )
+            .map_err(journal_error)?;
+            rustix::fs::fsync(&parent).map_err(journal_error)?;
+            hook(FinalizationPoint::StageRemoved)?;
+        }
+        // All stages must be absent before the first canonical journal goes.
+        // Thus a missing journal never authorizes deleting a surviving stage.
+        self.validate_state(&central, &registry)?;
+        for (id, entry) in &self.manifest.entries {
+            let name = format!("{id}.journal");
+            if exists(&path_from_fd(&registry).join(&name))? {
+                let pinned =
+                    entry
+                        .canonical
+                        .open_exact(&registry, &name, self.manifest.registry_mount)?;
+                self.validate_state(&central, &registry)?;
+                self.check_manifest(&registry, &manifest_file)?;
+                hook(FinalizationPoint::BeforeCanonicalUnlink)?;
+                self.check_registry(&registry)?;
+                self.check_manifest(&registry, &manifest_file)?;
+                self.require_absent_stages()?;
+                unlink_pinned(&registry, &name, &pinned)?;
+                rustix::fs::fsync(&registry).map_err(journal_error)?;
+                hook(FinalizationPoint::CanonicalJournalRemoved)?;
+            }
+        }
+        self.validate_state(&central, &registry)?;
+        self.check_manifest(&registry, &manifest_file)?;
+        hook(FinalizationPoint::BeforeManifestRemove)?;
+        self.check_registry(&registry)?;
+        self.check_manifest(&registry, &manifest_file)?;
+        self.require_absent_stages()?;
+        unlink_pinned(&registry, &filename(&self.id), &manifest_file)?;
+        rustix::fs::fsync(&registry).map_err(journal_error)?;
+        hook(FinalizationPoint::ManifestRemoved)?;
+        Ok(())
+    }
+
+    fn require_absent_stages(&self) -> Result<(), PlatformError> {
+        for entry in self.manifest.entries.values() {
+            entry.record.validate_parent_namespace()?;
+            if exists(&entry.record.transaction.decode().map_err(journal_error)?)? {
+                return Err(refusal(
+                    "A Copy private stage remains before canonical retirement",
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn check_manifest(&self, registry: &OwnedFd, pinned: &PinnedFile) -> Result<(), PlatformError> {
+        validate_pinned(registry, &filename(&self.id), pinned)
+    }
+
+    fn check_registry(&self, registry: &OwnedFd) -> Result<(), PlatformError> {
+        let named = rustix::fs::open(
+            &self.root,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?;
+        for fd in [registry, &named] {
+            let stat = rustix::fs::fstat(fd).map_err(journal_error)?;
+            if (stat.st_dev, stat.st_ino)
+                != (
+                    self.manifest.registry_identity.device,
+                    self.manifest.registry_identity.inode,
+                )
+                || mount(fd)? != self.manifest.registry_mount
+                || ObjectHandle::capture(fd).map_err(journal_error)?.as_ref()
+                    != Some(&self.manifest.registry_handle)
+            {
+                return Err(refusal("Copy finalization registry binding changed"));
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_state(
+        &self,
+        central: &LinuxJournalDirectory,
+        registry: &OwnedFd,
+    ) -> Result<(), PlatformError> {
+        self.check_registry(registry)?;
+        let all = registry_records(central)?;
+        let mut missing_canonical = false;
+        let mut surviving_stage = false;
+        for (id, entry) in &self.manifest.entries {
+            let record = &entry.record;
+            record.require_object_evidence()?;
+            record.validate_parent_namespace()?;
+            let transaction = record.transaction.decode().map_err(journal_error)?;
+            match all.get(id) {
+                Some(current) if current == record => {
+                    entry.canonical.open_exact(
+                        registry,
+                        &format!("{id}.journal"),
+                        self.manifest.registry_mount,
+                    )?;
+                }
+                None => missing_canonical = true,
+                _ => return Err(refusal("Copy finalization canonical record changed")),
+            }
+            if exists(&transaction)? {
+                surviving_stage = true;
+                let (_, stage) = open_directories(record)?;
+                let mut directory = rustix::fs::Dir::read_from(&stage).map_err(journal_error)?;
+                while let Some(child) = directory.read() {
+                    let child = child.map_err(journal_error)?;
+                    let name = child.file_name();
+                    match name.to_bytes() {
+                        b"." | b".." => {}
+                        b"copy-journal" => {
+                            entry.local.open_exact(
+                                &stage,
+                                "copy-journal",
+                                record.transaction_mount,
+                            )?;
+                        }
+                        b"copy-cleanup" => {
+                            entry
+                                .ledger
+                                .open_exact(&stage, LEDGER, record.transaction_mount)?;
+                        }
+                        _ => {
+                            return Err(refusal(
+                                "Unexpected data remains in a Copy finalization stage",
+                            ));
+                        }
+                    }
+                }
+            }
+            let stage_object = TreeObject {
+                path: NativePath::encode(Path::new("")),
+                mount: record.transaction_mount,
+                handle: record.transaction_handle.clone(),
+            };
+            for (other_id, other) in &all {
+                if !self.manifest.entries.contains_key(other_id) {
+                    if other.operation.id == record.operation.id {
+                        return Err(refusal(
+                            "Copy operation membership changed during finalization",
+                        ));
+                    }
+                    if possible_reference(other, std::slice::from_ref(&stage_object))? {
+                        return Err(refusal(
+                            "Another Copy operation still references the private stage",
+                        ));
+                    }
+                }
+            }
+        }
+        if missing_canonical && surviving_stage {
+            return Err(refusal(
+                "Copy canonical journal disappeared before all private stages were removed",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FinalizationPoint {
+    BeforeMetadataUnlink,
+    BeforeStageRemove,
+    BeforeCanonicalUnlink,
+    BeforeManifestRemove,
+    LedgerRemoved,
+    LocalJournalRemoved,
+    StageRemoved,
+    CanonicalJournalRemoved,
+    ManifestRemoved,
+}
+
+fn filename(id: &str) -> String {
+    format!("{PREFIX}{id}{SUFFIX}")
+}
+fn valid_id(id: &str) -> bool {
+    id.len() == 64
+        && id
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+}
+
+fn validate_pinned(
+    directory: &impl rustix::fd::AsFd,
+    name: &str,
+    pinned: &PinnedFile,
+) -> Result<(), PlatformError> {
+    let named = rustix::fs::openat(
+        directory,
+        name,
+        OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+        Mode::empty(),
+    )
+    .map_err(journal_error)?;
+    let named = std::fs::File::from(named);
+    if LedgerStamp::read(&pinned.file)? != pinned.stamp
+        || LedgerStamp::read(&named)? != pinned.stamp
+        || mount(&named)? != mount(&pinned.file)?
+    {
+        return Err(refusal("Copy finalization file changed before unlink"));
+    }
+    Ok(())
+}
+
+fn unlink_pinned(
+    directory: &impl rustix::fd::AsFd,
+    name: &str,
+    pinned: &PinnedFile,
+) -> Result<(), PlatformError> {
+    validate_pinned(directory, name, pinned)?;
+    rustix::fs::unlinkat(directory, name, AtFlags::empty()).map_err(journal_error)
+}
+
+// load owns a nonblocking exclusive lock, released with its returned File.
+fn load(registry: &OwnedFd, id: &str) -> Result<(PinnedFile, FileProof, Manifest), PlatformError> {
+    if !valid_id(id) {
+        return Err(refusal("Invalid Copy finalization ID"));
+    }
+    let fd = rustix::fs::openat(
+        registry,
+        filename(id),
+        OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK,
+        Mode::empty(),
+    )
+    .map_err(journal_error)?;
+    let locked = PinnedFile::lock(std::fs::File::from(fd))?;
+    let (file, proof, bytes) = FileProof::capture(registry, &filename(id), mount(registry)?)?;
+    let stat = rustix::fs::fstat(&locked.file).map_err(journal_error)?;
+    if (stat.st_dev, stat.st_ino) != (proof.identity.device, proof.identity.inode) {
+        return Err(refusal("Copy finalization manifest changed while locking"));
+    }
+    if LedgerStamp::read(&locked.file)? != file.stamp {
+        return Err(refusal("Copy finalization manifest changed while locking"));
+    }
+    if locked.stamp != file.stamp {
+        return Err(refusal("Copy finalization manifest changed while locking"));
+    }
+    drop(file);
+    let manifest: Manifest = serde_json::from_slice(&bytes).map_err(journal_error)?;
+    manifest.validate()?;
+    if manifest.id()? != id || manifest.bytes()? != bytes {
+        return Err(refusal(
+            "Copy finalization manifest name or encoding changed",
+        ));
+    }
+    Ok((locked, proof, manifest))
+}
+
+pub(super) fn begin(
+    plan: &RetainedCopyCleanupPlan,
+) -> Result<RetainedCopyFinalization, PlatformError> {
+    if !plan.pending.is_empty()
+        || plan
+            .records
+            .values()
+            .any(|record| record.phase != CopyPhase::CleanupComplete)
+    {
+        return Err(refusal(
+            "Finish all Copy payload reclamation before finalization",
+        ));
+    }
+    plan.revalidate()?;
+    let central =
+        LinuxJournalDirectory::open_copy_registry(&plan.root, false).map_err(journal_error)?;
+    let _creation_lock = central.try_lock_recovery().map_err(journal_error)?;
+    let registry = central.duplicate_copy_directory().map_err(journal_error)?;
+    let stat = rustix::fs::fstat(&registry).map_err(journal_error)?;
+    let registry_mount = mount(&registry)?;
+    let mut entries = BTreeMap::new();
+    for (id, record) in &plan.records {
+        let (_, stage) = open_directories(record)?;
+        let (_, local, bytes) =
+            FileProof::capture(&stage, "copy-journal", record.transaction_mount)?;
+        if CopyRecord::parse(&bytes)? != *record {
+            return Err(refusal("Copy local journal changed before finalization"));
+        }
+        let (_, ledger, _) = FileProof::capture(&stage, LEDGER, record.transaction_mount)?;
+        let (_, canonical, bytes) =
+            FileProof::capture(&registry, &format!("{id}.journal"), registry_mount)?;
+        if CopyRecord::parse(&bytes)? != *record {
+            return Err(refusal(
+                "Copy canonical journal changed before finalization",
+            ));
+        }
+        entries.insert(
+            id.clone(),
+            Entry {
+                record: record.clone(),
+                local,
+                ledger,
+                canonical,
+            },
+        );
+    }
+    let manifest = Manifest {
+        schema: 1,
+        registry_identity: PathMoveIdentity {
+            device: stat.st_dev,
+            inode: stat.st_ino,
+        },
+        registry_handle: ObjectHandle::capture(&registry)
+            .map_err(journal_error)?
+            .ok_or_else(|| refusal("Copy registry generation is unavailable"))?,
+        registry_mount,
+        entries,
+    };
+    manifest.validate()?;
+    let id = manifest.id()?;
+    let result = RetainedCopyFinalization {
+        root: plan.root.clone(),
+        id,
+        manifest,
+    };
+    result.validate_state(&central, &registry)?;
+    for existing_id in manifest_ids(&registry)? {
+        if existing_id == result.id {
+            continue;
+        }
+        let (_lock, _, existing) = load(&registry, &existing_id)?;
+        if existing
+            .entries
+            .keys()
+            .any(|id| result.manifest.entries.contains_key(id))
+        {
+            return Err(refusal(
+                "A selected Copy transaction already belongs to another finalization; resume that group first",
+            ));
+        }
+    }
+    let fd = rustix::fs::openat(
+        &registry,
+        filename(&result.id),
+        OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC | OFlags::NOFOLLOW,
+        Mode::RUSR | Mode::WUSR,
+    );
+    match fd {
+        Ok(fd) => {
+            let mut pinned = PinnedFile::lock(std::fs::File::from(fd))?;
+            pinned
+                .file
+                .write_all(&result.manifest.bytes()?)
+                .and_then(|()| pinned.file.sync_all())
+                .map_err(journal_error)?;
+            rustix::fs::fsync(&registry).map_err(journal_error)?;
+        }
+        Err(rustix::io::Errno::EXIST) => {
+            let (_, _, existing) = load(&registry, &result.id)?;
+            if existing != result.manifest {
+                return Err(refusal("Existing Copy finalization differs"));
+            }
+        }
+        Err(error) => return Err(journal_error(error)),
+    }
+    Ok(result)
+}
+
+pub fn resume_finalization(id: &str) -> Result<RetainedCopyFinalization, PlatformError> {
+    let root = configured_root()?;
+    let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
+    let registry = central.duplicate_copy_directory().map_err(journal_error)?;
+    let (_lock, _, manifest) = load(&registry, id)?;
+    let result = RetainedCopyFinalization {
+        root,
+        id: id.into(),
+        manifest,
+    };
+    result.validate_state(&central, &registry)?;
+    Ok(result)
+}
+
+fn manifest_ids(fd: &OwnedFd) -> Result<BTreeSet<String>, PlatformError> {
+    let mut directory = rustix::fs::Dir::read_from(fd).map_err(journal_error)?;
+    let mut ids = BTreeSet::new();
+    while let Some(entry) = directory.read() {
+        let entry = entry.map_err(journal_error)?;
+        let bytes = entry.file_name().to_bytes().to_vec();
+        if let Some(id) = bytes
+            .strip_prefix(PREFIX.as_bytes())
+            .and_then(|name| name.strip_suffix(SUFFIX.as_bytes()))
+        {
+            ids.insert(std::str::from_utf8(id).map_err(journal_error)?.to_owned());
+        }
+    }
+    Ok(ids)
+}
+
+pub fn discover_finalizations() -> Result<Vec<RetainedCopyFinalization>, PlatformError> {
+    let root = configured_root()?;
+    if !exists(&root)? {
+        return Ok(Vec::new());
+    }
+    let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
+    let fd = central.duplicate_copy_directory().map_err(journal_error)?;
+    manifest_ids(&fd)?
+        .into_iter()
+        .map(|id| {
+            resume_finalization(&id).map_err(|error| PlatformError::CleanupPending {
+                transaction: root.join(filename(&id)).display().to_string(),
+                message: format!("Preserve Copy finalization for review: {error}"),
+            })
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::tests::{Registry, directory_backup, stage, statuses};
+    use super::*;
+    use crate::{ConflictAction, DefaultPlatform, PlatformOps};
+
+    fn completed_group(root: &Path) -> (RetainedCopyFinalization, Vec<PathBuf>) {
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::create_dir_all(&destination).unwrap();
+        let paths = ["alpha", "beta"].map(|name| {
+            std::fs::write(destination.join(name), format!("old {name}")).unwrap();
+            let path = source.join(name);
+            std::fs::write(&path, format!("new {name}")).unwrap();
+            path
+        });
+        let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &paths,
+            &destination,
+            ConflictAction::Overwrite,
+        );
+        assert!(batch.error.is_none());
+        assert_eq!(batch.undo_receipts.len(), 2);
+        let stages = batch.undo_receipts.iter().map(stage).collect();
+        let mut plan = plan_cleanup(&statuses(root)).unwrap();
+        while plan.reclaim_payload_next().unwrap() {}
+        (plan.begin_finalization().unwrap(), stages)
+    }
+
+    fn assert_finished(root: &Path, stages: &[PathBuf]) {
+        for stage in stages {
+            assert!(!stage.exists());
+        }
+        assert!(statuses(root).is_empty());
+        assert!(discover_finalizations().unwrap().is_empty());
+        for name in ["alpha", "beta"] {
+            assert_eq!(
+                std::fs::read(root.join("destination").join(name)).unwrap(),
+                format!("new {name}").as_bytes()
+            );
+            assert_eq!(
+                std::fs::read(root.join("source").join(name)).unwrap(),
+                format!("new {name}").as_bytes()
+            );
+        }
+    }
+
+    #[test]
+    fn group_finalization_removes_all_private_metadata_and_preserves_visible_data() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let (finalization, stages) = completed_group(root.path());
+        assert_eq!(finalization.transaction_ids().len(), 2);
+        let resumed = discover_finalizations().unwrap();
+        assert_eq!(resumed.len(), 1);
+        assert_eq!(resumed[0].id(), finalization.id());
+        finalization.finish().unwrap();
+        assert_finished(root.path(), &stages);
+        // A live retry can confirm absence after the final unlink/sync boundary.
+        finalization.finish().unwrap();
+    }
+
+    #[test]
+    fn finalization_reopens_after_every_metadata_retirement_boundary() {
+        for point in [
+            FinalizationPoint::BeforeMetadataUnlink,
+            FinalizationPoint::BeforeStageRemove,
+            FinalizationPoint::BeforeCanonicalUnlink,
+            FinalizationPoint::BeforeManifestRemove,
+            FinalizationPoint::LedgerRemoved,
+            FinalizationPoint::LocalJournalRemoved,
+            FinalizationPoint::StageRemoved,
+            FinalizationPoint::CanonicalJournalRemoved,
+            FinalizationPoint::ManifestRemoved,
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let (original, stages) = completed_group(root.path());
+            let mut stopped = false;
+            assert!(
+                original
+                    .finish_with_hook(&mut |observed| {
+                        if !stopped && observed == point {
+                            stopped = true;
+                            return Err(refusal("owned interruption"));
+                        }
+                        Ok(())
+                    })
+                    .is_err()
+            );
+            assert!(stopped);
+            if point != FinalizationPoint::ManifestRemoved {
+                let resumed = resume_finalization(original.id()).unwrap();
+                resumed.finish().unwrap();
+            } else {
+                original.finish().unwrap();
+            }
+            assert_finished(root.path(), &stages);
+        }
+    }
+
+    #[test]
+    fn finalization_sigkill_child() {
+        let Some(root) = std::env::var_os("OTTRIN_FINALIZE_KILL_ROOT") else {
+            return;
+        };
+        let root = PathBuf::from(root);
+        let _registry = Registry::new(&root);
+        let id = std::env::var("OTTRIN_FINALIZE_KILL_ID").unwrap();
+        let point = std::env::var("OTTRIN_FINALIZE_KILL_POINT").unwrap();
+        resume_finalization(&id)
+            .unwrap()
+            .finish_with_hook(&mut |observed| {
+                if format!("{observed:?}") == point {
+                    // Dedicated test subprocess only; no destructor recovery.
+                    unsafe {
+                        libc::kill(libc::getpid(), libc::SIGKILL);
+                    }
+                    unreachable!("SIGKILL returned");
+                }
+                Ok(())
+            })
+            .unwrap();
+        panic!("Child never reached requested finalization boundary");
+    }
+
+    #[test]
+    fn group_finalization_resumes_after_sigkill_with_a_canonical_member_already_gone() {
+        use std::os::unix::process::ExitStatusExt;
+        for point in [
+            FinalizationPoint::BeforeMetadataUnlink,
+            FinalizationPoint::BeforeStageRemove,
+            FinalizationPoint::BeforeCanonicalUnlink,
+            FinalizationPoint::BeforeManifestRemove,
+            FinalizationPoint::LedgerRemoved,
+            FinalizationPoint::LocalJournalRemoved,
+            FinalizationPoint::StageRemoved,
+            FinalizationPoint::CanonicalJournalRemoved,
+            FinalizationPoint::ManifestRemoved,
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let (original, stages) = completed_group(root.path());
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "copy_recovery::cleanup::finalization::tests::finalization_sigkill_child",
+                ])
+                .env("OTTRIN_FINALIZE_KILL_ROOT", root.path())
+                .env("OTTRIN_FINALIZE_KILL_ID", original.id())
+                .env("OTTRIN_FINALIZE_KILL_POINT", format!("{point:?}"))
+                .stdout(std::process::Stdio::null())
+                .status()
+                .unwrap();
+            assert_eq!(status.signal(), Some(libc::SIGKILL), "{point:?}");
+            if point != FinalizationPoint::ManifestRemoved {
+                let discovered = discover_finalizations().unwrap();
+                assert_eq!(discovered.len(), 1);
+                discovered[0].finish().unwrap();
+            } else {
+                original.finish().unwrap();
+            }
+            assert_finished(root.path(), &stages);
+        }
+    }
+
+    #[test]
+    fn changed_or_replaced_metadata_and_unknown_children_are_never_retired() {
+        for attack in [
+            "ledger",
+            "local",
+            "canonical",
+            "replacement",
+            "unknown",
+            "manifest",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let (original, stages) = completed_group(root.path());
+            let first_id = original.transaction_ids()[0].to_owned();
+            let first_stage = original.manifest.entries[&first_id]
+                .record
+                .transaction
+                .decode()
+                .unwrap();
+            let path = match attack {
+                "ledger" => first_stage.join(LEDGER),
+                "local" | "replacement" => first_stage.join("copy-journal"),
+                "canonical" => root
+                    .path()
+                    .join("copies")
+                    .join(format!("{first_id}.journal")),
+                "unknown" => first_stage.join("user-file"),
+                "manifest" => root.path().join("copies").join(filename(original.id())),
+                _ => unreachable!(),
+            };
+            if attack == "replacement" {
+                let bytes = std::fs::read(&path).unwrap();
+                std::fs::rename(&path, root.path().join("original-local-journal")).unwrap();
+                std::fs::write(&path, bytes).unwrap();
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+            } else {
+                std::fs::write(&path, "user data changed after finalization began").unwrap();
+            }
+            let bytes = std::fs::read(&path).unwrap();
+            assert!(original.finish().is_err(), "{attack}");
+            assert_eq!(std::fs::read(&path).unwrap(), bytes, "{attack}");
+            for stage in stages {
+                assert!(stage.exists());
+            }
+        }
+    }
+
+    #[test]
+    fn interrupted_finalization_refuses_reused_stage_and_parent_names() {
+        for replace_parent in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let (original, stages) = completed_group(root.path());
+            let victim = if replace_parent {
+                root.path().join("destination")
+            } else {
+                stages[0].clone()
+            };
+            std::fs::rename(&victim, root.path().join("moved-original")).unwrap();
+            std::fs::create_dir(&victim).unwrap();
+            std::fs::write(victim.join("user-file"), "keep replacement").unwrap();
+            assert!(original.finish().is_err());
+            assert!(resume_finalization(original.id()).is_err());
+            assert_eq!(
+                std::fs::read(victim.join("user-file")).unwrap(),
+                b"keep replacement"
+            );
+        }
+    }
+
+    #[test]
+    fn final_checks_preserve_metadata_modified_after_it_was_pinned() {
+        for attack in ["write", "replace", "canonical-write", "manifest-write"] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let (original, _) = completed_group(root.path());
+            let first_id = original.transaction_ids()[0].to_owned();
+            let first_stage = original.manifest.entries[&first_id]
+                .record
+                .transaction
+                .decode()
+                .unwrap();
+            let (path, point) = match attack {
+                "write" | "replace" => (
+                    first_stage.join(LEDGER),
+                    FinalizationPoint::BeforeMetadataUnlink,
+                ),
+                "canonical-write" => (
+                    root.path()
+                        .join("copies")
+                        .join(format!("{first_id}.journal")),
+                    FinalizationPoint::BeforeCanonicalUnlink,
+                ),
+                "manifest-write" => (
+                    root.path().join("copies").join(filename(original.id())),
+                    FinalizationPoint::BeforeManifestRemove,
+                ),
+                _ => unreachable!(),
+            };
+            let mut attacked = false;
+            assert!(
+                original
+                    .finish_with_hook(&mut |observed| {
+                        if !attacked && observed == point {
+                            attacked = true;
+                            if attack == "replace" {
+                                let bytes = std::fs::read(&path).unwrap();
+                                std::fs::rename(&path, root.path().join("moved-pinned-file"))
+                                    .unwrap();
+                                std::fs::write(&path, bytes).unwrap();
+                            } else {
+                                std::fs::write(&path, "keep user changes after pinning").unwrap();
+                            }
+                        }
+                        Ok(())
+                    })
+                    .is_err(),
+                "{attack}"
+            );
+            assert!(attacked);
+            assert!(path.exists(), "{attack}");
+            if attack != "replace" {
+                assert_eq!(
+                    std::fs::read(&path).unwrap(),
+                    b"keep user changes after pinning"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn final_checks_refuse_replaced_empty_stage_and_late_unknown_children() {
+        for replace in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let (original, _) = completed_group(root.path());
+            let id = original.transaction_ids()[0];
+            let victim = original.manifest.entries[id]
+                .record
+                .transaction
+                .decode()
+                .unwrap();
+            let mut attacked = false;
+            assert!(
+                original
+                    .finish_with_hook(&mut |point| {
+                        if point == FinalizationPoint::BeforeStageRemove && !attacked {
+                            attacked = true;
+                            if replace {
+                                std::fs::rename(&victim, root.path().join("original-empty-stage"))
+                                    .unwrap();
+                                std::fs::create_dir(&victim).unwrap();
+                            } else {
+                                std::fs::write(victim.join("late-user-file"), "preserve").unwrap();
+                            }
+                        }
+                        Ok(())
+                    })
+                    .is_err()
+            );
+            assert!(attacked);
+            assert!(victim.exists());
+            assert!(
+                root.path()
+                    .join("copies")
+                    .join(format!("{id}.journal"))
+                    .exists()
+            );
+            if !replace {
+                assert_eq!(
+                    std::fs::read(victim.join("late-user-file")).unwrap(),
+                    b"preserve"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn missing_canonical_or_manifest_cannot_authorize_deleting_surviving_stages() {
+        for remove_manifest in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = Registry::new(root.path());
+            let (original, stages) = completed_group(root.path());
+            let path = if remove_manifest {
+                root.path().join("copies").join(filename(original.id()))
+            } else {
+                root.path()
+                    .join("copies")
+                    .join(format!("{}.journal", original.transaction_ids()[0]))
+            };
+            std::fs::remove_file(path).unwrap();
+            assert!(original.finish().is_err());
+            for stage in stages {
+                assert!(stage.join(LEDGER).exists());
+                assert!(stage.join("copy-journal").exists());
+            }
+        }
+    }
+
+    #[test]
+    fn finalization_lock_excludes_other_workers_and_unlocks_with_an_inherited_descriptor() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let (original, stages) = completed_group(root.path());
+        let central = LinuxJournalDirectory::open_copy_registry(&original.root, false).unwrap();
+        let registry = central.duplicate_copy_directory().unwrap();
+        let (lock, _, _) = load(&registry, original.id()).unwrap();
+        assert!(resume_finalization(original.id()).is_err());
+        // A duplicate shares the open-file description, just as the transient
+        // descriptor inherited by another thread's fork does until exec.
+        let inherited = rustix::io::fcntl_dupfd_cloexec(&lock.file, 0).unwrap();
+        drop(lock);
+        let resumed = resume_finalization(original.id()).unwrap();
+        resumed.finish().unwrap();
+        drop(inherited);
+        assert_finished(root.path(), &stages);
+    }
+
+    #[test]
+    fn a_transaction_cannot_belong_to_overlapping_finalizations() {
+        use super::super::tests::copy;
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let (original, stages) = completed_group(root.path());
+        let third = copy(root.path(), "third");
+        let mut combined = plan_cleanup(&statuses(root.path())).unwrap();
+        while combined.reclaim_payload_next().unwrap() {}
+        assert!(combined.begin_finalization().is_err());
+        let selected = statuses(root.path())
+            .into_iter()
+            .filter(|entry| entry.transaction.as_ref() == Some(&stage(&third)))
+            .collect::<Vec<_>>();
+        let mut independent = plan_cleanup(&selected).unwrap();
+        while independent.reclaim_payload_next().unwrap() {}
+        let independent = independent.begin_finalization().unwrap();
+        assert_eq!(discover_finalizations().unwrap().len(), 2);
+        original.finish().unwrap();
+        independent.finish().unwrap();
+        assert_finished(root.path(), &stages);
+        assert!(!stage(&third).exists());
+        assert_eq!(
+            std::fs::read(root.path().join("destination/item")).unwrap(),
+            b"third"
+        );
+    }
+
+    #[test]
+    fn recursive_payload_and_finalization_preserve_symlink_targets_and_visible_edits() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let receipt = directory_backup(root.path());
+        std::fs::write(root.path().join("destination/item"), "later user edit").unwrap();
+        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        while plan.reclaim_payload_next().unwrap() {}
+        plan.begin_finalization().unwrap().finish().unwrap();
+        assert!(!stage(&receipt).exists());
+        assert!(statuses(root.path()).is_empty());
+        assert_eq!(
+            std::fs::read(root.path().join("outside")).unwrap(),
+            b"outside user data"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("destination/item")).unwrap(),
+            b"later user edit"
+        );
+    }
+}

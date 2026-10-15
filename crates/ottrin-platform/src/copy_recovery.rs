@@ -11,7 +11,10 @@ use std::path::{Component, Path, PathBuf};
 
 #[path = "copy_cleanup.rs"]
 mod cleanup;
-pub use cleanup::{RetainedCopyCleanupPlan, plan_cleanup, resume_cleanup};
+pub use cleanup::{
+    RetainedCopyCleanupPlan, RetainedCopyFinalization, discover_finalizations, plan_cleanup,
+    resume_cleanup, resume_finalization,
+};
 
 /// Identity-only filesystem evidence, scoped by the record's boot and unique
 /// mount IDs. Its filesystem-defined identifier can distinguish reused inode
@@ -1379,6 +1382,14 @@ impl CopyRecord {
     }
 
     fn validate_namespace(&self) -> Result<(), PlatformError> {
+        self.validate_namespace_scope(true)
+    }
+
+    fn validate_parent_namespace(&self) -> Result<(), PlatformError> {
+        self.validate_namespace_scope(false)
+    }
+
+    fn validate_namespace_scope(&self, include_stage: bool) -> Result<(), PlatformError> {
         let transaction = self.transaction.decode().map_err(journal_error)?;
         let parent = transaction.parent().expect("validated transaction parent");
         if std::fs::read_to_string("/proc/sys/kernel/random/boot_id")
@@ -1403,7 +1414,10 @@ impl CopyRecord {
                 self.transaction_mount,
                 &self.transaction_handle,
             ),
-        ] {
+        ]
+        .into_iter()
+        .take(if include_stage { 2 } else { 1 })
+        {
             let metadata = std::fs::symlink_metadata(path).map_err(journal_error)?;
             if !metadata.is_dir()
                 || super::rename_identity(path).map_err(journal_error)? != *identity

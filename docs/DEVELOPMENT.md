@@ -730,12 +730,40 @@ mutation refusal, replaced ancestors, root symlinks and a metadata-read bound fo
 unowned pre-intent artifacts and uncertain evidence are retained for review;
 these tests do not establish arbitrary power-loss or physical-removable acceptance.
 
-Journal/stage finalization and Activity Clear/history eviction are still required
-before the complete lifecycle is usable. Activity may discard a receipt only
-after the worker confirms finalization. No UI cleanup, automatic expiry or newly
-packaged release is enabled by the payload API. Never substitute deletion by name
-or age. Prior exact AppImage directory-ownership acceptance remains recorded in
-`dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json` at its original scope.
+After all payloads finish, `begin_finalization` persists one immutable group
+manifest in the private Copy registry. It binds the complete original records,
+registry generation/mount and the contents/generations of each ledger, local
+journal and canonical journal. A transaction cannot join overlapping manifests.
+`discover_retained_copy_finalizations` and `resume_retained_copy_finalization`
+reopen that authority without writing. Unknown or damaged manifests retain their
+path for review rather than being adopted or silently omitted.
+
+Finalization removes only matching ledger/local-journal files, then uses `rmdir`
+on each empty original stage. Every stage must be absent before any canonical
+journal is removed, and the group manifest is removed last. Thus interruption
+between canonical journal removals does not lose batch membership or its original
+namespace evidence. Named and pinned metadata stamps/mounts are checked again
+immediately before unlink; changed bytes, byte-identical replacements, unexpected
+children and replaced stage/parent/registry names are refused. Worker-scoped
+manifest and stage locks serialize mutation. Explicit lock release also prevents
+an unrelated thread's fork from extending a completed worker's OFD lock lifetime.
+No directory descriptors survive in an idle plan.
+
+Source/private-fixture finalization checks cover a two-item Copy group, forced
+termination at nine pre-mutation/post-fsync boundaries, loss of one canonical
+member, in-process error/reopen retries, changed/replaced metadata after pinning,
+late unknown children, replacement empty stages and retained visible edits/symlink
+targets. An original in-memory plan can confirm all paths are absent and retry the
+last directory sync if the manifest unlink succeeded before an error. IDs alone
+cannot reconstruct a missing manifest to delete surviving data.
+
+Activity background scheduling, cleanup/retry presentation and Clear/history
+eviction integration remain required. No UI cleanup or automatic expiry is
+currently enabled, and no package is promoted by these platform checks. Torn or
+unowned manifest writes conservatively retain data for review; the interruption
+matrix does not establish arbitrary power-loss durability. Prior exact AppImage
+directory-ownership acceptance remains at its original scope in
+`dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json`.
 
 Run the mount fixture only inside an explicitly owned child namespace:
 

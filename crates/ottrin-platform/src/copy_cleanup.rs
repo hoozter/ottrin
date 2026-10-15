@@ -9,6 +9,10 @@ use std::io::{Read, Write};
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileExt, MetadataExt};
 
+#[path = "copy_finalization.rs"]
+mod finalization;
+pub use finalization::{RetainedCopyFinalization, discover_finalizations, resume_finalization};
+
 const LEDGER: &str = "copy-cleanup";
 const QUARANTINE: &str = "cleanup-entry";
 
@@ -907,6 +911,12 @@ impl RetainedCopyCleanupPlan {
         Ok(true)
     }
 
+    /// Persist group-wide finalization authority before removing private
+    /// bookkeeping. The manifest remains until all selected journals are gone.
+    pub fn begin_finalization(&self) -> Result<RetainedCopyFinalization, PlatformError> {
+        finalization::begin(self)
+    }
+
     /// Rechecks original records, complete operation membership, dependencies,
     /// namespace identity and retained contents. Never adopts a newer record.
     pub fn revalidate(&self) -> Result<(), PlatformError> {
@@ -1228,9 +1238,9 @@ mod tests {
     use super::*;
     use crate::{ConflictAction, DefaultPlatform, PlatformOps};
 
-    struct Registry(Option<PathBuf>);
+    pub(super) struct Registry(Option<PathBuf>);
     impl Registry {
-        fn new(root: &Path) -> Self {
+        pub(super) fn new(root: &Path) -> Self {
             Self(crate::move_transaction::replace_test_recovery_root(Some(
                 root.join("moves"),
             )))
@@ -1242,7 +1252,7 @@ mod tests {
         }
     }
 
-    fn copy(root: &Path, version: &str) -> crate::PathMoveUndoReceipt {
+    pub(super) fn copy(root: &Path, version: &str) -> crate::PathMoveUndoReceipt {
         let directory = root.join(version);
         std::fs::create_dir(&directory).unwrap();
         let source = directory.join("item");
@@ -1255,11 +1265,11 @@ mod tests {
             .unwrap()
     }
 
-    fn statuses(root: &Path) -> Vec<RetainedCopyStatus> {
+    pub(super) fn statuses(root: &Path) -> Vec<RetainedCopyStatus> {
         discover_at(&root.join("copies")).unwrap()
     }
 
-    fn stage(receipt: &crate::PathMoveUndoReceipt) -> PathBuf {
+    pub(super) fn stage(receipt: &crate::PathMoveUndoReceipt) -> PathBuf {
         receipt.before_path().parent().unwrap().to_path_buf()
     }
 
@@ -1568,7 +1578,7 @@ mod tests {
         assert!(stage(&receipt).join(LEDGER).exists());
     }
 
-    fn directory_backup(root: &Path) -> crate::PathMoveUndoReceipt {
+    pub(super) fn directory_backup(root: &Path) -> crate::PathMoveUndoReceipt {
         let destination = root.join("destination");
         std::fs::create_dir_all(destination.join("item/nested/deeper")).unwrap();
         std::fs::write(destination.join("item/nested/deeper/a"), "retained a").unwrap();

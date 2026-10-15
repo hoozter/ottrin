@@ -18,8 +18,8 @@ pub use copy_transaction::RetainedCopyTransaction;
 mod copy_recovery;
 #[cfg(target_os = "linux")]
 pub use copy_recovery::{
-    CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyCleanupPlan, RetainedCopyStatus,
-    RetainedCopyUndoPlan,
+    CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyCleanupPlan,
+    RetainedCopyFinalization, RetainedCopyStatus, RetainedCopyUndoPlan,
 };
 
 /// Reads retained Copy status without creating recovery data or granting Undo authority.
@@ -67,6 +67,19 @@ pub fn resume_retained_copy_cleanup(
     transaction_ids: &[String],
 ) -> Result<RetainedCopyCleanupPlan, PlatformError> {
     copy_recovery::resume_cleanup(transaction_ids)
+}
+/// Discovers durable Copy finalizations, including groups with removed journals.
+#[cfg(target_os = "linux")]
+pub fn discover_retained_copy_finalizations() -> Result<Vec<RetainedCopyFinalization>, PlatformError>
+{
+    copy_recovery::discover_finalizations()
+}
+/// Reopens existing group finalization authority without mutating its contents.
+#[cfg(target_os = "linux")]
+pub fn resume_retained_copy_finalization(
+    id: &str,
+) -> Result<RetainedCopyFinalization, PlatformError> {
+    copy_recovery::resume_finalization(id)
 }
 mod copy_transaction;
 #[cfg(target_os = "linux")]

@@ -2527,3 +2527,27 @@ next work; no UI cleanup, automatic expiry or updated package is claimed. Unowne
 pre-intent artifacts and torn writes remain conservative review cases, not
 implicitly recoverable deletion authority. Full lifecycle and physical-platform
 acceptance remain open.
+
+
+### Copy group metadata finalization — 2026-10-15
+
+The Linux platform now persists a group finalization manifest after payload
+reclamation. It binds complete original records, registry identity and metadata
+file content/generation evidence, rejects overlapping ownership, and can discover
+or reopen partial finalization without mutation. Matching private ledger/local
+journals are unlinked, empty original stages are removed, all canonical journals
+are retired only after every stage is absent, and the manifest goes last. A
+partial group with one canonical journal already removed remains recoverable.
+Unknown children, changed bytes, byte-identical replacement files, reused stage
+or parent names, late metadata edits and prematurely missing canonical authority
+are refused. File and directory syncs retain explicit ordering; locks are scoped
+to workers and explicitly released even if another thread inherited a descriptor.
+
+Private source fixtures exercise in-process interruption/reopen and actual
+subprocess SIGKILL at nine finalization boundaries, two-item operation membership,
+final metadata-pin races, empty-stage replacement, lost authority and preserved
+visible edits/symlink targets. These checks do not establish arbitrary power-loss
+or physical-removable acceptance. Activity scheduling, status/retry and Clear/
+history eviction integration remain next, followed by exact packaged workflow
+acceptance. No automatic cleanup, operator-data mutation or package promotion is
+claimed by this platform checkpoint.
