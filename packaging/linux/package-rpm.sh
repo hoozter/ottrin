@@ -75,6 +75,7 @@ fi
 /usr/bin/ottrin-legacy-doc-render
 /usr/bin/ottrin-media-playback
 /usr/libexec/ottrin/ottrin-priv-helper
+/usr/libexec/ottrin/rg
 /usr/libexec/ottrin/native-package-lifecycle
 /usr/libexec/ottrin/pdfium
 /usr/share/applications/org.ottrin.Ottrin.desktop
