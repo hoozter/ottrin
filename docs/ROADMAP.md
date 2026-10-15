@@ -3014,3 +3014,40 @@ traces are alongside it. Superseded `3a3d72d` Windows construction output is
 removed after its compact receipts and deferred actor inputs were retained.
 Native Windows/macOS and physical Wayland/GPU acceptance remain separate;
 this does not close the wider roadmap or the MSI rollback gate.
+
+### Current Windows preview and early setup recovery acceptance (2026-10-15)
+
+Clean source `a7c189f87172c73791493af0ac9e9579f73201f8` is now packaged as one
+coherent internal portable/NSIS/MSI cohort at
+`.hermes/packaging-tmp/windows-current/`. All 51 payload files agree across
+portable, NSIS and native MSI administrative extraction; strict Windows UI
+all-target Clippy passes. Exact hashes and native results are recorded in
+`.hermes/evidence/windows-init-integration-current/ACCEPTANCE.json` and the
+cohort's `CANDIDATE_ACCEPTANCE.json`.
+
+Six full-payload NSIS pre-journal interruption/retry cases pass, covering both
+initialization points, fresh installs and all four existing login/runtime
+combinations. Original root identity, task XML/security, typed registration,
+running daemon identity, saved-index identity, preferences and source bytes
+are checked where applicable. An initial harness assumption was corrected:
+schema 3 intentionally records an absent own task with null XML/security.
+Normal uninstall reset preceded the corrected complete rerun.
+
+The exact MSI passes fresh ordinary-user install/uninstall and all payload
+hashes. Its tiny fixture watcher takes 675 ms; a five-second quiet sample uses
+0.312% of one CPU core. These numbers are not large-index performance acceptance.
+The installed NSIS GUI passes VCF → PDF → VCF arrow navigation and Space close
+without changing source bytes, in Dark at 96 DPI with Automatic graphics mode.
+Native screenshots confirm the shared flush Inspector title bar. The configured
+daemon retains its PID/task instance across GUI launch and normal close.
+First-login privacy UI initially blocked keyboard focus; only the disposable
+account's policy was corrected, using the installed OOBE policy definition,
+before reboot and successful rerun. No product change was needed for that blocker.
+
+Original-user preference/installation hashes remain unchanged. The owned child
+VM was shut down normally, then its exact overlay, NVRAM and TPM were removed;
+original VMs/backing storage remain preserved and shut off. Superseded internal
+packages and the instrumented QA installer were removed. Public Windows packages
+remain unchanged: failed-registration MSI rollback is still an open release
+gate. Physical GPU, wider DPI/theme coverage, temporal Windows PDF stability,
+explicit Windows edit/save, Office and other roadmap gates remain separate.

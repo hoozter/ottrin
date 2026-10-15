@@ -1,0 +1,8 @@
+{
+  "domain": "ottrin-init-integration",
+  "guest_root": "C:\\OttrinInitFinalQA",
+  "account": "OttrinInitFinalQA",
+  "purpose": "Current coherent Windows installer and real daemon/scheduler acceptance",
+  "restore": "All changes confined to owned child overlay. Collect evidence and verify original-profile hashes, then normal shutdown and delete only exact owned child domain/NVRAM/TPM/disk; preserve backing and original domains.",
+  "gui_environment_correction": "First Automatic GUI trial blocked by new-account OOBE. Verified installed OOBE.admx classBoth/DisablePrivacyExperience DWORD1; applied only owned user hive and rebooted child before retry."
+}

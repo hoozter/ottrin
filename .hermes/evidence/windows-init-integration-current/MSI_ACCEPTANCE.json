@@ -1,0 +1,16 @@
+{
+  "uninstall_exit": 0,
+  "quiet_cpu_single_core_percent": 0.312,
+  "phase": "uninstalled",
+  "payload_files": 51,
+  "watcher_ms": 675,
+  "install_exit": 0,
+  "scope": "Exact current MSI fresh ordinary-user lifecycle; tiny-fixture watcher/quiet CPU only; failed-registration rollback not accepted here",
+  "installer_sha256": "a826e5dc8eec85b78c28949e51799636993a010ceb8cdb1f686a6e3fc060fda5",
+  "status": "pass",
+  "product": "{00E5FAFA-F7C5-43A8-BE95-1149BF022EB9}",
+  "live": {
+    "instance": "{E5DA95B5-A178-407F-A675-56785594B2E8}",
+    "pid": 3216
+  }
+}

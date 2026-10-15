@@ -1,0 +1,218 @@
+{
+  "status": "bounded native acceptance passed; unpublished coherent candidates",
+  "date": "2026-10-15",
+  "source_revision": "a7c189f87172c73791493af0ac9e9579f73201f8",
+  "tracked_source_clean_at_build": true,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "3dfd1155868935592371c3660b481aa013c983b9812fbee0497da7a99995c0b8",
+    "Ottrin-0.1.0-windows-x64.msi": "a826e5dc8eec85b78c28949e51799636993a010ceb8cdb1f686a6e3fc060fda5",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "225e8c2dc3c454c9f7449f565353e3500c5d6509e689e3c87cc37aa934f429a0"
+  },
+  "payload_files": 51,
+  "payload_identity": "Portable, NSIS and native MSI extraction agree for all 51 files",
+  "native_nsis": {
+    "phase": "accepted",
+    "status": "pass",
+    "cases": [
+      {
+        "early_daemon_untouched": true,
+        "running": null,
+        "existing_saved_index_identity_preserved": false,
+        "old_root": null,
+        "payload_files": 51,
+        "task_intent_xml_security_verified": true,
+        "name": "root-fresh",
+        "typed_registration_snapshot_verified": false,
+        "preferences_and_source_preserved": true,
+        "status": "pass",
+        "new_transaction_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000010000000027c7f",
+        "point": "root",
+        "enabled": null,
+        "existing": false
+      },
+      {
+        "early_daemon_untouched": true,
+        "running": null,
+        "existing_saved_index_identity_preserved": false,
+        "old_root": null,
+        "payload_files": 51,
+        "task_intent_xml_security_verified": true,
+        "name": "new-fresh",
+        "typed_registration_snapshot_verified": false,
+        "preferences_and_source_preserved": true,
+        "status": "pass",
+        "new_transaction_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000011000000027c8e",
+        "point": "new",
+        "enabled": null,
+        "existing": false
+      },
+      {
+        "early_daemon_untouched": true,
+        "running": true,
+        "existing_saved_index_identity_preserved": true,
+        "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000010000000027ca1",
+        "payload_files": 51,
+        "task_intent_xml_security_verified": true,
+        "name": "root-enabled-running",
+        "typed_registration_snapshot_verified": true,
+        "preferences_and_source_preserved": true,
+        "status": "pass",
+        "new_transaction_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000001a000000027d3f",
+        "point": "root",
+        "enabled": true,
+        "existing": true
+      },
+      {
+        "early_daemon_untouched": true,
+        "running": false,
+        "existing_saved_index_identity_preserved": true,
+        "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000e000000027ca9",
+        "payload_files": 51,
+        "task_intent_xml_security_verified": true,
+        "name": "root-disabled-stopped",
+        "typed_registration_snapshot_verified": true,
+        "preferences_and_source_preserved": true,
+        "status": "pass",
+        "new_transaction_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000003c000000002209",
+        "point": "root",
+        "enabled": false,
+        "existing": true
+      },
+      {
+        "early_daemon_untouched": true,
+        "running": true,
+        "existing_saved_index_identity_preserved": true,
+        "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000014000000027cb2",
+        "payload_files": 51,
+        "task_intent_xml_security_verified": true,
+        "name": "new-disabled-running",
+        "typed_registration_snapshot_verified": true,
+        "preferences_and_source_preserved": true,
+        "status": "pass",
+        "new_transaction_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000016000000027d61",
+        "point": "new",
+        "enabled": false,
+        "existing": true
+      },
+      {
+        "early_daemon_untouched": true,
+        "running": false,
+        "existing_saved_index_identity_preserved": true,
+        "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000035000000027cea",
+        "payload_files": 51,
+        "task_intent_xml_security_verified": true,
+        "name": "new-enabled-stopped",
+        "typed_registration_snapshot_verified": true,
+        "preferences_and_source_preserved": true,
+        "status": "pass",
+        "new_transaction_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000001a000000027cb7",
+        "point": "new",
+        "enabled": true,
+        "existing": true
+      }
+    ],
+    "current_installer_sha256": "225e8c2dc3c454c9f7449f565353e3500c5d6509e689e3c87cc37aa934f429a0"
+  },
+  "native_msi": {
+    "uninstall_exit": 0,
+    "quiet_cpu_single_core_percent": 0.312,
+    "phase": "uninstalled",
+    "payload_files": 51,
+    "watcher_ms": 675,
+    "install_exit": 0,
+    "scope": "Exact current MSI fresh ordinary-user lifecycle; tiny-fixture watcher/quiet CPU only; failed-registration rollback not accepted here",
+    "installer_sha256": "a826e5dc8eec85b78c28949e51799636993a010ceb8cdb1f686a6e3fc060fda5",
+    "status": "pass",
+    "product": "{00E5FAFA-F7C5-43A8-BE95-1149BF022EB9}",
+    "live": {
+      "instance": "{E5DA95B5-A178-407F-A675-56785594B2E8}",
+      "pid": 3216
+    }
+  },
+  "harness_correction": "Initial fresh-task snapshot assertion was incorrect: schema3 deliberately records one absent own task. Normal uninstall reset and corrected rerun passed all six cases. No product validation relaxed.",
+  "checks": {
+    "strict_windows_ui_all_targets_clippy": "pass"
+  },
+  "limits": [
+    "Current MSI failed-registration rollback remains open; positive lifecycle does not waive it.",
+    "Private VM and tiny watcher fixture only; no physical GPU, large-index, Office or full DPI acceptance.",
+    "Public Windows release artifacts unchanged.",
+    "Windows GUI acceptance is Dark, 96 DPI, Automatic mode in this VM; screenshots confirm shared title bar. No temporal Windows PDF stability or explicit Windows edit/save acceptance is claimed."
+  ],
+  "native_gui": {
+    "source_bytes_unchanged": true,
+    "root_dpi": 96,
+    "scope": "Exact NSIS installed GUI, ordinary interactive user, read-only preview navigation and source preservation",
+    "phase": "accepted",
+    "renderer_request": "Automatic",
+    "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+    "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+    "index_before": {
+      "instance": "{2FE27CBB-3C8E-45C4-99BA-C0F76A6A0916}",
+      "pid": 4364
+    },
+    "space_closed": true,
+    "graphics_modules": [
+      {
+        "ModuleName": "opengl32.dll",
+        "FileName": "C:\\Users\\OttrinInitFinalQA\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll"
+      },
+      {
+        "ModuleName": "libgallium_wgl.dll",
+        "FileName": "C:\\Users\\OttrinInitFinalQA\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll"
+      },
+      {
+        "ModuleName": "d3d12.dll",
+        "FileName": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll"
+      },
+      {
+        "ModuleName": "dxgi.dll",
+        "FileName": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll"
+      }
+    ],
+    "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+    "status": "pass",
+    "index_after": {
+      "instance": "{2FE27CBB-3C8E-45C4-99BA-C0F76A6A0916}",
+      "pid": 4364
+    },
+    "index_while_open": {
+      "instance": "{2FE27CBB-3C8E-45C4-99BA-C0F76A6A0916}",
+      "pid": 4364
+    }
+  },
+  "gui_environment_correction": "Initial keyboard check was blocked by owned-account first-login OOBE. Installed OOBE.admx confirmed per-user privacy policy; corrected only disposable account and rebooted before successful rerun.",
+  "fixture_sha256": {
+    "reset.ps1": "1a663ae03989e08484b8fe108f96673dadb0ffdeb8a94b4d8c7dff39d5f3cbd5",
+    "prepare-account.py": "2aea29753bcfde40f37cbbeae94fc1590962775bb6b9179e110a90622bb97304",
+    "launch.py": "ca42228a4ae8a78925b1598f75303213dcd57f83b627ec56e58062aff05beae5",
+    "check_archives.py": "2c979f4d59b235237f71a204dbbc89ec9158e8a21de9e6bcf50190e1d7708c9d",
+    "native_compiler.py": "2cdc12f81e6778c676421cff36cedf456c2dee51ed3f5aaa8f513fa83bfa9d57",
+    "dispose.py": "98898aa6d2fee14c405382741d3dc9f68545ef419fcd54ba65799681590893a1",
+    "actor.ps1": "101992cf501b6bdfe4c923e7b678aa0213665c22ca4122303c361aff7d450b73",
+    "build-qa.py": "b147f74db637caf84123d9d81871bfe41a1d4c549a21b54b3c744d144c325264",
+    "payload-transaction.qa.ps1": "005bcc327a306ac096a69fe637a3986ee19e29203462fb57d7eb821f1e990e85",
+    "msi-actor.ps1": "d3c1210df89d102669eecb0a86f6ef71f0ea4a701f27f4cd74a98326239b9b70",
+    "vm.py": "31402d577c0b5ceeeef329ffbde771d9e76add78e0545d3f0d9ddd6caf8d7120",
+    "transport.py": "8413efb42d30b2340b96efa6a42023c99b4e1b6b26b0ef970c270ea636402915",
+    "preview-actor.ps1": "4738ea9126440f9eb7bad7c0b20b643619efc4346276df410e17683f8e2e9b77",
+    "actor-initial.ps1": "d29d930c129668c52fcb44dfc82c988a54e9801e6c801fc3c99d97518fd4b903",
+    "admin-extract.ps1": "fcfb399c68fdaf200937b424012b391d944b83b8be20b4873239fb77fe88ba16"
+  },
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "screenshots_sha256": {
+    "GUI-Automatic-OOBE-root.png": "8d81131434bbd07ed27708cc4e969357d66473d8af6635497b233899a00be916",
+    "GUI-Automatic-pdf.png": "1626c60b09c1e1cc8bb89223c39fbd677cbffe2607e3860fe4eae9df53dfdd48",
+    "GUI-Automatic-root.png": "0dbfa410001d19d731a0fa6adbc10f0979136193cf744ba3448a376d80947e05",
+    "GUI-Automatic-vcf.png": "ae475dff8f836b2c17186b3e4166b3b1ac98a03a5fa565d9408473f2fcc772a4"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "scope": "QA checkpoints only in Initialize; actual51-file payload, actual controller and unmodified NSIS authoring",
+  "source_revision": "a7c189f87172c73791493af0ac9e9579f73201f8",
+  "source_sha256": {
+    "packaging/windows/installer.nsi": "54118cc0168986a58117692e598111d7cd5a3e2c26c6969af014feb794e88aa0",
+    "packaging/windows/payload-transaction.ps1": "6288c89352f936416ea3027be82f3db6414330e5ef63e63fc924d54f7e816544"
+  },
+  "fixture_sha256": {
+    "payload-transaction.qa.ps1": "005bcc327a306ac096a69fe637a3986ee19e29203462fb57d7eb821f1e990e85",
+    "actor.ps1": "d29d930c129668c52fcb44dfc82c988a54e9801e6c801fc3c99d97518fd4b903"
+  },
+  "qa_installer_sha256": "6482d83772bc0a8821a1f2e740a6d285dad50bd826736f096c44948ac6846f37"
+}

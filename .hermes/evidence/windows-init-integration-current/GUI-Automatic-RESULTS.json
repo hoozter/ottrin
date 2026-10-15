@@ -1,0 +1,42 @@
+{
+  "source_bytes_unchanged": true,
+  "root_dpi": 96,
+  "scope": "Exact NSIS installed GUI, ordinary interactive user, read-only preview navigation and source preservation",
+  "phase": "accepted",
+  "renderer_request": "Automatic",
+  "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+  "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+  "index_before": {
+    "instance": "{2FE27CBB-3C8E-45C4-99BA-C0F76A6A0916}",
+    "pid": 4364
+  },
+  "space_closed": true,
+  "graphics_modules": [
+    {
+      "ModuleName": "opengl32.dll",
+      "FileName": "C:\\Users\\OttrinInitFinalQA\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll"
+    },
+    {
+      "ModuleName": "libgallium_wgl.dll",
+      "FileName": "C:\\Users\\OttrinInitFinalQA\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll"
+    },
+    {
+      "ModuleName": "d3d12.dll",
+      "FileName": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll"
+    },
+    {
+      "ModuleName": "dxgi.dll",
+      "FileName": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll"
+    }
+  ],
+  "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+  "status": "pass",
+  "index_after": {
+    "instance": "{2FE27CBB-3C8E-45C4-99BA-C0F76A6A0916}",
+    "pid": 4364
+  },
+  "index_while_open": {
+    "instance": "{2FE27CBB-3C8E-45C4-99BA-C0F76A6A0916}",
+    "pid": 4364
+  }
+}

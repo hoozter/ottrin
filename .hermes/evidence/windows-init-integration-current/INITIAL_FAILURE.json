@@ -1,0 +1,7 @@
+{
+  "phase": "retry-root-fresh",
+  "status": "fail",
+  "error": "Fresh retry invented a previous task",
+  "cases": [],
+  "stack": "at Assert, C:\\OttrinInitFinalQA\\actor.ps1: line 4\r\nat <ScriptBlock>, C:\\OttrinInitFinalQA\\actor.ps1: line 123"
+}
