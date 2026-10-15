@@ -1292,6 +1292,49 @@ mod tests {
     }
 
     #[test]
+    fn cleanup_observation_refuses_interrupted_phases_without_reading_publications() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let receipt = copy(root.path(), "selected");
+        let local = stage(&receipt).join("copy-journal");
+        let original = CopyRecord::parse(&std::fs::read(&local).unwrap()).unwrap();
+        let id = original.transaction_id().unwrap();
+        let central = root.path().join("copies").join(format!("{id}.journal"));
+        let large = vec![b'x'; 4 * 1024 * 1024];
+        std::fs::write(root.path().join("destination/item"), &large).unwrap();
+        let read_chars = || {
+            std::fs::read_to_string("/proc/thread-self/io")
+                .unwrap()
+                .lines()
+                .find_map(|line| {
+                    line.strip_prefix("rchar: ")
+                        .map(|n| n.parse::<u64>().unwrap())
+                })
+                .unwrap()
+        };
+        for phase in [CopyPhase::PublicationIntent, CopyPhase::UndoIntent] {
+            let mut record = original.clone();
+            record.phase = phase;
+            let bytes = serde_json::to_vec(&record).unwrap();
+            std::fs::write(&local, &bytes).unwrap();
+            std::fs::write(&central, &bytes).unwrap();
+            let before = read_chars();
+            let captured = super::super::observe_cleanup(std::slice::from_ref(&id)).unwrap();
+            assert!(plan_cleanup(&captured).is_err());
+            assert!(
+                read_chars() - before < 1024 * 1024,
+                "Cleanup observation hashed a visible publication in unsupported phase {phase:?}"
+            );
+            assert_eq!(std::fs::read(&local).unwrap(), bytes);
+            assert_eq!(std::fs::read(&central).unwrap(), bytes);
+            assert_eq!(
+                std::fs::read(root.path().join("destination/item")).unwrap(),
+                large
+            );
+        }
+    }
+
+    #[test]
     fn cleanup_observation_never_reads_selected_publication_or_unrelated_payloads() {
         let root = tempfile::tempdir().unwrap();
         let _registry = Registry::new(root.path());

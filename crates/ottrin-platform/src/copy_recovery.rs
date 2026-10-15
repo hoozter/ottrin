@@ -1154,6 +1154,12 @@ fn discover_entries(
                             CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
                         }
                         CopyPhase::PublicationIntent => CopyRecoveryEvidence::MatchingJournals,
+                        CopyPhase::UndoIntent if cleanup_only => {
+                            CopyRecoveryEvidence::NeedsReview {
+                                reason: "Interrupted Copy Undo must be reconciled before cleanup"
+                                    .into(),
+                            }
+                        }
                         CopyPhase::UndoIntent => match record.undo_topology(&fd)? {
                             UndoTopology::Published => CopyRecoveryEvidence::UndoReadyToWithdraw,
                             UndoTopology::Withdrawn => CopyRecoveryEvidence::UndoWithdrawalMatches,
