@@ -2243,6 +2243,13 @@ impl LinuxJournalDirectory {
     pub(super) fn discover_copy_records(
         &self,
     ) -> Result<Vec<super::copy_recovery::CopyRegistryEntry>, JournalError> {
+        self.discover_copy_records_with(|name| self.read_copy_record(name))
+    }
+
+    pub(super) fn discover_copy_records_with(
+        &self,
+        mut read: impl FnMut(&str) -> Result<super::copy_recovery::CopyRecord, super::PlatformError>,
+    ) -> Result<Vec<super::copy_recovery::CopyRegistryEntry>, JournalError> {
         let mut directory = rustix::fs::Dir::read_from(&self.directory)
             .map_err(|error| JournalError::Io(error.to_string()))?;
         let mut records = Vec::new();
@@ -2258,9 +2265,7 @@ impl LinuxJournalDirectory {
                     "invalid Copy registry filename".into(),
                 ))
             } else {
-                self.read_copy_record(
-                    std::str::from_utf8(bytes).expect("validated journal filename"),
-                )
+                read(std::str::from_utf8(bytes).expect("validated journal filename"))
             };
             records.push((id, record));
         }

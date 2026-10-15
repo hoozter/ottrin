@@ -2579,3 +2579,24 @@ Clean source `eb10b1b7f42322a0e90f656280df869ebe21d93f` is published at the stab
 The exact delivered AppImage passes per-entry/bulk Clear confirmation, cancellation preserving the original backup, changed-data refusal, persistent error/retry, success styling, full selected stage/journal/manifest removal and source/publication preservation in Dark100 and Light150. The same actual package preserves complete menu icons, compact leading padding and separate check columns. The first visual previews exposed duplicated failure details, retry wording and an incorrect success color flag; those previews were corrected, rebuilt and retested before promotion. Normal exits and private fixture/display/daemon teardown are recorded. Current package contents and native namespace ownership checks pass; current daemon bytes differ from the older distro-tested payload, so older package-manager lifecycle receipts remain historical.
 
 This closes the explicit Linux Activity Copy cleanup integration and its focused package workflow. Automatic expiry remains disabled; other owned recovery receipts remain protected. Large-operation resource profiling, broader appearance/desktop/release matrices, arbitrary power-loss boundaries, physical hardware and native Windows gates retain their separate scopes. Operator data/settings/services are unchanged and user testing remains deferred. Evidence: `.hermes/evidence/copy-activity-current/` and `dist/packages/COPY_CLEANUP_ACCEPTANCE.json`. The overall roadmap remains open.
+
+
+### Copy finalization read scaling — 2026-10-15
+
+A 32-directory overwrite/reclaim fixture reproduced 58,028,663 bytes of metadata
+reads during finalization for 555,919 bytes of canonical metadata. The finalizer
+now memoizes verified contents and parsed records only within the active worker.
+Every repeated check still reopens the named file without following symlinks and
+checks its generation, mount and complete inode stamp; every actual unlink keeps
+its independent full-content and final pinned-name checks. Inode watches also
+invalidate alias writes, including equal-timestamp changes. Cache admission is
+limited to known local filesystem types with successful inode watches, 4,096
+files and 64 MiB of encoded contents; unknown/remote filesystems and exhausted
+watch/cache resources retain full reads. Directory enumeration, operation
+membership, external dependency, stage absence and namespace checks remain in
+place. Idle plans retain no cache or notification descriptor.
+
+Focused read-volume and alias-write regressions are added. This is a bounded I/O
+improvement, not proof of linear CPU/syscall scaling, broad large-operation
+acceptance or delivery in an updated package. Current stable packages retain
+the preceding Copy Activity receipt until a new exact-artifact acceptance passes.

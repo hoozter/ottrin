@@ -40,7 +40,7 @@ struct Ledger {
 }
 
 /// Constant-size checks protect an active ledger without rereading its prefix.
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 struct LedgerStamp {
     device: u64,
     inode: u64,

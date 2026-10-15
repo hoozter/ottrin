@@ -38,6 +38,95 @@ impl Drop for PinnedFile {
     }
 }
 
+// Worker-local content memoization, never deletion authority. Every lookup still
+// opens the current name without following links and checks generation, mount,
+// and the complete inode stamp. This bounded worker cache holds only one
+// notification descriptor and no per-file descriptors.
+#[derive(Default)]
+struct MetadataReads {
+    files: BTreeMap<(u64, u64), CachedMetadata>,
+    bytes: usize,
+    enabled: bool,
+    events: Option<OwnedFd>,
+    changed: BTreeSet<i32>,
+}
+struct CachedMetadata {
+    stamp: LedgerStamp,
+    watch: i32,
+    proof: FileProof,
+    bytes: std::sync::Arc<[u8]>,
+    record: Option<CopyRecord>,
+}
+
+impl MetadataReads {
+    fn drain(&mut self) -> Result<(), PlatformError> {
+        use rustix::fs::inotify;
+        let Some(events) = &self.events else {
+            return Ok(());
+        };
+        let mut buffer = [std::mem::MaybeUninit::uninit(); 4096];
+        let mut reader = inotify::Reader::new(events, &mut buffer);
+        loop {
+            match reader.next() {
+                Ok(event) => {
+                    if event.events().contains(inotify::ReadFlags::QUEUE_OVERFLOW) {
+                        return Err(refusal("Copy finalization metadata watch overflowed"));
+                    }
+                    self.changed.insert(event.wd());
+                }
+                Err(rustix::io::Errno::WOULDBLOCK) => return Ok(()),
+                Err(rustix::io::Errno::INTR) => continue,
+                Err(error) => return Err(journal_error(error)),
+            }
+        }
+    }
+
+    fn record(
+        &mut self,
+        registry: &OwnedFd,
+        name: &str,
+        expected_mount: u64,
+    ) -> Result<CopyRecord, PlatformError> {
+        let (_, proof, bytes) =
+            FileProof::capture_with_reads(registry, name, expected_mount, self)?;
+        if let Some(cached) = self
+            .files
+            .get_mut(&(proof.identity.device, proof.identity.inode))
+        {
+            if let Some(record) = &cached.record {
+                return Ok(record.clone());
+            }
+            let record = CopyRecord::parse(&bytes)?;
+            cached.record = Some(record.clone());
+            return Ok(record);
+        }
+        CopyRecord::parse(&bytes)
+    }
+
+    fn watch(&mut self, file: &std::fs::File) -> Option<i32> {
+        use rustix::fs::inotify;
+        // Remote/userspace filesystems may cache attributes or change without
+        // local notification. Keep full rereads there and on unknown types.
+        let kind = rustix::fs::fstatfs(file).ok()?.f_type as u64;
+        if !matches!(kind, 0xef53 | 0x9123683e | 0x58465342 | 0x01021994) {
+            return None;
+        }
+        if self.events.is_none() {
+            self.events =
+                inotify::init(inotify::CreateFlags::NONBLOCK | inotify::CreateFlags::CLOEXEC).ok();
+        }
+        inotify::add_watch(
+            self.events.as_ref()?,
+            path_from_fd(file),
+            inotify::WatchFlags::MODIFY
+                | inotify::WatchFlags::ATTRIB
+                | inotify::WatchFlags::DELETE_SELF
+                | inotify::WatchFlags::MOVE_SELF,
+        )
+        .ok()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct FileProof {
@@ -52,7 +141,21 @@ impl FileProof {
         directory: &impl rustix::fd::AsFd,
         name: &str,
         expected_mount: u64,
-    ) -> Result<(PinnedFile, Self, Vec<u8>), PlatformError> {
+    ) -> Result<(PinnedFile, Self, std::sync::Arc<[u8]>), PlatformError> {
+        Self::capture_with_reads(
+            directory,
+            name,
+            expected_mount,
+            &mut MetadataReads::default(),
+        )
+    }
+
+    fn capture_with_reads(
+        directory: &impl rustix::fd::AsFd,
+        name: &str,
+        expected_mount: u64,
+        reads: &mut MetadataReads,
+    ) -> Result<(PinnedFile, Self, std::sync::Arc<[u8]>), PlatformError> {
         let fd = rustix::fs::openat(
             directory,
             name,
@@ -75,6 +178,31 @@ impl FileProof {
             .map_err(journal_error)?
             .ok_or_else(|| refusal("Copy finalization file generation is unavailable"))?;
         let before = LedgerStamp::read(&file)?;
+        let key = (stat.st_dev, stat.st_ino);
+        reads.drain()?;
+        if let Some(cached) = reads.files.get(&key) {
+            if cached.stamp != before
+                || cached.proof.handle != handle
+                || reads.changed.contains(&cached.watch)
+                || LedgerStamp::read(&file)? != before
+            {
+                return Err(refusal("Copy finalization metadata changed during cleanup"));
+            }
+            return Ok((
+                PinnedFile {
+                    file,
+                    stamp: before,
+                    locked: false,
+                },
+                cached.proof.clone(),
+                cached.bytes.clone(),
+            ));
+        }
+        let watch = if reads.enabled && reads.bytes < 64 * 1024 * 1024 && reads.files.len() < 4096 {
+            reads.watch(&file)
+        } else {
+            None
+        };
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes).map_err(journal_error)?;
         if LedgerStamp::read(&file)? != before || before.size != bytes.len() as u64 {
@@ -89,6 +217,23 @@ impl FileProof {
             length: bytes.len() as u64,
             digest: digest(&bytes),
         };
+        let bytes: std::sync::Arc<[u8]> = bytes.into();
+        // Large groups fall back to ordinary verified reads beyond this bound.
+        if let Some(watch) =
+            watch.filter(|_| reads.bytes.saturating_add(bytes.len()) <= 64 * 1024 * 1024)
+        {
+            reads.bytes += bytes.len();
+            reads.files.insert(
+                key,
+                CachedMetadata {
+                    stamp: before.clone(),
+                    watch,
+                    proof: proof.clone(),
+                    bytes: bytes.clone(),
+                    record: None,
+                },
+            );
+        }
         Ok((
             PinnedFile {
                 file,
@@ -106,7 +251,22 @@ impl FileProof {
         name: &str,
         expected_mount: u64,
     ) -> Result<PinnedFile, PlatformError> {
-        let (file, current, _) = Self::capture(directory, name, expected_mount)?;
+        self.open_exact_with_reads(
+            directory,
+            name,
+            expected_mount,
+            &mut MetadataReads::default(),
+        )
+    }
+
+    fn open_exact_with_reads(
+        &self,
+        directory: &impl rustix::fd::AsFd,
+        name: &str,
+        expected_mount: u64,
+        reads: &mut MetadataReads,
+    ) -> Result<PinnedFile, PlatformError> {
+        let (file, current, _) = Self::capture_with_reads(directory, name, expected_mount, reads)?;
         if current != *self {
             return Err(refusal(
                 "Copy finalization file identity or contents changed",
@@ -234,9 +394,13 @@ impl RetainedCopyFinalization {
         if manifest != self.manifest {
             return Err(refusal("Copy finalization manifest changed"));
         }
+        let mut reads = MetadataReads {
+            enabled: true,
+            ..Default::default()
+        };
         // The manifest lock serializes finalizers, and local locks serialize
         // stage mutation against the existing Copy/Undo workers.
-        self.validate_state(&central, &registry)?;
+        self.validate_state_with_reads(&central, &registry, &mut reads)?;
         for entry in self.manifest.entries.values() {
             let record = &entry.record;
             let transaction = record.transaction.decode().map_err(journal_error)?;
@@ -246,7 +410,7 @@ impl RetainedCopyFinalization {
             let (parent, stage) = open_directories(record)?;
             let local = LinuxJournalDirectory::for_copy_stage(&stage).map_err(journal_error)?;
             let _lock = local.try_lock_recovery().map_err(journal_error)?;
-            self.validate_state(&central, &registry)?;
+            self.validate_state_with_reads(&central, &registry, &mut reads)?;
             for (name, proof, point) in [
                 (LEDGER, &entry.ledger, FinalizationPoint::LedgerRemoved),
                 (
@@ -274,7 +438,7 @@ impl RetainedCopyFinalization {
             record.validate_namespace()?;
             record.validate_opened_directory(&parent, true)?;
             record.validate_opened_directory(&stage, false)?;
-            self.validate_state(&central, &registry)?;
+            self.validate_state_with_reads(&central, &registry, &mut reads)?;
             self.check_manifest(&registry, &manifest_file)?;
             hook(FinalizationPoint::BeforeStageRemove)?;
             self.check_registry(&registry)?;
@@ -292,7 +456,7 @@ impl RetainedCopyFinalization {
         }
         // All stages must be absent before the first canonical journal goes.
         // Thus a missing journal never authorizes deleting a surviving stage.
-        self.validate_state(&central, &registry)?;
+        self.validate_state_with_reads(&central, &registry, &mut reads)?;
         for (id, entry) in &self.manifest.entries {
             let name = format!("{id}.journal");
             if exists(&path_from_fd(&registry).join(&name))? {
@@ -300,7 +464,7 @@ impl RetainedCopyFinalization {
                     entry
                         .canonical
                         .open_exact(&registry, &name, self.manifest.registry_mount)?;
-                self.validate_state(&central, &registry)?;
+                self.validate_state_with_reads(&central, &registry, &mut reads)?;
                 self.check_manifest(&registry, &manifest_file)?;
                 hook(FinalizationPoint::BeforeCanonicalUnlink)?;
                 self.check_registry(&registry)?;
@@ -311,7 +475,7 @@ impl RetainedCopyFinalization {
                 hook(FinalizationPoint::CanonicalJournalRemoved)?;
             }
         }
-        self.validate_state(&central, &registry)?;
+        self.validate_state_with_reads(&central, &registry, &mut reads)?;
         self.check_manifest(&registry, &manifest_file)?;
         hook(FinalizationPoint::BeforeManifestRemove)?;
         self.check_registry(&registry)?;
@@ -368,8 +532,35 @@ impl RetainedCopyFinalization {
         central: &LinuxJournalDirectory,
         registry: &OwnedFd,
     ) -> Result<(), PlatformError> {
+        self.validate_state_with_reads(central, registry, &mut MetadataReads::default())
+    }
+
+    fn validate_state_with_reads(
+        &self,
+        central: &LinuxJournalDirectory,
+        registry: &OwnedFd,
+        reads: &mut MetadataReads,
+    ) -> Result<(), PlatformError> {
         self.check_registry(registry)?;
-        let all = registry_records(central)?;
+        let all = central
+            .discover_copy_records_with(|name| {
+                reads.record(registry, name, self.manifest.registry_mount)
+            })
+            .map_err(journal_error)?
+            .into_iter()
+            .map(|(id, record)| {
+                let record = record?;
+                if record.transaction_id()? != id {
+                    return Err(refusal("Copy registry filename differs from its record"));
+                }
+                Ok((id, record))
+            })
+            .collect::<Result<BTreeMap<_, _>, PlatformError>>()?;
+        let outside: Vec<_> = all
+            .iter()
+            .filter(|(id, _)| !self.manifest.entries.contains_key(*id))
+            .map(|(_, record)| record)
+            .collect();
         let mut missing_canonical = false;
         let mut surviving_stage = false;
         for (id, entry) in &self.manifest.entries {
@@ -379,10 +570,11 @@ impl RetainedCopyFinalization {
             let transaction = record.transaction.decode().map_err(journal_error)?;
             match all.get(id) {
                 Some(current) if current == record => {
-                    entry.canonical.open_exact(
+                    entry.canonical.open_exact_with_reads(
                         registry,
                         &format!("{id}.journal"),
                         self.manifest.registry_mount,
+                        reads,
                     )?;
                 }
                 None => missing_canonical = true,
@@ -398,16 +590,20 @@ impl RetainedCopyFinalization {
                     match name.to_bytes() {
                         b"." | b".." => {}
                         b"copy-journal" => {
-                            entry.local.open_exact(
+                            entry.local.open_exact_with_reads(
                                 &stage,
                                 "copy-journal",
                                 record.transaction_mount,
+                                reads,
                             )?;
                         }
                         b"copy-cleanup" => {
-                            entry
-                                .ledger
-                                .open_exact(&stage, LEDGER, record.transaction_mount)?;
+                            entry.ledger.open_exact_with_reads(
+                                &stage,
+                                LEDGER,
+                                record.transaction_mount,
+                                reads,
+                            )?;
                         }
                         _ => {
                             return Err(refusal(
@@ -422,18 +618,16 @@ impl RetainedCopyFinalization {
                 mount: record.transaction_mount,
                 handle: record.transaction_handle.clone(),
             };
-            for (other_id, other) in &all {
-                if !self.manifest.entries.contains_key(other_id) {
-                    if other.operation.id == record.operation.id {
-                        return Err(refusal(
-                            "Copy operation membership changed during finalization",
-                        ));
-                    }
-                    if possible_reference(other, std::slice::from_ref(&stage_object))? {
-                        return Err(refusal(
-                            "Another Copy operation still references the private stage",
-                        ));
-                    }
+            for other in &outside {
+                if other.operation.id == record.operation.id {
+                    return Err(refusal(
+                        "Copy operation membership changed during finalization",
+                    ));
+                }
+                if possible_reference(other, std::slice::from_ref(&stage_object))? {
+                    return Err(refusal(
+                        "Another Copy operation still references the private stage",
+                    ));
                 }
             }
         }
@@ -527,7 +721,7 @@ fn load(registry: &OwnedFd, id: &str) -> Result<(PinnedFile, FileProof, Manifest
     drop(file);
     let manifest: Manifest = serde_json::from_slice(&bytes).map_err(journal_error)?;
     manifest.validate()?;
-    if manifest.id()? != id || manifest.bytes()? != bytes {
+    if manifest.id()? != id || manifest.bytes()?.as_slice() != bytes.as_ref() {
         return Err(refusal(
             "Copy finalization manifest name or encoding changed",
         ));
@@ -736,6 +930,155 @@ mod tests {
                 std::fs::read(root.join("source").join(name)).unwrap(),
                 format!("new {name}").as_bytes()
             );
+        }
+    }
+
+    #[test]
+    fn cached_metadata_detects_alias_writes_even_when_stamps_compare_equal() {
+        let root = tempfile::tempdir().unwrap();
+        let registry = rustix::fs::open(
+            root.path(),
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .unwrap();
+        let file = root.path().join("metadata");
+        std::fs::write(&file, b"original").unwrap();
+        std::fs::set_permissions(&file, std::os::unix::fs::PermissionsExt::from_mode(0o600))
+            .unwrap();
+        let alias = root.path().join("alias");
+        std::fs::hard_link(&file, &alias).unwrap();
+        let mut reads = MetadataReads {
+            enabled: true,
+            ..Default::default()
+        };
+        let (_, proof, _) = FileProof::capture_with_reads(
+            &registry,
+            "metadata",
+            mount(&registry).unwrap(),
+            &mut reads,
+        )
+        .unwrap();
+        assert_eq!(
+            reads.files.len(),
+            1,
+            "test requires a locally watched inode"
+        );
+        std::fs::write(&alias, b"modified").unwrap();
+        // Model equal timestamps on a filesystem with coarse timestamp precision.
+        // The independent inode watch must still invalidate the captured bytes.
+        reads
+            .files
+            .get_mut(&(proof.identity.device, proof.identity.inode))
+            .unwrap()
+            .stamp = LedgerStamp::read(&std::fs::File::open(&file).unwrap()).unwrap();
+        assert!(
+            FileProof::capture_with_reads(
+                &registry,
+                "metadata",
+                mount(&registry).unwrap(),
+                &mut reads
+            )
+            .is_err()
+        );
+        assert_eq!(std::fs::read(file).unwrap(), b"modified");
+    }
+
+    #[test]
+    fn finalization_refuses_metadata_rewritten_through_an_outside_alias() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let (finalization, stages) = completed_group(root.path());
+        let id = finalization.transaction_ids().last().unwrap().to_string();
+        let canonical = root.path().join("copies").join(format!("{id}.journal"));
+        let alias = root.path().join("outside-registry-alias");
+        std::fs::hard_link(&canonical, &alias).unwrap();
+        let bytes = std::fs::read(&canonical).unwrap();
+        let mut rewritten = false;
+        let result = finalization.finish_with_hook(&mut |point| {
+            if point == FinalizationPoint::LedgerRemoved && !rewritten {
+                // Even an identical-byte rewrite invalidates the active proof.
+                std::fs::write(&alias, &bytes).unwrap();
+                rewritten = true;
+            }
+            Ok(())
+        });
+        assert!(rewritten);
+        assert!(result.is_err());
+        assert_eq!(std::fs::read(&canonical).unwrap(), bytes);
+        assert!(stages.iter().all(|stage| stage.exists()));
+        // A fresh worker reads and verifies the current metadata again.
+        finalization.finish().unwrap();
+        assert_finished(root.path(), &stages);
+        assert_eq!(std::fs::read(&alias).unwrap(), bytes);
+    }
+
+    #[test]
+    fn finalizing_large_groups_does_not_reread_every_journal_per_item() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let source = root.path().join("source");
+        let destination = root.path().join("destination");
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::create_dir_all(&destination).unwrap();
+        let mut sources = Vec::new();
+        for index in 0..32 {
+            let name = format!("directory-{index:02}");
+            let old = destination.join(&name);
+            std::fs::create_dir(&old).unwrap();
+            for leaf in 0..16 {
+                std::fs::write(old.join(format!("old-{leaf:02}")), "retained").unwrap();
+            }
+            let new = source.join(&name);
+            std::fs::create_dir(&new).unwrap();
+            std::fs::write(new.join("new"), "visible source").unwrap();
+            sources.push(new);
+        }
+        let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &sources,
+            &destination,
+            ConflictAction::Overwrite,
+        );
+        assert!(batch.error.is_none(), "{:?}", batch.error);
+        let mut plan = plan_cleanup(&statuses(root.path())).unwrap();
+        while plan.reclaim_payload_next().unwrap() {}
+        let finalization = plan.begin_finalization().unwrap();
+        let metadata_size = std::fs::read_dir(root.path().join("copies"))
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                entry.metadata().unwrap().len()
+            })
+            .sum::<u64>();
+        let read_chars = || {
+            std::fs::read_to_string("/proc/thread-self/io")
+                .unwrap()
+                .lines()
+                .find_map(|line| {
+                    line.strip_prefix("rchar: ")
+                        .map(|n| n.parse::<u64>().unwrap())
+                })
+                .unwrap()
+        };
+        let before = read_chars();
+        let start = std::time::Instant::now();
+        finalization.finish().unwrap();
+        let reads = read_chars() - before;
+        eprintln!(
+            "Finalization: records=32 metadata_bytes={metadata_size} read_bytes={reads} elapsed_ms={}",
+            start.elapsed().as_millis()
+        );
+        assert!(
+            reads < metadata_size * 20 + 1024 * 1024,
+            "Finalization repeatedly read whole-group metadata: {reads} bytes for {metadata_size} bytes of original metadata"
+        );
+        assert!(statuses(root.path()).is_empty());
+        for path in sources {
+            assert_eq!(
+                std::fs::read(destination.join(path.file_name().unwrap()).join("new")).unwrap(),
+                b"visible source"
+            );
+            assert_eq!(std::fs::read(path.join("new")).unwrap(), b"visible source");
         }
     }
 
