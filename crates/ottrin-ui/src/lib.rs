@@ -63,6 +63,7 @@ const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer ins
 
 mod appearance_editor;
 mod config;
+mod copy_activity_cleanup;
 mod file_details;
 mod icons;
 mod image_ops;
@@ -1061,6 +1062,7 @@ struct RetainedCopyOwnership {
     transactions: Vec<String>,
     blocked_by: Vec<String>,
     restored: bool,
+    finalization: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -1075,8 +1077,33 @@ type RetainedCopySnapshot = (Vec<RestoredCopyActivity>, Option<String>);
 
 #[cfg(target_os = "linux")]
 fn load_retained_copy_activity() -> RetainedCopySnapshot {
-    match ottrin_platform::discover_retained_copy_transactions() {
-        Ok(entries) => (group_retained_copy_activity(entries), None),
+    let result = (|| -> Result<Vec<RestoredCopyActivity>, PlatformError> {
+        let finalizations = ottrin_platform::discover_retained_copy_finalizations()?;
+        let finalized_ids = finalizations
+            .iter()
+            .flat_map(|plan| plan.transaction_ids().into_iter().map(str::to_owned))
+            .collect::<HashSet<_>>();
+        let entries = ottrin_platform::discover_retained_copy_transactions()?
+            .into_iter()
+            .filter(|entry| !finalized_ids.contains(&entry.transaction_id))
+            .collect();
+        let mut activity = group_retained_copy_activity(entries);
+        for plan in finalizations {
+            activity.push(RestoredCopyActivity {
+                ownership: RetainedCopyOwnership {
+                    key: format!("cleanup:{}", plan.id()),
+                    transactions: plan.transaction_ids().into_iter().map(str::to_owned).collect(),
+                    blocked_by: Vec::new(), restored: true, finalization: Some(plan.id().into()),
+                },
+                detail: "Interrupted Copy cleanup · retained recovery bookkeeping remains".into(),
+                undo: PathMoveUndoState::Unavailable { reason: "Copy cleanup has revoked Undo. Finish cleanup to release its remaining bookkeeping.".into() },
+                receipt: None,
+            });
+        }
+        Ok(activity)
+    })();
+    match result {
+        Ok(activity) => (activity, None),
         Err(error) => (Vec::new(), Some(error.to_string())),
     }
 }
@@ -1127,6 +1154,7 @@ fn group_retained_copy_activity(
                 },
                 CopyRecoveryEvidence::NeedsReview { reason: error } => reason = Some(error.clone()),
                 CopyRecoveryEvidence::MatchingJournals => reason = Some("Copy publication was interrupted and needs reconciliation".into()),
+                CopyRecoveryEvidence::CleanupReady => reason = Some("Cleanup-only evidence cannot restore Undo".into()),
                 CopyRecoveryEvidence::CleanupPending => reason = Some("Copy cleanup is in progress; Undo is no longer available".into()),
                 CopyRecoveryEvidence::CleanupComplete => reason = Some("Retained Copy data was reclaimed; history finalization is pending".into()),
             }
@@ -1153,7 +1181,7 @@ fn group_retained_copy_activity(
             PathMoveUndoState::Available
         };
         RestoredCopyActivity {
-            ownership: RetainedCopyOwnership { key, transactions: entries.into_iter().map(|entry| entry.transaction_id).collect(), blocked_by, restored: true },
+            ownership: RetainedCopyOwnership { key, transactions: entries.into_iter().map(|entry| entry.transaction_id).collect(), blocked_by, restored: true, finalization: None },
             detail,
             undo,
             receipt,
@@ -3043,6 +3071,7 @@ pub struct OttrinApp {
     retained_copy_activity_loader: RetainedActivityLoader<RetainedCopySnapshot>,
     retained_copy_activity_error: Option<String>,
     pending_retained_copy_activity: Option<Vec<RestoredCopyActivity>>,
+    copy_cleanup: copy_activity_cleanup::CopyCleanupUi,
     /// Last discovery snapshot. Roots are deliberately independent even when a
     /// backend reports the same identity at multiple mount points.
     known_storage_locations: Vec<StorageLocation>,
@@ -3976,6 +4005,7 @@ impl OttrinApp {
             retained_copy_activity_loader,
             retained_copy_activity_error,
             pending_retained_copy_activity: None,
+            copy_cleanup: Default::default(),
             known_storage_locations: Vec::new(),
             unavailable_locations: HashMap::new(),
             unavailable_root_tombstones: Vec::new(),
@@ -5845,10 +5875,12 @@ impl OttrinApp {
             self.retained_copy_activity_error = error;
             self.pending_retained_copy_activity = Some(activity);
         }
-        if self.operation_history.iter().any(|record| {
-            record.status == OperationStatus::Queued
-                || matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
-        }) {
+        if self.copy_cleanup.running()
+            || self.operation_history.iter().any(|record| {
+                record.status == OperationStatus::Queued
+                    || matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
+            })
+        {
             return;
         }
         if let Some(activity) = self.pending_retained_copy_activity.take() {
@@ -5873,6 +5905,29 @@ impl OttrinApp {
             }
         }
         for group in activity {
+            if group.ownership.finalization.is_some() {
+                // One manifest owns the whole interrupted clear, even when it
+                // originally covered multiple operation cards.
+                let mut kept = false;
+                self.operation_history.retain(|record| {
+                    let overlaps = record.retained_copy.as_ref().is_some_and(|owner| {
+                        owner
+                            .transactions
+                            .iter()
+                            .any(|id| group.ownership.transactions.contains(id))
+                    }) || copy_receipt_transaction_ids(record)
+                        .iter()
+                        .any(|id| group.ownership.transactions.contains(id));
+                    if !overlaps {
+                        return true;
+                    }
+                    if kept {
+                        return false;
+                    }
+                    kept = true;
+                    true
+                });
+            }
             let existing = self.operation_history.iter().position(|record| {
                 record.retained_copy.as_ref().is_some_and(|owner| {
                     owner.key == group.ownership.key
@@ -5890,6 +5945,7 @@ impl OttrinApp {
                     .retained_copy
                     .as_ref()
                     .is_none_or(|owner| !owner.restored)
+                    && group.ownership.finalization.is_none()
                 {
                     let mut ownership = group.ownership;
                     ownership.restored = false;
@@ -5933,6 +5989,7 @@ impl OttrinApp {
                 });
             }
         }
+        self.restore_copy_cleanup_errors();
     }
 
     fn refresh_tab(&mut self, tab_id: u64, dir: PathBuf) {
@@ -6414,6 +6471,9 @@ impl OttrinApp {
     }
 
     fn run_path_move_undo(&mut self, op_id: u64) {
+        if self.copy_cleanup.running() {
+            return;
+        }
         let Some((token, kind)) = self
             .operation_history
             .iter()
@@ -13912,13 +13972,15 @@ impl OttrinApp {
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 if ui
                     .add_enabled(
-                        self.operation_history.iter().any(OperationRecord::can_clear_history),
+                        !self.copy_cleanup.running() && self.operation_history.iter().any(|record| record.can_clear_history() || copy_activity_cleanup::can_cleanup(record)),
                         egui::Button::new("Clear finished").themed(&c),
                     )
-                    .on_hover_text("Clear finished history. Running operations and entries that own Undo or retained transaction data stay available.")
+                    .on_hover_text("Clear finished history. Copy entries require confirmation before retained undo versions are discarded. Other owned recovery data stays available.")
                     .clicked()
                 {
+                    let copies = self.operation_history.iter().filter(|record| copy_activity_cleanup::can_cleanup(record)).map(|record| record.id).collect::<Vec<_>>();
                     self.clear_finished_activity();
+                    if !copies.is_empty() { self.request_copy_cleanup(copies); }
                 }
             });
         });
@@ -13930,6 +13992,9 @@ impl OttrinApp {
         );
         ui.add_space(8.0);
 
+        if self.copy_cleanup.running() {
+            ui.label(RichText::new(self.copy_cleanup.progress()).color(c.accent));
+        }
         if self.retained_copy_activity_loader.pending {
             ui.label(RichText::new("Checking retained Copy history…").color(c.text_muted));
         }
@@ -14046,14 +14111,17 @@ impl OttrinApp {
         }
 
         let mut undo_rename = None;
+        let mut clear_copy = None;
         ScrollArea::vertical().show(ui, |ui| {
             for record in &self.operation_history {
-                let (status_text, status_color, status_icon) = match record.status {
+                let (status_text, status_color, status_icon) = if self.copy_cleanup.owns(record) {
+                    ("Cleaning up", c.accent_dim, MI_HISTORY)
+                } else { match record.status {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
                     OperationStatus::Completed => ("Done", c.accent, MI_CHECK),
                     OperationStatus::Failed => ("Failed", c.error, MI_CLEAR),
                     OperationStatus::NeedsReview => ("Needs review", c.error, MI_HISTORY),
-                };
+                }};
                 Frame::new()
                     .fill(c.panel)
                     .stroke(Stroke::new(
@@ -14138,8 +14206,8 @@ impl OttrinApp {
                                 ),
                             };
                             ui.add_space(4.0);
-                            let checking = record.retained_copy.as_ref().is_some_and(|owner| owner.restored)
-                                && self.retained_copy_activity_loader.pending;
+                            let checking = self.copy_cleanup.running() || (record.retained_copy.as_ref().is_some_and(|owner| owner.restored)
+                                && self.retained_copy_activity_loader.pending);
                             if ui.add_enabled(!checking, egui::Button::new(button_label).themed(&c))
                                 .on_hover_text(hover_text)
                                 .clicked()
@@ -14227,6 +14295,12 @@ impl OttrinApp {
                             .finished_at
                             .unwrap_or_else(Instant::now)
                             .saturating_duration_since(record.queued_at);
+                        if copy_activity_cleanup::can_cleanup(record)
+                            && ui.add_enabled(!self.copy_cleanup.running(), egui::Button::new(
+                                if record.retained_copy.as_ref().is_some_and(|owner| owner.finalization.is_some()) {
+                                    "Finish Copy cleanup"
+                                } else { "Discard Copy undo and clear…" }
+                            ).themed(&c)).clicked() { clear_copy = Some(record.id); }
                         ui.label(
                             RichText::new(if record.retained_copy.as_ref().is_some_and(|owner| owner.restored) {
                                 "Restored history · original time unavailable".to_owned()
@@ -14242,6 +14316,9 @@ impl OttrinApp {
         });
         if let Some(op_id) = undo_rename {
             self.run_path_move_undo(op_id);
+        }
+        if let Some(op_id) = clear_copy {
+            self.request_copy_cleanup(vec![op_id]);
         }
     }
 
@@ -22267,6 +22344,7 @@ impl eframe::App for OttrinApp {
         self.poll_op_results();
         self.poll_path_move_undo_results();
         self.poll_retained_move_activity();
+        self.poll_copy_cleanup();
         self.poll_retained_copy_activity();
         self.poll_trash_results();
 
@@ -22299,6 +22377,7 @@ impl eframe::App for OttrinApp {
             || self.retained_move_activity_loader.pending
             || self.retained_copy_activity_loader.pending
             || self.pending_retained_copy_activity.is_some()
+            || self.copy_cleanup.running()
             || transient_status
             || self.trash_panel.loading
             || self.trash_panel.emptying
@@ -22445,6 +22524,7 @@ impl eframe::App for OttrinApp {
             self.render_creation_modal(ctx);
             self.render_rename_modal(ctx);
             self.render_delete_confirmation(ctx);
+            self.render_copy_cleanup_confirmation(ctx);
         }
         self.render_move_conflict_confirmation(ctx);
         self.render_empty_trash_confirmation(ctx);
@@ -30151,6 +30231,7 @@ mod tests {
                 transactions: vec!["test".into()],
                 blocked_by: Vec::new(),
                 restored: true,
+                finalization: None,
             },
             detail: "restored".into(),
             undo: PathMoveUndoState::Undone,

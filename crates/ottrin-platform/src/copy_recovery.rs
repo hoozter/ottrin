@@ -775,6 +775,7 @@ pub enum CopyRecoveryEvidence {
     UndoneRetainedObjectsAndContentsMatch,
     CleanupPending,
     CleanupComplete,
+    CleanupReady,
     NeedsReview {
         reason: String,
     },
@@ -963,6 +964,7 @@ pub(super) fn restore_plan(
             .iter()
             .map(|(id, record)| (id.clone(), Ok(record.clone())))
             .collect(),
+        false,
     )?;
     let mut entries = Vec::new();
     for (id, record) in &records {
@@ -1030,11 +1032,57 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
     let central = super::move_recovery::LinuxJournalDirectory::open_copy_registry(root, false)
         .map_err(journal_error)?;
     let entries = central.discover_copy_records().map_err(journal_error)?;
-    discover_entries(entries)
+    discover_entries(entries, false)
+}
+
+/// Observe only selected retained payloads. IDs select records for read-only
+/// inspection; the private original observations still bind cleanup admission.
+/// Batch membership comes from the entire registry, without reading unrelated
+/// visible publications or retained payloads.
+pub fn observe_cleanup(ids: &[String]) -> Result<Vec<RetainedCopyStatus>, PlatformError> {
+    use super::move_recovery::LinuxJournalDirectory;
+    let selected = ids
+        .iter()
+        .cloned()
+        .collect::<std::collections::BTreeSet<_>>();
+    if selected.is_empty() || selected.len() != ids.len() {
+        return Err(PlatformError::CopyCleanupRefused(
+            "Select unique retained Copy transactions".into(),
+        ));
+    }
+    let root = configured_root()?;
+    let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
+    let all = cleanup::registry_records(&central)?;
+    if selected.iter().any(|id| !all.contains_key(id)) {
+        return Err(PlatformError::CopyCleanupRefused(
+            "A selected retained Copy record is missing".into(),
+        ));
+    }
+    let mut members = std::collections::BTreeMap::<String, Vec<String>>::new();
+    for (id, record) in &all {
+        members
+            .entry(record.operation.id.clone())
+            .or_default()
+            .push(id.clone());
+    }
+    let entries = all
+        .into_iter()
+        .filter(|(id, _)| selected.contains(id))
+        .map(|(id, record)| (id, Ok(record)))
+        .collect();
+    let mut statuses = discover_entries(entries, true)?;
+    for status in &mut statuses {
+        if let Some(observation) = &mut status.observation {
+            observation.members =
+                std::sync::Arc::new(members[&observation.record.operation.id].clone());
+        }
+    }
+    Ok(statuses)
 }
 
 fn discover_entries(
     entries: Vec<CopyRegistryEntry>,
+    cleanup_only: bool,
 ) -> Result<Vec<RetainedCopyStatus>, PlatformError> {
     let mut records = std::collections::BTreeMap::new();
     let mut statuses: Vec<_> = entries
@@ -1079,7 +1127,9 @@ fn discover_entries(
                 let local = super::move_recovery::LinuxJournalDirectory::for_copy_stage(&fd)
                     .map_err(journal_error)?;
                 let local = local.read_copy_record("copy-journal")?;
-                if local != record {
+                if cleanup_only && record.cleanup.is_some() {
+                    cleanup::validate_observed_pair(&fd, &record)?;
+                } else if local != record {
                     return Err(PlatformError::Io(
                         "central and destination-local Copy journals differ".into(),
                     ));
@@ -1094,6 +1144,10 @@ fn discover_entries(
                             } else {
                                 CopyRecoveryEvidence::CleanupPending
                             }
+                        }
+                        CopyPhase::Published if cleanup_only => {
+                            record.validate_retained_backup(&fd)?;
+                            CopyRecoveryEvidence::CleanupReady
                         }
                         CopyPhase::Published => {
                             record.validate_published_data(&fd)?;
@@ -1139,7 +1193,7 @@ fn discover_entries(
     }
     let mut dependents = vec![Vec::new(); statuses.len()];
     for (index, status) in statuses.iter().enumerate() {
-        if !matches!(status.evidence, CopyRecoveryEvidence::NeedsReview { .. }) {
+        if cleanup_only || !matches!(status.evidence, CopyRecoveryEvidence::NeedsReview { .. }) {
             continue;
         }
         let Some(record) = records.get(&status.transaction_id) else {

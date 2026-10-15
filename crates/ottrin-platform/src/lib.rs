@@ -61,6 +61,13 @@ pub fn plan_retained_copy_cleanup(
 ) -> Result<RetainedCopyCleanupPlan, PlatformError> {
     copy_recovery::plan_cleanup(captured)
 }
+/// Read-only cleanup-specific observation; never inspects visible publications.
+#[cfg(target_os = "linux")]
+pub fn observe_retained_copy_cleanup(
+    transaction_ids: &[String],
+) -> Result<Vec<RetainedCopyStatus>, PlatformError> {
+    copy_recovery::observe_cleanup(transaction_ids)
+}
 /// Reopens existing durable cleanup intent; never starts deletion from IDs alone.
 #[cfg(target_os = "linux")]
 pub fn resume_retained_copy_cleanup(

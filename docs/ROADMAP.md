@@ -2551,3 +2551,22 @@ or physical-removable acceptance. Activity scheduling, status/retry and Clear/
 history eviction integration remain next, followed by exact packaged workflow
 acceptance. No automatic cleanup, operator-data mutation or package promotion is
 claimed by this platform checkpoint.
+
+
+### Activity Copy cleanup integration — 2026-10-15
+
+Activity now offers explicit per-entry and bulk Copy cleanup with confirmation,
+background progress, retained failure details and retry. It restores interrupted
+finalization manifests as actionable history, disables Undo during mutation and
+releases ownership/history only after durable finalization. Selected cleanup
+observations read retained data without hashing visible publications or unrelated
+retained payloads, preserve complete batch membership and cannot authorize Undo.
+One-sided pending journals in a partly started batch are validated without writes
+and reconciled by the mutation worker. Ordinary history trimming still preserves
+owned receipts; automatic expiry remains disabled.
+
+Source fixtures exercise actual asynchronous cleanup, confirmation before
+mutation, changed-data refusal and retry, an overwrite chain and restart from
+partially removed metadata in disposable processes/profiles. Exact packaged UI
+workflow and visual acceptance, large-operation resource profiling and remaining
+release/platform gates retain their separate scopes until verified.

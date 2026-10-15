@@ -480,15 +480,16 @@ fn pair_matches(
     Ok(())
 }
 
-fn reconcile_pair(
+fn check_ordered_pair(
     central: &LinuxJournalDirectory,
     local: &LinuxJournalDirectory,
-    stage: &std::fs::File,
+    stage: &impl rustix::fd::AsFd,
     record: &CopyRecord,
-) -> Result<(), PlatformError> {
+) -> Result<CopyRecord, PlatformError> {
     let previous = local.read_copy_record("copy-journal")?;
     if previous == *record {
-        return pair_matches(central, local, record);
+        pair_matches(central, local, record)?;
+        return Ok(previous);
     }
     if original_record(&previous) != original_record(record) {
         return Err(refusal(
@@ -523,8 +524,30 @@ fn reconcile_pair(
             "Cleanup journal pair changed before reconciliation",
         ));
     }
-    local.persist_copy_record(record).map_err(journal_error)?;
+    Ok(previous)
+}
+
+fn reconcile_pair(
+    central: &LinuxJournalDirectory,
+    local: &LinuxJournalDirectory,
+    stage: &std::fs::File,
+    record: &CopyRecord,
+) -> Result<(), PlatformError> {
+    if check_ordered_pair(central, local, stage, record)? != *record {
+        local.persist_copy_record(record).map_err(journal_error)?;
+    }
     pair_matches(central, local, record)
+}
+
+pub(super) fn validate_observed_pair(
+    stage: &impl rustix::fd::AsFd,
+    record: &CopyRecord,
+) -> Result<(), PlatformError> {
+    let root = configured_root()?;
+    let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
+    let local = LinuxJournalDirectory::for_copy_stage(stage).map_err(journal_error)?;
+    check_ordered_pair(&central, &local, stage, record)?;
+    Ok(())
 }
 
 fn mutation_boundary(
@@ -1113,7 +1136,7 @@ fn refusal(message: &str) -> PlatformError {
     PlatformError::CopyCleanupRefused(message.into())
 }
 
-fn registry_records(
+pub(super) fn registry_records(
     central: &LinuxJournalDirectory,
 ) -> Result<BTreeMap<String, CopyRecord>, PlatformError> {
     central
@@ -1184,13 +1207,10 @@ fn validate_retained(
     record.validate_opened_directory(&stage, false)?;
     let local = LinuxJournalDirectory::for_copy_stage(&stage).map_err(journal_error)?;
     let _lock = local.try_lock_recovery().map_err(journal_error)?;
-    let id = record.transaction_id()?;
-    if local.read_copy_record("copy-journal")? != *record
-        || central.read_copy_record(&format!("{id}.journal"))? != *record
-    {
-        return Err(refusal(
-            "Copy journals differ or changed during cleanup admission",
-        ));
+    if record.cleanup.is_some() {
+        check_ordered_pair(central, &local, &stage, record)?;
+    } else {
+        pair_matches(central, &local, record)?;
     }
     let mut directory = rustix::fs::Dir::read_from(&stage).map_err(journal_error)?;
     while let Some(entry) = directory.read() {
@@ -1223,12 +1243,10 @@ fn validate_retained(
     record.validate_namespace()?;
     record.validate_opened_directory(&parent, true)?;
     record.validate_opened_directory(&stage, false)?;
-    if local.read_copy_record("copy-journal")? != *record
-        || central.read_copy_record(&format!("{id}.journal"))? != *record
-    {
-        return Err(refusal(
-            "Copy journals changed while retained contents were checked",
-        ));
+    if record.cleanup.is_some() {
+        check_ordered_pair(central, &local, &stage, record)?;
+    } else {
+        pair_matches(central, &local, record)?;
     }
     Ok(())
 }
@@ -1271,6 +1289,122 @@ mod tests {
 
     pub(super) fn stage(receipt: &crate::PathMoveUndoReceipt) -> PathBuf {
         receipt.before_path().parent().unwrap().to_path_buf()
+    }
+
+    #[test]
+    fn cleanup_observation_never_reads_selected_publication_or_unrelated_payloads() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        std::fs::create_dir(root.path().join("destination")).unwrap();
+        std::fs::write(root.path().join("destination/item"), "old selected").unwrap();
+        let receipt = copy(root.path(), "selected");
+        let id = stage(&receipt)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .strip_prefix(".ottrin-txn-")
+            .unwrap()
+            .to_owned();
+        let unrelated = root.path().join("unrelated");
+        std::fs::create_dir_all(unrelated.join("destination")).unwrap();
+        let large = vec![b'x'; 4 * 1024 * 1024];
+        std::fs::write(unrelated.join("destination/item"), &large).unwrap();
+        let other = copy(&unrelated, "other");
+        std::fs::write(root.path().join("destination/item"), &large).unwrap();
+        let read_chars = || {
+            std::fs::read_to_string("/proc/thread-self/io")
+                .unwrap()
+                .lines()
+                .find_map(|line| {
+                    line.strip_prefix("rchar: ")
+                        .map(|n| n.parse::<u64>().unwrap())
+                })
+                .unwrap()
+        };
+        let before = read_chars();
+        let observed = super::super::observe_cleanup(&[id]).unwrap();
+        assert_eq!(observed[0].evidence, CopyRecoveryEvidence::CleanupReady);
+        assert!(super::super::restore_plan(&observed).is_err());
+        let mut plan = plan_cleanup(&observed).unwrap();
+        assert!(
+            read_chars() - before < 1024 * 1024,
+            "Cleanup observation read unrelated 4MiB content"
+        );
+        while plan.reclaim_payload_next().unwrap() {}
+        plan.begin_finalization().unwrap().finish().unwrap();
+        assert_eq!(
+            std::fs::read(root.path().join("destination/item")).unwrap(),
+            large
+        );
+        assert_eq!(std::fs::read(other.before_path()).unwrap(), large);
+    }
+
+    #[test]
+    fn explicit_cleanup_readmission_recovers_a_mixed_batch_with_one_sided_intent() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = Registry::new(root.path());
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let sources = ["alpha", "beta"].map(|name| {
+            std::fs::write(destination.join(name), format!("old {name}")).unwrap();
+            let path = root.path().join(name);
+            std::fs::write(&path, format!("new {name}")).unwrap();
+            path
+        });
+        let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &sources,
+            &destination,
+            ConflictAction::Overwrite,
+        );
+        assert!(batch.error.is_none());
+        let captured = statuses(root.path());
+        let mut plan = plan_cleanup(&captured).unwrap();
+        let first = plan.records.values().next().unwrap();
+        let local = first.transaction.decode().unwrap().join("copy-journal");
+        let old = std::fs::read(&local).unwrap();
+        let ids = plan
+            .transaction_ids()
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        assert!(
+            plan.reclaim_payload_next_with_hook(&mut |point| {
+                if point == CleanupPoint::IntentDurable {
+                    std::fs::write(&local, &old).unwrap();
+                    return Err(refusal("interrupted before local intent"));
+                }
+                Ok(())
+            })
+            .is_err()
+        );
+        drop(plan);
+        let observed = super::super::observe_cleanup(&ids).unwrap();
+        assert!(
+            observed
+                .iter()
+                .any(|entry| entry.phase == Some(CopyPhase::Published))
+        );
+        assert!(
+            observed
+                .iter()
+                .any(|entry| entry.phase == Some(CopyPhase::CleanupPending))
+        );
+        let mut resumed = plan_cleanup(&observed).unwrap();
+        assert_eq!(
+            std::fs::read(&local).unwrap(),
+            old,
+            "Observation/admission wrote the lagging journal"
+        );
+        while resumed.reclaim_payload_next().unwrap() {}
+        resumed.begin_finalization().unwrap().finish().unwrap();
+        assert!(statuses(root.path()).is_empty());
+        for name in ["alpha", "beta"] {
+            assert_eq!(
+                std::fs::read(destination.join(name)).unwrap(),
+                format!("new {name}").as_bytes()
+            );
+        }
     }
 
     #[test]

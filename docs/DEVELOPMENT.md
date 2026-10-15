@@ -757,9 +757,19 @@ targets. An original in-memory plan can confirm all paths are absent and retry t
 last directory sync if the manifest unlink succeeded before an error. IDs alone
 cannot reconstruct a missing manifest to delete surviving data.
 
-Activity background scheduling, cleanup/retry presentation and Clear/history
-eviction integration remain required. No UI cleanup or automatic expiry is
-currently enabled, and no package is promoted by these platform checks. Torn or
+Activity routes explicit per-entry and bulk Clear requests through a background
+Copy cleanup worker after confirmation. The UI holds transaction ownership until
+the worker confirms durable finalization, blocks Undo while cleanup runs, shows
+progress/errors and retains failed entries for retry. Cold discovery groups a
+partial finalization by its manifest, including when some canonical journals are
+already absent. Stale in-flight Activity snapshots are invalidated after cleanup.
+Cleanup-specific observation reads only selected retained payloads and registry
+metadata; its evidence cannot restore Undo. A mixed batch with one lagging local
+intent is admitted read-only and reconciled only by the mutation worker.
+
+Automatic expiry remains disabled. History still keeps other owned recovery
+receipts; an explicit Clear releases Copy ownership only after the complete
+cleanup lifecycle succeeds. Source worker checks do not promote a package. Torn or
 unowned manifest writes conservatively retain data for review; the interruption
 matrix does not establish arbitrary power-loss durability. Prior exact AppImage
 directory-ownership acceptance remains at its original scope in
