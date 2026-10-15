@@ -1,0 +1,101 @@
+{
+  "uninstalled": true,
+  "gui_exit": 0,
+  "preference_hash_before": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "scope": "Installed NSIS; standard interactive user; bundled OpenGL",
+  "preference_hash_restored": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "source_hash_after": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "installer_sha256": "78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d",
+  "before": {
+    "instance": "{A93B9651-0A6D-4020-AA58-35D66E178569}",
+    "pid": 6392
+  },
+  "after_close_query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\after-window-closed-current.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "after-window-closed-current.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 34,
+        "modified_unix_secs": 1792025405,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "view_preference": "Miller",
+  "closed": {
+    "instance": "{A93B9651-0A6D-4020-AA58-35D66E178569}",
+    "pid": 6392
+  },
+  "title": "Ottrin",
+  "open": {
+    "instance": "{A93B9651-0A6D-4020-AA58-35D66E178569}",
+    "pid": 6392
+  },
+  "source_hash_before": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "after_watch": {
+    "instance": "{A93B9651-0A6D-4020-AA58-35D66E178569}",
+    "pid": 6392
+  },
+  "app_sha256": "9ae08a2adab26599579aae6561031fb0c3a1e35f2bf02155a93c69372fff3660",
+  "preference_hash_after_gui": "4469A397DB68FC16F02A380F5405578A4747690447315B862DB1A13C333C69E9",
+  "search": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 27,
+        "modified_unix_secs": 1792013981,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "gui_pid": 6988,
+  "status": "pass",
+  "graphics_modules": [
+    {
+      "ModuleName": "opengl32.dll",
+      "FileName": "C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll"
+    },
+    {
+      "ModuleName": "libgallium_wgl.dll",
+      "FileName": "C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll"
+    }
+  ],
+  "after_close_visibility_ms": 1179.0691000000002,
+  "daemon_sha256": "780f23ff36951a12058111efed3d4b51decd64a01d3361bfb9275b50d5cbb624",
+  "source_revision": "4a0c13b084080fccf18d839bbd43bac80b66a399",
+  "visual_search_review": "One visible search row and 1 result label; separate file preview card is not a second result",
+  "visual_theme_acceptance": "Not accepted: dark panels contain default light input/sort controls; source repair in this checkpoint needs rebuilt native package acceptance",
+  "screenshots": [
+    "windows-installed-current-opened.png",
+    "windows-installed-current-search.png"
+  ],
+  "limits": [
+    "Bundled Mesa/OpenGL on isolated guest; not native hardware GPU acceptance",
+    "QA preferences were changed by normal GUI persistence, then restored byte-for-byte by the actor; source fixture unchanged",
+    "One fixture root; no broad whole-home search/performance or full visual/theme acceptance"
+  ],
+  "cleanup": {
+    "actor_exit": 0,
+    "owned_app_index_tasks_and_guest_fixtures_removed": true,
+    "no_ottrin_processes": true,
+    "temporary_signin_and_plaintext_credential_removed": true,
+    "overlay_and_backing_guests": "shut off",
+    "backing_content_mtime_unchanged": true,
+    "backing_content_mtime": "1792007729.962647502"
+  }
+}

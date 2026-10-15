@@ -1,0 +1,27 @@
+{
+  "source_base": "12fb69a",
+  "scope": "Source/rendered egui frame regression; native fixed-package acceptance remains pending",
+  "native_red_screenshot": "windows-installed-current-search.png",
+  "red": {
+    "command": "cargo test -p ottrin-ui themed_controls_keep_the_resolved_palette_when_system_appearance_changes --lib -- --nocapture",
+    "exit": 101,
+    "observed_input_fill": "#FFFFFFFF",
+    "expected_resolved_dark_input_fill": "#313842FF"
+  },
+  "green": {
+    "focused_regression": "1 passed",
+    "ui_suite": "365 passed; 1 ignored",
+    "linux_ui_all_targets_strict_clippy": "pass",
+    "windows_ui_all_targets_strict_clippy": "pass",
+    "fmt_and_diff_check": "pass"
+  },
+  "regression_covers": [
+    "Resolved Light and Dark palettes survive later Light/Dark OS appearance events",
+    "Real TextEdit background shape paints the resolved surface",
+    "Inactive controls retain the same resolved surface",
+    "Raw system_theme remains observable for Ottrin System-mode resolution"
+  ],
+  "cause": "Context.set_visuals updates only the active egui style. Its default System theme preference later selected an uncustomized style while Ottrin manually painted the resolved palette.",
+  "repair": "Select the style matching the resolved palette before applying visuals and shared spacing. System mode remains resolved by Ottrin from raw OS appearance.",
+  "delivery": "No fixed artifact published by this source checkpoint"
+}

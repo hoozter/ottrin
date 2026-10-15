@@ -4089,6 +4089,14 @@ impl OttrinApp {
         visuals.widgets.open.fg_stroke = Stroke::new(1.0, control_text);
         visuals.selection.bg_fill = c.selected_bg;
         visuals.selection.stroke = Stroke::new(1.0, c.text);
+        // Ottrin resolves System mode and editor previews into this palette.
+        // Keep egui on its matching style when a later OS appearance event arrives.
+        // Raw system_theme remains available to our own mode resolution.
+        ctx.set_theme(if visuals.dark_mode {
+            egui::Theme::Dark
+        } else {
+            egui::Theme::Light
+        });
         ctx.set_visuals(visuals);
         ctx.style_mut(|style| {
             let mut scroll = egui::style::ScrollStyle::solid();

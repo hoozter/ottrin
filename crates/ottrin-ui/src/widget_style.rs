@@ -549,6 +549,50 @@ mod tests {
     }
 
     #[test]
+    fn themed_controls_keep_the_resolved_palette_when_system_appearance_changes() {
+        for dark in [true, false] {
+            let ctx = Context::default();
+            let mut app = OttrinApp::default();
+            app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+            app.apply_theme_to_ctx(&ctx);
+            let c = app.colors;
+            for system_theme in [egui::Theme::Light, egui::Theme::Dark, egui::Theme::Light] {
+                let mut input_rect = Rect::NOTHING;
+                let mut text = String::from("Search");
+                let output = ctx.run(
+                    egui::RawInput {
+                        system_theme: Some(system_theme),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            assert_eq!(ui.visuals().text_edit_bg_color(), c.panel_raised);
+                            assert_eq!(ui.visuals().widgets.inactive.bg_fill, c.panel_raised);
+                            input_rect = ui
+                                .add(egui::TextEdit::singleline(&mut text).themed(&c))
+                                .rect;
+                            egui::ComboBox::from_id_salt("theme-regression-sort")
+                                .selected_text("Name")
+                                .show_ui(ui, |ui| {
+                                    ui.label("Name");
+                                });
+                        });
+                    },
+                );
+                assert!(
+                    output.shapes.iter().any(|shape| matches!(
+                        &shape.shape,
+                        Shape::Rect(rect) if rect.rect.contains_rect(input_rect)
+                            && rect.fill == c.panel_raised
+                    )),
+                    "the actual input frame must paint the resolved theme surface"
+                );
+                assert_eq!(ctx.system_theme(), Some(system_theme));
+            }
+        }
+    }
+
+    #[test]
     fn menu_rows_align_labels_and_icons_across_states_themes_and_text_scales() {
         for dark in [true, false] {
             for scale in [1.0, 1.35] {

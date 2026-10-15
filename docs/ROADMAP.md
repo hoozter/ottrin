@@ -2200,3 +2200,39 @@ The owned guest was shut down with backing content mtime unchanged.
 This closes the current NSIS installed-daemon reboot/login check, not MSI reboot,
 main-window close lifetime, GUI search or whole-home performance. Those checks,
 MSI registration rollback and the broader roadmap remain open.
+
+
+### Installed Windows GUI index lifetime and OS-theme defect — 2026-10-15
+
+The current `4a0c13b` NSIS package passes a standard interactive-user GUI lifetime
+check through the installed path. Before opening, while open, after normal GUI
+exit and after a subsequent query, the scheduled index daemon retains PID 6392
+and the same task InstanceGuid. Ctrl+F search visibly shows one result row and a
+separate preview card; the CLI independently confirms one fixture. Closing the
+window exits zero. A file created afterward is found by that same daemon in
+1,179.069 ms, demonstrating continued watching rather than client-triggered
+replacement. Installed GUI and daemon hashes match the published package. Mesa
+modules are recorded; native hardware graphics are not accepted. QA preferences
+change through normal GUI persistence and are then restored byte-for-byte by the
+actor. The source fixture is unchanged. Uninstall removes the app/index/task;
+owned actor, guest fixtures, one-shot sign-in and plaintext credential are removed.
+The owned VM is shut off with backing content mtime unchanged. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_INSTALLED_GUI_INDEX_LIFETIME_ACCEPTANCE.json`.
+
+Visual inspection also found default white input/sort controls inside the dark
+palette. This is a real failed theme-coherence gate, not accepted by the lifetime
+result. A rendered-frame regression reproduces the white `#FFFFFFFF` input
+instead of Ottrin's `#313842FF` when an OS Light event arrives after palette setup.
+`Context::set_visuals` writes only the active egui style, while egui's default
+System preference can later select the untouched style. Ottrin now selects the
+style matching its resolved palette before applying colors and spacing. Its own
+System-mode resolution still observes raw OS appearance, as the regression checks.
+
+The regression passes for both palettes across OS Light/Dark transitions, including
+the real input background shape and control surfaces. All 365 regular UI tests
+pass (one ignored), along with strict Linux and Windows UI all-target Clippy,
+formatting and diff checks. Source receipt: `THEME_OS_TRANSITION_SOURCE_ACCEPTANCE.json`.
+Rebuild and inspect the corrected native packages before claiming this delivered;
+the published `4a0c13b` artifacts still contain the visual defect. This checkpoint
+closes focused installed-GUI daemon reuse/lifetime, not appearance coherence,
+MSI reboot/rollback or the remaining roadmap.

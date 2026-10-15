@@ -36,7 +36,9 @@
     "cleanup_stops_daemon_and_removes_private_database": true,
     "nsis_native_lifecycle": "pass; WINDOWS_NSIS_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
     "msi_native_lifecycle": "pass; WINDOWS_MSI_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
-    "nsis_real_reboot_login_startup": "pass; WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json"
+    "nsis_real_reboot_login_startup": "pass; WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json",
+    "installed_gui_daemon_lifetime": "pass; WINDOWS_INSTALLED_GUI_INDEX_LIFETIME_ACCEPTANCE.json",
+    "installed_gui_theme_coherence": "failed visual inspection; source repair validated, rebuilt exact-package acceptance pending"
   },
   "evidence": [
     "WINDOWS_OFFLINE_CANDIDATE_PAYLOAD.json",
@@ -45,7 +47,8 @@
     "WINDOWS_NSIS_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
     "WINDOWS_MSI_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
     "WINDOWS_OFFLINE_INSTALLER_CLEANUP.json",
-    "WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json"
+    "WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json",
+    "WINDOWS_INSTALLED_GUI_INDEX_LIFETIME_ACCEPTANCE.json"
   ],
   "cleanup": {
     "task_exit": 0,
