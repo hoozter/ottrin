@@ -1,0 +1,75 @@
+{
+    "status":  "pass",
+    "actions":  {
+                    "InstallBackgroundIndex":  {
+                                                   "target":  "index service-install",
+                                                   "source":  "MainExecutable",
+                                                   "type":  1042
+                                               },
+                    "PrepareBackgroundIndex":  {
+                                                   "target":  "--installer-transaction Prepare \"[TempFolder]OttrinIndexRollback-[ProductCode].json\"",
+                                                   "source":  "IndexLifecycleController",
+                                                   "type":  1026
+                                               },
+                    "SnapshotRemovedIndex":  {
+                                                 "target":  "--installer-transaction Snapshot \"[TempFolder]OttrinIndexRollback-[ProductCode].json\"",
+                                                 "source":  "IndexLifecycleController",
+                                                 "type":  1026
+                                             },
+                    "CleanupBeforeUninstall":  {
+                                                   "target":  "--uninstall",
+                                                   "source":  "MainExecutable",
+                                                   "type":  1042
+                                               },
+                    "RollbackRemovedIndex":  {
+                                                 "target":  "--installer-transaction Rollback \"[TempFolder]OttrinIndexRollback-[ProductCode].json\"",
+                                                 "source":  "IndexLifecycleController",
+                                                 "type":  1282
+                                             },
+                    "CommitBackgroundIndex":  {
+                                                  "target":  "--installer-transaction Commit \"[TempFolder]OttrinIndexRollback-[ProductCode].json\"",
+                                                  "source":  "IndexLifecycleController",
+                                                  "type":  1538
+                                              },
+                    "RollbackBackgroundIndex":  {
+                                                    "target":  "--installer-transaction Rollback \"[TempFolder]OttrinIndexRollback-[ProductCode].json\"",
+                                                    "source":  "IndexLifecycleController",
+                                                    "type":  1282
+                                                }
+                },
+    "sequence":  {
+                     "RegisterProduct":  6100,
+                     "LaunchConditions":  100,
+                     "PrepareBackgroundIndex":  1502,
+                     "ProcessComponents":  1600,
+                     "InstallFinalize":  6600,
+                     "CreateFolders":  3700,
+                     "CostInitialize":  800,
+                     "RollbackBackgroundIndex":  1501,
+                     "InstallExecute":  6500,
+                     "SnapshotRemovedIndex":  1504,
+                     "RollbackRemovedIndex":  1503,
+                     "RemoveFiles":  3500,
+                     "InstallValidate":  1400,
+                     "PublishFeatures":  6300,
+                     "InstallInitialize":  1500,
+                     "CleanupBeforeUninstall":  1505,
+                     "RemoveFolders":  3600,
+                     "FileCost":  900,
+                     "RemoveShortcuts":  3200,
+                     "RemoveRegistryValues":  2600,
+                     "ValidateProductID":  700,
+                     "InstallBackgroundIndex":  4001,
+                     "CommitBackgroundIndex":  6599,
+                     "WriteRegistryValues":  5000,
+                     "PublishProduct":  6400,
+                     "RegisterUser":  6000,
+                     "RemoveExistingProducts":  6501,
+                     "UnpublishFeatures":  1800,
+                     "FindRelatedProducts":  25,
+                     "CostFinalize":  1000,
+                     "CreateShortcuts":  4500,
+                     "MigrateFeatureStates":  1200,
+                     "InstallFiles":  4000
+                 }
+}

@@ -1,0 +1,24 @@
+{
+    "preference_hash":  "EDEC0B676147FF9F4AE16B951767633B0E8E1E0736ADD5D1964BD91BF1D0D756",
+    "database_creation_before":  639276424790927136,
+    "scope":  "Source-built transaction controller; published410 MSI baseline; ordinary interactive user",
+    "phase":  "upgraded-running",
+    "after":  {
+                  "instance":  "{85A20AC7-53AE-4101-8DB0-1F092495B7FC}",
+                  "pid":  600
+              },
+    "payload_files":  51,
+    "before":  {
+                   "instance":  "{E1F79DC7-245B-4845-8836-983EDC0D84B4}",
+                   "pid":  7288
+               },
+    "new_product":  "{74EA8D75-B2D2-407D-9497-82C03E21E475}",
+    "before_security":  "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:AI(A;ID;0x1f019f;;;BA)(A;ID;0x1f019f;;;SY)(A;ID;FA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)",
+    "database_creation_after":  639276424790927136,
+    "installer_sha256":  "a7ba85534614219a1c666d2beb16c74a92dec534fa9e9846430d576fd5828c37",
+    "upgrade_exit":  0,
+    "status":  "pass",
+    "old_product":  "{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}",
+    "before_enabled":  true,
+    "source_hash":  "2085FCCC824C317A745F24FDAF4137F34065A5D2424B764AC710CC0C089FF766"
+}

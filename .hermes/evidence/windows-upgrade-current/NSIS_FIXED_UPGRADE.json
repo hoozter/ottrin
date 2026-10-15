@@ -1,0 +1,37 @@
+{
+    "installer_sha256":  "c4dfe9a4d3998dd7cdd300ddd81d4cf800fad7421d96e2007670e78b8023cd51",
+    "preference_hash":  "EDEC0B676147FF9F4AE16B951767633B0E8E1E0736ADD5D1964BD91BF1D0D756",
+    "after":  {
+                  "instance":  "{A66B3408-FA87-454A-B33A-81A1536F3E77}",
+                  "pid":  5660
+              },
+    "payload_files":  51,
+    "before":  {
+                   "instance":  "{E4307569-5890-40B4-98EB-21F1EE5FFFC3}",
+                   "pid":  6312
+               },
+    "phase":  "accepted",
+    "before_security":  "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:AI(A;ID;0x1f019f;;;BA)(A;ID;0x1f019f;;;SY)(A;ID;FA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)",
+    "scope":  "Source-built transaction controller; published410 MSI baseline; ordinary interactive user",
+    "runtime_cases":  [
+                          {
+                              "status":  "pass",
+                              "running":  true,
+                              "enabled":  false
+                          },
+                          {
+                              "status":  "pass",
+                              "running":  false,
+                              "enabled":  true
+                          },
+                          {
+                              "status":  "pass",
+                              "running":  false,
+                              "enabled":  false
+                          }
+                      ],
+    "status":  "pass",
+    "setup_exit":  0,
+    "before_enabled":  true,
+    "source_hash":  "2085FCCC824C317A745F24FDAF4137F34065A5D2424B764AC710CC0C089FF766"
+}

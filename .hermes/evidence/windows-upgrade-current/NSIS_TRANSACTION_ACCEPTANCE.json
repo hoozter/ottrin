@@ -1,0 +1,26 @@
+{
+  "status": "native prototype checks passed",
+  "baseline_revision": "41027a0",
+  "payload_revision": "651d3e9",
+  "controller_sha256": "08cc56bd301a9a34d7d09ac2f0c686601a17d4058afb544a63eef98b79fe4214",
+  "normal_upgrade": "NSIS_FIXED_UPGRADE.json",
+  "failure_recovery": "NSIS_FAILURE_RECOVERY.json",
+  "rejected_original_update": "NSIS_UPGRADE_REJECTED.json",
+  "raw_scope_label_correction": "The NSIS actor templates inherited an MSI scope string. These three NSIS results execute baseline-setup.exe/fixed-setup.exe/failure-setup.exe, not MSI. MSI results are independently bound by installer_sha256.",
+  "checks": [
+    "Native original NSIS returned success with old daemon bytes",
+    "Corrected setup replaces all51 files and restarts daemon without replacing saved database",
+    "Enabled and disabled login state and running/idle intent preserved",
+    "Forced NSIS Abort after quiescence returns73 and actual .onInstFailed restores exact original XML/security/running state without payload changes",
+    "Invalid journal returns1 and preserves journal/payload/live worker",
+    "Fresh prototype install and uninstall preserve preferences/source",
+    "Current-source global mutex refuses concurrent setup before writes; current-source fresh install and uninstall pass"
+  ],
+  "limits": [
+    "Prototype setups contain verified651 payload and dirty installer source; not final published artifacts",
+    "Task recovery does not implement full payload rollback",
+    "MSI failed-transaction product registration rollback remains open",
+    "First failure fixture rejected because it expected a running task after a disabled-idle case; corrected fixture explicitly enables and starts it"
+  ],
+  "lock_and_current_source_fresh": "NSIS_LOCK_AND_FRESH.json"
+}

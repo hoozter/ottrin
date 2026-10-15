@@ -1,0 +1,21 @@
+{
+    "invalid_refusal_exit":  1,
+    "fixed_setup_sha256":  "c4dfe9a4d3998dd7cdd300ddd81d4cf800fad7421d96e2007670e78b8023cd51",
+    "fresh":  {
+                  "instance":  "{9F83CCAA-A8E0-4554-8852-3FFBA483B393}",
+                  "pid":  2860
+              },
+    "phase":  "uninstalled",
+    "scope":  "Source-built transaction controller; published410 MSI baseline; ordinary interactive user",
+    "before":  {
+                   "instance":  "{41370AEA-18E7-4A05-98E0-27C0D9215423}",
+                   "pid":  4544
+               },
+    "failure_exit":  73,
+    "status":  "pass",
+    "after":  {
+                  "instance":  "{ABA2D599-5622-4272-B44B-014BC93677C3}",
+                  "pid":  4004
+              },
+    "failure_setup_sha256":  "dcbe7b2fec657870ebe4cc2d548b506b0cc4a368a7e88155654b6427cb3144d0"
+}

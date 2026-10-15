@@ -1,0 +1,7 @@
+{
+    "phase":  "prepare",
+    "status":  "fail",
+    "scope":  "Source-built transaction controller; published410 MSI baseline; ordinary interactive user",
+    "error":  "Expected one running index task",
+    "stack":  "at Assert, C:\\OttrinDesktopQA\\nsis-failure-actor.ps1: line 4\r\nat Live, C:\\OttrinDesktopQA\\nsis-failure-actor.ps1: line 13\r\nat \u003cScriptBlock\u003e, C:\\OttrinDesktopQA\\nsis-failure-actor.ps1: line 25"
+}

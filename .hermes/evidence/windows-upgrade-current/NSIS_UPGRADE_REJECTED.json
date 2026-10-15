@@ -1,0 +1,19 @@
+{
+    "expected_daemon_sha256":  "08cc56bd301a9a34d7d09ac2f0c686601a17d4058afb544a63eef98b79fe4214",
+    "old_daemon_sha256":  "8e7debca5fbb2730a9cf163380d570f1b8c9beb89e60fd8af6e775258ae7fd38",
+    "installer_sha256":  "956189f51c16de5a09434deda22d7113234791be286421cc9fe04c72d644b75e",
+    "setup_exit":  0,
+    "daemon_replaced":  false,
+    "actual_daemon_sha256":  "8e7debca5fbb2730a9cf163380d570f1b8c9beb89e60fd8af6e775258ae7fd38",
+    "phase":  "observed",
+    "scope":  "Source-built transaction controller; published410 MSI baseline; ordinary interactive user",
+    "before":  {
+                   "instance":  "{77721745-0F00-43B8-AF9C-A55BB4B0EDBF}",
+                   "pid":  5452
+               },
+    "status":  "observed",
+    "after":  {
+                  "instance":  "{821A9C93-D5A5-4FEE-AC54-B267B4546CA0}",
+                  "pid":  4244
+              }
+}

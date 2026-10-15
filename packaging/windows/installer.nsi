@@ -7,6 +7,9 @@ RequestExecutionLevel user
 
 Var CleanupAppHandle
 Var CleanupUninstallerHandle
+Var IndexTransactionActive
+Var IndexTransactionSnapshot
+Var InstallerMutex
 
 !ifndef VERSION
   !define VERSION "0.1.0"
@@ -24,6 +27,7 @@ SetCompressor /SOLID lzma
 InstallDir "$LOCALAPPDATA\Programs\Ottrin"
 
 !define MUI_ABORTWARNING
+!define MUI_CUSTOMFUNCTION_ABORT RestoreIndexTransaction
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\ottrin.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "Launch Ottrin"
 
@@ -37,10 +41,43 @@ InstallDir "$LOCALAPPDATA\Programs\Ottrin"
 
 !insertmacro MUI_LANGUAGE "English"
 
+Function .onInit
+  ; A second setup must not consume an active transaction's recovery journal.
+  ; Keep this handle until installer exit; Windows releases it on every exit path.
+  System::Call 'kernel32::CreateMutexW(p 0, i 0, w "Global\OttrinInstaller") p.r0 ?e'
+  Pop $1
+  ${If} $0 == 0
+  ${OrIf} $1 == 183
+    MessageBox MB_OK|MB_ICONSTOP "Another Ottrin installer is running, or setup could not acquire its installation lock. Finish the other setup and retry." /SD IDOK
+    SetErrorLevel 1
+    Abort
+  ${EndIf}
+  StrCpy $InstallerMutex $0
+FunctionEnd
+
 Section "Ottrin" SEC_MAIN
   SetShellVarContext current
+  ; This controller lives outside the payload being replaced. Its journal stays
+  ; in the user data directory if restoration fails, rather than disappearing
+  ; when NSIS removes $PLUGINSDIR.
+  InitPluginsDir
+  SetOutPath "$PLUGINSDIR"
+  File /oname=index-controller.exe "${STAGE}\bin\ottrin-indexd.exe"
+  CreateDirectory "$LOCALAPPDATA\ottrin"
+  StrCpy $IndexTransactionSnapshot "$LOCALAPPDATA\ottrin\installer-index-transaction.json"
+  StrCpy $IndexTransactionActive 1
+  ClearErrors
+  ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Prepare "$IndexTransactionSnapshot"' $0
+  IfErrors index_prepare_failed
+  ${If} $0 != 0
+    Goto index_prepare_failed
+  ${EndIf}
+
   SetOutPath "$INSTDIR"
+  ClearErrors
   File /r "${STAGE}\*.*"
+
+  IfErrors index_payload_failed
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   CreateDirectory "$SMPROGRAMS\Ottrin"
@@ -60,15 +97,58 @@ Section "Ottrin" SEC_MAIN
   ExecWait '"$INSTDIR\bin\ottrin.exe" index service-install' $0
   IfErrors background_integration_launch_failed
   ${If} $0 != 0
-    MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background index service could not be enabled. You can retry from Services settings." /SD IDOK
+    Goto background_integration_launch_failed
   ${EndIf}
+  ClearErrors
+  ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Commit "$IndexTransactionSnapshot"' $0
+  IfErrors index_commit_failed
+  ${If} $0 != 0
+    Goto index_commit_failed
+  ${EndIf}
+  StrCpy $IndexTransactionActive 0
   Goto background_integration_done
 
+index_prepare_failed:
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not safely stop background indexing. Application files have not been replaced. Close Ottrin and retry setup." /SD IDOK
+  SetErrorLevel 1
+  Abort
+
+index_payload_failed:
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not replace all application files. Setup is incomplete; close Ottrin and retry this installer." /SD IDOK
+  SetErrorLevel 1
+  Abort
+
 background_integration_launch_failed:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background index service could not be enabled. You can retry from Services settings." /SD IDOK
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin was installed, but its background index service could not be enabled. You can retry from Services settings. Setup will restore the previous task configuration where possible." /SD IDOK
+  SetErrorLevel 1
+  Abort
+
+index_commit_failed:
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not restore the previous indexing state after setup. The transaction record is retained at $IndexTransactionSnapshot if recovery fails. Retry setup or use Services settings." /SD IDOK
+  SetErrorLevel 1
+  Abort
 
 background_integration_done:
 SectionEnd
+
+Function RestoreIndexTransaction
+  StrCmp $IndexTransactionActive 1 0 restore_index_done
+  ClearErrors
+  ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Rollback "$IndexTransactionSnapshot"' $0
+  IfErrors restore_index_failed
+  ${If} $0 != 0
+    Goto restore_index_failed
+  ${EndIf}
+  StrCpy $IndexTransactionActive 0
+  Goto restore_index_done
+restore_index_failed:
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not restore its previous background index task. The recovery record remains at $IndexTransactionSnapshot. Application file replacement may be incomplete; retry setup before opening Ottrin." /SD IDOK
+restore_index_done:
+FunctionEnd
+
+Function .onInstFailed
+  Call RestoreIndexTransaction
+FunctionEnd
 
 Section "Uninstall"
   SetShellVarContext current

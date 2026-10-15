@@ -1,0 +1,11 @@
+{
+    "installer_sha256":  "49c4e36f8edb6bd9156f73b4ff6ca460cdb91343c948fb000283f2d9b8930f4a",
+    "lock_refusal_exit":  1,
+    "phase":  "uninstalled",
+    "scope":  "Native NSIS current-source global lock and fresh lifecycle; ordinary interactive user",
+    "status":  "pass",
+    "live":  {
+                 "instance":  "{9879EF2F-83C5-470C-82DE-7EB7AA67456F}",
+                 "pid":  4160
+             }
+}

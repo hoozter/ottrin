@@ -742,3 +742,16 @@ Persistent Windows daemon launches must inherit no caller handles. Redirecting o
 Windows root-window startup uses the native primary-monitor work area, excluding taskbars, and converts its physical coordinates using the current system DPI after Winit establishes awareness. The initial viewport hook fits requested/minimum size and centers a fresh main window; explicit caller positions remain intact. Verify real initial bounds against the work area, not only the full monitor size. Wait for the actual titled window during native QA: temporary renderer windows are not UI readiness.
 
 The Windows MSI embeds its current indexd as the transaction controller. Before InstallFiles it captures task metadata/runtime intent and stops the index through the authenticated normal service API. Snapshot/rollback/commit use embedded shared PowerShell source and never depend on installed scripts being available. Successful commit preserves preexisting running/idle intent using the upgraded definition; rollback restores the original definition/security. The controller does not remove saved index/configuration. Engine-driven failure/registration rollback requires separate native verification.
+
+
+NSIS serializes setup instances with a process-lifetime named mutex so a second
+installer cannot consume an active recovery journal. It uses the same embedded
+index transaction implementation as MSI and extracts
+its current indexd into the NSIS private plugin directory, prepares before any
+payload copy, and commits after normal service installation. Installation failure
+and confirmed cancellation restore the previous task through that independent
+controller. Keep failed recovery journals in the user's Ottrin data directory;
+never put the only recovery record in the automatically deleted plugin directory.
+A payload-copy error must return failure rather than silently leave an old daemon
+inside a new installation. Task restoration does not provide whole-payload
+rollback: failed partial replacements require a setup retry and must say so.

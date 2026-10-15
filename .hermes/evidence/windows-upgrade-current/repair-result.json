@@ -1,0 +1,23 @@
+{
+    "after_disabled":  {
+                           "instance":  "{E67CA803-4F10-46AB-91EA-BB56E100BFBF}",
+                           "pid":  3240
+                       },
+    "disabled_repair":  0,
+    "scope":  "Source-built transaction controller; published410 MSI baseline; ordinary interactive user",
+    "preference_hash":  "EDEC0B676147FF9F4AE16B951767633B0E8E1E0736ADD5D1964BD91BF1D0D756",
+    "before_disabled":  {
+                            "instance":  "{85A20AC7-53AE-4101-8DB0-1F092495B7FC}",
+                            "pid":  600
+                        },
+    "phase":  "uninstalled",
+    "idle_repair":  0,
+    "product":  "{74EA8D75-B2D2-407D-9497-82C03E21E475}",
+    "status":  "pass",
+    "before_uninstall":  {
+                             "instance":  "{D3F45B4B-D4CC-491A-9FF2-82682A0B45CE}",
+                             "pid":  1624
+                         },
+    "uninstall_exit":  0,
+    "source_hash":  "2085FCCC824C317A745F24FDAF4137F34065A5D2424B764AC710CC0C089FF766"
+}
