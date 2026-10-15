@@ -1,0 +1,8 @@
+{
+  "cleanup_profile_absent": true,
+  "error": "CLI output remained open after exit: index update --json",
+  "scope": "Exact portable payload native SYSTEM/private-profile CLI, watcher, persistence and bounded quiet-idle acceptance; not interactive-user service or UI acceptance",
+  "stack": "at Assert, <No file>: line 7\r\nat Invoke-App, <No file>: line 12\r\nat <ScriptBlock>, <No file>: line 26",
+  "cleanup_processes_absent": true,
+  "status": "fail"
+}

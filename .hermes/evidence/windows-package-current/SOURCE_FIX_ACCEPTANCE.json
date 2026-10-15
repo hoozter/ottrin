@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "source_sha256": {
+    "crates/ottrin-search/src/windows_daemon.rs": "1344c9eb07eb69d91857c3e3a3ed62fbd7a6db4d4d41d878daadf263b9e3a870",
+    "crates/ottrin-search/tests/windows_daemon.rs": "c85325fc6c75a63f28eee177d7583c66d0e27b2f65473faf994aab230ddcf4cf"
+  },
+  "fixed_binary_sha256": {
+    "ottrin-app.exe": "40747535204d679f13aae8d8c75f05e85ecdb46c171a0b1c3d3b416e1abe2b49",
+    "ottrin-indexd.exe": "93c94567f961e621bb7b8628fd60d5172c94cd3cf49c19ab0989d88d5e37a286"
+  },
+  "baseline": "Clean84c05de portable package fails bounded redirected-output EOF test; original diagnostic unblocks only after its daemon is stopped",
+  "native_regressions": [
+    "caller-owned inheritable file can be deleted while daemon remains responsive",
+    "same regression with space and Unicode executable path",
+    "fixed release CLI cold update returns complete output in 1145 ms",
+    "repeated CLI reuses daemon; watcher discovers new file; restart retains both files",
+    "8 second quiet sample: 62.5ms CPU, 8515584 bytes working set; coarse VM sample, not sustained idle acceptance"
+  ],
+  "checks": [
+    "Windows search all-target strict Clippy",
+    "Windows standalone test cross-build",
+    "Native Windows release app and indexd build"
+  ],
+  "scope": "Source acceptance; fixed archives, standard-user lifecycle, GUI, MSI rollback remain separate",
+  "references": {
+    "win32_inheritance": "https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes",
+    "rust_inheritance": "https://github.com/rust-lang/rust/issues/161158",
+    "msi_rollback_still_open": "https://github.com/wixtoolset/issues/issues/8574"
+  }
+}

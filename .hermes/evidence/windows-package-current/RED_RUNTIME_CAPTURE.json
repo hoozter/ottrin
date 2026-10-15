@@ -1,0 +1,10 @@
+{
+  "cold_update_ms": 115239,
+  "cleanup_profile_absent": true,
+  "cold_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready -+ 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792041548,\n  \"last_scan_completed_unix_secs\": 1792041548,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792041548,\n  \"snapshot_revision\": 1,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "scope": "Exact portable payload native SYSTEM/private-profile CLI, watcher, persistence and bounded quiet-idle acceptance; not interactive-user service or UI acceptance",
+  "stack": "at Assert, <No file>: line 7\r\nat <ScriptBlock>, <No file>: line 27",
+  "cleanup_processes_absent": true,
+  "status": "fail",
+  "error": "Expected one daemon after cold update"
+}

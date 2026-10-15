@@ -90,8 +90,6 @@ pub fn run_windows_search_daemon(config: SearchConfig, store: PathBuf) -> Result
 pub fn ensure_windows_search_daemon(
     executable: &std::path::Path,
 ) -> Result<crate::SearchDaemonClient, String> {
-    use std::os::windows::process::CommandExt;
-    use std::process::{Command, Stdio};
     let client = crate::SearchDaemonClient::connect_default()?;
     if client.ping().is_ok() {
         if same_executable_content(&client.server_executable()?, executable)
@@ -101,15 +99,62 @@ pub fn ensure_windows_search_daemon(
         }
         client.prepare_upgrade_and_wait()?;
     }
-    let mut child = Command::new(executable)
-        .arg("--index-daemon")
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .creation_flags(0x08000000) // CREATE_NO_WINDOW; daemon survives the launching GUI.
-        .spawn()
+    let child = spawn_daemon_without_inherited_handles(executable)
         .map_err(|error| format!("Cannot start the index daemon: {error}"))?;
-    wait_for_daemon(executable, Some(&mut child))
+    wait_for_daemon(executable, Some(&child))
+}
+
+/// A persistent daemon must not retain any caller-owned pipe or file handles.
+/// Command::spawn on stable Rust inherits every inheritable Windows handle even
+/// with null stdio. That keeps captured CLI output open after the CLI exits.
+fn spawn_daemon_without_inherited_handles(
+    executable: &std::path::Path,
+) -> std::io::Result<std::os::windows::io::OwnedHandle> {
+    use std::os::windows::ffi::OsStrExt;
+    use std::os::windows::io::{FromRawHandle, OwnedHandle};
+    use windows_sys::Win32::System::Threading::{
+        CREATE_NO_WINDOW, CreateProcessW, PROCESS_INFORMATION, STARTUPINFOW,
+    };
+    let mut application: Vec<u16> = executable.as_os_str().encode_wide().collect();
+    if application.contains(&0) {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Index daemon executable contains a null character",
+        ));
+    }
+    let mut command = vec![u16::from(b'"')];
+    command.extend_from_slice(&application);
+    command.extend("\" --index-daemon".encode_utf16());
+    command.push(0);
+    application.push(0);
+    // SAFETY: these Win32 structures permit zero initialization; cb is set below.
+    let mut startup: STARTUPINFOW = unsafe { std::mem::zeroed() };
+    startup.cb = std::mem::size_of::<STARTUPINFOW>() as u32;
+    let mut process: PROCESS_INFORMATION = unsafe { std::mem::zeroed() };
+    // SAFETY: buffers/structures remain live, command is writable and terminated.
+    // FALSE inheritance excludes all caller handles. Null environment/directory
+    // preserve the caller's profile and working directory without copying handles.
+    let created = unsafe {
+        CreateProcessW(
+            application.as_ptr(),
+            command.as_mut_ptr(),
+            std::ptr::null(),
+            std::ptr::null(),
+            0,
+            CREATE_NO_WINDOW,
+            std::ptr::null(),
+            std::ptr::null(),
+            &startup,
+            &mut process,
+        )
+    };
+    if created == 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    // SAFETY: successful CreateProcess transfers two distinct owned handles.
+    let thread = unsafe { OwnedHandle::from_raw_handle(process.hThread) };
+    drop(thread);
+    Ok(unsafe { OwnedHandle::from_raw_handle(process.hProcess) })
 }
 
 pub(crate) fn wait_for_windows_search_daemon(
@@ -120,7 +165,7 @@ pub(crate) fn wait_for_windows_search_daemon(
 
 fn wait_for_daemon(
     executable: &std::path::Path,
-    mut child: Option<&mut std::process::Child>,
+    child: Option<&std::os::windows::io::OwnedHandle>,
 ) -> Result<crate::SearchDaemonClient, String> {
     let client = crate::SearchDaemonClient::connect_default()?;
     let deadline = Instant::now() + Duration::from_secs(30);
@@ -134,12 +179,25 @@ fn wait_for_daemon(
             }
             return Err("Another Ottrin installation started a different index daemon".to_string());
         }
-        if let Some(child) = child.as_mut()
-            && let Some(status) = child.try_wait().map_err(|error| error.to_string())?
-        {
-            return Err(format!(
-                "Index daemon exited before becoming ready ({status})"
-            ));
+        if let Some(child) = child {
+            use std::os::windows::io::AsRawHandle;
+            use windows_sys::Win32::Foundation::{WAIT_FAILED, WAIT_OBJECT_0};
+            use windows_sys::Win32::System::Threading::{GetExitCodeProcess, WaitForSingleObject};
+            // SAFETY: the owned process handle stays live; zero timeout never blocks.
+            let state = unsafe { WaitForSingleObject(child.as_raw_handle(), 0) };
+            if state == WAIT_FAILED {
+                return Err(std::io::Error::last_os_error().to_string());
+            }
+            if state == WAIT_OBJECT_0 {
+                let mut code = 0;
+                // SAFETY: handle remains live and the output pointer is writable.
+                if unsafe { GetExitCodeProcess(child.as_raw_handle(), &mut code) } == 0 {
+                    return Err(std::io::Error::last_os_error().to_string());
+                }
+                return Err(format!(
+                    "Index daemon exited before becoming ready ({code})"
+                ));
+            }
         }
         if Instant::now() >= deadline {
             return Err("Ottrin index daemon did not become ready within 30 seconds".to_string());

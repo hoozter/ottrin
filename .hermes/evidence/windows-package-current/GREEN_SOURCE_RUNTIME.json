@@ -1,0 +1,20 @@
+{
+  "daemon_reused_pid": 4408,
+  "cleanup_profile_absent": true,
+  "scope": "Source-built fixed app/indexd over preceding portable runtime, native SYSTEM/private profile; not fixed archive, interactive-user service or UI acceptance",
+  "persisted_restart_files": 2,
+  "cleanup_processes_absent": true,
+  "restart_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 81920,\n  \"detail\": \"Ready -+ 2 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 2,\n  \"last_completed_indexed_items\": 2,\n  \"last_progress_unix_secs\": 1792041936,\n  \"last_scan_completed_unix_secs\": 1792041936,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792041936,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 20632,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "cold_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready -+ 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792041925,\n  \"last_scan_completed_unix_secs\": 1792041925,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792041925,\n  \"snapshot_revision\": 1,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "restarted_pid": 1724,
+  "watcher_added_file": true,
+  "repeated_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready -+ 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792041925,\n  \"last_scan_completed_unix_secs\": 1792041925,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792041925,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "status": "pass",
+  "quiet_idle": {
+    "one_core_percent": 0.7802700588331115,
+    "wall_ms": 8010.0472,
+    "cpu_ms": 62.5,
+    "working_set_bytes": 8515584
+  },
+  "cold_update_ms": 1145
+}

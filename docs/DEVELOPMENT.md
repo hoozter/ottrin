@@ -736,3 +736,5 @@ python3 packaging/tests/verify-linux-native-daemon-ownership.py \
 ```
 
 This requires Linux user/mount namespaces. It preserves the invoking UID, uses private profiles/endpoints, and reaps each owned process before deleting its mount sources. Namespace denial is a failed/unavailable environment gate, not a passing ownership test.
+
+Persistent Windows daemon launches must inherit no caller handles. Redirecting only stdin/stdout/stderr is insufficient: other inheritable pipe/file handles can keep CLI readers open or files locked after the client exits. The native launcher uses `CreateProcessW` with handle inheritance disabled while retaining the caller environment. Verify cold CLI output reaches EOF while the daemon remains alive, and run the standalone inherited-file regression, including paths with spaces and Unicode.

@@ -376,3 +376,94 @@ fn measure_quiet_daemon_cpu(pid: u32) {
         "Quiet daemon consumed noticeable CPU: {percent_of_one_core}%"
     );
 }
+
+#[test]
+#[ignore = "requires an explicit private profile and current standalone indexd executable"]
+fn windows_standalone_spawn_does_not_retain_inheritable_files() {
+    use std::os::windows::ffi::OsStrExt;
+    use std::os::windows::io::{FromRawHandle, OwnedHandle};
+    use windows_sys::Win32::Foundation::{GENERIC_READ, INVALID_HANDLE_VALUE};
+    use windows_sys::Win32::Security::SECURITY_ATTRIBUTES;
+    use windows_sys::Win32::Storage::FileSystem::{
+        CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_ALWAYS,
+    };
+    let executable = PathBuf::from(std::env::var_os("OTTRIN_QA_INDEXD").unwrap());
+    let profile = PathBuf::from(std::env::var_os("OTTRIN_QA_PROFILE").unwrap());
+    assert!(
+        profile
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .starts_with("ottrin-handle-qa-")
+    );
+    assert_eq!(
+        std::env::var_os("APPDATA").map(PathBuf::from),
+        Some(profile.clone())
+    );
+    assert_eq!(
+        std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
+        Some(profile.join("cache"))
+    );
+    assert!(!profile.exists(), "Private fixture must be fresh");
+    fs::create_dir_all(profile.join("ottrin")).unwrap();
+    struct ProfileCleanup(PathBuf);
+    impl Drop for ProfileCleanup {
+        fn drop(&mut self) {
+            fs::remove_dir_all(&self.0).unwrap();
+        }
+    }
+    let _profile = ProfileCleanup(profile.clone());
+    fs::create_dir(profile.join("files")).unwrap();
+    let mut config = ottrin_core::AppConfig::default();
+    config.search.include_roots = vec![profile.join("files")];
+    config.search.use_system_locate = false;
+    config.search.manage_locate_db = false;
+    fs::write(
+        profile.join("ottrin/config.json"),
+        serde_json::to_vec(&config).unwrap(),
+    )
+    .unwrap();
+    struct DaemonCleanup(SearchDaemonClient);
+    impl Drop for DaemonCleanup {
+        fn drop(&mut self) {
+            let _ = self.0.prepare_upgrade_and_wait();
+        }
+    }
+    let _daemon = DaemonCleanup(SearchDaemonClient::connect_default().unwrap());
+    let path = profile.join("caller-owned.lock");
+    let wide: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
+    let attributes = SECURITY_ATTRIBUTES {
+        nLength: std::mem::size_of::<SECURITY_ATTRIBUTES>() as u32,
+        lpSecurityDescriptor: std::ptr::null_mut(),
+        bInheritHandle: 1,
+    };
+    // SAFETY: terminated filename and attributes stay live; no delete sharing
+    // makes any inherited copy observable after the original handle is closed.
+    let raw = unsafe {
+        CreateFileW(
+            wide.as_ptr(),
+            GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            &attributes,
+            OPEN_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            std::ptr::null_mut(),
+        )
+    };
+    assert_ne!(
+        raw,
+        INVALID_HANDLE_VALUE,
+        "{}",
+        std::io::Error::last_os_error()
+    );
+    // SAFETY: successful CreateFile transfers one owned handle.
+    let caller_file = unsafe { OwnedHandle::from_raw_handle(raw) };
+    let client = ottrin_search::ensure_windows_search_daemon(&executable).unwrap();
+    client.ping().unwrap();
+    drop(caller_file);
+    fs::remove_file(&path).expect("Persistent daemon retained a caller-owned inheritable file");
+    client
+        .ping()
+        .expect("Daemon must remain alive after the caller closes its file");
+    client.prepare_upgrade_and_wait().unwrap();
+}

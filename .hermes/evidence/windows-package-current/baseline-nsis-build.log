@@ -1,0 +1,24 @@
+Command line defined: "VERSION=0.1.0"
+Command line defined: "STAGE=/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64"
+Command line defined: "OUTPUT=/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/.windows-installer.AC240q/Ottrin-0.1.0-windows-x64-setup.exe"
+Processing config: /etc/nsisconf.nsh
+Processing script file: "/home/campbell/Projects/Ottrin/packaging/windows/installer.nsi" (UTF8)
+
+Processed 1 file, writing output (x86-unicode):
+
+Output: "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/.windows-installer.AC240q/Ottrin-0.1.0-windows-x64-setup.exe"
+Install: 3 pages (192 bytes), 1 section (4120 bytes), 450 instructions (12600 bytes), 241 strings (8028 bytes), 1 language table (278 bytes).
+Uninstall: 3 pages (256 bytes), 1 section (4120 bytes), 622 instructions (17416 bytes), 220 strings (7006 bytes), 1 language table (282 bytes).
+Datablock optimizer saved 26498 bytes (~0.0%).
+
+Using lzma (compress whole) compression.
+
+EXE header size:              113664 / 100864 bytes
+Install code:                          (23634 bytes)
+Install data:                          (127654122 bytes)
+Uninstall code+data:                   (111422 bytes)
+Compressed data:            36065484 / 127789178 bytes
+CRC (0x2150AAFA):                  4 / 4 bytes
+
+Total size:                 36179152 / 127890046 bytes (28.2%)
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-setup.exe
