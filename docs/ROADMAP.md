@@ -2173,3 +2173,30 @@ before execution, changing registry ACLs, disabling rollback, or manually deleti
 the payload cannot substitute for that acceptance. Continue current reboot/login
 and GUI checks, plus other roadmap implementation, while this root cause remains
 unresolved.
+
+
+### Current NSIS real reboot and login-daemon startup — 2026-10-15
+
+The current published NSIS, SHA-256
+`78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d`
+from clean `4a0c13b`, passes actual standard-user sign-in after a real graceful
+reboot. New boot: `2026-10-15T02:43:37.5000000+02:00`; scheduled daemon launch:
+`02:43:48`. Before any verification CLI call, the per-user login task had one
+running instance and no main Ottrin GUI was running. Its indexd SHA-256 matches
+the current published payload. A subsequent query returns the saved fixture and
+status reports ready watches and completed startup reconciliation. Task result
+267009 means running, not failure.
+
+The first reboot had no interactive sign-in because the prior automatic sign-in
+had been consumed. That did not exercise the login trigger and was not accepted.
+An additional guest-only generated QA credential and one-shot sign-in allowed
+the second graceful reboot to test the real trigger. No credential was exported.
+Uninstall then removed the app, generated index and task, with exact preference
+and source-file hashes preserved. The actor exited zero; owned task/files and
+one-shot sign-in/plaintext credential were removed. Receipt and all three phases:
+`.hermes/evidence/windows-20261011/WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json`.
+The owned guest was shut down with backing content mtime unchanged.
+
+This closes the current NSIS installed-daemon reboot/login check, not MSI reboot,
+main-window close lifetime, GUI search or whole-home performance. Those checks,
+MSI registration rollback and the broader roadmap remain open.

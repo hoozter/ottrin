@@ -35,7 +35,8 @@
     "session_stop_preserves_database": true,
     "cleanup_stops_daemon_and_removes_private_database": true,
     "nsis_native_lifecycle": "pass; WINDOWS_NSIS_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
-    "msi_native_lifecycle": "pass; WINDOWS_MSI_OFFLINE_LIFECYCLE_ACCEPTANCE.json"
+    "msi_native_lifecycle": "pass; WINDOWS_MSI_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
+    "nsis_real_reboot_login_startup": "pass; WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json"
   },
   "evidence": [
     "WINDOWS_OFFLINE_CANDIDATE_PAYLOAD.json",
@@ -43,7 +44,8 @@
     "WINDOWS_OFFLINE_INDEX_CLEANUP.json",
     "WINDOWS_NSIS_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
     "WINDOWS_MSI_OFFLINE_LIFECYCLE_ACCEPTANCE.json",
-    "WINDOWS_OFFLINE_INSTALLER_CLEANUP.json"
+    "WINDOWS_OFFLINE_INSTALLER_CLEANUP.json",
+    "WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json"
   ],
   "cleanup": {
     "task_exit": 0,
@@ -58,7 +60,7 @@
     "account_source_sha256": "26f0da9e473f8ed2b6a04c9fcc381d606d914a1e19b61195b43b9bdb63c8ba50"
   },
   "limits": [
-    "Current MSI failed-transaction rollback, cross-version upgrade/repair, reboot persistence and GUI breadth remain open",
+    "Current MSI failed-transaction rollback, cross-version upgrade/repair, MSI reboot persistence and GUI breadth remain open",
     "Private 10000-file metadata-only index fixture; no universal CPU/latency guarantee"
   ],
   "historical_candidate_receipt": "WINDOWS_43CFA62_CANDIDATE_ACCEPTANCE.json",

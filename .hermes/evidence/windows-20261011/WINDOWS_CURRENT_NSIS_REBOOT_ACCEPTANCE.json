@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-15",
+  "source_revision": "4a0c13b084080fccf18d839bbd43bac80b66a399",
+  "artifact": "dist/Ottrin-0.1.0-windows-x64-setup.exe",
+  "sha256": "78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d",
+  "environment": "Native Windows guest, actual non-administrator interactive QA account, real graceful reboot and one-shot automatic sign-in",
+  "phases": {
+    "Install": {
+      "boot": "2026-10-15T02:38:50.5000000+02:00",
+      "source_hash": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+      "installer_sha256": "78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d",
+      "query": {
+        "items": [
+          {
+            "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+            "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+            "name": "scheduled-daemon-fixture.txt",
+            "kind": "File",
+            "is_executable": false,
+            "symlink_target_is_dir": null,
+            "size_bytes": 27,
+            "modified_unix_secs": 1792013981,
+            "content_snippet": null
+          }
+        ],
+        "total": 1,
+        "status": "Ready",
+        "error": null
+      },
+      "phase": "Install",
+      "daemon_instances": 1,
+      "status": "pass",
+      "preference_hash": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793"
+    },
+    "Verify": {
+      "daemon_sha256": "780f23ff36951a12058111efed3d4b51decd64a01d3361bfb9275b50d5cbb624",
+      "preference_hash": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+      "task_last_run": "2026-10-15T02:43:48.0000000",
+      "before_cli_running_instances": 1,
+      "phase": "Verify",
+      "query": {
+        "items": [
+          {
+            "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+            "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+            "name": "scheduled-daemon-fixture.txt",
+            "kind": "File",
+            "is_executable": false,
+            "symlink_target_is_dir": null,
+            "size_bytes": 27,
+            "modified_unix_secs": 1792013981,
+            "content_snippet": null
+          }
+        ],
+        "total": 1,
+        "status": "Ready",
+        "error": null
+      },
+      "task_last_result": 267009,
+      "boot": "2026-10-15T02:43:37.5000000+02:00",
+      "status": "pass",
+      "index_status": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 81920,
+        "detail": "Ready \u252c\u2556 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1792025034,
+        "last_scan_completed_unix_secs": 1792025034,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1792025034,
+        "snapshot_revision": 2,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "task_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin continuous background index service</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <LogonTrigger>\r\n      <UserId>DESKTOP-81GHP8U\\OttrinIndexQA</UserId>\r\n    </LogonTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-daemon</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+      "source_hash": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50"
+    },
+    "Remove": {
+      "bootstrap_exit": 0,
+      "source_hash": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+      "task_removed": true,
+      "phase": "Remove",
+      "install_removed": true,
+      "status": "pass",
+      "preference_hash": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793"
+    }
+  },
+  "qa_setup_note": "The first reboot had no interactive sign-in because the previous one-shot automatic sign-in had been consumed. No product acceptance was inferred. A guest-only generated credential configured one new QA-account sign-in; a second graceful reboot supplied the accepted login.",
+  "limits": [
+    "NSIS installed daemon login/startup only; does not independently accept MSI reboot or GUI lifetime",
+    "One fixture root; not a populated whole-home performance measurement"
+  ],
+  "cleanup": {
+    "actor_exit": 0,
+    "qa_task_removed": true,
+    "owned_guest_fixtures_removed": true,
+    "no_ottrin_processes": true,
+    "temporary_signin_and_plaintext_credential_removed": true,
+    "overlay_and_backing_guests": "shut off",
+    "backing_content_mtime_unchanged": true,
+    "backing_content_mtime": "1792007729.962647502",
+    "preferences_and_source_hashes_preserved": true
+  }
+}
