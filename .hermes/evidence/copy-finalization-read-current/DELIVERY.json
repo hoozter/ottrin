@@ -1,0 +1,12 @@
+{
+  "source_revision": "6f1a0a2432717ce64c01a73cc96e4cc9e8168e77",
+  "published_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "1da2ea38f34bc63427e03b598641d20f5aeb226cd6c3dc14c20d429812b7b3c3",
+    "Ottrin-0.1.0-x86_64.AppImage": "124ce5e9552868894d6414e500211cb972ee01c8b9e01ea470acc9adc2dfc6b5",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "44c20007ca828e782f2fec636bb4fee47092102c586a521cfe3cfde7f32f9881",
+    "ottrin_0.1.0_amd64.deb": "53b30d37948d5fbb6ea14fbd5748bb4e8eafff49555de2c21677b23b29056460"
+  },
+  "verified_utc": "2026-10-15T11:14:49.990375+00:00",
+  "acceptance": "COPY_FINALIZATION_READ_ACCEPTANCE.json",
+  "cleanup": "PROCESS_CLEANUP.json"
+}

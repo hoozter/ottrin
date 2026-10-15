@@ -1,0 +1,43 @@
+{
+  "source_revision": "6f1a0a2432717ce64c01a73cc96e4cc9e8168e77",
+  "platform_tests": "401 passed, 1 ignored",
+  "strict_linux_platform_clippy": "pass",
+  "before": {
+    "records": 32,
+    "encoded_registry_bytes": 555919,
+    "read_bytes": 58028663,
+    "elapsed_ms": 456
+  },
+  "after": {
+    "records": 32,
+    "encoded_registry_bytes": 555735,
+    "read_bytes": 1807952,
+    "elapsed_ms": 435
+  },
+  "interpretation": "96.9 percent fewer read bytes in this fixture; no significant wall-clock speedup established. Repeated metadata/syscall CPU scaling remains open.",
+  "additional_checks": [
+    "outside-alias identical-byte rewrite invalidates worker; a fresh worker can safely retry",
+    "inode notifications detect alias writes with equal simulated stamps",
+    "all pre-existing finalization crash, retry, tamper and preservation tests pass"
+  ],
+  "delivery": "all four Linux packages promoted after exact-artifact acceptance",
+  "status": "implemented, tested and published; user acceptance deferred",
+  "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+  "artifact_sha256": "124ce5e9552868894d6414e500211cb972ee01c8b9e01ea470acc9adc2dfc6b5",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "1da2ea38f34bc63427e03b598641d20f5aeb226cd6c3dc14c20d429812b7b3c3",
+    "Ottrin-0.1.0-x86_64.AppImage": "124ce5e9552868894d6414e500211cb972ee01c8b9e01ea470acc9adc2dfc6b5",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "44c20007ca828e782f2fec636bb4fee47092102c586a521cfe3cfde7f32f9881",
+    "ottrin_0.1.0_amd64.deb": "53b30d37948d5fbb6ea14fbd5748bb4e8eafff49555de2c21677b23b29056460"
+  },
+  "gui": [
+    "Dark100 per-entry Clear and Light150 bulk Clear: cancel, refusal, retry, source/publication preservation and full private metadata removal",
+    "Both main/View menu visuals inspected; normal exits and scoped teardown"
+  ],
+  "ui_worker": "current rebuilt private-process success, changed-backup retry, overwrite-chain and partial-finalization cases pass",
+  "limits": [
+    "No significant wall-clock speedup established; repeated namespace/dependency CPU scaling remains open",
+    "No fresh native distro install/upgrade/reboot, physical desktop or Windows acceptance; Windows packages unchanged",
+    "Automatic expiry remains disabled; no operator Copy data reclaimed or host service changed"
+  ]
+}

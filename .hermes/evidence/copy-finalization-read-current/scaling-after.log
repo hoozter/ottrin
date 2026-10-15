@@ -1,0 +1,6 @@
+
+running 1 test
+Finalization: records=32 metadata_bytes=555735 read_bytes=1807952 elapsed_ms=435
+test copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 401 filtered out; finished in 1.31s

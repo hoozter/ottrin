@@ -1,0 +1,20 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 26.90s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-ae68b2dc04dbe44d)
+
+running 1 test
+Finalization: records=32 metadata_bytes=555919 read_bytes=58028663 elapsed_ms=456
+
+thread 'copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item' (3885234) panicked at crates/ottrin-platform/src/copy_finalization.rs:797:9:
+Finalization repeatedly read whole-group metadata: 58028663 bytes for 555919 bytes of original metadata
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... FAILED
+
+failures:
+
+failures:
+    copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 399 filtered out; finished in 1.12s
+
+error: test failed, to rerun pass `-p ottrin-platform --lib`

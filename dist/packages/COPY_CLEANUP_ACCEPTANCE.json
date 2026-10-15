@@ -1,12 +1,12 @@
 {
   "status": "implemented, tested and published in all four current Linux packages; user acceptance deferred",
-  "source_revision": "eb10b1b7f42322a0e90f656280df869ebe21d93f",
+  "source_revision": "6f1a0a2432717ce64c01a73cc96e4cc9e8168e77",
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
-  "artifact_sha256": "291d915dcad494ffcd8af2daf9486c72cdd6bac08330d6c7f7bbc792b0b2ec30",
+  "artifact_sha256": "124ce5e9552868894d6414e500211cb972ee01c8b9e01ea470acc9adc2dfc6b5",
   "source_sha256": {
-    "crates/ottrin-platform/src/copy_cleanup.rs": "a26b88c1c45d0d6936185fcda9fcd14b2d3adaa000c7d4dc36bbbe4d43d9f6cf",
+    "crates/ottrin-platform/src/copy_cleanup.rs": "fe687a515d67dc05e7840cc04b7d5149fb12ecbb1665050a7fb85ca36a3afc3f",
     "crates/ottrin-platform/src/copy_recovery.rs": "7a363db94207a7462d77aa922f1a0a0d7cdd6b1c964add081cca80492853512f",
-    "crates/ottrin-platform/src/copy_finalization.rs": "21edc70bb35648b8765becc3686c8005657e6b620fed7a9dfd9007e0a432c286",
+    "crates/ottrin-platform/src/copy_finalization.rs": "f1f6d277e8ca9a937ec95059279e2c68abf001682014e9673d1e23119b63e700",
     "crates/ottrin-platform/src/lib.rs": "6a6735584ddba180944c9befcf35de41a5c65764261dc1ce48aabe166dc5ddb5",
     "crates/ottrin-ui/src/copy_activity_cleanup.rs": "6e05de48feb24732610f6c81ee87cdf8eb8382312b1362f1471b7436abb74657",
     "crates/ottrin-ui/src/lib.rs": "7e4f04ea50aed2d6e873267157584ed5af22533f6cad7d60fdade9073c91eaf6"
@@ -22,25 +22,15 @@
     "Correct success/error notification styling, concise failure status and no duplicated error detail"
   ],
   "checks": {
-    "platform_library": "398 passed; 1 ignored",
-    "ui_library": "374 passed; 1 ignored; final Cargo run used disposable HOME and all XDG directories with shared compiler caches",
-    "strict_linux_platform_ui_all_targets_clippy": "pass",
-    "strict_windows_gnu_platform_ui_all_targets_clippy": "pass; cross-target validation only",
-    "private_async_process_cases": [
-      "success",
-      "changed-backup refusal then explicit retry",
-      "overwrite chain cleared together",
-      "restored partial finalization without another confirmation"
-    ],
-    "io_regressions": "Under1MiB reads with a4MiB edited visible publication and unrelated4MiB backup. Unsupported PublicationIntent/UndoIntent observation also stays under1MiB and performs no mutation. The new interrupted-Undo test failed before the early guard and passes afterward.",
+    "platform_library": "401 passed; 1 ignored",
+    "strict_linux_platform_all_targets_clippy": "pass",
+    "private_async_process_cases": "current rebuilt success, changed-backup retry, overwrite chain and restored partial finalization pass",
     "packaged_gui": [
-      "Dark100 per-entry cleanup, cancel, refusal, retry, complete metadata removal, correct success ink and normal exit",
-      "Light150 bulk Clear, cancel, refusal, retry, complete metadata removal, correct success ink and normal exit",
-      "Current main/View menu complete icons, compact action-menu gutter and separate choice/check columns in both themes/scales"
+      "Dark100 per-entry Clear and Light150 bulk Clear: cancel, refusal, retry, source/publication preservation and full private metadata removal",
+      "Both main/View menu visuals inspected; normal exits and scoped teardown"
     ],
-    "package_contents": "All four clean-source Linux artifacts verified against their payloads, source notes and exact guide/release documents; current native daemon namespace ownership cases pass for AppImage and RPM",
-    "preserved_operator_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
-    "preserved_operator_service_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350"
+    "package_contents": "all four current payload/document/source identities; current AppImage/RPM namespace ownership tests pass",
+    "io_scaling": "96.9 percent fewer read bytes in this fixture; no significant wall-clock speedup established. Repeated metadata/syscall CPU scaling remains open."
   },
   "limits": [
     "Automatic expiry is disabled; ordinary capacity trimming continues to retain owned recovery receipts until an explicit supported cleanup",
@@ -64,5 +54,7 @@
     "A success status flag incorrectly used error ink; actual packaged inspection caught it, and async fixture assertions now require true for success and false for failure",
     "Interrupted Undo cleanup observation unnecessarily hashed visible data; the failing I/O regression and guarded passing full suite are retained"
   ],
-  "cleanup": "GUI sessions exited normally; all task-owned app groups, private daemon peers, buses, displays, profiles and extraction fixtures exited/removed. Verified package candidates moved to stable paths and empty staging removed. Diagnostic logs moved here or discarded when superseded."
+  "cleanup": "GUI sessions exited normally; all task-owned app groups, private daemon peers, buses, displays, profiles and extraction fixtures exited/removed. Verified package candidates moved to stable paths and empty staging removed. Diagnostic logs moved here or discarded when superseded.",
+  "current_evidence": ".hermes/evidence/copy-finalization-read-current",
+  "preceding_broader_check_scope": ".hermes/evidence/copy-activity-current/ACCEPTANCE.json; preceding full UI and Windows cross-target checks retain that source scope"
 }
