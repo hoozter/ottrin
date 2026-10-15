@@ -75,7 +75,8 @@ mod system_appearance;
 mod widget_style;
 use path_display::{path_crumbs, path_label};
 use widget_style::{
-    ThemeButtonExt, ThemeTextEditExt, aligned_menu_button, aligned_submenu, themed_menu_button,
+    ThemeButtonExt, ThemeTextEditExt, aligned_menu_button, aligned_submenu, paint_sort_header,
+    themed_menu_button,
 };
 mod theme_colors;
 mod theme_import;
@@ -3115,20 +3116,7 @@ impl OttrinApp {
         // Register Material Icons as a fallback font.
         // PUA codepoints (U+E000–U+F8FF) used by Material icons are not in
         // NotoSans, so egui automatically falls back to this font for them.
-        let mut fonts = egui::FontDefinitions::default();
-        fonts.font_data.insert(
-            "material-icons".to_owned(),
-            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
-                "../assets/MaterialSymbolsFilled.ttf"
-            ))),
-        );
-        // Push as last fallback so NotoSans still handles normal text
-        fonts
-            .families
-            .entry(egui::FontFamily::Proportional)
-            .or_default()
-            .push("material-icons".to_owned());
-        cc.egui_ctx.set_fonts(fonts);
+        install_application_fonts(&cc.egui_ctx);
 
         let config = load_config();
         let mut app =
@@ -3144,19 +3132,7 @@ impl OttrinApp {
         graphics_runtime: GraphicsRuntimeStatus,
     ) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
-        let mut fonts = egui::FontDefinitions::default();
-        fonts.font_data.insert(
-            "material-icons".to_owned(),
-            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
-                "../assets/MaterialSymbolsFilled.ttf"
-            ))),
-        );
-        fonts
-            .families
-            .entry(egui::FontFamily::Proportional)
-            .or_default()
-            .push("material-icons".to_owned());
-        cc.egui_ctx.set_fonts(fonts);
+        install_application_fonts(&cc.egui_ctx);
 
         let config = load_config();
         let mut app = Self::new_with_config_and_graphics_status(config, graphics_runtime);
@@ -14718,24 +14694,14 @@ impl OttrinApp {
                             header.col(|ui| {
                                 let header_rect = ui.max_rect();
                                 let active = self.search_ui.sort == sort;
-                                let text = if active {
-                                    format!("{label} ▲")
-                                } else {
-                                    label.to_string()
-                                };
-                                let rich = RichText::new(text).size(10.5 * c.font_scale).color(if active {
-                                    c.text
-                                } else {
-                                    c.text_muted
-                                });
-                                let resp = if right_align {
-                                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                        ui.add(egui::Label::new(rich).sense(Sense::click()))
-                                    })
-                                    .inner
-                                } else {
-                                    ui.add(egui::Label::new(rich).sense(Sense::click()))
-                                };
+                                let (rect, resp) = ui.allocate_exact_size(ui.available_size(), Sense::click());
+                                resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), format!("Sort search results by {label}")));
+                                paint_sort_header(
+                                    ui, rect, label,
+                                    active.then_some(matches!(sort, SearchSort::Name | SearchSort::Path)),
+                                    FontId::proportional(10.5 * c.font_scale),
+                                    if active { c.text } else { c.text_muted }, right_align,
+                                );
                                 if resp.hovered() {
                                     ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                 }
@@ -17798,25 +17764,18 @@ impl OttrinApp {
                 }
                 return;
             }
-            let arrow = if current_sort.by == sort_by {
-                if current_sort.ascending {
-                    " ▲"
-                } else {
-                    " ▼"
-                }
-            } else {
-                ""
-            };
-            ui.painter().text(
-                egui::Pos2::new(x + 4.0, header_rect.center().y),
-                Align2::LEFT_CENTER,
-                format!("{}{}", label, arrow),
+            paint_sort_header(
+                ui,
+                col_rect.shrink2(Vec2::new(4.0, 0.0)),
+                label,
+                (current_sort.by == sort_by).then_some(current_sort.ascending),
                 FontId::proportional(header_size),
                 if current_sort.by == sort_by {
                     c.text_dim
                 } else {
                     c.text_muted
                 },
+                false,
             );
 
             // Drag handle between columns
@@ -22511,6 +22470,22 @@ impl eframe::App for OttrinApp {
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
         self.persist_config();
     }
+}
+
+fn install_application_fonts(ctx: &Context) {
+    let mut fonts = egui::FontDefinitions::default();
+    fonts.font_data.insert(
+        "material-icons".to_owned(),
+        std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
+            "../assets/MaterialSymbolsFilled.ttf"
+        ))),
+    );
+    fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .push("material-icons".to_owned());
+    ctx.set_fonts(fonts);
 }
 
 fn command_key_pressed(input: &egui::InputState, key: Key) -> bool {

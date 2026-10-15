@@ -1,6 +1,65 @@
 use crate::Colors;
 use egui::{Button, CornerRadius, Response, Stroke, Ui, Widget};
 
+/// Keep sort markers visible when a column truncates its label. Icon spacing
+/// belongs to layout, and both header renderers use the installed icon font.
+pub(crate) fn paint_sort_header(
+    ui: &Ui,
+    rect: egui::Rect,
+    label: &str,
+    ascending: Option<bool>,
+    font: egui::FontId,
+    color: egui::Color32,
+    right_align: bool,
+) {
+    let painter = ui.painter().with_clip_rect(rect.intersect(ui.clip_rect()));
+    let icon = ascending.map(|ascending| {
+        painter.layout_no_wrap(
+            if ascending {
+                crate::icons::MI_ARROW_UP
+            } else {
+                crate::icons::MI_ARROW_DOWN
+            }
+            .into(),
+            font.clone(),
+            color,
+        )
+    });
+    let gap = if icon.is_some() {
+        font.size * 0.35
+    } else {
+        0.0
+    };
+    let reserved = icon.as_ref().map_or(0.0, |icon| icon.size().x + gap);
+    let mut job = egui::text::LayoutJob::simple(
+        label.into(),
+        font,
+        color,
+        (rect.width() - reserved).max(0.0),
+    );
+    job.wrap.max_rows = 1;
+    let text = painter.layout_job(job);
+    let width = text.size().x + reserved;
+    let x = if right_align {
+        rect.right() - width
+    } else {
+        rect.left()
+    };
+    let text_width = text.size().x;
+    painter.galley(
+        egui::pos2(x, rect.center().y - text.size().y * 0.5),
+        text,
+        color,
+    );
+    if let Some(icon) = icon {
+        painter.galley(
+            egui::pos2(x + text_width + gap, rect.center().y - icon.size().y * 0.5),
+            icon,
+            color,
+        );
+    }
+}
+
 /// Give buttons their own theme role without changing text inputs or checkboxes.
 pub(crate) trait ThemeButtonExt<'a> {
     fn themed(self, colors: &Colors) -> ThemeButton<'a>;
@@ -268,6 +327,75 @@ mod tests {
     use super::*;
     use crate::{OttrinApp, ThemePreset};
     use egui::{Color32, Context, Rect, Vec2, epaint::Shape};
+
+    #[test]
+    fn sort_headers_keep_supported_direction_icons_inside_narrow_columns() {
+        for dark in [true, false] {
+            for scale in [1.0, 1.35] {
+                for width in [80.0, 240.0] {
+                    for ascending in [None, Some(true), Some(false)] {
+                        for right_align in [true, false] {
+                            let ctx = Context::default();
+                            crate::install_application_fonts(&ctx);
+                            let color = Colors::preset(ThemePreset::Ottrin, dark).text;
+                            let rect = Rect::from_min_size(
+                                egui::pos2(20.0, 20.0),
+                                Vec2::new(width, 26.0 * scale),
+                            );
+                            let font = egui::FontId::proportional(11.5 * scale);
+                            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                                egui::CentralPanel::default().show(ctx, |ui| {
+                                    paint_sort_header(ui, rect, "Modified", ascending, font.clone(), color, right_align);
+                                    if let Some(ascending) = ascending {
+                                        let glyph = if ascending { crate::icons::MI_ARROW_UP } else { crate::icons::MI_ARROW_DOWN };
+                                        assert!(ui.fonts_mut(|fonts| fonts.has_glyphs(&font, glyph)), "sort icon is missing from the actual application font stack");
+                                    }
+                                });
+                            });
+                            let texts: Vec<_> = output
+                                .shapes
+                                .iter()
+                                .filter_map(|shape| match &shape.shape {
+                                    Shape::Text(text) => Some(text),
+                                    _ => None,
+                                })
+                                .collect();
+                            assert_eq!(texts.len(), if ascending.is_some() { 2 } else { 1 });
+                            for text in &texts {
+                                assert_eq!(text.galley.rows.len(), 1);
+                                assert!(
+                                    rect.expand(0.5).contains_rect(Rect::from_min_size(
+                                        text.pos,
+                                        text.galley.size()
+                                    )),
+                                    "sort header escapes its column"
+                                );
+                                assert!(
+                                    text.galley
+                                        .job
+                                        .sections
+                                        .iter()
+                                        .all(|section| section.format.color == color)
+                                );
+                            }
+                            if let Some(ascending) = ascending {
+                                let icon = texts.last().unwrap();
+                                assert_eq!(
+                                    icon.galley.job.text,
+                                    if ascending {
+                                        crate::icons::MI_ARROW_UP
+                                    } else {
+                                        crate::icons::MI_ARROW_DOWN
+                                    }
+                                );
+                                assert!(icon.pos.x > texts[0].pos.x + texts[0].galley.size().x);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn page_navigation_keeps_reading_order_and_wraps_without_clipping() {

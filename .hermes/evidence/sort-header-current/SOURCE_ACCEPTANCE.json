@@ -1,0 +1,17 @@
+{
+  "status": "source and rendered font regression pass; packages/actual GUI pending",
+  "parent_revision": "807dbdb",
+  "checks": [
+    "Production font stack supports Material up/down icons",
+    "Sort-header marker survives narrow columns and enlarged text; both alignments/theme ink checked",
+    "File and Search share one painter and both application constructors share font installation",
+    "Search Size/Modified markers match descending query order",
+    "372 regular UI tests pass; one ignored",
+    "Strict Linux and Windows UI all-target Clippy pass"
+  ],
+  "remaining": [
+    "clean packaging and GUI behavior",
+    "Windows portable/NSIS/MSI refresh and scoped native acceptance",
+    "full roadmap gates"
+  ]
+}
