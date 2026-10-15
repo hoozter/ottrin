@@ -6918,16 +6918,6 @@ impl OttrinApp {
             match response.target {
                 PreviewTarget::Overlay => {
                     self.preview.data = Some(response.data);
-                    if self.preview.text_editor.is_none()
-                        && text_editing_supported()
-                        && self
-                            .preview
-                            .data
-                            .as_ref()
-                            .is_some_and(is_complete_text_preview)
-                    {
-                        self.begin_preview_text_edit(&response.path);
-                    }
                 }
                 PreviewTarget::InfoPanel => {
                     self.info_panel_preview = Some((response.path, response.data));
@@ -12772,6 +12762,7 @@ impl OttrinApp {
                                         preview_render::preview_content_frame(
                                             ui,
                                             Vec2::new(ui.available_width(), 118.0),
+                                            false,
                                             |ui| {
                                                 // Clip to allocated rect so overflowing
                                                 // text never pushes metadata rows away.
@@ -17248,7 +17239,7 @@ impl OttrinApp {
                 let sizing_id = ui.id().with(("miller_preview_sizing", &entry.path));
                 let (mut visual_fit, mut visual_fit_width, mut visual_zoom, mut flow_text_scale, mut spreadsheet_overview) = ui.ctx().data_mut(|data| {
                     data.get_persisted::<(bool, bool, f32, f32, bool)>(sizing_id)
-                        .unwrap_or((true, matches!(preview_render::preview_sizing_for(preview.kind), preview_render::PreviewSizingMode::FitWidth), 1.0, 1.0, false))
+                        .unwrap_or((true, matches!(preview_render::preview_sizing_for(ottrin_preview::preview_profile(&entry.path).kind()), preview_render::PreviewSizingMode::FitWidth), 1.0, 1.0, false))
                 });
                 let uses_sizing_controls = use_visual_renderer || matches!(preview.kind, PreviewKind::Text | PreviewKind::OfficeMetadata);
                 let toolbar_top = ui.cursor().top();
@@ -17281,7 +17272,7 @@ impl OttrinApp {
                 let preview_h =
                     (height - info_total_h - (ui.cursor().top() - toolbar_top))
                         .max(80.0);
-                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), |ui| {
+                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), use_visual_renderer && visual_fit && visual_fit_width, |ui| {
                 if use_visual_renderer {
                     if let Some(img) = self.cached_shared_visual_preview_widget(
                         &entry.path,
@@ -18575,13 +18566,14 @@ impl OttrinApp {
         egui::CentralPanel::default()
             .frame(
                 Frame::new()
-                    .fill(c.panel_raised)
-                    .inner_margin(egui::Margin::same(12)),
+                    .fill(c.panel)
+                    .inner_margin(egui::Margin::same(c.window_border_width.ceil() as i8)),
             )
             .show(inspector_ctx, |ui| {
                 render_custom_titlebar(ui, inspector_ctx, c, c.titlebar_bg,
                     &format!("Quick Inspector — {name}"), true, &mut close_requested, |_| {});
 
+                Frame::new().inner_margin(12).show(ui, |ui| {
                 ui.with_layout(Layout::top_down(Align::Min), |ui| {
                     ui.horizontal(|ui| {
                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
@@ -18792,7 +18784,7 @@ impl OttrinApp {
                             (self.preview.visual_zoom * gesture_zoom).clamp(0.1, 8.0);
                     }
 
-                    preview_render::preview_content_frame(ui, ui.available_size(), |ui| {
+                    preview_render::preview_content_frame(ui, ui.available_size(), self.preview.text_editor.is_none() && self.preview.visual_fit && self.preview.visual_fit_width && (preview_uses_visual_preview(&path, preview.kind) || uses_office_provider), |ui| {
                     let specialized_body_renderer = (preview.kind == PreviewKind::Text
                         && self.preview.text_editor.is_some())
                         || (preview.kind == PreviewKind::OfficeMetadata
@@ -18959,7 +18951,7 @@ impl OttrinApp {
                         visual_kind if visual_kind != PreviewKind::OfficeMetadata
                             && preview_uses_visual_preview(&path, visual_kind) =>
                         {
-                            ScrollArea::both().show(ui, |ui| {
+                            ui.scope(|ui| {
                                 let max_w = ui.available_width().max(1.0);
                                 let max_h = (ui.available_height() - 34.0).max(1.0);
                                 ui.vertical_centered(|ui| {
@@ -19077,7 +19069,7 @@ impl OttrinApp {
                         }
                         PreviewKind::OfficeMetadata => {
                             if uses_office_provider {
-                                ScrollArea::both().show(ui, |ui| {
+                                ui.scope(|ui| {
                                     let max_w = ui.available_width().max(1.0);
                                     let max_h = (ui.available_height() - 34.0).max(1.0);
                                     ui.vertical_centered(|ui| {
@@ -19288,6 +19280,7 @@ impl OttrinApp {
                     }
                     }
                     });
+                });
                 });
             });
         if self.pending_rename.is_some() {
@@ -28716,6 +28709,32 @@ mod tests {
     }
 
     #[test]
+    fn pdf_sidebar_fit_default_does_not_depend_on_async_preview_metadata() {
+        let mut app = OttrinApp::default();
+        let ctx = Context::default();
+        let path = PathBuf::from("/not-loaded-yet.pdf");
+        let entry = FileEntry {
+            path,
+            name: "not-loaded-yet.pdf".into(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        };
+        let out = ctx.run(Default::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                app.render_miller_file_preview(ui, &entry, 360.0, 600.0);
+            });
+        });
+        assert!(
+            out.shapes.iter().any(|shape| matches!(&shape.shape,
+            egui::Shape::Text(text) if text.galley.job.text.starts_with("Fit width ·"))),
+            "the loading placeholder must not persist a Fit page default for PDFs"
+        );
+    }
+
+    #[test]
     fn sizing_main_preview_paints_fitted_image_inside_actual_clip_with_visible_controls() {
         let path = PathBuf::from("/sizing-main.png");
         let entry = FileEntry {
@@ -29223,9 +29242,16 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn admitted_text_opens_directly_and_refresh_keeps_unsaved_edits() {
+    fn admitted_text_stays_read_only_until_explicit_edit_and_refresh_keeps_edits() {
         let fixture = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
-        for name in ["notes.txt", "main.rs", "settings.json", "README", "main.kt"] {
+        for name in [
+            "notes.txt",
+            "main.rs",
+            "settings.json",
+            "README",
+            "main.kt",
+            "contact.vcf",
+        ] {
             let path = fixture.path().join(name);
             std::fs::write(&path, "original\n").unwrap();
             TextEditSession::open(&path).expect("fixture must support actual editing");
@@ -29246,7 +29272,12 @@ mod tests {
                 }
                 std::thread::sleep(Duration::from_millis(10));
             }
-            let editor = app.preview.text_editor.as_mut().expect("direct editor");
+            assert!(
+                app.preview.text_editor.is_none(),
+                "{name} must open read-only"
+            );
+            app.begin_preview_text_edit(&path);
+            let editor = app.preview.text_editor.as_mut().expect("explicit editor");
             assert_eq!(editor.buffer, "original\n", "{name}");
             editor.buffer = "unsaved\n".into();
             app.request_preview_load(PreviewTarget::Overlay, path, EntryKind::File);

@@ -21,6 +21,12 @@ Use the workspace `target/` for current builds. Historical-source QA builds must
 
 Every UI change must preserve shared theme roles and consistent text/icon alignment across the main window, Settings, theme editor, Inspector, menus, and dialogs. Reuse the authoritative themed widgets; previews must use production controls where they represent those controls.
 
+Quick Inspector opens every file read-only. Only an explicit **Edit text** action
+may create an editor; asynchronous loading, reload of a preview, and selection
+navigation must never enable editing. Read-only previews leave arrow navigation
+and Space-to-close available. Width-fitted document previews reserve a stable
+vertical scrollbar gutter so overflow cannot feed back into page sizing.
+
 Human-readable path labels must use the shared display helpers. Keep navigation, commands, clipboard paths and editable configuration as original paths; never reconstruct an operation path from a shortened display string. Windows drive/share roots are one breadcrumb with the original rooted target. Explicit breadcrumb and address navigation must also reveal the destination file column; changing only the address while its contents remain off-screen is a failed navigation.
 
 Sort headers use the shared header painter and installed Material direction icons, with a reserved marker slot even when the label is truncated. Search markers follow the actual query order: Name/Folder ascending, Size/Modified descending.

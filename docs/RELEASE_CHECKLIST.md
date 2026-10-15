@@ -6,6 +6,8 @@ Every item must be checked against the exact artifact intended for release. A so
 
 - [ ] Shared theme roles and text/icon alignment meet [UI consistency requirements](DEVELOPMENT.md#ui-consistency-requirements) across main window, menus/submenus, Settings, theme editor, Inspector, and dialogs; checked, unchecked, iconless, and disabled rows retain common columns in Light/Dark at 100%/150% scaling and enlarged text.
 
+- [ ] Inspector previews remain read-only until **Edit text**; arrows and Space work on VCF/plain text before editing, source bytes remain unchanged, auxiliary title bars match the theme, and non-PDF → PDF transitions stay stable at scrollbar overflow boundaries.
+
 ## Automated Gates
 
 - [ ] `cargo fmt --all --check`

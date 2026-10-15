@@ -6,7 +6,8 @@ platforms remain read-only/fail-closed; the broader cross-platform proposal
 below remains deferred.
 
 The Quick Inspector loads a `PreviewData` snapshot asynchronously. On Linux,
-an eligible complete UTF-8 text preview can open a bounded editor and save its
+an eligible complete UTF-8 text preview remains read-only until the user chooses
+**Edit text**. That explicit action can open a bounded editor and save its
 buffer through the platform boundary. Failed saves retain that buffer. This
 does not authorize broader editing, format support, or platform enablement.
 

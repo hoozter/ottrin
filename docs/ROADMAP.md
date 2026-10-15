@@ -2956,3 +2956,33 @@ are unchanged. This is helper-level interruption acceptance plus installer
 construction, not renewed full-package/daemon/scheduler acceptance. Torn journal
 recovery, arbitrary power loss and hostile namespace races remain separate;
 MSI registration rollback, Office and wider platform gates remain open.
+
+### Inspector read-only entry and PDF fit stability correction (2026-10-15)
+
+The shipped Linux AppImage reproduced automatic text-editor entry: an admitted
+VCF captured arrow keys and Space instead of navigating/closing. Preview-load
+completion no longer creates an editor. **Edit text** is the explicit entry
+point; existing save/conflict/discard protections remain. Folder sample text
+also uses an immutable selectable label rather than an editable throwaway buffer.
+The Inspector uses the shared title bar at the window border, with padding in
+its body and the shared window surface.
+
+A rendered regression reproduced a width-fitted page alternating between 318
+and 325 pixels throughout 180 frames. A real one-page PDF in the shipped package
+also produced repeated width/height changes across 100 captures. Conditional
+solid-scrollbar allocation changed the fitted page width and therefore whether
+it overflowed, creating a feedback loop. Width-fit mode now reserves a stable
+vertical gutter, and redundant Inspector visual/Office scroll containers are
+removed so the common preview frame owns scrolling. PDF fit defaults use the
+file profile, avoiding a different default while asynchronous metadata loads.
+
+All 376 UI library tests pass (one ignored), including explicit edit entry, draft
+preservation during refresh, pending-PDF defaults and overflow-boundary settling.
+Strict UI all-target Clippy, formatting and diff checks pass. Exact packaged
+Linux acceptance follows this source checkpoint; Windows build/native acceptance
+of these UI changes remains separate. The newly built `3a3d72d` Windows portable
+and NSIS inputs passed all-51-file archive verification but their native installer
+actor was not launched before this urgent user correction. Its disposable VM was
+shut down and discarded; inputs and handoff are retained at
+`.hermes/evidence/windows-init-package-current/`. The full roadmap goal remains
+active, including the independent MSI registration rollback gate.

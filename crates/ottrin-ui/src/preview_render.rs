@@ -103,6 +103,7 @@ pub(crate) fn spreadsheet_content_width(
 pub(crate) fn preview_content_frame<R>(
     ui: &mut egui::Ui,
     size: Vec2,
+    width_fitted: bool,
     contents: impl FnOnce(&mut egui::Ui) -> R,
 ) -> egui::InnerResponse<R> {
     let (outer, response) = ui.allocate_exact_size(size, Sense::hover());
@@ -115,7 +116,17 @@ pub(crate) fn preview_content_frame<R>(
     child.set_clip_rect(ui.clip_rect().intersect(inner_rect));
     child.visuals_mut().clip_rect_margin = 0.0;
     child.spacing_mut().scroll = egui::style::ScrollStyle::solid();
-    let inner = ScrollArea::both()
+    // A width-fitted page must not determine the presence of the gutter that
+    // determines its own width. Near the height boundary, a conditional solid
+    // scrollbar otherwise alternates forever between wide/overflowing and
+    // narrow/fitting. Reserve its vertical gutter throughout this fit mode.
+    let scroll = if width_fitted {
+        ScrollArea::vertical()
+            .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysVisible)
+    } else {
+        ScrollArea::both()
+    };
+    let inner = scroll
         .auto_shrink([false, false])
         .show(&mut child, contents)
         .inner;
@@ -1475,14 +1486,14 @@ pub(crate) fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &st
                 .size(12.0 * c.font_scale)
                 .strong(),
         );
-        let mut text = sample.to_string();
         ui.add(
-            egui::TextEdit::multiline(&mut text)
-                .font(FontId::monospace(11.0 * c.font_scale))
-                .text_color(c.text_dim)
-                .frame(true)
-                .desired_rows(10)
-                .interactive(true),
+            egui::Label::new(
+                RichText::new(sample)
+                    .font(FontId::monospace(11.0 * c.font_scale))
+                    .color(c.text_dim),
+            )
+            .wrap()
+            .selectable(true),
         );
     }
 }
@@ -1731,6 +1742,58 @@ mod tests {
     }
 
     #[test]
+    fn fit_width_preview_settles_after_switching_from_overflowing_content() {
+        let ctx = egui::Context::default();
+        let texture = ctx.load_texture(
+            "fit-width-page",
+            egui::ColorImage::filled([600, 684], Color32::WHITE),
+            Default::default(),
+        );
+        let mut widths = Vec::new();
+        for frame in 0..180 {
+            let _ = ctx.run(
+                egui::RawInput {
+                    time: Some(frame as f64 / 60.0),
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(800.0, 700.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        preview_content_frame(ui, Vec2::new(360.0, 400.0), true, |ui| {
+                            if frame < 5 {
+                                ui.allocate_exact_size(Vec2::new(1600.0, 700.0), Sense::hover());
+                            } else {
+                                ui.vertical_centered(|ui| {
+                                    let size = fit_size(
+                                        Vec2::new(600.0, 684.0),
+                                        ui.available_size(),
+                                        PreviewSizingMode::FitWidth,
+                                    );
+                                    widths.push(
+                                        ui.add(egui::Image::new(&texture).fit_to_exact_size(size))
+                                            .rect
+                                            .width(),
+                                    );
+                                });
+                            }
+                        });
+                    });
+                },
+            );
+        }
+        let settled = &widths[20..];
+        let min = settled.iter().copied().fold(f32::INFINITY, f32::min);
+        let max = settled.iter().copied().fold(0.0, f32::max);
+        assert!(
+            max - min < 0.1,
+            "fit width continues oscillating: {widths:?}"
+        );
+    }
+
+    #[test]
     fn preview_consistency_common_frame_reserves_padding_and_natural_size() {
         // The frame is independent of format: fit pages, wide tables and small
         // images all receive the same bounded viewport.
@@ -1744,7 +1807,7 @@ mod tests {
                 egui::CentralPanel::default().show(ctx, |ui| {
                     let origin = ui.cursor().min;
                     let outer = Rect::from_min_size(origin, Vec2::new(320.0, 240.0));
-                    let result = preview_content_frame(ui, outer.size(), |ui| {
+                    let result = preview_content_frame(ui, outer.size(), false, |ui| {
                         let clip = ui.clip_rect();
                         let content = if size.x < 100.0 {
                             let texture = ui.ctx().load_texture(

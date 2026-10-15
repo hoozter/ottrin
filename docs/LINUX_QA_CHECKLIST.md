@@ -148,7 +148,7 @@ Open previews with Space and the preview action/shortcut exposed by the UI.
 - [ ] Replacing an Office source while conversion/rendering is in progress never publishes a
   page from the old generation under the new file.
 - [ ] Markdown renders correctly and transitions into the flagship editor without losing data.
-- [ ] Plain text opens directly as editable text.
+- [ ] Plain text opens read-only; only **Edit text** enables editing. Arrow keys navigate files and Space closes the Inspector before edit mode.
 - [ ] Code opens with syntax highlighting, line numbers, and search.
 - [ ] Audio/video preview either plays with host-supported codecs or reports missing support
   clearly; it never hangs silently.
