@@ -20,6 +20,15 @@ use ottrin_core::SearchConfig;
 const MAX_ACTIVE_CLIENTS: usize = 64;
 
 pub fn default_daemon_socket_path() -> Result<PathBuf, String> {
+    checked_daemon_socket_path(true).map(|path| path.expect("required runtime was checked"))
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn existing_daemon_socket_path() -> Result<Option<PathBuf>, String> {
+    checked_daemon_socket_path(false)
+}
+
+fn checked_daemon_socket_path(require_runtime: bool) -> Result<Option<PathBuf>, String> {
     let socket_path = daemon_socket_path_for_unix_user(
         // SAFETY: geteuid has no preconditions and no side effects.
         unsafe { libc::geteuid() },
@@ -33,19 +42,25 @@ pub fn default_daemon_socket_path() -> Result<PathBuf, String> {
         socket_path.parent().and_then(Path::parent)
     }
     .expect("daemon socket path has a runtime parent");
-    let metadata = fs::metadata(runtime).map_err(|error| {
-        format!(
-            "could not inspect runtime directory {}: {error}",
-            runtime.display()
-        )
-    })?;
+    let metadata = match fs::metadata(runtime) {
+        Ok(metadata) => metadata,
+        Err(error) if !require_runtime && error.kind() == std::io::ErrorKind::NotFound => {
+            return Ok(None);
+        }
+        Err(error) => {
+            return Err(format!(
+                "could not inspect runtime directory {}: {error}",
+                runtime.display()
+            ));
+        }
+    };
     if metadata.uid() != current_uid() || metadata.permissions().mode() & 0o077 != 0 {
         return Err(format!(
             "runtime directory {} must be owned by the current user with mode 0700",
             runtime.display()
         ));
     }
-    Ok(socket_path)
+    Ok(Some(socket_path))
 }
 
 fn daemon_socket_path_for_unix_user(
@@ -313,7 +328,12 @@ mod tests {
         wait_for_socket(&socket);
         let client = SearchDaemonClient::new(socket);
 
-        assert_eq!(client.server_pid(), Ok(std::process::id()));
+        let reported_pid = client.server_pid();
+        #[cfg(target_os = "linux")]
+        let foreign_probe = (
+            client.stop_if_executable(Path::new("/not-the-owning-package/ottrin-indexd")),
+            client.ping(),
+        );
 
         client.shutdown().expect("shutdown daemon");
         daemon
@@ -321,6 +341,9 @@ mod tests {
             .expect("join daemon")
             .expect("daemon clean exit");
         let _ = fs::remove_dir_all(root);
+        assert_eq!(reported_pid, Ok(std::process::id()));
+        #[cfg(target_os = "linux")]
+        assert_eq!(foreign_probe, (Ok(false), Ok(())));
     }
 
     #[test]

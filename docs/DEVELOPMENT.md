@@ -718,3 +718,12 @@ ordered Windows Installer version. Published releases must advance a first-three
 semantic version field when ordering/downgrade protection is required. Verify
 that upgrading removes the old product registration, retains only the new one,
 preserves preferences/source data and migrates the per-user index task.
+
+
+## Native Linux package lifecycle
+
+DEB/RPM use `packaging/linux/native-package-lifecycle.sh` for native service cleanup and post-install refresh. User files are changed only after switching to that UID with a sanitized environment; effective executable ownership keeps independent portable/AppImage services intact. Removal performs ownership preflight before mutation, refuses unresolved offline overrides, and retains preferences, indexes and source files. Reinstall uses try-restart so stopped registrations remain stopped.
+
+The package's internal `ottrin-indexd --native-package-stop` operation also drains native session daemons without an installed unit. It authenticates a Unix peer, validates the executable path (including a deleted native image), keeps the connection used for validation, requests graceful upgrade preparation, and waits on the captured process fd. It does not create a daemon or load a user profile. Independent portable executables at the same user's endpoint are left alone.
+
+Native acceptance must exercise direct package-manager removal, not only application service removal followed by uninstall. Cover active/offline users, an independent portable service/session, protected Administrator state, cleanup failure before file deletion, preserved data and running/stopped reinstall behavior. Canonical offline configuration is currently supported; custom offline configuration roots and nonstandard runtime namespaces remain separate audit items. The Fedora fixture and exact draft evidence are under `.hermes/evidence/native-lifecycle-current/`; DPKG and clean-artifact acceptance remain explicit gates.

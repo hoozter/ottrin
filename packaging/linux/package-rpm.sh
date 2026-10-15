@@ -31,6 +31,8 @@ License: MIT
 URL: https://github.com/hoozter/ottrin
 BuildArch: $RPM_ARCH
 AutoReqProv: yes
+Requires: systemd
+Requires: /usr/sbin/runuser
 Requires: polkit
 Requires: /usr/bin/pkexec
 Requires: libc.so.6()(64bit)
@@ -59,12 +61,21 @@ Ottrin is a keyboard-first desktop file manager with Miller, List, and Grid view
 mkdir -p %{buildroot}
 cp -a %{_sourcedir}/stage/. %{buildroot}/
 
+%preun
+if [ \$1 -eq 0 ]; then
+    /usr/libexec/ottrin/native-package-lifecycle remove || exit \$?
+fi
+
+%posttrans
+/usr/libexec/ottrin/native-package-lifecycle refresh
+
 %files
 /usr/bin/ottrin
 /usr/bin/ottrin-indexd
 /usr/bin/ottrin-legacy-doc-render
 /usr/bin/ottrin-media-playback
 /usr/libexec/ottrin/ottrin-priv-helper
+/usr/libexec/ottrin/native-package-lifecycle
 /usr/libexec/ottrin/pdfium
 /usr/share/applications/org.ottrin.Ottrin.desktop
 /usr/share/icons/hicolor/scalable/apps/ottrin.svg

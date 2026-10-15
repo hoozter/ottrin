@@ -706,12 +706,14 @@ rpm2cpio "$LINUX_RPM" | (cd "$RPM_STAGE"; cpio -idm --quiet)
 for stage in "$DEB_STAGE" "$RPM_STAGE"; do
   for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
     usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
-    usr/libexec/ottrin/ottrin-priv-helper; do
+    usr/libexec/ottrin/ottrin-priv-helper usr/libexec/ottrin/native-package-lifecycle; do
     test -x "$stage/$executable" || {
       printf 'Native package is missing executable: %s\n' "$executable" >&2
       exit 1
     }
   done
+  cmp "$stage/usr/libexec/ottrin/native-package-lifecycle" \
+    "$ROOT/packaging/linux/native-package-lifecycle.sh"
   for payload in lib/libpdfium.so LICENSE licenses/pdfium.txt; do
     test -f "$stage/usr/libexec/ottrin/pdfium/$payload" || {
       printf 'Native package is missing PDFium payload: %s\n' "$payload" >&2
@@ -747,7 +749,7 @@ for stage in "$DEB_STAGE" "$RPM_STAGE"; do
 done
 DEB_LIBC_MIN="$(ottrin_native_glibc_requirement "$DEB_STAGE")"
 DEB_DEPENDS="$(dpkg-deb -f "$LINUX_DEB" Depends)"
-for dependency in "libc6 (>= $DEB_LIBC_MIN)" pkexec polkitd; do
+for dependency in "libc6 (>= $DEB_LIBC_MIN)" pkexec polkitd systemd util-linux; do
   if [[ ", $DEB_DEPENDS," != *", $dependency,"* ]]; then
     printf 'Linux DEB is missing runtime dependency: %s\n' "$dependency" >&2
     exit 1
@@ -755,12 +757,25 @@ for dependency in "libc6 (>= $DEB_LIBC_MIN)" pkexec polkitd; do
 done
 RPM_LIBC_MIN="$(ottrin_native_glibc_requirement "$RPM_STAGE")"
 RPM_DEPENDS="$(rpm -qp --queryformat '[%{REQUIRENAME}\n]' "$LINUX_RPM")"
-for dependency in "libc.so.6(GLIBC_$RPM_LIBC_MIN)(64bit)" polkit /usr/bin/pkexec; do
+for dependency in "libc.so.6(GLIBC_$RPM_LIBC_MIN)(64bit)" polkit /usr/bin/pkexec systemd /usr/sbin/runuser; do
   if ! grep -Fxq "$dependency" <<<"$RPM_DEPENDS"; then
     printf 'Linux RPM is missing runtime dependency: %s\n' "$dependency" >&2
     exit 1
   fi
 done
+
+DEB_CONTROL="$APPIMAGE_EXTRACT_DIR/deb-control"
+dpkg-deb -e "$LINUX_DEB" "$DEB_CONTROL"
+test -x "$DEB_CONTROL/prerm"
+test -x "$DEB_CONTROL/postinst"
+grep -Fq 'if [ "$1" = remove ]; then' "$DEB_CONTROL/prerm"
+grep -Fq '/usr/libexec/ottrin/native-package-lifecycle remove' "$DEB_CONTROL/prerm"
+grep -Fq 'if [ "$1" = configure ]; then' "$DEB_CONTROL/postinst"
+grep -Fq '/usr/libexec/ottrin/native-package-lifecycle refresh' "$DEB_CONTROL/postinst"
+RPM_SCRIPTS="$(rpm -qp --queryformat '%{PREUN}\n%{POSTTRANS}\n' "$LINUX_RPM")"
+grep -Fq 'if [ $1 -eq 0 ]; then' <<<"$RPM_SCRIPTS"
+grep -Fq '/usr/libexec/ottrin/native-package-lifecycle remove || exit $?' <<<"$RPM_SCRIPTS"
+grep -Fq '/usr/libexec/ottrin/native-package-lifecycle refresh' <<<"$RPM_SCRIPTS"
 
 verify_source_revision \
   'Linux AppImage' \

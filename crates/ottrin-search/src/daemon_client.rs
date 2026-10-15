@@ -75,6 +75,91 @@ impl SearchDaemonClient {
         }
     }
 
+    /// Package removal must also release session daemons, without stopping a
+    /// portable/AppImage daemon sharing the same user's endpoint.
+    #[cfg(target_os = "linux")]
+    pub fn stop_native_package_daemon() -> Result<bool, String> {
+        let Some(socket) = crate::daemon::existing_daemon_socket_path()? else {
+            return Ok(false);
+        };
+        Self::new(socket).stop_if_executable(std::path::Path::new("/usr/bin/ottrin-indexd"))
+    }
+
+    #[cfg(target_os = "linux")]
+    pub(super) fn stop_if_executable(&self, expected: &std::path::Path) -> Result<bool, String> {
+        use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+
+        let stream = match UnixStream::connect(&self.socket_path) {
+            Ok(stream) => stream,
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::NotFound | std::io::ErrorKind::ConnectionRefused
+                ) =>
+            {
+                return Ok(false);
+            }
+            Err(error) => return Err(format!("Cannot inspect native index daemon: {error}")),
+        };
+        let peer = crate::daemon::peer_credentials(&stream)?;
+        if peer.uid != crate::daemon::current_uid() || peer.pid <= 0 {
+            return Err("Native package daemon peer is not owned by this user".into());
+        }
+        // Keep both the authenticated connection and a process reference. The
+        // shutdown request uses this connection, never a re-opened endpoint.
+        // SAFETY: pidfd_open has no pointer arguments; peer.pid is positive.
+        let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, peer.pid, 0) };
+        if fd < 0 {
+            let error = std::io::Error::last_os_error();
+            if error.raw_os_error() == Some(libc::ESRCH) {
+                return Ok(false);
+            }
+            return Err(format!("Cannot retain native daemon process: {error}"));
+        }
+        // SAFETY: a successful pidfd_open returned an owned descriptor.
+        let process = unsafe { OwnedFd::from_raw_fd(fd as i32) };
+        let executable = match std::fs::read_link(format!("/proc/{}/exe", peer.pid)) {
+            Ok(executable) => executable,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => return Err(format!("Cannot identify index executable: {error}")),
+        };
+        let mut deleted = expected.as_os_str().to_os_string();
+        deleted.push(" (deleted)");
+        if executable != expected && executable.as_os_str() != deleted {
+            return Ok(false);
+        }
+        match self.transact_stream(stream, DaemonRequest::PrepareUpgrade)? {
+            DaemonResponse::Complete => (),
+            response => return Err(unexpected_response(response)),
+        }
+        let deadline = Instant::now() + Duration::from_secs(30);
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                return Err("Native index daemon did not exit before package removal".into());
+            }
+            let mut descriptor = libc::pollfd {
+                fd: process.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            };
+            // SAFETY: descriptor is live and contains a retained process fd.
+            let ready =
+                unsafe { libc::poll(&mut descriptor, 1, remaining.as_millis().min(30_000) as i32) };
+            if ready > 0 && descriptor.revents & libc::POLLIN != 0 {
+                return Ok(true);
+            }
+            if ready < 0
+                && std::io::Error::last_os_error().kind() == std::io::ErrorKind::Interrupted
+            {
+                continue;
+            }
+            if ready != 0 {
+                return Err("Cannot observe native daemon process exit".into());
+            }
+        }
+    }
+
     pub fn diagnostics(&self) -> Result<SearchIndexDiagnostics, String> {
         match self.transact(DaemonRequest::Status)? {
             DaemonResponse::Status { diagnostics } => Ok(*diagnostics),

@@ -38,6 +38,14 @@ fn daemon_launch(args: &[String]) -> Result<DaemonLaunch, String> {
 #[cfg(unix)]
 fn main() {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
+    #[cfg(target_os = "linux")]
+    if args == ["--native-package-stop"] {
+        if let Err(error) = ottrin_search::SearchDaemonClient::stop_native_package_daemon() {
+            eprintln!("ottrin index package cleanup: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     let launch = daemon_launch(&args).unwrap_or_else(|error| {
         eprintln!("ottrin index daemon: {error}");
         std::process::exit(2);
