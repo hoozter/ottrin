@@ -1,0 +1,23 @@
+{
+    "scope":  "Final fcf00aa NSIS fresh/lock/refusal lifecycle; separate earlier QA-only abort setup exercises task restoration",
+    "phase":  "uninstalled",
+    "after":  {
+                  "instance":  "{D1A2E431-D8BC-4749-BF4F-F8AA9DC90CE0}",
+                  "pid":  4304
+              },
+    "fresh":  {
+                  "instance":  "{8920E0D9-1158-403D-ACEF-879034CDA39F}",
+                  "pid":  5812
+              },
+    "payload_files":  51,
+    "before":  {
+                   "instance":  "{2DC1AD9C-40AB-4A12-AAA9-69C4B878E70B}",
+                   "pid":  6080
+               },
+    "lock_refusal_exit":  1,
+    "failure_exit":  73,
+    "fixed_setup_sha256":  "075a537f2852f9b60422fc5a47af4812ec22c6d49395c5df4df401ad49204710",
+    "failure_setup_sha256":  "dcbe7b2fec657870ebe4cc2d548b506b0cc4a368a7e88155654b6427cb3144d0",
+    "status":  "pass",
+    "invalid_refusal_exit":  1
+}

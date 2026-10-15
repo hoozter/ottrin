@@ -1,0 +1,37 @@
+{
+    "installer_sha256":  "075a537f2852f9b60422fc5a47af4812ec22c6d49395c5df4df401ad49204710",
+    "preference_hash":  "EDEC0B676147FF9F4AE16B951767633B0E8E1E0736ADD5D1964BD91BF1D0D756",
+    "after":  {
+                  "instance":  "{DE48D354-7E68-47B6-AE0C-51B505567CAF}",
+                  "pid":  7852
+              },
+    "payload_files":  51,
+    "before":  {
+                   "instance":  "{F803B5CC-5CAB-4430-9901-B0C0DFE59D9F}",
+                   "pid":  6392
+               },
+    "phase":  "accepted",
+    "before_security":  "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:AI(A;ID;0x1f019f;;;BA)(A;ID;0x1f019f;;;SY)(A;ID;FA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)",
+    "scope":  "Clean fcf00aa NSIS published410 running upgrade and intent matrix; ordinary interactive user",
+    "runtime_cases":  [
+                          {
+                              "status":  "pass",
+                              "running":  true,
+                              "enabled":  false
+                          },
+                          {
+                              "status":  "pass",
+                              "running":  false,
+                              "enabled":  true
+                          },
+                          {
+                              "status":  "pass",
+                              "running":  false,
+                              "enabled":  false
+                          }
+                      ],
+    "status":  "pass",
+    "setup_exit":  0,
+    "before_enabled":  true,
+    "source_hash":  "2085FCCC824C317A745F24FDAF4137F34065A5D2424B764AC710CC0C089FF766"
+}

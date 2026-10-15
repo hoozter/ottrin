@@ -1,0 +1,19 @@
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 1m 42s
+    Finished `release` profile [optimized] target(s) in 0.45s
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+/tmp/tmp.LozTn95lks/pdfium.tgz: OK
+/tmp/tmp.cfA2f4ALrA/mesa.7z: OK
+/tmp/tmp.cfA2f4ALrA/mesa-source.tar.gz: OK
+/tmp/tmp.cfA2f4ALrA/pal1000-LICENSE.txt: OK
+/tmp/tmp.cfA2f4ALrA/dxc.zip: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/opengl32.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/libEGL.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/libGLESv2.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/libgallium_wgl.dll: OK
+/tmp/tmp.cfA2f4ALrA/dxc/LICENSE-MS.txt: OK
+/tmp/tmp.cfA2f4ALrA/dxc/bin/x64/dxil.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-portable.zip

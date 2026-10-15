@@ -1,0 +1,14 @@
+{
+    "uninstall_exit":  0,
+    "phase":  "uninstalled",
+    "payload_files":  51,
+    "install_exit":  0,
+    "scope":  "Clean fcf00aa MSI native fresh ordinary-user lifecycle",
+    "installer_sha256":  "f28a7f143edba14fd972781c1fbe4a6c368ec8cc9037d05a5b3d7b84dba15108",
+    "status":  "pass",
+    "product":  "{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}",
+    "live":  {
+                 "instance":  "{D421363A-4FB6-4483-AD02-7B2B070E1C1F}",
+                 "pid":  4616
+             }
+}

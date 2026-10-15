@@ -1,0 +1,37 @@
+{
+  "status": "clean staged candidates with scoped native acceptance; unpublished",
+  "source_revision": "fcf00aaee547085517300a5f5d32925c323dd2ae",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "3ea27c533774afb54ddcf9fabc83fa039cb3008e2f032007d4140bcd0a8636b9",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "075a537f2852f9b60422fc5a47af4812ec22c6d49395c5df4df401ad49204710",
+    "Ottrin-0.1.0-windows-x64.msi": "f28a7f143edba14fd972781c1fbe4a6c368ec8cc9037d05a5b3d7b84dba15108"
+  },
+  "checks": [
+    "All51 portable and NSIS payload identities match current clean stage and current docs",
+    "NSIS independent embedded controller matches current stage indexd",
+    "Exact NSIS running upgrade and all four login/runtime-intent cases pass",
+    "Exact NSIS fresh install/uninstall, concurrent setup and corrupt-journal refusal pass",
+    "Exact MSI ordinary-user fresh install/uninstall passes, all51 installed bytes match",
+    "Sources/preferences preserved; temporary account/profile/password/tasks/staging removed; prior login values restored"
+  ],
+  "native_scope": "Earlier651 MSI upgrade/repair and NSIS prototype matrix have separately bound receipts; not inherited as exact current-artifact acceptance",
+  "publication": "Unpublished; MSI failed-transaction product-registration rollback remains open",
+  "evidence": ".hermes/evidence/windows-upgrade-current/",
+  "native_nsis_upgrade": "FINAL_NSIS_UPGRADE.json",
+  "native_nsis_fresh_lock_and_refusal": "FINAL_NSIS_FRESH.json",
+  "native_msi_fresh": "FINAL_MSI_FRESH.json",
+  "contents": "FINAL_ARCHIVE_CONTENTS.json",
+  "cleanup": "FINAL_GUEST_CLEANUP.json",
+  "domain_final_state": "shut off",
+  "limits": [
+    "Current MSI fresh lifecycle passes; repeat running upgrade/repair against this exact MSI before promotion. Previous651 MSI upgrade/repair has separately bound passing evidence.",
+    "MSI failed-transaction product registration rollback remains open.",
+    "NSIS task restoration does not implement full payload rollback after a partially completed file copy.",
+    "Abort fixture is an earlier separately hashed QA-only setup, not the final published setup.",
+    "Current login/reboot, standalone portable-path, wider native GUI/DPI/Office and production signing acceptance remain separate."
+  ],
+  "fixture_notes": [
+    "Initial failure fixture incorrectly assumed running state after disabled-idle; corrected fixture explicitly starts it.",
+    "File-based cleanup invocation was blocked before execution by default PowerShell policy; the identical trusted cleanup text then ran through the normal QGA encoded-command runner. No policy setting was changed."
+  ]
+}
