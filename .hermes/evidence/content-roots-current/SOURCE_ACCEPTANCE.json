@@ -1,0 +1,57 @@
+{
+  "status": "pass",
+  "date": "2026-10-16",
+  "source_revision": "61bfab9d4fc7cc6b73f020d69ad1286a456a98fa",
+  "linux": {
+    "status": "pass",
+    "scope": "Full Linux search-library suite, serial, with private TMPDIR",
+    "owned_process_group": 2669810,
+    "exit": 0,
+    "passed": 232,
+    "failed": 0,
+    "ignored": 2,
+    "performance_isolation": "Owned idle Windows VM suspended during Linux suite and resumed afterward",
+    "cleanup": "Owned process group stopped before private TMPDIR removal"
+  },
+  "windows": {
+    "status": "pass",
+    "ordinary_user": true,
+    "passed": 216,
+    "failed": 0,
+    "ignored": 6,
+    "elapsed_seconds": 107.23,
+    "binary": {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-baeb8ec95f6d2cd8.exe",
+      "sha256": "029e47664ca5676ac9793b7f3ec2db5e3f00987618d712bfa99612d33611befd"
+    },
+    "actor": {
+      "exit": 0,
+      "filter": "",
+      "child_working_directory": "C:\\WINDOWS\\System32",
+      "temporary_entries_after_tests": 0,
+      "scope": "Full native search-library tests as a disposable ordinary user; no installed-app claim",
+      "ripgrep_available": false,
+      "status": "pass"
+    }
+  },
+  "checks": [
+    "Independent disjoint, metadata-excluded nested and zero-metadata saved-content roots survive read-only reload without live fallback",
+    "Real watcher edits, subtree moves/deletion and detach when content disabled",
+    "Missing optional content folder leaves metadata ready and recovers at unchanged 60-second retry, then follows edits",
+    "Filename query paths share recorded metadata membership",
+    "Canonical rowid binding prevents stale pathname postings and duplicate results",
+    "Older private caches are rebuilt; future cache versions refused without mutation",
+    "Strict Linux and Windows app/search all-target Clippy; formatting and diff validation"
+  ],
+  "control": {
+    "scope": "Reintroduced former read-time filesystem admission in the current stream; retained implementation restored byte-for-byte",
+    "control_failed": true,
+    "restored_source_sha256": "603c68cc457fd67c0bf1b01d0da38b7cde4ad792f8b8f9e6211f7cc8fd258a5a",
+    "note": "Initial draft used literal AND; only the corrected implicit-AND control is evidence"
+  },
+  "limits": [
+    "Source/library acceptance only; exact rebuilt packages pending",
+    "Positive content totals still need complete/lower-bound pagination semantics; no exact-total claim",
+    "No blocked-network-IO isolation, configured-root ancestor/junction, physical storage, login/reboot or broad GUI claim"
+  ]
+}

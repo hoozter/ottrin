@@ -1,105 +1,82 @@
 {
   "date": "2026-10-16",
-  "source_revision": "937d773497dc232fb713f4f671aa9d61212b8d3e",
-  "binary_build_revision": "51a56e4c08fd8e011882447342d89b107b604ff6",
-  "binary_reuse": "937d773 changes only the RPM payload list; all runtime sources equal the clean 51a56e4 build",
+  "source_revision": "61bfab9d4fc7cc6b73f020d69ad1286a456a98fa",
+  "binary_build_revision": "61bfab9d4fc7cc6b73f020d69ad1286a456a98fa",
   "artifacts": {
-    "Ottrin-0.1.0-x86_64.AppImage": "9de4701132ec0bafc0a2a6a3ed5616e261319d8bc8ebc0e2024a84142faa9907",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "152909cce0249028ff3d5b7d1b088365c959deca7f01e393efa20bb3b2f17ded",
-    "ottrin_0.1.0_amd64.deb": "91e78ca24faae27aaebac28919413765f93079c9ef41f0ee790c9e563743705c",
-    "ottrin-0.1.0-1.x86_64.rpm": "7050b9bb8fca1b56a9e3b6b404e7a2083bcf5fd7a5d95ecfe3dd4060ccc7d49f"
+    "Ottrin-0.1.0-x86_64.AppImage": "e9944a7b4951d4c1d233c4abdaed135954cc89d5a926709bac887ef1a3182f74",
+    "ottrin_0.1.0_amd64.deb": "c6ec483c3834d76a3f253823cd955e82c035532e2d0e9243e45be09266c1051d",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "8fb27e174c447740990822dfd46e64e1bd641f6f44c981dbc68612d8ddcbdc5d",
+    "ottrin-0.1.0-1.x86_64.rpm": "d5099fec6ff863a57ece94c2670433e08bf95345542cf992ad68942b9b272912"
   },
   "checks": [
-    "Exact extracted AppImage, portable, DEB and RPM public content-search CLI with a private profile and PATH restricted to wrapper tools",
-    "Pinned provider identity (RPM executable/data sections after normal ELF stripping) and full notice set",
-    "Content-only roots, folder scope, Unicode names, size/type/exclusion policy, external tool config ignored",
-    "Missing provider reports an error while retaining filename hits; disabled content reports settings guidance",
-    "Private AppImage daemon follows existing/new nested directory renames; fixture contents preserved",
-    "All package payloads match release binaries; RPM executable/data sections match after normal stripping"
+    "Full source search suites: Linux 232 passed / 2 ignored; native ordinary-user Windows 216 passed / 6 ignored",
+    "Strict Linux and Windows app/search all-target Clippy, formatting and diff checks",
+    "All four exact extracted packages: saved-content roots independent of metadata, real watched edits/subtree moves/deletion, disable/detach, zero metadata roots",
+    "Pinned provider/notices, clean PATH, Unicode and scope/privacy policy; explicit damaged-provider errors retain indexed results",
+    "All Linux executable payloads match release binaries; RPM executable/data sections match after standard stripping",
+    "Exact current AppImage GUI: stable PDF fit, shared title bar, read-only VCF arrows/Space, explicit Edit/Save"
   ],
-  "package_content_evidence": ".hermes/evidence/content-provider-current/PAYLOAD_VERIFICATION.json",
-  "content_evidence": ".hermes/evidence/content-provider-current",
-  "daemon_evidence": ".hermes/evidence/content-provider-current/LINUX_DAEMON_ACCEPTANCE.json",
-  "previous_preview_acceptance": {
-    "source_revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
-    "artifacts": {
-      "Ottrin-0.1.0-x86_64.AppImage": "7e8a921e829b818ab81ccaca0f762a49391843361d98b81c90d8bfc0103f0b9a",
-      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7a8c2ee3997f2cb374fc8e2fc92460c39fd8b3969292e167322163f209663284",
-      "ottrin_0.1.0_amd64.deb": "b5e09a4dee61c36d6403d20c66d502656874ffa796c9ddb400e0004ffbdf0770",
-      "ottrin-0.1.0-1.x86_64.rpm": "44288e8314335284783e226276c9f30fb462c979ce2afd207f16f6c926524f5f"
+  "source_evidence": ".hermes/evidence/content-roots-current/SOURCE_ACCEPTANCE.json",
+  "package_content_evidence": ".hermes/evidence/content-roots-current/PAYLOAD_VERIFICATION.json",
+  "content_evidence": ".hermes/evidence/content-roots-current",
+  "idle_cpu": {
+    "Ottrin-0.1.0-x86_64.AppImage": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
     },
-    "evidence": ".hermes/evidence/preview-safety-current/ACCEPTANCE.json"
+    "ottrin_0.1.0_amd64.deb": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    },
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "percent_single_core": 0.19998633929360615,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    },
+    "ottrin-0.1.0-1.x86_64.rpm": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    }
   },
-  "limits": [
-    "Host Linux exact extracted-package CLI and daemon only; no fresh distro lifecycle or current GUI/physical GPU claim",
-    "Earlier preview/UI and distro lifecycle receipts retain original artifact scopes",
-    "Independent saved-content roots and background watcher coverage remain required",
-    "Windows and broader release gates remain separate"
-  ],
   "preview_recheck": {
-    "date": "2026-10-16",
     "status": "pass",
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "sha256": "9de4701132ec0bafc0a2a6a3ed5616e261319d8bc8ebc0e2024a84142faa9907",
-    "cases": {
-      "current-appimage-recheck": {
-        "theme": "Dark",
-        "desktop_scale": 1.0,
-        "font_scale": 1.0,
-        "opened": "Ottrin Quick Inspector \u2014 a.vcf",
-        "header_edge_color": [
-          30,
-          34,
-          39
-        ],
-        "header_center_color": [
-          30,
-          34,
-          39
-        ],
-        "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
-        "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
-        "space_closed": true,
-        "vcf_bytes_unchanged": true,
-        "settled_capture_count": 70,
-        "distinct_settled_boxes": 1,
-        "cleanup": {
-          "profile_removed": true,
-          "private_processes": []
-        }
+    "sha256": "e9944a7b4951d4c1d233c4abdaed135954cc89d5a926709bac887ef1a3182f74",
+    "case": {
+      "theme": "Dark",
+      "desktop_scale": 1.0,
+      "font_scale": 1.0,
+      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+      "header_edge_color": [
+        30,
+        34,
+        39
+      ],
+      "header_center_color": [
+        30,
+        34,
+        39
+      ],
+      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+      "space_closed": true,
+      "vcf_bytes_unchanged": true,
+      "explicit_edit": {
+        "draft_kept_file_unchanged": true,
+        "explicit_save_published_marker": true
       },
-      "current-edit-recheck": {
-        "theme": "Dark",
-        "desktop_scale": 1.0,
-        "font_scale": 1.0,
-        "opened": "Ottrin Quick Inspector \u2014 a.vcf",
-        "header_edge_color": [
-          30,
-          34,
-          39
-        ],
-        "header_center_color": [
-          30,
-          34,
-          39
-        ],
-        "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
-        "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
-        "space_closed": true,
-        "vcf_bytes_unchanged": true,
-        "explicit_edit": {
-          "draft_kept_file_unchanged": true,
-          "explicit_save_published_marker": true
-        },
-        "settled_capture_count": 70,
-        "distinct_settled_boxes": 1,
-        "cleanup": {
-          "profile_removed": true,
-          "private_processes": []
-        }
+      "settled_capture_count": 70,
+      "distinct_settled_boxes": 1,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": []
       }
     },
-    "scope": "Exact current AppImage in private Xvfb/X11 and software OpenGL, Dark at 100 percent scale. Real rendered PDF sizing, VCF keyboard navigation and source preservation, edge-aligned title bar, explicit Edit and Save. Not physical Wayland/GPU or Windows acceptance.",
-    "evidence": ".hermes/evidence/preview-safety-current"
-  }
+    "scope": "Private Xvfb/X11, software OpenGL, Dark 100%; no physical Wayland/GPU claim"
+  },
+  "limits": [
+    "Tiny fixture CPU is not live-home/content-enabled workload acceptance",
+    "No fresh distro install/upgrade, physical storage, login/reboot, broad GUI/DPI or blocked-network-IO isolation claim",
+    "Positive-content totals/pagination, configured-root ancestor/junction and other roadmap gates remain open",
+    "Windows installer rollback and public release remain separate"
+  ]
 }

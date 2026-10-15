@@ -10,7 +10,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Linux delivery status
 
-The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. The current `937d773` cohort adds a bundled live-content search provider and explicit provider errors to the saved appearance/view repairs, menu consistency, native index-service cleanup, read-only Inspector entry and stable PDF fitting. All four exact extracted packages pass public CLI content queries with restricted PATH, separate content folders, scope/privacy policy and damaged-provider checks. The exact AppImage daemon follows existing/new nested directory renames in a private profile; executable payload identity is verified across all four formats. Runtime binaries come from clean `51a56e4`; `937d773` changes only RPM's payload list. Earlier `0040b44` preview/UI and Ubuntu/Fedora lifecycle receipts retain their original exact artifact scope. These focused checks do not close the broader release gates below.
+The current local Linux artifacts, exact revisions, checksums and scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM use clean source `61bfab9` at stable paths under `dist/packages/`. All four exact extracted packages pass independent saved-content extraction/watch checks, edits, subtree moves/deletion, disabled-watch removal and content-only operation with zero metadata roots. Clean-PATH provider, scope/privacy and damaged-provider checks also pass. Executable payload identity is verified across all four formats. Five-second settled tiny-fixture CPU samples range from 0% to 0.2% of one core; this is not acceptance for the operator's full workload. The exact AppImage also passes isolated Dark 100% PDF stability, shared Inspector title bar, read-only VCF navigation/Space and explicit Edit/Save checks. Earlier theme/DPI, distro lifecycle and broader GUI receipts retain their original exact artifact scopes. These focused checks do not close the broader release gates below.
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
@@ -23,13 +23,15 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 Public portable, NSIS and MSI at the stable `dist/` paths still use clean source
 `41027a0`; identities remain in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. The newer
 coherent internal cohort at `.hermes/packaging-tmp/windows-current/` uses clean
-source `937d773`. Its `CANDIDATE_ACCEPTANCE.json` records all three exact hashes,
+source `61bfab9`. Its `CANDIDATE_ACCEPTANCE.json` records all three exact hashes,
 57 payload identities and bounded accepted scopes. Portable, NSIS and native MSI
 administrative extraction agree for every payload file, including the pinned
 live-content provider and its notices.
 
-All three current packages pass ordinary-user public CLI content search with no
-provider on PATH, Unicode filenames, content folders outside filename roots,
+All three current packages pass ordinary-user saved-content extraction and real
+watcher edits, subtree moves/deletion, watch detachment and zero-metadata-root
+operation. Public CLI checks also cover no provider on PATH, Unicode filenames,
+content folders outside filename roots,
 current-folder scope, size/type/exclusion policy and ignored external provider
 configuration. The portable test removes its provider and verifies an explicit
 nonzero error while filename results remain available; disabled content points
@@ -37,11 +39,11 @@ to settings. NSIS and MSI pass normal per-user install/uninstall, installed
 payload identity and content queries through their scheduled daemon. These are
 positive lifecycle checks, not failed-registration rollback acceptance.
 
-The updated native search library passes 209 tests with six specialized tests
-excluded; its temporary namespace is empty afterward. Linux passes 225 with two
-storage measurements excluded. Strict app/search Clippy passes for both targets.
-Source, actual PowerShell staging/checksum rejection and exact package evidence:
-`.hermes/evidence/content-provider-current/ACCEPTANCE.json`.
+The updated native search library passes 216 tests with six specialized tests
+excluded; its temporary namespace is empty afterward. Linux passes 232 with two
+storage measurements excluded. Strict app/search all-target Clippy passes for both
+targets. Source, exact packages, native lifecycle, payload identities and cleanup:
+`.hermes/evidence/content-roots-current/ACCEPTANCE.json`.
 
 The previous clean `3d24d47` NSIS passed twenty ordinary-user GUI Cut/Paste cases:
 populated folders and mixed file/folder batches, with unoccupied, Replace, Keep
@@ -64,7 +66,10 @@ packages are removed after their compact receipts are retained.
 Failed-transaction MSI registration rollback remains open: the rejected
 `3ddb1bf` package and early-execution prototype reproduced advertised product
 state and access-denied rollback. Positive install checks do not close that gate.
-Independent saved-content roots and watcher coverage are implemented in the current source checkpoint below; the published packages above still predate that work. Exact positive-content totals/pagination remain required: sampled FTS/live candidates must not be presented as a proven complete total. Configured-root ancestors,
+Independent saved-content roots and watcher coverage pass the current Linux and
+internal Windows package checks. Exact positive-content totals/pagination remain
+required: sampled FTS/live candidates must not be presented as a proven complete
+total. Configured-root ancestors,
 junction isolation, physical storage, Undo/interruption, current exact upgrade/
 repair and reboot/login, broader GUI/DPI, Office, graphics/media and signing gates
 remain open. Internal candidates stay unpublished; user testing is deferred.
@@ -3273,7 +3278,7 @@ remain unchanged because the independent MSI registration rollback gate remains
 open. Saved-content persistence/watch coverage outside filename roots is the
 next required indexing outcome; the full roadmap goal remains active.
 
-### Independent saved-content folders — source checkpoint (2026-10-16)
+### Independent saved-content folders — source and package acceptance (2026-10-16)
 
 The scan/watch plan now admits enabled content folders independently of metadata
 locations and exclusions, including a profile with zero metadata roots. Canonical
@@ -3290,7 +3295,27 @@ the unchanged 60-second initial retry and subsequent watched edits. Retry
 backoff, blocked network filesystem calls and configured-root ancestor/junction
 isolation retain their separate acceptance requirements.
 
-The full Linux search suite passes 232 tests (2 ignored); strict Linux and Windows
-app/search all-target Clippy passes. Native Windows and exact rebuilt package
-checks are in progress. Current stable deliverables remain the accepted cohort
-listed above until replacement packages pass their checks.
+Clean source `61bfab9` passes the full Linux search suite (232 passed, 2 ignored)
+and ordinary-user native Windows suite (216 passed, 6 ignored). Strict Linux and
+Windows app/search all-target Clippy, formatting and diff checks pass. Controlled
+regression evidence reproduces the prior filename membership inconsistency and
+passes with stored membership restored.
+
+All four current Linux packages and all three internal Windows packages pass
+saved-only extraction/watch checks with real edits, subtree moves/deletion,
+disabling content and zero metadata roots. Content-only files stay absent from
+native filename results. Clean-PATH provider/privacy/error checks pass. Portable,
+NSIS and native MSI extraction match all 57 Windows payload files; NSIS and MSI
+pass normal ordinary-user install, scheduled-daemon content query and uninstall.
+The new AppImage also passes isolated preview geometry, keyboard/data safety and
+explicit Edit/Save. The owned Windows COW guest, NVRAM, TPM and disk are removed;
+original stopped domains, backing images and original profile/installation are
+preserved. Superseded internal Windows generated output is removed.
+
+Current Linux receipt: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Internal
+Windows receipt: `.hermes/packaging-tmp/windows-current/CANDIDATE_ACCEPTANCE.json`.
+Compact evidence: `.hermes/evidence/content-roots-current/ACCEPTANCE.json`.
+Public Windows remains unchanged pending failed-registration MSI rollback.
+Exact positive-content totals/pagination is the next indexing outcome; network
+I/O isolation, configured-root ancestor/junction and the other roadmap gates
+remain separate. The full roadmap goal stays active; user testing is deferred.
