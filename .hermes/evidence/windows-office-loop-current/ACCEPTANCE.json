@@ -1,0 +1,20 @@
+{
+  "status": "Fresh-source synchronous Calc and caller-pumped Calc/Impress timeout; no production repair accepted",
+  "source_revision": "e8aace609ee737c1ea8ae8d6c90f9f69363c7b92",
+  "baseline": "Existing production helper and package unchanged; diagnostic probes derive from retained C controls",
+  "valid_controls": {
+    "synchronous": "office-loop-current2/results.json",
+    "caller_message_pump": "office-loop-current3/results.json"
+  },
+  "findings": [
+    "Fresh Writer diagnostic converts in 14141ms, exit0; exported PDF independently contains both DOCX BASELINE and PAGE TWO",
+    "Fresh synchronous XLS diagnostic reaches watchdog exit124 at30538ms with no PDF",
+    "Fresh caller-pumped XLS and ODP each reach watchdog exit124 at30226ms and30162ms with no PDF",
+    "Original corpus contains a preexisting .~lock.sheet.xls#; direct-original controls returned load failure and are not accepted as evidence about thread ownership",
+    "WCT capture exposes per-thread states but reports no dependency cycle; no deadlock root cause established"
+  ],
+  "invalid_fixture_scope": "office-loop-current/results.json records null exit codes because of Process handle acquisition; excluded from exit-code acceptance. Later scripts acquire the process handle before waiting and refuse unavailable exit codes.",
+  "environment": "Network-isolated existing owned Windows QA guest, medium-integrity interactive token, Administrators deny-only; installed LibreOffice26.8.1.1; uncontained diagnostics only",
+  "next_boundary": "Caller queue pumping is rejected. Production containment, macro positive control, all formats/fidelity and exact-package gates remain open. Do not enable provider or repeat the stale-original probe.",
+  "cleanup": "cleanup.log; exact probe task/processes, copied fixtures and uploaded executables/scripts removed. Existing corpus including stale lock and user installation preserved; guest shutdown separately verified."
+}

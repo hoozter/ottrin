@@ -21,7 +21,18 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 ## Current Windows local delivery — 2026-10-15
 
 Portable, NSIS and MSI at the stable `dist/` paths use clean source `41027a0`.
-A newer coherent candidate from clean `1662557` is staged under `.hermes/packaging-tmp/windows-current/`. It fixes the reproduced cold Windows CLI output-handle leak. All 51 portable/NSIS files and 53 natively extracted MSI files match the stage/source; native SYSTEM/private-profile CLI EOF, daemon reuse, watcher changes and persisted restart pass. Fresh ordinary-user NSIS/MSI lifecycle and focused GUI acceptance now pass, while the running-daemon upgrade and packaging the newer startup work-area repair still prevent promotion. Updated native scopes: `.hermes/evidence/windows-desktop-current/ACCEPTANCE.json`. Exact candidate hashes and limits: `.hermes/evidence/windows-package-current/CANDIDATE_ACCEPTANCE.json`. The native acceptance described next retains its published `41027a0` scope.
+Newer coherent candidates from clean `fcf00aa` are staged under
+`.hermes/packaging-tmp/windows-current/`. Their exact hashes and native scopes are
+in that directory's `CANDIDATE_ACCEPTANCE.json`. The exact NSIS passes fresh
+installation/removal, running-daemon replacement, enabled/disabled running/idle
+intent preservation, concurrent-setup refusal and corrupt-journal refusal. The
+exact MSI passes fresh installation/removal, published-to-candidate upgrade with
+a running daemon, and all four repair-intent cases without requiring reboot.
+Failed-transaction MSI registration rollback remains rejected, including
+independent file-only controls, so these candidates remain unpublished. Broader
+current GUI/DPI, login/reboot, Office, NSIS full payload rollback and signing gates
+remain separate. The native acceptance described next retains its published
+`41027a0` scope.
 
 Current installed NSIS native GUI acceptance verifies readable drive breadcrumbs,
 actual drive-root navigation with its full file column visible, exact address
@@ -36,7 +47,7 @@ are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json` and
 
 The preceding `4a0c13b` reboot, cleanup-failure/retry and populated-index CPU/offline
 results remain historical evidence for that revision. Current exact reboot/login,
-upgrade/repair, MSI failed-transaction registration rollback, interactive-installer
+MSI failed-transaction registration rollback, interactive-installer
 breadth and physical GPU gates remain open. These are local test builds, not full
 release acceptance. The October 11 snapshot below is historical.
 
@@ -2698,3 +2709,26 @@ is about45 percent faster than3961 ms, with stronger monitoring. Finalization
 remains approximately linear in the monitored fixture. Native receipt-unmount,
 exact package workflow, broad resource and platform gates retain their recorded
 scopes; delivery is recorded in `dist/packages/COPY_PAYLOAD_ACCEPTANCE.json`.
+
+
+### Windows Office caller-queue hypothesis — fresh native rejection, 2026-10-15
+
+A new ordinary interactive-user control copies each Office fixture into a fresh
+owned directory before loading it. This matters because the original retained
+spreadsheet corpus has a stale LibreOffice lock: direct-original controls return
+a generic load failure rather than testing the previously observed timeout. The
+first diagnostic runner also recorded unavailable exit codes; those results are
+excluded, and the corrected runner pins the process handle before waiting.
+
+With fresh copies, synchronous Kit converts Writer in14.14 seconds and its PDF
+independently contains both expected page markers. Synchronous Calc reaches its
+30-second watchdog without a PDF. Keeping the caller thread pumping while a
+worker loads fresh XLS and ODP also reaches the watchdog in both cases. This
+rejects caller-queue pumping as a repair with valid inputs; it does not establish
+a deadlock cause. Native wait-chain capture reports per-thread states without a
+dependency cycle. Production code, containment and stable packages are unchanged;
+the Windows Office provider remains gated. All-format/fidelity, macro-positive
+control and exact-package acceptance remain open. Evidence and precise scope:
+`.hermes/evidence/windows-office-loop-current/ACCEPTANCE.json`. Exact probe tasks,
+processes, uploads and copied fixture/profile directories were removed; the
+original corpus, stale lock and operator installation were preserved.

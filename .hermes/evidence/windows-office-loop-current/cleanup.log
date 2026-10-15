@@ -1,0 +1,74 @@
+{
+    "scope":  "Only exact named probe task, probe executables/scripts and three task-owned directories removed; preexisting corpus, lock, installation and user profile preserved",
+    "owned_probe_processes":  0,
+    "original_corpus_retained":  [
+                                     {
+                                         "sha256":  "1d7f985068aafaf0890e0ad08011f192cc9997358de9924517d22a541ccdcb7a",
+                                         "name":  ".~lock.sheet.xls#",
+                                         "length":  109
+                                     },
+                                     {
+                                         "sha256":  "5b5650beb0301749429a48e3b9478fe60cc85027cb034b76304f37d0b3e7c201",
+                                         "name":  "document.doc",
+                                         "length":  11264
+                                     },
+                                     {
+                                         "sha256":  "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6",
+                                         "name":  "document.docx",
+                                         "length":  1997
+                                     },
+                                     {
+                                         "sha256":  "b8fcaae59b9e42fd6b5066cfb035ff02f055397aaecd551e26844356611e645d",
+                                         "name":  "document.odt",
+                                         "length":  14654
+                                     },
+                                     {
+                                         "sha256":  "2e8c7f710c5d2c5e1224aa97f01c07b6560b33fc593a775499945e8903c65a4e",
+                                         "name":  "sheet.fods",
+                                         "length":  602
+                                     },
+                                     {
+                                         "sha256":  "8e27336b61a2cd8cbc205fb739098966571752c1c914acfe3de69be98aa69f7c",
+                                         "name":  "sheet.ods",
+                                         "length":  7851
+                                     },
+                                     {
+                                         "sha256":  "46f322d0f3abd8c123ddbbc4525591c231df2eade6011b3e4f2ce913a183328d",
+                                         "name":  "sheet.xls",
+                                         "length":  5632
+                                     },
+                                     {
+                                         "sha256":  "4ce94083836cd9ac390172f641e527f61b8c532d00060c03f44950c0119ffdef",
+                                         "name":  "sheet.xlsm",
+                                         "length":  5550
+                                     },
+                                     {
+                                         "sha256":  "25c7f92e985c0c54cef19c4cd5729d4d9178921700e2accc668e2eff3e821b04",
+                                         "name":  "sheet.xlsx",
+                                         "length":  5536
+                                     },
+                                     {
+                                         "sha256":  "ee96d041b975ea4e77f06d9e649da699e3ef823e5562bcc5781ed570d132b6a4",
+                                         "name":  "slides.fodp",
+                                         "length":  685
+                                     },
+                                     {
+                                         "sha256":  "5707e39fdc142ad0848bede56a45cb20f352acbe3e4f963b79c35f11160f77ae",
+                                         "name":  "slides.odp",
+                                         "length":  11067
+                                     },
+                                     {
+                                         "sha256":  "b98dc138a8499e8d35d87249ea3feba885ad4e45067890ee2c6fef70d616d9b2",
+                                         "name":  "slides.pptx",
+                                         "length":  8185
+                                     }
+                                 ],
+    "executable_sha256":  {
+                              "office-loop-control-wct.exe":  "75873d240bb3f7a393168c068d93d2be945f9d4a7d2a18264088356e28e8a602",
+                              "office-loop-pump.exe":  "2442592e2eb8d4bcbf016621f8e53b521585665352205a1e12f681df86f9d304",
+                              "office-loop-control.exe":  "e0f9ccba59e99446235c0eaa27771179c7a9e34445b886b2f73618dda8e3eb80"
+                          },
+    "owned_task_removed":  true,
+    "status":  "pass",
+    "private_fixture_roots_removed":  true
+}

@@ -1,0 +1,19 @@
+{
+  "compiler": "x86_64-w64-mingw32-gcc (GCC) 13-win32",
+  "source_sha256": {
+    ".hermes/evidence/windows-office-loop-current/control.c": "c92d7dbeaf63e3e534f96aacfcbed491321aa036cd8e12049bb33f3a271d4083",
+    ".hermes/evidence/windows-office-loop-current/pump.c": "47ce9b144e29aa8bcfde015f53988c36a4569daebc660ee23008fcc960455d50",
+    ".hermes/evidence/windows-20261010/kit-headers/LibreOfficeKit/LibreOfficeKit.h": "b64561b8b1a19c7d06d91d52c821c68cf2fcbf0206d1cf0b742b4b0889c8cae4",
+    ".hermes/evidence/windows-20261010/kit-headers/LibreOfficeKit/LibreOfficeKitTypes.h": "62534a5f692c327b0be1b6c0331ca160347e815f6f702cf3faf6a5cea44d6464"
+  },
+  "commands": [
+    "x86_64-w64-mingw32-gcc -D_WIN32_WINNT=0x0601 -municode -I.hermes/evidence/windows-20261010/kit-headers .hermes/evidence/windows-office-loop-current/control.c -o /tmp/ottrin-office-control.exe -lshlwapi -ladvapi32",
+    "x86_64-w64-mingw32-gcc -municode -I.hermes/evidence/windows-20261010/kit-headers .hermes/evidence/windows-office-loop-current/pump.c -o /tmp/ottrin-office-pump.exe -lshlwapi"
+  ],
+  "guest_final_state": "shut off; original and other owned QA domains also shut off",
+  "source_references": [
+    "https://github.com/LibreOffice/core/blob/master/desktop/source/lib/init.cxx",
+    "https://github.com/LibreOffice/core/blob/master/desktop/source/app/cmdlineargs.cxx"
+  ],
+  "source_reference_scope": "Inspection informed hypothesis only; current native probe results determine acceptance. No production threading change inferred."
+}

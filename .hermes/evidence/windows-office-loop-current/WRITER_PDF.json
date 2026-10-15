@@ -1,0 +1,5 @@
+{
+  "sha256": "bc300095cb695b827f70a440b497d3b8cc51bfcfaaa177055e663659770dfcac",
+  "text": "DOCX BASELINE\nThis heading is centered, blue, bold, and 20 pt in the source document.\nBold text beside italic text and ordinary body text.\nFeature\nExpected source layout\nTable\nTwo bordered columns\nFallback\nTruthful extracted text only\n\n\fPAGE TWO \u2014 right aligned in the source.\n\n\f",
+  "scope": "Fresh uncontained diagnostic Writer conversion, not current AppContainer or package acceptance"
+}

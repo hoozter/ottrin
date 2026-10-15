@@ -1,0 +1,48 @@
+Private directory canonicalization length=51 error=0
+Existing private directory create=0 error=183
+Installed preset copy=1 error=0
+Initializing private LibreOfficeKit
+Loading installed DLL
+Calling installed Kit hook
+Loading admitted document
+thread=6536 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6536
+thread=6532 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6532
+thread=6540 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6540
+thread=6508 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=6508
+thread=6528 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6528
+Owned window text: sheet.xls
+Owned window text: VCL ImplGetDefaultWindow
+Owned window text: Default IME
+thread=6500 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=6500
+thread=6504 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=6504
+Owned window text: GDI+ Window (office-loop-control-wct.exe)
+Owned window text: Default IME
+thread=6464 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=6464
+thread=6452 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6452
+thread=6448 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6448
+thread=6444 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6444
+thread=6436 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6436
+thread=6428 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6428
+thread=6456 nodes=1 cycle=0
+ node type=8 status=2 pid=6664 tid=6456
+thread=6672 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=6672
+thread=5392 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=5392
+thread=6468 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=6468
+thread=6496 nodes=1 cycle=0
+ node type=8 status=3 pid=6664 tid=6496
