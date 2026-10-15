@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "account_cleanup": "ACCOUNT_CLEANUP.json",
+  "owned_compiler_extractions_uploads_and_guest_root_removed": true,
+  "existing_profile_and_installation_hashes_unchanged": true,
+  "qa_guest_state": "shut off",
+  "superseded_generated_candidate_removed": true,
+  "current_candidate_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current"
+}

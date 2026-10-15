@@ -1,0 +1,16 @@
+{
+  "uninstall_exit": 0,
+  "quiet_cpu_single_core_percent": 0,
+  "phase": "uninstalled",
+  "payload_files": 51,
+  "watcher_ms": 686,
+  "install_exit": 0,
+  "scope": "Current 3ddb1bf MSI fresh ordinary-user lifecycle and bounded real daemon watcher/quiet CPU",
+  "installer_sha256": "717890c74af6e259005b37ae057bf5eb273e6bafea58a2c15d9fb139e0e138be",
+  "status": "pass",
+  "product": "{604E7FE7-0FEA-4E59-B67A-271886ED45AB}",
+  "live": {
+    "instance": "{86CF70F7-BD78-4575-B99B-95160295A24D}",
+    "pid": 5464
+  }
+}

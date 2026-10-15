@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "msi_sha256": "717890c74af6e259005b37ae057bf5eb273e6bafea58a2c15d9fb139e0e138be",
+  "embedded_binary": "Binary.IndexLifecycleController",
+  "sha256": "92e4554f50b776cd016c91353b240afc50c8d8311efb6f42d04b4414e13ca83a",
+  "equals": "Exact current portable/NSIS stage bin/ottrin-indexd.exe"
+}

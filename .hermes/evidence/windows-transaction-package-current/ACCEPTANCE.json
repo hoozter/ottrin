@@ -1,0 +1,36 @@
+{
+  "status": "pass",
+  "scope": "Exact coherent candidate content and bounded native positive lifecycle acceptance; not broad release approval",
+  "source_revision": "3ddb1bf65ee514d1ecc69745df66055d2ae515e1",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "94643a23a7e78e2562efe20c1ccbee1e65a5d797e64e796568658fbc204d1f71",
+    "Ottrin-0.1.0-windows-x64.msi": "717890c74af6e259005b37ae057bf5eb273e6bafea58a2c15d9fb139e0e138be",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "26888c2439a54e64eb046333cb7541598d4a2142de23805c09346590e9416211"
+  },
+  "checks": [
+    "All51 portable, NSIS and native MSI-extracted files match clean staging",
+    "NSIS and MSI embedded controllers match the current index daemon; NSIS payload script matches source",
+    "Exact NSIS fresh install/uninstall and published410 running upgrade pass under a fresh interactive non-administrator",
+    "All four NSIS login/runtime-intent combinations preserve task state; permissions, preferences and saved index checked",
+    "Exact MSI ordinary-user fresh install/uninstall passes; product registration5 to-1, task/payload/index removal and preferences/source preservation checked",
+    "Real installed MSI daemon observes new filename in686ms; five-second two-file quiet CPU measured0% of one core",
+    "Owned account/profile/password/tasks/compiler/extractions/uploads removed; original installation/preferences unchanged; guest shut off",
+    "Current unpublished candidate atomically replaces superseded generated candidate; previous receipt archived"
+  ],
+  "evidence": [
+    "FINAL_ARCHIVE_CONTENTS.json",
+    "MSI_ADMIN_EXTRACTION.json",
+    "MSI_CONTROLLER_IDENTITY.json",
+    "NSIS_ACCEPTANCE.json",
+    "MSI_ACCEPTANCE.json",
+    "ACCOUNT_CLEANUP.json",
+    "GUEST_CLEANUP.json"
+  ],
+  "limits": [
+    "Actual full-payload interruption/recovery with the daemon and scheduler is not accepted by the earlier mocked22-case matrix or these positive tests",
+    "Current MSI upgrade/repair/failed-registration rollback not rerun; historical fcf failed-registration rollback gate remains open",
+    "Tiny filename-only fixture and five-second CPU sample do not establish live-home/content-enabled/large-index performance",
+    "Current GUI/DPI, reboot/login, Office, signing and wider daily-driver gates remain separate",
+    "Stable public Linux and Windows packages unchanged"
+  ]
+}

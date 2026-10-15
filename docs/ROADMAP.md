@@ -2862,3 +2862,33 @@ coherent candidate construction and actual app/daemon/scheduler acceptance.
 Pre-journal initialization interruption, arbitrary power loss and namespace races
 retain their separate limits. MSI registration rollback and Windows Office
 provider acceptance remain open.
+
+### Coherent Windows candidate and real index lifecycle checkpoint (2026-10-15)
+
+Unpublished portable, NSIS and MSI candidates now share clean source
+`3ddb1bf65ee514d1ecc69745df66055d2ae515e1` at the stable internal path
+`.hermes/packaging-tmp/windows-current/`. All 51 portable and NSIS files match
+staging; native administrative MSI extraction matches those same files. Both
+installer controllers match the current daemon, and NSIS embeds the exact
+payload-recovery script. The preceding generated candidate was atomically
+replaced after its receipt was archived.
+
+The exact NSIS passes fresh install/uninstall, upgrade from the published410
+build with a running daemon, and all four login/runtime-intent combinations
+under a new interactive non-administrator. Checks cover payload hashes, task
+permissions, preferences, saved-index behavior and upgrade database creation
+identity. The exact MSI passes ordinary-user fresh install/uninstall with all
+payload hashes, product registration 5 to -1, task/index/payload removal and
+preference/source preservation. Its real daemon observed a new filename in
+686 ms; a five-second quiet sample in the two-file fixture measured zero
+single-core CPU. This is a small filename-only fixture, not large-index or
+content-enabled performance acceptance.
+
+Evidence: `.hermes/evidence/windows-transaction-package-current/ACCEPTANCE.json`.
+The disposable account, profile, task, temporary credential, native compiler,
+extractions and uploads were removed; prior login values were restored exactly,
+the original installation/preferences remained unchanged and the guest is off.
+Stable public packages remain unchanged. Next is full-payload interruption and
+recovery with the actual daemon/scheduler, plus the still-open MSI registration
+rollback gate. Current MSI upgrade/repair, GUI/DPI, reboot/login, Office, signing
+and full daily-driver acceptance retain their separate scopes.

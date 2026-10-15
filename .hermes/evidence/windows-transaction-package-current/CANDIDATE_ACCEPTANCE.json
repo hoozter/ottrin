@@ -1,0 +1,14 @@
+{
+  "status": "unpublished coherent candidates; bounded NSIS/MSI positive native acceptance passed",
+  "source_revision": "3ddb1bf65ee514d1ecc69745df66055d2ae515e1",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "94643a23a7e78e2562efe20c1ccbee1e65a5d797e64e796568658fbc204d1f71",
+    "Ottrin-0.1.0-windows-x64.msi": "717890c74af6e259005b37ae057bf5eb273e6bafea58a2c15d9fb139e0e138be",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "26888c2439a54e64eb046333cb7541598d4a2142de23805c09346590e9416211"
+  },
+  "evidence": ".hermes/evidence/windows-transaction-package-current/",
+  "native_nsis": "Fresh install/uninstall, published410 running upgrade and four login/runtime cases; all51 payload hashes, permissions, preferences and saved-index semantics",
+  "native_msi": "Fresh ordinary-user install/uninstall, all51 payload hashes and product registration 5 to -1; real watcher 686ms and zero single-core CPU in five-second quiet two-file fixture",
+  "publication": "Stable public packages unchanged. Full-payload interruption/rollback with actual daemon/scheduler and MSI failed-registration rollback acceptance remain open; historical fcf MSI registration rejection not waived.",
+  "scope": "No broader daily-driver, graphics, Office, reboot/login or large-index performance claim"
+}

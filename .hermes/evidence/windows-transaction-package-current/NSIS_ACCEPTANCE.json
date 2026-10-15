@@ -1,0 +1,43 @@
+{
+  "preference_hash": "964C614F2C564A390AC6A76E73FE49F8E7CAD9F311A4576DB4B58EAD7B08BCDE",
+  "scope": "Current 3ddb1bf exact NSIS fresh lifecycle, published410 running upgrade and intent matrix; ordinary interactive non-administrator user",
+  "phase": "accepted",
+  "after": {
+    "instance": "{FFD24DB6-D5F1-47D6-B5B7-3B84AC5D6E3A}",
+    "pid": 3432
+  },
+  "fresh": {
+    "instance": "{34EBA7D8-9E78-4C47-93C8-65F10F3284EF}",
+    "pid": 6400
+  },
+  "payload_files": 51,
+  "before": {
+    "instance": "{F2AC6558-3849-4B43-9983-EF593D2735D9}",
+    "pid": 4360
+  },
+  "fresh_current_install_uninstall": "pass",
+  "setup_exit": 0,
+  "before_security": "O:S-1-5-21-3183210791-1673105385-3262580894-1029G:S-1-5-21-3183210791-1673105385-3262580894-513D:AI(A;ID;0x1f019f;;;BA)(A;ID;0x1f019f;;;SY)(A;ID;FA;;;S-1-5-21-3183210791-1673105385-3262580894-1029)",
+  "installer_sha256": "26888c2439a54e64eb046333cb7541598d4a2142de23805c09346590e9416211",
+  "runtime_cases": [
+    {
+      "status": "pass",
+      "running": true,
+      "enabled": false
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": true
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": false
+    }
+  ],
+  "status": "pass",
+  "final_uninstall": "pass",
+  "before_enabled": true,
+  "source_hash": "D406CDDC11486CE5FF347EC3E6830D8E088E770B200583554ADC06610960F42E"
+}

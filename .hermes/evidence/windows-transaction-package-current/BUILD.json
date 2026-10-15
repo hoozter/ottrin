@@ -1,0 +1,32 @@
+{
+  "source_revision": "3ddb1bf65ee514d1ecc69745df66055d2ae515e1",
+  "source_state": "clean tracked tree; unrelated untracked AGENTS.md preserved",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "94643a23a7e78e2562efe20c1ccbee1e65a5d797e64e796568658fbc204d1f71",
+    "Ottrin-0.1.0-windows-x64.msi": "717890c74af6e259005b37ae057bf5eb273e6bafea58a2c15d9fb139e0e138be",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "26888c2439a54e64eb046333cb7541598d4a2142de23805c09346590e9416211"
+  },
+  "native_scope": "Acceptance running; no public promotion",
+  "historical_helper_restored": true,
+  "executed_fixture_sha256": {
+    "nsis-actor.ps1": "f6b6ab6e1a1d5d92a75617352e4b97aaa0b73b139b07cb4c4befb573f8670ee7",
+    "msi-actor.ps1": "fdf784942672db537dde488cb34c860dbedeef9793c8de0251534a39cd34cd25",
+    "admin_extract.ps1": "2a0b015e263ade94157fbf2071255b444dd054f6eb8b0650b4d7cde7f0c5e17d",
+    "cleanup-account.ps1": "e6ef2bb98b1ee9006e806f9a8686d5cbd335a0a0783b8d129f2d7624e0f1a84f"
+  },
+  "construction_notes": [
+    "Portable source marker is clean at3ddb1bf; historical host QA helper was temporarily reused, then its exact tracked content and executable mode restored. No product source or artifact provenance changed.",
+    "Initial archive verifier expected the preceding direct-copy NSIS layout; corrected to the new $INSTDIR.ottrin-setup/new payload path.",
+    "Administrative script invocation was initially blocked by the default execution policy; the terminal failed attempt is recorded. Trusted QA script then ran as an encoded script block, with no machine policy change."
+  ],
+  "fixture_sha256": {
+    "prepare-account.py": "a357cd6b9af1a437a823c5da383220e040af0b63d382e998d892f68dfbc109b8",
+    "nsis-actor.ps1": "f6b6ab6e1a1d5d92a75617352e4b97aaa0b73b139b07cb4c4befb573f8670ee7",
+    "check_archives.py": "8196fb81c80a800ec3ad15c8464db58c0b5d356894a67245965714b4db5e5d5b",
+    "native_compiler.py": "f8875731e261dfcf67cd6d1dba07268710834ae5899b2909644d853447684802",
+    "cleanup-account.ps1": "e6ef2bb98b1ee9006e806f9a8686d5cbd335a0a0783b8d129f2d7624e0f1a84f",
+    "msi-actor.ps1": "fdf784942672db537dde488cb34c860dbedeef9793c8de0251534a39cd34cd25",
+    "admin_extract.ps1": "2a0b015e263ade94157fbf2071255b444dd054f6eb8b0650b4d7cde7f0c5e17d",
+    "collect-cleanup.py": "cd6907d4ede34e91e4a5a497f6bfafda0a29fef14aff466ea141cb16d25e836c"
+  }
+}

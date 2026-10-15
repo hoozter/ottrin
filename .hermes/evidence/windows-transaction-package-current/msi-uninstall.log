@@ -1,0 +1,1001 @@
+=== Verbose logging started: 2026-10-15  18:08:54  Build type: SHIP UNICODE 5.00.10011.00  Calling process: C:\WINDOWS\system32\msiexec.exe ===
+MSI (c) (94:08) [18:08:54:027]: Resetting cached policy values
+MSI (c) (94:08) [18:08:54:027]: Machine policy value 'Debug' is 0
+MSI (c) (94:08) [18:08:54:027]: ******* RunEngine:
+           ******* Product: {604E7FE7-0FEA-4E59-B67A-271886ED45AB}
+           ******* Action:
+           ******* CommandLine: **********
+MSI (c) (94:08) [18:08:54:029]: Client-side and UI is none or basic: Running entire install on the server.
+MSI (c) (94:08) [18:08:54:029]: Grabbed execution mutex.
+MSI (c) (94:08) [18:08:54:048]: Cloaking enabled.
+MSI (c) (94:08) [18:08:54:048]: Attempting to enable all disabled privileges before calling Install on Server
+MSI (c) (94:08) [18:08:54:063]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (80:64) [18:08:54:075]: Running installation inside multi-package transaction {604E7FE7-0FEA-4E59-B67A-271886ED45AB}
+MSI (s) (80:64) [18:08:54:075]: Grabbed execution mutex.
+MSI (s) (80:24) [18:08:54:081]: Resetting cached policy values
+MSI (s) (80:24) [18:08:54:081]: Machine policy value 'Debug' is 0
+MSI (s) (80:24) [18:08:54:081]: ******* RunEngine:
+           ******* Product: {604E7FE7-0FEA-4E59-B67A-271886ED45AB}
+           ******* Action:
+           ******* CommandLine: **********
+MSI (s) (80:24) [18:08:54:081]: Machine policy value 'DisableUserInstalls' is 0
+MSI (s) (80:24) [18:08:54:086]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (80:24) [18:08:54:088]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (80:24) [18:08:54:088]: MSCOREE not loaded loading copy from system32
+MSI (s) (80:24) [18:08:54:096]: End dialog not enabled
+MSI (s) (80:24) [18:08:54:096]: Original package ==> C:\WINDOWS\Installer\3c9fe.msi
+MSI (s) (80:24) [18:08:54:096]: Package we're running from ==> C:\WINDOWS\Installer\3c9fe.msi
+MSI (s) (80:24) [18:08:54:098]: APPCOMPAT: Uninstall Flags override found.
+MSI (s) (80:24) [18:08:54:098]: APPCOMPAT: Uninstall VersionNT override found.
+MSI (s) (80:24) [18:08:54:098]: APPCOMPAT: Uninstall ServicePackLevel override found.
+MSI (s) (80:24) [18:08:54:100]: APPCOMPAT: looking for appcompat database entry with ProductCode '{604E7FE7-0FEA-4E59-B67A-271886ED45AB}'.
+MSI (s) (80:24) [18:08:54:100]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (80:24) [18:08:54:136]: Machine policy value 'DisablePatch' is 0
+MSI (s) (80:24) [18:08:54:136]: Machine policy value 'AllowLockdownPatch' is 0
+MSI (s) (80:24) [18:08:54:136]: Machine policy value 'DisableMsi' is 0
+MSI (s) (80:24) [18:08:54:136]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:54:136]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:54:136]: Product {604E7FE7-0FEA-4E59-B67A-271886ED45AB} is not managed.
+MSI (s) (80:24) [18:08:54:136]: Running product '{604E7FE7-0FEA-4E59-B67A-271886ED45AB}' with user privileges: It's not assigned.
+MSI (s) (80:24) [18:08:54:136]: Machine policy value 'DisableLUAPatching' is 0
+MSI (s) (80:24) [18:08:54:136]: Machine policy value 'DisableFlyWeightPatching' is 0
+MSI (s) (80:24) [18:08:54:139]: APPCOMPAT: looking for appcompat database entry with ProductCode '{604E7FE7-0FEA-4E59-B67A-271886ED45AB}'.
+MSI (s) (80:24) [18:08:54:141]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (80:24) [18:08:54:144]: Transforms are not secure.
+MSI (s) (80:24) [18:08:54:144]: Note: 1: 2205 2:  3: Control
+MSI (s) (80:24) [18:08:54:144]: PROPERTY CHANGE: Adding MsiLogFileLocation property. Its value is 'C:\OttrinPackageQA\results\final-msi-uninstall.log'.
+MSI (s) (80:24) [18:08:54:144]: Command Line: REBOOT=ReallySuppress REMOVE=ALL CURRENTDIRECTORY=C:\WINDOWS\system32 CLIENTUILEVEL=3 CLIENTPROCESSID=4500
+MSI (s) (80:24) [18:08:54:144]: PROPERTY CHANGE: Adding PackageCode property. Its value is '{B8E2959A-2BE7-4EB0-8B73-67FCB793DA6F}'.
+MSI (s) (80:24) [18:08:54:144]: Product Code passed to Engine.Initialize:           '{604E7FE7-0FEA-4E59-B67A-271886ED45AB}'
+MSI (s) (80:24) [18:08:54:144]: Product Code from property table before transforms: '{604E7FE7-0FEA-4E59-B67A-271886ED45AB}'
+MSI (s) (80:24) [18:08:54:144]: Product Code from property table after transforms:  '{604E7FE7-0FEA-4E59-B67A-271886ED45AB}'
+MSI (s) (80:24) [18:08:54:144]: Product registered: entering maintenance mode
+MSI (s) (80:24) [18:08:54:144]: Determined that existing product (either this product or the product being upgraded with a patch) is installed per-user.
+MSI (s) (80:24) [18:08:54:144]: Product {604E7FE7-0FEA-4E59-B67A-271886ED45AB} is not managed.
+MSI (s) (80:24) [18:08:54:146]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:54:146]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:54:146]: MSI_LUA: Package is marked as LUA installation capable with no elevation required
+MSI (s) (80:24) [18:08:54:146]: PROPERTY CHANGE: Adding ProductState property. Its value is '5'.
+MSI (s) (80:24) [18:08:54:146]: PROPERTY CHANGE: Adding ProductToBeRegistered property. Its value is '1'.
+MSI (s) (80:24) [18:08:54:146]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2
+MSI (s) (80:24) [18:08:54:146]: Package name retrieved from configuration data: 'current.msi'
+MSI (s) (80:24) [18:08:54:146]: Note: 1: 2205 2:  3: Error
+MSI (s) (80:24) [18:08:54:154]: Note: 1: 2262 2: AdminProperties 3: -2147287038
+MSI (s) (80:24) [18:08:54:154]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:54:154]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:54:154]: Product {604E7FE7-0FEA-4E59-B67A-271886ED45AB} is not managed.
+MSI (s) (80:24) [18:08:54:154]: Running product '{604E7FE7-0FEA-4E59-B67A-271886ED45AB}' with user privileges: It's not assigned.
+MSI (s) (80:24) [18:08:54:154]: PROPERTY CHANGE: Adding REBOOT property. Its value is 'ReallySuppress'.
+MSI (s) (80:24) [18:08:54:154]: PROPERTY CHANGE: Adding REMOVE property. Its value is 'ALL'.
+MSI (s) (80:24) [18:08:54:154]: PROPERTY CHANGE: Adding CURRENTDIRECTORY property. Its value is 'C:\WINDOWS\system32'.
+MSI (s) (80:24) [18:08:54:154]: PROPERTY CHANGE: Adding CLIENTUILEVEL property. Its value is '3'.
+MSI (s) (80:24) [18:08:54:154]: PROPERTY CHANGE: Adding CLIENTPROCESSID property. Its value is '4500'.
+MSI (s) (80:24) [18:08:54:154]: Machine policy value 'DisableAutomaticApplicationShutdown' is 0
+MSI (s) (80:24) [18:08:54:154]: PROPERTY CHANGE: Adding MsiRestartManagerSessionKey property. Its value is '28c44e29d703524c9efed2cf88cad1d1'.
+MSI (s) (80:24) [18:08:54:156]: RESTART MANAGER: Session opened.
+MSI (s) (80:24) [18:08:54:156]: TRANSFORMS property is now:
+MSI (s) (80:24) [18:08:54:156]: PROPERTY CHANGE: Adding PRODUCTLANGUAGE property. Its value is '0'.
+MSI (s) (80:24) [18:08:54:156]: PROPERTY CHANGE: Adding VersionDatabase property. Its value is '500'.
+MSI (s) (80:24) [18:08:54:158]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming
+MSI (s) (80:24) [18:08:54:162]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\Favorites
+MSI (s) (80:24) [18:08:54:164]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Network Shortcuts
+MSI (s) (80:24) [18:08:54:166]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\Documents
+MSI (s) (80:24) [18:08:54:168]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Printer Shortcuts
+MSI (s) (80:24) [18:08:54:171]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Recent
+MSI (s) (80:24) [18:08:54:175]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\SendTo
+MSI (s) (80:24) [18:08:54:178]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Templates
+MSI (s) (80:24) [18:08:54:178]: SHELL32::SHGetFolderPath returned: C:\ProgramData
+MSI (s) (80:24) [18:08:54:180]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Local
+MSI (s) (80:24) [18:08:54:182]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\Pictures
+MSI (s) (80:24) [18:08:54:188]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (80:24) [18:08:54:190]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (80:24) [18:08:54:194]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+MSI (s) (80:24) [18:08:54:196]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu
+MSI (s) (80:24) [18:08:54:198]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\Desktop
+MSI (s) (80:24) [18:08:54:203]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (80:24) [18:08:54:205]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (80:24) [18:08:54:210]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+MSI (s) (80:24) [18:08:54:212]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu
+MSI (s) (80:24) [18:08:54:214]: SHELL32::SHGetFolderPath returned: C:\Users\Public\Desktop
+MSI (s) (80:24) [18:08:54:216]: SHELL32::SHGetFolderPath returned: C:\WINDOWS\Fonts
+MSI (s) (80:24) [18:08:54:216]: Note: 1: 2898 2: MS Sans Serif 3: MS Sans Serif 4: 0 5: 16
+MSI (s) (80:24) [18:08:54:250]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2
+MSI (s) (80:24) [18:08:54:250]: PROPERTY CHANGE: Adding USERNAME property. Its value is 'campbell'.
+MSI (s) (80:24) [18:08:54:250]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2
+MSI (s) (80:24) [18:08:54:250]: PROPERTY CHANGE: Adding Installed property. Its value is '00:00:00'.
+MSI (s) (80:24) [18:08:54:250]: PROPERTY CHANGE: Adding DATABASE property. Its value is 'C:\WINDOWS\Installer\3c9fe.msi'.
+MSI (s) (80:24) [18:08:54:250]: PROPERTY CHANGE: Adding OriginalDatabase property. Its value is 'C:\WINDOWS\Installer\3c9fe.msi'.
+MSI (s) (80:24) [18:08:54:250]: Machine policy value 'MsiDisableEmbeddedUI' is 0
+MSI (s) (80:24) [18:08:54:250]: EEUI - Disabling MsiEmbeddedUI for service because it's not a quiet/basic install
+MSI (s) (80:24) [18:08:54:251]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (80:24) [18:08:54:251]: Machine policy value 'DisableRollback' is 0
+MSI (s) (80:24) [18:08:54:251]: User policy value 'DisableRollback' is 0
+MSI (s) (80:24) [18:08:54:251]: PROPERTY CHANGE: Adding UILevel property. Its value is '2'.
+=== Logging started: 2026-10-15  18:08:54 ===
+MSI (s) (80:24) [18:08:54:255]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (80:24) [18:08:54:255]: PROPERTY CHANGE: Adding Preselected property. Its value is '1'.
+MSI (s) (80:24) [18:08:54:255]: APPCOMPAT: [DetectVersionLaunchCondition] Launch condition already passes.
+MSI (s) (80:24) [18:08:54:297]: PROPERTY CHANGE: Adding ACTION property. Its value is 'INSTALL'.
+MSI (s) (80:24) [18:08:54:297]: Doing action: INSTALL
+MSI (s) (80:24) [18:08:54:297]: Note: 1: 2205 2:  3: ActionText
+Action start 18:08:54: INSTALL.
+MSI (s) (80:24) [18:08:54:301]: Running ExecuteSequence
+MSI (s) (80:24) [18:08:54:301]: Doing action: FindRelatedProducts
+MSI (s) (80:24) [18:08:54:301]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (80:24) [18:08:54:303]: Skipping FindRelatedProducts action: not run in maintenance mode
+Action start 18:08:54: FindRelatedProducts.
+MSI (s) (80:24) [18:08:54:305]: Doing action: LaunchConditions
+MSI (s) (80:24) [18:08:54:305]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:54: FindRelatedProducts. Return value 0.
+Action start 18:08:54: LaunchConditions.
+MSI (s) (80:24) [18:08:54:307]: Doing action: ValidateProductID
+MSI (s) (80:24) [18:08:54:307]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:54: LaunchConditions. Return value 1.
+Action start 18:08:54: ValidateProductID.
+MSI (s) (80:24) [18:08:54:311]: Doing action: CostInitialize
+MSI (s) (80:24) [18:08:54:311]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:54: ValidateProductID. Return value 1.
+MSI (s) (80:24) [18:08:54:313]: Machine policy value 'MaxPatchCacheSize' is 10
+MSI (s) (80:24) [18:08:54:317]: PROPERTY CHANGE: Adding ROOTDRIVE property. Its value is 'C:\'.
+MSI (s) (80:24) [18:08:54:317]: PROPERTY CHANGE: Adding CostingComplete property. Its value is '0'.
+MSI (s) (80:24) [18:08:54:317]: Note: 1: 2205 2:  3: Patch
+MSI (s) (80:24) [18:08:54:317]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (80:24) [18:08:54:317]: Note: 1: 2205 2:  3: MsiPatchHeaders
+MSI (s) (80:24) [18:08:54:317]: Note: 1: 2205 2:  3: __MsiPatchFileList
+MSI (s) (80:24) [18:08:54:317]: Note: 1: 2205 2:  3: PatchPackage
+MSI (s) (80:24) [18:08:54:317]: Note: 1: 2228 2:  3: PatchPackage 4: SELECT `DiskId`, `PatchId`, `LastSequence` FROM `Media`, `PatchPackage` WHERE `Media`.`DiskId`=`PatchPackage`.`Media_` ORDER BY `DiskId`
+MSI (s) (80:24) [18:08:54:317]: Note: 1: 2205 2:  3: Patch
+Action start 18:08:54: CostInitialize.
+MSI (s) (80:24) [18:08:54:319]: Doing action: FileCost
+MSI (s) (80:24) [18:08:54:319]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:54: CostInitialize. Return value 1.
+MSI (s) (80:24) [18:08:54:323]: Note: 1: 2205 2:  3: MsiAssembly
+MSI (s) (80:24) [18:08:54:323]: Note: 1: 2205 2:  3: Class
+MSI (s) (80:24) [18:08:54:323]: Note: 1: 2205 2:  3: Extension
+MSI (s) (80:24) [18:08:54:323]: Note: 1: 2205 2:  3: TypeLib
+Action start 18:08:54: FileCost.
+MSI (s) (80:24) [18:08:54:325]: Doing action: CostFinalize
+MSI (s) (80:24) [18:08:54:325]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:54: FileCost. Return value 1.
+MSI (s) (80:24) [18:08:54:327]: PROPERTY CHANGE: Adding OutOfDiskSpace property. Its value is '0'.
+MSI (s) (80:24) [18:08:54:327]: PROPERTY CHANGE: Adding OutOfNoRbDiskSpace property. Its value is '0'.
+MSI (s) (80:24) [18:08:54:327]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceAvailable property. Its value is '0'.
+MSI (s) (80:24) [18:08:54:327]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRequired property. Its value is '0'.
+MSI (s) (80:24) [18:08:54:327]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRemaining property. Its value is '0'.
+MSI (s) (80:24) [18:08:54:330]: Note: 1: 2205 2:  3: MsiAssembly
+MSI (s) (80:24) [18:08:54:330]: Note: 1: 2228 2:  3: MsiAssembly 4:  SELECT `MsiAssembly`.`Attributes`, `MsiAssembly`.`File_Application`, `MsiAssembly`.`File_Manifest`,  `Component`.`KeyPath` FROM `MsiAssembly`, `Component` WHERE  `MsiAssembly`.`Component_` = `Component`.`Component` AND `MsiAssembly`.`Component_` = ?
+MSI (s) (80:24) [18:08:54:330]: PROPERTY CHANGE: Adding BinFolder property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin'.
+MSI (s) (80:24) [18:08:54:330]: PROPERTY CHANGE: Adding INSTALLFOLDER property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin'.
+MSI (s) (80:24) [18:08:54:330]: PROPERTY CHANGE: Adding dmzbjdDiB3W0FrOGXQNfyu.Blzhw property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\assets'.
+MSI (s) (80:24) [18:08:54:331]: PROPERTY CHANGE: Adding dhhl6QFuQFTY7VU2uD_d2S_M70_8 property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin'.
+MSI (s) (80:24) [18:08:54:333]: PROPERTY CHANGE: Adding dTzIUDEdB9rSr7wS4lPVox5hKT.I property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\docs'.
+MSI (s) (80:24) [18:08:54:333]: PROPERTY CHANGE: Adding dn32F_8EtPmtoACQpTPiLDsMMxTU property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices'.
+MSI (s) (80:24) [18:08:54:333]: PROPERTY CHANGE: Adding dhJxUVfdQ0cl.WUkznCLAjT2gzFA property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium'.
+MSI (s) (80:24) [18:08:54:333]: PROPERTY CHANGE: Adding dhuWcOUKYThzfMwsTQDFI31Lw5Ok property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses'.
+MSI (s) (80:24) [18:08:54:337]: PROPERTY CHANGE: Adding d7by2ua02ym.a3GUBsFb3YUdY4gs property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs'.
+MSI (s) (80:24) [18:08:54:337]: PROPERTY CHANGE: Adding dN_kwZFmId13TyskwoOeucYFGuv0 property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses'.
+MSI (s) (80:24) [18:08:54:337]: PROPERTY CHANGE: Adding d7.2MW0tjqQJvzMj9gk50FPZwvfg property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions'.
+MSI (s) (80:24) [18:08:54:337]: Note: 1: 2205 2:  3: Patch
+MSI (s) (80:24) [18:08:54:337]: Note: 1: 2205 2:  3: Condition
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding TARGETDIR property. Its value is 'C:\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding OttrinProgramMenuFolder property. Its value is 'C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding ProgramsFolder property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying INSTALLFOLDER property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding dKlNTx_FNRtGPIc1yN5FSjNnSq0o property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding d1aMKBYakpeHigRQUYF0B8iJEAP0 property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding dLUkJbpjstbOHi6.8vdP3Zi7wgxo property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying d7.2MW0tjqQJvzMj9gk50FPZwvfg property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying dN_kwZFmId13TyskwoOeucYFGuv0 property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying d7by2ua02ym.a3GUBsFb3YUdY4gs property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding dPNflk_4aOYVKo3ZPc8cTz2n7r0Y property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Adding dKuX5xjNESgOVxU1WHSJFvghTrNw property. Its value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying dhuWcOUKYThzfMwsTQDFI31Lw5Ok property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying dhJxUVfdQ0cl.WUkznCLAjT2gzFA property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying dn32F_8EtPmtoACQpTPiLDsMMxTU property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying dTzIUDEdB9rSr7wS4lPVox5hKT.I property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\docs'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\docs\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying dhhl6QFuQFTY7VU2uD_d2S_M70_8 property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying dmzbjdDiB3W0FrOGXQNfyu.Blzhw property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\assets'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\assets\'.
+MSI (s) (80:24) [18:08:54:339]: PROPERTY CHANGE: Modifying BinFolder property. Its current value is 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin'. Its new value: 'C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (80:24) [18:08:54:339]: Target path resolution complete. Dumping Directory table...
+MSI (s) (80:24) [18:08:54:339]: Note: target paths subject to change (via custom actions or browsing)
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: TARGETDIR	, Object: C:\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: WindowsFolder	, Object: C:\WINDOWS\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: System64Folder	, Object: C:\WINDOWS\system32\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: ProgramMenuFolder	, Object: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: OttrinProgramMenuFolder	, Object: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: LocalAppDataFolder	, Object: C:\Users\OttrinPackageQA\AppData\Local\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: ProgramsFolder	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: INSTALLFOLDER	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: dKlNTx_FNRtGPIc1yN5FSjNnSq0o	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: d1aMKBYakpeHigRQUYF0B8iJEAP0	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\
+MSI (s) (80:24) [18:08:54:339]: Dir (target): Key: dLUkJbpjstbOHi6.8vdP3Zi7wgxo	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: d7.2MW0tjqQJvzMj9gk50FPZwvfg	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dN_kwZFmId13TyskwoOeucYFGuv0	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: d7by2ua02ym.a3GUBsFb3YUdY4gs	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dPNflk_4aOYVKo3ZPc8cTz2n7r0Y	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dKuX5xjNESgOVxU1WHSJFvghTrNw	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dhuWcOUKYThzfMwsTQDFI31Lw5Ok	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dhJxUVfdQ0cl.WUkznCLAjT2gzFA	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dn32F_8EtPmtoACQpTPiLDsMMxTU	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dTzIUDEdB9rSr7wS4lPVox5hKT.I	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\docs\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dhhl6QFuQFTY7VU2uD_d2S_M70_8	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: dmzbjdDiB3W0FrOGXQNfyu.Blzhw	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\assets\
+MSI (s) (80:24) [18:08:54:342]: Dir (target): Key: BinFolder	, Object: C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (80:24) [18:08:54:342]: PROPERTY CHANGE: Adding INSTALLLEVEL property. Its value is '1'.
+Action start 18:08:54: CostFinalize.
+MSI (s) (80:24) [18:08:54:389]: Doing action: MigrateFeatureStates
+MSI (s) (80:24) [18:08:54:389]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:54: CostFinalize. Return value 1.
+MSI (s) (80:24) [18:08:54:391]: Skipping MigrateFeatureStates action: not run in maintenance mode
+Action start 18:08:54: MigrateFeatureStates.
+MSI (s) (80:24) [18:08:54:394]: Doing action: InstallValidate
+MSI (s) (80:24) [18:08:54:394]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:54: MigrateFeatureStates. Return value 0.
+MSI (s) (80:24) [18:08:54:397]: PROPERTY CHANGE: Deleting MsiRestartManagerSessionKey property. Its current value is '28c44e29d703524c9efed2cf88cad1d1'.
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: Dialog
+MSI (s) (80:24) [18:08:54:397]: Feature: MainFeature; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: StartMenuComponent; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: MainExecutableComponent; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsZc32FZODtW6b6NO6fzkp81ZDd8A; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsRNhaMHscOhp.l05dI4VGk3qQ_XY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsIxV6crlvxifgZDN2HWFvxzvSHqs; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls7HBQddGBhspWWaHoS3OU2RYJTAo; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsg4RLgrh.v26uyGgIfNdoumQ1U1o; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsOWrIrTIp6j4UNnXUWTzQNKnBeg4; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls826Xmx1bYye73tb8BcY9HcKSVS0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flswJyYalMCkontqvr3WKJBu8kKrqA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsdKYvTGfXzFAsH8hjS47Hvk1kX7A; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls10lq__Xrvf4KApIOuXi1crEVd_Y; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flst02CQ3HYNLiLf5b_1GoZWnIddkA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flswaIFQK0b.WVSy3f8BK7xeHtqVtI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsJ99jFqEEvG4pAcUSORPa8VfSmmw; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsrnR0CTjRWGxqX5ntnPrfl0ob8JQ; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flswRWUZ_tzjJhb6KWPZYz3oDOKaE8; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsmMWtAKWqL7VGNDJ_8HDBITM1QvI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flszOA9Y3vHcmXT6QAiCNUTOdsRzj0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls2lW2GbeeywRPOQBryx9jkamJl2M; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsh4_V94sFI75gBFX8X17OdkPmt80; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsvcrUA26LJrg5I0H389dkn1Iudwg; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls8fm4FrBbmgvGAAjxD4GPnMfNRxY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flskt9tsQwxwZNZAMt9wipYGaAxc.k; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsyiuiLxaMkHemJ1ojh8cILO5V.jI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsdCAvLkpzrof8WILjS04mVVUS9mc; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flslhRMia5Z9HxCzpcsEMj3aCz7X0c; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls1AiWwP0XKjtxzJfS7IJ.Gexf2qY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsGl2aYODhnYulOwdrRWY7u8D1FaY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsXeh73ocsqjgZsONNouw2BulFCyM; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsWdgHG2nUnBhlNJ4fS8gf4oJkI1o; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsOQ81YSXjs6w9URGCqnnRbZuekQ0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsyKMYUZUw7miouXIPxUnICwm0AM0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsdU57opLm1LzppPEQRyTXU59yj.8; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls63mwVQOMWPYt7L5hXH.YH0VT5sk; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsTqor3sCEJyanvkljGljmqeXtbGs; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls6e5Ak60ws6ai7jvhTxZiTuKETkw; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsS_2yib0Ubq9rImrQd_29kiZj2Rw; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsbpQu3H1JtL0I9OgR9u5eb2D8DUo; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsUrjbkbvFSPCSNg1trp1GfQhYPpA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsfEluz9FpOGdyAgk.auRt..Nsa1o; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsYzbaHaykdLDieaEUvz7ijM_lCz8; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls2uGT3MNvcCKS80WWQb5gERM3rSE; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls.8vsInPsKTcQrJt.KvNmdoEH9fc; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsyNlLl33YQT4R1ziYwMnbNyQd6J0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsacoG0dlqKLpCpBPPhZMWOdlH4TI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsM6ssNGS55HjhTDdSuhQl05scfdI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsXr7rgln3yB_L3i.4SAUi3dYnHYA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls94RokVx_IxBvQn5YlN110VZR1UI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsuv7gbOD0jLH4hWhE_kdXSDog_0U; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: fls5s_KDQcgyiRb7bGNxpaKaVtF_d4; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: flsIVYwMtPBiphiTO1Cvs0NgQOPnmQ; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Component: __StartMenuComponent65; Installed: Null;   Request: Absent;   Action: Absent
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: BindImage
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: ProgId
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: PublishComponent
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: SelfReg
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: Extension
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: Font
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: Class
+MSI (s) (80:24) [18:08:54:397]: Note: 1: 2205 2:  3: TypeLib
+Action start 18:08:54: InstallValidate.
+MSI (s) (80:24) [18:08:54:403]: Note: 1: 2205 2:  3: _RemoveFilePath
+MSI (s) (80:24) [18:08:54:477]: PROPERTY CHANGE: Modifying CostingComplete property. Its current value is '0'. Its new value: '1'.
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: BindImage
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: ProgId
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: PublishComponent
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: SelfReg
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: Extension
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: Font
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: Class
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2205 2:  3: TypeLib
+MSI (s) (80:24) [18:08:54:477]: Note: 1: 2727 2:
+MSI (s) (80:24) [18:08:54:535]: RESTART MANAGER: Will attempt to shut down and restart applications in no UI modes.
+MSI (s) (80:24) [18:08:54:535]: Note: 1: 2205 2:  3: Error
+MSI (s) (80:24) [18:08:54:535]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1607
+MSI (s) (80:24) [18:08:54:538]: Note: 1: 2205 2:  3: Error
+MSI (s) (80:24) [18:08:54:538]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1607
+MSI (s) (80:24) [18:08:54:610]: Note: 1: 2205 2:  3: ActionText
+MSI (c) (94:84) [18:08:54:543]: RESTART MANAGER: Session opened.
+MSI (s) (80:24) [18:08:54:642]: RESTART MANAGER: Successfully shut down all applications in the service's session that held files in use.
+MSI (c) (94:84) [18:08:54:642]: RESTART MANAGER: Successfully shut down all applications that held files in use.
+MSI (s) (80:24) [18:08:55:152]: Note: 1: 2727 2:
+MSI (s) (80:24) [18:08:55:152]: Doing action: InstallInitialize
+MSI (s) (80:24) [18:08:55:152]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: InstallValidate. Return value 1.
+MSI (s) (80:24) [18:08:55:154]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:55:154]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (80:24) [18:08:55:154]: BeginTransaction: Locking Server
+MSI (s) (80:24) [18:08:55:154]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (80:24) [18:08:55:154]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (80:24) [18:08:55:154]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (80:24) [18:08:55:154]: Server not locked: locking for product {604E7FE7-0FEA-4E59-B67A-271886ED45AB}
+MSI (s) (80:24) [18:08:55:174]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (80:24) [18:08:55:176]: Note: 1: 2205 2:  3: ActionText
+MSI (s) (80:24) [18:08:55:182]: Note: 1: 2205 2:  3: ActionText
+Action start 18:08:55: InstallInitialize.
+MSI (s) (80:24) [18:08:55:188]: PROPERTY CHANGE: Deleting ProductToBeRegistered property. Its current value is '1'.
+MSI (s) (80:24) [18:08:55:190]: Note: 1: 2205 2:  3: Class
+MSI (s) (80:24) [18:08:55:190]: Note: 1: 2228 2:  3: Class 4: SELECT `CLSID` FROM `Class` WHERE `Icon_`=? AND `Class`.`Attributes`=1
+MSI (s) (80:24) [18:08:55:190]: Note: 1: 2205 2:  3: Class
+MSI (s) (80:24) [18:08:55:190]: Note: 1: 2228 2:  3: Class 4: SELECT `Component`,`CLSID` FROM `Component`,`Class` WHERE `Component`=`Component_` AND `Icon_`=? AND  (`Component`.`Installed` <> 0 AND `Component`.`Action` <> 0)
+MSI (s) (80:24) [18:08:55:190]: Note: 1: 2205 2:  3: Extension
+MSI (s) (80:24) [18:08:55:190]: Note: 1: 2228 2:  3: Extension 4: SELECT `Component`,`Extension` FROM `Component`,`Extension`,`ProgId` WHERE `Component`.`Component`=`Extension`.`Component_` AND `ProgId`.`ProgId`=`Extension`.`ProgId_` AND `ProgId`.`Icon_`=? AND  (`Component`.`Installed` <> 0 AND `Component`.`Action` <> 0)
+MSI (s) (80:24) [18:08:55:190]: 'OttrinApp.ico' icon will be removed.
+MSI (s) (80:24) [18:08:55:194]: Skipping action: RollbackBackgroundIndex (condition is false)
+MSI (s) (80:24) [18:08:55:194]: Skipping action: PrepareBackgroundIndex (condition is false)
+MSI (s) (80:24) [18:08:55:194]: Doing action: RollbackRemovedIndex
+MSI (s) (80:24) [18:08:55:194]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: InstallInitialize. Return value 1.
+Action start 18:08:55: RollbackRemovedIndex.
+MSI (s) (80:24) [18:08:55:437]: Doing action: SnapshotRemovedIndex
+MSI (s) (80:24) [18:08:55:437]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RollbackRemovedIndex. Return value 1.
+Action start 18:08:55: SnapshotRemovedIndex.
+MSI (s) (80:24) [18:08:55:520]: Doing action: CleanupBeforeUninstall
+MSI (s) (80:24) [18:08:55:520]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: SnapshotRemovedIndex. Return value 1.
+Action start 18:08:55: CleanupBeforeUninstall.
+MSI (s) (80:24) [18:08:55:526]: Doing action: ProcessComponents
+MSI (s) (80:24) [18:08:55:526]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: CleanupBeforeUninstall. Return value 1.
+Action start 18:08:55: ProcessComponents.
+MSI (s) (80:24) [18:08:55:600]: Doing action: UnpublishFeatures
+MSI (s) (80:24) [18:08:55:600]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: ProcessComponents. Return value 1.
+Action start 18:08:55: UnpublishFeatures.
+MSI (s) (80:24) [18:08:55:606]: Doing action: RemoveRegistryValues
+MSI (s) (80:24) [18:08:55:606]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: UnpublishFeatures. Return value 1.
+Action start 18:08:55: RemoveRegistryValues.
+MSI (s) (80:24) [18:08:55:612]: Doing action: RemoveShortcuts
+MSI (s) (80:24) [18:08:55:612]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RemoveRegistryValues. Return value 1.
+Action start 18:08:55: RemoveShortcuts.
+MSI (s) (80:24) [18:08:55:620]: Doing action: RemoveFiles
+MSI (s) (80:24) [18:08:55:620]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RemoveShortcuts. Return value 1.
+Action start 18:08:55: RemoveFiles.
+MSI (s) (80:24) [18:08:55:668]: Counted 1 foreign folders to be removed.
+MSI (s) (80:24) [18:08:55:668]: Removing foreign folder: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+MSI (s) (80:24) [18:08:55:670]: Doing action: RemoveFolders
+MSI (s) (80:24) [18:08:55:670]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RemoveFiles. Return value 1.
+Action start 18:08:55: RemoveFolders.
+MSI (s) (80:24) [18:08:55:672]: Doing action: CreateFolders
+MSI (s) (80:24) [18:08:55:672]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RemoveFolders. Return value 0.
+Action start 18:08:55: CreateFolders.
+MSI (s) (80:24) [18:08:55:677]: Doing action: InstallFiles
+MSI (s) (80:24) [18:08:55:677]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: CreateFolders. Return value 0.
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2205 2:  3: Patch
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2228 2:  3: Patch 4: SELECT `Patch`.`File_`, `Patch`.`Header`, `Patch`.`Attributes`, `Patch`.`Sequence`, `Patch`.`StreamRef_` FROM `Patch` WHERE `Patch`.`File_` = ? AND `Patch`.`#_MsiActive`=? ORDER BY `Patch`.`Sequence`
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2205 2:  3: Error
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1302
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2205 2:  3: MsiSFCBypass
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2228 2:  3: MsiSFCBypass 4: SELECT `File_` FROM `MsiSFCBypass` WHERE `File_` = ?
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2205 2:  3: MsiPatchHeaders
+MSI (s) (80:24) [18:08:55:682]: Note: 1: 2228 2:  3: MsiPatchHeaders 4: SELECT `Header` FROM `MsiPatchHeaders` WHERE `StreamRef` = ?
+Action start 18:08:55: InstallFiles.
+MSI (s) (80:24) [18:08:55:686]: Skipping action: InstallBackgroundIndex (condition is false)
+MSI (s) (80:24) [18:08:55:686]: Doing action: CreateShortcuts
+MSI (s) (80:24) [18:08:55:686]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: InstallFiles. Return value 1.
+MSI (s) (80:24) [18:08:55:688]: Note: 1: 2205 2:  3: MsiShortcutProperty
+MSI (s) (80:24) [18:08:55:688]: Note: 1: 2205 2:  3: MsiShortcutProperty
+Action start 18:08:55: CreateShortcuts.
+MSI (s) (80:24) [18:08:55:691]: Doing action: WriteRegistryValues
+MSI (s) (80:24) [18:08:55:691]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: CreateShortcuts. Return value 1.
+Action start 18:08:55: WriteRegistryValues.
+MSI (s) (80:24) [18:08:55:695]: Doing action: RegisterUser
+MSI (s) (80:24) [18:08:55:695]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: WriteRegistryValues. Return value 1.
+Action start 18:08:55: RegisterUser.
+MSI (s) (80:24) [18:08:55:698]: Doing action: RegisterProduct
+MSI (s) (80:24) [18:08:55:698]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RegisterUser. Return value 0.
+Action start 18:08:55: RegisterProduct.
+MSI (s) (80:24) [18:08:55:702]: Doing action: PublishFeatures
+MSI (s) (80:24) [18:08:55:702]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RegisterProduct. Return value 1.
+Action start 18:08:55: PublishFeatures.
+MSI (s) (80:24) [18:08:55:707]: Doing action: PublishProduct
+MSI (s) (80:24) [18:08:55:707]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: PublishFeatures. Return value 1.
+Action start 18:08:55: PublishProduct.
+MSI (s) (80:24) [18:08:55:716]: Skipping action: InstallExecute (condition is false)
+MSI (s) (80:24) [18:08:55:716]: Doing action: RemoveExistingProducts
+MSI (s) (80:24) [18:08:55:716]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: PublishProduct. Return value 1.
+MSI (s) (80:24) [18:08:55:720]: Skipping RemoveExistingProducts action: current configuration is maintenance mode or an uninstall
+Action start 18:08:55: RemoveExistingProducts.
+MSI (s) (80:24) [18:08:55:720]: Doing action: CommitBackgroundIndex
+MSI (s) (80:24) [18:08:55:720]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: RemoveExistingProducts. Return value 0.
+Action start 18:08:55: CommitBackgroundIndex.
+MSI (s) (80:24) [18:08:55:789]: Doing action: InstallFinalize
+MSI (s) (80:24) [18:08:55:789]: Note: 1: 2205 2:  3: ActionText
+Action ended 18:08:55: CommitBackgroundIndex. Return value 1.
+MSI (s) (80:24) [18:08:55:791]: Running Script: C:\WINDOWS\Installer\MSI4D5.tmp
+MSI (s) (80:24) [18:08:55:791]: PROPERTY CHANGE: Adding UpdateStarted property. Its value is '1'.
+MSI (s) (80:24) [18:08:55:799]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (80:24) [18:08:55:799]: Machine policy value 'DisableRollback' is 0
+MSI (s) (80:24) [18:08:55:801]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:55:805]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:55:805]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (80:24) [18:08:55:807]: Executing op: Header(Signature=1397708873,Version=500,Timestamp=1565495580,LangId=0,Platform=589824,ScriptType=1,ScriptMajorVersion=21,ScriptMinorVersion=4,ScriptAttributes=0)
+Action start 18:08:55: InstallFinalize.
+MSI (s) (80:24) [18:08:55:809]: Executing op: ProductInfo(ProductKey={604E7FE7-0FEA-4E59-B67A-271886ED45AB},ProductName=Ottrin,PackageName=current.msi,Language=0,Version=65536,Assignment=0,ObsoleteArg=0,ProductIcon=OttrinApp.ico,,PackageCode={B8E2959A-2BE7-4EB0-8B73-67FCB793DA6F},,,InstanceType=0,LUASetting=0,RemoteURTInstalls=0,ProductDeploymentFlags=2)
+MSI (s) (80:24) [18:08:55:813]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming
+MSI (s) (80:24) [18:08:55:815]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming
+MSI (s) (80:24) [18:08:55:819]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming
+MSI (s) (80:24) [18:08:55:821]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:55:823]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:55:825]: Executing op: DialogInfo(Type=0,Argument=0)
+MSI (s) (80:24) [18:08:55:827]: Executing op: DialogInfo(Type=1,Argument=Ottrin)
+MSI (s) (80:24) [18:08:55:829]: Executing op: RollbackInfo(,RollbackAction=Rollback,RollbackDescription=Rolling back action: [1],,CleanupAction=RollbackCleanup,CleanupDescription=Removing backup files File: [1],)
+MSI (s) (80:24) [18:08:55:829]: Executing op: SetBaseline(Baseline=0,)
+MSI (s) (80:24) [18:08:55:829]: Executing op: SetBaseline(Baseline=1,)
+MSI (s) (80:24) [18:08:55:829]: Executing op: ActionStart(Name=InstallInitialize,,)
+MSI (s) (80:24) [18:08:55:829]: Executing op: ProductUnregister(UpgradeCode={04304CE2-990E-4053-9EDA-AF3E69548C9D})
+MSI (s) (80:24) [18:08:55:831]: Note: 1: 1402 2: UNKNOWN\Products\7EF7E406AEF095E46BA7728168DE54BA\Transforms 3: 2
+MSI (s) (80:24) [18:08:55:831]: Note: 1: 1402 2: UNKNOWN\Products\7EF7E406AEF095E46BA7728168DE54BA\Transforms 3: 2
+MSI (s) (80:24) [18:08:55:831]: Scheduling file 'C:\WINDOWS\Installer\3c9fe.msi' for deletion during post-install cleanup (not post-reboot).
+MSI (s) (80:24) [18:08:55:849]: Note: 1: 1402 2: UNKNOWN\Products\7EF7E406AEF095E46BA7728168DE54BA\Usage 3: 2
+MSI (s) (80:24) [18:08:55:851]: Executing op: ProductCPDisplayInfoUnregister()
+MSI (s) (80:24) [18:08:55:853]: Executing op: ProductUnpublish(PackageKey={B8E2959A-2BE7-4EB0-8B73-67FCB793DA6F})
+MSI (s) (80:24) [18:08:55:857]: Executing op: UpgradeCodeUnpublish(UpgradeCode={04304CE2-990E-4053-9EDA-AF3E69548C9D})
+MSI (s) (80:24) [18:08:55:859]: Executing op: IconRemove(Icon=OttrinApp.ico,)
+MSI (s) (80:24) [18:08:55:863]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming
+MSI (s) (80:24) [18:08:55:863]: Scheduling file 'C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Installer\{604E7FE7-0FEA-4E59-B67A-271886ED45AB}\OttrinApp.ico' for deletion during post-install cleanup (not post-reboot).
+MSI (s) (80:24) [18:08:55:865]: Executing op: ProductUnpublishClient(,,)
+MSI (s) (80:24) [18:08:55:865]: Note: 1: 1402 2: UNKNOWN\Installer\Products\7EF7E406AEF095E46BA7728168DE54BA 3: 2
+MSI (s) (80:24) [18:08:55:865]: Executing op: SourceListUnpublish(,)
+MSI (s) (80:24) [18:08:55:867]: Note: 1: 1402 2: UNKNOWN\Installer\Products\7EF7E406AEF095E46BA7728168DE54BA\SourceList 3: 2
+MSI (s) (80:24) [18:08:55:867]: Executing op: ActionStart(Name=RollbackRemovedIndex,,)
+MSI (s) (80:24) [18:08:55:873]: Executing op: CustomActionSchedule(Action=RollbackRemovedIndex,ActionType=1282,Source=BinaryData,Target=--installer-transaction Rollback "C:\Users\OTTRIN~1\AppData\Local\Temp\OttrinIndexRollback-{604E7FE7-0FEA-4E59-B67A-271886ED45AB}.json",)
+MSI (s) (80:24) [18:08:55:929]: Executing op: ActionStart(Name=SnapshotRemovedIndex,,)
+MSI (s) (80:24) [18:08:55:936]: Executing op: CustomActionSchedule(Action=SnapshotRemovedIndex,ActionType=1026,Source=BinaryData,Target=--installer-transaction Snapshot "C:\Users\OTTRIN~1\AppData\Local\Temp\OttrinIndexRollback-{604E7FE7-0FEA-4E59-B67A-271886ED45AB}.json",)
+MSI (s) (80:24) [18:08:57:465]: Executing op: ActionStart(Name=CleanupBeforeUninstall,,)
+MSI (s) (80:24) [18:08:57:467]: Executing op: CustomActionSchedule(Action=CleanupBeforeUninstall,ActionType=1042,Source=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe,Target=--uninstall,)
+MSI (s) (80:24) [18:08:58:964]: Executing op: ActionStart(Name=ProcessComponents,Description=Updating component registration,)
+MSI (s) (80:24) [18:08:58:966]: Executing op: ProgressTotal(Total=52,Type=1,ByteEquivalent=24000)
+MSI (s) (80:24) [18:08:58:966]: Executing op: UnregisterSharedComponentProvider(Component={D81AB516-553E-5C56-9201-CC1F353A2ED3},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:966]: Executing op: ComponentUnregister(ComponentId={D81AB516-553E-5C56-9201-CC1F353A2ED3},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:968]: Executing op: UnregisterSharedComponentProvider(Component={4E854875-1887-54B3-8F18-12545E471D9E},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:968]: Executing op: ComponentUnregister(ComponentId={4E854875-1887-54B3-8F18-12545E471D9E},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:970]: Executing op: UnregisterSharedComponentProvider(Component={493D7630-064F-5A36-8057-A8521ED62C3A},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:970]: Executing op: ComponentUnregister(ComponentId={493D7630-064F-5A36-8057-A8521ED62C3A},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:970]: Executing op: UnregisterSharedComponentProvider(Component={B41D0305-5EFC-5E4E-974A-7635A7C5EABF},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:970]: Executing op: ComponentUnregister(ComponentId={B41D0305-5EFC-5E4E-974A-7635A7C5EABF},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:972]: Executing op: UnregisterSharedComponentProvider(Component={B4C0F32C-03BC-5648-BDFA-69BC45982169},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:972]: Executing op: ComponentUnregister(ComponentId={B4C0F32C-03BC-5648-BDFA-69BC45982169},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:972]: Executing op: UnregisterSharedComponentProvider(Component={F9109C9D-CDCA-5E08-9AA6-12F0563F6EF6},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:972]: Executing op: ComponentUnregister(ComponentId={F9109C9D-CDCA-5E08-9AA6-12F0563F6EF6},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:974]: Executing op: UnregisterSharedComponentProvider(Component={63D661B2-EB3B-520B-AC74-0BF760A9E614},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:974]: Executing op: ComponentUnregister(ComponentId={63D661B2-EB3B-520B-AC74-0BF760A9E614},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:976]: Executing op: UnregisterSharedComponentProvider(Component={C78C024F-FB03-5F49-A57F-B3853EB68E0F},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:976]: Executing op: ComponentUnregister(ComponentId={C78C024F-FB03-5F49-A57F-B3853EB68E0F},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:978]: Executing op: UnregisterSharedComponentProvider(Component={B710F7ED-F019-5FBA-B08F-CEECB945467E},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:978]: Executing op: ComponentUnregister(ComponentId={B710F7ED-F019-5FBA-B08F-CEECB945467E},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:978]: Executing op: UnregisterSharedComponentProvider(Component={5C135F4C-3FF4-5608-BE61-B3E186F5026D},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:978]: Executing op: ComponentUnregister(ComponentId={5C135F4C-3FF4-5608-BE61-B3E186F5026D},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:980]: Executing op: UnregisterSharedComponentProvider(Component={72C6E8BF-B8C6-5C2D-9BAF-93714DCC4B31},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:980]: Executing op: ComponentUnregister(ComponentId={72C6E8BF-B8C6-5C2D-9BAF-93714DCC4B31},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:982]: Executing op: UnregisterSharedComponentProvider(Component={B3EFF1EA-48FA-5C13-8D8C-69D7B21C2AF2},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:982]: Executing op: ComponentUnregister(ComponentId={B3EFF1EA-48FA-5C13-8D8C-69D7B21C2AF2},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:982]: Executing op: UnregisterSharedComponentProvider(Component={C5935208-3C6B-5A11-9535-D7458282CF86},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:982]: Executing op: ComponentUnregister(ComponentId={C5935208-3C6B-5A11-9535-D7458282CF86},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:984]: Executing op: UnregisterSharedComponentProvider(Component={7F89E803-455C-5F62-8CE0-E8C37E7AFE85},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:984]: Executing op: ComponentUnregister(ComponentId={7F89E803-455C-5F62-8CE0-E8C37E7AFE85},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:986]: Executing op: UnregisterSharedComponentProvider(Component={5622D9AE-522F-591B-8735-67D1C65EE279},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:986]: Executing op: ComponentUnregister(ComponentId={5622D9AE-522F-591B-8735-67D1C65EE279},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:986]: Executing op: UnregisterSharedComponentProvider(Component={F9FB5F52-155A-5578-BFDF-3FBC9485F177},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:986]: Executing op: ComponentUnregister(ComponentId={F9FB5F52-155A-5578-BFDF-3FBC9485F177},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:988]: Executing op: UnregisterSharedComponentProvider(Component={1AC196AD-1972-55E9-80EE-1F5F42215502},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:988]: Executing op: ComponentUnregister(ComponentId={1AC196AD-1972-55E9-80EE-1F5F42215502},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:990]: Executing op: UnregisterSharedComponentProvider(Component={D04B5A13-8767-575C-AFAB-CA44D35E23EB},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:990]: Executing op: ComponentUnregister(ComponentId={D04B5A13-8767-575C-AFAB-CA44D35E23EB},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:990]: Executing op: UnregisterSharedComponentProvider(Component={46F320FD-A0A7-5473-B3BB-6F7BDC88545E},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:990]: Executing op: ComponentUnregister(ComponentId={46F320FD-A0A7-5473-B3BB-6F7BDC88545E},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:992]: Executing op: UnregisterSharedComponentProvider(Component={29903665-FA7D-5253-867D-F4891D868DBB},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:992]: Executing op: ComponentUnregister(ComponentId={29903665-FA7D-5253-867D-F4891D868DBB},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:992]: Executing op: UnregisterSharedComponentProvider(Component={29B1D534-6012-58E2-9BE7-E15AEA7C28BE},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:994]: Executing op: ComponentUnregister(ComponentId={29B1D534-6012-58E2-9BE7-E15AEA7C28BE},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:994]: Executing op: UnregisterSharedComponentProvider(Component={1F64DBBB-986C-5154-BE76-4E437BE14DD4},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:994]: Executing op: ComponentUnregister(ComponentId={1F64DBBB-986C-5154-BE76-4E437BE14DD4},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:996]: Executing op: UnregisterSharedComponentProvider(Component={785AA3D4-0E3C-5C19-9746-4F6E5454D853},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:996]: Executing op: ComponentUnregister(ComponentId={785AA3D4-0E3C-5C19-9746-4F6E5454D853},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:998]: Executing op: UnregisterSharedComponentProvider(Component={F36F48CF-9F00-5C0A-846B-5BE60ABE8806},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:998]: Executing op: ComponentUnregister(ComponentId={F36F48CF-9F00-5C0A-846B-5BE60ABE8806},,BinaryType=1,)
+MSI (s) (80:24) [18:08:58:998]: Executing op: UnregisterSharedComponentProvider(Component={DEF30BD4-88A4-5A77-8459-3566FBCB5193},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:58:998]: Executing op: ComponentUnregister(ComponentId={DEF30BD4-88A4-5A77-8459-3566FBCB5193},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:000]: Executing op: UnregisterSharedComponentProvider(Component={B55A3599-0A18-5B99-A2C0-6F43876F822E},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:000]: Executing op: ComponentUnregister(ComponentId={B55A3599-0A18-5B99-A2C0-6F43876F822E},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:000]: Executing op: UnregisterSharedComponentProvider(Component={4BFA69D0-2B4D-55FF-B19C-864CA48FD47A},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:000]: Executing op: ComponentUnregister(ComponentId={4BFA69D0-2B4D-55FF-B19C-864CA48FD47A},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:002]: Executing op: UnregisterSharedComponentProvider(Component={E3121301-18A9-5412-8541-3069AD8B4C7E},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:002]: Executing op: ComponentUnregister(ComponentId={E3121301-18A9-5412-8541-3069AD8B4C7E},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:002]: Executing op: UnregisterSharedComponentProvider(Component={3CD85970-4AA3-5976-B70A-E980C6D49762},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:002]: Executing op: ComponentUnregister(ComponentId={3CD85970-4AA3-5976-B70A-E980C6D49762},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:004]: Executing op: UnregisterSharedComponentProvider(Component={AE7078EA-C061-5F47-96BD-85B50B9C782A},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:004]: Executing op: ComponentUnregister(ComponentId={AE7078EA-C061-5F47-96BD-85B50B9C782A},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:006]: Executing op: UnregisterSharedComponentProvider(Component={45904AF4-B3A0-51A2-BABE-68EA0128F96B},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:006]: Executing op: ComponentUnregister(ComponentId={45904AF4-B3A0-51A2-BABE-68EA0128F96B},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:006]: Executing op: UnregisterSharedComponentProvider(Component={549FC552-B2B0-55DA-BBDD-21EA37F67678},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:006]: Executing op: ComponentUnregister(ComponentId={549FC552-B2B0-55DA-BBDD-21EA37F67678},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:008]: Executing op: UnregisterSharedComponentProvider(Component={20839051-27B7-5E99-A250-45D2C82E8558},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:008]: Executing op: ComponentUnregister(ComponentId={20839051-27B7-5E99-A250-45D2C82E8558},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:008]: Executing op: UnregisterSharedComponentProvider(Component={2B55CE69-0D65-5874-AC8A-4ECA9CAE31CB},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:008]: Executing op: ComponentUnregister(ComponentId={2B55CE69-0D65-5874-AC8A-4ECA9CAE31CB},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:010]: Executing op: UnregisterSharedComponentProvider(Component={BF589076-A861-52CA-A366-B11B26918592},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:010]: Executing op: ComponentUnregister(ComponentId={BF589076-A861-52CA-A366-B11B26918592},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:012]: Executing op: UnregisterSharedComponentProvider(Component={AA0C2DEB-FB77-5ACF-A492-C66431A0B0F0},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:012]: Executing op: ComponentUnregister(ComponentId={AA0C2DEB-FB77-5ACF-A492-C66431A0B0F0},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:012]: Executing op: UnregisterSharedComponentProvider(Component={534E1D6C-D255-5F6D-B996-BC03239153F1},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:012]: Executing op: ComponentUnregister(ComponentId={534E1D6C-D255-5F6D-B996-BC03239153F1},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:014]: Executing op: UnregisterSharedComponentProvider(Component={5CE7141B-B527-56DF-9251-1EA0C5B5761C},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:014]: Executing op: ComponentUnregister(ComponentId={5CE7141B-B527-56DF-9251-1EA0C5B5761C},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:014]: Executing op: UnregisterSharedComponentProvider(Component={8F4919AF-0204-5C0A-ACC8-75B015D1288F},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:016]: Executing op: ComponentUnregister(ComponentId={8F4919AF-0204-5C0A-ACC8-75B015D1288F},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:016]: Executing op: UnregisterSharedComponentProvider(Component={C70BBDEC-8BC2-57AF-A615-737C1AB7E328},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:016]: Executing op: ComponentUnregister(ComponentId={C70BBDEC-8BC2-57AF-A615-737C1AB7E328},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:018]: Executing op: UnregisterSharedComponentProvider(Component={2C2E822A-799B-5AAA-9580-D1E94856FBD9},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:018]: Executing op: ComponentUnregister(ComponentId={2C2E822A-799B-5AAA-9580-D1E94856FBD9},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:018]: Executing op: UnregisterSharedComponentProvider(Component={9D764E0D-1A3B-542B-8589-A68A1722F266},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:018]: Executing op: ComponentUnregister(ComponentId={9D764E0D-1A3B-542B-8589-A68A1722F266},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:020]: Executing op: UnregisterSharedComponentProvider(Component={09F736E0-3EBC-5610-B1DF-E636AB1426AB},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:020]: Executing op: ComponentUnregister(ComponentId={09F736E0-3EBC-5610-B1DF-E636AB1426AB},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:022]: Executing op: UnregisterSharedComponentProvider(Component={777A76B6-0790-5F05-AC41-CEDAE6023509},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:022]: Executing op: ComponentUnregister(ComponentId={777A76B6-0790-5F05-AC41-CEDAE6023509},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:022]: Executing op: UnregisterSharedComponentProvider(Component={565FD30C-41DA-5626-8EF4-F0C928379B25},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:022]: Executing op: ComponentUnregister(ComponentId={565FD30C-41DA-5626-8EF4-F0C928379B25},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:024]: Executing op: UnregisterSharedComponentProvider(Component={4949097F-881C-5FD9-9D18-E74AB0DDB490},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:024]: Executing op: ComponentUnregister(ComponentId={4949097F-881C-5FD9-9D18-E74AB0DDB490},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:026]: Executing op: UnregisterSharedComponentProvider(Component={D3CB88B6-AC12-52BF-8FC9-0114AF05265C},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:026]: Executing op: ComponentUnregister(ComponentId={D3CB88B6-AC12-52BF-8FC9-0114AF05265C},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:026]: Executing op: UnregisterSharedComponentProvider(Component={720A6523-24D2-5740-A6E5-C29B3F0EBACF},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:026]: Executing op: ComponentUnregister(ComponentId={720A6523-24D2-5740-A6E5-C29B3F0EBACF},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:028]: Executing op: UnregisterSharedComponentProvider(Component={41C95DAF-7977-5AAA-97D9-CF67F31B1AF2},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:028]: Executing op: ComponentUnregister(ComponentId={41C95DAF-7977-5AAA-97D9-CF67F31B1AF2},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:028]: Executing op: UnregisterSharedComponentProvider(Component={D251D243-F875-56E3-B482-EA1E4314B8BD},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:028]: Executing op: ComponentUnregister(ComponentId={D251D243-F875-56E3-B482-EA1E4314B8BD},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:030]: Executing op: UnregisterSharedComponentProvider(Component={E31D8E8F-F2EC-55F8-AFE3-1E2064CA8AB5},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:030]: Executing op: ComponentUnregister(ComponentId={E31D8E8F-F2EC-55F8-AFE3-1E2064CA8AB5},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:032]: Executing op: UnregisterSharedComponentProvider(Component={089A9083-642F-5346-806A-B229C5A211CC},ProductCode={604E7FE7-0FEA-4E59-B67A-271886ED45AB})
+MSI (s) (80:24) [18:08:59:032]: Executing op: ComponentUnregister(ComponentId={089A9083-642F-5346-806A-B229C5A211CC},,BinaryType=1,)
+MSI (s) (80:24) [18:08:59:032]: Executing op: ActionStart(Name=UnpublishFeatures,Description=Unpublishing Product Features Feature: [1],)
+MSI (s) (80:24) [18:08:59:034]: Executing op: FeatureUnpublish(Feature=MainFeature,,Absent=2,Component=81gNnoqVbERj`6-Dc6sle8+8A{Lu6C2'f$C0DSnZU8pU?dYO~DPb,XB)q?d6W8Rtb+qDBFa[T35@mzbfi?~*c,E,gC]8=We7r(lIm)3'y~nv6Fm]T1vy+65xw*N*HWmKGBL+~Ix(I~e)y)J.i{-4^F,@X{Rf*$!(&C2pcLg8jFzbA,uAkbYPCPJZEfyA`C.}tUqjI)&K`DYtL,Q6^EyZlRLjgep3SNcob+cIZE)5o7nj_aov,4VRh7tUyDfK{M=)PsCSsG6~P2Ok`FB&&{gPJX(S$80cCt9A_DtDaAlT2h2O{T7Eyf9wOCoBjReVIfVNHhyZ+HI}[CledXF4Jfh!]VGykvT])D9YB,=jheXt&k=m=4g-0C(V0bO@i~BF!OOF1FM,OBU7kDTkVg?ecK'J1&f6XD9am5EwIv,fC0`*-!xq.BDog^9Rvv7mttxbN9%$[EohUNKR(WyBN4G8w)+PYEZ^+&s%~R+%+0g`p~lN)ELg6qH%V[EW]NE@c?oEME=k@b9{$Zy2SH_K@KYD_CI*[Z@V$ZPO-$C}qP'f$C.q^mI'cEZP]m6W77L!iDTLcLQi[NcGU`Q(aFvy]FcB~DcsO=`191JF=qJ48BJwlDtbGedJ00p4CgiMZCy~79tElzeNXj8N-T4CJF.!GYlRI?ND2trw1h!NLDypl$jq2&BjGZFRfOyj[BT$Vu+M%n*WMRS`_q*u3E1m)IHFXHFvSFmjBs7$bF4z)5$xWjWvFm~qE7BAwCv{9O[2iZ0,u7J'V?UJYEo&dearIz!VP[e{h!WP3D$'o~O[k'01*U~42Bst.EO&a0tGn$(oBic[ZRsH'Ci8kWTf.G*I@G95&0P1aC'wq_5eVZ!`GN$JNzcoUFk!UCoOmTz%iB`iCl.ScCgymuiHpF*0C8)W?[8SmFf'=)@Qq6SV]X!)mNA[ZBADXL)`_I]E(HO`Lb'Z&Di@7(ZU[rik@L609trt.E}=%GIDQzmvcMdZl}{hwCiFZx,K
+MSI (s) (80:24) [18:08:59:034]: Note: 1: 1402 2: UNKNOWN\Installer\Features\7EF7E406AEF095E46BA7728168DE54BA 3: 2
+MSI (s) (80:24) [18:08:59:036]: Executing op: ActionStart(Name=RemoveRegistryValues,Description=Removing system registry values Key: [1], Name: [2],)
+MSI (s) (80:24) [18:08:59:036]: Executing op: ProgressTotal(Total=1,Type=1,ByteEquivalent=13200)
+MSI (s) (80:24) [18:08:59:036]: Executing op: RegOpenKey(Root=-2147483647,Key=Software\Ottrin\MSI,,BinaryType=1,,)
+MSI (s) (80:24) [18:08:59:036]: Executing op: RegRemoveValue(Name=StartMenuInstalled,Value=#1,)
+MSI (s) (80:24) [18:08:59:038]: Executing op: ActionStart(Name=RemoveShortcuts,Description=Removing shortcuts Shortcut: [1],)
+MSI (s) (80:24) [18:08:59:038]: Executing op: SetTargetFolder(Folder=2\Ottrin\)
+MSI (s) (80:24) [18:08:59:044]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+MSI (s) (80:24) [18:08:59:044]: Executing op: ShortcutRemove(Name=Ottrin)
+MSI (s) (80:24) [18:08:59:103]: Verifying accessibility of file: Ottrin.lnk
+MSI (s) (80:24) [18:08:59:103]: Using source file security for destination.
+MSI (s) (80:24) [18:08:59:103]: Note: 1: 2318 2: C:\Config.Msi\3ca02.rbf
+MSI (s) (80:24) [18:08:59:312]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:314]: Executing op: ShortcutRemove(Name=nmpezywv|Uninstall Ottrin)
+MSI (s) (80:24) [18:08:59:318]: Verifying accessibility of file: Uninstall Ottrin.lnk
+MSI (s) (80:24) [18:08:59:318]: Using source file security for destination.
+MSI (s) (80:24) [18:08:59:318]: Note: 1: 2318 2: C:\Config.Msi\3ca03.rbf
+MSI (s) (80:24) [18:08:59:394]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:398]: Executing op: ActionStart(Name=RemoveFiles,Description=Removing files File: [1], Directory: [9],)
+MSI (s) (80:24) [18:08:59:398]: Executing op: ProgressTotal(Total=51,Type=1,ByteEquivalent=175000)
+MSI (s) (80:24) [18:08:59:398]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\)
+MSI (s) (80:24) [18:08:59:398]: Executing op: FileRemove(,FileName=ottrin.exe,,ComponentId={4E854875-1887-54B3-8F18-12545E471D9E})
+MSI (s) (80:24) [18:08:59:400]: Verifying accessibility of file: ottrin.exe
+MSI (s) (80:24) [18:08:59:400]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:402]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:402]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\)
+MSI (s) (80:24) [18:08:59:402]: Executing op: FileRemove(,FileName=LICENSE,,ComponentId={493D7630-064F-5A36-8057-A8521ED62C3A})
+MSI (s) (80:24) [18:08:59:402]: Verifying accessibility of file: LICENSE
+MSI (s) (80:24) [18:08:59:404]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:404]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:404]: Executing op: FileRemove(,FileName=README.md,,ComponentId={B41D0305-5EFC-5E4E-974A-7635A7C5EABF})
+MSI (s) (80:24) [18:08:59:406]: Verifying accessibility of file: README.md
+MSI (s) (80:24) [18:08:59:408]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:408]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:408]: Executing op: FileRemove(,FileName=RUNNING.md,,ComponentId={B4C0F32C-03BC-5648-BDFA-69BC45982169})
+MSI (s) (80:24) [18:08:59:410]: Verifying accessibility of file: RUNNING.md
+MSI (s) (80:24) [18:08:59:410]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:412]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:412]: Executing op: FileRemove(,FileName=SOURCE_REVISION.txt,,ComponentId={F9109C9D-CDCA-5E08-9AA6-12F0563F6EF6})
+MSI (s) (80:24) [18:08:59:414]: Verifying accessibility of file: SOURCE_REVISION.txt
+MSI (s) (80:24) [18:08:59:416]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:416]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:416]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\assets\)
+MSI (s) (80:24) [18:08:59:416]: Executing op: FileRemove(,FileName=icon.ico,,ComponentId={63D661B2-EB3B-520B-AC74-0BF760A9E614})
+MSI (s) (80:24) [18:08:59:418]: Verifying accessibility of file: icon.ico
+MSI (s) (80:24) [18:08:59:418]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:420]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:420]: Executing op: FileRemove(,FileName=icon.png,,ComponentId={C78C024F-FB03-5F49-A57F-B3853EB68E0F})
+MSI (s) (80:24) [18:08:59:422]: Verifying accessibility of file: icon.png
+MSI (s) (80:24) [18:08:59:422]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:422]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:422]: Executing op: FileRemove(,FileName=icon.svg,,ComponentId={B710F7ED-F019-5FBA-B08F-CEECB945467E})
+MSI (s) (80:24) [18:08:59:424]: Verifying accessibility of file: icon.svg
+MSI (s) (80:24) [18:08:59:426]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:426]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:426]: Executing op: FileRemove(,FileName=logo.svg,,ComponentId={5C135F4C-3FF4-5608-BE61-B3E186F5026D})
+MSI (s) (80:24) [18:08:59:428]: Verifying accessibility of file: logo.svg
+MSI (s) (80:24) [18:08:59:428]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:428]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:430]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\)
+MSI (s) (80:24) [18:08:59:430]: Executing op: FileRemove(,FileName=dxil.dll,,ComponentId={72C6E8BF-B8C6-5C2D-9BAF-93714DCC4B31})
+MSI (s) (80:24) [18:08:59:430]: Verifying accessibility of file: dxil.dll
+MSI (s) (80:24) [18:08:59:432]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:432]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:432]: Executing op: FileRemove(,FileName=libEGL.dll,,ComponentId={B3EFF1EA-48FA-5C13-8D8C-69D7B21C2AF2})
+MSI (s) (80:24) [18:08:59:434]: Verifying accessibility of file: libEGL.dll
+MSI (s) (80:24) [18:08:59:434]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:436]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:436]: Executing op: FileRemove(,FileName=libgallium_wgl.dll,,ComponentId={C5935208-3C6B-5A11-9535-D7458282CF86})
+MSI (s) (80:24) [18:08:59:438]: Verifying accessibility of file: libgallium_wgl.dll
+MSI (s) (80:24) [18:08:59:438]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:438]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:438]: Executing op: FileRemove(,FileName=libGLESv2.dll,,ComponentId={7F89E803-455C-5F62-8CE0-E8C37E7AFE85})
+MSI (s) (80:24) [18:08:59:440]: Verifying accessibility of file: libGLESv2.dll
+MSI (s) (80:24) [18:08:59:442]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:442]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:442]: Executing op: FileRemove(,FileName=opengl32.dll,,ComponentId={5622D9AE-522F-591B-8735-67D1C65EE279})
+MSI (s) (80:24) [18:08:59:444]: Verifying accessibility of file: opengl32.dll
+MSI (s) (80:24) [18:08:59:444]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:444]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:444]: Executing op: FileRemove(,FileName=ottrin-indexd.exe,,ComponentId={F9FB5F52-155A-5578-BFDF-3FBC9485F177})
+MSI (s) (80:24) [18:08:59:446]: Verifying accessibility of file: ottrin-indexd.exe
+MSI (s) (80:24) [18:08:59:448]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:448]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:448]: Executing op: FileRemove(,FileName=ottrin-legacy-doc-render.exe,,ComponentId={1AC196AD-1972-55E9-80EE-1F5F42215502})
+MSI (s) (80:24) [18:08:59:450]: Verifying accessibility of file: ottrin-legacy-doc-render.exe
+MSI (s) (80:24) [18:08:59:450]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:450]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:450]: Executing op: FileRemove(,FileName=ottrin-office-render.exe,,ComponentId={D04B5A13-8767-575C-AFAB-CA44D35E23EB})
+MSI (s) (80:24) [18:08:59:452]: Verifying accessibility of file: ottrin-office-render.exe
+MSI (s) (80:24) [18:08:59:454]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:454]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:454]: Executing op: FileRemove(,FileName=ottrin-priv-helper.exe,,ComponentId={46F320FD-A0A7-5473-B3BB-6F7BDC88545E})
+MSI (s) (80:24) [18:08:59:456]: Verifying accessibility of file: ottrin-priv-helper.exe
+MSI (s) (80:24) [18:08:59:456]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:456]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:456]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\docs\)
+MSI (s) (80:24) [18:08:59:456]: Executing op: FileRemove(,FileName=DEVELOPMENT.md,,ComponentId={29903665-FA7D-5253-867D-F4891D868DBB})
+MSI (s) (80:24) [18:08:59:458]: Verifying accessibility of file: DEVELOPMENT.md
+MSI (s) (80:24) [18:08:59:460]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:460]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:460]: Executing op: FileRemove(,FileName=RELEASE_CHECKLIST.md,,ComponentId={29B1D534-6012-58E2-9BE7-E15AEA7C28BE})
+MSI (s) (80:24) [18:08:59:462]: Verifying accessibility of file: RELEASE_CHECKLIST.md
+MSI (s) (80:24) [18:08:59:462]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:462]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:464]: Executing op: FileRemove(,FileName=RELEASE_NOTES.md,,ComponentId={1F64DBBB-986C-5154-BE76-4E437BE14DD4})
+MSI (s) (80:24) [18:08:59:464]: Verifying accessibility of file: RELEASE_NOTES.md
+MSI (s) (80:24) [18:08:59:466]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:466]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:466]: Executing op: FileRemove(,FileName=ROADMAP.md,,ComponentId={785AA3D4-0E3C-5C19-9746-4F6E5454D853})
+MSI (s) (80:24) [18:08:59:468]: Verifying accessibility of file: ROADMAP.md
+MSI (s) (80:24) [18:08:59:468]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:470]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:470]: Executing op: FileRemove(,FileName=USER_GUIDE.md,,ComponentId={F36F48CF-9F00-5C0A-846B-5BE60ABE8806})
+MSI (s) (80:24) [18:08:59:470]: Verifying accessibility of file: USER_GUIDE.md
+MSI (s) (80:24) [18:08:59:472]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:472]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:472]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\)
+MSI (s) (80:24) [18:08:59:472]: Executing op: FileRemove(,FileName=MANIFEST.txt,,ComponentId={DEF30BD4-88A4-5A77-8459-3566FBCB5193})
+MSI (s) (80:24) [18:08:59:474]: Verifying accessibility of file: MANIFEST.txt
+MSI (s) (80:24) [18:08:59:476]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:476]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:476]: Executing op: FileRemove(,FileName=Microsoft-DXC-LICENSE-MS.txt,,ComponentId={B55A3599-0A18-5B99-A2C0-6F43876F822E})
+MSI (s) (80:24) [18:08:59:478]: Verifying accessibility of file: Microsoft-DXC-LICENSE-MS.txt
+MSI (s) (80:24) [18:08:59:478]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:480]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:480]: Executing op: FileRemove(,FileName=pal1000-LICENSE.txt,,ComponentId={4BFA69D0-2B4D-55FF-B19C-864CA48FD47A})
+MSI (s) (80:24) [18:08:59:482]: Verifying accessibility of file: pal1000-LICENSE.txt
+MSI (s) (80:24) [18:08:59:482]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:482]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:482]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\)
+MSI (s) (80:24) [18:08:59:482]: Executing op: FileRemove(,FileName=LICENSE,,ComponentId={E3121301-18A9-5412-8541-3069AD8B4C7E})
+MSI (s) (80:24) [18:08:59:484]: Verifying accessibility of file: LICENSE
+MSI (s) (80:24) [18:08:59:486]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:486]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:486]: Executing op: FileRemove(,FileName=pdfium.dll,,ComponentId={3CD85970-4AA3-5976-B70A-E980C6D49762})
+MSI (s) (80:24) [18:08:59:488]: Verifying accessibility of file: pdfium.dll
+MSI (s) (80:24) [18:08:59:488]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:488]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:490]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\)
+MSI (s) (80:24) [18:08:59:490]: Executing op: FileRemove(,FileName=abseil.txt,,ComponentId={AE7078EA-C061-5F47-96BD-85B50B9C782A})
+MSI (s) (80:24) [18:08:59:490]: Verifying accessibility of file: abseil.txt
+MSI (s) (80:24) [18:08:59:492]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:492]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:492]: Executing op: FileRemove(,FileName=agg23.txt,,ComponentId={45904AF4-B3A0-51A2-BABE-68EA0128F96B})
+MSI (s) (80:24) [18:08:59:494]: Verifying accessibility of file: agg23.txt
+MSI (s) (80:24) [18:08:59:494]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:496]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:496]: Executing op: FileRemove(,FileName=fast_float.txt,,ComponentId={549FC552-B2B0-55DA-BBDD-21EA37F67678})
+MSI (s) (80:24) [18:08:59:498]: Verifying accessibility of file: fast_float.txt
+MSI (s) (80:24) [18:08:59:498]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:498]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:498]: Executing op: FileRemove(,FileName=freetype.txt,,ComponentId={20839051-27B7-5E99-A250-45D2C82E8558})
+MSI (s) (80:24) [18:08:59:500]: Verifying accessibility of file: freetype.txt
+MSI (s) (80:24) [18:08:59:502]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:502]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:502]: Executing op: FileRemove(,FileName=icu.txt,,ComponentId={2B55CE69-0D65-5874-AC8A-4ECA9CAE31CB})
+MSI (s) (80:24) [18:08:59:504]: Verifying accessibility of file: icu.txt
+MSI (s) (80:24) [18:08:59:504]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:504]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:504]: Executing op: FileRemove(,FileName=lcms.txt,,ComponentId={BF589076-A861-52CA-A366-B11B26918592})
+MSI (s) (80:24) [18:08:59:506]: Verifying accessibility of file: lcms.txt
+MSI (s) (80:24) [18:08:59:508]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:508]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:508]: Executing op: FileRemove(,FileName=libjpeg_turbo.ijg,,ComponentId={AA0C2DEB-FB77-5ACF-A492-C66431A0B0F0})
+MSI (s) (80:24) [18:08:59:510]: Verifying accessibility of file: libjpeg_turbo.ijg
+MSI (s) (80:24) [18:08:59:510]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:510]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:512]: Executing op: FileRemove(,FileName=libjpeg_turbo.md,,ComponentId={534E1D6C-D255-5F6D-B996-BC03239153F1})
+MSI (s) (80:24) [18:08:59:514]: Verifying accessibility of file: libjpeg_turbo.md
+MSI (s) (80:24) [18:08:59:514]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:516]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:516]: Executing op: FileRemove(,FileName=libopenjpeg.txt,,ComponentId={5CE7141B-B527-56DF-9251-1EA0C5B5761C})
+MSI (s) (80:24) [18:08:59:518]: Verifying accessibility of file: libopenjpeg.txt
+MSI (s) (80:24) [18:08:59:518]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:518]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:518]: Executing op: FileRemove(,FileName=libpng.txt,,ComponentId={8F4919AF-0204-5C0A-ACC8-75B015D1288F})
+MSI (s) (80:24) [18:08:59:520]: Verifying accessibility of file: libpng.txt
+MSI (s) (80:24) [18:08:59:522]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:522]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:522]: Executing op: FileRemove(,FileName=libtiff.txt,,ComponentId={C70BBDEC-8BC2-57AF-A615-737C1AB7E328})
+MSI (s) (80:24) [18:08:59:524]: Verifying accessibility of file: libtiff.txt
+MSI (s) (80:24) [18:08:59:524]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:524]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:526]: Executing op: FileRemove(,FileName=llvm-libc.txt,,ComponentId={2C2E822A-799B-5AAA-9580-D1E94856FBD9})
+MSI (s) (80:24) [18:08:59:526]: Verifying accessibility of file: llvm-libc.txt
+MSI (s) (80:24) [18:08:59:528]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:528]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:528]: Executing op: FileRemove(,FileName=pdfium.txt,,ComponentId={9D764E0D-1A3B-542B-8589-A68A1722F266})
+MSI (s) (80:24) [18:08:59:530]: Verifying accessibility of file: pdfium.txt
+MSI (s) (80:24) [18:08:59:530]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:532]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:532]: Executing op: FileRemove(,FileName=simdutf.txt,,ComponentId={09F736E0-3EBC-5610-B1DF-E636AB1426AB})
+MSI (s) (80:24) [18:08:59:534]: Verifying accessibility of file: simdutf.txt
+MSI (s) (80:24) [18:08:59:534]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:534]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:534]: Executing op: FileRemove(,FileName=zlib.txt,,ComponentId={777A76B6-0790-5F05-AC41-CEDAE6023509})
+MSI (s) (80:24) [18:08:59:538]: Verifying accessibility of file: zlib.txt
+MSI (s) (80:24) [18:08:59:538]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:538]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:540]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:540]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:540]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\)
+MSI (s) (80:24) [18:08:59:540]: Executing op: FileRemove(,FileName=license.rst,,ComponentId={565FD30C-41DA-5626-8EF4-F0C928379B25})
+MSI (s) (80:24) [18:08:59:542]: Verifying accessibility of file: license.rst
+MSI (s) (80:24) [18:08:59:544]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:544]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:544]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\)
+MSI (s) (80:24) [18:08:59:544]: Executing op: FileRemove(,FileName=Apache-2.0,,ComponentId={4949097F-881C-5FD9-9D18-E74AB0DDB490})
+MSI (s) (80:24) [18:08:59:546]: Verifying accessibility of file: Apache-2.0
+MSI (s) (80:24) [18:08:59:548]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:548]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:548]: Executing op: FileRemove(,FileName=BSL-1.0,,ComponentId={D3CB88B6-AC12-52BF-8FC9-0114AF05265C})
+MSI (s) (80:24) [18:08:59:550]: Verifying accessibility of file: BSL-1.0
+MSI (s) (80:24) [18:08:59:550]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:550]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:550]: Executing op: FileRemove(,FileName=GPL-1.0-or-later,,ComponentId={720A6523-24D2-5740-A6E5-C29B3F0EBACF})
+MSI (s) (80:24) [18:08:59:552]: Verifying accessibility of file: GPL-1.0-or-later
+MSI (s) (80:24) [18:08:59:552]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:554]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:554]: Executing op: FileRemove(,FileName=GPL-2.0-only,,ComponentId={41C95DAF-7977-5AAA-97D9-CF67F31B1AF2})
+MSI (s) (80:24) [18:08:59:556]: Verifying accessibility of file: GPL-2.0-only
+MSI (s) (80:24) [18:08:59:556]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:556]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:556]: Executing op: FileRemove(,FileName=MIT,,ComponentId={D251D243-F875-56E3-B482-EA1E4314B8BD})
+MSI (s) (80:24) [18:08:59:558]: Verifying accessibility of file: MIT
+MSI (s) (80:24) [18:08:59:560]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:560]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:560]: Executing op: FileRemove(,FileName=SGI-B-2.0,,ComponentId={E31D8E8F-F2EC-55F8-AFE3-1E2064CA8AB5})
+MSI (s) (80:24) [18:08:59:562]: Verifying accessibility of file: SGI-B-2.0
+MSI (s) (80:24) [18:08:59:562]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:564]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:564]: Executing op: SetTargetFolder(Folder=C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\)
+MSI (s) (80:24) [18:08:59:564]: Executing op: FileRemove(,FileName=Linux-Syscall-Note,,ComponentId={089A9083-642F-5346-806A-B229C5A211CC})
+MSI (s) (80:24) [18:08:59:566]: Verifying accessibility of file: Linux-Syscall-Note
+MSI (s) (80:24) [18:08:59:566]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:566]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:568]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:568]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:568]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:08:59:568]: Executing op: ProgressTotal(Total=1,Type=1,ByteEquivalent=175000)
+MSI (s) (80:24) [18:08:59:568]: Executing op: FolderRemove(Folder=C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\,Foreign=1)
+MSI (s) (80:24) [18:08:59:570]: Executing op: ActionStart(Name=PublishProduct,Description=Publishing product information,)
+MSI (s) (80:24) [18:08:59:570]: Executing op: CleanupConfigData()
+MSI (s) (80:24) [18:08:59:570]: Executing op: RegisterPatchOrder(Continue=0,SequenceType=0,Remove=1)
+MSI (s) (80:24) [18:08:59:570]: Note: 1: 1402 2: UNKNOWN\Installer\Products\7EF7E406AEF095E46BA7728168DE54BA\Patches 3: 2
+MSI (s) (80:24) [18:08:59:570]: Executing op: RegisterPatchOrder(Continue=0,SequenceType=1,Remove=1)
+MSI (s) (80:24) [18:08:59:572]: Executing op: CleanupConfigData(RemovingProduct=1)
+MSI (s) (80:24) [18:08:59:572]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1029\Products\7EF7E406AEF095E46BA7728168DE54BA\Patches 3: 2
+MSI (s) (80:24) [18:08:59:572]: Executing op: ActionStart(Name=CommitBackgroundIndex,,)
+MSI (s) (80:24) [18:08:59:574]: Executing op: CustomActionSchedule(Action=CommitBackgroundIndex,ActionType=1538,Source=BinaryData,Target=--installer-transaction Commit "C:\Users\OTTRIN~1\AppData\Local\Temp\OttrinIndexRollback-{604E7FE7-0FEA-4E59-B67A-271886ED45AB}.json",)
+MSI (s) (80:24) [18:08:59:602]: Executing op: End(Checksum=0,ProgressTotalHDWord=0,ProgressTotalLDWord=10361200)
+MSI (s) (80:24) [18:08:59:610]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (80:24) [18:08:59:612]: User policy value 'DisableRollback' is 0
+MSI (s) (80:24) [18:08:59:612]: Machine policy value 'DisableRollback' is 0
+MSI (s) (80:24) [18:08:59:614]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (80:24) [18:09:00:648]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:09:00:756]: Note: 1: 2318 2:
+MSI (s) (80:24) [18:09:00:758]: Note: 1: 1321 2: C:\Config.Msi\ 3: 5
+MSI (s) (80:24) [18:09:00:758]: Note: 1: 2205 2:  3: Error
+MSI (s) (80:24) [18:09:00:758]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 2911
+DEBUG: Error 2911:  Could not remove the folder C:\Config.Msi\.
+MSI (s) (80:24) [18:09:00:760]: Note: 1: 2318 2:
+The installer has encountered an unexpected error installing this package. This may indicate a problem with this package. The error code is 2911. The arguments are: C:\Config.Msi\, ,
+MSI (s) (80:24) [18:09:00:762]: No System Restore sequence number for this installation.
+MSI (s) (80:24) [18:09:00:762]: Unlocking Server
+MSI (s) (80:24) [18:09:00:766]: PROPERTY CHANGE: Deleting UpdateStarted property. Its current value is '1'.
+Action ended 18:09:00: InstallFinalize. Return value 1.
+Action ended 18:09:00: INSTALL. Return value 1.
+Property(S): UpgradeCode = {04304CE2-990E-4053-9EDA-AF3E69548C9D}
+Property(S): ARPPRODUCTICON = OttrinApp.ico
+Property(S): Manufacturer = hoozter
+Property(S): ProductCode = {604E7FE7-0FEA-4E59-B67A-271886ED45AB}
+Property(S): ProductLanguage = 0
+Property(S): ProductName = Ottrin
+Property(S): ProductVersion = 0.1.0
+Property(S): SecureCustomProperties = WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+Property(S): BinFolder = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): INSTALLFOLDER = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\
+Property(S): ProgramsFolder = C:\Users\OttrinPackageQA\AppData\Local\Programs\
+Property(S): LocalAppDataFolder = C:\Users\OttrinPackageQA\AppData\Local\
+Property(S): OttrinProgramMenuFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+Property(S): ProgramMenuFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
+Property(S): dmzbjdDiB3W0FrOGXQNfyu.Blzhw = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\assets\
+Property(S): dhhl6QFuQFTY7VU2uD_d2S_M70_8 = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): dTzIUDEdB9rSr7wS4lPVox5hKT.I = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\docs\
+Property(S): dn32F_8EtPmtoACQpTPiLDsMMxTU = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\
+Property(S): dPNflk_4aOYVKo3ZPc8cTz2n7r0Y = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): dhJxUVfdQ0cl.WUkznCLAjT2gzFA = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+Property(S): dKuX5xjNESgOVxU1WHSJFvghTrNw = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+Property(S): dhuWcOUKYThzfMwsTQDFI31Lw5Ok = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\
+Property(S): dKlNTx_FNRtGPIc1yN5FSjNnSq0o = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\
+Property(S): d1aMKBYakpeHigRQUYF0B8iJEAP0 = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\
+Property(S): d7by2ua02ym.a3GUBsFb3YUdY4gs = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\
+Property(S): dN_kwZFmId13TyskwoOeucYFGuv0 = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+Property(S): dLUkJbpjstbOHi6.8vdP3Zi7wgxo = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+Property(S): d7.2MW0tjqQJvzMj9gk50FPZwvfg = C:\Users\OttrinPackageQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\
+Property(S): TARGETDIR = C:\
+Property(S): System64Folder = C:\WINDOWS\system32\
+Property(S): MsiLogFileLocation = C:\OttrinPackageQA\results\final-msi-uninstall.log
+Property(S): PackageCode = {B8E2959A-2BE7-4EB0-8B73-67FCB793DA6F}
+Property(S): ProductState = 5
+Property(S): REBOOT = ReallySuppress
+Property(S): REMOVE = ALL
+Property(S): CURRENTDIRECTORY = C:\WINDOWS\system32
+Property(S): CLIENTUILEVEL = 3
+Property(S): CLIENTPROCESSID = 4500
+Property(S): PRODUCTLANGUAGE = 0
+Property(S): VersionDatabase = 500
+Property(S): VersionMsi = 5.00
+Property(S): VersionNT = 603
+Property(S): VersionNT64 = 603
+Property(S): WindowsBuild = 9600
+Property(S): ServicePackLevel = 0
+Property(S): ServicePackLevelMinor = 0
+Property(S): MsiNTProductType = 1
+Property(S): WindowsFolder = C:\WINDOWS\
+Property(S): WindowsVolume = C:\
+Property(S): SystemFolder = C:\WINDOWS\SysWOW64\
+Property(S): RemoteAdminTS = 1
+Property(S): TempFolder = C:\Users\OTTRIN~1\AppData\Local\Temp\
+Property(S): ProgramFilesFolder = C:\Program Files (x86)\
+Property(S): CommonFilesFolder = C:\Program Files (x86)\Common Files\
+Property(S): ProgramFiles64Folder = C:\Program Files\
+Property(S): CommonFiles64Folder = C:\Program Files\Common Files\
+Property(S): AppDataFolder = C:\Users\OttrinPackageQA\AppData\Roaming\
+Property(S): FavoritesFolder = C:\Users\OttrinPackageQA\Favorites\
+Property(S): NetHoodFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Network Shortcuts\
+Property(S): PersonalFolder = C:\Users\OttrinPackageQA\Documents\
+Property(S): PrintHoodFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Printer Shortcuts\
+Property(S): RecentFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Recent\
+Property(S): SendToFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\SendTo\
+Property(S): TemplateFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Templates\
+Property(S): CommonAppDataFolder = C:\ProgramData\
+Property(S): MyPicturesFolder = C:\Users\OttrinPackageQA\Pictures\
+Property(S): AdminToolsFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools\
+Property(S): StartupFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\
+Property(S): StartMenuFolder = C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Windows\Start Menu\
+Property(S): DesktopFolder = C:\Users\OttrinPackageQA\Desktop\
+Property(S): FontsFolder = C:\WINDOWS\Fonts\
+Property(S): GPTSupport = 1
+Property(S): OLEAdvtSupport = 1
+Property(S): ShellAdvtSupport = 1
+Property(S): MsiAMD64 = 25
+Property(S): Msix64 = 25
+Property(S): Intel = 25
+Property(S): PhysicalMemory = 4077
+Property(S): VirtualMemory = 2769
+Property(S): LogonUser = OttrinPackageQA
+Property(S): UserSID = S-1-5-21-3183210791-1673105385-3262580894-1029
+Property(S): UserLanguageID = 8192
+Property(S): ComputerName = DESKTOP-81GHP8U
+Property(S): SystemLanguageID = 1033
+Property(S): ScreenX = 1024
+Property(S): ScreenY = 768
+Property(S): CaptionHeight = 23
+Property(S): BorderTop = 1
+Property(S): BorderSide = 1
+Property(S): TextHeight = 16
+Property(S): TextInternalLeading = 3
+Property(S): ColorBits = 32
+Property(S): TTCSupport = 1
+Property(S): Time = 18:09:00
+Property(S): Date = 2026-10-15
+Property(S): MsiNetAssemblySupport = 4.8.9032.0
+Property(S): MsiWin32AssemblySupport = 6.3.26100.8972
+Property(S): RedirectedDllSupport = 2
+Property(S): USERNAME = campbell
+Property(S): Installed = 00:00:00
+Property(S): DATABASE = C:\WINDOWS\Installer\3c9fe.msi
+Property(S): OriginalDatabase = C:\WINDOWS\Installer\3c9fe.msi
+Property(S): UILevel = 2
+Property(S): Preselected = 1
+Property(S): ACTION = INSTALL
+Property(S): ROOTDRIVE = C:\
+Property(S): CostingComplete = 1
+Property(S): OutOfDiskSpace = 0
+Property(S): OutOfNoRbDiskSpace = 0
+Property(S): PrimaryVolumeSpaceAvailable = 0
+Property(S): PrimaryVolumeSpaceRequired = 0
+Property(S): PrimaryVolumeSpaceRemaining = 0
+Property(S): INSTALLLEVEL = 1
+MSI (s) (80:24) [18:09:00:802]: Note: 1: 1724
+MSI (s) (80:24) [18:09:00:802]: Note: 1: 2205 2:  3: Error
+MSI (s) (80:24) [18:09:00:802]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1724
+MSI (s) (80:24) [18:09:00:802]: Note: 1: 2205 2:  3: Error
+MSI (s) (80:24) [18:09:00:802]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1709
+MSI (s) (80:24) [18:09:00:802]: Product: Ottrin -- Removal completed successfully.
+
+MSI (s) (80:24) [18:09:00:804]: Windows Installer removed the product. Product Name: Ottrin. Product Version: 0.1.0. Product Language: 0. Manufacturer: hoozter. Removal success or error status: 0.
+
+MSI (s) (80:24) [18:09:00:808]: Deferring clean up of packages/files, if any exist
+MSI (s) (80:24) [18:09:00:808]: MainEngineThread is returning 0
+MSI (s) (80:64) [18:09:00:814]: RESTART MANAGER: Previously shut down applications have been restarted.
+MSI (s) (80:64) [18:09:00:814]: RESTART MANAGER: Session closed.
+MSI (s) (80:64) [18:09:00:814]: No System Restore sequence number for this installation.
+=== Logging stopped: 2026-10-15  18:09:00 ===
+MSI (s) (80:64) [18:09:00:818]: User policy value 'DisableRollback' is 0
+MSI (s) (80:64) [18:09:00:818]: Machine policy value 'DisableRollback' is 0
+MSI (s) (80:64) [18:09:00:818]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (80:64) [18:09:00:818]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (80:64) [18:09:00:822]: Note: 1: 2265 2:  3: -2147287035
+MSI (s) (80:64) [18:09:00:822]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (80:64) [18:09:00:824]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (s) (80:64) [18:09:00:824]: Post-install cleanup: removing installer file 'C:\WINDOWS\Installer\3c9fe.msi'
+MSI (s) (80:64) [18:09:00:830]: Post-install cleanup: removing installer file 'C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Installer\{604E7FE7-0FEA-4E59-B67A-271886ED45AB}\OttrinApp.ico'
+MSI (s) (80:64) [18:09:00:830]: Post-install cleanup: removing installer folder 'C:\Users\OttrinPackageQA\AppData\Roaming\Microsoft\Installer\{604E7FE7-0FEA-4E59-B67A-271886ED45AB}\' (if empty)
+MSI (s) (80:64) [18:09:00:830]: Note: 1: 2318 2:
+MSI (s) (80:64) [18:09:00:830]: Note: 1: 2318 2:
+MSI (c) (94:08) [18:09:00:834]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (c) (94:08) [18:09:00:834]: MainEngineThread is returning 0
+MSI (c) (94:84) [18:09:00:840]: RESTART MANAGER: Previously shut down applications have been restarted.
+MSI (c) (94:84) [18:09:00:842]: RESTART MANAGER: Session closed.
+=== Verbose logging stopped: 2026-10-15  18:09:00 ===
