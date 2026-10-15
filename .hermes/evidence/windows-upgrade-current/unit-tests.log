@@ -1,0 +1,8 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.84s
+     Running unittests src/bin/ottrin-indexd.rs (target/debug/deps/ottrin_indexd-76fde0427140867b)
+
+running 2 tests
+test tests::administrator_mode_uses_only_protected_fixed_paths ... ok
+test windows_launch_tests::installer_actions_are_explicit_and_preserve_unicode_snapshot_paths ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

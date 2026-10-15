@@ -85,26 +85,31 @@ function Restore-OttrinTaskRecord($folder, $record) {
             $restored.SetSecurityDescriptor($record.security, 16)
         }
     }
-    if ($null -ne $restored) {
-        if ($record.running -and $restored.GetInstances(0).Count -eq 0) {
-            # Resume captured instance intent, independently of future triggers.
-            # Disabled tasks can have live instances; preserve that distinction.
-            $enabled = $restored.Enabled
-            try {
-                if (-not $enabled) { $restored.Enabled = $true }
-                $instance = $restored.RunEx($null, 2, 0, $null)
-                if ($null -eq $instance) { throw 'Restored index task did not accept a restart.' }
-                $deadline = [DateTime]::UtcNow.AddSeconds(10)
-                while ($instance.State -ne 4) {
-                    $instance.Refresh()
-                    if ([DateTime]::UtcNow -ge $deadline) { throw 'Restored index task did not start within 10 seconds.' }
-                    Start-Sleep -Milliseconds 20
-                }
-            } finally {
-                if (-not $enabled) { $restored.Enabled = $false }
+    if ($null -ne $restored) { Restore-OttrinTaskRunningState $restored $record.running }
+}
+
+# Use current task metadata when preserving runtime intent after a successful
+# upgrade; rollback first restores the captured metadata, then uses this too.
+function Restore-OttrinTaskRunningState($task, [bool]$running) {
+    Assert-OttrinTaskOwner $task
+    if ($running -and $task.GetInstances(0).Count -eq 0) {
+        # Resume captured instance intent, independently of future triggers.
+        # Disabled tasks can have live instances; preserve that distinction.
+        $enabled = $task.Enabled
+        try {
+            if (-not $enabled) { $task.Enabled = $true }
+            $instance = $task.RunEx($null, 2, 0, $null)
+            if ($null -eq $instance) { throw 'Restored index task did not accept a restart.' }
+            $deadline = [DateTime]::UtcNow.AddSeconds(10)
+            while ($instance.State -ne 4) {
+                $instance.Refresh()
+                if ([DateTime]::UtcNow -ge $deadline) { throw 'Restored index task did not start within 10 seconds.' }
+                Start-Sleep -Milliseconds 20
             }
-        } elseif (-not $record.running -and $restored.GetInstances(0).Count -ne 0) {
-            Stop-OttrinIndexTask $restored
+        } finally {
+            if (-not $enabled) { $task.Enabled = $false }
         }
+    } elseif (-not $running -and $task.GetInstances(0).Count -ne 0) {
+        Stop-OttrinIndexTask $task
     }
 }

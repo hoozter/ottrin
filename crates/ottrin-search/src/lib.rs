@@ -37,9 +37,13 @@ mod scanner;
 mod watch;
 #[cfg(target_os = "windows")]
 mod windows_identity;
+mod windows_installer;
 mod worker;
 #[cfg(target_os = "windows")]
 pub use windows_identity::IndexDaemonIdentity;
+pub use windows_installer::IndexInstallerPhase;
+#[cfg(target_os = "windows")]
+pub use windows_installer::run as run_windows_index_installer_transaction;
 #[cfg(target_os = "windows")]
 mod windows_pipe;
 #[cfg(target_os = "windows")]

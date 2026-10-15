@@ -1,0 +1,18 @@
+{
+  "status": "source and native controller pass; MSI engine acceptance pending",
+  "baseline": "Published41027a0 MSI with ordinary interactive user and running index task",
+  "controller_sha256": "08cc56bd301a9a34d7d09ac2f0c686601a17d4058afb544a63eef98b79fe4214",
+  "checks": [
+    "Snapshot then graceful stop preserves saved index, task XML/security and login enablement",
+    "Rollback resumes previously running tasks, including disabled-running, without starting disabled idle tasks",
+    "Snapshot/commit do not interrupt a continuing running task",
+    "Commit rejects an invalid snapshot and preserves its bytes",
+    "Successful-setup commit preserves enabled/disabled and running/idle combinations while retaining the new task definition",
+    "Unicode/space/apostrophe snapshot path and source/preference preservation",
+    "Explicit CLI parsing tests, strict Windows app/search all-target Clippy and MSI authoring contract pass"
+  ],
+  "scope": "Native controller tests against installed published baseline; not engine-driven MSI upgrade/rollback or new package delivery",
+  "references": {
+    "wix_binary_custom_action": "https://docs.firegiant.com/wix/schema/wxs/customaction/"
+  }
+}

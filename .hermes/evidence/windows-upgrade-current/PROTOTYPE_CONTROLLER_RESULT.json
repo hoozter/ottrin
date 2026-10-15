@@ -1,0 +1,27 @@
+{
+  "preference_hash": "EDEC0B676147FF9F4AE16B951767633B0E8E1E0736ADD5D1964BD91BF1D0D756",
+  "scope": "Source-built transaction controller; published410 MSI baseline; ordinary interactive user",
+  "phase": "ready-for-upgrade",
+  "restored": {
+    "instance": "{C23755AE-AEB0-4A71-897D-23C1BA034A7F}",
+    "pid": 4384
+  },
+  "invalid_snapshot_exit": 1,
+  "controller_sha256": "01dc14e505a7a40d0325ed650d8b31497bfabc660974f5d241c8e1d0e7d505fa",
+  "before": {
+    "instance": "{1AAFB6E0-F8D2-4F55-8928-2BB5CB0F7D05}",
+    "pid": 4120
+  },
+  "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+  "disabled_restored": {
+    "instance": "{76774510-6798-4A79-A080-ED00603020B7}",
+    "pid": 5572
+  },
+  "baseline_product": "{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}",
+  "after": {
+    "instance": "{912C36B9-62D1-44E3-93EC-7CCC94D6870E}",
+    "pid": 5268
+  },
+  "status": "pass",
+  "source_hash": "2085FCCC824C317A745F24FDAF4137F34065A5D2424B764AC710CC0C089FF766"
+}

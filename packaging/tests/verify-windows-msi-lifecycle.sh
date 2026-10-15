@@ -21,7 +21,7 @@ require_literal() {
 [[ -x "$PACKAGER" ]] || { printf 'Windows MSI packager is missing or not executable: %s\n' "$PACKAGER" >&2; exit 1; }
 [[ -f "$POWERSHELL_PACKAGER" ]] || { printf 'Native Windows MSI packager is missing: %s\n' "$POWERSHELL_PACKAGER" >&2; exit 1; }
 
-# The MSI is per-user and delegates lifecycle ownership to the installed app.
+# MSI resource control quiesces indexing before payload changes; normal setup/cleanup remains app-owned.
 # Cleanup precedes payload removal; engine registration can be unpublished first.
 # A nonzero result aborts uninstall and schedules task restoration. Native checks
 # must not infer product-registration restoration from source sequencing. They separately
@@ -29,21 +29,23 @@ require_literal() {
 require_literal "$SOURCE" 'Scope="perUser"'
 require_literal "$SOURCE" 'Schedule="afterInstallExecute"'
 require_literal "$SOURCE" 'ExeCommand="index service-install"'
-require_literal "$SOURCE" 'Id="IndexTransactionScript"'
-require_literal "$SOURCE" '-Phase Snapshot -Snapshot'
-require_literal "$SOURCE" '-Phase Rollback -Snapshot'
-require_literal "$SOURCE" '-Phase Commit -Snapshot'
+require_literal "$SOURCE" 'Id="IndexLifecycleController"'
+require_literal "$SOURCE" 'BinaryRef="IndexLifecycleController"'
+require_literal "$SOURCE" '--installer-transaction Snapshot'
+require_literal "$SOURCE" '--installer-transaction Rollback'
+require_literal "$SOURCE" '--installer-transaction Commit'
 require_literal "$SOURCE" 'After="RollbackBackgroundIndex"'
+require_literal "$SOURCE" 'Id="PrepareBackgroundIndex"'
 require_literal "$SOURCE" 'Id="RollbackBackgroundIndex"'
 require_literal "$SOURCE" 'Execute="rollback"'
-require_literal "$SOURCE" 'After="SnapshotBackgroundIndex"'
+require_literal "$SOURCE" 'After="InstallFiles"'
 require_literal "$SOURCE" 'Execute="commit"'
 require_literal "$SOURCE" 'ExeCommand="--uninstall"'
 require_literal "$SOURCE" 'After="InstallInitialize"'
 require_literal "$SOURCE" 'After="RollbackRemovedIndex"'
 require_literal "$SOURCE" 'After="SnapshotRemovedIndex"'
 require_literal "$SOURCE" 'Before="InstallFinalize"'
-require_literal "$SOURCE" '.json.scripts\index-task-transaction.ps1'
+require_literal "$SOURCE" '--installer-transaction Prepare'
 require_literal "$SOURCE" 'Return="check"'
 require_literal "$SOURCE" 'Condition="NOT REMOVE"'
 require_literal "$SOURCE" 'Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE"'
