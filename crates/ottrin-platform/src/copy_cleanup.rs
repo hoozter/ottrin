@@ -134,11 +134,7 @@ fn origin_digest(record: &CopyRecord) -> Result<String, PlatformError> {
 }
 
 fn mount(fd: &impl rustix::fd::AsFd) -> Result<u64, PlatformError> {
-    crate::local_storage::local_path_mount_identity(
-        &PathBuf::from(format!("/proc/self/fd/{}", fd.as_fd().as_raw_fd())),
-        true,
-    )
-    .map_err(journal_error)
+    crate::local_storage::local_fd_mount_identity(fd).map_err(journal_error)
 }
 
 impl Ledger {

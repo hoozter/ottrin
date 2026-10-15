@@ -6,6 +6,7 @@
 
 use super::move_recovery::{NativePath, SourceTreeSnapshot};
 use super::{PathMoveIdentity, PlatformError};
+use rustix::fs::{Mode, OFlags};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
 
@@ -226,7 +227,6 @@ impl CopyRecord {
         fd: &impl rustix::fd::AsFd,
         parent: bool,
     ) -> Result<(), PlatformError> {
-        use rustix::fd::AsRawFd;
         let (identity, mount, handle) = if parent {
             (
                 &self.parent_identity,
@@ -241,11 +241,8 @@ impl CopyRecord {
             )
         };
         let metadata = rustix::fs::fstat(fd).map_err(journal_error)?;
-        let opened_mount = super::local_storage::local_path_mount_identity(
-            &PathBuf::from(format!("/proc/self/fd/{}", fd.as_fd().as_raw_fd())),
-            true,
-        )
-        .map_err(journal_error)?;
+        let opened_mount =
+            super::local_storage::local_fd_mount_identity(fd).map_err(journal_error)?;
         if rustix::fs::FileType::from_raw_mode(metadata.st_mode) != rustix::fs::FileType::Directory
             || (metadata.st_dev, metadata.st_ino) != (identity.device, identity.inode)
             || opened_mount != mount
@@ -1461,59 +1458,20 @@ impl CopyRecord {
                 "Copy directory evidence belongs to another boot; review is required".into(),
             ));
         }
-        for (path, identity, mount, handle) in [
-            (
-                parent,
-                &self.parent_identity,
-                self.parent_mount,
-                &self.parent_handle,
-            ),
-            (
-                transaction.as_path(),
-                &self.transaction_identity,
-                self.transaction_mount,
-                &self.transaction_handle,
-            ),
-        ]
-        .into_iter()
-        .take(if include_stage { 2 } else { 1 })
+        for (path, is_parent) in [(parent, true), (transaction.as_path(), false)]
+            .into_iter()
+            .take(if include_stage { 2 } else { 1 })
         {
-            let metadata = std::fs::symlink_metadata(path).map_err(journal_error)?;
-            if !metadata.is_dir()
-                || super::rename_identity(path).map_err(journal_error)? != *identity
-                || super::local_storage::local_path_mount_identity(path, false)
-                    .map_err(journal_error)?
-                    != mount
-            {
-                return Err(PlatformError::Io(
-                    "Copy directory or mount binding changed".into(),
-                ));
-            }
-            if let Some(expected) = handle {
-                let fd = rustix::fs::open(
-                    path,
-                    rustix::fs::OFlags::PATH
-                        | rustix::fs::OFlags::NOFOLLOW
-                        | rustix::fs::OFlags::CLOEXEC,
-                    rustix::fs::Mode::empty(),
-                )
-                .map_err(journal_error)?;
-                let opened = rustix::fs::fstat(&fd).map_err(journal_error)?;
-                use rustix::fd::AsRawFd;
-                let opened_mount = super::local_storage::local_path_mount_identity(
-                    &PathBuf::from(format!("/proc/self/fd/{}", fd.as_raw_fd())),
-                    true,
-                )
-                .map_err(journal_error)?;
-                if (opened.st_dev, opened.st_ino) != (identity.device, identity.inode)
-                    || opened_mount != mount
-                    || ObjectHandle::capture(&fd).map_err(journal_error)?.as_ref() != Some(expected)
-                {
-                    return Err(PlatformError::Io(
-                        "Copy directory object generation changed".into(),
-                    ));
-                }
-            }
+            // Resolve each current name once, then use the same opened-object
+            // checks as Copy/Undo/cleanup workers. O_PATH|NOFOLLOW pins even an
+            // unreadable replacement, whose type/generation/mount is refused.
+            let fd = rustix::fs::open(
+                path,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(journal_error)?;
+            self.validate_opened_directory(&fd, is_parent)?;
         }
         Ok(())
     }

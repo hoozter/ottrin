@@ -2600,3 +2600,27 @@ Focused read-volume and alias-write regressions are added. This is a bounded I/O
 improvement, not proof of linear CPU/syscall scaling, broad large-operation
 acceptance or delivery in an updated package. Current stable packages retain
 the preceding Copy Activity receipt until a new exact-artifact acceptance passes.
+
+
+### Copy namespace validation cost — 2026-10-15
+
+Profiling the same 32-directory finalization fixture identified duplicate named
+path metadata checks before the directory was opened and checked again. Copy
+namespace validation now opens each current name with O_PATH|O_NOFOLLOW and
+reuses the worker's authoritative opened-directory validator. Type, inode,
+generation, unique mount and private-stage owner/mode checks remain active.
+Mount queries on opened objects use statx AT_EMPTY_PATH directly; named-path
+mount queries retain their existing ancestor/dangling-link semantics through the
+same unique-mount syscall implementation. No namespace or generation result is
+cached. A regression checks opened symlink and followed-target mount identities,
+including after unlink/removal, on separate existing mounts.
+
+All402 regular platform tests pass (one ignored), as does strict Linux platform
+all-target Clippy. Five untraced runs of the finalization interval measured
+329/308/311/316/315 ms before and223/229/225/224/224 ms after (median315 to224 ms).
+The complete traced fixture, including setup/payload reclamation, made130,497
+statx calls before and97,185 after, with identical name_to_handle_at/fstat counts.
+These are bounded local optimized-test-build measurements, not a linear-scaling
+or universal performance claim. Whole-group repetition and broader resource
+profiling remain open. Exact-package delivery is recorded separately in
+`dist/packages/COPY_NAMESPACE_ACCEPTANCE.json` when promoted.
