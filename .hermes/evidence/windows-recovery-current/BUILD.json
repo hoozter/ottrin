@@ -1,0 +1,25 @@
+{
+  "production_sha256": {
+    "packaging/windows/installer.nsi": "54118cc0168986a58117692e598111d7cd5a3e2c26c6969af014feb794e88aa0",
+    "packaging/windows/payload-transaction.ps1": "c47286ccd4ee7996b7bd5e8e58ffa8dd8cce53dc79737b3a410f2ad82503f992"
+  },
+  "fixture_sha256": {
+    "cleanup-user.ps1": "e002d73a489b311b7f7429060db0fbbb55c4de7759e4d2c69ff04843031d05f0",
+    "reset.ps1": "2d740b8d918029d49550dd97691338f901502b6b4bd45ca1ab1a4dc5c8972f1f",
+    "diagnose.ps1": "ef631df45f742922ee33f82da652c20830b1c46d74ff2f3c5674474e10a6cdb2",
+    "baseline.nsi": "8271e7694658d3bc74e7f7d6192bb2aca9caa0cc49894f0fa94beb22de0425a6",
+    "actor.ps1": "6712c5a895370a098473db1143fbfe7ed03138519ed5ca67ac0174175c2fe7fa",
+    "payload-transaction.qa.ps1": "1d7f328ce1dd985dea83573307799354499e2f310e59c7014b005cfa80f64769",
+    "fixed.nsi": "ebd4d0eb9c9436e113147afe3c1bc4c59fbd6e592475b07bb04bd8e5c36cabbc",
+    "reset-all.ps1": "2b27d5b3fc3305181e5149e6dd348edfc61d62ff0b271ed03cfbe34c2cecc848",
+    "reset-remaining.ps1": "b09fa872a4cf9a14053ab774297d28e08f0109721db7c34df9903a3b694d8461",
+    "mock.c": "6cdeb6a7f013367d6c05a89823efc7f5991bd6efa386cf5f719af91b786d0f7c",
+    "collect-cleanup.py": "6030d64a98ea1e35d74bb10143d3e44a386f5a23ccd53ac74be19e71c3884410",
+    "actor-initial.ps1": "029f161e72127ed98eda402b2c8bc2823e1a57d3c6a0abaed01dcb63e3fa3817",
+    "build.py": "58fc2d1343893f415d25858e2543c0b0ef8a82d30a3430e7989e74a7f3b7dc6d"
+  },
+  "artifacts": {
+    "baseline.exe": "dc83c43c3639b0f3a5f47924a9df20a4a97602063cd3c3353fc0837e474c770e",
+    "fixed.exe": "d9402da3fa7a4102b7a321a653b31abab14fee6a4e40afc731b86edae6ea9e50"
+  }
+}

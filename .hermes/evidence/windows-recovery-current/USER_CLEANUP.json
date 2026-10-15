@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "live_fixture_installers_and_payload_helpers": 0,
+  "fixture_registry_shortcuts_and_profile_absent": true,
+  "artifacts": {
+    "baseline.exe": "dc83c43c3639b0f3a5f47924a9df20a4a97602063cd3c3353fc0837e474c770e",
+    "fixed.exe": "d9402da3fa7a4102b7a321a653b31abab14fee6a4e40afc731b86edae6ea9e50",
+    "actor.ps1": "6712c5a895370a098473db1143fbfe7ed03138519ed5ca67ac0174175c2fe7fa",
+    "payload-transaction.qa.ps1": "1d7f328ce1dd985dea83573307799354499e2f310e59c7014b005cfa80f64769"
+  },
+  "identity": "desktop-81ghp8u\\campbell"
+}

@@ -1,0 +1,35 @@
+{
+  "production_sha256": {
+    "packaging/windows/installer.nsi": "ce6ba526603ac035ed450876fb5f97be8b4e9dcb9e312a401469599f943936d9",
+    "packaging/windows/payload-transaction.ps1": "a50355ccc26b50829befeaf1270e67fd810fd63dc794401ea20b0479a27ba7d4"
+  },
+  "fixture_sha256": {
+    "reset.ps1": "2d740b8d918029d49550dd97691338f901502b6b4bd45ca1ab1a4dc5c8972f1f",
+    "diagnose.ps1": "ef631df45f742922ee33f82da652c20830b1c46d74ff2f3c5674474e10a6cdb2",
+    "baseline.nsi": "8271e7694658d3bc74e7f7d6192bb2aca9caa0cc49894f0fa94beb22de0425a6",
+    "actor.ps1": "18cb1279b82b476da8ad5b4c88e21ba46fc3885ea38903aae2dfe5c543876a94",
+    "payload-transaction.qa.ps1": "2614a0c4bd943daf9197789e1ab84d5ffd7289c5859355dc5710e905e42a5d39",
+    "fixed.nsi": "1df2a942bfb68f4669df2bb8f0688b986d1d96dda87d33b7dde479c39a5537a2",
+    "mock.c": "6cdeb6a7f013367d6c05a89823efc7f5991bd6efa386cf5f719af91b786d0f7c",
+    "build.py": "58fc2d1343893f415d25858e2543c0b0ef8a82d30a3430e7989e74a7f3b7dc6d",
+    "actor-initial.ps1": "029f161e72127ed98eda402b2c8bc2823e1a57d3c6a0abaed01dcb63e3fa3817"
+  },
+  "artifacts": {
+    "baseline.exe": "8705ecc96d8443eb46d82e01dcf1ef936a892936779756dbbe30cae14ecc0c20",
+    "fixed.exe": "b675ab9999507be7f27768530543bbac26cef364451e40bc6582b6986c81ddd2"
+  },
+  "actor_batches": [
+    {
+      "sha256": "029f161e72127ed98eda402b2c8bc2823e1a57d3c6a0abaed01dcb63e3fa3817",
+      "accepted_cases": [
+        "staging",
+        "publishing",
+        "old-moved",
+        "candidate-moved",
+        "published",
+        "integrating"
+      ],
+      "terminal_result": "Next case reached committed state during retry, then whole-installer 45s fixture deadline expired; finally killed owned process tree, no fixture processes remained. Parallel host release compilation was active; underlying delay was not otherwise attributed."
+    }
+  ]
+}

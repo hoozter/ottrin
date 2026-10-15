@@ -1,0 +1,7 @@
+{
+  "status": "fixture_assertion_rejected",
+  "case": "staging",
+  "source_recovery": "completed with correct original root and registry before next setup",
+  "observed": "Windows appended a shell property-store block to Uninstall Ottrin.lnk: snapshot Base64 length 1968 versus observed 2028. Extracted target path remained the original fixture Uninstall.exe. Ottrin.lnk remained byte-identical.",
+  "correction": "Compare original shortcut target, arguments, description, icon, working directory, hotkey and window style; report byte equality separately. Native shell tracking metadata can change independently of setup."
+}

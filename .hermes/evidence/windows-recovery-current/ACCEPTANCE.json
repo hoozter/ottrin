@@ -1,0 +1,41 @@
+{
+  "status": "pass",
+  "scope": "NSIS valid-journal restart recovery source and isolated native integration checkpoint; no production package promotion",
+  "implemented": [
+    "Setup obtains a recovery decision before starting a new transaction, using new embedded controllers",
+    "Uncommitted publication restores original directory and integration metadata before task restoration; already restored state avoids stopping its daemon again",
+    "Committed publication preserves the candidate and resumes snapshot/payload cleanup",
+    "Staging identity is persisted in schema v2 and validated before publication/recovery",
+    "Active transaction retirement precedes final receipt disposal; completed receipt/empty-directory disposal resumes on next setup",
+    "Unexpected root files retain their journal, while malformed/foreign recovery records are refused before index commands",
+    "Metadata is recaptured immediately before installation renames; Windows shortcut tracking no longer triggers the removed post-rename conflict check"
+  ],
+  "checks": [
+    "22 native force-termination/retry and invalid-record cases pass on corrected production source with isolated integration names",
+    "Original directory identity, typed registry values, shortcut targets/arguments/style, preferences, unowned data and controller phase order checked",
+    "Default production NSIS construction compiles",
+    "Updated source lifecycle preflight passes",
+    "Windows app/index daemon release cross-build and GUI subsystem checks pass; Rust sources unchanged against 19bf276"
+  ],
+  "evidence": [
+    "BUILD.json",
+    "RESULTS.json",
+    "USER_CLEANUP.json",
+    "GUEST_CLEANUP.json",
+    "RELEASE_BUILD.json",
+    "SHORTCUT_GUARD_FAILURE.log"
+  ],
+  "rejected_attempts": [
+    "Initial machine-protocol decision emitted a newline and NSIS refused it; exact Console.Out.Write repaired it",
+    "An exact shortcut-byte fixture assumption was invalid because Windows appended tracking metadata without changing target; fixture now checks user-visible shortcut properties",
+    "A 45-second whole-installer fixture deadline expired after commit; owned processes were terminated, committed fixture cleanup completed explicitly, and the final complete matrix used a bounded 120-second installer deadline",
+    "Instrumented rejected matrix reproduced the post-rename shortcut-conflict failure; metadata ownership now begins before renames, and the complete 22-case matrix was rerun"
+  ],
+  "limitations": [
+    "App/index controller actions are harmless mocks in the native installer matrix; this is not full actual-daemon/scheduler/package acceptance",
+    "Recovery requires a valid current schema-v2 journal at the selected installation path; missing/torn/unknown records remain conservatively refused",
+    "Arbitrary power loss, initialization before the first durable journal, hostile namespace races and complete native Windows lifecycle remain outside this acceptance",
+    "Stable Windows and Linux packages are unchanged",
+    "MSI failed-registration rollback and Windows Office provider gates remain open"
+  ]
+}

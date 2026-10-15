@@ -1,0 +1,8 @@
+New-Item : An item with the specified name C:\OttrinQA-20261011\recovery-current\staging Space O 'copy' already exists.
+At C:\OttrinQA-20261011\recovery-current\actor.ps1:45 char:50
++ ... $case+" Space O 'copy'");New-Item -ItemType Directory $folder|Out-Nul ...
++                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceExists: (C:\OttrinQA-202... Space O 'copy':String) [New-Item], IOException
+    + FullyQualifiedErrorId : DirectoryExist,Microsoft.PowerShell.Commands.NewItemCommand
+ 
+

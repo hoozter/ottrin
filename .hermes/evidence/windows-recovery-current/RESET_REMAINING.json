@@ -1,0 +1,4 @@
+{
+  "disposal_scope": "Only timed-out rollback-candidate-moved fixture; persisted commit finished before copied uninstaller ran; six passing fixture cases retained in PROGRESS.json",
+  "status": "pass"
+}

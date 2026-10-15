@@ -2828,3 +2828,37 @@ This is a source and isolated integration checkpoint. Automatic restart recovery
 full coherent package/daemon acceptance, MSI registration rollback and the Office
 provider gates remain open. Stable packages are unchanged. Task-owned fixtures,
 integrations, processes and staging were removed; the owned guest was shut down.
+
+### Windows NSIS interrupted-setup recovery checkpoint (2026-10-15)
+
+Setup now validates a retained transaction before creating a new one. An
+uncommitted publication restores the original payload and integration metadata,
+then the task controller restores scheduler intent. Already restored payloads
+avoid another daemon stop. A committed publication retains the new installation
+and resumes snapshot removal and old-payload cleanup. The new schema v2 records
+staging-directory identity; unknown, torn or foreign records remain refused.
+
+Final transaction-folder retirement precedes deletion of its receipt, so a killed
+process can leave a completed receipt or empty folder for the next setup to
+reclaim. Unexpected root files retain the journal alongside them. Integration
+metadata is recaptured immediately before installation renames. This fixes a
+native failure where Windows refreshed shortcut tracking after a rename and the
+installer incorrectly rejected that consequence as an external metadata edit.
+
+All 22 native isolated interruption/retry and refusal cases pass on the corrected
+source. They check directory identity, typed registry values, shortcut behavior,
+preferences, retained unowned files and controller call order. App/index commands
+are mocks; this is not combined real-daemon/scheduler/full-package acceptance.
+Default NSIS construction and the updated source lifecycle preflight pass. The
+Windows app and daemon release cross-build and GUI-subsystem checks also pass;
+new coherent installers have not yet been built or promoted. Rejected fixture
+assumptions, a bounded timeout and the causal shortcut-guard failure are retained
+with the final results at
+`.hermes/evidence/windows-recovery-current/ACCEPTANCE.json`.
+
+Owned fixture processes, task, integrations, uploads and staging were removed;
+the owned guest was shut down. Stable packages are unchanged. Next work is exact
+coherent candidate construction and actual app/daemon/scheduler acceptance.
+Pre-journal initialization interruption, arbitrary power loss and namespace races
+retain their separate limits. MSI registration rollback and Windows Office
+provider acceptance remain open.

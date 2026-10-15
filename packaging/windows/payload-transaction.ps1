@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Initialize','Publish','BeginIntegration','Rollback','FinishRollback','SealCommit','Commit')][string]$Phase,
+    [ValidateSet('Initialize','RecoveryPlan','Publish','BeginIntegration','Rollback','FinishRollback','SealCommit','Commit')][string]$Phase,
     [string]$Target=$env:OTTRIN_INSTALLER_TARGET
 )
 $ErrorActionPreference='Stop'
@@ -12,6 +12,7 @@ $Root="$Target.ottrin-setup"
 $New=Join-Path $Root 'new'
 $Old=Join-Path $Root 'previous'
 $Journal=Join-Path $Root 'transaction.json'
+$Completed=$Target+'.ottrin-completed'
 $User=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 
 # NSIS runs children from its plugin directory, which contains a native
@@ -165,7 +166,7 @@ function Finish($record) {
     # Only the exact candidate files are disposable. Unexpected or edited files
     # stay available outside the live installation and do not block later setup.
     if ([IO.Directory]::Exists($New)) {
-        if($null -ne $record.candidate){Expect $New $record.candidate}
+        Expect $New $record.staged
         $null=Files $New | Out-Null
         $owned=$record.files
         if($null -eq $record.candidate) {
@@ -177,7 +178,11 @@ function Finish($record) {
         }
         EmptyDirectories $New
     }
-    if([IO.Directory]::Exists($Old) -or [IO.Directory]::Exists($New)) {
+    # Keep the journal with unexpected root entries too (for example a flushed
+    # temporary journal from an interrupted replacement). Never unlink the only
+    # recovery record before discovering that the directory cannot be removed.
+    $remaining=@([IO.Directory]::EnumerateFileSystemEntries($Root)|Where-Object {$_ -cne $Journal})
+    if($remaining.Count -ne 0) {
         $retained=$Target+'.ottrin-retained-'+[Guid]::NewGuid().ToString('N')
         if($env:OTTRIN_INSTALLER_PAYLOAD_NOTICE) {
             [IO.File]::WriteAllText($env:OTTRIN_INSTALLER_PAYLOAD_NOTICE,$retained,[Text.Encoding]::Unicode)
@@ -185,10 +190,44 @@ function Finish($record) {
         [IO.Directory]::Move($Root,$retained)
         Write-Output "Changed or unowned previous files remain at $retained"
     } else {
+        # Retire the active transaction name atomically before removing its
+        # final receipt. A killed process can leave an empty/receipt-only
+        # completed directory; the next setup safely finishes that disposal.
         Expect $Root $record.root
-        [IO.File]::Delete($Journal)
-        [IO.Directory]::Delete($Root)
+        [IO.Directory]::Move($Root,$Completed)
+        Expect $Completed $record.root
+        $completedJournal=Join-Path $Completed 'transaction.json'
+        if(-not (Retire $completedJournal (Stamp $completedJournal))){throw 'Completed installation receipt changed.'}
+        [IO.Directory]::Delete($Completed)
     }
+}
+function CaptureIntegration($record) {
+    $record.registry=@(foreach($spec in $RegistrySpec) {RegistrySnapshot $spec})
+    $record.links=@(foreach($name in $Links) {
+        $path=Join-Path $Menu $name
+        if (Test-Path -LiteralPath $path) {
+            $null=Identity $path
+            @{name=$name;bytes=[Convert]::ToBase64String([IO.File]::ReadAllBytes($path))}
+        } else {@{name=$name;bytes=$null}}
+    })
+}
+function ReadRecord($directory) {
+    $path=Join-Path $directory 'transaction.json'
+    $null=Identity $path
+    $record=Get-Content -LiteralPath $path -Raw -Encoding UTF8|ConvertFrom-Json
+    if ($record.version -ne 2 -or $record.user -cne $User -or $record.target -cne $Target) {throw 'Installation transaction identity is invalid.'}
+    Expect $directory $record.root
+    if ($record.state -notin @('staging','publishing','published','integrating','rolled-back','committed') -or
+        [string]::IsNullOrEmpty($record.staged) -or
+        ($null -ne $record.candidate -and $record.candidate -cne $record.staged)) {throw 'Installation transaction state is invalid.'}
+    if (@($record.registry).Count -ne 2 -or @($record.links).Count -ne 2) {throw 'Installation integration snapshot is incomplete.'}
+    for($i=0;$i -lt 2;$i++) {
+        $spec=$RegistrySpec[$i]
+        if ($record.registry[$i].path -cne $spec.path -or $record.links[$i].name -cne $Links[$i]) {throw 'Installation snapshot is outside its integration scope.'}
+        if(@($record.registry[$i].values).Count -ne $spec.names.Count){throw 'Registry snapshot is incomplete.'}
+        for($j=0;$j -lt $spec.names.Count;$j++){if($record.registry[$i].values[$j].name -cne $spec.names[$j]){throw 'Registry snapshot value is outside its integration scope.'}}
+    }
+    return $record
 }
 $Menu=Join-Path ([Environment]::GetFolderPath('Programs')) 'Ottrin'
 $Links=@('Ottrin.lnk','Uninstall Ottrin.lnk')
@@ -197,7 +236,7 @@ if ($Phase -eq 'Initialize') {
     $parent=[IO.Path]::GetDirectoryName($Target)
     $null=[IO.Directory]::CreateDirectory($parent)
     $null=Identity $parent
-    $record=@{version=1;user=$User;target=$Target;root=$null;state='staging';previous=$null;candidate=$null;files=@();registry=@();links=@()}
+    $record=@{version=2;user=$User;target=$Target;root=$null;state='staging';previous=$null;staged=$null;candidate=$null;files=@();registry=@();links=@()}
     if (Test-Path -LiteralPath $Target) {
         if (-not [IO.Directory]::Exists($Target)) {throw 'Installation target is not a directory.'}
         $null=Files $Target | Out-Null
@@ -207,18 +246,12 @@ if ($Phase -eq 'Initialize') {
         }
         $record.previous=Identity $Target
     }
-    $record.registry=@(foreach($spec in $RegistrySpec) {RegistrySnapshot $spec})
-    $record.links=@(foreach($name in $Links) {
-        $path=Join-Path $Menu $name
-        if (Test-Path -LiteralPath $path) {
-            $null=Identity $path
-            @{name=$name;bytes=[Convert]::ToBase64String([IO.File]::ReadAllBytes($path))}
-        } else {@{name=$name;bytes=$null}}
-    })
+    CaptureIntegration $record
     [OttrinInstallIdentity]::Create($Root)
     $record.root=Identity $Root
     try {
         $null=[IO.Directory]::CreateDirectory($New)
+        $record.staged=Identity $New
         Save $record
     } catch {
         if([IO.Directory]::Exists($New) -and @([IO.Directory]::EnumerateFileSystemEntries($New)).Count -eq 0){[IO.Directory]::Delete($New)}
@@ -227,19 +260,51 @@ if ($Phase -eq 'Initialize') {
     }
     return
 }
-$record=Get-Content -LiteralPath $Journal -Raw -Encoding UTF8|ConvertFrom-Json
-if ($record.version -ne 1 -or $record.user -cne $User -or $record.target -cne $Target) {throw 'Installation transaction identity is invalid.'}
-Expect $Root $record.root
-if (@($record.registry).Count -ne 2 -or @($record.links).Count -ne 2) {throw 'Installation integration snapshot is incomplete.'}
-for($i=0;$i -lt 2;$i++) {
-    $spec=$RegistrySpec[$i]
-    if ($record.registry[$i].path -cne $spec.path -or $record.links[$i].name -cne $Links[$i]) {throw 'Installation snapshot is outside its integration scope.'}
-    if(@($record.registry[$i].values).Count -ne $spec.names.Count){throw 'Registry snapshot is incomplete.'}
-    for($j=0;$j -lt $spec.names.Count;$j++){if($record.registry[$i].values[$j].name -cne $spec.names[$j]){throw 'Registry snapshot value is outside its integration scope.'}}
+if ($Phase -eq 'RecoveryPlan' -and (Test-Path -LiteralPath $Completed)) {
+    $null=Identity $Completed
+    $entries=@([IO.Directory]::EnumerateFileSystemEntries($Completed))
+    if($entries.Count -ne 0) {
+        $completedJournal=Join-Path $Completed 'transaction.json'
+        if($entries.Count -ne 1 -or $entries[0] -cne $completedJournal){throw 'Unexpected files remain in the completed transaction directory.'}
+        $finished=ReadRecord $Completed
+        if($finished.state -notin @('committed','rolled-back')){throw 'The completed transaction does not have a final decision.'}
+        if(-not (Retire $completedJournal (Stamp $completedJournal))){throw 'Completed installation receipt changed.'}
+    }
+    [IO.Directory]::Delete($Completed)
 }
-if ($Phase -eq 'Publish') {
-    if ($record.state -ne 'staging') {throw 'Installation is not ready for publication.'}
-    $record.candidate=Identity $New
+if ($Phase -eq 'RecoveryPlan' -and -not (Test-Path -LiteralPath $Root)) {[Console]::Out.Write('none');return}
+$record=ReadRecord $Root
+if ($Phase -eq 'RecoveryPlan') {
+    # Validate the physical placement left by an interrupted rename before the
+    # caller stops any daemon or invokes task restoration. No retained executable
+    # is run: the new installer's embedded controller owns those operations.
+    $live=$null
+    if(Test-Path -LiteralPath $Target){$live=Identity $Target}
+    if($null -ne $live -and $live -cne $record.previous -and $live -cne $record.candidate){throw 'The installation path is occupied by an unrelated object.'}
+    if(Test-Path -LiteralPath $New){Expect $New $record.staged}
+    if(Test-Path -LiteralPath $Old){
+        if($null -eq $record.previous){throw 'Unexpected previous installation.'}
+        Expect $Old $record.previous
+    }
+    if($record.state -eq 'committed') {
+        Expect $Target $record.candidate
+        [Console]::Out.Write('commit')
+    } elseif($record.state -in @('staging','integrating','rolled-back')) {
+        if($record.state -eq 'integrating'){$null=Identity (Join-Path $Root 'index-transaction.json')}
+        if($live -cne $record.previous){throw 'The original installation is not in place.'}
+        [Console]::Out.Write('rollback-restored')
+    } else {
+        if($null -eq $record.candidate){throw 'The published candidate identity is missing.'}
+        if($live -cne $record.candidate -and -not (Test-Path -LiteralPath $New)){throw 'The published candidate is missing.'}
+        if($null -ne $record.previous -and $live -cne $record.previous -and -not (Test-Path -LiteralPath $Old)){throw 'The original installation is missing.'}
+        $snapshot=Join-Path $Root 'index-transaction.json'
+        $null=Identity $snapshot
+        [Console]::Out.Write('rollback-published')
+    }
+} elseif ($Phase -eq 'Publish') {
+    if ($record.state -ne 'integrating') {throw 'Installation integration has not been prepared.'}
+    Expect $New $record.staged
+    $record.candidate=$record.staged
     $record.files=@(foreach($path in (Files $New)) {
         $relative=Relative $path $New
         $prior=$null
@@ -260,22 +325,15 @@ if ($Phase -eq 'Publish') {
     Expect $Target $record.candidate
     $record.state='published';Save $record
 } elseif ($Phase -eq 'BeginIntegration') {
-    if($record.state -ne 'published'){throw 'Payload publication has not completed.'}
-    Expect $Target $record.candidate
-    for($i=0;$i -lt $RegistrySpec.Count;$i++) {
-        $current=RegistrySnapshot $RegistrySpec[$i]
-        $saved=$record.registry[$i]
-        for($j=0;$j -lt $RegistrySpec[$i].names.Count;$j++) {
-            $a=$current['values'][$j];$b=$saved.values[$j]
-            if($a.exists -ne $b.exists -or ($a.exists -and ($a.kind -ne $b.kind -or (ConvertTo-Json -Compress -InputObject $a.value) -cne (ConvertTo-Json -Compress -InputObject $b.value)))) {throw 'Installation registration changed before setup could update it.'}
-        }
-    }
-    foreach($link in $record.links) {
-        $path=Join-Path $Menu $link.name
-        $bytes=$null
-        if(Test-Path -LiteralPath $path){$null=Identity $path;$bytes=[Convert]::ToBase64String([IO.File]::ReadAllBytes($path))}
-        if($bytes -cne $link.bytes){throw 'Installation shortcut changed before setup could update it.'}
-    }
+    if($record.state -ne 'staging'){throw 'Installation integration has already started.'}
+    Expect $New $record.staged
+    if($null -ne $record.previous){Expect $Target $record.previous}
+    elseif(Test-Path -LiteralPath $Target){throw 'The installation path became occupied.'}
+    # Capture the latest metadata before moving any installation directory.
+    # Windows may refresh shortcut tracking as a consequence of those moves;
+    # that is part of this transaction, not a conflicting user edit. Changes
+    # made while extraction was running belong in the rollback snapshot too.
+    CaptureIntegration $record
     $record.state='integrating';Save $record
 } elseif ($Phase -eq 'Rollback') {
     if ($record.state -eq 'committed') {throw 'A committed installation cannot be rolled back.'}
@@ -289,7 +347,7 @@ if ($Phase -eq 'Publish') {
         [IO.Directory]::Move($Old,$Target)
     }
     if ($null -ne $record.previous) {Expect $Target $record.previous}
-    if($record.state -eq 'integrating'){
+    if($record.state -in @('integrating','publishing','published')){
         foreach($key in $record.registry) {RestoreRegistry $key}
         foreach($link in $record.links) {
             $path=Join-Path $Menu $link.name
@@ -303,7 +361,7 @@ if ($Phase -eq 'Publish') {
     if($record.state -ne 'rolled-back'){throw 'Payload rollback has not completed.'}
     Finish $record
 } elseif ($Phase -eq 'SealCommit') {
-    if ($record.state -ne 'integrating') {throw 'Only an integrated installation can commit.'}
+    if ($record.state -ne 'published') {throw 'Only a published installation can commit.'}
     Expect $Target $record.candidate
     # Persist the commit boundary before reclaiming anything from the old tree.
     $record.state='committed';Save $record

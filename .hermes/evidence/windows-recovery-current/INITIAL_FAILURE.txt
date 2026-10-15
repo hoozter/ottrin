@@ -1,0 +1,8 @@
+Installer exited before staging checkpoint
+At C:\OttrinQA-20261011\recovery-current\actor.ps1:4 char:36
++ function Assert($v,$m){if(-not $v){throw $m}}
++                                    ~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Installer exite...ging checkpoint:String) [], RuntimeException
+    + FullyQualifiedErrorId : Installer exited before staging checkpoint
+ 
+

@@ -1,0 +1,8 @@
+{
+  "status": "rejected",
+  "case": "staging",
+  "failure": "Installer exited before staging checkpoint",
+  "cause": "RecoveryPlan used Write-Output, whose trailing newline was not equal to the NSIS protocol token none",
+  "mutation_scope": "Baseline fixture installed; corrected setup exited before Initialize; no interrupted setup checkpoint reached",
+  "repair": "Emit exact machine tokens using Console.Out.Write; add terminal folder retirement/recovery before final receipt deletion"
+}

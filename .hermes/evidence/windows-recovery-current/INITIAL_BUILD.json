@@ -1,0 +1,18 @@
+{
+  "production_sha256": {
+    "packaging/windows/installer.nsi": "ce6ba526603ac035ed450876fb5f97be8b4e9dcb9e312a401469599f943936d9",
+    "packaging/windows/payload-transaction.ps1": "07f68c5d1221db0ae10a4a6d64e73f8025f279f7de29e0857ef060f542762d30"
+  },
+  "fixture_sha256": {
+    "baseline.nsi": "8271e7694658d3bc74e7f7d6192bb2aca9caa0cc49894f0fa94beb22de0425a6",
+    "actor.ps1": "9879d4c904aaa1fdcb19d3b5e2f71f6b31c0871ab4fefad57bd372a4044a4224",
+    "payload-transaction.qa.ps1": "54245f918c0b8360f51c146bb7a9c1fa2ecae8aafdc2445426554bfaec775fb3",
+    "fixed.nsi": "e5880c9a8c3ce01fa343b5a5065fc5716d21d67dabe560bddbb9f868db58ac64",
+    "mock.c": "6cdeb6a7f013367d6c05a89823efc7f5991bd6efa386cf5f719af91b786d0f7c",
+    "build.py": "b870a695150fd95274ddfd4cded4241d9f21f8b5fd92125f60f2c9198b4477a2"
+  },
+  "artifacts": {
+    "baseline.exe": "0562c444fef1884a55fe8f546672ab86cf205d32b5c25bb76e625fd1ea9afc55",
+    "fixed.exe": "818c8e08f1dadfa6dfb8103f02b1cca0e61e54ee21df34948fe219b8b96ac1a4"
+  }
+}

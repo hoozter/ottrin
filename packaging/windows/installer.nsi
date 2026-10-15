@@ -97,16 +97,15 @@ Function un.onInit
       Return
     ${EndIf}
   ${EndIf}
-  MessageBox MB_OK|MB_ICONSTOP "An installation transaction is retained at $INSTDIR.ottrin-setup. Recover that installation before uninstalling Ottrin." /SD IDOK
+  MessageBox MB_OK|MB_ICONSTOP "An installation transaction is retained at $INSTDIR.ottrin-setup. Run Ottrin setup again to recover that installation before uninstalling." /SD IDOK
   SetErrorLevel 1
   Abort
 FunctionEnd
 
 Section "Ottrin" SEC_MAIN
   SetShellVarContext current
-  ; This controller lives outside the payload being replaced. Its journal stays
-  ; in the user data directory if restoration fails, rather than disappearing
-  ; when NSIS removes $PLUGINSDIR.
+  ; Fresh embedded controllers run outside the payload being replaced. Recovery
+  ; records remain beside the installation when setup exits or is interrupted.
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
   File /oname=index-controller.exe "${STAGE}\bin\ottrin-indexd.exe"
@@ -117,6 +116,44 @@ Section "Ottrin" SEC_MAIN
   StrCmp $0 0 payload_transaction_failed
   System::Call 'kernel32::SetEnvironmentVariableW(w "OTTRIN_INSTALLER_PAYLOAD_NOTICE", w "$PLUGINSDIR\payload-notice.txt") i.r0'
   StrCmp $0 0 payload_transaction_failed
+  StrCpy $IndexTransactionSnapshot "$INSTDIR.ottrin-setup\index-transaction.json"
+  StrCpy $PayloadTransactionPhase RecoveryPlan
+  Call RunPayloadTransaction
+  StrCmp $0 0 +2
+  Goto payload_transaction_failed
+  ${If} $PayloadTransactionResult == "commit"
+    ; The durable decision is authoritative even when snapshot removal or
+    ; payload reclamation was interrupted. Do not stop or roll back this app.
+    ClearErrors
+    ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Commit "$IndexTransactionSnapshot"' $0
+    IfErrors commit_recovery_required
+    StrCmp $0 0 +2
+    Goto commit_recovery_required
+    StrCpy $PayloadTransactionPhase Commit
+    Call RunPayloadTransaction
+    StrCmp $0 0 +2
+    Goto commit_recovery_required
+    ${If} $PayloadTransactionResult != ""
+      MessageBox MB_OK|MB_ICONINFORMATION "$PayloadTransactionResult" /SD IDOK
+    ${EndIf}
+  ${ElseIf} $PayloadTransactionResult == "rollback-restored"
+  ${OrIf} $PayloadTransactionResult == "rollback-published"
+    StrCpy $PayloadPublished 0
+    ${If} $PayloadTransactionResult == "rollback-published"
+      StrCpy $PayloadPublished 1
+    ${EndIf}
+    StrCpy $PayloadTransactionActive 1
+    StrCpy $IndexTransactionActive 1
+    Call RestoreInstallationTransaction
+    ${If} $PayloadTransactionActive != 0
+      ; Retain failed recovery; .onInstFailed must not start another attempt.
+      StrCpy $PayloadTransactionActive 0
+      StrCpy $IndexTransactionActive 0
+      Goto payload_transaction_failed
+    ${EndIf}
+  ${ElseIf} $PayloadTransactionResult != "none"
+    Goto payload_transaction_failed
+  ${EndIf}
   StrCpy $PayloadTransactionPhase Initialize
   Call RunPayloadTransaction
   StrCmp $0 0 +2
@@ -131,7 +168,6 @@ Section "Ottrin" SEC_MAIN
   WriteUninstaller "$INSTDIR.ottrin-setup\new\Uninstall.exe"
   IfErrors index_payload_failed
   SetOutPath "$PLUGINSDIR"
-  StrCpy $IndexTransactionSnapshot "$INSTDIR.ottrin-setup\index-transaction.json"
   StrCpy $IndexTransactionActive 1
   ClearErrors
   ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Prepare "$IndexTransactionSnapshot"' $0
@@ -140,15 +176,15 @@ Section "Ottrin" SEC_MAIN
     Goto index_prepare_failed
   ${EndIf}
 
+  StrCpy $PayloadTransactionPhase BeginIntegration
+  Call RunPayloadTransaction
+  StrCmp $0 0 +2
+  Goto payload_transaction_failed
   StrCpy $PayloadTransactionPhase Publish
   Call RunPayloadTransaction
   StrCmp $0 0 +2
   Goto payload_transaction_failed
   StrCpy $PayloadPublished 1
-  StrCpy $PayloadTransactionPhase BeginIntegration
-  Call RunPayloadTransaction
-  StrCmp $0 0 +2
-  Goto payload_transaction_failed
   ClearErrors
   CreateDirectory "$SMPROGRAMS\Ottrin"
   CreateShortcut "$SMPROGRAMS\Ottrin\Ottrin.lnk" "$INSTDIR\bin\ottrin.exe"
@@ -226,7 +262,7 @@ index_commit_failed:
   Abort
 
 commit_recovery_required:
-  MessageBox MB_OK|MB_ICONSTOP "Setup could not finish recording the installation commit. The new installation and recovery records remain at $INSTDIR.ottrin-setup. Do not remove that directory; recovery is required before another setup or uninstall." /SD IDOK
+  MessageBox MB_OK|MB_ICONSTOP "Setup could not finish recording the installation commit. The new installation and recovery records remain at $INSTDIR.ottrin-setup. Do not remove that directory; run setup again to recover before uninstalling." /SD IDOK
   SetErrorLevel 1
   Abort
 

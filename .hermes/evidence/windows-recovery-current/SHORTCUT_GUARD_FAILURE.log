@@ -1,0 +1,8 @@
+BeginIntegration|1|Installation shortcut changed before setup could update it.
+At line:356 char:37
++ ... link.bytes){throw 'Installation shortcut changed before setup could u ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Installation sh...ould update it.:String) [], RuntimeException
+    + FullyQualifiedErrorId : Installation shortcut changed before setup could update it.
+ 
+

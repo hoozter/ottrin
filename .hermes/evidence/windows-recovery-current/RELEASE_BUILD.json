@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "command": "cargo build --release --target x86_64-pc-windows-gnu -p ottrin-app -p ottrin-platform -p ottrin-search",
+  "rust_source_revision": "19bf27676b919df09b36cbc7520482f3b9bf4131",
+  "rust_sources_clean_against_revision": true,
+  "scope": "Cross-compiled application/index daemon; installers and new coherent packages have not yet been constructed or accepted",
+  "gui_subsystem_checks": [
+    "ottrin-app.exe",
+    "ottrin-indexd.exe"
+  ],
+  "sha256": {
+    "ottrin-app.exe": "e98cea4295fcc2947366e3877136075f859b4659289d1da04d77291981479887",
+    "ottrin-indexd.exe": "92e4554f50b776cd016c91353b240afc50c8d8311efb6f42d04b4414e13ca83a",
+    "ottrin-priv-helper.exe": "dc022aab4533009fdbdb070a48928d13ab167fd58adadc2a40b2c3460890fcc4"
+  }
+}
