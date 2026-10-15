@@ -1,0 +1,18 @@
+{
+  "status": "pass",
+  "artifact": "ottrin-0.1.0-1.x86_64.rpm",
+  "sha256": "7050b9bb8fca1b56a9e3b6b404e7a2083bcf5fd7a5d95ecfe3dd4060ccc7d49f",
+  "provider_identity": "RPM stripped ELF: .text and .rodata equal pinned provider",
+  "provider_sha256": "a5b9be816a62093bbc10055eddf0c0e7416d9e25f301822fc08908770978e5e8",
+  "checks": [
+    "Pinned private provider and all notices",
+    "PATH contains only wrapper tools; external RG config ignored",
+    "Metadata-only and live content-only roots remain distinct",
+    "Size/type/exclusion policy and Unicode paths",
+    "Current-folder traversal restriction",
+    "Missing provider is a nonzero explicit error preserving filename hits",
+    "Disabled content policy is actionable"
+  ],
+  "cleanup": "Disposable extraction and XDG profile removed; headless commands all terminal",
+  "scope": "Exact extracted-package CLI on host Linux; no distro lifecycle or GUI claim"
+}

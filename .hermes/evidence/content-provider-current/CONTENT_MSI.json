@@ -1,0 +1,15 @@
+{
+  "mode": "MSI",
+  "checks": [
+    "All payload identities",
+    "Clean PATH and external config ignored",
+    "Unicode live-content hit outside metadata root",
+    "Size/type/exclusion policy",
+    "Current-folder scope",
+    "Filename results preserved"
+  ],
+  "payload_files": 57,
+  "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+  "scheduled_daemon_content_query": "pass",
+  "status": "pass"
+}

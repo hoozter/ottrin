@@ -1,18 +1,25 @@
 {
-  "date": "2026-10-15",
-  "source_revision": "3cc1ca5ba820126bf15250b887ff2c15dab2d06b",
+  "date": "2026-10-16",
+  "source_revision": "937d773497dc232fb713f4f671aa9d61212b8d3e",
+  "binary_build_revision": "51a56e4c08fd8e011882447342d89b107b604ff6",
+  "binary_reuse": "937d773 changes only the RPM payload list; all runtime sources equal the clean 51a56e4 build",
   "artifacts": {
-    "Ottrin-0.1.0-x86_64.AppImage": "cd87f4bd459992afc5f05f61aeb749275b12355b6bbb28fa12b0cdef94b88f3b",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "17e6c705cb44e9f29588cbaf1afca38180e485686e524d4da9856c8961d5c386",
-    "ottrin_0.1.0_amd64.deb": "811a29a49a6256d09bcbeb34e8b7b9e45ecbfa8ad54eebc752d6f799897c34d8",
-    "ottrin-0.1.0-1.x86_64.rpm": "b6d5d89aa0f4058318769827391f457175bbf6bafd586a30c6d82ab11fabbb7e"
+    "Ottrin-0.1.0-x86_64.AppImage": "9de4701132ec0bafc0a2a6a3ed5616e261319d8bc8ebc0e2024a84142faa9907",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "152909cce0249028ff3d5b7d1b088365c959deca7f01e393efa20bb3b2f17ded",
+    "ottrin_0.1.0_amd64.deb": "91e78ca24faae27aaebac28919413765f93079c9ef41f0ee790c9e563743705c",
+    "ottrin-0.1.0-1.x86_64.rpm": "7050b9bb8fca1b56a9e3b6b404e7a2083bcf5fd7a5d95ecfe3dd4060ccc7d49f"
   },
   "checks": [
-    "All four payloads match clean-source release binaries; RPM executable code/data sections match after standard stripping",
-    "Packaged AppImage real-daemon watching follows existing/new directory renames in a private XDG profile; contents preserved"
+    "Exact extracted AppImage, portable, DEB and RPM public content-search CLI with a private profile and PATH restricted to wrapper tools",
+    "Pinned provider identity (RPM executable/data sections after normal ELF stripping) and full notice set",
+    "Content-only roots, folder scope, Unicode names, size/type/exclusion policy, external tool config ignored",
+    "Missing provider reports an error while retaining filename hits; disabled content reports settings guidance",
+    "Private AppImage daemon follows existing/new nested directory renames; fixture contents preserved",
+    "All package payloads match release binaries; RPM executable/data sections match after normal stripping"
   ],
-  "package_content_evidence": ".hermes/evidence/windows-tree-ui-current/PAYLOAD_VERIFICATION.json",
-  "daemon_evidence": ".hermes/evidence/windows-tree-ui-current/LINUX_DAEMON_ACCEPTANCE.json",
+  "package_content_evidence": ".hermes/evidence/content-provider-current/PAYLOAD_VERIFICATION.json",
+  "content_evidence": ".hermes/evidence/content-provider-current",
+  "daemon_evidence": ".hermes/evidence/content-provider-current/LINUX_DAEMON_ACCEPTANCE.json",
   "previous_preview_acceptance": {
     "source_revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
     "artifacts": {
@@ -24,8 +31,9 @@
     "evidence": ".hermes/evidence/preview-safety-current/ACCEPTANCE.json"
   },
   "limits": [
-    "Current Linux payload and daemon watching only; earlier preview GUI results retain their exact 0040b44 artifact scope",
-    "No fresh distro upgrade/reboot lifecycle, physical Wayland/GPU or broad daily-driver claim",
+    "Host Linux exact extracted-package CLI and daemon only; no fresh distro lifecycle or current GUI/physical GPU claim",
+    "Earlier preview/UI and distro lifecycle receipts retain original artifact scopes",
+    "Independent saved-content roots and background watcher coverage remain required",
     "Windows and broader release gates remain separate"
   ]
 }

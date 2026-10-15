@@ -1,0 +1,18 @@
+{
+  "status": "pass",
+  "artifact": "ottrin_0.1.0_amd64.deb",
+  "sha256": "91e78ca24faae27aaebac28919413765f93079c9ef41f0ee790c9e563743705c",
+  "provider_identity": "whole-file pinned hash",
+  "provider_sha256": "e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849",
+  "checks": [
+    "Pinned private provider and all notices",
+    "PATH contains only wrapper tools; external RG config ignored",
+    "Metadata-only and live content-only roots remain distinct",
+    "Size/type/exclusion policy and Unicode paths",
+    "Current-folder traversal restriction",
+    "Missing provider is a nonzero explicit error preserving filename hits",
+    "Disabled content policy is actionable"
+  ],
+  "cleanup": "Disposable extraction and XDG profile removed; headless commands all terminal",
+  "scope": "Exact extracted-package CLI on host Linux; no distro lifecycle or GUI claim"
+}

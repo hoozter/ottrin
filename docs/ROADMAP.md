@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-15
+Last updated: 2026-10-16
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -10,7 +10,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Linux delivery status
 
-The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. The current `3cc1ca5` cohort includes the saved appearance/view repairs, clickable address navigation, complete menu icons and compact action spacing, native index-service cleanup, read-only Inspector entry and stable PDF fitting. Its exact AppImage daemon follows existing/new nested directory renames in a private profile, and all four package payloads match the clean-source release binaries. Earlier `0040b44` preview/UI checks retain their original exact artifact scope. Ubuntu and Fedora lifecycle receipts likewise retain their original candidate scope. These focused checks do not close the broader release gates below. Older receipts retain their original revision scope.
+The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. The current `937d773` cohort adds a bundled live-content search provider and explicit provider errors to the saved appearance/view repairs, menu consistency, native index-service cleanup, read-only Inspector entry and stable PDF fitting. All four exact extracted packages pass public CLI content queries with restricted PATH, separate content folders, scope/privacy policy and damaged-provider checks. The exact AppImage daemon follows existing/new nested directory renames in a private profile; executable payload identity is verified across all four formats. Runtime binaries come from clean `51a56e4`; `937d773` changes only RPM's payload list. Earlier `0040b44` preview/UI and Ubuntu/Fedora lifecycle receipts retain their original exact artifact scope. These focused checks do not close the broader release gates below.
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
@@ -18,63 +18,62 @@ The October 3 native clipboard-event repair is part of the current source. The S
 
 These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
 
-## Current Windows local delivery — 2026-10-15
+## Current Windows local delivery — 2026-10-16
 
 Public portable, NSIS and MSI at the stable `dist/` paths still use clean source
-`41027a0`; their exact identities are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`.
-The newer coherent internal cohort at `.hermes/packaging-tmp/windows-current/`
-uses clean source `3d24d47`. Its `CANDIDATE_ACCEPTANCE.json` records exact hashes,
-all 51 payload identities and accepted scopes. Portable, NSIS and native MSI
-extraction agree for all payload files.
+`41027a0`; identities remain in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. The newer
+coherent internal cohort at `.hermes/packaging-tmp/windows-current/` uses clean
+source `937d773`. Its `CANDIDATE_ACCEPTANCE.json` records all three exact hashes,
+57 payload identities and bounded accepted scopes. Portable, NSIS and native MSI
+administrative extraction agree for every payload file, including the pinned
+live-content provider and its notices.
 
-The exact NSIS passes twenty ordinary-user GUI Cut/Paste cases: populated
-folders and mixed file/folder batches, each using unoccupied, Replace, Keep Both,
-Skip and Cancel on the same NTFS volume and across two NTFS volumes. Indexing
-stays active during moves. The tests verify published/source bytes and tree
-shape, same-volume identities, preserved conflicting entries and paired durable
-retention journals. All twenty outcomes are rechecked after normal NSIS uninstall
-and again after the subsequent MSI lifecycle. Cross-volume mixed-batch Replace
-moves all three entries and retains both displaced destinations; Skip moves only
-the nonconflicting entry. This repairs the index-watch directory lock and the
-unoccupied-entry Replace transaction defect found during this matrix.
+All three current packages pass ordinary-user public CLI content search with no
+provider on PATH, Unicode filenames, content folders outside filename roots,
+current-folder scope, size/type/exclusion policy and ignored external provider
+configuration. The portable test removes its provider and verifies an explicit
+nonzero error while filename results remain available; disabled content points
+to settings. NSIS and MSI pass normal per-user install/uninstall, installed
+payload identity and content queries through their scheduled daemon. These are
+positive lifecycle checks, not failed-registration rollback acceptance.
 
-The exact MSI passes ordinary-user install/uninstall, all 51 installed payload
-hashes, explicit scheduled indexing setup, watched populated-tree rename, and
-preservation of preferences/source data. One scheduled daemon runs; its quiet CPU
-sample is 0% of one core over five seconds on a tiny private fixture. This bounded
-sample has no general workload claim. Native tests, receipts and GUI evidence:
-`.hermes/evidence/windows-tree-ui-current/ACCEPTANCE.json`.
+The updated native search library passes 209 tests with six specialized tests
+excluded; its temporary namespace is empty afterward. Linux passes 225 with two
+storage measurements excluded. Strict app/search Clippy passes for both targets.
+Source, actual PowerShell staging/checksum rejection and exact package evidence:
+`.hermes/evidence/content-provider-current/ACCEPTANCE.json`.
 
-Earlier `a7c189f` six-case pre-journal interruption/retry, VCF/PDF Inspector,
-GUI-close/daemon lifetime and ten-case regular-file Move receipts retain their
-exact prior artifact scope in `.hermes/evidence/windows-init-integration-current/`
-and `.hermes/evidence/windows-move-ui-current/`. They are not rerun by the current
-directory/batch matrix. Superseded generated packages were removed after their
-compact receipts were retained; the owned VM, VHD and test processes were removed.
+The previous clean `3d24d47` NSIS passed twenty ordinary-user GUI Cut/Paste cases:
+populated folders and mixed file/folder batches, with unoccupied, Replace, Keep
+Both, Skip and Cancel on the same and across two NTFS volumes. Indexing stayed
+active, and bytes, tree shapes, same-volume identities and paired durable
+retention journals were verified after both NSIS and MSI uninstall. Its MSI also
+passed explicit scheduling, watched populated-tree rename and a bounded quiet
+CPU sample on a tiny fixture. Those checks retain their exact prior artifact
+scope in `.hermes/evidence/windows-tree-ui-current/ACCEPTANCE.json`; they were not
+rerun by the current content-search package checks.
 
-Failed-transaction MSI registration rollback remains an open release gate. The
-rejected `3ddb1bf` package and its early-execution prototype reproduce advertised
-product state and access-denied registration rollback; positive install checks
-do not close that failure. The native search library now passes 207 tests with six specialized exclusions
-when its declared ripgrep test dependency is supplied; all 48 earlier failures are
-resolved by portable, owned fixtures. Exact results and controls are recorded in
-`.hermes/evidence/windows-search-portability-current/ACCEPTANCE.json`. Shipping
-live-content fallback remains open: the current 51-file Windows payload omits
-ripgrep. The real library returns no content hit without it and returns the
-expected hit when `rg.exe` sits beside the executable, without PATH changes and
-with System32 as the working directory. Deliver the provider, expose provider
-failures, and verify actual packaged content search on a clean PATH; audit Linux
-provider delivery at the same time. The package receipt's prior 48-failure note
-retains its original source/test scope.
+Earlier `a7c189f` pre-journal interruption/retry, VCF/PDF Inspector, GUI-close/
+daemon lifetime and regular-file Move receipts likewise retain their original
+scope. The historical 48 search-test failures were cleared by portable, owned
+fixtures in `b49f474`; the subsequently verified missing-provider shipping gap is
+closed by the current content-search cohort. The original profiles/installations
+and stopped domains are preserved; task-owned VM and superseded generated
+packages are removed after their compact receipts are retained.
 
-Configured-root ancestors, junction isolation, physical storage, Undo/interruption, current exact
-upgrade/repair and reboot/login, broader GUI/DPI, Office, graphics/media and signing
-gates remain open. Internal candidates stay unpublished; user testing is deferred.
+Failed-transaction MSI registration rollback remains open: the rejected
+`3ddb1bf` package and early-execution prototype reproduced advertised product
+state and access-denied rollback. Positive install checks do not close that gate.
+Independent saved-content roots and watcher coverage also remain required; live
+content fallback does not substitute for that outcome. Configured-root ancestors,
+junction isolation, physical storage, Undo/interruption, current exact upgrade/
+repair and reboot/login, broader GUI/DPI, Office, graphics/media and signing gates
+remain open. Internal candidates stay unpublished; user testing is deferred.
 
 The `41027a0` public candidate's native drive navigation/address/search and daemon
 lifetime evidence remains in
 `.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
-The October 11 snapshot below is historical, including its package revisions and
+The October 11 snapshot below is historical, including package revisions and
 then-open tasks; subsequent dated entries retain their own exact scope.
 
 ## Audited platform status — 2026-10-11
@@ -3239,3 +3238,38 @@ only the final private-provider-before-sibling lookup ordering; exact package QA
 will exercise that ordering. Exact rebuilt package, clean-PATH, provider failure
 and lifecycle checks remain pending at this source checkpoint; existing
 deliverables keep their prior provenance until replaced and verified.
+
+
+### Exact live-content package acceptance (2026-10-16)
+
+Clean `937d773` now forms one current Linux and internal Windows package cohort.
+Runtime binaries were built at clean `51a56e4`; the only intervening source change
+adds the provider to RPM's explicit file list after its first build correctly
+refused an unpackaged file. RPM's normal ELF metadata stripping is verified by
+comparing executable/data sections against the independently pinned provider.
+All four exact extracted Linux formats pass restricted-PATH content CLI checks,
+including metadata/content folder separation, folder scope, Unicode names,
+size/type/exclusion policy, ignored external configuration and explicit provider
+failure while preserving filename results. The exact AppImage's real private
+daemon also follows existing/new nested directory renames without stale paths.
+
+The Windows portable, NSIS and native MSI extraction agree on all 57 files. All
+three pass the same public CLI content/privacy/scope checks as an ordinary user.
+Portable proves missing-provider and disabled-content errors. Both installers
+pass positive normal install/uninstall and scheduled-daemon content queries.
+The NSIS test waits for the actual self-copying uninstaller's completion rather
+than its launching process. The private test PATH includes Windows' PowerShell
+system directory, but no installed ripgrep. Owned daemon cleanup is explicit on
+success/failure; all owned test processes and VM resources are removed afterward.
+
+The full search suites pass 225 Linux tests and 209 Windows tests with their
+specialized exclusions unchanged; strict app/search Clippy passes both targets.
+Actual PowerShell staging and checksum rejection use the verified archive through
+offline transport; a full native PowerShell Cargo build is not claimed.
+Receipts are in `.hermes/evidence/content-provider-current/ACCEPTANCE.json`,
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and the internal cohort's
+`CANDIDATE_ACCEPTANCE.json`. Existing GUI, distro lifecycle and other native
+acceptance retain their prior exact artifact scopes. Public Windows artifacts
+remain unchanged because the independent MSI registration rollback gate remains
+open. Saved-content persistence/watch coverage outside filename roots is the
+next required indexing outcome; the full roadmap goal remains active.

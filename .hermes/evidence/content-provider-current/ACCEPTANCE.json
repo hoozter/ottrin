@@ -1,0 +1,181 @@
+{
+  "date": "2026-10-16",
+  "status": "bounded source, exact-package and positive lifecycle acceptance passed",
+  "source_revision": "937d773497dc232fb713f4f671aa9d61212b8d3e",
+  "linux": {
+    "date": "2026-10-16",
+    "source_revision": "937d773497dc232fb713f4f671aa9d61212b8d3e",
+    "binary_build_revision": "51a56e4c08fd8e011882447342d89b107b604ff6",
+    "binary_reuse": "937d773 changes only the RPM payload list; all runtime sources equal the clean 51a56e4 build",
+    "artifacts": {
+      "Ottrin-0.1.0-x86_64.AppImage": "9de4701132ec0bafc0a2a6a3ed5616e261319d8bc8ebc0e2024a84142faa9907",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "152909cce0249028ff3d5b7d1b088365c959deca7f01e393efa20bb3b2f17ded",
+      "ottrin_0.1.0_amd64.deb": "91e78ca24faae27aaebac28919413765f93079c9ef41f0ee790c9e563743705c",
+      "ottrin-0.1.0-1.x86_64.rpm": "7050b9bb8fca1b56a9e3b6b404e7a2083bcf5fd7a5d95ecfe3dd4060ccc7d49f"
+    },
+    "checks": [
+      "Exact extracted AppImage, portable, DEB and RPM public content-search CLI with a private profile and PATH restricted to wrapper tools",
+      "Pinned provider identity (RPM executable/data sections after normal ELF stripping) and full notice set",
+      "Content-only roots, folder scope, Unicode names, size/type/exclusion policy, external tool config ignored",
+      "Missing provider reports an error while retaining filename hits; disabled content reports settings guidance",
+      "Private AppImage daemon follows existing/new nested directory renames; fixture contents preserved",
+      "All package payloads match release binaries; RPM executable/data sections match after normal stripping"
+    ],
+    "package_content_evidence": ".hermes/evidence/content-provider-current/PAYLOAD_VERIFICATION.json",
+    "content_evidence": ".hermes/evidence/content-provider-current",
+    "daemon_evidence": ".hermes/evidence/content-provider-current/LINUX_DAEMON_ACCEPTANCE.json",
+    "previous_preview_acceptance": {
+      "source_revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
+      "artifacts": {
+        "Ottrin-0.1.0-x86_64.AppImage": "7e8a921e829b818ab81ccaca0f762a49391843361d98b81c90d8bfc0103f0b9a",
+        "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7a8c2ee3997f2cb374fc8e2fc92460c39fd8b3969292e167322163f209663284",
+        "ottrin_0.1.0_amd64.deb": "b5e09a4dee61c36d6403d20c66d502656874ffa796c9ddb400e0004ffbdf0770",
+        "ottrin-0.1.0-1.x86_64.rpm": "44288e8314335284783e226276c9f30fb462c979ce2afd207f16f6c926524f5f"
+      },
+      "evidence": ".hermes/evidence/preview-safety-current/ACCEPTANCE.json"
+    },
+    "limits": [
+      "Host Linux exact extracted-package CLI and daemon only; no fresh distro lifecycle or current GUI/physical GPU claim",
+      "Earlier preview/UI and distro lifecycle receipts retain original artifact scopes",
+      "Independent saved-content roots and background watcher coverage remain required",
+      "Windows and broader release gates remain separate"
+    ]
+  },
+  "windows": {
+    "date": "2026-10-16",
+    "status": "bounded exact-package and positive lifecycle acceptance passed; unpublished internal candidates",
+    "source_revision": "937d773497dc232fb713f4f671aa9d61212b8d3e",
+    "binary_build_revision": "51a56e4c08fd8e011882447342d89b107b604ff6",
+    "binary_reuse": "Intervening commit changes only the RPM package file list",
+    "artifacts": {
+      "Ottrin-0.1.0-windows-x64-portable.zip": "be7552ceb6370206a2cbbcf590f3486f2ab30c794e6c61c69384e712a3558e31",
+      "Ottrin-0.1.0-windows-x64-setup.exe": "0677abfd1336919f60e5b8a175bfc10bdf8ae2c535ad57d5c8c4bc8ff3e4e722",
+      "Ottrin-0.1.0-windows-x64.msi": "9919bfe10eaa3d4ef443ea51a8ad985b07a8cbd6091bdae69c93e916707d10c7"
+    },
+    "payload_files": 57,
+    "payload_identity": "All portable, NSIS and native MSI extraction files equal staged manifest",
+    "native": {
+      "Portable": {
+        "mode": "Portable",
+        "checks": [
+          "All payload identities",
+          "Clean PATH and external config ignored",
+          "Unicode live-content hit outside metadata root",
+          "Size/type/exclusion policy",
+          "Current-folder scope",
+          "Filename results preserved",
+          "Missing-provider error",
+          "Disabled content error"
+        ],
+        "payload_files": 57,
+        "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+        "status": "pass"
+      },
+      "NSIS": {
+        "mode": "NSIS",
+        "checks": [
+          "All payload identities",
+          "Clean PATH and external config ignored",
+          "Unicode live-content hit outside metadata root",
+          "Size/type/exclusion policy",
+          "Current-folder scope",
+          "Filename results preserved"
+        ],
+        "payload_files": 57,
+        "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+        "scheduled_daemon_content_query": "pass",
+        "status": "pass"
+      },
+      "MSI": {
+        "mode": "MSI",
+        "checks": [
+          "All payload identities",
+          "Clean PATH and external config ignored",
+          "Unicode live-content hit outside metadata root",
+          "Size/type/exclusion policy",
+          "Current-folder scope",
+          "Filename results preserved"
+        ],
+        "payload_files": 57,
+        "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+        "scheduled_daemon_content_query": "pass",
+        "status": "pass"
+      }
+    },
+    "source_tests": {
+      "linux": "225 passed, 2 ignored",
+      "windows": "209 passed, 6 ignored",
+      "windows_scope": "Library test executable predates only the final private-provider lookup ordering; final packages exercise final runtime code",
+      "strict_app_search_clippy": "Linux and Windows passed"
+    },
+    "cleanup": {
+      "status": "pass",
+      "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+      "backing_image": "preserved",
+      "original_domains": {
+        "ottrin-qa-20261011": "shut off",
+        "ottrin-index-qa": "shut off",
+        "win11ltsc": "shut off"
+      }
+    },
+    "original_profile_and_installation": {
+      "actor_state": "Ready",
+      "actor_result": 0,
+      "owned_product_processes": 0,
+      "original_profile_and_installation": "unchanged"
+    },
+    "evidence": ".hermes/evidence/content-provider-current/ACCEPTANCE.json",
+    "limits": [
+      "Positive lifecycle and public content CLI only; prior file-operation/preview GUI receipts retain original exact artifact scopes",
+      "MSI failed-registration rollback remains open; public Windows artifacts unchanged",
+      "Independent saved-content roots/watching, current upgrade/repair/reboot and broader native acceptance remain open",
+      "Actual PowerShell staging and checksum guard accepted with offline archive transport; no complete native PowerShell Cargo build claim"
+    ]
+  },
+  "source_and_staging": {
+    "status": "source checks pass; package acceptance pending",
+    "linux_search": "225 passed, 2 ignored",
+    "windows_search": "209 passed, 6 ignored",
+    "windows_temporary_entries": 0,
+    "checks": [
+      "Linux and Windows strict all-target app/search Clippy",
+      "CLI argument test",
+      "Bash provider staging both platforms",
+      "PowerShell real staging and bad-checksum rejection with offline archive transport"
+    ],
+    "limit": "Windows library executable precedes final provider lookup ordering; package QA still required"
+  },
+  "scope_note": "SOURCE_ACCEPTANCE records the earlier checkpoint; current exact package evidence below supersedes its pending-package status",
+  "fixtures_sha256": {
+    "linux-content-qa.py": "30357061bc28afd1e2253554d9bbeed08ac928a6def506b40de3d97034229acc",
+    "linux-daemon-smoke.py": "9d2e562091d623a7ff26b1363b14305c5265ac58213fd928ba907298000095d8",
+    "content-actor.ps1": "f62890d9da8f48951b61600cfcb7193de6d21959b1c2d282ebc4f1547c94c9b1",
+    "admin-extract.ps1": "2cbff6c0f09def6b02605f4ddad494e4b3d57c490f0725ef7886e34107e943f4",
+    "check_archives.py": "f2e8f0a3fbc4ee74d7409446b6a3a9a890f7b091b3a817c6c0554bf96f28ab68",
+    "verify-linux-packages.py": "54a513d6d640b9d059b7a2aa959197be2edb0995416699fa8fcd7304dfd82194",
+    "native_compiler.py": "4e8ad8ca8991cb7b8ecdf37a2211955237ec2d86c2b456326d17e8e982c1c403"
+  },
+  "qa_controls": [
+    "RPM first refused unpackaged provider; explicit payload list corrected",
+    "RPM strips ELF comment/note metadata; executable/data sections match pinned upstream provider",
+    "Initial harness daemon lifecycle and missing PowerShell PATH entry corrected; owned Linux orphan test daemons explicitly stopped",
+    "NSIS launching stub exits before self-copying uninstaller; final harness waits for actual uninstall completion",
+    "Initial WiX attempt overlapped payload refresh; final compiler verifies every staged input before compilation and native extraction verifies all outputs",
+    "Initial Linux benchmark exceeded unchanged 250ms budget at 285ms during cross-compilation; isolated serial full run passes 225 tests without relaxing budget"
+  ],
+  "remaining_work": [
+    "Independent saved-content persistence and watcher coverage outside filename roots",
+    "MSI failed-registration rollback and remaining roadmap gates"
+  ],
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "fixture_evolution_note": "Portable Windows acceptance precedes only addition of the unused NSIS uninstall-wait helper; final retained actor ran NSIS/MSI. Final Linux content fixture rerun for all four artifacts."
+}

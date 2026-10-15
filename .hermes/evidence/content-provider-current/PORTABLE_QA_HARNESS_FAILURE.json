@@ -1,0 +1,9 @@
+{
+  "mode": "Portable",
+  "payload_files": 57,
+  "error": "Unexpected exit 1: --stop  ottrin index daemon: Failed to inspect the Ottrin Index task: program not found\n",
+  "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+  "stack": "at Assert, C:\\OttrinProviderQA\\content-actor.ps1: line 4\r\nat Process, C:\\OttrinProviderQA\\content-actor.ps1: line 7\r\nat <ScriptBlock>, C:\\OttrinProviderQA\\content-actor.ps1: line 33",
+  "cleanup_error": "Access to the path 'ottrin-indexd.exe' is denied.",
+  "status": "fail"
+}

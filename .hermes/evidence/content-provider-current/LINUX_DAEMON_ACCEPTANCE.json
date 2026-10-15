@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "sha256": "9de4701132ec0bafc0a2a6a3ed5616e261319d8bc8ebc0e2024a84142faa9907",
+  "checks": [
+    "Private configured root ready",
+    "Existing populated tree rename followed without stale path",
+    "New nested subtree created and watched",
+    "New populated subtree rename followed without stale path",
+    "Contents preserved; daemon remained running"
+  ],
+  "scope": "Linux packaged CLI and real filesystem watching; no GUI or distro lifecycle claim",
+  "cleanup": "Owned daemon exited; private extraction/profile/fixtures removed"
+}

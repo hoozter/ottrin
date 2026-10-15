@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-15",
+  "source_revision": "3cc1ca5ba820126bf15250b887ff2c15dab2d06b",
+  "artifacts": {
+    "Ottrin-0.1.0-x86_64.AppImage": "cd87f4bd459992afc5f05f61aeb749275b12355b6bbb28fa12b0cdef94b88f3b",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "17e6c705cb44e9f29588cbaf1afca38180e485686e524d4da9856c8961d5c386",
+    "ottrin_0.1.0_amd64.deb": "811a29a49a6256d09bcbeb34e8b7b9e45ecbfa8ad54eebc752d6f799897c34d8",
+    "ottrin-0.1.0-1.x86_64.rpm": "b6d5d89aa0f4058318769827391f457175bbf6bafd586a30c6d82ab11fabbb7e"
+  },
+  "checks": [
+    "All four payloads match clean-source release binaries; RPM executable code/data sections match after standard stripping",
+    "Packaged AppImage real-daemon watching follows existing/new directory renames in a private XDG profile; contents preserved"
+  ],
+  "package_content_evidence": ".hermes/evidence/windows-tree-ui-current/PAYLOAD_VERIFICATION.json",
+  "daemon_evidence": ".hermes/evidence/windows-tree-ui-current/LINUX_DAEMON_ACCEPTANCE.json",
+  "previous_preview_acceptance": {
+    "source_revision": "0040b4419fcd2349c57161619d032e42e8bd948c",
+    "artifacts": {
+      "Ottrin-0.1.0-x86_64.AppImage": "7e8a921e829b818ab81ccaca0f762a49391843361d98b81c90d8bfc0103f0b9a",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7a8c2ee3997f2cb374fc8e2fc92460c39fd8b3969292e167322163f209663284",
+      "ottrin_0.1.0_amd64.deb": "b5e09a4dee61c36d6403d20c66d502656874ffa796c9ddb400e0004ffbdf0770",
+      "ottrin-0.1.0-1.x86_64.rpm": "44288e8314335284783e226276c9f30fb462c979ce2afd207f16f6c926524f5f"
+    },
+    "evidence": ".hermes/evidence/preview-safety-current/ACCEPTANCE.json"
+  },
+  "limits": [
+    "Current Linux payload and daemon watching only; earlier preview GUI results retain their exact 0040b44 artifact scope",
+    "No fresh distro upgrade/reboot lifecycle, physical Wayland/GPU or broad daily-driver claim",
+    "Windows and broader release gates remain separate"
+  ]
+}
