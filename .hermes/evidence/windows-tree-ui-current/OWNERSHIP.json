@@ -1,0 +1,9 @@
+{
+  "domain": "ottrin-init-tree-ui",
+  "guest_root": "C:\\OttrinTreeUIQA",
+  "account": "OttrinTreeUIQA",
+  "purpose": "Native exact-package GUI directory and mixed-batch Move acceptance",
+  "restore": "All fixture changes reside in the owned child overlay. Verify original-user hashes and product teardown, detach the owned VHD, shut down normally, then delete only exact owned domain/overlay/NVRAM/TPM.",
+  "fixture": "128 MiB NTFS VHD in guest-owned root; user Modify on inner NTFS root and Full Control on backing image before reattach",
+  "setup_correction": "Initial new-account description exceeded Windows length limit; no account was created. Corrected short description before completing existing owned volume setup."
+}

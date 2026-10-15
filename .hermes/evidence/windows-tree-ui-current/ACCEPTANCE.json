@@ -1,0 +1,382 @@
+{
+  "status": "bounded native acceptance passed; unpublished coherent candidates",
+  "date": "2026-10-15",
+  "source_revision": "3d24d47bc2239be00ee910eff5f6361dbd54cf27",
+  "tracked_source_clean_at_build": true,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "469cdddfd435cdaaf83c688b717c95466d133ee0cf60837e3a3a3ae72c82e4ff",
+    "Ottrin-0.1.0-windows-x64.msi": "5c42306a71ef652b6975c1d236cd31d049d0a7b2f8e1cb5ca432b57b94488add",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "af9d568f5673334819874f17fe8d7231cd1fd06a7966e9889e801fa44c79ad02"
+  },
+  "payload_files": 51,
+  "payload_identity": "Portable, NSIS and native MSI extraction match all 51 files",
+  "native_nsis": {
+    "status": "pass",
+    "cases": [
+      {
+        "moved": 1,
+        "name": "same-directory-unoccupied",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 1,
+        "status": "pass"
+      },
+      {
+        "moved": 1,
+        "name": "same-directory-replace",
+        "retained": 1,
+        "source_entries": 0,
+        "destination_entries": 2,
+        "status": "pass"
+      },
+      {
+        "moved": 1,
+        "name": "same-directory-rename",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 2,
+        "status": "pass"
+      },
+      {
+        "moved": 0,
+        "name": "same-directory-skip",
+        "retained": 0,
+        "source_entries": 1,
+        "destination_entries": 1,
+        "status": "pass"
+      },
+      {
+        "moved": 0,
+        "name": "same-directory-cancel",
+        "retained": 0,
+        "source_entries": 1,
+        "destination_entries": 1,
+        "status": "pass"
+      },
+      {
+        "moved": 3,
+        "name": "same-batch-unoccupied",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 3,
+        "status": "pass"
+      },
+      {
+        "moved": 3,
+        "name": "same-batch-replace",
+        "retained": 2,
+        "source_entries": 0,
+        "destination_entries": 5,
+        "status": "pass"
+      },
+      {
+        "moved": 3,
+        "name": "same-batch-rename",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 5,
+        "status": "pass"
+      },
+      {
+        "moved": 1,
+        "name": "same-batch-skip",
+        "retained": 0,
+        "source_entries": 2,
+        "destination_entries": 3,
+        "status": "pass"
+      },
+      {
+        "moved": 0,
+        "name": "same-batch-cancel",
+        "retained": 0,
+        "source_entries": 3,
+        "destination_entries": 2,
+        "status": "pass"
+      },
+      {
+        "moved": 1,
+        "name": "cross-directory-unoccupied",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 1,
+        "status": "pass"
+      },
+      {
+        "moved": 1,
+        "name": "cross-directory-replace",
+        "retained": 1,
+        "source_entries": 0,
+        "destination_entries": 2,
+        "status": "pass"
+      },
+      {
+        "moved": 1,
+        "name": "cross-directory-rename",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 2,
+        "status": "pass"
+      },
+      {
+        "moved": 0,
+        "name": "cross-directory-skip",
+        "retained": 0,
+        "source_entries": 1,
+        "destination_entries": 1,
+        "status": "pass"
+      },
+      {
+        "moved": 0,
+        "name": "cross-directory-cancel",
+        "retained": 0,
+        "source_entries": 1,
+        "destination_entries": 1,
+        "status": "pass"
+      },
+      {
+        "moved": 3,
+        "name": "cross-batch-unoccupied",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 3,
+        "status": "pass"
+      },
+      {
+        "moved": 3,
+        "name": "cross-batch-replace",
+        "retained": 2,
+        "source_entries": 0,
+        "destination_entries": 5,
+        "status": "pass"
+      },
+      {
+        "moved": 3,
+        "name": "cross-batch-rename",
+        "retained": 0,
+        "source_entries": 0,
+        "destination_entries": 5,
+        "status": "pass"
+      },
+      {
+        "moved": 1,
+        "name": "cross-batch-skip",
+        "retained": 0,
+        "source_entries": 2,
+        "destination_entries": 3,
+        "status": "pass"
+      },
+      {
+        "moved": 0,
+        "name": "cross-batch-cancel",
+        "retained": 0,
+        "source_entries": 3,
+        "destination_entries": 2,
+        "status": "pass"
+      }
+    ],
+    "scope": "Exact NSIS ordinary-user GUI directory and mixed-batch Move on owned NTFS volumes",
+    "post_uninstall_and_post_msi_recheck": {
+      "scope": "All twenty directory/mixed-batch outcomes independently rechecked after normal GUI close and normal uninstall",
+      "status": "pass",
+      "index_task_absent": true,
+      "cases": [
+        {
+          "moved": 1,
+          "name": "same-directory-unoccupied",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 1,
+          "status": "pass"
+        },
+        {
+          "moved": 1,
+          "name": "same-directory-replace",
+          "retained": 1,
+          "source_entries": 0,
+          "destination_entries": 2,
+          "status": "pass"
+        },
+        {
+          "moved": 1,
+          "name": "same-directory-rename",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 2,
+          "status": "pass"
+        },
+        {
+          "moved": 0,
+          "name": "same-directory-skip",
+          "retained": 0,
+          "source_entries": 1,
+          "destination_entries": 1,
+          "status": "pass"
+        },
+        {
+          "moved": 0,
+          "name": "same-directory-cancel",
+          "retained": 0,
+          "source_entries": 1,
+          "destination_entries": 1,
+          "status": "pass"
+        },
+        {
+          "moved": 3,
+          "name": "same-batch-unoccupied",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 3,
+          "status": "pass"
+        },
+        {
+          "moved": 3,
+          "name": "same-batch-replace",
+          "retained": 2,
+          "source_entries": 0,
+          "destination_entries": 5,
+          "status": "pass"
+        },
+        {
+          "moved": 3,
+          "name": "same-batch-rename",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 5,
+          "status": "pass"
+        },
+        {
+          "moved": 1,
+          "name": "same-batch-skip",
+          "retained": 0,
+          "source_entries": 2,
+          "destination_entries": 3,
+          "status": "pass"
+        },
+        {
+          "moved": 0,
+          "name": "same-batch-cancel",
+          "retained": 0,
+          "source_entries": 3,
+          "destination_entries": 2,
+          "status": "pass"
+        },
+        {
+          "moved": 1,
+          "name": "cross-directory-unoccupied",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 1,
+          "status": "pass"
+        },
+        {
+          "moved": 1,
+          "name": "cross-directory-replace",
+          "retained": 1,
+          "source_entries": 0,
+          "destination_entries": 2,
+          "status": "pass"
+        },
+        {
+          "moved": 1,
+          "name": "cross-directory-rename",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 2,
+          "status": "pass"
+        },
+        {
+          "moved": 0,
+          "name": "cross-directory-skip",
+          "retained": 0,
+          "source_entries": 1,
+          "destination_entries": 1,
+          "status": "pass"
+        },
+        {
+          "moved": 0,
+          "name": "cross-directory-cancel",
+          "retained": 0,
+          "source_entries": 1,
+          "destination_entries": 1,
+          "status": "pass"
+        },
+        {
+          "moved": 3,
+          "name": "cross-batch-unoccupied",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 3,
+          "status": "pass"
+        },
+        {
+          "moved": 3,
+          "name": "cross-batch-replace",
+          "retained": 2,
+          "source_entries": 0,
+          "destination_entries": 5,
+          "status": "pass"
+        },
+        {
+          "moved": 3,
+          "name": "cross-batch-rename",
+          "retained": 0,
+          "source_entries": 0,
+          "destination_entries": 5,
+          "status": "pass"
+        },
+        {
+          "moved": 1,
+          "name": "cross-batch-skip",
+          "retained": 0,
+          "source_entries": 2,
+          "destination_entries": 3,
+          "status": "pass"
+        },
+        {
+          "moved": 0,
+          "name": "cross-batch-cancel",
+          "retained": 0,
+          "source_entries": 3,
+          "destination_entries": 2,
+          "status": "pass"
+        }
+      ]
+    }
+  },
+  "native_msi": {
+    "uninstall_exit": 0,
+    "quiet_cpu_single_core_percent": 0,
+    "payload_files": 51,
+    "install_exit": 0,
+    "scope": "Current MSI ordinary-user install, payload, explicit scheduled daemon setup, watching, populated-tree rename, quiet-fixture CPU and normal uninstall; no failed-registration rollback claim",
+    "installer_sha256": "5c42306a71ef652b6975c1d236cd31d049d0a7b2f8e1cb5ca432b57b94488add",
+    "status": "pass"
+  },
+  "source_checks": {
+    "watcher": ".hermes/evidence/windows-tree-ui-current/SOURCE_ACCEPTANCE.json",
+    "batch_replace": ".hermes/evidence/windows-tree-ui-current/BATCH_REPLACE_SOURCE_ACCEPTANCE.json"
+  },
+  "previous_revision_evidence": {
+    "a7c189f": ".hermes/evidence/windows-init-integration-current/ACCEPTANCE.json",
+    "regular_file_gui_cases": ".hermes/evidence/windows-move-ui-current/ACCEPTANCE.json",
+    "superseded_candidate_receipt": ".hermes/evidence/windows-tree-ui-current/PREVIOUS_CANDIDATE.json"
+  },
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "limits": [
+    "Failed-transaction MSI registration rollback remains unaccepted; public Windows dist artifacts are unchanged",
+    "Full native Windows search suite has 48 unchanged baseline failures; focused regressions do not waive this gate",
+    "Configured-root ancestors, junction isolation, physical storage and broader file-operation/Undo/interruption gates remain separate",
+    "Earlier VCF/PDF preview, graphics, UAC, upgrade/reboot/login and interruption receipts retain their original exact artifact scopes",
+    "MSI quiet CPU is a five-second tiny-fixture measurement, not a general Windows workload benchmark",
+    "Broader Office, physical desktop and release acceptance remain open; user testing remains deferred"
+  ]
+}

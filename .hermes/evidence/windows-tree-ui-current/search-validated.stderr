@@ -1,0 +1,195 @@
+
+thread 'db::generation_tests::committed_generation_indexes_bounded_utf8_content_and_replaces_stale_hits' (5348) panicked at crates/ottrin-search/src/db.rs:3487:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'db::generation_tests::content_policy_controls_payloads_and_invalidates_prior_generations' (5168) panicked at crates/ottrin-search/src/db.rs:4522:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'db::generation_tests::content_query_started_before_replacement_reads_one_complete_generation' (3368) panicked at crates/ottrin-search/src/db.rs:3391:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'db::generation_tests::content_stream_started_before_replacement_reads_one_complete_generation' (1360) panicked at crates/ottrin-search/src/db.rs:3354:9:
+assertion `left == right` failed
+  left: [("C:\\Users\\OTTRIN~1\\AppData\\Local\\Temp\\ottrin-generation-content-stream-replacement-1792093870563710700.root\\old.txt", None, false)]
+ right: [("C:\\Users\\OTTRIN~1\\AppData\\Local\\Temp\\ottrin-generation-content-stream-replacement-1792093870563710700.root\\old.txt", Some("old body"), true)]
+
+thread 'db::generation_tests::discarding_an_active_completed_generation_is_a_noop' (5516) panicked at crates/ottrin-search/src/db.rs:3080:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'db::generation_tests::generation_content_honors_configured_extraction_size_limit' (8148) panicked at crates/ottrin-search/src/db.rs:3827:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'db::generation_tests::generation_content_honors_selected_file_groups' (7752) panicked at crates/ottrin-search/src/db.rs:3869:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'db::generation_tests::metadata_equal_incremental_upserts_refresh_content' (4128) panicked at crates/ottrin-search/src/db.rs:3745:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'db::generation_tests::v8_migration_rebuilds_paths_from_canonical_items_when_accelerator_has_stale_duplicates' (2296) panicked at crates/ottrin-search/src/db.rs:2744:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'plan::tests::invalid_startup_plan_recovers_after_config_is_corrected' (2012) panicked at crates/ottrin-search/src/plan.rs:486:40:
+create plan recovery root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'scanner::tests::completed_scan_returns_items_with_exact_plan_ownership' (6284) panicked at crates/ottrin-search/src/scanner.rs:456:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'scanner::tests::single_root_scan_uses_exact_plan_ownership_and_filters' (1428) panicked at crates/ottrin-search/src/scanner.rs:481:64:
+root scan: "root is not part of the active scan plan: C:\\Users\\OTTRIN~1\\AppData\\Local\\Temp\\ottrin-scanner-single-root-6408-1792093878597092800\\nested"
+
+thread 'tests::clear_storage_stops_owner_and_leaves_empty_unavailable_state' (728) panicked at crates/ottrin-search/src/lib.rs:5483:55:
+create sidecar: Os { code: 1224, kind: Uncategorized, message: "The requested operation cannot be performed on a file with a user-mapped section open." }
+
+thread 'tests::content_fallback_honors_selected_file_groups' (4400) panicked at crates/ottrin-search/src/lib.rs:6116:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::content_ripgrep_exclude_globs_keep_exact_files_and_descendants_out_of_rg' (2332) panicked at crates/ottrin-search/src/lib.rs:6500:14:
+write excluded metacharacter file: Os { code: 123, kind: InvalidFilename, message: "The filename, directory name, or volume label syntax is incorrect." }
+
+thread 'tests::content_search_matches_multi_word_queries' (336) panicked at crates/ottrin-search/src/lib.rs:7137:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::content_search_returns_content_matches_with_snippets' (5740) panicked at crates/ottrin-search/src/lib.rs:6068:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::content_search_snippets_handle_colons_in_paths' (5208) panicked at crates/ottrin-search/src/lib.rs:7168:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::content_search_uses_active_fts_generation_before_ripgrep_fallback' (1652) panicked at crates/ottrin-search/src/lib.rs:6532:54:
+test lock: PoisonError { .. }
+
+thread 'tests::default_index_roots_remain_home_only' (5448) panicked at crates/ottrin-search/src/lib.rs:5600:9:
+assertion `left == right` failed
+  left: ["\\\\?\\C:\\Users\\OttrinTreeUIQA"]
+ right: ["C:\\Users\\OttrinTreeUIQA"]
+
+thread 'tests::dropping_query_handles_does_not_stop_owner_rebuilds' (4028) panicked at crates/ottrin-search/src/lib.rs:5645:35:
+create handle ownership root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'tests::indexed_content_search_applies_name_filters_without_querying_them_as_content' (4672) panicked at crates/ottrin-search/src/lib.rs:6581:54:
+test lock: PoisonError { .. }
+
+thread 'tests::indexed_content_search_keeps_multi_word_matches_when_terms_are_on_separate_lines' (1944) panicked at crates/ottrin-search/src/lib.rs:6629:54:
+test lock: PoisonError { .. }
+
+thread 'tests::indexed_content_search_merges_fts_evidence_into_filename_matches' (4112) panicked at crates/ottrin-search/src/lib.rs:6674:54:
+test lock: PoisonError { .. }
+
+thread 'tests::indexed_content_search_pages_past_rejected_fts_candidates' (3616) panicked at crates/ottrin-search/src/lib.rs:7051:54:
+test lock: PoisonError { .. }
+
+thread 'tests::indexed_content_search_preserves_or_branch_filters' (5156) panicked at crates/ottrin-search/src/lib.rs:6997:54:
+test lock: PoisonError { .. }
+
+thread 'tests::live_content_search_excludes_a_configured_directory_after_it_becomes_a_file' (3528) panicked at crates/ottrin-search/src/lib.rs:6284:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::live_content_search_excludes_content_policy_roots' (5648) panicked at crates/ottrin-search/src/lib.rs:6239:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::live_content_search_excludes_hidden_policy_roots_when_hidden_search_is_enabled' (7868) panicked at crates/ottrin-search/src/lib.rs:6329:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::live_content_search_honors_nested_include_and_exclude_roots' (6444) panicked at crates/ottrin-search/src/lib.rs:6377:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::negated_content_search_returns_only_generation_complete_content_absences' (7620) panicked at crates/ottrin-search/src/lib.rs:6925:9:
+assertion `left == right` failed
+  left: Some("Excluded 5 item(s) with unknown indexed content from negated content search.")
+ right: Some("Excluded 3 item(s) with unknown indexed content from negated content search.")
+
+thread 'tests::negated_filename_filter_keeps_content_fallback_available_while_indexing' (5088) panicked at crates/ottrin-search/src/lib.rs:6791:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'tests::persisted_native_rows_deduplicate_system_results_outside_the_loaded_page' (4880) panicked at crates/ottrin-search/src/lib.rs:5830:9:
+assertion `left == right` failed: exact native path must not be counted twice
+  left: 3
+ right: 2
+
+thread 'tests::persisted_simple_term_no_match_does_not_fall_back_to_generation_wide_fuzzy_results' (3744) panicked at crates/ottrin-search/src/lib.rs:5014:54:
+test lock: PoisonError { .. }
+
+thread 'tests::persisted_snapshot_can_be_read_without_starting_or_locking_a_writer' (4136) panicked at crates/ottrin-search/src/lib.rs:5105:9:
+assertion `left == right` failed
+  left: "\\\\?\\C:\\Users\\OttrinTreeUIQA\\AppData\\Local\\Temp\\ottrin-read-only-status-root-6408\\marker.txt"
+ right: "C:\\Users\\OTTRIN~1\\AppData\\Local\\Temp\\ottrin-read-only-status-root-6408\\marker.txt"
+
+thread 'tests::quoted_negated_content_is_treated_as_a_literal_not_fts_syntax' (7252) panicked at crates/ottrin-search/src/lib.rs:6799:54:
+test lock: PoisonError { .. }
+
+thread 'worker::tests::continuous_events_do_not_starve_incremental_updates' (5064) panicked at crates/ottrin-search/src/worker.rs:3566:40:
+create root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'worker::tests::directory_metadata_changes_preserve_children_without_scanning_them' (7292) panicked at crates/ottrin-search/src/worker.rs:3420:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'worker::tests::directory_notify_event_indexes_descendants_transactionally' (2944) panicked at crates/ottrin-search/src/worker.rs:3653:41:
+create moved directory: Os { code: 123, kind: InvalidFilename, message: "The filename, directory name, or volume label syntax is incorrect." }
+
+thread 'worker::tests::disappearing_watch_descendant_does_not_trigger_root_recovery' (120) panicked at crates/ottrin-search/src/worker.rs:2229:9:
+assertion failed: !watch_error_requires_recovery(std::slice::from_ref(&child))
+
+thread 'worker::tests::failed_large_burst_delta_keeps_changes_queued_until_commit_succeeds' (6828) panicked at crates/ottrin-search/src/worker.rs:3729:40:
+create root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'worker::tests::filtered_rename_event_removes_previously_indexed_path' (264) panicked at crates/ottrin-search/src/worker.rs:3608:40:
+create root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'worker::tests::large_notify_burst_drains_without_a_full_scan_or_lost_changes' (7932) panicked at crates/ottrin-search/src/worker.rs:3507:40:
+create root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'worker::tests::notify_burst_commits_one_transactional_delta_generation' (2412) panicked at crates/ottrin-search/src/worker.rs:3460:40:
+create root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'worker::tests::notify_delta_is_durable_before_memory_publication' (5372) panicked at crates/ottrin-search/src/worker.rs:3793:40:
+create root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'worker::tests::recovered_root_commits_replace_root_before_queued_delta' (2808) panicked at crates/ottrin-search/src/worker.rs:3864:40:
+create root: Os { code: 267, kind: NotADirectory, message: "The directory name is invalid." }
+
+thread 'worker::tests::watch_directory_walk_matches_scan_membership' (7384) panicked at crates/ottrin-search/src/worker.rs:2125:9:
+assertion failed: watched.contains(&root)
+
+thread 'worker::tests::watch_registration_failure_on_existing_directory_is_preserved' (3896) panicked at crates/ottrin-search/src/worker.rs:2250:9:
+assertion `left == right` failed
+  left: Ok(())
+ right: Err("watch limit reached")

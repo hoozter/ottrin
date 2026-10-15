@@ -10,7 +10,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Linux delivery status
 
-The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. The current `0040b44` cohort includes the saved appearance/view repairs, clickable address navigation, complete menu icons and compact action spacing, native index-service cleanup, read-only Inspector entry and stable PDF fitting. Ubuntu and Fedora package lifecycle evidence is scoped to the exact candidates named in that receipt; a documentation-only repack is distinguished from a new native runtime test. These focused checks do not close the broader release gates below. Older receipts retain their original revision scope.
+The current local Linux artifacts, exact source revisions, checksums and verification scopes are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM share stable paths under `dist/packages/`. The current `3cc1ca5` cohort includes the saved appearance/view repairs, clickable address navigation, complete menu icons and compact action spacing, native index-service cleanup, read-only Inspector entry and stable PDF fitting. Its exact AppImage daemon follows existing/new nested directory renames in a private profile, and all four package payloads match the clean-source release binaries. Earlier `0040b44` preview/UI checks retain their original exact artifact scope. Ubuntu and Fedora lifecycle receipts likewise retain their original candidate scope. These focused checks do not close the broader release gates below. Older receipts retain their original revision scope.
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
@@ -23,35 +23,43 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 Public portable, NSIS and MSI at the stable `dist/` paths still use clean source
 `41027a0`; their exact identities are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`.
 The newer coherent internal cohort at `.hermes/packaging-tmp/windows-current/`
-uses clean source `a7c189f`. Its `CANDIDATE_ACCEPTANCE.json` records exact hashes,
-all 51 payload identities and the accepted scopes; do not infer current acceptance
-from older receipts below.
+uses clean source `3d24d47`. Its `CANDIDATE_ACCEPTANCE.json` records exact hashes,
+all 51 payload identities and accepted scopes. Portable, NSIS and native MSI
+extraction agree for all payload files.
 
-The current NSIS passes six pre-journal interruption/retry cases, including fresh
-installs and all four configured login/runtime combinations with real indexing.
-Task XML/security, typed registration, saved index and original/published payload
-identities are preserved where applicable. The exact MSI passes fresh ordinary-user
-install/uninstall and payload verification. Current installed NSIS GUI acceptance
-covers VCF/PDF arrow navigation and Space close without editing source files,
-a flush themed Inspector title bar, and one persistent scheduled daemon across
-GUI launch and close. These GUI checks use Dark, 96 DPI and Automatic graphics
-in an isolated Windows VM.
+The exact NSIS passes twenty ordinary-user GUI Cut/Paste cases: populated
+folders and mixed file/folder batches, each using unoccupied, Replace, Keep Both,
+Skip and Cancel on the same NTFS volume and across two NTFS volumes. Indexing
+stays active during moves. The tests verify published/source bytes and tree
+shape, same-volume identities, preserved conflicting entries and paired durable
+retention journals. All twenty outcomes are rechecked after normal NSIS uninstall
+and again after the subsequent MSI lifecycle. Cross-volume mixed-batch Replace
+moves all three entries and retains both displaced destinations; Skip moves only
+the nonconflicting entry. This repairs the index-watch directory lock and the
+unoccupied-entry Replace transaction defect found during this matrix.
 
-The same exact NSIS also passes ten ordinary-user GUI Cut/Paste regular-file
-cases: unoccupied, Replace, Keep Both, Skip and Cancel on the same NTFS volume
-and across two NTFS volumes. Post-close/uninstall verification confirms exact
-bytes and identities, empty completed-source parents, retained displaced files
-and paired published journals. This is a bounded file-workflow check; directory
-trees, batches, Undo, interruption and physical storage remain separate. Receipt:
-`.hermes/evidence/windows-move-ui-current/ACCEPTANCE.json`.
+The exact MSI passes ordinary-user install/uninstall, all 51 installed payload
+hashes, explicit scheduled indexing setup, watched populated-tree rename, and
+preservation of preferences/source data. One scheduled daemon runs; its quiet CPU
+sample is 0% of one core over five seconds on a tiny private fixture. This bounded
+sample has no general workload claim. Native tests, receipts and GUI evidence:
+`.hermes/evidence/windows-tree-ui-current/ACCEPTANCE.json`.
+
+Earlier `a7c189f` six-case pre-journal interruption/retry, VCF/PDF Inspector,
+GUI-close/daemon lifetime and ten-case regular-file Move receipts retain their
+exact prior artifact scope in `.hermes/evidence/windows-init-integration-current/`
+and `.hermes/evidence/windows-move-ui-current/`. They are not rerun by the current
+directory/batch matrix. Superseded generated packages were removed after their
+compact receipts were retained; the owned VM, VHD and test processes were removed.
 
 Failed-transaction MSI registration rollback remains an open release gate. The
 rejected `3ddb1bf` package and its early-execution prototype reproduce advertised
-product state and access-denied registration rollback; a newer positive install
-check does not close that failure. Current exact upgrade/repair, reboot/login,
-broader GUI/DPI, file-operation, Office, graphics/media, storage and signing gates
-remain separate. Internal candidates stay unpublished. Detailed current evidence:
-`.hermes/evidence/windows-init-integration-current/ACCEPTANCE.json`.
+product state and access-denied registration rollback; positive install checks
+do not close that failure. The Windows search suite retains 48 unchanged baseline
+failures, with focused watcher/batch regressions passing. Configured-root
+ancestors, junction isolation, physical storage, Undo/interruption, current exact
+upgrade/repair and reboot/login, broader GUI/DPI, Office, graphics/media and signing
+gates remain open. Internal candidates stay unpublished; user testing is deferred.
 
 The `41027a0` public candidate's native drive navigation/address/search and daemon
 lifetime evidence remains in
@@ -3153,3 +3161,17 @@ required application config fields and fell back to defaults; it was discarded,
 corrected to use a complete config, and rerun. This is package/daemon acceptance,
 not fresh GUI or native distro lifecycle acceptance. Exact hashes/scopes are in
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+
+### Windows directory/batch package acceptance (2026-10-15)
+
+The source-repair checkpoints above now have exact-package acceptance. Clean
+`3d24d47` portable, NSIS and MSI form the stable internal cohort. The full twenty
+GUI cases pass, including the previously failed cross-volume mixed-batch Replace;
+all resulting bytes/identities and retained journal pairs survive normal NSIS and
+MSI uninstall. The current MSI's positive lifecycle, watcher rename and bounded
+quiet CPU checks also pass. `.hermes/evidence/windows-tree-ui-current/ACCEPTANCE.json`
+records the artifacts, scopes, historical controls and remaining gates. Normal
+VM shutdown/owned-volume removal preserved the original profile, installation,
+backing image and three original stopped domains. The source/library and broader
+roadmap gates remain active as described in the current delivery overview.

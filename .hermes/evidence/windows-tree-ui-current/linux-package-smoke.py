@@ -13,7 +13,12 @@ with tempfile.TemporaryDirectory(prefix='ottrin-watch-') as temp:
     watched=root/'files';(watched/'original/nested').mkdir(parents=True)
     (watched/'original/nested/first-probe.txt').write_text('preserved bytes')
     config=root/'config/ottrin';config.mkdir()
-    settings=json.loads((evidence/'config-template.json').read_text(encoding='utf-8-sig'))
+    # Supply all required application fields so a malformed partial fixture
+    # cannot silently select the default Home indexing policy.
+    settings=dict(theme='Dark',default_view_mode='Miller',list_columns=[],
+                  command_frame_always_visible=False,restore_session=False,
+                  show_hidden_files=False,target={'current':None},
+                  last_session_dirs=[],search={})
     settings['search'].update(include_roots=[str(watched)],exclude_roots=[],use_system_locate=False,manage_locate_db=False,refresh_interval_hours=0)
     (config/'config.json').write_text(json.dumps(settings))
     def cli(*args):

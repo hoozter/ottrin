@@ -3,9 +3,10 @@ base=pathlib.Path(__file__).resolve().parent
 repo=pathlib.Path.cwd();dist=repo/'dist/packages'
 def run(args,**kw):return subprocess.run(args,check=True,**kw)
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
-revision=run(['git','rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()
 appimage=json.loads((dist/'Ottrin-0.1.0-x86_64.AppImage.provenance.json').read_text())
-assert not run(['git','diff',appimage['revision'],'HEAD','--','crates','Cargo.toml','Cargo.lock'],capture_output=True,text=True).stdout
+revision=appimage['revision']
+assert appimage['built_from_tracked_clean_source']
+assert sha(dist/appimage['artifact'])==appimage['sha256']
 names={'portable':'Ottrin-0.1.0-linux-x86_64-portable.tar.gz','deb':'ottrin_0.1.0_amd64.deb','rpm':'ottrin-0.1.0-1.x86_64.rpm'}
 roles={'ottrin-app':'ottrin','ottrin-indexd':'ottrin-indexd','ottrin-media-playback':'ottrin-media-playback','ottrin-legacy-doc-render':'ottrin-legacy-doc-render','ottrin-priv-helper':'ottrin-priv-helper'}
 receipt={'date':'2026-10-15','package_source_revision':revision,'binary_source_revision':appimage['revision'],'appimage':appimage,'packages':{}}
@@ -26,7 +27,7 @@ with tempfile.TemporaryDirectory(prefix='ottrin-payload-qa-') as temp:
    run(['cpio','-idm','--quiet'],stdin=p.stdout,cwd=stage);p.stdout.close();assert p.wait()==0
   record=stage/('SOURCE_REVISION.txt' if kind=='portable' else 'usr/share/doc/ottrin/SOURCE_REVISION.txt')
   assert 'Git revision: '+revision in record.read_text()
-  assert 'clean' in record.read_text()
+  assert ('Working tree: clean' if kind=='portable' else 'Tracked tree: clean') in record.read_text().splitlines()
   hashes={}
   for src,exe in roles.items():
    if kind=='portable':rel=('bin/' if src=='ottrin-priv-helper' else 'libexec/ottrin/')+exe

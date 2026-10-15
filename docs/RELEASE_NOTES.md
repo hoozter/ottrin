@@ -4,6 +4,11 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Windows cross-volume Replace batches now move their nonconflicting files and
+  folders using non-replacing transactions. Existing conflicting destinations
+  retain the full identity-bound replacement/recovery checks. The current internal
+  installer passes twenty directory/mixed-batch GUI cases across NTFS volumes.
+
 - Windows indexing now watches configured roots recursively instead of holding
   descendant directory handles that prevent ordinary populated-folder moves.
   Excluded events are filtered before waking the worker, and configuration
