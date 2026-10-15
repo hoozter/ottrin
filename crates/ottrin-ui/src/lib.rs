@@ -68,10 +68,12 @@ mod icons;
 mod image_ops;
 mod launcher;
 mod listing;
+mod path_display;
 mod preview_render;
 mod semantic_style;
 mod system_appearance;
 mod widget_style;
+use path_display::{path_crumbs, path_label};
 use widget_style::{
     ThemeButtonExt, ThemeTextEditExt, aligned_menu_button, aligned_submenu, themed_menu_button,
 };
@@ -291,7 +293,7 @@ fn locations_rail_accessibility_label(name: &str, path: &Path, indexed: Option<b
 }
 
 fn locations_rail_tile_detail(name: &str, path: &Path, indexed: Option<bool>) -> String {
-    let detail = format!("{name} · {}", path.display());
+    let detail = format!("{name} · {}", path_label(path));
     match indexed {
         Some(true) => format!("{detail}\nIndexed search: enabled"),
         Some(false) => format!("{detail}\nIndexed search: disabled"),
@@ -1119,7 +1121,7 @@ fn group_retained_copy_activity(
                 CopyRecoveryEvidence::PublicationRetainedByCopy { transaction_id } => {
                     blocked_by.push(transaction_id.clone());
                     if !entries.iter().any(|owner| &owner.transaction_id == transaction_id) {
-                    reason = Some(format!("Undo the newer copy of {} first. Ottrin retains this version until that copy is undone.", entry.publication.as_ref().expect("validated Copy publication").display()));
+                    reason = Some(format!("Undo the newer copy of {} first. Ottrin retains this version until that copy is undone.", path_label(entry.publication.as_ref().expect("validated Copy publication"))));
                     }
                 },
                 CopyRecoveryEvidence::NeedsReview { reason: error } => reason = Some(error.clone()),
@@ -2155,7 +2157,7 @@ fn remove_administrator_session_index_directory(
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(error) => Err(format!(
             "Could not remove the Administrator session index at {}: {error}",
-            paths.directory.display()
+            path_label(&paths.directory)
         )),
     }
 }
@@ -2902,7 +2904,7 @@ fn administrator_persistent_index_disclosure(config: &SearchConfig, database_byt
     let scope = config
         .include_roots
         .iter()
-        .map(|root| root.display().to_string())
+        .map(|root| path_label(root))
         .collect::<Vec<_>>()
         .join(", ");
     let storage = if database_bytes == 0 {
@@ -3197,7 +3199,7 @@ impl OttrinApp {
             name: path
                 .file_name()
                 .map(|name| name.to_string_lossy().into_owned())
-                .unwrap_or_else(|| path.display().to_string()),
+                .unwrap_or_else(|| path_label(&path)),
             path,
             kind: EntryKind::File,
             is_executable: false,
@@ -4878,7 +4880,7 @@ impl OttrinApp {
         };
         let op_id = self.queue_activity_record_with_recoverability(
             title,
-            path.display().to_string(),
+            path_label(path),
             image_rotation_recoverability(),
         );
         match rotate_image_file(path, clockwise) {
@@ -5611,7 +5613,7 @@ impl OttrinApp {
         match std::fs::write(&path, json) {
             Ok(()) => {
                 self.theme_status = Some((
-                    format!("Exported theme to {}", path.display()),
+                    format!("Exported theme to {}", path_label(&path)),
                     true,
                     Instant::now() + Duration::from_secs(3),
                 ));
@@ -5772,7 +5774,7 @@ impl OttrinApp {
             .and_then(|n| n.to_str())
             .map(|s| s.to_string())
             .filter(|s| !s.is_empty())
-            .unwrap_or_else(|| path.display().to_string());
+            .unwrap_or_else(|| path_label(&path));
         self.state
             .config
             .bookmarks
@@ -7653,7 +7655,7 @@ impl OttrinApp {
         let message = format!(
             "{} was not started: {} is unavailable. Choose Home or another location before retrying.",
             operation_title(cmd),
-            location.root.display()
+            path_label(&location.root)
         );
         self.set_status_message(message.clone(), false, 6);
         self.command_frame.error = Some(message);
@@ -9003,7 +9005,7 @@ impl OttrinApp {
                             .is_ok_and(|bindings| !bindings.is_empty());
                     let op_id = self.queue_activity_record_with_recoverability(
                         "Edit text",
-                        path.display().to_string(),
+                        path_label(path),
                         if undo_available {
                             OperationRecoverability::SessionTracked
                         } else {
@@ -9450,7 +9452,7 @@ impl OttrinApp {
                 show_hidden: self.state.config.show_hidden_files,
             },
             context: PrivilegedContext {
-                reason: Some(format!("Read restricted folder {}", dir.display())),
+                reason: Some(format!("Read restricted folder {}", path_label(&dir))),
                 cwd: Some(self.state.active_tab().current_dir.clone()),
             },
         };
@@ -9654,7 +9656,7 @@ impl OttrinApp {
             self.set_status_message(
                 format!(
                     "Copy was not started: {} is unavailable",
-                    location.root.display()
+                    path_label(&location.root)
                 ),
                 false,
                 6,
@@ -10818,7 +10820,7 @@ impl OttrinApp {
                     self.navigate_tab_to(tab_id, target);
                     ok!()
                 } else {
-                    err!(format!("Not a directory: {}", target.display()))
+                    err!(format!("Not a directory: {}", path_label(&target)))
                 }
             }
             "mkdir" => match creation_command_from_input(CreationKind::Folder, raw, cwd) {
@@ -10849,10 +10851,10 @@ impl OttrinApp {
                 let src = resolve_path(src_str, cwd);
                 let dst = resolve_path(dst_str, cwd);
                 if !src.exists() {
-                    return err!(format!("No such file: {}", src.display()));
+                    return err!(format!("No such file: {}", path_label(&src)));
                 }
                 if !dst.is_dir() {
-                    return err!(format!("Destination not a directory: {}", dst.display()));
+                    return err!(format!("Destination not a directory: {}", path_label(&dst)));
                 }
                 let cmd = FileCommand::Copy {
                     sources: vec![src],
@@ -10872,13 +10874,16 @@ impl OttrinApp {
                 };
                 let src = resolve_path(src_str, cwd);
                 if !src.exists() {
-                    return err!(format!("No such file: {}", src.display()));
+                    return err!(format!("No such file: {}", path_label(&src)));
                 }
                 match dst_resolved {
                     None => err!("No destination specified and no drop folder set."),
                     Some(dst) => {
                         if !dst.is_dir() {
-                            return err!(format!("Destination not a directory: {}", dst.display()));
+                            return err!(format!(
+                                "Destination not a directory: {}",
+                                path_label(&dst)
+                            ));
                         }
                         let cmd = FileCommand::Move {
                             sources: vec![src],
@@ -10898,7 +10903,7 @@ impl OttrinApp {
                 }
                 let src = resolve_path(src_str, cwd);
                 if !src.exists() {
-                    return err!(format!("No such file: {}", src.display()));
+                    return err!(format!("No such file: {}", path_label(&src)));
                 }
                 let mode = if force {
                     DeleteMode::Permanent
@@ -10931,7 +10936,7 @@ impl OttrinApp {
                 };
                 let target = resolve_path(f, cwd);
                 if !target.exists() {
-                    return err!(format!("No such file: {}", target.display()));
+                    return err!(format!("No such file: {}", path_label(&target)));
                 }
                 let cmd = FileCommand::Chmod {
                     target,
@@ -11187,7 +11192,7 @@ impl OttrinApp {
                         });
                         resp.response.on_hover_text(format!(
                             "{}{}",
-                            tab_dir.display(),
+                            path_label(&tab_dir),
                             if is_tandem_selected {
                                 "\nSelected for Tandem"
                             } else {
@@ -12219,7 +12224,7 @@ impl OttrinApp {
                         painter.text(
                             egui::pos2(text_left, rect.top() + 35.0),
                             Align2::LEFT_CENTER,
-                            path.display().to_string(),
+                            path_label(&path),
                             FontId::proportional(10.5 * c.font_scale),
                             c.text_dim,
                         );
@@ -12394,7 +12399,8 @@ impl OttrinApp {
                 );
                 if response.lost_focus() {
                     if ui.input(|i| i.key_pressed(Key::Enter)) {
-                        let raw = bar.text.trim().to_string();
+                        // Whitespace can be part of a real directory name.
+                        let raw = bar.text.clone();
                         let cwd = self
                             .state
                             .tab_by_id(tab_id)
@@ -12436,21 +12442,13 @@ impl OttrinApp {
                 ui.set_width(ui.available_width());
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     ui.set_height(18.0);
-                    // Components of the path as clickable breadcrumbs
-                    let mut cumulative = PathBuf::new();
-                    let components: Vec<_> = path.components().collect();
-                    for (i, component) in components.iter().enumerate() {
-                        let comp_str = component.as_os_str().to_string_lossy();
-                        let display = if comp_str == "/" || comp_str.is_empty() {
-                            "/".to_string()
-                        } else {
-                            comp_str.to_string()
-                        };
-                        cumulative.push(component);
-                        let dest = cumulative.clone();
-                        let is_last = i == components.len() - 1;
+                    let crumbs = path_crumbs(&path);
+                    for (i, crumb) in crumbs.iter().enumerate() {
+                        let display = &crumb.label;
+                        let dest = crumb.target.clone();
+                        let is_last = i == crumbs.len() - 1;
                         let text_color = c.text_muted;
-                        let icon = if dest == Path::new("/") {
+                        let icon = if crumb.is_root {
                             MI_STORAGE
                         } else {
                             let sem = semantic_for_path(&dest);
@@ -12971,7 +12969,7 @@ impl OttrinApp {
                                 ui.add_space(4.0);
                                 ui.horizontal_wrapped(|ui| {
                                     ui.add_space(8.0);
-                                    ui.label(RichText::new(entry.path.display().to_string())
+                                    ui.label(RichText::new(path_label(&entry.path))
                                         .color(c.text_muted).size(9.5 * c.font_scale));
                                 });
                             } else {
@@ -13008,12 +13006,11 @@ impl OttrinApp {
                                 .inner_margin(egui::Margin::symmetric(8, 8))
                                 .show(ui, |ui| {
                                     ui.set_width(ui.available_width());
-                                    let path_str = self.state.config.target.current
-                                        .as_ref()
-                                        .map(|p| p.display().to_string())
+                                    let target_path = self.state.config.target.current.as_deref();
+                                    let path_str = target_path.map(path_label)
                                         .unwrap_or_else(|| "No drop folder set".to_string());
-                                    let folder_name = std::path::Path::new(&path_str)
-                                        .file_name().and_then(|n| n.to_str()).unwrap_or(&path_str);
+                                    let folder_name = target_path.and_then(Path::file_name)
+                                        .and_then(|n| n.to_str()).unwrap_or(&path_str);
                                     ui.horizontal(|ui| {
                                         ui.label(RichText::new(MI_MOVE_TO_INBOX).size(24.0 * c.font_scale).color(if target_set { c.accent } else { c.text_muted }));
                                         ui.vertical(|ui| {
@@ -13021,9 +13018,8 @@ impl OttrinApp {
                                             ui.label(RichText::new(truncate_name(folder_name, 18))
                                                 .color(if target_set { c.text } else { c.text_muted }).size(12.0 * c.font_scale).strong());
                                             if target_set {
-                                                let parent = std::path::Path::new(&path_str)
-                                                    .parent().map(|p| p.display().to_string())
-                                                    .unwrap_or_default();
+                                                let parent = target_path.and_then(Path::parent)
+                                                    .map(path_label).unwrap_or_default();
                                                 ui.label(RichText::new(truncate_name(&parent, 21))
                                                     .color(c.text_muted).size(10.5 * c.font_scale))
                                                     .on_hover_text(&path_str);
@@ -13078,7 +13074,7 @@ impl OttrinApp {
                                         });
                                         ui.add_space(4.0);
                                         if let Some(dir) = self.target_dropdown.dir.clone() {
-                                            ui.label(RichText::new(dir.display().to_string()).color(c.text_dim).size(10.5 * c.font_scale));
+                                            ui.label(RichText::new(path_label(&dir)).color(c.text_dim).size(10.5 * c.font_scale));
                                         }
                                         ui.add_space(6.0);
                                         ui.horizontal(|ui| {
@@ -13159,7 +13155,7 @@ impl OttrinApp {
                                                         if resp.clicked() {
                                                             chosen_target = Some(path.clone());
                                                         }
-                                                        resp.on_hover_text(path.display().to_string());
+                                                        resp.on_hover_text(path_label(path));
 
                                                         let up = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_ARROW_UP).size(14.0 * c.font_scale)).themed(&c));
                                                         if up.hovered() {
@@ -13226,7 +13222,7 @@ impl OttrinApp {
                                                         if resp.clicked() {
                                                             chosen_target = Some(path.clone());
                                                         }
-                                                        resp.on_hover_text(path.display().to_string());
+                                                        resp.on_hover_text(path_label(path));
 
                                                         let pin = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_BOOKMARK).size(14.0 * c.font_scale)).themed(&c));
                                                         if pin.hovered() {
@@ -13758,7 +13754,7 @@ impl OttrinApp {
                                 });
                             })
                             .response
-                            .on_hover_text(item.original_path.display().to_string());
+                            .on_hover_text(path_label(&item.original_path));
                         if resp.clicked() {
                             selected_now = Some(idx);
                         }
@@ -13794,7 +13790,7 @@ impl OttrinApp {
                             .size(10.0 * c.font_scale),
                     );
                     ui.label(
-                        RichText::new(item.original_path.display().to_string())
+                        RichText::new(path_label(&item.original_path))
                             .color(c.text_dim)
                             .size(10.0 * c.font_scale),
                     );
@@ -13823,7 +13819,7 @@ impl OttrinApp {
                 } else {
                     let op_id = self.queue_activity_record_with_recoverability(
                         "Restore from Trash",
-                        format!("{} to {}", item.name, item.original_path.display()),
+                        format!("{} to {}", item.name, path_label(&item.original_path)),
                         OperationRecoverability::Restorable,
                     );
                     match self.platform.restore_trash_item(&item) {
@@ -14912,7 +14908,7 @@ impl OttrinApp {
                                             mix_color(c.selected_bg, c.accent, 0.08),
                                         );
                                     }
-                                    let full_path = item.parent_path.display().to_string();
+                                    let full_path = path_label(&item.parent_path);
                                     ui.label(
                                         RichText::new(truncate_middle(&full_path, folder_cap))
                                             .size(10.5 * c.font_scale)
@@ -16227,7 +16223,7 @@ impl OttrinApp {
                 ui.label(
                     RichText::new(format!(
                         "{} is no longer available. No file operation will be redirected from this location.",
-                        unavailable.root.display()
+                        path_label(&unavailable.root)
                     ))
                     .color(c.text),
                 );
@@ -17438,7 +17434,7 @@ impl OttrinApp {
                                     meta_row(ui, "Modified", &format_modified(secs));
                                 }
                                 if let Some(parent) = entry.path.parent() {
-                                    meta_row(ui, "Location", &parent.display().to_string());
+                                    meta_row(ui, "Location", &path_label(parent));
                                 }
 
                                 // ── Details toggle ──────────
@@ -17470,7 +17466,7 @@ impl OttrinApp {
                                     {
                                         meta_row(ui, "Extension", &format!(".{ext}"));
                                     }
-                                    meta_row(ui, "Full path", &entry.path.display().to_string());
+                                    meta_row(ui, "Full path", &path_label(&entry.path));
                                     let detail = self.cached_info_details(entry);
                                     if let Some(owner) = detail.owner.as_deref() {
                                         meta_row(ui, "Owner", owner);
@@ -19359,7 +19355,7 @@ impl OttrinApp {
                         });
                         ui.add_space(12.0);
                         ui.label(
-                            RichText::new(format!("Location: {}", pending.parent.display()))
+                            RichText::new(format!("Location: {}", path_label(&pending.parent)))
                                 .color(c.text_dim)
                                 .size(10.5 * c.font_scale),
                         );
@@ -19747,7 +19743,7 @@ impl OttrinApp {
                     RichText::new(format!(
                         "Choose how to move {count} item{} into {}.",
                         plural_s(count),
-                        destination.display()
+                        path_label(destination)
                     ))
                     .color(c.text_muted)
                     .size(11.0 * c.font_scale),
@@ -20564,7 +20560,7 @@ impl OttrinApp {
                                             .size(12.0 * c.font_scale),
                                         );
                                         ui.label(
-                                            RichText::new(detected.executable.display().to_string())
+                                            RichText::new(path_label(&detected.executable))
                                                 .color(c.text_muted)
                                                 .size(10.5 * c.font_scale)
                                                 .monospace(),
@@ -20898,7 +20894,7 @@ impl OttrinApp {
                                             diag.last_indexed_path
                                                 .as_ref()
                                                 .or(diag.active_root.as_ref())
-                                                .map(|p| p.display().to_string())
+                                                .map(|p| path_label(p))
                                         } else {
                                             None
                                         };
@@ -21064,7 +21060,7 @@ impl OttrinApp {
                                                     if !excl_open {
                                                         let preview: String = self.state.config.search.exclude_roots.iter()
                                                             .take(4)
-                                                            .map(|p| p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| p.display().to_string()))
+                                                            .map(|p| p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| path_label(p)))
                                                             .collect::<Vec<_>>()
                                                             .join("   ");
                                                         let suffix = if excl_n > 4 { format!("   +{}", excl_n - 4) } else { String::new() };
@@ -21879,7 +21875,7 @@ impl OttrinApp {
                                             ui.label(RichText::new("Thumbnail cache").color(c.text).size(12.0 * c.font_scale).strong());
                                             let stats = preview_cache_stats();
                                             let dir_label = preview_cache_dir()
-                                                .map(|p| p.display().to_string())
+                                                .map(|p| path_label(&p))
                                                 .unwrap_or_else(|| "Unavailable".to_string());
                                             ui.label(
                                                 RichText::new(format!("Cache path: {}", dir_label))
@@ -23509,13 +23505,13 @@ fn validate_operation_storage_bindings(
             .map_err(|error| {
                 format!(
                     "operation was not started: cannot identify storage for {}: {error}",
-                    binding.root.display()
+                    path_label(&binding.root)
                 )
             })?;
             if current != mount_id {
                 return Err(format!(
                     "operation was not started: the filesystem for {} changed or is unavailable",
-                    binding.root.display()
+                    path_label(&binding.root)
                 ));
             }
             continue;
@@ -23523,7 +23519,7 @@ fn validate_operation_storage_bindings(
         let Some(expected_identity) = binding.stable_identity.as_ref() else {
             return Err(format!(
                 "operation was not started: {} has no stable volume identity; explicitly navigate after it is rediscovered",
-                binding.root.display()
+                path_label(&binding.root)
             ));
         };
         if !locations.iter().any(|location| {
@@ -23532,7 +23528,7 @@ fn validate_operation_storage_bindings(
         }) {
             return Err(format!(
                 "operation was not started: {} changed or is unavailable",
-                binding.root.display()
+                path_label(&binding.root)
             ));
         }
     }
@@ -23551,7 +23547,7 @@ fn capture_required_storage_bindings<'a>(
             let Some(stable_identity) = location.stable_identity.clone() else {
                 return Err(format!(
                     "{} has no stable volume identity",
-                    location.path.display()
+                    path_label(&location.path)
                 ));
             };
             let binding = StorageOperationBinding {
@@ -23572,7 +23568,7 @@ fn capture_required_storage_bindings<'a>(
             let mount_id =
                 ottrin_platform::local_storage::local_path_mount_identity(&root, follow_symlink)
                     .map_err(|error| {
-                        format!("cannot identify storage for {}: {error}", path.display())
+                        format!("cannot identify storage for {}: {error}", path_label(path))
                     })?;
             let binding = StorageOperationBinding {
                 root,
@@ -23592,7 +23588,7 @@ fn capture_required_storage_bindings<'a>(
             if !path.starts_with(&home) {
                 return Err(format!(
                     "the storage identity for {} cannot be proven",
-                    path.display()
+                    path_label(path)
                 ));
             }
             let binding = StorageOperationBinding {
@@ -23846,7 +23842,7 @@ fn operation_recoverability_label(
 fn operation_detail(cmd: &FileCommand) -> String {
     match cmd {
         FileCommand::CreateFile { parent, name } | FileCommand::CreateFolder { parent, name } => {
-            format!("{name} in {}", parent.display())
+            format!("{name} in {}", path_label(parent))
         }
         FileCommand::Rename { source, new_name } => {
             let old = source
@@ -23864,7 +23860,7 @@ fn operation_detail(cmd: &FileCommand) -> String {
             format!(
                 "{} to {}",
                 operation_sources_detail(sources),
-                destination.display()
+                path_label(destination)
             )
         }
         FileCommand::RecoverRetainedMove { transaction_id } => {
@@ -23882,12 +23878,12 @@ fn operation_detail(cmd: &FileCommand) -> String {
             format!(
                 "{} to {}",
                 operation_sources_detail(sources),
-                destination.display()
+                path_label(destination)
             )
         }
         FileCommand::ShowProperties { target }
         | FileCommand::Chmod { target, .. }
-        | FileCommand::Symlink { target, .. } => target.display().to_string(),
+        | FileCommand::Symlink { target, .. } => path_label(target),
     }
 }
 
@@ -23921,7 +23917,7 @@ fn successful_mixed_move_batch_detail(
     Some(format!(
         "{} items to {} — {moved} moved, {skipped} skipped",
         sources.len(),
-        destination.display()
+        path_label(destination)
     ))
 }
 
@@ -23935,7 +23931,7 @@ fn operation_sources_detail(paths: &[PathBuf]) -> String {
             .unwrap_or_else(|| {
                 paths
                     .first()
-                    .map(|path| path.display().to_string())
+                    .map(|path| path_label(path))
                     .unwrap_or_else(|| "item".to_string())
             })
     } else {
@@ -24941,7 +24937,7 @@ fn search_diagnostics_tooltip(
 }
 
 fn compact_search_path(path: &Path) -> String {
-    let text = path.display().to_string();
+    let text = path_label(path);
     let max_chars = 56usize;
     if text.chars().count() <= max_chars {
         return text;
@@ -25356,6 +25352,47 @@ mod tests {
         }];
         ui.main_sel = Some(0);
         (root, app, source)
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn address_submission_preserves_a_directory_names_trailing_space() {
+        let (root, mut app, _) = clipboard_keyboard_fixture();
+        let intended = root.path().join("literal target ");
+        let decoy = root.path().join("literal target");
+        std::fs::create_dir(&intended).unwrap();
+        std::fs::create_dir(&decoy).unwrap();
+        let ctx = Context::default();
+        let tab_id = app.state.active_tab().id;
+        let bar = app.address_bar_state_mut(tab_id);
+        bar.editing = true;
+        bar.request_focus = true;
+        bar.tab_id = Some(tab_id);
+        bar.text = intended.to_string_lossy().into_owned();
+        let _ = ctx.run(Default::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                app.render_address_bar(ui, tab_id);
+            });
+        });
+        let _ = ctx.run(
+            egui::RawInput {
+                events: vec![egui::Event::Key {
+                    key: Key::Enter,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                }],
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    app.render_address_bar(ui, tab_id);
+                });
+            },
+        );
+        assert_eq!(app.state.active_tab().current_dir, intended);
+        assert_ne!(app.state.active_tab().current_dir, decoy);
     }
 
     #[test]

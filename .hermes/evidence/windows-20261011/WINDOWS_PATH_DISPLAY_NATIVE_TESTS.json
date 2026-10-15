@@ -1,0 +1,18 @@
+{
+  "binary_sha256": "9c56ed1ef7208a7519d995995839ba30b6cd3fc25c1db8d61515f4ad30b59b4f",
+  "module_source_sha256": "cf576376e5c7dbe12f160e0f134bf378bdd634be16cbdcf27559a2561c461aab",
+  "command": "rustc --edition=2024 --test --target x86_64-pc-windows-gnu crates/ottrin-ui/src/path_display.rs; native executable --test-threads=1 --nocapture",
+  "runtime": "Native Windows guest via QGA SYSTEM; pure path/label tests, no file-operation or GUI acceptance",
+  "exit": 0,
+  "stdout": "\nrunning 4 tests\ntest tests::relative_names_and_targets_are_preserved ... ok\ntest tests::windows_drive_labels_hide_only_namespace_and_keep_original_targets ... ok\ntest tests::windows_unc_share_is_one_root_and_remains_the_original_navigation_path ... ok\ntest tests::windows_volume_and_device_namespaces_are_not_rewritten ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n",
+  "stderr": "",
+  "cleanup": {
+    "native_process_exited": true,
+    "guest_fixture_removed": true,
+    "guest_fixture_sha256_matches_uploaded_binary": true,
+    "overlay_and_backing_guests": "shut off",
+    "backing_content_mtime_unchanged": true,
+    "backing_content_mtime": "1792007729.962647502",
+    "interactive_signin_or_credentials_used": false
+  }
+}

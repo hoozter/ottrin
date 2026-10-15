@@ -2287,3 +2287,45 @@ GUI lifetime checks. Physical GPU/Wayland, full theme/state/scale acceptance,
 current exact reboot/upgrade/repair, MSI registration rollback and the remaining
 roadmap are not claimed complete. No new whole-home or CPU benchmark is inferred
 from this UI repair; prior performance receipts retain their original hashes.
+
+
+### Readable Windows path labels and rooted breadcrumbs — source checkpoint
+
+The delivered Windows screenshots exposed internal verbatim prefixes in the
+breadcrumb, search Folder column and file Location. Breadcrumb rendering also
+split a drive prefix from its root separator. The shared UI `path_display` module
+now formats ordinary drive/UNC labels and constructs breadcrumbs from original
+`Path::ancestors`. Drive/share roots are one storage breadcrumb; each click target
+remains an original `PathBuf`, never a parsed display string. Volume/device
+namespaces retain their spelling. Unicode and unusual filename endings are not
+trimmed or normalized by display formatting.
+
+Read-only navigation/tooltips, search, Info/Inspector details, Drop Folder labels,
+Activity descriptions, diagnostics and folder-read errors now use that helper.
+Drop Folder labels derive parent/name from the original path before formatting.
+Editable addresses/configuration, clipboard paths, cache keys and command completion
+retain original path data. This distinction is now part of the UI development
+requirements.
+
+The review also found that address-field Enter trimmed real directory-name
+whitespace. A private real-filesystem GUI regression created both `literal target`
+and `literal target ` and reproduced navigation to the wrong decoy. Submission now
+preserves the entered string, and the regression opens the intended directory.
+That real-filesystem case runs on Linux; no Windows filesystem/GUI acceptance is
+inferred from it.
+
+Native Windows tests compile and execute the actual std-only UI helper module:
+all four pass, covering rooted drive and UNC labels/targets, Unicode, trailing
+characters, relative paths and unchanged volume/device namespaces. This is pure
+path-format/identity testing under QGA SYSTEM, not file-operation or main-window
+acceptance. All 368 regular UI tests pass (one ignored), plus strict Linux and
+Windows UI all-target Clippy, formatting and diff checks. Receipts:
+`.hermes/evidence/windows-20261011/PATH_DISPLAY_SOURCE_ACCEPTANCE.json` and
+`WINDOWS_PATH_DISPLAY_NATIVE_TESTS.json` beside it. Native test fixture/process
+are removed; guest/backing VMs are shut off with backing content mtime unchanged.
+The failed-address test's private profile was also removed on panic.
+
+Rebuild current Linux/Windows packages and inspect the native breadcrumb, search
+and Info labels, including drive-root navigation, before calling this delivered.
+Current stable downloads remain the accepted `d4ef8f9` palette repair. The path
+source changes do not close any remaining installer, Office or daily-driver gate.

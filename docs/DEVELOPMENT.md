@@ -21,6 +21,8 @@ Use the workspace `target/` for current builds. Historical-source QA builds must
 
 Every UI change must preserve shared theme roles and consistent text/icon alignment across the main window, Settings, theme editor, Inspector, menus, and dialogs. Reuse the authoritative themed widgets; previews must use production controls where they represent those controls.
 
+Human-readable path labels must use the shared display helpers. Keep navigation, commands, clipboard paths and editable configuration as original paths; never reconstruct an operation path from a shortened display string. Windows drive/share roots are one breadcrumb with the original rooted target.
+
 Repeated rows must share label starts, icon centers, padding, and vertical centers. Reserve separate fixed columns for selection indicators and icons, including empty columns on unchecked or disabled rows within a choice group. Action-only menus must omit the unused selection column. Use meaningful, consistently sized icons for menu actions and view/sort options; review density, padding and visual balance as well as geometry. Never position icons or checkmarks with whitespace inside text labels. Keep submenu arrows and secondary actions in their own trailing columns. Scale row height and column spacing with text size; avoid clipping or shifting labels when state changes.
 
 Before delivery, inspect affected surfaces in Light and Dark at 100% and 150% desktop scaling and enlarged text. Exercise checked/unchecked, enabled/disabled, hover/focus, and submenu states. Add rendered geometry regressions for shared alignment fixes and verify the exact packaged app. A compilation check alone does not satisfy visual acceptance.

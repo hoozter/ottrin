@@ -1,3 +1,4 @@
+use crate::path_display::path_label;
 use ottrin_core::{EntryKind, FileEntry, SortBy, default_home_dir};
 use std::path::{Path, PathBuf};
 
@@ -170,15 +171,15 @@ fn format_list_dir_error(path: &Path, e: &std::io::Error) -> String {
         ErrorKind::PermissionDenied => {
             format!(
                 "Permission denied\nYou don't have permission to read this folder:\n{}",
-                path.display()
+                path_label(path)
             )
         }
         ErrorKind::NotFound => {
             format!(
                 "Folder not found\nThis folder no longer exists:\n{}",
-                path.display()
+                path_label(path)
             )
         }
-        _ => format!("Could not open folder:\n{}\n({})", path.display(), e),
+        _ => format!("Could not open folder:\n{}\n({})", path_label(path), e),
     }
 }

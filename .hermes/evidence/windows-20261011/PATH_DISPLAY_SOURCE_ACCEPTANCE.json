@@ -1,0 +1,30 @@
+{
+  "source_base": "eb94112",
+  "source_files_sha256": {
+    "crates/ottrin-ui/src/path_display.rs": "cf576376e5c7dbe12f160e0f134bf378bdd634be16cbdcf27559a2561c461aab",
+    "crates/ottrin-ui/src/lib.rs": "4cd6ace5f116af2bd93a96aec705917c8ac745e88d74ad47197462e82e7092e8",
+    "crates/ottrin-ui/src/file_details.rs": "6b644231109401ba58b2296b4a85935d96bf54f0f34f9c71d0652d442332d3a2",
+    "crates/ottrin-ui/src/listing.rs": "1db801ae69192a74c7afe254c095838029c7a46f55f9d53cf14bfa568e55bfb0"
+  },
+  "checks": {
+    "native_windows_pure_path_tests": "4 passed; no filesystem/GUI acceptance inferred",
+    "linux_ui_suite": "368 passed; 1 ignored",
+    "linux_ui_all_targets_strict_clippy": "pass",
+    "windows_ui_all_targets_strict_clippy": "pass",
+    "fmt_diff_check": "pass"
+  },
+  "address_space_regression": {
+    "red": "Actual address-field Enter navigated to the trimmed decoy directory",
+    "green": "Actual address-field Enter retains the intended directory name ending in a space",
+    "scope": "Linux private real filesystem directories; Windows namespace/target-label checks remain separately native"
+  },
+  "boundaries": [
+    "Read-only labels use path_label; navigation targets come from original Path ancestors",
+    "Windows drive/share and root separator are one breadcrumb",
+    "Ordinary drive and UNC display prefixes shortened; volume/device namespaces retained",
+    "Address editor, clipboard data, config path entries, cache keys and command completion retain original paths",
+    "Address submission no longer trims meaningful whitespace"
+  ],
+  "delivery": "Source checkpoint only; current published packages remain d4ef8f9 until rebuild and native GUI acceptance",
+  "native_evidence": "WINDOWS_PATH_DISPLAY_NATIVE_TESTS.json"
+}

@@ -1,3 +1,4 @@
+use super::path_display::path_label;
 use ottrin_core::{EntryKind, format_modified};
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
@@ -196,9 +197,7 @@ pub(crate) fn build_info_panel_details(path: &Path) -> InfoPanelDetails {
         None
     };
     let symlink_target = if meta.file_type().is_symlink() {
-        std::fs::read_link(path)
-            .ok()
-            .map(|p| p.display().to_string())
+        std::fs::read_link(path).ok().map(|p| path_label(&p))
     } else {
         None
     };
