@@ -9,6 +9,10 @@ use super::{PathMoveIdentity, PlatformError};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
 
+#[path = "copy_cleanup.rs"]
+mod cleanup;
+pub use cleanup::{RetainedCopyCleanupPlan, plan_cleanup};
+
 /// Identity-only filesystem evidence, scoped by the record's boot and unique
 /// mount IDs. Its filesystem-defined identifier can distinguish reused inode
 /// numbers. No descriptor is retained between sessions.
@@ -773,6 +777,26 @@ pub struct RetainedCopyStatus {
     observation: Option<CopyObservation>,
 }
 
+impl RetainedCopyStatus {
+    // Public presentation fields are not authority. Undo and cleanup must both
+    // bind them to the private observation captured by discovery.
+    fn matches_observation(&self) -> Result<bool, PlatformError> {
+        let Some(observation) = &self.observation else {
+            return Ok(false);
+        };
+        let record = &observation.record;
+        Ok(self.transaction_id == record.transaction_id()?
+            && self.phase == Some(record.phase)
+            && self.operation.as_ref() == Some(&record.operation)
+            && self.evidence == observation.evidence
+            && self.source.as_ref() == Some(&record.source.decode().map_err(journal_error)?)
+            && self.publication.as_ref()
+                == Some(&record.publication.decode().map_err(journal_error)?)
+            && self.transaction.as_ref()
+                == Some(&record.transaction.decode().map_err(journal_error)?))
+    }
+}
+
 #[derive(Debug)]
 struct CopyObservation {
     record: CopyRecord,
@@ -872,15 +896,7 @@ pub(super) fn restore_plan(
             ))?;
         let record = &observation.record;
         if observation.members.as_ref() != &captured_ids
-            || status.transaction_id != record.transaction_id()?
-            || status.phase != Some(record.phase)
-            || status.operation.as_ref() != Some(&record.operation)
-            || status.evidence != observation.evidence
-            || status.source.as_ref() != Some(&record.source.decode().map_err(journal_error)?)
-            || status.publication.as_ref()
-                != Some(&record.publication.decode().map_err(journal_error)?)
-            || status.transaction.as_ref()
-                != Some(&record.transaction.decode().map_err(journal_error)?)
+            || !status.matches_observation()?
             || central.read_copy_record(&format!("{}.journal", status.transaction_id))? != *record
         {
             return Err(PlatformError::InvalidPathMoveUndoReceipt(

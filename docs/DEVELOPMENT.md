@@ -690,9 +690,38 @@ handles were rejected after a private namespace probe demonstrated they prevent
 ordinary unmount; the replacement watch design has a dedicated ignored private
 mount test for ordinary unmount, tmpfs replacement, and same-inode bind remount.
 
+Cleanup admission is implemented separately from Undo admission through
+`plan_retained_copy_cleanup`. It captures immutable discovery observations and
+revalidates the recorded operation membership, both journals, namespace/object
+identities, retained contents and cross-operation references, including an older
+private transaction nested inside an ancestor-folder overwrite. A changed visible
+publication does not block discarding an otherwise unchanged retained backup;
+changed retained data, unexpected stage entries and interrupted publication/Undo
+are refused. Plans hold no directory descriptors between calls and grant no
+deletion authority. Registry records are read for dependencies, but unrelated
+visible file contents are not read. Unknown/corrupt registry records and unavailable dependency object evidence
+currently refuse admission because references cannot be proven absent. Possible
+generation-handle matches across namespaces conservatively retain data; those
+matches never grant mutation authority.
+
+The mutation stage must persist cleanup intent before its first deletion and
+revoke Undo for that transaction. Every claimed entry needs an original-record
+binding and a durable pending-name mapping before quarantine, so interruption
+cannot turn an owned entry into an unclassified temporary file. Recursive
+cleanup must refuse changed contents, replacements, unknown children and mount
+changes; a directory name or a prior eligibility result cannot authorize an
+unlink. Partial progress and uncertain journal writes must retain ownership for
+revalidation/retry. Journal/stage finalization is part of successful cleanup,
+and Activity may discard a receipt only after the worker confirms it. Keep
+worker handles short-lived; plans and idle history must not pin mounts.
+
+This is the admission part only. Durable cleanup intent, per-entry deletion,
+interruption recovery, journal/stage finalization and Activity Clear/eviction
+integration remain unfinished; no automatic cleanup or expiry is enabled.
+
 This guards session ownership but does not reclaim retained transaction data.
-History eviction/Clear, durable cleanup intent, changed retained-content refusal,
-and safe recursive reclamation still need one explicit lifecycle. Never replace
+History eviction/Clear, durable cleanup intent and recursive mutation still need
+one explicit lifecycle with content revalidation at every deletion. Never replace
 that work with deletion by transaction name or age. Native physical removable
 acceptance remains separate from the passing private mount test. Exact rebuilt
 AppImage acceptance is recorded in

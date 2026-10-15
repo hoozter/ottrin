@@ -18,7 +18,8 @@ pub use copy_transaction::RetainedCopyTransaction;
 mod copy_recovery;
 #[cfg(target_os = "linux")]
 pub use copy_recovery::{
-    CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyStatus, RetainedCopyUndoPlan,
+    CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyCleanupPlan, RetainedCopyStatus,
+    RetainedCopyUndoPlan,
 };
 
 /// Reads retained Copy status without creating recovery data or granting Undo authority.
@@ -50,6 +51,15 @@ pub fn restore_retained_copy_undo_plan(
     captured: &[RetainedCopyStatus],
 ) -> Result<RetainedCopyUndoPlan, PlatformError> {
     copy_recovery::restore_plan(captured)
+}
+/// Read-only admission for discarding retained Copy data. Visible publications
+/// may have changed; the original retained objects, journals and dependencies
+/// must still match. This plan alone grants no deletion authority.
+#[cfg(target_os = "linux")]
+pub fn plan_retained_copy_cleanup(
+    captured: &[RetainedCopyStatus],
+) -> Result<RetainedCopyCleanupPlan, PlatformError> {
+    copy_recovery::plan_cleanup(captured)
 }
 mod copy_transaction;
 #[cfg(target_os = "linux")]
@@ -163,6 +173,8 @@ pub enum PlatformError {
     DestinationExists(String),
     #[error("filesystem undo receipt is invalid: {0}")]
     InvalidPathMoveUndoReceipt(String),
+    #[error("Copy cleanup refused: {0}")]
+    CopyCleanupRefused(String),
     #[error("undo target is missing or no longer the same entry: {0}")]
     StalePathMoveUndo(String),
     #[error("contents changed since this operation: {0}")]
