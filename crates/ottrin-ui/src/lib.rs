@@ -12422,7 +12422,7 @@ impl OttrinApp {
                 }
             }
             if let Some(target) = submit_target {
-                self.navigate_tab_to(tab_id, target);
+                self.navigate_miller_pointer_folder(tab_id, target);
             }
             if invalid_target {
                 self.set_status_message("Not a directory", false, 2);
@@ -12477,7 +12477,7 @@ impl OttrinApp {
                         crumb_right = Some(resp.rect.right());
                         if resp.clicked() {
                             self.focus_tab(tab_id);
-                            self.navigate_tab_to(tab_id, dest);
+                            self.navigate_miller_pointer_folder(tab_id, dest);
                         }
                         if resp.hovered() {
                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -16933,8 +16933,12 @@ impl OttrinApp {
                             points_per_second: 600.0,
                             duration: Rangef::new(0.15, 0.4),
                         };
-                        // Left/Backspace: scroll left if focus is off the left edge.
-                        if col_idx == focus_col && scroll_left_nav && rect.left() < clip.left() {
+                        // Explicit navigation can jump to an ancestor left of the
+                        // old viewport, just like keyboard Left/Backspace.
+                        if ((col_idx == focus_col && scroll_left_nav)
+                            || reveal_col == Some(col_idx))
+                            && rect.left() < clip.left()
+                        {
                             ui.scroll_to_rect_animation(rect, Some(egui::Align::LEFT), smooth);
                         }
                         // Right/Enter: ALWAYS ensure focus + 1 column is
@@ -25432,6 +25436,78 @@ mod tests {
         assert_eq!(
             app.address_bar_state(tab_id).unwrap().text,
             root.path().display().to_string()
+        );
+    }
+
+    #[test]
+    fn breadcrumb_navigation_reveals_a_destination_left_of_the_old_viewport() {
+        let root = tempfile::tempdir().unwrap();
+        let deep = root.path().join("one/two/three/four/five");
+        std::fs::create_dir_all(&deep).unwrap();
+        let mut app = OttrinApp::default();
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        app.sidebar = SidebarSection::None;
+        app.open_directory_at_startup(deep);
+        let tab_id = app.state.active_tab().id;
+        let ctx = Context::default();
+        let mut destination_button = None;
+        for frame in 0..180 {
+            app.poll_listing_results();
+            let events = if frame == 90 {
+                let pos = destination_button.expect("visible ancestor breadcrumb");
+                vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: false,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ]
+            } else {
+                Vec::new()
+            };
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1100.0, 690.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::TopBottomPanel::top("test_address").show(ctx, |ui| {
+                        app.render_address_bar(ui, tab_id);
+                    });
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_miller(ui, tab_id);
+                    });
+                },
+            );
+            if frame == 89 {
+                assert!(app.tab_ui[&tab_id].miller_h_offset > 500.0);
+                let name = root.path().file_name().unwrap().to_str().unwrap();
+                destination_button = output.shapes.iter().find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) if text.galley.job.text.ends_with(name) => {
+                        Some(Rect::from_min_size(text.pos, text.galley.size()).center())
+                    }
+                    _ => None,
+                });
+            }
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(app.state.active_tab().current_dir, root.path());
+        assert!(
+            app.tab_ui[&tab_id].miller_current_visible,
+            "ancestor navigation must reveal its file column, not leave the old horizontal offset"
         );
     }
 

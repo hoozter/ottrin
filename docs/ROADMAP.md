@@ -2356,3 +2356,10 @@ Rebuild the source and rerun the native drive-root and literal-space navigation
 checks before publishing. Current downloads remain the preceding accepted palette
 build. The rejected candidate's pure label/target tests did not prove clickability;
 this real packaged GUI gate is required.
+
+
+### Address destination visibility — 2026-10-15
+
+The `82d75c1` native packaged drive-click check correctly changed the path, but visual review rejected the resulting file view: the old horizontal offset left almost all of the root column off-screen. This candidate was not published. `.hermes/evidence/windows-20261011/PATH_REVEAL_REJECTED.json` and `path-reveal-red-root.png` record that boundary.
+
+Breadcrumb and address-entry navigation now use the existing one-shot Miller destination reveal. Explicit reveals bring a destination left of the viewport into view as well as revealing destinations to its right. A rendered regression starts deep enough to scroll, clicks the actual ancestor breadcrumb, and checks that the resulting current file column becomes fully visible; it fails before the repair and passes afterward. Ordinary same-directory refresh and deliberate horizontal scrolling keep their existing behavior. All 370 regular UI tests pass (one ignored), with strict Linux/Windows UI all-target Clippy. Packages require a fresh native visual check before publication.

@@ -1,0 +1,8 @@
+{
+  "source_revision": "82d75c164a322d37acc097183d9842ea0cbcba50",
+  "installer_sha256": "efc50d361a6c0e05a9602cd407f85203c16d50d504e2795904510130d9b0020c",
+  "root_address": "\\\\?\\C:\\",
+  "pointer_navigation": "passes model change",
+  "visual_acceptance": "rejected: current root file column is mostly left of the viewport; screenshot path-reveal-red-root.png",
+  "delivery": "not published"
+}

@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 29.06s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-79a909d55133516b)
+
+running 1 test
+test tests::breadcrumb_navigation_reveals_a_destination_left_of_the_old_viewport ... FAILED
+
+failures:
+
+---- tests::breadcrumb_navigation_reveals_a_destination_left_of_the_old_viewport stdout ----
+
+thread 'tests::breadcrumb_navigation_reveals_a_destination_left_of_the_old_viewport' (1923916) panicked at crates/ottrin-ui/src/lib.rs:25478:9:
+ancestor navigation must reveal its file column, not leave the old horizontal offset
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::breadcrumb_navigation_reveals_a_destination_left_of_the_old_viewport
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 370 filtered out; finished in 0.71s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`
