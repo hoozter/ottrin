@@ -1,37 +1,39 @@
 {
   "date": "2026-10-15",
-  "source_revision": "d4ef8f92aa4d24e04d4bd9f4d2cd1b6c79095760",
+  "source_revision": "41027a0cac4ddaf735bea28b608f3e0b824e8ea7",
   "tracked_clean_source": true,
   "published": true,
   "stage": "dist/windows-payload/Ottrin-0.1.0-windows-x64",
   "artifacts": {
     "Ottrin-0.1.0-windows-x64-portable.zip": {
-      "sha256": "b5db8255de9067ae71d09c96846ab95f3db4f8da8435b540064e0979a5153bf4",
-      "bytes": 50459797
+      "sha256": "92d722ddd803d748247196e507152b9c473e8949c3a3f6f04b5bb234109ceae1",
+      "bytes": 50461809
     },
     "Ottrin-0.1.0-windows-x64.msi": {
-      "sha256": "9a721175476c667895d673cec2f1ab849cacff3b004383e15d75cabd3459c984",
+      "sha256": "de47dae2de001294809187d91cb981d1e3b8aa6a542f5369045453b5807421f9",
       "bytes": 42590208
     },
     "Ottrin-0.1.0-windows-x64-setup.exe": {
-      "sha256": "ccc60c043cbcf728b2c2d159516336d71451330f858eba027d58949cb593874c",
-      "bytes": 36172050
+      "sha256": "fd917b1ef84c9601eb3529523ef6dd8d178ec33a4a33953379ab2d4c4045342c",
+      "bytes": 36168361
     }
   },
   "checks": [
-    "Portable exact 51 files; NSIS 51 and MSI 53 embedded matching digest multiset",
-    "Current installed NSIS GUI palette/search/index reuse and after-close watch pass",
-    "Current MSI 53-file install/task/query/uninstall pass"
+    "Portable exact 51-file map; NSIS 51 and MSI 53 embedded payload/helper digest multiplicities pass",
+    "Installed NSIS GUI drive-root click reveals a readable full file column; exact trailing-space path submission, return and search pass",
+    "Same daemon before/during/after GUI close; subsequent file watch pass",
+    "MSI standard-user 51-file install, index/query, uninstall and preferences/source preservation pass"
   ],
   "evidence": [
-    "THEME_FIXED_PACKAGE_IDENTITIES.json",
-    "WINDOWS_THEME_FIXED_GUI_ACCEPTANCE.json",
-    "WINDOWS_THEME_FIXED_MSI_ACCEPTANCE.json"
+    "PATH_FIXED_PACKAGE_IDENTITIES.json",
+    "PATH_FIXED_VISUAL_REVIEW.json",
+    "WINDOWS_PATH_FIXED_GUI_ACCEPTANCE.json",
+    "WINDOWS_PATH_FIXED_MSI_ACCEPTANCE.json"
   ],
-  "historical_previous_receipt": "WINDOWS_4A0C13B_ACCEPTANCE.json",
+  "previous_revision": "d4ef8f92aa4d24e04d4bd9f4d2cd1b6c79095760",
   "limits": [
-    "Current exact reboot/login, upgrade/repair, MSI failed-transaction rollback and interactive installer breadth remain open",
-    "Prior 4a0c13b index CPU/offline/reboot receipts remain historical; no new CPU measurement inferred",
-    "Current GUI uses bundled Mesa/OpenGL on a guest; no physical GPU/full theme-scale matrix acceptance"
+    "Current exact reboot/login, upgrade/repair, MSI failed-transaction rollback and installer interaction breadth remain open",
+    "Prior CPU/offline/reboot receipts are historical; no new CPU measurement inferred",
+    "Guest bundled OpenGL only; physical GPU and full appearance/scale matrix remain open"
   ]
 }

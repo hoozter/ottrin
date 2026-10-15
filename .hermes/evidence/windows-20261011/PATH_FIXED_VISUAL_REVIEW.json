@@ -1,0 +1,21 @@
+{
+  "source_revision": "41027a0cac4ddaf735bea28b608f3e0b824e8ea7",
+  "status": "pass",
+  "observations": [
+    "Windows installed GUI drive click reveals a full root column with readable folder names",
+    "Literal trailing-space folder remains the selected target; readable breadcrumb labels match the directory",
+    "Linux main menu has compact leading padding and full action icons",
+    "Linux View Options has complete semantic view/sort icons, a separate narrow check column and consistent text starts",
+    "Dark100 and Light150 match their palettes; disabled rows remain readable and aligned"
+  ],
+  "screenshots": {
+    ".hermes/evidence/windows-20261011/path-fixed-gui-root-click.png": "947c254a189adb98f4d9ff82940ebe8a642538214b447a491b9c9a70f8de2945",
+    ".hermes/evidence/windows-20261011/path-fixed-gui-root.png": "947c254a189adb98f4d9ff82940ebe8a642538214b447a491b9c9a70f8de2945",
+    ".hermes/evidence/windows-20261011/path-fixed-gui-literal-target.png": "85905d4efa3a8a60a39e0a93eaa75789480862c9d7898032540b0b3f111c73d7",
+    ".hermes/evidence/path-display-linux/gui/dark-100-refined-main.png": "f081207834d7e9d2bb8ecac395f7766d2561485df291ad760af4fe8d772b24e0",
+    ".hermes/evidence/path-display-linux/gui/dark-100-refined-view.png": "f9995a00ad7124c5abe569d391d3392552c1df64ddb80ec1497476c636c709c0",
+    ".hermes/evidence/path-display-linux/gui/light-150-refined-main.png": "85dce9c2936aa56b3e11877de3734d79d36e861636b6cac44772d872cb6e3c8e",
+    ".hermes/evidence/path-display-linux/gui/light-150-refined-view.png": "91dd9131faa36f9030ecdd95d775a5b81f7e0b79bba5fc62b31b1dfcfe3de83b"
+  },
+  "scope": "Focused menu and address-navigation visual review; full appearance audit and physical graphics remain separate"
+}

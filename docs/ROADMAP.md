@@ -10,11 +10,13 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Linux delivery status
 
-The current local packages use clean source `d4ef8f9`, including the OS-appearance
-palette correction described at the end of this roadmap. AppImage SHA-256:
-`31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a`.
+The current local packages use clean source `41027a0`, including the OS-appearance
+palette correction, literal address-path preservation, and clickable breadcrumbs
+that reveal their destination file column. AppImage SHA-256:
+`681dfd741e3a1c7c51eca471246d8576fd4629300bda0f39acd12e678271fbb1`.
 All four stable Linux formats have current payload checks; exact AppImage GUI
-Dark100/Light150 menu/Move checks pass. These focused checks do not close the
+Dark100/Light150 menu/Move checks pass, including complete semantic menu icons
+and compact action-menu leading spacing. These focused checks do not close the
 broader release gates. `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` identifies
 the current artifacts; older receipts retain their original revision scope.
 
@@ -26,13 +28,17 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 
 ## Current Windows local delivery — 2026-10-15
 
-Portable, NSIS and MSI at the stable `dist/` paths use clean source `d4ef8f9`.
-Current NSIS native GUI acceptance verifies matching dark controls, one search
-result and the same scheduled daemon before/during/after normal window close,
-including live indexing afterward. Current MSI standard-user install/index/query/
-uninstall passes all 53 payload/helper hashes. The exact archives and installer
-payloads match. Current hashes and limits are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`
-and `.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+Portable, NSIS and MSI at the stable `dist/` paths use clean source `41027a0`.
+Current installed NSIS native GUI acceptance verifies readable drive breadcrumbs,
+actual drive-root navigation with its full file column visible, exact address
+submission to a real trailing-space directory, return navigation, search, and the
+same scheduled daemon before/during/after normal window close and subsequent
+file watching. Current MSI standard-user installation verifies all 51 installed
+files, index registration/query, uninstall and preference/source preservation.
+Archive/NSIS payloads match all 51 stage files; MSI embedded data additionally
+matches both authoritative installer helper scripts. Current hashes and limits
+are in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json` and
+`.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
 
 The preceding `4a0c13b` reboot, cleanup-failure/retry and populated-index CPU/offline
 results remain historical evidence for that revision. Current exact reboot/login,
@@ -2363,3 +2369,12 @@ this real packaged GUI gate is required.
 The `82d75c1` native packaged drive-click check correctly changed the path, but visual review rejected the resulting file view: the old horizontal offset left almost all of the root column off-screen. This candidate was not published. `.hermes/evidence/windows-20261011/PATH_REVEAL_REJECTED.json` and `path-reveal-red-root.png` record that boundary.
 
 Breadcrumb and address-entry navigation now use the existing one-shot Miller destination reveal. Explicit reveals bring a destination left of the viewport into view as well as revealing destinations to its right. A rendered regression starts deep enough to scroll, clicks the actual ancestor breadcrumb, and checks that the resulting current file column becomes fully visible; it fails before the repair and passes afterward. Ordinary same-directory refresh and deliberate horizontal scrolling keep their existing behavior. All 370 regular UI tests pass (one ignored), with strict Linux/Windows UI all-target Clippy. Packages require a fresh native visual check before publication.
+
+
+### Address and menu package delivery — 2026-10-15
+
+All seven stable Linux/Windows packages are refreshed from clean `41027a0`. The rejected `7907130` pointer interception and `82d75c1` hidden root-column candidates were replaced without publishing them. Exact installed Windows GUI root/literal-directory/search and continuing-daemon checks pass; the after-close file became searchable in about 632 ms without replacing the daemon. The exact MSI passes ordinary standard-user install, 51 installed-file identities, index registration/query, uninstall and preservation. The first MSI harness incorrectly expected its two embedded transaction scripts to be installed files; the corrected manifest verifies 51 installed files while independent cabinet inspection checks all 53 embedded payload/helper digests.
+
+Exact AppImage main/View menus were inspected in Dark 100% and Light 150%: complete semantic icons, compact action-menu leading padding, aligned labels/checks and matching palettes. Both real Move operations preserve bytes and exit normally. Native Linux package verification and portable/Windows payload identities pass. Source has 370 passing regular UI tests (one ignored) and strict Linux/Windows UI all-target Clippy.
+
+Evidence: `.hermes/evidence/windows-20261011/PATH_FIXED_PACKAGE_IDENTITIES.json`, `PATH_FIXED_VISUAL_REVIEW.json`, `WINDOWS_PATH_FIXED_GUI_ACCEPTANCE.json`, `WINDOWS_PATH_FIXED_MSI_ACCEPTANCE.json`, and `.hermes/evidence/path-display-linux/gui/`. Private Linux profiles/processes and current Windows test tasks, installations, generated databases, compiler/extracted payloads, and autologon credentials were removed. QA preferences/source and operator Linux preferences/unit remain unchanged. The owned guest is shut off; both underlying guests remain shut off and the base disk content timestamp is unchanged. Earlier CPU, reboot, upgrade/rollback, physical GPU and wider appearance acceptance are not inherited by the refreshed artifacts.

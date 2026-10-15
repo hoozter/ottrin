@@ -1,0 +1,41 @@
+{
+  "source_revision": "41027a0cac4ddaf735bea28b608f3e0b824e8ea7",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": {
+      "sha256": "be7a9b9173e350be59f4e79f577e0e8ff8796596a572fadf8a5235f849843a38",
+      "bytes": 24048348
+    },
+    "Ottrin-0.1.0-x86_64.AppImage": {
+      "sha256": "681dfd741e3a1c7c51eca471246d8576fd4629300bda0f39acd12e678271fbb1",
+      "bytes": 28775616
+    },
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "sha256": "79cb1168fb1fbc92874a6412489793ee35c9bc6f0e2d1aebd25b534e942a3eac",
+      "bytes": 28453145
+    },
+    "ottrin_0.1.0_amd64.deb": {
+      "sha256": "774737852f9760032a56003dc3447950192dc616e078970d2818e8d7e616b4ba",
+      "bytes": 18584814
+    },
+    "Ottrin-0.1.0-windows-x64-portable.zip": {
+      "sha256": "92d722ddd803d748247196e507152b9c473e8949c3a3f6f04b5bb234109ceae1",
+      "bytes": 50461809
+    },
+    "Ottrin-0.1.0-windows-x64.msi": {
+      "sha256": "de47dae2de001294809187d91cb981d1e3b8aa6a542f5369045453b5807421f9",
+      "bytes": 42590208
+    },
+    "Ottrin-0.1.0-windows-x64-setup.exe": {
+      "sha256": "fd917b1ef84c9601eb3529523ef6dd8d178ec33a4a33953379ab2d4c4045342c",
+      "bytes": 36168361
+    }
+  },
+  "checks": [
+    "Production native package verifier: bytes/code sections, provenance, GLIBC and polkit pass",
+    "Portable six payload byte identities and embedded provenance pass",
+    "Windows portable exact 51 file map, NSIS 51 and MSI 53 payload/helper digest multiplicities pass"
+  ],
+  "native_verifier_sha256": "aa4a7329a2ae3a55a5e151cc9a08e542ce69600ef6afb24e8c3964afd3667d31",
+  "cleanup": "All private extracted package fixtures removed",
+  "scope": "Focused package payload acceptance; GUI and native installer receipts recorded separately"
+}

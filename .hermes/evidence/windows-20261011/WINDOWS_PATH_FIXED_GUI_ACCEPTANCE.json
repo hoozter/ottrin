@@ -1,0 +1,83 @@
+﻿{
+    "uninstalled":  true,
+    "gui_exit":  0,
+    "preference_hash_before":  "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+    "scope":  "Installed NSIS; standard interactive user; bundled OpenGL",
+    "preference_hash_restored":  "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+    "root_address":  "\\\\?\\C:\\",
+    "graphics_modules":  [
+                             {
+                                 "ModuleName":  "opengl32.dll",
+                                 "FileName":  "C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll"
+                             },
+                             {
+                                 "ModuleName":  "libgallium_wgl.dll",
+                                 "FileName":  "C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll"
+                             }
+                         ],
+    "source_hash_after":  "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+    "after_close_visibility_ms":  631.84840000000008,
+    "before":  {
+                   "instance":  "{9647D38C-BD84-4212-82A2-CAC7C8AA5802}",
+                   "pid":  3244
+               },
+    "after_close_query":  {
+                              "items":  [
+                                            {
+                                                "path":  "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\after-window-closed-current.txt",
+                                                "parent_path":  "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+                                                "name":  "after-window-closed-current.txt",
+                                                "kind":  "File",
+                                                "is_executable":  false,
+                                                "symlink_target_is_dir":  null,
+                                                "size_bytes":  34,
+                                                "modified_unix_secs":  1792030391,
+                                                "content_snippet":  null
+                                            }
+                                        ],
+                              "total":  1,
+                              "status":  "Ready",
+                              "error":  null
+                          },
+    "view_preference":  "Miller",
+    "closed":  {
+                   "instance":  "{9647D38C-BD84-4212-82A2-CAC7C8AA5802}",
+                   "pid":  3244
+               },
+    "title":  "Ottrin",
+    "open":  {
+                 "instance":  "{9647D38C-BD84-4212-82A2-CAC7C8AA5802}",
+                 "pid":  3244
+             },
+    "source_hash_before":  "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+    "returned_address":  "C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+    "literal_address":  "\\\\?\\C:\\OttrinQA-20261011\\installed-index-gui-current\\literal target ",
+    "installer_sha256":  "fd917b1ef84c9601eb3529523ef6dd8d178ec33a4a33953379ab2d4c4045342c",
+    "preference_hash_after_gui":  "4469A397DB68FC16F02A380F5405578A4747690447315B862DB1A13C333C69E9",
+    "app_sha256":  "cfae2ff24918012ec996dc4b42661242641da077d64404126da0c5da2fa96d10",
+    "gui_pid":  4516,
+    "status":  "pass",
+    "search":  {
+                   "items":  [
+                                 {
+                                     "path":  "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+                                     "parent_path":  "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+                                     "name":  "scheduled-daemon-fixture.txt",
+                                     "kind":  "File",
+                                     "is_executable":  false,
+                                     "symlink_target_is_dir":  null,
+                                     "size_bytes":  27,
+                                     "modified_unix_secs":  1792013981,
+                                     "content_snippet":  null
+                                 }
+                             ],
+                   "total":  1,
+                   "status":  "Ready",
+                   "error":  null
+               },
+    "after_watch":  {
+                        "instance":  "{9647D38C-BD84-4212-82A2-CAC7C8AA5802}",
+                        "pid":  3244
+                    },
+    "daemon_sha256":  "8e7debca5fbb2730a9cf163380d570f1b8c9beb89e60fd8af6e775258ae7fd38"
+}

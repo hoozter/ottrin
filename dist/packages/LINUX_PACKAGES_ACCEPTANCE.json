@@ -1,20 +1,21 @@
 {
   "date": "2026-10-15",
-  "source_revision": "d4ef8f92aa4d24e04d4bd9f4d2cd1b6c79095760",
+  "source_revision": "41027a0cac4ddaf735bea28b608f3e0b824e8ea7",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "058b87ee17f9705845f478b56fa68fd0f84083af79256f27341d2d8fd48a6723",
-    "Ottrin-0.1.0-x86_64.AppImage": "31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "aa30f1511790472467fc8410dacfba80e0b6b17c380390d8ac0469cf9a38bb2c",
-    "ottrin_0.1.0_amd64.deb": "48499c8cade9cfef6e86f2073936640d246a440dd4f0b433ec65d97666d347f8"
+    "ottrin-0.1.0-1.x86_64.rpm": "be7a9b9173e350be59f4e79f577e0e8ff8796596a572fadf8a5235f849843a38",
+    "Ottrin-0.1.0-x86_64.AppImage": "681dfd741e3a1c7c51eca471246d8576fd4629300bda0f39acd12e678271fbb1",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "79cb1168fb1fbc92874a6412489793ee35c9bc6f0e2d1aebd25b534e942a3eac",
+    "ottrin_0.1.0_amd64.deb": "774737852f9760032a56003dc3447950192dc616e078970d2818e8d7e616b4ba"
   },
   "checks": [
-    "Exact packaged Linux GUI Dark100/Light150 menus visually inspected; Move completed and normal exit/private cleanup pass",
-    "DEB bytes, RPM code/readonly sections, portable six payload bytes match AppImage; native metadata/provenance/GLIBC/polkit checks pass"
+    "Exact packaged main/View menus visually inspected in Dark100/Light150; full semantic icons and compact action spacing",
+    "Both real Move operations preserve bytes; normal GUI exits and private-profile/process cleanup pass",
+    "Portable six payload byte identities; production DEB/RPM provenance/code/GLIBC/polkit verification pass"
   ],
-  "gui_evidence": ".hermes/evidence/theme-os-transition-linux/gui",
-  "payload_evidence": ".hermes/evidence/windows-20261011/THEME_FIXED_PACKAGE_IDENTITIES.json",
+  "gui_evidence": ".hermes/evidence/path-display-linux/gui",
+  "payload_evidence": ".hermes/evidence/windows-20261011/PATH_FIXED_PACKAGE_IDENTITIES.json",
   "limits": [
-    "Focused GUI/payload acceptance only; previous offline/CPU/native-install receipts retain original revisions",
-    "Physical Wayland/GPU, full release and signing gates remain open"
+    "Focused GUI and package payload acceptance; prior CPU/offline/reboot/native installation receipts retain recorded artifacts",
+    "Physical Wayland/GPU, full release and signing remain open"
   ]
 }

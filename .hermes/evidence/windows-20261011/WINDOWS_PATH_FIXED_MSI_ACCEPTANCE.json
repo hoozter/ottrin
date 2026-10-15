@@ -1,0 +1,33 @@
+﻿{
+    "source_hash_after":  "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+    "preference_hash_before":  "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+    "phase":  "uninstalled",
+    "payload_files":  51,
+    "preference_hash_after":  "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+    "query":  {
+                  "items":  [
+                                {
+                                    "path":  "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+                                    "parent_path":  "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+                                    "name":  "scheduled-daemon-fixture.txt",
+                                    "kind":  "File",
+                                    "is_executable":  false,
+                                    "symlink_target_is_dir":  null,
+                                    "size_bytes":  27,
+                                    "modified_unix_secs":  1792013981,
+                                    "content_snippet":  null
+                                }
+                            ],
+                  "total":  1,
+                  "status":  "Ready",
+                  "error":  null
+              },
+    "product_code":  "{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}",
+    "source_hash_before":  "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+    "index_update":  "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready ┬╖ 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792030427,\n  \"last_scan_completed_unix_secs\": 1792030427,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792030427,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+    "msi_hash":  "de47dae2de001294809187d91cb981d1e3b8aa6a542f5369045453b5807421f9",
+    "status":  "pass",
+    "install_exit":  0,
+    "task_xml":  "\u003c?xml version=\"1.0\" encoding=\"UTF-16\"?\u003e\r\n\u003cTask version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\"\u003e\r\n  \u003cRegistrationInfo\u003e\r\n    \u003cDescription\u003eOttrin continuous background index service\u003c/Description\u003e\r\n    \u003cURI\u003e\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029\u003c/URI\u003e\r\n  \u003c/RegistrationInfo\u003e\r\n  \u003cPrincipals\u003e\r\n    \u003cPrincipal id=\"Author\"\u003e\r\n      \u003cUserId\u003eS-1-5-21-3183210791-1673105385-3262580894-1029\u003c/UserId\u003e\r\n      \u003cLogonType\u003eInteractiveToken\u003c/LogonType\u003e\r\n    \u003c/Principal\u003e\r\n  \u003c/Principals\u003e\r\n  \u003cSettings\u003e\r\n    \u003cDisallowStartIfOnBatteries\u003efalse\u003c/DisallowStartIfOnBatteries\u003e\r\n    \u003cStopIfGoingOnBatteries\u003efalse\u003c/StopIfGoingOnBatteries\u003e\r\n    \u003cExecutionTimeLimit\u003ePT0S\u003c/ExecutionTimeLimit\u003e\r\n    \u003cMultipleInstancesPolicy\u003eIgnoreNew\u003c/MultipleInstancesPolicy\u003e\r\n    \u003cIdleSettings\u003e\r\n      \u003cDuration\u003ePT10M\u003c/Duration\u003e\r\n      \u003cWaitTimeout\u003ePT1H\u003c/WaitTimeout\u003e\r\n      \u003cStopOnIdleEnd\u003etrue\u003c/StopOnIdleEnd\u003e\r\n      \u003cRestartOnIdle\u003efalse\u003c/RestartOnIdle\u003e\r\n    \u003c/IdleSettings\u003e\r\n  \u003c/Settings\u003e\r\n  \u003cTriggers\u003e\r\n    \u003cLogonTrigger\u003e\r\n      \u003cUserId\u003eDESKTOP-81GHP8U\\OttrinIndexQA\u003c/UserId\u003e\r\n    \u003c/LogonTrigger\u003e\r\n  \u003c/Triggers\u003e\r\n  \u003cActions Context=\"Author\"\u003e\r\n    \u003cExec\u003e\r\n      \u003cCommand\u003eC:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe\u003c/Command\u003e\r\n      \u003cArguments\u003e--index-daemon\u003c/Arguments\u003e\r\n    \u003c/Exec\u003e\r\n  \u003c/Actions\u003e\r\n\u003c/Task\u003e",
+    "uninstall_exit":  0
+}
