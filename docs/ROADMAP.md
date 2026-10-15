@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-13
+Last updated: 2026-10-15
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -15,6 +15,23 @@ The saved-view reset was traced to UI tests writing the operator's settings; tes
 The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `.hermes/coordinator-worker-report.md`, with October 9 baseline evidence in `.hermes/evidence/takeover-20261009/REPORT.md`.
 
 These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
+
+## Current Windows local delivery — 2026-10-15
+
+Portable, NSIS and MSI at the stable `dist/` paths now contain clean source
+`4a0c13b`, including continuous `ottrin-indexd`, session cleanup, visible Move
+completion and offline startup reconciliation. The refreshed exact NSIS passes
+standard-user install/reinstall, locked-cache uninstall retention and retry;
+the exact MSI passes standard-user install/uninstall, running scoped login task,
+query, product registration and 53-file payload checks. Preferences/source hashes
+remain unchanged. The private 10,000-file portable index acceptance is recorded
+below. Current hashes are authoritative in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`
+and `.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+
+These are local testing builds, not full release acceptance. Current MSI
+failed-transaction registration rollback, upgrade/repair, reboot persistence,
+interactive installer and broad GUI/device gates remain open. The October 11
+snapshot below is historical and does not describe the current published files.
 
 ## Audited platform status — 2026-10-11
 
@@ -2097,3 +2114,30 @@ MSI failed-transaction registration recovery, login/reboot and GUI gates remain
 open. Owned guest fixtures/compiler copies and the QA task were removed; the
 owned VM and both backing guests are shut off, with source/preferences and
 backing content mtime preserved.
+
+
+### Current Windows local packages published after installer verification — 2026-10-15
+
+The `4a0c13b` portable/NSIS/MSI candidates now replace the older files at stable
+`dist/` paths. Their SHA-256 values are recorded in the current acceptance receipt
+and matching checksum/provenance sidecars. Superseded payload staging and duplicate
+candidate archives were removed; the sole current extracted payload is
+`dist/windows-payload/Ottrin-0.1.0-windows-x64`.
+
+Exact NSIS standard-user acceptance passes installation, same-version reinstall,
+51 installed payload hashes, running index/query, locked-cache uninstall returning
+1 while retaining registration, identical running instance, task XML and database
+bytes, followed by successful retry and generated-data removal. Exact MSI
+standard-user acceptance passes installation, installed ProductState 5, all 53
+payload/helper hashes, running per-user login task with expected trigger/action,
+fixture query, successful uninstall and ProductState -1. Both preserve source and
+preferences. Receipts: `WINDOWS_NSIS_OFFLINE_LIFECYCLE_ACCEPTANCE.json` and
+`WINDOWS_MSI_OFFLINE_LIFECYCLE_ACCEPTANCE.json` beside the current receipt. These
+supersede the earlier statements that the refreshed files were candidates only;
+prior-revision acceptance remains historical. Owned actors and guest fixtures
+were removed and the owned guest shut down with backing content mtime unchanged.
+
+MSI failed-transaction registration rollback is still unresolved. Current exact
+upgrade/repair, reboot/login persistence, interactive installer and broader GUI
+acceptance remain open; publishing a current local test build does not close the
+release-candidate gate.

@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-15",
+  "nsis_actor_exit": 0,
+  "msi_actor_exit": 0,
+  "owned_qa_tasks_removed": true,
+  "owned_app_index_and_interactive_installer_processes_absent": true,
+  "owned_guest_installer_actor_manifest_log_directories_removed": true,
+  "installed_app_removed": true,
+  "account_preferences_sha256": "2103659f5a0f491aca2e012358e26b739c0c04fe9fa0418f7f537330cd839793",
+  "account_source_sha256": "26f0da9e473f8ed2b6a04c9fcc381d606d914a1e19b61195b43b9bdb63c8ba50",
+  "owned_overlay_state": "shut off",
+  "backing_content_mtime": "1792007729.962647502",
+  "backing_content_mtime_unchanged": true
+}

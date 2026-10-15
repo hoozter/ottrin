@@ -1,0 +1,33 @@
+{
+  "source_hash_after": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "preference_hash_before": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "phase": "uninstalled",
+  "payload_files": 53,
+  "preference_hash_after": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 27,
+        "modified_unix_secs": 1792013981,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "product_code": "{CA0FBA61-E5FD-47A1-BE8A-A011B5B08420}",
+  "source_hash_before": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "index_update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready \u252c\u2556 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792024273,\n  \"last_scan_completed_unix_secs\": 1792024273,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792024273,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "msi_hash": "e527a129d6767484c259b181f8ca294a007899ae178de24542a34cbb88b9a778",
+  "status": "pass",
+  "install_exit": 0,
+  "task_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin continuous background index service</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <LogonTrigger>\r\n      <UserId>DESKTOP-81GHP8U\\OttrinIndexQA</UserId>\r\n    </LogonTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-daemon</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+  "uninstall_exit": 0
+}

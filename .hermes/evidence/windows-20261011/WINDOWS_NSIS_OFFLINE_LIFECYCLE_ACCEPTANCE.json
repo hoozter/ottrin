@@ -1,0 +1,39 @@
+{
+  "generated_data_removed": true,
+  "uninstall_bootstrap_exit": 0,
+  "preference_hash_before": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "installer_sha256": "78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d",
+  "phase": "uninstalled",
+  "reinstall_exit": 0,
+  "source_hash_after": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "same_live_instance_after_failure": true,
+  "payload_files": 51,
+  "preference_hash_after": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "index_hash_after_failure": "AB3E8B51EE51B3A84A3727EB567B08768169940B5325B69EC86AFF0C84818412",
+  "source_hash_before": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready \u252c\u2556 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792024189,\n  \"last_scan_completed_unix_secs\": 1792024189,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792024189,\n  \"snapshot_revision\": 2,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "failed_uninstall_exit": 1,
+  "status": "pass",
+  "query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 27,
+        "modified_unix_secs": 1792013981,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "registration_retained_after_failure": true,
+  "install_exit": 0,
+  "empty_cache_directory_retained": true,
+  "task_removed": true
+}
