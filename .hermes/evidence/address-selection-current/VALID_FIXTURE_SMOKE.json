@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "artifact": "dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+  "artifact_sha256": "1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60",
+  "accepted_theme_preference": "Dark",
+  "view_toggle_persisted": "List",
+  "private_search_roots_preserved": true,
+  "scope": "Corrected complete fixture exercised against delivered package; initial loading does not fall back to System defaults"
+}

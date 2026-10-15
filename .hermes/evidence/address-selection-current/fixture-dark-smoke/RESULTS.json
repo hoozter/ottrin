@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": "1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60",
+  "theme": "Dark",
+  "scale": "1",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: a764a0caa97ee975972dcbf40bb351847fcfbc42\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "visual_checks": [
+    "Corrected complete private config loads actual Dark preference and private search roots",
+    "View toggle persists List without changing Dark; delivered AppImage Ctrl+L replacement navigates to select"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

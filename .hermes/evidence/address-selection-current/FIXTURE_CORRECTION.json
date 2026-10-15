@@ -1,0 +1,7 @@
+{
+  "issue": "Partial AppConfig input failed deserialization; System/Dark fallback rendered instead of requested Light",
+  "correction": "Actual Appearance Light selection through the UI saved a complete 31-field private default configuration; current Light run now uses that real mode",
+  "future_fixture": "Complete private saved defaults with requested theme, profile path remapping and private search roots",
+  "scope": "Dark100 first run rendered System/Dark; Light150 acceptance begins only after the observed Light selection",
+  "corrected_fixture_validation": "VALID_FIXTURE_SMOKE.json; corrected complete configuration replayed against the delivered AppImage with actual Dark preference preserved"
+}

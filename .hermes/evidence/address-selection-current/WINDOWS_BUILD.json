@@ -1,0 +1,12 @@
+{
+  "status": "release cross-build complete; not packaged or native accepted",
+  "source_revision": "a764a0caa97ee975972dcbf40bb351847fcfbc42",
+  "files": {
+    "ottrin-app.exe": "bb34dff16497699643af733a448731ed5e69d680a65cff76099d22196056be9e",
+    "ottrin-indexd.exe": "684dc0e2af44b7c8c72f73fd82122cfd2cfabf8fbae888cca0c70d0195112f2d",
+    "ottrin-office-render.exe": "ffa89d3b1cb23b9dfa267654a2be32cef7d5517ef5962dc6f2e8451968750df0",
+    "ottrin-legacy-doc-render.exe": "5939b5f011c274ed2155037899655af5b45a7addda0b7032a60bcfb4d39da80c",
+    "ottrin-priv-helper.exe": "d65413f13e5a50229f76e9eccddc9fb4020f215331fb50f897ff3446575fce13"
+  },
+  "scope": "App/index daemon GUI-subsystem checks and cross-target build; stable Windows installer/archive artifacts remain unchanged"
+}

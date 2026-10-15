@@ -1,0 +1,5 @@
+{
+  "artifact_sha256": "b0d9d942f7149b1fb7cff105704199fd571f357c80edc4bbc8fbdf27e88a97b9",
+  "source_revision": "723ac7c0aa3c83ba932f3948f224da57b841d397",
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

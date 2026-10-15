@@ -3,15 +3,18 @@
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
   "provenance": {
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "revision": "723ac7c0aa3c83ba932f3948f224da57b841d397",
-    "sha256": "b0d9d942f7149b1fb7cff105704199fd571f357c80edc4bbc8fbdf27e88a97b9",
+    "revision": "a764a0caa97ee975972dcbf40bb351847fcfbc42",
+    "sha256": "1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60",
     "built_from_tracked_clean_source": true
   },
-  "visual_evidence": {
-    "tested_source_revision": "2350b212e42b637bdee51477555309707bd5b2a3",
-    "tested_appimage_sha256": "8061278014feb6589ed27fa7e51f44cf1f55e870ea19883adebddd40c9e29812",
-    "receipt": ".hermes/evidence/native-lifecycle-current/CLEAN_NATIVE_ACCEPTANCE.json",
-    "scope": "Preceding 2350b21 candidate main/View menus and Move checked Dark100/Light150. UI source/assets remain unchanged, but native cleanup dependency changed. Current package has fresh native lifecycle/payload/ownership checks; no fresh GUI claim."
-  },
-  "scope": "Focused menu evidence; full appearance audit remains separate"
+  "checks": [
+    "Exact current packaged main/View menus inspected in rendered System/Dark100 and actual Light150: complete semantic icons, compact spacing, aligned indicators and matching palette"
+  ],
+  "screenshots": [
+    ".hermes/evidence/address-selection-current/dark100/main-menu.png",
+    ".hermes/evidence/address-selection-current/dark100/view-menu.png",
+    ".hermes/evidence/address-selection-current/light150/main-menu.png",
+    ".hermes/evidence/address-selection-current/light150/view-menu.png"
+  ],
+  "scope": "Focused menu acceptance; fixture correction and effective theme scopes are explicit in GUI receipts. Not a full appearance audit."
 }

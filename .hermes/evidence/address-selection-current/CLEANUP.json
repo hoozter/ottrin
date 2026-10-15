@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "gui_receipts": [
+    "dark100/RESULTS.json",
+    "light150/RESULTS.json",
+    "fixture-dark-smoke/RESULTS.json"
+  ],
+  "private_profile_paths_absent": [
+    "/tmp/ottrin-tabs-ahpbqzyc",
+    "/tmp/ottrin-tabs-lw05ipm5",
+    "/tmp/ottrin-tabs-51an6zxg"
+  ],
+  "removed_owned_paths": [
+    ".hermes/packaging-tmp/linux-current",
+    ".hermes/qa/tabs-selection-current",
+    ".hermes/qa/address-selection-current"
+  ],
+  "retained": "Current stable Linux packages; compact screenshots/receipts; shared native and Windows compiler output needed by current work",
+  "operator_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "operator_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+  "windows_delivery": "Release cross-build completed; existing published Windows artifacts unchanged"
+}

@@ -1,0 +1,44 @@
+{
+  "artifact_sha256": "1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60",
+  "theme": "Dark",
+  "scale": "1",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: a764a0caa97ee975972dcbf40bb351847fcfbc42\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "copy_checks": [
+    {
+      "dest": "MILLER-copy",
+      "files": [
+        "charlie.txt",
+        "alpha.txt"
+      ],
+      "bytes_match": true
+    },
+    {
+      "dest": "LIST-copy",
+      "files": [
+        "charlie.txt",
+        "alpha.txt"
+      ],
+      "bytes_match": true
+    },
+    {
+      "dest": "GRID-copy",
+      "files": [
+        "charlie.txt",
+        "alpha.txt"
+      ],
+      "bytes_match": true
+    }
+  ],
+  "visual_checks": [
+    "Ctrl+L and repeated Ctrl+L select the full address; replacement paths navigate without Ctrl+A",
+    "Tab reorder forward/reverse retains active identity; moved tab opens ALPHA contents",
+    "Miller/List/Grid Ctrl+A then Ctrl-click deselection copies only alpha.txt and charlie.txt with exact bytes",
+    "Main/View menus retain complete icons, compact spacing and coherent Dark palette"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed",
+  "effective_theme_preference": "System",
+  "rendered_variant": "Dark",
+  "fixture_scope": "Initial incomplete seed fell back to default System; observed Dark palette. No explicit Dark-preference acceptance claim."
+}

@@ -1,0 +1,45 @@
+{
+  "artifact_sha256": "1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60",
+  "theme": "Light",
+  "scale": "1.5",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: a764a0caa97ee975972dcbf40bb351847fcfbc42\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "copy_checks": [
+    {
+      "dest": "MILLER-copy",
+      "files": [
+        "charlie.txt",
+        "alpha.txt"
+      ],
+      "bytes_match": true
+    },
+    {
+      "dest": "LIST-copy",
+      "files": [
+        "charlie.txt",
+        "alpha.txt"
+      ],
+      "bytes_match": true
+    },
+    {
+      "dest": "GRID-copy",
+      "files": [
+        "charlie.txt",
+        "alpha.txt"
+      ],
+      "bytes_match": true
+    }
+  ],
+  "visual_checks": [
+    "Appearance Light selected through the actual Settings UI; Settings and main window both update",
+    "Ctrl+L and repeated Ctrl+L select the full address; replacement navigation succeeds without Ctrl+A",
+    "Forward/reverse tab reorder preserves active identity and moved ALPHA contents",
+    "Miller/List/Grid Ctrl+A then Ctrl-click exclusion copies only alpha.txt and charlie.txt with exact bytes",
+    "Main/View menus show complete icons, compact spacing and coherent Light palette"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed",
+  "effective_theme_preference": "Light",
+  "rendered_variant": "Light",
+  "fixture_scope": "Appearance Light chosen through Settings after incomplete-seed fallback was noticed; all recorded reorder/selection/menu checks repeated in actual Light."
+}

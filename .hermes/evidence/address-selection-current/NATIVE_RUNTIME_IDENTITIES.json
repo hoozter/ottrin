@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "native_tested_source_revision": "723ac7c0aa3c83ba932f3948f224da57b841d397",
+  "current_source_revision": "a764a0caa97ee975972dcbf40bb351847fcfbc42",
+  "unchanged_bytes": {
+    "./usr/bin/ottrin-indexd": "c618a009645244365c0daca1c289bd9dc6982e77fe1312a969ab157e9d88507a",
+    "./usr/libexec/ottrin/native-package-lifecycle": "2555a6281fb68fce83a78b071425dba5596eeb325694ca5dd0caa743bee1b8fc"
+  },
+  "scope": "Current daemon and native lifecycle helper equal the preceding native-tested package; current GUI executable changed. No new native distro lifecycle claim."
+}
