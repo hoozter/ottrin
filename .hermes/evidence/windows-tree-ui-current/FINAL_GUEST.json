@@ -1,6 +1,6 @@
 {
-    "actor_state":  "Ready",
-    "actor_result":  0,
-    "owned_product_processes":  0,
-    "original_profile_and_installation":  "unchanged"
+  "actor_state": "Ready",
+  "actor_result": 0,
+  "owned_product_processes": 0,
+  "original_profile_and_installation": "unchanged"
 }

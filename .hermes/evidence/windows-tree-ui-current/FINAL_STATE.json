@@ -1,167 +1,167 @@
-﻿{
-    "scope":  "All twenty directory/mixed-batch outcomes independently rechecked after normal GUI close and normal uninstall",
-    "status":  "pass",
-    "index_task_absent":  true,
-    "cases":  [
-                  {
-                      "moved":  1,
-                      "name":  "same-directory-unoccupied",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  1,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  1,
-                      "name":  "same-directory-replace",
-                      "retained":  1,
-                      "source_entries":  0,
-                      "destination_entries":  2,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  1,
-                      "name":  "same-directory-rename",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  2,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  0,
-                      "name":  "same-directory-skip",
-                      "retained":  0,
-                      "source_entries":  1,
-                      "destination_entries":  1,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  0,
-                      "name":  "same-directory-cancel",
-                      "retained":  0,
-                      "source_entries":  1,
-                      "destination_entries":  1,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  3,
-                      "name":  "same-batch-unoccupied",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  3,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  3,
-                      "name":  "same-batch-replace",
-                      "retained":  2,
-                      "source_entries":  0,
-                      "destination_entries":  5,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  3,
-                      "name":  "same-batch-rename",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  5,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  1,
-                      "name":  "same-batch-skip",
-                      "retained":  0,
-                      "source_entries":  2,
-                      "destination_entries":  3,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  0,
-                      "name":  "same-batch-cancel",
-                      "retained":  0,
-                      "source_entries":  3,
-                      "destination_entries":  2,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  1,
-                      "name":  "cross-directory-unoccupied",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  1,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  1,
-                      "name":  "cross-directory-replace",
-                      "retained":  1,
-                      "source_entries":  0,
-                      "destination_entries":  2,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  1,
-                      "name":  "cross-directory-rename",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  2,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  0,
-                      "name":  "cross-directory-skip",
-                      "retained":  0,
-                      "source_entries":  1,
-                      "destination_entries":  1,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  0,
-                      "name":  "cross-directory-cancel",
-                      "retained":  0,
-                      "source_entries":  1,
-                      "destination_entries":  1,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  3,
-                      "name":  "cross-batch-unoccupied",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  3,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  3,
-                      "name":  "cross-batch-replace",
-                      "retained":  2,
-                      "source_entries":  0,
-                      "destination_entries":  5,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  3,
-                      "name":  "cross-batch-rename",
-                      "retained":  0,
-                      "source_entries":  0,
-                      "destination_entries":  5,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  1,
-                      "name":  "cross-batch-skip",
-                      "retained":  0,
-                      "source_entries":  2,
-                      "destination_entries":  3,
-                      "status":  "pass"
-                  },
-                  {
-                      "moved":  0,
-                      "name":  "cross-batch-cancel",
-                      "retained":  0,
-                      "source_entries":  3,
-                      "destination_entries":  2,
-                      "status":  "pass"
-                  }
-              ]
+{
+  "scope": "All twenty directory/mixed-batch outcomes independently rechecked after normal GUI close and normal uninstall",
+  "status": "pass",
+  "index_task_absent": true,
+  "cases": [
+    {
+      "moved": 1,
+      "name": "same-directory-unoccupied",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 1,
+      "status": "pass"
+    },
+    {
+      "moved": 1,
+      "name": "same-directory-replace",
+      "retained": 1,
+      "source_entries": 0,
+      "destination_entries": 2,
+      "status": "pass"
+    },
+    {
+      "moved": 1,
+      "name": "same-directory-rename",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 2,
+      "status": "pass"
+    },
+    {
+      "moved": 0,
+      "name": "same-directory-skip",
+      "retained": 0,
+      "source_entries": 1,
+      "destination_entries": 1,
+      "status": "pass"
+    },
+    {
+      "moved": 0,
+      "name": "same-directory-cancel",
+      "retained": 0,
+      "source_entries": 1,
+      "destination_entries": 1,
+      "status": "pass"
+    },
+    {
+      "moved": 3,
+      "name": "same-batch-unoccupied",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 3,
+      "status": "pass"
+    },
+    {
+      "moved": 3,
+      "name": "same-batch-replace",
+      "retained": 2,
+      "source_entries": 0,
+      "destination_entries": 5,
+      "status": "pass"
+    },
+    {
+      "moved": 3,
+      "name": "same-batch-rename",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 5,
+      "status": "pass"
+    },
+    {
+      "moved": 1,
+      "name": "same-batch-skip",
+      "retained": 0,
+      "source_entries": 2,
+      "destination_entries": 3,
+      "status": "pass"
+    },
+    {
+      "moved": 0,
+      "name": "same-batch-cancel",
+      "retained": 0,
+      "source_entries": 3,
+      "destination_entries": 2,
+      "status": "pass"
+    },
+    {
+      "moved": 1,
+      "name": "cross-directory-unoccupied",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 1,
+      "status": "pass"
+    },
+    {
+      "moved": 1,
+      "name": "cross-directory-replace",
+      "retained": 1,
+      "source_entries": 0,
+      "destination_entries": 2,
+      "status": "pass"
+    },
+    {
+      "moved": 1,
+      "name": "cross-directory-rename",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 2,
+      "status": "pass"
+    },
+    {
+      "moved": 0,
+      "name": "cross-directory-skip",
+      "retained": 0,
+      "source_entries": 1,
+      "destination_entries": 1,
+      "status": "pass"
+    },
+    {
+      "moved": 0,
+      "name": "cross-directory-cancel",
+      "retained": 0,
+      "source_entries": 1,
+      "destination_entries": 1,
+      "status": "pass"
+    },
+    {
+      "moved": 3,
+      "name": "cross-batch-unoccupied",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 3,
+      "status": "pass"
+    },
+    {
+      "moved": 3,
+      "name": "cross-batch-replace",
+      "retained": 2,
+      "source_entries": 0,
+      "destination_entries": 5,
+      "status": "pass"
+    },
+    {
+      "moved": 3,
+      "name": "cross-batch-rename",
+      "retained": 0,
+      "source_entries": 0,
+      "destination_entries": 5,
+      "status": "pass"
+    },
+    {
+      "moved": 1,
+      "name": "cross-batch-skip",
+      "retained": 0,
+      "source_entries": 2,
+      "destination_entries": 3,
+      "status": "pass"
+    },
+    {
+      "moved": 0,
+      "name": "cross-batch-cancel",
+      "retained": 0,
+      "source_entries": 3,
+      "destination_entries": 2,
+      "status": "pass"
+    }
+  ]
 }

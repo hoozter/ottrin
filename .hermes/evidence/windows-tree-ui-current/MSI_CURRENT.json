@@ -1,9 +1,9 @@
-﻿{
-    "uninstall_exit":  0,
-    "quiet_cpu_single_core_percent":  0,
-    "payload_files":  51,
-    "install_exit":  0,
-    "scope":  "Current MSI ordinary-user install, payload, explicit scheduled daemon setup, watching, populated-tree rename, quiet-fixture CPU and normal uninstall; no failed-registration rollback claim",
-    "installer_sha256":  "5c42306a71ef652b6975c1d236cd31d049d0a7b2f8e1cb5ca432b57b94488add",
-    "status":  "pass"
+{
+  "uninstall_exit": 0,
+  "quiet_cpu_single_core_percent": 0,
+  "payload_files": 51,
+  "install_exit": 0,
+  "scope": "Current MSI ordinary-user install, payload, explicit scheduled daemon setup, watching, populated-tree rename, quiet-fixture CPU and normal uninstall; no failed-registration rollback claim",
+  "installer_sha256": "5c42306a71ef652b6975c1d236cd31d049d0a7b2f8e1cb5ca432b57b94488add",
+  "status": "pass"
 }

@@ -268,4 +268,3 @@ failures:
     worker::tests::watch_registration_failure_on_existing_directory_is_preserved
 
 test result: FAILED. 159 passed; 48 failed; 6 ignored; 0 measured; 0 filtered out; finished in 19.56s
-
