@@ -1,0 +1,19 @@
+{
+  "status": "source regression and checks pass; clean package/desktop acceptance pending",
+  "prior_published_artifact_sha256": "b0d9d942f7149b1fb7cff105704199fd571f357c80edc4bbc8fbdf27e88a97b9",
+  "prior_source_revision": "723ac7c0aa3c83ba932f3948f224da57b841d397",
+  "reproduced": "Ctrl+L leaves the old address unselected; replacement text appends and navigation fails",
+  "regressions": [
+    "Exact same-frame path replacement with press-event Ctrl/Command modifiers",
+    "Unicode selection, repeated Ctrl+L in an open editor and normal intervening typing"
+  ],
+  "checks": [
+    "371 regular UI tests pass; one ignored",
+    "Strict Linux/Windows UI all-target Clippy pass"
+  ],
+  "remaining": [
+    "clean packaged GUI tab/selection/address acceptance",
+    "Copy reclamation implementation",
+    "full roadmap acceptance"
+  ]
+}

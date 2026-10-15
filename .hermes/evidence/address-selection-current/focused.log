@@ -1,0 +1,9 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 18.18s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-79a909d55133516b)
+
+running 2 tests
+test tests::address_shortcut_reselects_an_open_editor_without_reselecting_normal_typing ... ok
+test tests::address_shortcut_uses_key_event_modifiers_and_focuses_before_same_frame_typing ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 370 filtered out; finished in 0.01s

@@ -8472,13 +8472,7 @@ impl OttrinApp {
             let extend_selection = input.modifiers.shift;
             // A complete chord can be pressed and released between frames.
             // Use the modifiers attached to the key event, not the final state.
-            let command_pressed = |key| {
-                input.events.iter().any(|event| {
-                    matches!(event, egui::Event::Key {
-                        key: event_key, pressed: true, modifiers, ..
-                    } if *event_key == key && (modifiers.ctrl || modifiers.command))
-                })
-            };
+            let command_pressed = |key| command_key_pressed(input, key);
 
             if command_pressed(Key::F) {
                 self.sidebar = SidebarSection::Search;
@@ -12388,8 +12382,16 @@ impl OttrinApp {
             {
                 let bar = self.address_bar_state_mut(tab_id);
                 let editor_id = ui.make_persistent_id(("address_bar_text", tab_id));
-                if std::mem::take(&mut bar.request_focus) {
+                if std::mem::take(&mut bar.request_focus)
+                    || ui.input(|input| command_key_pressed(input, Key::L))
+                {
                     ui.memory_mut(|memory| memory.request_focus(editor_id));
+                    let mut state = TextEditState::load(ui.ctx(), editor_id).unwrap_or_default();
+                    state.cursor.set_char_range(Some(CCursorRange::two(
+                        CCursor::new(0),
+                        CCursor::new(bar.text.chars().count()),
+                    )));
+                    state.store(ui.ctx(), editor_id);
                 }
                 let response = ui.add(
                     egui::TextEdit::singleline(&mut bar.text)
@@ -22511,6 +22513,14 @@ impl eframe::App for OttrinApp {
     }
 }
 
+fn command_key_pressed(input: &egui::InputState, key: Key) -> bool {
+    input.events.iter().any(|event| {
+        matches!(event, egui::Event::Key {
+            key: event_key, pressed: true, modifiers, ..
+        } if *event_key == key && (modifiers.ctrl || modifiers.command))
+    })
+}
+
 fn menu_item(ui: &mut egui::Ui, icon: &str, label: &str, c: &Colors) -> egui::Response {
     let (indicator, icon) = if icon == MI_CHECK || icon == " " {
         (icon, "")
@@ -25590,12 +25600,80 @@ mod tests {
             );
             let bar = app.address_bar_state(tab_id).unwrap();
             assert!(bar.editing);
-            assert!(
-                bar.text.contains("-same-frame"),
-                "first-frame typing must reach the address field"
-            );
+            assert_eq!(bar.text, "-same-frame", "Ctrl+L must replace the old path");
             assert!(!app.command_frame.visible);
             assert!(ctx.wants_keyboard_input());
+        }
+    }
+
+    #[test]
+    fn address_shortcut_reselects_an_open_editor_without_reselecting_normal_typing() {
+        fn render(app: &mut OttrinApp, ctx: &Context, tab_id: u64, events: Vec<egui::Event>) {
+            let _ = ctx.run(
+                egui::RawInput {
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.handle_keyboard(ctx);
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_address_bar(ui, tab_id);
+                    });
+                },
+            );
+        }
+        for modifiers in [egui::Modifiers::CTRL, egui::Modifiers::COMMAND] {
+            let (_root, mut app, _source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            let tab_id = app.state.active_tab().id;
+            let bar = app.address_bar_state_mut(tab_id);
+            bar.text = "/å/新/old".into();
+            bar.editing = true;
+            bar.request_focus = true;
+            bar.tab_id = Some(tab_id);
+            render(
+                &mut app,
+                &ctx,
+                tab_id,
+                vec![egui::Event::Text("first".into())],
+            );
+            assert_eq!(app.address_bar_state(tab_id).unwrap().text, "first");
+            render(
+                &mut app,
+                &ctx,
+                tab_id,
+                vec![egui::Event::Text("-continued".into())],
+            );
+            assert_eq!(
+                app.address_bar_state(tab_id).unwrap().text,
+                "first-continued"
+            );
+            render(
+                &mut app,
+                &ctx,
+                tab_id,
+                vec![
+                    egui::Event::Key {
+                        key: Key::L,
+                        physical_key: None,
+                        pressed: true,
+                        repeat: false,
+                        modifiers,
+                    },
+                    egui::Event::Key {
+                        key: Key::L,
+                        physical_key: None,
+                        pressed: false,
+                        repeat: false,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                    egui::Event::Text("/新/replacement".into()),
+                ],
+            );
+            assert_eq!(
+                app.address_bar_state(tab_id).unwrap().text,
+                "/新/replacement"
+            );
         }
     }
 

@@ -56,6 +56,7 @@ and signing still require macOS release-candidate evidence.
 | Arrow keys | Move through files and columns |
 | Enter | Open selected folder or file |
 | Backspace | Go to parent folder |
+| Ctrl+L | Select the full address for replacement; Enter opens it |
 | Ctrl+F | Open search |
 | Space | Open Quick Inspector |
 | Delete | Move selected item to Trash |
