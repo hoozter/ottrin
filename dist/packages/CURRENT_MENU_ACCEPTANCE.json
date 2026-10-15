@@ -3,19 +3,15 @@
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
   "provenance": {
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "revision": "41027a0cac4ddaf735bea28b608f3e0b824e8ea7",
-    "sha256": "681dfd741e3a1c7c51eca471246d8576fd4629300bda0f39acd12e678271fbb1",
+    "revision": "1ac0c8c57249a99c3a06f8d2133bdf9a68034f87",
+    "sha256": "af1801906c80ddc06af86f22c8f9be517aa38b48ac648f75c2a91409680207a6",
     "built_from_tracked_clean_source": true
   },
-  "checks": [
-    "Exact packaged main/View Options menus visually inspected: complete icons, compact action spacing, Dark100/Light150",
-    "Both Move fixtures preserve bytes, normal GUI exits and private cleanup pass"
-  ],
-  "screenshots": [
-    ".hermes/evidence/path-display-linux/gui/dark-100-refined-main.png",
-    ".hermes/evidence/path-display-linux/gui/dark-100-refined-view.png",
-    ".hermes/evidence/path-display-linux/gui/light-150-refined-main.png",
-    ".hermes/evidence/path-display-linux/gui/light-150-refined-view.png"
-  ],
-  "scope": "Focused menu acceptance, not a full appearance audit"
+  "visual_evidence": {
+    "tested_source_revision": "2350b212e42b637bdee51477555309707bd5b2a3",
+    "tested_appimage_sha256": "8061278014feb6589ed27fa7e51f44cf1f55e870ea19883adebddd40c9e29812",
+    "receipt": ".hermes/evidence/native-lifecycle-current/CLEAN_NATIVE_ACCEPTANCE.json",
+    "scope": "Preceding clean candidate main/View menus and Move checked Dark100/Light150. Current source delta contains docs/evidence only; current package payload verification passes. No fresh GUI claim for the repackaged guide."
+  },
+  "scope": "Focused menu evidence; full appearance audit remains separate"
 }

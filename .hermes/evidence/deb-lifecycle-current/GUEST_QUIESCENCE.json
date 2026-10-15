@@ -1,0 +1,6 @@
+{
+  "remaining_index_daemons": 0,
+  "native_binary_absent": true,
+  "primary_native_unit_absent": true,
+  "dpkg_audit": "clean"
+}

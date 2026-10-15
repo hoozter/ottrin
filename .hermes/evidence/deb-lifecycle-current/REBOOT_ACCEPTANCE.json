@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "scope": "Ubuntu native service persistence through actual guest reboot with explicitly configured loginctl lingering; no default pre-login persistence claim",
+  "source_revision": "1ac0c8c57249a99c3a06f8d2133bdf9a68034f87",
+  "deb_sha256": "24653789d108ba0e5ed99aac8d98de8a03b6b7d0efb1d9c722516cb0bf2ad07c",
+  "configuration_preserved": true,
+  "service": "enabled and active",
+  "index": "ready; watched roots active",
+  "before_boot_id": "9cb78687-0d1c-4877-b9df-2702d4d009ee",
+  "after_boot_id": "7d8fca78-a2f7-4fcb-87ad-e7aeb1aa6e86"
+}

@@ -1,0 +1,29 @@
+enabled
+active
+{
+  "active_root": null,
+  "active_root_index": 0,
+  "configured_roots": 1,
+  "database_bytes": 98304,
+  "detail": "Ready · 20 indexed",
+  "error": null,
+  "estimated_total_items": null,
+  "freelist_bytes": 4096,
+  "freelist_pages": 1,
+  "indexed_items": 20,
+  "last_completed_indexed_items": 20,
+  "last_progress_unix_secs": 1792036826,
+  "last_scan_completed_unix_secs": 1792036826,
+  "last_scan_duration_ms": null,
+  "last_scan_started_unix_secs": 1792036826,
+  "snapshot_revision": 2,
+  "status": "ready",
+  "total_roots": 1,
+  "wal_bytes": 4152,
+  "watched_roots": 1,
+  "watcher_error": null,
+  "watcher_ready": true
+}
+7d8fca78-a2f7-4fcb-87ad-e7aeb1aa6e86
+c9e596c47a82cd7fd13391aaeb2320f4f0802b4a038f9af327a91400c6882d79  /home/ottrinqa/.config/ottrin/config.json
+Linger=yes
