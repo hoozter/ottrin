@@ -1,0 +1,8 @@
+{
+  "domain": "ottrin-index-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinSortHeaderQA",
+  "purpose": "Native WiX compilation and isolated standard-account installer/UI acceptance",
+  "preserve": "Existing campbell profile/installation and baseline guest state; return domain to shut off",
+  "compiler_cache": "Host verified pins from windows-msi-compiler-downloads.json"
+}

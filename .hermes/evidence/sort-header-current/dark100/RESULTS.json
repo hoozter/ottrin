@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": "cb4b4df9d25687fdde3e563c81f8fd9c8df37e95cbbfb29c05d679d48de7441f",
+  "theme": "Dark",
+  "scale": "1",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 4fb827acc976caf5e4056aa8f947d11d93e16543\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "visual_checks": [
+    "View and main menus have complete semantic icons, compact action-only leading spacing and consistent columns",
+    "File List Name ascending and descending supported markers match actual alpha/bravo/charlie order",
+    "Search Modified displays supported descending icon; timestamp ties do not establish order"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

@@ -13,5 +13,7 @@
     "clean packaging and GUI behavior",
     "Windows portable/NSIS/MSI refresh and scoped native acceptance",
     "full roadmap gates"
-  ]
+  ],
+  "delivery_receipt": "DELIVERY.json",
+  "packaged_gui_scope": "Dark100 and Light150 menus and List Name direction checked; Search Modified marker checked in Dark100"
 }

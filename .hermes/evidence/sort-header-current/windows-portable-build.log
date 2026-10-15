@@ -1,0 +1,16 @@
+    Finished `release` profile [optimized] target(s) in 1.56s
+    Finished `release` profile [optimized] target(s) in 0.48s
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+/tmp/tmp.E4NSdenL1K/pdfium.tgz: OK
+/tmp/tmp.uVxxC03pec/mesa.7z: OK
+/tmp/tmp.uVxxC03pec/mesa-source.tar.gz: OK
+/tmp/tmp.uVxxC03pec/pal1000-LICENSE.txt: OK
+/tmp/tmp.uVxxC03pec/dxc.zip: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/opengl32.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/libEGL.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/libGLESv2.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/libgallium_wgl.dll: OK
+/tmp/tmp.uVxxC03pec/dxc/LICENSE-MS.txt: OK
+/tmp/tmp.uVxxC03pec/dxc/bin/x64/dxil.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-portable.zip

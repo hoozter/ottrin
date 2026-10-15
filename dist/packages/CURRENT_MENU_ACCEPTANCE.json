@@ -3,18 +3,21 @@
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
   "provenance": {
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "revision": "a764a0caa97ee975972dcbf40bb351847fcfbc42",
-    "sha256": "1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60",
+    "revision": "4fb827acc976caf5e4056aa8f947d11d93e16543",
+    "sha256": "cb4b4df9d25687fdde3e563c81f8fd9c8df37e95cbbfb29c05d679d48de7441f",
     "built_from_tracked_clean_source": true
   },
   "checks": [
-    "Exact current packaged main/View menus inspected in rendered System/Dark100 and actual Light150: complete semantic icons, compact spacing, aligned indicators and matching palette"
+    "Exact AppImage main/View menu visual inspection in Dark100 and Light150",
+    "Complete semantic icons, compact action-only padding, consistent check and icon columns",
+    "List Name sort direction icon and actual ascending/descending order"
   ],
   "screenshots": [
-    ".hermes/evidence/address-selection-current/dark100/main-menu.png",
-    ".hermes/evidence/address-selection-current/dark100/view-menu.png",
-    ".hermes/evidence/address-selection-current/light150/main-menu.png",
-    ".hermes/evidence/address-selection-current/light150/view-menu.png"
+    ".hermes/evidence/sort-header-current/dark100/main-menu-current.png",
+    ".hermes/evidence/sort-header-current/dark100/view-menu-current.png",
+    ".hermes/evidence/sort-header-current/light150/main-menu-current.png",
+    ".hermes/evidence/sort-header-current/light150/view-menu-current.png"
   ],
-  "scope": "Focused menu acceptance; fixture correction and effective theme scopes are explicit in GUI receipts. Not a full appearance audit."
+  "requirement": "docs/DEVELOPMENT.md:22-30",
+  "scope": "Focused actual packaged menu acceptance, not a full appearance audit."
 }

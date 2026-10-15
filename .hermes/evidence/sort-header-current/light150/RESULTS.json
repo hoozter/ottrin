@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": "cb4b4df9d25687fdde3e563c81f8fd9c8df37e95cbbfb29c05d679d48de7441f",
+  "theme": "Light",
+  "scale": "1.5",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 4fb827acc976caf5e4056aa8f947d11d93e16543\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "visual_checks": [
+    "Light150 main menu has compact leading spacing and complete icons including disabled actions",
+    "Light150 View menu icons, separate check/icon columns and section hierarchy inspected",
+    "List Name ascending/descending supported direction icons match file order"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

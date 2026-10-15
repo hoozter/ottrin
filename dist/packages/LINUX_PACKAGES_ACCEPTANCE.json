@@ -1,11 +1,11 @@
 {
   "date": "2026-10-15",
-  "source_revision": "a764a0caa97ee975972dcbf40bb351847fcfbc42",
+  "source_revision": "4fb827acc976caf5e4056aa8f947d11d93e16543",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "d5d126a723b4f2e948920cb40dd63f2b004d6c124bdb81c41b812e228b02fd1a",
-    "Ottrin-0.1.0-x86_64.AppImage": "1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "aebc1244bb9d70901e1b6ef8fbfb2b1d5249890c05fc3ffdf73220b367228d50",
-    "ottrin_0.1.0_amd64.deb": "8c0c6b6fa4d332fc6022b258fd53d99635522354cbc444d33bc976e59bbe5c68"
+    "ottrin-0.1.0-1.x86_64.rpm": "ba2c85002ebf2f76048e8ed4066da05c1a8b85a143e5dcd31dceaeef5367377d",
+    "Ottrin-0.1.0-x86_64.AppImage": "cb4b4df9d25687fdde3e563c81f8fd9c8df37e95cbbfb29c05d679d48de7441f",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b095f096fa85029b9e02db39957aa3f981e10d4685cfb6089aa1ddbf31731597",
+    "ottrin_0.1.0_amd64.deb": "8afdacf4483ba539d81ab0406b82cc583a63f15c5c51c8caabb9b690ce91524e"
   },
   "checks": [
     "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
@@ -13,35 +13,20 @@
     "all four formats contain exact current guide and release docs",
     "clean embedded source revision",
     "all package runtime identities checked against the actual rebuilt AppImage",
-    "Exact AppImage rendered Dark100/Light150 address replacement and repeated Ctrl+L",
-    "Forward/reverse tab reorder, active identity and moved tab contents",
-    "Miller/List/Grid select-all and Ctrl-click exclusion, two-file Copy with exact bytes and source preservation",
-    "Main/View menu icons, compact leading spacing and theme palettes",
-    "Both normal GUI exits and private process/profile/display cleanup"
+    "Exact AppImage main/View menu visual inspection in Dark100 and Light150",
+    "Complete semantic icons, compact action-only padding, consistent check and icon columns",
+    "List Name sort direction icon and actual ascending/descending order",
+    "Search Modified descending marker; equal timestamp order not asserted",
+    "372 regular UI tests and one rendered header regression; strict Linux and Windows UI Clippy",
+    "Normal GUI exits and private process/display/profile teardown"
   ],
-  "gui_evidence": ".hermes/evidence/address-selection-current",
-  "gui_runs": [
-    ".hermes/evidence/address-selection-current/dark100/RESULTS.json",
-    ".hermes/evidence/address-selection-current/light150/RESULTS.json"
-  ],
-  "fixture_scope": ".hermes/evidence/address-selection-current/FIXTURE_CORRECTION.json",
-  "package_content_evidence": ".hermes/evidence/address-selection-current/FINAL_PACKAGE_IDENTITIES.json",
-  "native_deb_acceptance": {
-    "receipt": ".hermes/evidence/native-lifecycle-audit/deb/managed/result.json",
-    "session_receipt": ".hermes/evidence/native-lifecycle-audit/deb/session/result.json",
-    "status": "Exact current DEB pass"
-  },
-  "native_rpm_acceptance": {
-    "receipt": ".hermes/evidence/native-lifecycle-audit/rpm/managed/result.json",
-    "session_receipt": ".hermes/evidence/native-lifecycle-audit/rpm/session/result.json",
-    "status": "Exact current RPM pass"
-  },
-  "native_runtime_identity": ".hermes/evidence/address-selection-current/NATIVE_RUNTIME_IDENTITIES.json",
-  "native_scope": "Native distro lifecycle receipts retain 723ac7c exact artifacts; current daemon/helper bytes match them and current package payload/namespace checks pass. No fresh distro lifecycle claim for the GUI update.",
+  "gui_evidence": ".hermes/evidence/sort-header-current",
+  "package_content_evidence": ".hermes/evidence/sort-header-current/FINAL_PACKAGE_IDENTITIES.json",
+  "native_runtime_identity": ".hermes/evidence/sort-header-current/NATIVE_RUNTIME_IDENTITIES.json",
+  "native_scope": "Current daemon/helper bytes match prior native-tested source723; no fresh distro lifecycle claim for this UI update. Prior lifecycle receipts retained.",
   "limits": [
-    "Xvfb/private DBus/software GL acceptance; physical Wayland/GPU remains separate",
-    "Full keyboard/multi-selection/appearance and release matrices remain open",
-    "Copy retained-data expiry/reclamation remains unfinished",
-    "Windows binaries rebuilt; stable Windows installers/portable remain unchanged pending refresh"
+    "Private Xvfb/software GL; physical Wayland/GPU acceptance remains separate",
+    "Full appearance and release matrices remain open",
+    "Windows compiled and candidate portable/NSIS staged; stable Windows packages unchanged pending native MSI and acceptance"
   ]
 }
