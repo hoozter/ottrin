@@ -1,0 +1,40 @@
+﻿{
+    "phase":  "observed-file-only-controls",
+    "status":  "observed",
+    "scope":  "Native file-only per-user controls: one text file, HKCU key path, standard Type19 failure after executed file operations, no Ottrin application/custom executable",
+    "cases":  [
+                  {
+                      "skipped_rollback_errors":  84,
+                      "payload_after_cleanup":  false,
+                      "repair_exit":  0,
+                      "payload_after_failure":  false,
+                      "failure_exit":  1603,
+                      "state_after_repair":  5,
+                      "cleanup_exit":  0,
+                      "state_after_cleanup":  -1,
+                      "kind":  "install",
+                      "actual_file_operation_before_failure":  true,
+                      "product":  "{620CD6FB-2765-4059-86AD-141D4C7B32C3}",
+                      "msi_sha256":  "b708ed638d68950f0b67d44499930f6be72990f226f7798de3b39d46dbc471c6",
+                      "state_after_failure":  5,
+                      "state_before":  -1
+                  },
+                  {
+                      "skipped_rollback_errors":  80,
+                      "payload_after_cleanup":  true,
+                      "repair_exit":  0,
+                      "payload_after_failure":  true,
+                      "failure_exit":  1603,
+                      "state_after_repair":  5,
+                      "cleanup_exit":  0,
+                      "state_after_cleanup":  -1,
+                      "kind":  "uninstall",
+                      "actual_file_operation_before_failure":  true,
+                      "product":  "{F97382F5-49B0-41F9-B742-FB2D3765A0C6}",
+                      "msi_sha256":  "001b27006bac57b71baad9fdba5114a664ce8abd9bdbea56c45432383eac73a0",
+                      "install_exit":  0,
+                      "state_after_failure":  1,
+                      "state_before":  -1
+                  }
+              ]
+}

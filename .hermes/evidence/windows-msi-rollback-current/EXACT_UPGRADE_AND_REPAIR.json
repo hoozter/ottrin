@@ -1,0 +1,49 @@
+{
+    "scope":  "Clean fcf00aa NSIS published410 running upgrade and intent matrix; ordinary interactive user",
+    "phase":  "ready-for-fault-tests",
+    "ready":  {
+                  "instance":  "{B49A035B-BF82-4ABC-B7FD-4BBF5403164D}",
+                  "pid":  3268
+              },
+    "after":  {
+                  "instance":  "{3EA0C560-E99B-48CF-98D2-6E2A5438B443}",
+                  "pid":  2120
+              },
+    "payload_files":  51,
+    "before":  {
+                   "instance":  "{136607E9-7199-4074-B98D-79D902109B1E}",
+                   "pid":  7644
+               },
+    "baseline_exit":  0,
+    "new_product":  "{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}",
+    "installer_sha256":  "f28a7f143edba14fd972781c1fbe4a6c368ec8cc9037d05a5b3d7b84dba15108",
+    "upgrade_exit":  0,
+    "status":  "pass",
+    "old_product":  "{DDD92E40-FC7F-45E1-A1B2-9DFD5C9E871B}",
+    "repair_cases":  [
+                         {
+                             "exit":  0,
+                             "running":  true,
+                             "status":  "pass",
+                             "enabled":  true
+                         },
+                         {
+                             "exit":  0,
+                             "running":  true,
+                             "status":  "pass",
+                             "enabled":  false
+                         },
+                         {
+                             "exit":  0,
+                             "running":  false,
+                             "status":  "pass",
+                             "enabled":  true
+                         },
+                         {
+                             "exit":  0,
+                             "running":  false,
+                             "status":  "pass",
+                             "enabled":  false
+                         }
+                     ]
+}

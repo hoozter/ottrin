@@ -1,0 +1,13 @@
+{
+  "domain": "ottrin-msi-rollback-qa",
+  "uuid": "0eca65bd-e68e-49e0-9de0-c927649dcfae",
+  "base_domain": "ottrin-index-qa",
+  "base_state": "shut off",
+  "base_disk": "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+  "base_disk_mtime_ns": 1792048839742654125,
+  "base_nvram_mtime_ns": 1792045495697947683,
+  "disk": "/var/lib/libvirt/images/ottrin-msi-rollback-qa.qcow2",
+  "nvram": "/var/lib/libvirt/qemu/nvram/ottrin-msi-rollback-qa_VARS.fd",
+  "purpose": "Exact MSI normal upgrade/repair plus isolated failed-transaction rollback audit",
+  "cleanup": "Stop/discard only this COW domain, disk, copied NVRAM and new TPM; never modify/restart backing domains"
+}

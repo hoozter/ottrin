@@ -87,6 +87,15 @@ implementation scope, and acceptance plan.
 - [ ] Uninstall cleanup commands remove scheduled/background integration without deleting user files; cleanup launch/failure stops before application deletion, and incomplete file deletion retains Installed Apps registration for retry.
 
 
+The staged `fcf00aa` Windows MSI passes exact native running-daemon upgrade and
+all four login-enabled/disabled and running/idle repair cases. Its failed-uninstall
+rollback still damages product registration; normal repair/retry does not recover
+that installation. Independent file-only per-user controls reproduce registration
+rollback failures after actual file execution. This does not establish a safe
+compiler/runtime fix and does not waive the rollback gate. Evidence and exact
+scope: `.hermes/evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
+
+
 ## Release Review
 
 - [ ] `README.md`, `USER_GUIDE.md`, `ROADMAP.md`, and `RELEASE_NOTES.md` match observed behavior.

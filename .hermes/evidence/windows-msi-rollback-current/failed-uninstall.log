@@ -1,0 +1,1184 @@
+=== Verbose logging started: 2026-10-15  09:29:52  Build type: SHIP UNICODE 5.00.10011.00  Calling process: C:\WINDOWS\system32\msiexec.exe ===
+MSI (c) (E8:6C) [09:29:52:081]: Resetting cached policy values
+MSI (c) (E8:6C) [09:29:52:081]: Machine policy value 'Debug' is 0
+MSI (c) (E8:6C) [09:29:52:081]: ******* RunEngine:
+           ******* Product: {DED5E704-031D-4FF4-97C7-E680A0E8A5C6}
+           ******* Action: 
+           ******* CommandLine: **********
+MSI (c) (E8:6C) [09:29:52:081]: Client-side and UI is none or basic: Running entire install on the server.
+MSI (c) (E8:6C) [09:29:52:081]: Grabbed execution mutex.
+MSI (c) (E8:6C) [09:29:52:087]: Cloaking enabled.
+MSI (c) (E8:6C) [09:29:52:087]: Attempting to enable all disabled privileges before calling Install on Server
+MSI (c) (E8:6C) [09:29:52:093]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (08:E8) [09:29:52:101]: Running installation inside multi-package transaction {DED5E704-031D-4FF4-97C7-E680A0E8A5C6}
+MSI (s) (08:E8) [09:29:52:101]: Grabbed execution mutex.
+MSI (s) (08:D4) [09:29:52:103]: Resetting cached policy values
+MSI (s) (08:D4) [09:29:52:103]: Machine policy value 'Debug' is 0
+MSI (s) (08:D4) [09:29:52:103]: ******* RunEngine:
+           ******* Product: {DED5E704-031D-4FF4-97C7-E680A0E8A5C6}
+           ******* Action: 
+           ******* CommandLine: **********
+MSI (s) (08:D4) [09:29:52:103]: Machine policy value 'DisableUserInstalls' is 0
+MSI (s) (08:D4) [09:29:52:105]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (08:D4) [09:29:52:105]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (08:D4) [09:29:52:105]: MSCOREE not loaded loading copy from system32
+MSI (s) (08:D4) [09:29:52:109]: End dialog not enabled
+MSI (s) (08:D4) [09:29:52:109]: Original package ==> C:\WINDOWS\Installer\1653e.msi
+MSI (s) (08:D4) [09:29:52:109]: Package we're running from ==> C:\WINDOWS\Installer\1653e.msi
+MSI (s) (08:D4) [09:29:52:109]: APPCOMPAT: Uninstall Flags override found.
+MSI (s) (08:D4) [09:29:52:109]: APPCOMPAT: Uninstall VersionNT override found.
+MSI (s) (08:D4) [09:29:52:109]: APPCOMPAT: Uninstall ServicePackLevel override found.
+MSI (s) (08:D4) [09:29:52:109]: APPCOMPAT: looking for appcompat database entry with ProductCode '{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}'.
+MSI (s) (08:D4) [09:29:52:111]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (08:D4) [09:29:52:127]: Machine policy value 'DisablePatch' is 0
+MSI (s) (08:D4) [09:29:52:127]: Machine policy value 'AllowLockdownPatch' is 0
+MSI (s) (08:D4) [09:29:52:127]: Machine policy value 'DisableMsi' is 0
+MSI (s) (08:D4) [09:29:52:127]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:127]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:127]: Product {DED5E704-031D-4FF4-97C7-E680A0E8A5C6} is not managed.
+MSI (s) (08:D4) [09:29:52:127]: Running product '{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}' with user privileges: It's not assigned.
+MSI (s) (08:D4) [09:29:52:127]: Machine policy value 'DisableLUAPatching' is 0
+MSI (s) (08:D4) [09:29:52:127]: Machine policy value 'DisableFlyWeightPatching' is 0
+MSI (s) (08:D4) [09:29:52:129]: APPCOMPAT: looking for appcompat database entry with ProductCode '{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}'.
+MSI (s) (08:D4) [09:29:52:129]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (08:D4) [09:29:52:131]: Transforms are not secure.
+MSI (s) (08:D4) [09:29:52:131]: Note: 1: 2205 2:  3: Control 
+MSI (s) (08:D4) [09:29:52:131]: PROPERTY CHANGE: Adding MsiLogFileLocation property. Its value is 'C:\OttrinDesktopQA\results\failed-uninstall.log'.
+MSI (s) (08:D4) [09:29:52:131]: Command Line: REBOOT=ReallySuppress REMOVE=ALL CURRENTDIRECTORY=C:\WINDOWS\system32 CLIENTUILEVEL=3 CLIENTPROCESSID=6632 
+MSI (s) (08:D4) [09:29:52:131]: PROPERTY CHANGE: Adding PackageCode property. Its value is '{07530248-6633-4EF1-BDBD-D292094094F2}'.
+MSI (s) (08:D4) [09:29:52:131]: Product Code passed to Engine.Initialize:           '{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}'
+MSI (s) (08:D4) [09:29:52:131]: Product Code from property table before transforms: '{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}'
+MSI (s) (08:D4) [09:29:52:131]: Product Code from property table after transforms:  '{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}'
+MSI (s) (08:D4) [09:29:52:131]: Product registered: entering maintenance mode
+MSI (s) (08:D4) [09:29:52:131]: Determined that existing product (either this product or the product being upgraded with a patch) is installed per-user.
+MSI (s) (08:D4) [09:29:52:131]: Product {DED5E704-031D-4FF4-97C7-E680A0E8A5C6} is not managed.
+MSI (s) (08:D4) [09:29:52:131]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:131]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:131]: MSI_LUA: Package is marked as LUA installation capable with no elevation required
+MSI (s) (08:D4) [09:29:52:131]: PROPERTY CHANGE: Adding ProductState property. Its value is '5'.
+MSI (s) (08:D4) [09:29:52:131]: PROPERTY CHANGE: Adding ProductToBeRegistered property. Its value is '1'.
+MSI (s) (08:D4) [09:29:52:131]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2 
+MSI (s) (08:D4) [09:29:52:131]: Package name retrieved from configuration data: 'current.msi'
+MSI (s) (08:D4) [09:29:52:131]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:52:133]: Note: 1: 2262 2: AdminProperties 3: -2147287038 
+MSI (s) (08:D4) [09:29:52:133]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:133]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:133]: Product {DED5E704-031D-4FF4-97C7-E680A0E8A5C6} is not managed.
+MSI (s) (08:D4) [09:29:52:133]: Running product '{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}' with user privileges: It's not assigned.
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding REBOOT property. Its value is 'ReallySuppress'.
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding REMOVE property. Its value is 'ALL'.
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding CURRENTDIRECTORY property. Its value is 'C:\WINDOWS\system32'.
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding CLIENTUILEVEL property. Its value is '3'.
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding CLIENTPROCESSID property. Its value is '6632'.
+MSI (s) (08:D4) [09:29:52:133]: Machine policy value 'DisableAutomaticApplicationShutdown' is 0
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding MsiRestartManagerSessionKey property. Its value is 'd1ff72a76c4e0c44b7e8cedbef2ad58d'.
+MSI (s) (08:D4) [09:29:52:133]: RESTART MANAGER: Session opened.
+MSI (s) (08:D4) [09:29:52:133]: TRANSFORMS property is now: 
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding PRODUCTLANGUAGE property. Its value is '0'.
+MSI (s) (08:D4) [09:29:52:133]: PROPERTY CHANGE: Adding VersionDatabase property. Its value is '500'.
+MSI (s) (08:D4) [09:29:52:135]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:52:137]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Favorites
+MSI (s) (08:D4) [09:29:52:137]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Network Shortcuts
+MSI (s) (08:D4) [09:29:52:139]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Documents
+MSI (s) (08:D4) [09:29:52:139]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Printer Shortcuts
+MSI (s) (08:D4) [09:29:52:139]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Recent
+MSI (s) (08:D4) [09:29:52:141]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\SendTo
+MSI (s) (08:D4) [09:29:52:141]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Templates
+MSI (s) (08:D4) [09:29:52:141]: SHELL32::SHGetFolderPath returned: C:\ProgramData
+MSI (s) (08:D4) [09:29:52:143]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Local
+MSI (s) (08:D4) [09:29:52:143]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Pictures
+MSI (s) (08:D4) [09:29:52:145]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (08:D4) [09:29:52:147]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (08:D4) [09:29:52:147]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+MSI (s) (08:D4) [09:29:52:147]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu
+MSI (s) (08:D4) [09:29:52:149]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\Desktop
+MSI (s) (08:D4) [09:29:52:151]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (08:D4) [09:29:52:151]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (08:D4) [09:29:52:151]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+MSI (s) (08:D4) [09:29:52:153]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu
+MSI (s) (08:D4) [09:29:52:153]: SHELL32::SHGetFolderPath returned: C:\Users\Public\Desktop
+MSI (s) (08:D4) [09:29:52:153]: SHELL32::SHGetFolderPath returned: C:\WINDOWS\Fonts
+MSI (s) (08:D4) [09:29:52:153]: Note: 1: 2898 2: MS Sans Serif 3: MS Sans Serif 4: 0 5: 16 
+MSI (s) (08:D4) [09:29:52:171]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (08:D4) [09:29:52:171]: PROPERTY CHANGE: Adding USERNAME property. Its value is 'campbell'.
+MSI (s) (08:D4) [09:29:52:171]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (08:D4) [09:29:52:171]: PROPERTY CHANGE: Adding Installed property. Its value is '00:00:00'.
+MSI (s) (08:D4) [09:29:52:171]: PROPERTY CHANGE: Adding DATABASE property. Its value is 'C:\WINDOWS\Installer\1653e.msi'.
+MSI (s) (08:D4) [09:29:52:171]: PROPERTY CHANGE: Adding OriginalDatabase property. Its value is 'C:\WINDOWS\Installer\1653e.msi'.
+MSI (s) (08:D4) [09:29:52:171]: Machine policy value 'MsiDisableEmbeddedUI' is 0
+MSI (s) (08:D4) [09:29:52:171]: EEUI - Disabling MsiEmbeddedUI for service because it's not a quiet/basic install
+MSI (s) (08:D4) [09:29:52:173]: Note: 1: 2205 2:  3: PatchPackage 
+MSI (s) (08:D4) [09:29:52:173]: Machine policy value 'DisableRollback' is 0
+MSI (s) (08:D4) [09:29:52:173]: User policy value 'DisableRollback' is 0
+MSI (s) (08:D4) [09:29:52:173]: PROPERTY CHANGE: Adding UILevel property. Its value is '2'.
+=== Logging started: 2026-10-15  09:29:52 ===
+MSI (s) (08:D4) [09:29:52:173]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (08:D4) [09:29:52:173]: PROPERTY CHANGE: Adding Preselected property. Its value is '1'.
+MSI (s) (08:D4) [09:29:52:173]: APPCOMPAT: [DetectVersionLaunchCondition] Launch condition already passes.
+MSI (s) (08:D4) [09:29:52:187]: PROPERTY CHANGE: Adding ACTION property. Its value is 'INSTALL'.
+MSI (s) (08:D4) [09:29:52:187]: Doing action: INSTALL
+MSI (s) (08:D4) [09:29:52:187]: Note: 1: 2205 2:  3: ActionText 
+Action start 09:29:52: INSTALL.
+MSI (s) (08:D4) [09:29:52:189]: Running ExecuteSequence
+MSI (s) (08:D4) [09:29:52:189]: Doing action: FindRelatedProducts
+MSI (s) (08:D4) [09:29:52:189]: Note: 1: 2205 2:  3: ActionText 
+MSI (s) (08:D4) [09:29:52:191]: Skipping FindRelatedProducts action: not run in maintenance mode
+Action start 09:29:52: FindRelatedProducts.
+MSI (s) (08:D4) [09:29:52:191]: Doing action: LaunchConditions
+MSI (s) (08:D4) [09:29:52:191]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: FindRelatedProducts. Return value 0.
+Action start 09:29:52: LaunchConditions.
+MSI (s) (08:D4) [09:29:52:193]: Doing action: ValidateProductID
+MSI (s) (08:D4) [09:29:52:193]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: LaunchConditions. Return value 1.
+Action start 09:29:52: ValidateProductID.
+MSI (s) (08:D4) [09:29:52:193]: Doing action: CostInitialize
+MSI (s) (08:D4) [09:29:52:193]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: ValidateProductID. Return value 1.
+MSI (s) (08:D4) [09:29:52:195]: Machine policy value 'MaxPatchCacheSize' is 10
+MSI (s) (08:D4) [09:29:52:195]: PROPERTY CHANGE: Adding ROOTDRIVE property. Its value is 'C:\'.
+MSI (s) (08:D4) [09:29:52:195]: PROPERTY CHANGE: Adding CostingComplete property. Its value is '0'.
+MSI (s) (08:D4) [09:29:52:195]: Note: 1: 2205 2:  3: Patch 
+MSI (s) (08:D4) [09:29:52:195]: Note: 1: 2205 2:  3: PatchPackage 
+MSI (s) (08:D4) [09:29:52:195]: Note: 1: 2205 2:  3: MsiPatchHeaders 
+MSI (s) (08:D4) [09:29:52:195]: Note: 1: 2205 2:  3: __MsiPatchFileList 
+MSI (s) (08:D4) [09:29:52:195]: Note: 1: 2205 2:  3: PatchPackage 
+MSI (s) (08:D4) [09:29:52:195]: Note: 1: 2228 2:  3: PatchPackage 4: SELECT `DiskId`, `PatchId`, `LastSequence` FROM `Media`, `PatchPackage` WHERE `Media`.`DiskId`=`PatchPackage`.`Media_` ORDER BY `DiskId`  
+MSI (s) (08:D4) [09:29:52:195]: Note: 1: 2205 2:  3: Patch 
+Action start 09:29:52: CostInitialize.
+MSI (s) (08:D4) [09:29:52:197]: Doing action: FileCost
+MSI (s) (08:D4) [09:29:52:197]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: CostInitialize. Return value 1.
+MSI (s) (08:D4) [09:29:52:197]: Note: 1: 2205 2:  3: MsiAssembly 
+MSI (s) (08:D4) [09:29:52:197]: Note: 1: 2205 2:  3: Class 
+MSI (s) (08:D4) [09:29:52:197]: Note: 1: 2205 2:  3: Extension 
+MSI (s) (08:D4) [09:29:52:197]: Note: 1: 2205 2:  3: TypeLib 
+Action start 09:29:52: FileCost.
+MSI (s) (08:D4) [09:29:52:197]: Doing action: CostFinalize
+MSI (s) (08:D4) [09:29:52:197]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: FileCost. Return value 1.
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding OutOfDiskSpace property. Its value is '0'.
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding OutOfNoRbDiskSpace property. Its value is '0'.
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceAvailable property. Its value is '0'.
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRequired property. Its value is '0'.
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRemaining property. Its value is '0'.
+MSI (s) (08:D4) [09:29:52:199]: Note: 1: 2205 2:  3: MsiAssembly 
+MSI (s) (08:D4) [09:29:52:199]: Note: 1: 2228 2:  3: MsiAssembly 4:  SELECT `MsiAssembly`.`Attributes`, `MsiAssembly`.`File_Application`, `MsiAssembly`.`File_Manifest`,  `Component`.`KeyPath` FROM `MsiAssembly`, `Component` WHERE  `MsiAssembly`.`Component_` = `Component`.`Component` AND `MsiAssembly`.`Component_` = ? 
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding BinFolder property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin'.
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding INSTALLFOLDER property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin'.
+MSI (s) (08:D4) [09:29:52:199]: PROPERTY CHANGE: Adding dmzbjdDiB3W0FrOGXQNfyu.Blzhw property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets'.
+MSI (s) (08:D4) [09:29:52:201]: PROPERTY CHANGE: Adding dhhl6QFuQFTY7VU2uD_d2S_M70_8 property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin'.
+MSI (s) (08:D4) [09:29:52:201]: PROPERTY CHANGE: Adding dTzIUDEdB9rSr7wS4lPVox5hKT.I property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs'.
+MSI (s) (08:D4) [09:29:52:201]: PROPERTY CHANGE: Adding dn32F_8EtPmtoACQpTPiLDsMMxTU property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices'.
+MSI (s) (08:D4) [09:29:52:203]: PROPERTY CHANGE: Adding dhJxUVfdQ0cl.WUkznCLAjT2gzFA property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium'.
+MSI (s) (08:D4) [09:29:52:203]: PROPERTY CHANGE: Adding dhuWcOUKYThzfMwsTQDFI31Lw5Ok property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding d7by2ua02ym.a3GUBsFb3YUdY4gs property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding dN_kwZFmId13TyskwoOeucYFGuv0 property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding d7.2MW0tjqQJvzMj9gk50FPZwvfg property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions'.
+MSI (s) (08:D4) [09:29:52:205]: Note: 1: 2205 2:  3: Patch 
+MSI (s) (08:D4) [09:29:52:205]: Note: 1: 2205 2:  3: Condition 
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding TARGETDIR property. Its value is 'C:\'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding OttrinProgramMenuFolder property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding ProgramsFolder property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Modifying INSTALLFOLDER property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding dKlNTx_FNRtGPIc1yN5FSjNnSq0o property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding d1aMKBYakpeHigRQUYF0B8iJEAP0 property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\'.
+MSI (s) (08:D4) [09:29:52:205]: PROPERTY CHANGE: Adding dLUkJbpjstbOHi6.8vdP3Zi7wgxo property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying d7.2MW0tjqQJvzMj9gk50FPZwvfg property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying dN_kwZFmId13TyskwoOeucYFGuv0 property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying d7by2ua02ym.a3GUBsFb3YUdY4gs property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Adding dPNflk_4aOYVKo3ZPc8cTz2n7r0Y property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Adding dKuX5xjNESgOVxU1WHSJFvghTrNw property. Its value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying dhuWcOUKYThzfMwsTQDFI31Lw5Ok property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying dhJxUVfdQ0cl.WUkznCLAjT2gzFA property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying dn32F_8EtPmtoACQpTPiLDsMMxTU property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying dTzIUDEdB9rSr7wS4lPVox5hKT.I property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying dhhl6QFuQFTY7VU2uD_d2S_M70_8 property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying dmzbjdDiB3W0FrOGXQNfyu.Blzhw property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\'.
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Modifying BinFolder property. Its current value is 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin'. Its new value: 'C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\'.
+MSI (s) (08:D4) [09:29:52:207]: Target path resolution complete. Dumping Directory table...
+MSI (s) (08:D4) [09:29:52:207]: Note: target paths subject to change (via custom actions or browsing)
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: TARGETDIR	, Object: C:\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: WindowsFolder	, Object: C:\WINDOWS\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: System64Folder	, Object: C:\WINDOWS\system32\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: ProgramMenuFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: OttrinProgramMenuFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: LocalAppDataFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Local\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: ProgramsFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: INSTALLFOLDER	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dKlNTx_FNRtGPIc1yN5FSjNnSq0o	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: d1aMKBYakpeHigRQUYF0B8iJEAP0	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dLUkJbpjstbOHi6.8vdP3Zi7wgxo	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: d7.2MW0tjqQJvzMj9gk50FPZwvfg	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dN_kwZFmId13TyskwoOeucYFGuv0	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: d7by2ua02ym.a3GUBsFb3YUdY4gs	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dPNflk_4aOYVKo3ZPc8cTz2n7r0Y	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dKuX5xjNESgOVxU1WHSJFvghTrNw	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dhuWcOUKYThzfMwsTQDFI31Lw5Ok	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dhJxUVfdQ0cl.WUkznCLAjT2gzFA	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dn32F_8EtPmtoACQpTPiLDsMMxTU	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dTzIUDEdB9rSr7wS4lPVox5hKT.I	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dhhl6QFuQFTY7VU2uD_d2S_M70_8	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: dmzbjdDiB3W0FrOGXQNfyu.Blzhw	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\
+MSI (s) (08:D4) [09:29:52:207]: Dir (target): Key: BinFolder	, Object: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+MSI (s) (08:D4) [09:29:52:207]: PROPERTY CHANGE: Adding INSTALLLEVEL property. Its value is '1'.
+Action start 09:29:52: CostFinalize.
+MSI (s) (08:D4) [09:29:52:227]: Doing action: MigrateFeatureStates
+MSI (s) (08:D4) [09:29:52:227]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: CostFinalize. Return value 1.
+MSI (s) (08:D4) [09:29:52:227]: Skipping MigrateFeatureStates action: not run in maintenance mode
+Action start 09:29:52: MigrateFeatureStates.
+MSI (s) (08:D4) [09:29:52:229]: Doing action: InstallValidate
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: MigrateFeatureStates. Return value 0.
+MSI (s) (08:D4) [09:29:52:229]: PROPERTY CHANGE: Deleting MsiRestartManagerSessionKey property. Its current value is 'd1ff72a76c4e0c44b7e8cedbef2ad58d'.
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: Dialog 
+MSI (s) (08:D4) [09:29:52:229]: Feature: MainFeature; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: StartMenuComponent; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: MainExecutableComponent; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsZc32FZODtW6b6NO6fzkp81ZDd8A; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsRNhaMHscOhp.l05dI4VGk3qQ_XY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsIxV6crlvxifgZDN2HWFvxzvSHqs; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls7HBQddGBhspWWaHoS3OU2RYJTAo; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsg4RLgrh.v26uyGgIfNdoumQ1U1o; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsOWrIrTIp6j4UNnXUWTzQNKnBeg4; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls826Xmx1bYye73tb8BcY9HcKSVS0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flswJyYalMCkontqvr3WKJBu8kKrqA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsdKYvTGfXzFAsH8hjS47Hvk1kX7A; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls10lq__Xrvf4KApIOuXi1crEVd_Y; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flst02CQ3HYNLiLf5b_1GoZWnIddkA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flswaIFQK0b.WVSy3f8BK7xeHtqVtI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsJ99jFqEEvG4pAcUSORPa8VfSmmw; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsrnR0CTjRWGxqX5ntnPrfl0ob8JQ; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flswRWUZ_tzjJhb6KWPZYz3oDOKaE8; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsmMWtAKWqL7VGNDJ_8HDBITM1QvI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flszOA9Y3vHcmXT6QAiCNUTOdsRzj0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls2lW2GbeeywRPOQBryx9jkamJl2M; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsh4_V94sFI75gBFX8X17OdkPmt80; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsvcrUA26LJrg5I0H389dkn1Iudwg; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls8fm4FrBbmgvGAAjxD4GPnMfNRxY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flskt9tsQwxwZNZAMt9wipYGaAxc.k; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsyiuiLxaMkHemJ1ojh8cILO5V.jI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsdCAvLkpzrof8WILjS04mVVUS9mc; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flslhRMia5Z9HxCzpcsEMj3aCz7X0c; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls1AiWwP0XKjtxzJfS7IJ.Gexf2qY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsGl2aYODhnYulOwdrRWY7u8D1FaY; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsXeh73ocsqjgZsONNouw2BulFCyM; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsWdgHG2nUnBhlNJ4fS8gf4oJkI1o; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsOQ81YSXjs6w9URGCqnnRbZuekQ0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsyKMYUZUw7miouXIPxUnICwm0AM0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsdU57opLm1LzppPEQRyTXU59yj.8; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls63mwVQOMWPYt7L5hXH.YH0VT5sk; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsTqor3sCEJyanvkljGljmqeXtbGs; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls6e5Ak60ws6ai7jvhTxZiTuKETkw; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsS_2yib0Ubq9rImrQd_29kiZj2Rw; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsbpQu3H1JtL0I9OgR9u5eb2D8DUo; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsUrjbkbvFSPCSNg1trp1GfQhYPpA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsfEluz9FpOGdyAgk.auRt..Nsa1o; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsYzbaHaykdLDieaEUvz7ijM_lCz8; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls2uGT3MNvcCKS80WWQb5gERM3rSE; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls.8vsInPsKTcQrJt.KvNmdoEH9fc; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsyNlLl33YQT4R1ziYwMnbNyQd6J0; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsacoG0dlqKLpCpBPPhZMWOdlH4TI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsM6ssNGS55HjhTDdSuhQl05scfdI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsXr7rgln3yB_L3i.4SAUi3dYnHYA; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls94RokVx_IxBvQn5YlN110VZR1UI; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsuv7gbOD0jLH4hWhE_kdXSDog_0U; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: fls5s_KDQcgyiRb7bGNxpaKaVtF_d4; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: flsIVYwMtPBiphiTO1Cvs0NgQOPnmQ; Installed: Local;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Component: __StartMenuComponent65; Installed: Null;   Request: Absent;   Action: Absent
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: BindImage 
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: ProgId 
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: PublishComponent 
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: SelfReg 
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: Extension 
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: Font 
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: Class 
+MSI (s) (08:D4) [09:29:52:229]: Note: 1: 2205 2:  3: TypeLib 
+Action start 09:29:52: InstallValidate.
+MSI (s) (08:D4) [09:29:52:231]: Note: 1: 2205 2:  3: _RemoveFilePath 
+MSI (s) (08:D4) [09:29:52:257]: PROPERTY CHANGE: Modifying CostingComplete property. Its current value is '0'. Its new value: '1'.
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: BindImage 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: ProgId 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: PublishComponent 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: SelfReg 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: Extension 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: Font 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: Class 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2205 2:  3: TypeLib 
+MSI (s) (08:D4) [09:29:52:257]: Note: 1: 2727 2:  
+MSI (s) (08:D4) [09:29:52:277]: RESTART MANAGER: Will attempt to shut down and restart applications in no UI modes.
+MSI (s) (08:D4) [09:29:52:277]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:52:277]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1607 
+MSI (s) (08:D4) [09:29:52:277]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:52:277]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1607 
+MSI (s) (08:D4) [09:29:52:315]: Note: 1: 2205 2:  3: ActionText 
+MSI (c) (E8:B4) [09:29:52:281]: RESTART MANAGER: Session opened.
+MSI (s) (08:D4) [09:29:52:331]: RESTART MANAGER: Successfully shut down all applications in the service's session that held files in use.
+MSI (c) (E8:B4) [09:29:52:331]: RESTART MANAGER: Successfully shut down all applications that held files in use.
+MSI (s) (08:D4) [09:29:52:841]: Note: 1: 2727 2:  
+MSI (s) (08:D4) [09:29:52:843]: Doing action: InstallInitialize
+MSI (s) (08:D4) [09:29:52:843]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: InstallValidate. Return value 1.
+MSI (s) (08:D4) [09:29:52:843]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:843]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (08:D4) [09:29:52:843]: BeginTransaction: Locking Server
+MSI (s) (08:D4) [09:29:52:843]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (08:D4) [09:29:52:843]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (08:D4) [09:29:52:843]: Note: 1: 2203 2: C:\WINDOWS\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (08:D4) [09:29:52:843]: Server not locked: locking for product {DED5E704-031D-4FF4-97C7-E680A0E8A5C6}
+MSI (s) (08:D4) [09:29:52:849]: Note: 1: 2205 2:  3: ActionText 
+MSI (s) (08:D4) [09:29:52:849]: Note: 1: 2205 2:  3: ActionText 
+MSI (s) (08:D4) [09:29:52:851]: Note: 1: 2205 2:  3: ActionText 
+Action start 09:29:52: InstallInitialize.
+MSI (s) (08:D4) [09:29:52:853]: PROPERTY CHANGE: Deleting ProductToBeRegistered property. Its current value is '1'.
+MSI (s) (08:D4) [09:29:52:853]: Note: 1: 2205 2:  3: Class 
+MSI (s) (08:D4) [09:29:52:853]: Note: 1: 2228 2:  3: Class 4: SELECT `CLSID` FROM `Class` WHERE `Icon_`=? AND `Class`.`Attributes`=1 
+MSI (s) (08:D4) [09:29:52:853]: Note: 1: 2205 2:  3: Class 
+MSI (s) (08:D4) [09:29:52:853]: Note: 1: 2228 2:  3: Class 4: SELECT `Component`,`CLSID` FROM `Component`,`Class` WHERE `Component`=`Component_` AND `Icon_`=? AND  (`Component`.`Installed` <> 0 AND `Component`.`Action` <> 0) 
+MSI (s) (08:D4) [09:29:52:853]: Note: 1: 2205 2:  3: Extension 
+MSI (s) (08:D4) [09:29:52:853]: Note: 1: 2228 2:  3: Extension 4: SELECT `Component`,`Extension` FROM `Component`,`Extension`,`ProgId` WHERE `Component`.`Component`=`Extension`.`Component_` AND `ProgId`.`ProgId`=`Extension`.`ProgId_` AND `ProgId`.`Icon_`=? AND  (`Component`.`Installed` <> 0 AND `Component`.`Action` <> 0) 
+MSI (s) (08:D4) [09:29:52:853]: 'OttrinApp.ico' icon will be removed.
+MSI (s) (08:D4) [09:29:52:855]: Skipping action: RollbackBackgroundIndex (condition is false)
+MSI (s) (08:D4) [09:29:52:855]: Skipping action: PrepareBackgroundIndex (condition is false)
+MSI (s) (08:D4) [09:29:52:855]: Doing action: RollbackRemovedIndex
+MSI (s) (08:D4) [09:29:52:855]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: InstallInitialize. Return value 1.
+Action start 09:29:52: RollbackRemovedIndex.
+MSI (s) (08:D4) [09:29:52:893]: Doing action: SnapshotRemovedIndex
+MSI (s) (08:D4) [09:29:52:893]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: RollbackRemovedIndex. Return value 1.
+Action start 09:29:52: SnapshotRemovedIndex.
+MSI (s) (08:D4) [09:29:52:927]: Doing action: CleanupBeforeUninstall
+MSI (s) (08:D4) [09:29:52:927]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: SnapshotRemovedIndex. Return value 1.
+Action start 09:29:52: CleanupBeforeUninstall.
+MSI (s) (08:D4) [09:29:52:929]: Doing action: ProcessComponents
+MSI (s) (08:D4) [09:29:52:929]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: CleanupBeforeUninstall. Return value 1.
+Action start 09:29:52: ProcessComponents.
+MSI (s) (08:D4) [09:29:52:954]: Doing action: UnpublishFeatures
+MSI (s) (08:D4) [09:29:52:954]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: ProcessComponents. Return value 1.
+Action start 09:29:52: UnpublishFeatures.
+MSI (s) (08:D4) [09:29:52:956]: Doing action: RemoveRegistryValues
+MSI (s) (08:D4) [09:29:52:956]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: UnpublishFeatures. Return value 1.
+Action start 09:29:52: RemoveRegistryValues.
+MSI (s) (08:D4) [09:29:52:958]: Doing action: RemoveShortcuts
+MSI (s) (08:D4) [09:29:52:958]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: RemoveRegistryValues. Return value 1.
+Action start 09:29:52: RemoveShortcuts.
+MSI (s) (08:D4) [09:29:52:963]: Doing action: RemoveFiles
+MSI (s) (08:D4) [09:29:52:963]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: RemoveShortcuts. Return value 1.
+Action start 09:29:52: RemoveFiles.
+MSI (s) (08:D4) [09:29:52:979]: Counted 1 foreign folders to be removed.
+MSI (s) (08:D4) [09:29:52:979]: Removing foreign folder: C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+MSI (s) (08:D4) [09:29:52:981]: Doing action: RemoveFolders
+MSI (s) (08:D4) [09:29:52:981]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: RemoveFiles. Return value 1.
+Action start 09:29:52: RemoveFolders.
+MSI (s) (08:D4) [09:29:52:983]: Doing action: CreateFolders
+MSI (s) (08:D4) [09:29:52:983]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: RemoveFolders. Return value 0.
+Action start 09:29:52: CreateFolders.
+MSI (s) (08:D4) [09:29:52:983]: Doing action: InstallFiles
+MSI (s) (08:D4) [09:29:52:983]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: CreateFolders. Return value 0.
+MSI (s) (08:D4) [09:29:52:984]: Note: 1: 2205 2:  3: Patch 
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2228 2:  3: Patch 4: SELECT `Patch`.`File_`, `Patch`.`Header`, `Patch`.`Attributes`, `Patch`.`Sequence`, `Patch`.`StreamRef_` FROM `Patch` WHERE `Patch`.`File_` = ? AND `Patch`.`#_MsiActive`=? ORDER BY `Patch`.`Sequence` 
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1302 
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2205 2:  3: MsiSFCBypass 
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2228 2:  3: MsiSFCBypass 4: SELECT `File_` FROM `MsiSFCBypass` WHERE `File_` = ? 
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2205 2:  3: MsiPatchHeaders 
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2228 2:  3: MsiPatchHeaders 4: SELECT `Header` FROM `MsiPatchHeaders` WHERE `StreamRef` = ? 
+Action start 09:29:52: InstallFiles.
+MSI (s) (08:D4) [09:29:52:986]: Skipping action: InstallBackgroundIndex (condition is false)
+MSI (s) (08:D4) [09:29:52:986]: Doing action: CreateShortcuts
+MSI (s) (08:D4) [09:29:52:986]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: InstallFiles. Return value 1.
+MSI (s) (08:D4) [09:29:52:988]: Note: 1: 2205 2:  3: MsiShortcutProperty 
+MSI (s) (08:D4) [09:29:52:988]: Note: 1: 2205 2:  3: MsiShortcutProperty 
+Action start 09:29:52: CreateShortcuts.
+MSI (s) (08:D4) [09:29:52:988]: Doing action: WriteRegistryValues
+MSI (s) (08:D4) [09:29:52:988]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: CreateShortcuts. Return value 1.
+Action start 09:29:52: WriteRegistryValues.
+MSI (s) (08:D4) [09:29:52:990]: Doing action: RegisterUser
+MSI (s) (08:D4) [09:29:52:990]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: WriteRegistryValues. Return value 1.
+Action start 09:29:52: RegisterUser.
+MSI (s) (08:D4) [09:29:52:992]: Doing action: RegisterProduct
+MSI (s) (08:D4) [09:29:52:992]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: RegisterUser. Return value 0.
+Action start 09:29:52: RegisterProduct.
+MSI (s) (08:D4) [09:29:52:994]: Doing action: PublishFeatures
+MSI (s) (08:D4) [09:29:52:994]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: RegisterProduct. Return value 1.
+Action start 09:29:52: PublishFeatures.
+MSI (s) (08:D4) [09:29:52:994]: Doing action: PublishProduct
+MSI (s) (08:D4) [09:29:52:994]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: PublishFeatures. Return value 1.
+Action start 09:29:52: PublishProduct.
+MSI (s) (08:D4) [09:29:52:999]: Skipping action: InstallExecute (condition is false)
+MSI (s) (08:D4) [09:29:52:999]: Doing action: RemoveExistingProducts
+MSI (s) (08:D4) [09:29:52:999]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:52: PublishProduct. Return value 1.
+MSI (s) (08:D4) [09:29:53:000]: Skipping RemoveExistingProducts action: current configuration is maintenance mode or an uninstall
+Action start 09:29:52: RemoveExistingProducts.
+MSI (s) (08:D4) [09:29:53:000]: Doing action: CommitBackgroundIndex
+MSI (s) (08:D4) [09:29:53:000]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:53: RemoveExistingProducts. Return value 0.
+Action start 09:29:53: CommitBackgroundIndex.
+MSI (s) (08:D4) [09:29:53:032]: Doing action: InstallFinalize
+MSI (s) (08:D4) [09:29:53:032]: Note: 1: 2205 2:  3: ActionText 
+Action ended 09:29:53: CommitBackgroundIndex. Return value 1.
+MSI (s) (08:D4) [09:29:53:032]: Running Script: C:\WINDOWS\Installer\MSIADD4.tmp
+MSI (s) (08:D4) [09:29:53:032]: PROPERTY CHANGE: Adding UpdateStarted property. Its value is '1'.
+MSI (s) (08:D4) [09:29:53:036]: Note: 1: 2265 2:  3: -2147287035 
+MSI (s) (08:D4) [09:29:53:036]: Machine policy value 'DisableRollback' is 0
+MSI (s) (08:D4) [09:29:53:036]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:53:038]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:53:038]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:D4) [09:29:53:038]: Executing op: Header(Signature=1397708873,Version=500,Timestamp=1565477819,LangId=0,Platform=589824,ScriptType=1,ScriptMajorVersion=21,ScriptMinorVersion=4,ScriptAttributes=0)
+Action start 09:29:53: InstallFinalize.
+MSI (s) (08:D4) [09:29:53:040]: Executing op: ProductInfo(ProductKey={DED5E704-031D-4FF4-97C7-E680A0E8A5C6},ProductName=Ottrin,PackageName=current.msi,Language=0,Version=65536,Assignment=0,ObsoleteArg=0,ProductIcon=OttrinApp.ico,,PackageCode={07530248-6633-4EF1-BDBD-D292094094F2},,,InstanceType=0,LUASetting=0,RemoteURTInstalls=0,ProductDeploymentFlags=2)
+MSI (s) (08:D4) [09:29:53:040]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:53:042]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:53:044]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:53:044]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:53:046]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:53:046]: Executing op: DialogInfo(Type=0,Argument=0)
+MSI (s) (08:D4) [09:29:53:048]: Executing op: DialogInfo(Type=1,Argument=Ottrin)
+MSI (s) (08:D4) [09:29:53:048]: Executing op: RollbackInfo(,RollbackAction=Rollback,RollbackDescription=Rolling back action: [1],,CleanupAction=RollbackCleanup,CleanupDescription=Removing backup files File: [1],)
+MSI (s) (08:D4) [09:29:53:048]: Executing op: SetBaseline(Baseline=0,)
+MSI (s) (08:D4) [09:29:53:048]: Executing op: SetBaseline(Baseline=1,)
+MSI (s) (08:D4) [09:29:53:048]: Executing op: ActionStart(Name=InstallInitialize,,)
+MSI (s) (08:D4) [09:29:53:048]: Executing op: ProductUnregister(UpgradeCode={04304CE2-990E-4053-9EDA-AF3E69548C9D})
+MSI (s) (08:D4) [09:29:53:048]: Note: 1: 1402 2: UNKNOWN\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Transforms 3: 2 
+MSI (s) (08:D4) [09:29:53:048]: Note: 1: 1402 2: UNKNOWN\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Transforms 3: 2 
+MSI (s) (08:D4) [09:29:53:048]: Scheduling file 'C:\WINDOWS\Installer\1653e.msi' for deletion during post-install cleanup (not post-reboot).
+MSI (s) (08:D4) [09:29:53:058]: Note: 1: 1402 2: UNKNOWN\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Usage 3: 2 
+MSI (s) (08:D4) [09:29:53:060]: Executing op: ProductCPDisplayInfoUnregister()
+MSI (s) (08:D4) [09:29:53:060]: Executing op: ProductUnpublish(PackageKey={07530248-6633-4EF1-BDBD-D292094094F2})
+MSI (s) (08:D4) [09:29:53:062]: Executing op: UpgradeCodeUnpublish(UpgradeCode={04304CE2-990E-4053-9EDA-AF3E69548C9D})
+MSI (s) (08:D4) [09:29:53:062]: Executing op: IconRemove(Icon=OttrinApp.ico,)
+MSI (s) (08:D4) [09:29:53:066]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:53:066]: Scheduling file 'C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Installer\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}\OttrinApp.ico' for deletion during post-install cleanup (not post-reboot).
+MSI (s) (08:D4) [09:29:53:066]: Executing op: ProductUnpublishClient(,,)
+MSI (s) (08:D4) [09:29:53:066]: Note: 1: 1402 2: UNKNOWN\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C 3: 2 
+MSI (s) (08:D4) [09:29:53:066]: Executing op: SourceListUnpublish(,)
+MSI (s) (08:D4) [09:29:53:066]: Note: 1: 1402 2: UNKNOWN\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C\SourceList 3: 2 
+MSI (s) (08:D4) [09:29:53:066]: Executing op: ActionStart(Name=RollbackRemovedIndex,,)
+MSI (s) (08:D4) [09:29:53:070]: Executing op: CustomActionSchedule(Action=RollbackRemovedIndex,ActionType=1282,Source=BinaryData,Target=--installer-transaction Rollback "C:\Users\OTTRIN~2\AppData\Local\Temp\OttrinIndexRollback-{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.json",)
+MSI (s) (08:D4) [09:29:53:100]: Executing op: ActionStart(Name=SnapshotRemovedIndex,,)
+MSI (s) (08:D4) [09:29:53:102]: Executing op: CustomActionSchedule(Action=SnapshotRemovedIndex,ActionType=1026,Source=BinaryData,Target=--installer-transaction Snapshot "C:\Users\OTTRIN~2\AppData\Local\Temp\OttrinIndexRollback-{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.json",)
+MSI (s) (08:D4) [09:29:54:182]: Executing op: ActionStart(Name=CleanupBeforeUninstall,,)
+MSI (s) (08:D4) [09:29:54:182]: Executing op: CustomActionSchedule(Action=CleanupBeforeUninstall,ActionType=1042,Source=C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe,Target=--uninstall,)
+MSI (s) (08:D4) [09:29:54:246]: Note: 1: 1722 2: CleanupBeforeUninstall 3: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe 4: --uninstall 
+MSI (s) (08:D4) [09:29:54:246]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:54:246]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1722 
+CustomAction CleanupBeforeUninstall returned actual error code 1 (note this may not be 100% accurate if translation happened inside sandbox)
+MSI (s) (08:D4) [09:29:54:246]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:54:246]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1709 
+MSI (s) (08:D4) [09:29:54:246]: Product: Ottrin -- Error 1722. There is a problem with this Windows Installer package. A program run as part of the setup did not finish as expected. Contact your support personnel or package vendor.  Action CleanupBeforeUninstall, location: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe, command: --uninstall 
+
+Error 1722. There is a problem with this Windows Installer package. A program run as part of the setup did not finish as expected. Contact your support personnel or package vendor.  Action CleanupBeforeUninstall, location: C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\ottrin.exe, command: --uninstall 
+MSI (s) (08:D4) [09:29:54:254]: Note: 1: 2265 2:  3: -2147287035 
+MSI (s) (08:D4) [09:29:54:254]: User policy value 'DisableRollback' is 0
+MSI (s) (08:D4) [09:29:54:254]: Machine policy value 'DisableRollback' is 0
+Action ended 09:29:54: InstallFinalize. Return value 3.
+MSI (s) (08:D4) [09:29:54:256]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:54:260]: Executing op: Header(Signature=1397708873,Version=500,Timestamp=1565477819,LangId=0,Platform=589824,ScriptType=2,ScriptMajorVersion=21,ScriptMinorVersion=4,ScriptAttributes=0)
+MSI (s) (08:D4) [09:29:54:262]: Executing op: DialogInfo(Type=0,Argument=0)
+MSI (s) (08:D4) [09:29:54:262]: Executing op: DialogInfo(Type=1,Argument=Ottrin)
+MSI (s) (08:D4) [09:29:54:262]: Executing op: RollbackInfo(,RollbackAction=Rollback,RollbackDescription=Rolling back action: [1],,CleanupAction=RollbackCleanup,CleanupDescription=Removing backup files File: [1],)
+MSI (s) (08:D4) [09:29:54:264]: Executing op: ActionStart(Name=CleanupBeforeUninstall,,)
+MSI (s) (08:D4) [09:29:54:264]: Executing op: ProductInfo(ProductKey={DED5E704-031D-4FF4-97C7-E680A0E8A5C6},ProductName=Ottrin,PackageName=current.msi,Language=0,Version=65536,Assignment=0,ObsoleteArg=0,ProductIcon=OttrinApp.ico,,PackageCode={07530248-6633-4EF1-BDBD-D292094094F2},,,InstanceType=0,LUASetting=0,RemoteURTInstalls=0,ProductDeploymentFlags=2)
+MSI (s) (08:D4) [09:29:54:266]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:54:268]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:54:272]: SHELL32::SHGetFolderPath returned: C:\Users\OttrinDesktopQA\AppData\Roaming
+MSI (s) (08:D4) [09:29:54:272]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:54:274]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:54:276]: Executing op: ActionStart(Name=SnapshotRemovedIndex,,)
+MSI (s) (08:D4) [09:29:54:276]: Executing op: ActionStart(Name=RollbackRemovedIndex,,)
+MSI (s) (08:D4) [09:29:54:280]: Executing op: CustomActionRollback(Action=RollbackRemovedIndex,ActionType=1282,Source=BinaryData,Target=--installer-transaction Rollback "C:\Users\OTTRIN~2\AppData\Local\Temp\OttrinIndexRollback-{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.json",)
+MSI (s) (08:D4) [09:29:55:236]: Executing op: ActionStart(Name=InstallInitialize,,)
+MSI (s) (08:D4) [09:29:55:236]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C\SourceList,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:236]: Executing op: RegRemoveKey()
+MSI (s) (08:D4) [09:29:55:236]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C\SourceList 3: 2 
+MSI (s) (08:D4) [09:29:55:238]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:238]: Executing op: RegRemoveKey()
+MSI (s) (08:D4) [09:29:55:238]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C 3: 2 
+MSI (s) (08:D4) [09:29:55:238]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:238]: Executing op: RegRemoveValue(Name=C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Installer\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}\OttrinApp.ico,Value=#1,)
+MSI (s) (08:D4) [09:29:55:238]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages 3: 5 
+MSI (s) (08:D4) [09:29:55:238]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:238]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1403 
+Info 1403.Could not delete value C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Installer\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}\OttrinApp.ico from key \Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:240]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:240]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages 3: 5 
+MSI (s) (08:D4) [09:29:55:240]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:240]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:240]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:240]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:240]: Executing op: RegAddValue(Name=407E5DEDD1304FF4797C6E080A8E5A6C,,)
+MSI (s) (08:D4) [09:29:55:242]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9 3: 1307 
+MSI (s) (08:D4) [09:29:55:242]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:242]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:242]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value 407E5DEDD1304FF4797C6E080A8E5A6C to key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:242]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Features\407E5DEDD1304FF4797C6E080A8E5A6C,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:242]: Executing op: RegAddValue(Name=MainFeature,,)
+MSI (s) (08:D4) [09:29:55:242]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Features\407E5DEDD1304FF4797C6E080A8E5A6C,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:244]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:244]: Executing op: RegAddValue(Name=Clients,Value=[~]:[~],)
+MSI (s) (08:D4) [09:29:55:244]: Executing op: RegAddValue(Name=DeploymentFlags,Value=#2,)
+MSI (s) (08:D4) [09:29:55:244]: Executing op: RegAddValue(Name=AuthorizedLUAApp,Value=#0,)
+MSI (s) (08:D4) [09:29:55:244]: Executing op: RegAddValue(Name=InstanceType,Value=#0,)
+MSI (s) (08:D4) [09:29:55:246]: Executing op: RegAddValue(Name=ProductIcon,Value=#%%APPDATA%\Microsoft\Installer\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}\OttrinApp.ico,)
+MSI (s) (08:D4) [09:29:55:246]: Executing op: RegAddValue(Name=AdvertiseFlags,Value=#388,)
+MSI (s) (08:D4) [09:29:55:246]: Executing op: RegAddValue(Name=Assignment,Value=#0,)
+MSI (s) (08:D4) [09:29:55:246]: Executing op: RegAddValue(Name=Version,Value=#65536,)
+MSI (s) (08:D4) [09:29:55:246]: Executing op: RegAddValue(Name=Language,Value=#0,)
+MSI (s) (08:D4) [09:29:55:248]: Executing op: RegAddValue(Name=PackageCode,Value=8420357033661FE4DBDB2D299004492F,)
+MSI (s) (08:D4) [09:29:55:248]: Executing op: RegAddValue(Name=ProductName,Value=Ottrin,)
+MSI (s) (08:D4) [09:29:55:248]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C\SourceList,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:248]: Executing op: RegAddValue(Name=LastUsedSource,Value=#%n;1;C:\OttrinDesktopQA\,)
+MSI (s) (08:D4) [09:29:55:248]: Executing op: RegAddValue(Name=PackageName,Value=current.msi,)
+MSI (s) (08:D4) [09:29:55:250]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C\SourceList\Net,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:250]: Executing op: RegAddValue(Name=1,Value=#%C:\OttrinDesktopQA\,)
+MSI (s) (08:D4) [09:29:55:250]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C\SourceList\Media,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:250]: Executing op: RegAddValue(Name=1,Value=;,)
+MSI (s) (08:D4) [09:29:55:250]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\407E5DEDD1304FF4797C6E080A8E5A6C,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:252]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6},SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:252]: Executing op: RegAddValue(Name=DisplayName,Value=Ottrin,)
+MSI (s) (08:D4) [09:29:55:252]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:252]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:252]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:252]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayName to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:252]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:254]: Executing op: RegAddValue(Name=DisplayName,Value=Ottrin,)
+MSI (s) (08:D4) [09:29:55:254]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:254]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:254]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:254]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayName to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:254]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:256]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:256]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:256]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:256]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:256]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:256]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:258]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:258]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:258]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:258]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:258]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:260]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:260]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:260]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:260]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:260]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Usage,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:260]: Executing op: RegRemoveKey()
+MSI (s) (08:D4) [09:29:55:260]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Usage 3: 2 
+MSI (s) (08:D4) [09:29:55:260]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Usage,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:262]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:262]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Usage 3: 5 
+MSI (s) (08:D4) [09:29:55:262]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:262]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:262]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Usage.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:262]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:262]: Executing op: RegAddValue(Name=407E5DEDD1304FF4797C6E080A8E5A6C,,)
+MSI (s) (08:D4) [09:29:55:264]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9 3: 5 
+MSI (s) (08:D4) [09:29:55:264]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:264]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:264]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value 407E5DEDD1304FF4797C6E080A8E5A6C to key \Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:264]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6},SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:264]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:266]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:266]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:266]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:266]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:266]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:266]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:266]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:266]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:266]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:268]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:268]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:268]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:268]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:268]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:268]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:268]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:268]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:268]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:270]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:270]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:270]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:270]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:270]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:270]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:270]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:272]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:272]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:272]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:272]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:272]: Executing op: RegAddValue(Name=Language,Value=#0,)
+MSI (s) (08:D4) [09:29:55:272]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:272]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:272]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:274]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Language to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:274]: Executing op: RegAddValue(Name=Version,Value=#65536,)
+MSI (s) (08:D4) [09:29:55:274]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:274]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:274]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:274]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Version to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:274]: Executing op: RegAddValue(Name=WindowsInstaller,Value=#1,)
+MSI (s) (08:D4) [09:29:55:276]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:276]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:276]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:276]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value WindowsInstaller to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:276]: Executing op: RegAddValue(Name=VersionMinor,Value=#1,)
+MSI (s) (08:D4) [09:29:55:276]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:276]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:276]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:278]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMinor to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:278]: Executing op: RegAddValue(Name=VersionMajor,Value=#0,)
+MSI (s) (08:D4) [09:29:55:278]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:278]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:278]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:278]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMajor to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:280]: Executing op: RegAddValue(Name=URLUpdateInfo,,)
+MSI (s) (08:D4) [09:29:55:280]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:280]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:280]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:280]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLUpdateInfo to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:282]: Executing op: RegAddValue(Name=URLInfoAbout,,)
+MSI (s) (08:D4) [09:29:55:282]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:282]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:282]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:282]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLInfoAbout to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:282]: Executing op: RegAddValue(Name=UninstallString,Value=#%MsiExec.exe /I{DED5E704-031D-4FF4-97C7-E680A0E8A5C6},)
+MSI (s) (08:D4) [09:29:55:284]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:284]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:284]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:284]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value UninstallString to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:284]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:284]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:284]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:284]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:286]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:286]: Executing op: RegAddValue(Name=EstimatedSize,Value=#136357,)
+MSI (s) (08:D4) [09:29:55:286]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:286]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:286]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:286]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value EstimatedSize to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:286]: Executing op: RegAddValue(Name=Size,,)
+MSI (s) (08:D4) [09:29:55:288]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:288]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:288]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:288]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Size to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:288]: Executing op: RegAddValue(Name=Readme,,)
+MSI (s) (08:D4) [09:29:55:288]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:288]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:288]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:290]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Readme to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:290]: Executing op: RegAddValue(Name=Publisher,Value=hoozter,)
+MSI (s) (08:D4) [09:29:55:290]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:290]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:290]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:290]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Publisher to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:290]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:292]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:292]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:292]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:292]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:292]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:294]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:294]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:294]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:294]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:294]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:294]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:294]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:294]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:296]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:296]: Executing op: RegAddValue(Name=ModifyPath,Value=#%MsiExec.exe /I{DED5E704-031D-4FF4-97C7-E680A0E8A5C6},)
+MSI (s) (08:D4) [09:29:55:296]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:296]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:296]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:296]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value ModifyPath to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:296]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:298]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:298]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:298]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:298]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:298]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:298]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:298]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:298]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:300]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:300]: Executing op: RegAddValue(Name=InstallSource,Value=C:\OttrinDesktopQA\,)
+MSI (s) (08:D4) [09:29:55:302]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:302]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:302]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:302]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallSource to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:302]: Executing op: RegAddValue(Name=InstallLocation,,)
+MSI (s) (08:D4) [09:29:55:304]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:304]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:304]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:304]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallLocation to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:304]: Executing op: RegAddValue(Name=InstallDate,Value=20261015,)
+MSI (s) (08:D4) [09:29:55:306]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:306]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:306]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:306]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallDate to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:308]: Executing op: RegAddValue(Name=HelpTelephone,,)
+MSI (s) (08:D4) [09:29:55:308]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:308]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:308]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:308]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpTelephone to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:310]: Executing op: RegAddValue(Name=HelpLink,,)
+MSI (s) (08:D4) [09:29:55:310]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:310]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:310]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:310]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpLink to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:310]: Executing op: RegAddValue(Name=DisplayVersion,Value=0.1.0,)
+MSI (s) (08:D4) [09:29:55:312]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:312]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:312]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:312]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayVersion to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:312]: Executing op: RegAddValue(Name=Contact,,)
+MSI (s) (08:D4) [09:29:55:314]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:314]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:314]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:314]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Contact to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:316]: Executing op: RegAddValue(Name=Comments,,)
+MSI (s) (08:D4) [09:29:55:316]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:316]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:316]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:316]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Comments to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:318]: Executing op: RegAddValue(Name=AuthorizedCDFPrefix,,)
+MSI (s) (08:D4) [09:29:55:318]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6} 3: 5 
+MSI (s) (08:D4) [09:29:55:318]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:318]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:318]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value AuthorizedCDFPrefix to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:318]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:320]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:320]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:320]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:320]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:322]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:322]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:322]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:322]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:322]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:324]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:324]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:326]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:326]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:326]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:326]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:326]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:328]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:328]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:328]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:328]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:328]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:330]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:330]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:330]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:330]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:332]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:332]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:332]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:332]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:332]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:334]: Executing op: RegAddValue(Name=Language,Value=#0,)
+MSI (s) (08:D4) [09:29:55:334]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:334]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:334]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:336]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Language to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:336]: Executing op: RegAddValue(Name=Version,Value=#65536,)
+MSI (s) (08:D4) [09:29:55:338]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:338]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:338]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:338]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Version to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:338]: Executing op: RegAddValue(Name=WindowsInstaller,Value=#1,)
+MSI (s) (08:D4) [09:29:55:340]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:340]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:340]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:340]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value WindowsInstaller to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:340]: Executing op: RegAddValue(Name=VersionMinor,Value=#1,)
+MSI (s) (08:D4) [09:29:55:342]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:342]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:342]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:342]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMinor to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:344]: Executing op: RegAddValue(Name=VersionMajor,Value=#0,)
+MSI (s) (08:D4) [09:29:55:344]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:344]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:344]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:344]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMajor to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:346]: Executing op: RegAddValue(Name=URLUpdateInfo,,)
+MSI (s) (08:D4) [09:29:55:346]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:346]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:346]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:346]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLUpdateInfo to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:348]: Executing op: RegAddValue(Name=URLInfoAbout,,)
+MSI (s) (08:D4) [09:29:55:348]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:348]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:348]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:348]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLInfoAbout to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:348]: Executing op: RegAddValue(Name=UninstallString,Value=#%MsiExec.exe /I{DED5E704-031D-4FF4-97C7-E680A0E8A5C6},)
+MSI (s) (08:D4) [09:29:55:350]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:350]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:350]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:350]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value UninstallString to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:350]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:350]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:350]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:350]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:352]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:352]: Executing op: RegAddValue(Name=EstimatedSize,Value=#136357,)
+MSI (s) (08:D4) [09:29:55:354]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:354]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:354]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:354]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value EstimatedSize to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:354]: Executing op: RegAddValue(Name=Size,,)
+MSI (s) (08:D4) [09:29:55:356]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:356]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:356]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:356]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Size to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:358]: Executing op: RegAddValue(Name=Readme,,)
+MSI (s) (08:D4) [09:29:55:358]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:358]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:358]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:358]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Readme to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:360]: Executing op: RegAddValue(Name=Publisher,Value=hoozter,)
+MSI (s) (08:D4) [09:29:55:360]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:360]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:360]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:362]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Publisher to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:362]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:362]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:362]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:362]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:364]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:364]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:364]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:364]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:364]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:366]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:366]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:366]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:366]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:366]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:366]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:366]: Executing op: RegAddValue(Name=ModifyPath,Value=#%MsiExec.exe /I{DED5E704-031D-4FF4-97C7-E680A0E8A5C6},)
+MSI (s) (08:D4) [09:29:55:368]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:368]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:368]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:368]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value ModifyPath to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:368]: Executing op: RegAddValue(Name=LocalPackage,Value=C:\WINDOWS\Installer\1653e.msi,)
+MSI (s) (08:D4) [09:29:55:370]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:370]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:370]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:370]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value LocalPackage to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:370]: Executing op: RegCreateKey()
+MSI (s) (08:D4) [09:29:55:370]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:370]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:370]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401 
+MSI (s) (08:D4) [09:29:55:372]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:372]: Executing op: RegAddValue(Name=InstallSource,Value=C:\OttrinDesktopQA\,)
+MSI (s) (08:D4) [09:29:55:372]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:372]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:372]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:372]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallSource to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:374]: Executing op: RegAddValue(Name=InstallLocation,,)
+MSI (s) (08:D4) [09:29:55:374]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:374]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:374]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:374]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallLocation to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:374]: Executing op: RegAddValue(Name=InstallDate,Value=20261015,)
+MSI (s) (08:D4) [09:29:55:376]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:376]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:376]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:376]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallDate to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:376]: Executing op: RegAddValue(Name=HelpTelephone,,)
+MSI (s) (08:D4) [09:29:55:376]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:376]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:376]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:376]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpTelephone to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:378]: Executing op: RegAddValue(Name=HelpLink,,)
+MSI (s) (08:D4) [09:29:55:378]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:378]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:378]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:378]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpLink to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:378]: Executing op: RegAddValue(Name=DisplayVersion,Value=0.1.0,)
+MSI (s) (08:D4) [09:29:55:380]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:380]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:380]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:380]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayVersion to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:380]: Executing op: RegAddValue(Name=Contact,,)
+MSI (s) (08:D4) [09:29:55:380]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:380]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:380]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:382]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Contact to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:382]: Executing op: RegAddValue(Name=Comments,,)
+MSI (s) (08:D4) [09:29:55:382]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:382]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:382]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:382]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Comments to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:382]: Executing op: RegAddValue(Name=AuthorizedCDFPrefix,,)
+MSI (s) (08:D4) [09:29:55:384]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties 3: 5 
+MSI (s) (08:D4) [09:29:55:384]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:384]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406 
+MSI (s) (08:D4) [09:29:55:384]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value AuthorizedCDFPrefix to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:384]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:384]: Executing op: RegRemoveValue(Name=C:\WINDOWS\Installer\1653e.msi,Value=#0,)
+MSI (s) (08:D4) [09:29:55:384]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages 3: 5 
+MSI (s) (08:D4) [09:29:55:384]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:384]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1403 
+Info 1403.Could not delete value C:\WINDOWS\Installer\1653e.msi from key \Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:386]: Executing op: RegRemoveKey()
+MSI (s) (08:D4) [09:29:55:386]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages 3: 5 
+MSI (s) (08:D4) [09:29:55:386]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:386]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1404 
+MSI (s) (08:D4) [09:29:55:386]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:D4) [09:29:55:386]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Transforms,,BinaryType=1,,)
+MSI (s) (08:D4) [09:29:55:386]: Executing op: RegRemoveKey()
+MSI (s) (08:D4) [09:29:55:386]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\407E5DEDD1304FF4797C6E080A8E5A6C\Transforms 3: 2 
+MSI (s) (08:D4) [09:29:55:386]: Executing op: End(Checksum=0,ProgressTotalHDWord=0,ProgressTotalLDWord=0)
+MSI (s) (08:D4) [09:29:55:386]: Error in rollback skipped.	Return: 5
+MSI (s) (08:D4) [09:29:55:390]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:55:392]: Note: 1: 2318 2:  
+MSI (s) (08:D4) [09:29:55:394]: No System Restore sequence number for this installation.
+MSI (s) (08:D4) [09:29:55:394]: Unlocking Server
+MSI (s) (08:D4) [09:29:55:400]: PROPERTY CHANGE: Deleting UpdateStarted property. Its current value is '1'.
+Action ended 09:29:55: INSTALL. Return value 3.
+Property(S): UpgradeCode = {04304CE2-990E-4053-9EDA-AF3E69548C9D}
+Property(S): ARPPRODUCTICON = OttrinApp.ico
+Property(S): Manufacturer = hoozter
+Property(S): ProductCode = {DED5E704-031D-4FF4-97C7-E680A0E8A5C6}
+Property(S): ProductLanguage = 0
+Property(S): ProductName = Ottrin
+Property(S): ProductVersion = 0.1.0
+Property(S): SecureCustomProperties = WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+Property(S): BinFolder = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): INSTALLFOLDER = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\
+Property(S): ProgramsFolder = C:\Users\OttrinDesktopQA\AppData\Local\Programs\
+Property(S): LocalAppDataFolder = C:\Users\OttrinDesktopQA\AppData\Local\
+Property(S): OttrinProgramMenuFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Ottrin\
+Property(S): ProgramMenuFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
+Property(S): dmzbjdDiB3W0FrOGXQNfyu.Blzhw = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\assets\
+Property(S): dhhl6QFuQFTY7VU2uD_d2S_M70_8 = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): dTzIUDEdB9rSr7wS4lPVox5hKT.I = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\docs\
+Property(S): dn32F_8EtPmtoACQpTPiLDsMMxTU = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+Property(S): dPNflk_4aOYVKo3ZPc8cTz2n7r0Y = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\
+Property(S): dhJxUVfdQ0cl.WUkznCLAjT2gzFA = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+Property(S): dKuX5xjNESgOVxU1WHSJFvghTrNw = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\
+Property(S): dhuWcOUKYThzfMwsTQDFI31Lw5Ok = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\bin\pdfium\licenses\
+Property(S): dKlNTx_FNRtGPIc1yN5FSjNnSq0o = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\
+Property(S): d1aMKBYakpeHigRQUYF0B8iJEAP0 = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\
+Property(S): d7by2ua02ym.a3GUBsFb3YUdY4gs = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\docs\
+Property(S): dN_kwZFmId13TyskwoOeucYFGuv0 = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+Property(S): dLUkJbpjstbOHi6.8vdP3Zi7wgxo = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\
+Property(S): d7.2MW0tjqQJvzMj9gk50FPZwvfg = C:\Users\OttrinDesktopQA\AppData\Local\Programs\Ottrin\third-party-notices\mesa3d-26.1.3\licenses\exceptions\
+Property(S): TARGETDIR = C:\
+Property(S): System64Folder = C:\WINDOWS\system32\
+Property(S): MsiLogFileLocation = C:\OttrinDesktopQA\results\failed-uninstall.log
+Property(S): PackageCode = {07530248-6633-4EF1-BDBD-D292094094F2}
+Property(S): ProductState = 5
+Property(S): REBOOT = ReallySuppress
+Property(S): REMOVE = ALL
+Property(S): CURRENTDIRECTORY = C:\WINDOWS\system32
+Property(S): CLIENTUILEVEL = 3
+Property(S): CLIENTPROCESSID = 6632
+Property(S): PRODUCTLANGUAGE = 0
+Property(S): VersionDatabase = 500
+Property(S): VersionMsi = 5.00
+Property(S): VersionNT = 603
+Property(S): VersionNT64 = 603
+Property(S): WindowsBuild = 9600
+Property(S): ServicePackLevel = 0
+Property(S): ServicePackLevelMinor = 0
+Property(S): MsiNTProductType = 1
+Property(S): WindowsFolder = C:\WINDOWS\
+Property(S): WindowsVolume = C:\
+Property(S): SystemFolder = C:\WINDOWS\SysWOW64\
+Property(S): RemoteAdminTS = 1
+Property(S): TempFolder = C:\Users\OTTRIN~2\AppData\Local\Temp\
+Property(S): ProgramFilesFolder = C:\Program Files (x86)\
+Property(S): CommonFilesFolder = C:\Program Files (x86)\Common Files\
+Property(S): ProgramFiles64Folder = C:\Program Files\
+Property(S): CommonFiles64Folder = C:\Program Files\Common Files\
+Property(S): AppDataFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\
+Property(S): FavoritesFolder = C:\Users\OttrinDesktopQA\Favorites\
+Property(S): NetHoodFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Network Shortcuts\
+Property(S): PersonalFolder = C:\Users\OttrinDesktopQA\Documents\
+Property(S): PrintHoodFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Printer Shortcuts\
+Property(S): RecentFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Recent\
+Property(S): SendToFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\SendTo\
+Property(S): TemplateFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Templates\
+Property(S): CommonAppDataFolder = C:\ProgramData\
+Property(S): MyPicturesFolder = C:\Users\OttrinDesktopQA\Pictures\
+Property(S): AdminToolsFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools\
+Property(S): StartupFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\
+Property(S): StartMenuFolder = C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Windows\Start Menu\
+Property(S): DesktopFolder = C:\Users\OttrinDesktopQA\Desktop\
+Property(S): FontsFolder = C:\WINDOWS\Fonts\
+Property(S): GPTSupport = 1
+Property(S): OLEAdvtSupport = 1
+Property(S): ShellAdvtSupport = 1
+Property(S): MsiAMD64 = 25
+Property(S): Msix64 = 25
+Property(S): Intel = 25
+Property(S): PhysicalMemory = 4077
+Property(S): VirtualMemory = 2768
+Property(S): LogonUser = OttrinDesktopQA
+Property(S): UserSID = S-1-5-21-3183210791-1673105385-3262580894-1032
+Property(S): UserLanguageID = 8192
+Property(S): ComputerName = DESKTOP-81GHP8U
+Property(S): SystemLanguageID = 1033
+Property(S): ScreenX = 1024
+Property(S): ScreenY = 768
+Property(S): CaptionHeight = 23
+Property(S): BorderTop = 1
+Property(S): BorderSide = 1
+Property(S): TextHeight = 16
+Property(S): TextInternalLeading = 3
+Property(S): ColorBits = 32
+Property(S): TTCSupport = 1
+Property(S): Time = 09:29:55
+Property(S): Date = 2026-10-15
+Property(S): MsiNetAssemblySupport = 4.8.9032.0
+Property(S): MsiWin32AssemblySupport = 6.3.26100.8972
+Property(S): RedirectedDllSupport = 2
+Property(S): USERNAME = campbell
+Property(S): Installed = 00:00:00
+Property(S): DATABASE = C:\WINDOWS\Installer\1653e.msi
+Property(S): OriginalDatabase = C:\WINDOWS\Installer\1653e.msi
+Property(S): UILevel = 2
+Property(S): Preselected = 1
+Property(S): ACTION = INSTALL
+Property(S): ROOTDRIVE = C:\
+Property(S): CostingComplete = 1
+Property(S): OutOfDiskSpace = 0
+Property(S): OutOfNoRbDiskSpace = 0
+Property(S): PrimaryVolumeSpaceAvailable = 0
+Property(S): PrimaryVolumeSpaceRequired = 0
+Property(S): PrimaryVolumeSpaceRemaining = 0
+Property(S): INSTALLLEVEL = 1
+MSI (s) (08:D4) [09:29:55:436]: Note: 1: 1725 
+MSI (s) (08:D4) [09:29:55:436]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:436]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1725 
+MSI (s) (08:D4) [09:29:55:436]: Note: 1: 2205 2:  3: Error 
+MSI (s) (08:D4) [09:29:55:436]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1709 
+MSI (s) (08:D4) [09:29:55:436]: Product: Ottrin -- Removal failed.
+
+MSI (s) (08:D4) [09:29:55:436]: Windows Installer removed the product. Product Name: Ottrin. Product Version: 0.1.0. Product Language: 0. Manufacturer: hoozter. Removal success or error status: 1603.
+
+MSI (s) (08:D4) [09:29:55:440]: Deferring clean up of packages/files, if any exist
+MSI (s) (08:D4) [09:29:55:440]: MainEngineThread is returning 1603
+MSI (s) (08:E8) [09:29:55:450]: RESTART MANAGER: Previously shut down applications have been restarted.
+MSI (s) (08:E8) [09:29:55:450]: RESTART MANAGER: Session closed.
+MSI (s) (08:E8) [09:29:55:450]: No System Restore sequence number for this installation.
+=== Logging stopped: 2026-10-15  09:29:55 ===
+MSI (s) (08:E8) [09:29:55:454]: User policy value 'DisableRollback' is 0
+MSI (s) (08:E8) [09:29:55:454]: Machine policy value 'DisableRollback' is 0
+MSI (s) (08:E8) [09:29:55:454]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (08:E8) [09:29:55:454]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:E8) [09:29:55:454]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:E8) [09:29:55:454]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (s) (08:E8) [09:29:55:454]: Post-install cleanup: removing installer file 'C:\WINDOWS\Installer\1653e.msi'
+MSI (s) (08:E8) [09:29:55:460]: Post-install cleanup: removing installer file 'C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Installer\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}\OttrinApp.ico'
+MSI (s) (08:E8) [09:29:55:460]: Post-install cleanup: removing installer folder 'C:\Users\OttrinDesktopQA\AppData\Roaming\Microsoft\Installer\{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}\' (if empty)
+MSI (s) (08:E8) [09:29:55:460]: Note: 1: 2318 2:  
+MSI (s) (08:E8) [09:29:55:460]: Note: 1: 2318 2:  
+MSI (c) (E8:6C) [09:29:55:462]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (c) (E8:6C) [09:29:55:462]: MainEngineThread is returning 1603
+MSI (c) (E8:B4) [09:29:55:468]: RESTART MANAGER: Previously shut down applications have been restarted.
+MSI (c) (E8:B4) [09:29:55:468]: RESTART MANAGER: Session closed.
+=== Verbose logging stopped: 2026-10-15  09:29:55 ===
+

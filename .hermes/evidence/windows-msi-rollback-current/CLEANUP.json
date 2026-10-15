@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "owned_domain_removed": true,
+  "owned_disk_removed": true,
+  "owned_nvram_removed": true,
+  "undefine_with_nvram_tpm_succeeded": true,
+  "backing_disk_content_mtime_unchanged": true,
+  "backing_nvram_content_mtime_unchanged": true,
+  "backing_domains": {
+    "ottrin-index-qa": "shut off",
+    "ottrin-qa-20261011": "shut off",
+    "win11ltsc": "shut off"
+  },
+  "method": "Discarded only this task-created COW domain after saving observations; no MSI registry/ACL/policy repair"
+}

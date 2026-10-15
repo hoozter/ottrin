@@ -1,0 +1,316 @@
+MSI (s) (08:B8) [09:34:06:358]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2 
+MSI (s) (08:B8) [09:34:06:417]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (08:B8) [09:34:06:417]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+Action start 09:34:06: INSTALL.
+Action start 09:34:06: FindRelatedProducts.
+Action ended 09:34:06: FindRelatedProducts. Return value 0.
+Action start 09:34:06: LaunchConditions.
+Action ended 09:34:06: LaunchConditions. Return value 1.
+Action start 09:34:06: ValidateProductID.
+Action ended 09:34:06: ValidateProductID. Return value 1.
+Action start 09:34:06: CostInitialize.
+Action ended 09:34:06: CostInitialize. Return value 1.
+Action start 09:34:06: FileCost.
+Action ended 09:34:06: FileCost. Return value 1.
+Action start 09:34:06: CostFinalize.
+Action ended 09:34:06: CostFinalize. Return value 1.
+Action start 09:34:06: MigrateFeatureStates.
+Action ended 09:34:06: MigrateFeatureStates. Return value 0.
+Action start 09:34:06: InstallValidate.
+Action ended 09:34:06: InstallValidate. Return value 1.
+Action start 09:34:06: RemoveExistingProducts.
+Action ended 09:34:06: RemoveExistingProducts. Return value 0.
+Action start 09:34:06: InstallInitialize.
+Action ended 09:34:06: InstallInitialize. Return value 1.
+Action start 09:34:06: ProcessComponents.
+Action ended 09:34:06: ProcessComponents. Return value 1.
+Action start 09:34:06: UnpublishFeatures.
+Action ended 09:34:06: UnpublishFeatures. Return value 1.
+Action start 09:34:06: RemoveRegistryValues.
+Action ended 09:34:06: RemoveRegistryValues. Return value 1.
+Action start 09:34:06: RemoveFiles.
+Action ended 09:34:06: RemoveFiles. Return value 1.
+Action start 09:34:06: RemoveFolders.
+Action ended 09:34:06: RemoveFolders. Return value 0.
+Action start 09:34:06: CreateFolders.
+Action ended 09:34:06: CreateFolders. Return value 0.
+Action start 09:34:06: InstallFiles.
+Action ended 09:34:06: InstallFiles. Return value 1.
+Action start 09:34:06: WriteRegistryValues.
+Action ended 09:34:06: WriteRegistryValues. Return value 1.
+Action start 09:34:06: RegisterUser.
+Action ended 09:34:06: RegisterUser. Return value 0.
+Action start 09:34:06: RegisterProduct.
+Action ended 09:34:06: RegisterProduct. Return value 1.
+Action start 09:34:06: PublishFeatures.
+Action ended 09:34:06: PublishFeatures. Return value 1.
+Action start 09:34:06: PublishProduct.
+Action ended 09:34:06: PublishProduct. Return value 1.
+MSI (s) (08:B8) [09:34:06:537]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+Action start 09:34:06: InstallExecute.
+MSI (s) (08:B8) [09:34:06:549]: Note: 1: 1402 2: UNKNOWN\Products\5F28379F0B949F147B24BFD273560A6C\Transforms 3: 2 
+MSI (s) (08:B8) [09:34:06:549]: Note: 1: 1402 2: UNKNOWN\Products\5F28379F0B949F147B24BFD273560A6C\Transforms 3: 2 
+MSI (s) (08:B8) [09:34:06:563]: Note: 1: 1402 2: UNKNOWN\Products\5F28379F0B949F147B24BFD273560A6C\Usage 3: 2 
+MSI (s) (08:B8) [09:34:06:569]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:B8) [09:34:06:569]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C\SourceList 3: 2 
+MSI (s) (08:B8) [09:34:06:571]: Note: 1: 1402 2: UNKNOWN\Installer\Features\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:B8) [09:34:06:575]: Executing op: FileRemove(,FileName=control.txt,,ComponentId={F8550A14-5545-4032-A644-7D814D32DA3B})
+MSI (s) (08:B8) [09:34:06:581]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C\Patches 3: 2 
+MSI (s) (08:B8) [09:34:06:581]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Patches 3: 2 
+MSI (s) (08:B8) [09:34:06:587]: Doing action: DeliberateFailure
+Action ended 09:34:06: InstallExecute. Return value 1.
+Action start 09:34:06: DeliberateFailure.
+Action ended 09:34:06: DeliberateFailure. Return value 3.
+MSI (s) (08:B8) [09:34:06:605]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Patches 3: 2 
+MSI (s) (08:B8) [09:34:06:607]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Patches 3: 5 
+MSI (s) (08:B8) [09:34:06:607]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value AllPatches to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Patches.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:609]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\5F28379F0B949F147B24BFD273560A6C\Patches 3: 2 
+MSI (s) (08:B8) [09:34:06:611]: Executing op: FileCopy(SourceName=C:\Config.Msi\16638.rbf,,DestName=C:\Users\OttrinDesktopQA\AppData\Local\OttrinRollbackControlUninstall\control.txt,Attributes=32800,FileSize=32,PerTick=0,,VerifyMedia=0,ElevateFlags=1,,,,,,,InstallMode=4194308,,,,,,,)
+MSI (s) (08:B8) [09:34:06:617]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Features 3: 5 
+MSI (s) (08:B8) [09:34:06:617]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Main to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Features.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:619]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Features\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:B8) [09:34:06:623]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\5F28379F0B949F147B24BFD273560A6C\SourceList 3: 2 
+MSI (s) (08:B8) [09:34:06:623]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:B8) [09:34:06:625]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\4A6C64E77F533374483F0E7EE91F4088 3: 1307 
+MSI (s) (08:B8) [09:34:06:625]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value 5F28379F0B949F147B24BFD273560A6C to key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\4A6C64E77F533374483F0E7EE91F4088.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:637]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:637]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayName to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:639]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:639]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayName to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:643]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:643]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:643]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:645]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:645]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:645]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:647]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Usage 3: 2 
+MSI (s) (08:B8) [09:34:06:649]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Usage 3: 5 
+MSI (s) (08:B8) [09:34:06:649]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Usage.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:651]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\4A6C64E77F533374483F0E7EE91F4088 3: 5 
+MSI (s) (08:B8) [09:34:06:651]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value 5F28379F0B949F147B24BFD273560A6C to key \Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\4A6C64E77F533374483F0E7EE91F4088.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:653]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:653]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:655]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:655]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:655]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:655]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:657]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:657]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:659]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:659]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:659]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:661]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:661]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:661]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Language to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:663]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:663]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Version to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:665]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:665]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value WindowsInstaller to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:667]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:667]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMinor to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:667]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:669]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMajor to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:669]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:669]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLUpdateInfo to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:671]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:671]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLInfoAbout to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:673]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:673]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value UninstallString to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:673]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:675]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:675]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:675]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value EstimatedSize to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:677]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:677]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Size to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:679]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:679]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Readme to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:681]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:681]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Publisher to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:683]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:683]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:684]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:684]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:687]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:687]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:689]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:689]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value ModifyPath to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:691]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:691]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:693]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:693]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:695]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:695]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallSource to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:695]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:697]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallLocation to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:697]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:697]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallDate to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:699]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:699]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpTelephone to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:701]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:701]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpLink to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:703]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:703]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayVersion to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:703]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:705]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Contact to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:705]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:705]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Comments to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:707]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6} 3: 5 
+MSI (s) (08:B8) [09:34:06:707]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value AuthorizedCDFPrefix to key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{F97382F5-49B0-41F9-B742-FB2D3765A0C6}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:709]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:711]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:711]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:711]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:713]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:713]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:713]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:715]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:715]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:715]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:716]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:716]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:716]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:719]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Language to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:719]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:719]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Version to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:721]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:721]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value WindowsInstaller to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:723]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:723]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMinor to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:723]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:723]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value VersionMajor to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:725]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:725]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLUpdateInfo to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:725]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:727]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value URLInfoAbout to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:727]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:727]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value UninstallString to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:727]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:731]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:731]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:731]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value EstimatedSize to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:732]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:732]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Size to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:734]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:734]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Readme to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:734]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:734]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Publisher to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:736]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:736]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:736]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:739]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:739]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:739]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:741]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:741]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value ModifyPath to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:741]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:743]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value LocalPackage to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:743]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:743]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:745]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:745]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallSource to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:745]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:747]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallLocation to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:747]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:747]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value InstallDate to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:748]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:748]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpTelephone to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:748]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:750]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value HelpLink to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:750]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:750]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value DisplayVersion to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:752]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:752]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Contact to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:752]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:754]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value Comments to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:754]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 5 
+MSI (s) (08:B8) [09:34:06:754]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value AuthorizedCDFPrefix to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:756]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages 3: 5 
+Info 1403.Could not delete value C:\WINDOWS\Installer\16635.msi from key \Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:756]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages 3: 5 
+MSI (s) (08:B8) [09:34:06:756]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:B8) [09:34:06:758]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Transforms 3: 2 
+MSI (s) (08:B8) [09:34:06:758]: Error in rollback skipped.	Return: 5
+Action ended 09:34:06: INSTALL. Return value 3.
+MSI (s) (08:B8) [09:34:06:794]: MainEngineThread is returning 1603
+MSI (s) (08:04) [09:34:06:802]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:04) [09:34:06:802]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (c) (84:E0) [09:34:06:804]: MainEngineThread is returning 1603

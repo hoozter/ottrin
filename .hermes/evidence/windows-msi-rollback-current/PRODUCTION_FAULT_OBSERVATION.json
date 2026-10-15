@@ -1,0 +1,30 @@
+﻿{
+    "task_instances":  1,
+    "preference_hash":  "EDEC0B676147FF9F4AE16B951767633B0E8E1E0736ADD5D1964BD91BF1D0D756",
+    "scope":  "Exact fcf00aa MSI production uninstall failure and normal retry; ordinary account; no injected MSI action",
+    "phase":  "observed-production-rollback",
+    "state_after_retry":  1,
+    "payload_matches":  true,
+    "query_total":  1,
+    "after":  {
+                  "instance":  "{B49A035B-BF82-4ABC-B7FD-4BBF5403164D}",
+                  "pid":  3268
+              },
+    "failure_exit":  1603,
+    "task_enabled":  true,
+    "source_hash":  "2085FCCC824C317A745F24FDAF4137F34065A5D2424B764AC710CC0C089FF766",
+    "retry_uninstall_exit":  1603,
+    "before":  {
+                   "instance":  "{B49A035B-BF82-4ABC-B7FD-4BBF5403164D}",
+                   "pid":  3268
+               },
+    "task_xml_restored":  true,
+    "task_security_restored":  true,
+    "product":  "{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}",
+    "installer_sha256":  "f28a7f143edba14fd972781c1fbe4a6c368ec8cc9037d05a5b3d7b84dba15108",
+    "status":  "observed",
+    "payload_remaining_after_retry":  true,
+    "task_state":  4,
+    "state_after_failure":  1,
+    "state_before":  5
+}

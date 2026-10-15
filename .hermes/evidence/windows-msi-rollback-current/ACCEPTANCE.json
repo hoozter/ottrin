@@ -1,0 +1,38 @@
+{
+  "status": "Exact normal upgrade/repair accepted; failed-transaction registration rollback rejected",
+  "source_revision": "fcf00aaee547085517300a5f5d32925c323dd2ae",
+  "msi_sha256": "f28a7f143edba14fd972781c1fbe4a6c368ec8cc9037d05a5b3d7b84dba15108",
+  "environment": {
+    "caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+    "build": "26100",
+    "msi_version": "5.0.26100.9168"
+  },
+  "exact_normal_upgrade_and_four_repair_cases": "EXACT_UPGRADE_AND_REPAIR.json",
+  "production_failure": "PRODUCTION_FAULT_OBSERVATION.json",
+  "independent_file_only_controls": "FILE_ONLY_CONTROL_RESULTS.json",
+  "supported_recovery_attempts": "SUPPORTED_RECOVERY_RESULTS.json",
+  "cleanup": "CLEANUP.json",
+  "findings": [
+    "Exact published410-to-current MSI update with running daemon exits0 without reboot, verifies51 payload files and preserves database identity/security/login/preferences/source",
+    "Enabled-running, disabled-running, enabled-idle and disabled-idle forced repairs each exit0 and preserve intended state",
+    "Locked preview cache makes actual CleanupBeforeUninstall reject before stopping indexing; task XML/security, daemon instance, payload and source/preferences remain intact",
+    "MSI engine then fails product-registration rollback with access-denied/invalid-owner errors; product state becomes advertised1 and normal uninstall retry returns1603",
+    "Two independent standard per-user control packages reproduce failed registration rollback after actual file copy/removal, with no Ottrin executable or application custom action",
+    "The uninstall control reports repair0 and subsequent uninstall0 while its payload remains; a fresh reinstall then uninstall removes it",
+    "The production ADDLOCAL repair returns1602 and retry uninstall1603; direct ordinary Ottrin generated-data cleanup returns0, followed by discarding this disposable overlay"
+  ],
+  "upstream_issue": "https://github.com/wixtoolset/issues/issues/8574",
+  "upstream_comparison_scope": "Metadata-only inspection of attached packages. The Advanced Installer comparison fails via an immediate action at6401 before InstallExecute6500, so it is not equivalent to the after-execution rollback controls. No third-party MSI was executed.",
+  "cause_boundary": "Reproduces beyond Ottrin application code. Exact compiler/runtime/environment cause and a safe authoring fix are not established. No registry ACL changes, global policy changes, elevation workaround, rollback disabling or manual registration repair were used.",
+  "limits": [
+    "MSI rollback release gate remains failed; this is not a release waiver",
+    "Production locked-cache case leaves the daemon running; it does not exercise resuming a stopped daemon. After-index-shutdown engine rollback remains separate",
+    "Native tests use one disposable Windows environment, not all supported Windows versions",
+    "Current GUI/DPI/reboot/Office/cross-version/signing and full NSIS payload rollback gates retain their own scopes"
+  ],
+  "fixture_notes": [
+    "Raw upgrade result inherited an NSIS scope string from its common harness; the executed script uses msiexec and logs, ProductCodes and SHA256 bind the MSI result. Preserve raw output; interpret through this receipt.",
+    "Initial metadata export was corrected to use known COM table column counts and explicit UTF8 before interpreting the comparison.",
+    "Initial control authoring failed compilation before execution; explicit component GUIDs and explicit InstallExecute sequence6500 were added, then the controls built and ran."
+  ]
+}

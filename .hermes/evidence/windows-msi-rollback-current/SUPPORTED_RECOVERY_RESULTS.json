@@ -1,0 +1,16 @@
+﻿{
+    "app_files_remaining":  true,
+    "scope":  "Supported ordinary-user MSI APIs after verified registration rollback failure; no manual registry/ACL/policy changes",
+    "phase":  "observed-supported-recovery",
+    "repair_exit":  1602,
+    "control_uninstall_exit":  0,
+    "application_cleanup_exit":  0,
+    "state_after_repair":  1,
+    "control_file_remaining":  false,
+    "product":  "{DED5E704-031D-4FF4-97C7-E680A0E8A5C6}",
+    "uninstall_exit":  1603,
+    "status":  "observed",
+    "state_after_uninstall":  1,
+    "control_install_exit":  0,
+    "state_before":  1
+}

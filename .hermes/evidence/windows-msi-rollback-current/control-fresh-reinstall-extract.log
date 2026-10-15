@@ -1,0 +1,74 @@
+MSI (s) (08:68) [09:37:14:109]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2 
+MSI (s) (08:68) [09:37:14:178]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (08:68) [09:37:14:178]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+Action start 09:37:14: INSTALL.
+Action start 09:37:14: FindRelatedProducts.
+Action ended 09:37:14: FindRelatedProducts. Return value 1.
+Action start 09:37:14: LaunchConditions.
+Action ended 09:37:14: LaunchConditions. Return value 1.
+Action start 09:37:14: ValidateProductID.
+Action ended 09:37:14: ValidateProductID. Return value 1.
+Action start 09:37:14: CostInitialize.
+Action ended 09:37:14: CostInitialize. Return value 1.
+Action start 09:37:14: FileCost.
+Action ended 09:37:14: FileCost. Return value 1.
+Action start 09:37:14: CostFinalize.
+Action ended 09:37:14: CostFinalize. Return value 1.
+Action start 09:37:14: MigrateFeatureStates.
+Action ended 09:37:14: MigrateFeatureStates. Return value 0.
+Action start 09:37:14: InstallValidate.
+Action ended 09:37:14: InstallValidate. Return value 1.
+Action start 09:37:14: RemoveExistingProducts.
+Action ended 09:37:14: RemoveExistingProducts. Return value 1.
+Action start 09:37:14: InstallInitialize.
+Action ended 09:37:14: InstallInitialize. Return value 1.
+Action start 09:37:14: ProcessComponents.
+Action ended 09:37:14: ProcessComponents. Return value 1.
+Action start 09:37:14: UnpublishFeatures.
+Action ended 09:37:14: UnpublishFeatures. Return value 1.
+Action start 09:37:14: RemoveRegistryValues.
+Action ended 09:37:14: RemoveRegistryValues. Return value 1.
+Action start 09:37:14: RemoveFiles.
+Action ended 09:37:14: RemoveFiles. Return value 1.
+Action start 09:37:14: RemoveFolders.
+Action ended 09:37:14: RemoveFolders. Return value 0.
+Action start 09:37:14: CreateFolders.
+Action ended 09:37:14: CreateFolders. Return value 0.
+Action start 09:37:14: InstallFiles.
+Action ended 09:37:14: InstallFiles. Return value 1.
+Action start 09:37:14: WriteRegistryValues.
+Action ended 09:37:14: WriteRegistryValues. Return value 1.
+Action start 09:37:14: RegisterUser.
+Action ended 09:37:14: RegisterUser. Return value 1.
+Action start 09:37:14: RegisterProduct.
+Action ended 09:37:14: RegisterProduct. Return value 1.
+Action start 09:37:14: PublishFeatures.
+Action ended 09:37:14: PublishFeatures. Return value 1.
+Action start 09:37:14: PublishProduct.
+Action ended 09:37:14: PublishProduct. Return value 1.
+MSI (s) (08:68) [09:37:14:256]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+Action start 09:37:14: InstallExecute.
+MSI (s) (08:68) [09:37:14:264]: Executing op: FileCopy(SourceName=control.txt,SourceCabKey=ControlFile,DestName=control.txt,Attributes=512,FileSize=32,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1629166196,HashPart2=1332622345,HashPart3=-1045295759,HashPart4=1081083608,,)
+MSI (s) (08:68) [09:37:14:268]: Note: 1: 1402 2: UNKNOWN\Products\5F28379F0B949F147B24BFD273560A6C\InstallProperties 3: 2 
+MSI (s) (08:68) [09:37:14:280]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\5F28379F0B949F147B24BFD273560A6C\Patches 3: 2 
+MSI (s) (08:68) [09:37:14:280]: Note: 1: 1402 2: UNKNOWN\Products\5F28379F0B949F147B24BFD273560A6C\Patches 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C 3: 2 
+MSI (s) (08:68) [09:37:14:282]: Note: 1: 1402 2: UNKNOWN\Installer\Products\5F28379F0B949F147B24BFD273560A6C\SourceList 3: 2 
+Action ended 09:37:14: InstallExecute. Return value 1.
+Action start 09:37:14: InstallFinalize.
+Action ended 09:37:14: InstallFinalize. Return value 1.
+Action ended 09:37:14: INSTALL. Return value 1.
+MSI (s) (08:68) [09:37:14:331]: MainEngineThread is returning 0
+MSI (s) (08:F0) [09:37:14:336]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:F0) [09:37:14:339]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (c) (08:28) [09:37:14:341]: MainEngineThread is returning 0

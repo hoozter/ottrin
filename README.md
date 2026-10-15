@@ -21,8 +21,11 @@ artifact is claimed as published or accepted. See the
 
 The intended first release formats are Linux AppImage and portable tarball,
 Windows portable zip, per-user installer and per-user MSI, plus an unsigned
-macOS app-bundle archive. The Windows MSI and macOS package sources are
-complete, but both remain pending native platform construction and acceptance.
+macOS app-bundle archive. Windows MSI packages have been built and tested
+natively for normal installation, upgrade, repair and removal. Failed-transaction
+MSI registration rollback still fails native tests and blocks acceptance; see the
+[roadmap](docs/ROADMAP.md) for exact artifact scopes. Native macOS construction
+and platform acceptance remain pending.
 
 The latest locally verified Linux build is kept at
 `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, with its checksum and source

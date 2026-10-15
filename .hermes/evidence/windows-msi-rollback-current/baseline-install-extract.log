@@ -1,0 +1,138 @@
+MSI (s) (08:D4) [09:26:17:660]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2 
+MSI (s) (08:D4) [09:26:18:417]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (08:D4) [09:26:18:417]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+Action start 09:26:18: INSTALL.
+Action start 09:26:18: FindRelatedProducts.
+Action ended 09:26:18: FindRelatedProducts. Return value 1.
+Action start 09:26:18: LaunchConditions.
+Action ended 09:26:18: LaunchConditions. Return value 1.
+Action start 09:26:18: ValidateProductID.
+Action ended 09:26:18: ValidateProductID. Return value 1.
+Action start 09:26:18: CostInitialize.
+Action ended 09:26:18: CostInitialize. Return value 1.
+Action start 09:26:18: FileCost.
+Action ended 09:26:18: FileCost. Return value 1.
+Action start 09:26:18: CostFinalize.
+Action ended 09:26:18: CostFinalize. Return value 1.
+Action start 09:26:18: MigrateFeatureStates.
+Action ended 09:26:18: MigrateFeatureStates. Return value 0.
+Action start 09:26:18: InstallValidate.
+Action ended 09:26:18: InstallValidate. Return value 1.
+Action start 09:26:18: InstallInitialize.
+Action ended 09:26:18: InstallInitialize. Return value 1.
+Action start 09:26:18: ProcessComponents.
+Action ended 09:26:18: ProcessComponents. Return value 1.
+Action start 09:26:18: UnpublishFeatures.
+Action ended 09:26:18: UnpublishFeatures. Return value 1.
+Action start 09:26:18: RemoveRegistryValues.
+Action ended 09:26:18: RemoveRegistryValues. Return value 1.
+Action start 09:26:18: RemoveShortcuts.
+Action ended 09:26:18: RemoveShortcuts. Return value 1.
+Action start 09:26:18: RemoveFiles.
+Action ended 09:26:18: RemoveFiles. Return value 1.
+Action start 09:26:18: RemoveFolders.
+Action ended 09:26:18: RemoveFolders. Return value 0.
+Action start 09:26:18: CreateFolders.
+Action ended 09:26:18: CreateFolders. Return value 0.
+Action start 09:26:18: InstallFiles.
+Action ended 09:26:18: InstallFiles. Return value 1.
+Action start 09:26:18: RollbackBackgroundIndex.
+Action ended 09:26:18: RollbackBackgroundIndex. Return value 1.
+Action start 09:26:18: SnapshotBackgroundIndex.
+Action ended 09:26:18: SnapshotBackgroundIndex. Return value 1.
+Action start 09:26:18: InstallBackgroundIndex.
+Action ended 09:26:18: InstallBackgroundIndex. Return value 1.
+Action start 09:26:18: CreateShortcuts.
+Action ended 09:26:18: CreateShortcuts. Return value 1.
+Action start 09:26:18: WriteRegistryValues.
+Action ended 09:26:18: WriteRegistryValues. Return value 1.
+Action start 09:26:18: RegisterUser.
+Action ended 09:26:18: RegisterUser. Return value 1.
+Action start 09:26:18: RegisterProduct.
+Action ended 09:26:18: RegisterProduct. Return value 1.
+Action start 09:26:18: PublishFeatures.
+Action ended 09:26:18: PublishFeatures. Return value 1.
+Action start 09:26:18: PublishProduct.
+Action ended 09:26:18: PublishProduct. Return value 1.
+MSI (s) (08:D4) [09:26:18:626]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+Action start 09:26:18: InstallExecute.
+MSI (s) (08:D4) [09:26:18:672]: Executing op: FileCopy(SourceName=LICENSE,SourceCabKey=flsZc32FZODtW6b6NO6fzkp81ZDd8A,DestName=LICENSE,Attributes=512,FileSize=1064,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1278194335,HashPart2=2015275898,HashPart3=1364849293,HashPart4=1159391407,,)
+MSI (s) (08:D4) [09:26:18:684]: Executing op: FileCopy(SourceName=README.md,SourceCabKey=flsRNhaMHscOhp.l05dI4VGk3qQ_XY,DestName=README.md,Attributes=512,FileSize=7914,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1175457418,HashPart2=1985050330,HashPart3=-794787372,HashPart4=322837819,,)
+MSI (s) (08:D4) [09:26:18:686]: Executing op: FileCopy(SourceName=RUNNING.md,SourceCabKey=flsIxV6crlvxifgZDN2HWFvxzvSHqs,DestName=RUNNING.md,Attributes=512,FileSize=658,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-213149041,HashPart2=755921186,HashPart3=1943277268,HashPart4=1056146247,,)
+MSI (s) (08:D4) [09:26:18:688]: Executing op: FileCopy(SourceName=xaqmkjd7.txt|SOURCE_REVISION.txt,SourceCabKey=fls7HBQddGBhspWWaHoS3OU2RYJTAo,DestName=SOURCE_REVISION.txt,Attributes=512,FileSize=140,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-489781176,HashPart2=-1743157523,HashPart3=369353499,HashPart4=-1049049047,,)
+MSI (s) (08:D4) [09:26:18:690]: Executing op: FileCopy(SourceName=icon.ico,SourceCabKey=flsg4RLgrh.v26uyGgIfNdoumQ1U1o,DestName=icon.ico,Attributes=512,FileSize=21142,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-531660117,HashPart2=1752786096,HashPart3=-1656724844,HashPart4=1703663620,,)
+MSI (s) (08:D4) [09:26:18:692]: Executing op: FileCopy(SourceName=icon.png,SourceCabKey=flsOWrIrTIp6j4UNnXUWTzQNKnBeg4,DestName=icon.png,Attributes=512,FileSize=8217,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=581676473,HashPart2=-710623669,HashPart3=-518129872,HashPart4=-203598344,,)
+MSI (s) (08:D4) [09:26:18:694]: Executing op: FileCopy(SourceName=icon.svg,SourceCabKey=fls826Xmx1bYye73tb8BcY9HcKSVS0,DestName=icon.svg,Attributes=512,FileSize=1829,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1714889340,HashPart2=114504205,HashPart3=-457432469,HashPart4=701240645,,)
+MSI (s) (08:D4) [09:26:18:696]: Executing op: FileCopy(SourceName=logo.svg,SourceCabKey=flswJyYalMCkontqvr3WKJBu8kKrqA,DestName=logo.svg,Attributes=512,FileSize=5045,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=180336299,HashPart2=1694003200,HashPart3=1443603781,HashPart4=470606711,,)
+MSI (s) (08:D4) [09:26:18:698]: Executing op: FileCopy(SourceName=dxil.dll,SourceCabKey=flsdKYvTGfXzFAsH8hjS47Hvk1kX7A,DestName=dxil.dll,Attributes=512,FileSize=1503072,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.9.2602.24,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (08:D4) [09:26:18:710]: Executing op: FileCopy(SourceName=fhg9ccro.ps1|index-task-transaction.ps1,SourceCabKey=IndexTransactionScript,DestName=index-task-transaction.ps1,Attributes=512,FileSize=3637,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=764537542,HashPart2=-1117962296,HashPart3=743856248,HashPart4=143085939,,)
+MSI (s) (08:D4) [09:26:18:710]: Executing op: FileCopy(SourceName=libEGL.dll,SourceCabKey=fls10lq__Xrvf4KApIOuXi1crEVd_Y,DestName=libEGL.dll,Attributes=512,FileSize=184320,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (08:D4) [09:26:18:714]: Executing op: FileCopy(SourceName=h0ezw7fl.dll|libGLESv2.dll,SourceCabKey=flswaIFQK0b.WVSy3f8BK7xeHtqVtI,DestName=libGLESv2.dll,Attributes=512,FileSize=50176,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (08:D4) [09:26:18:716]: Executing op: FileCopy(SourceName=fu6imoyo.dll|libgallium_wgl.dll,SourceCabKey=flst02CQ3HYNLiLf5b_1GoZWnIddkA,DestName=libgallium_wgl.dll,Attributes=512,FileSize=76270592,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (08:D4) [09:26:19:113]: Executing op: FileCopy(SourceName=opengl32.dll,SourceCabKey=flsJ99jFqEEvG4pAcUSORPa8VfSmmw,DestName=opengl32.dll,Attributes=512,FileSize=123904,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=26.1.3.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (08:D4) [09:26:19:115]: Executing op: FileCopy(SourceName=z4ivgyyi.exe|ottrin-indexd.exe,SourceCabKey=flsrnR0CTjRWGxqX5ntnPrfl0ob8JQ,DestName=ottrin-indexd.exe,Attributes=512,FileSize=5772022,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-619259991,HashPart2=896396698,HashPart3=3144225,HashPart4=69548309,,)
+MSI (s) (08:D4) [09:26:19:161]: Executing op: FileCopy(SourceName=y0uiaria.exe|ottrin-legacy-doc-render.exe,SourceCabKey=flswRWUZ_tzjJhb6KWPZYz3oDOKaE8,DestName=ottrin-legacy-doc-render.exe,Attributes=512,FileSize=5527129,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1875319156,HashPart2=-745387155,HashPart3=1395539357,HashPart4=-1581724072,,)
+MSI (s) (08:D4) [09:26:19:200]: Executing op: FileCopy(SourceName=ba_6gxym.exe|ottrin-office-render.exe,SourceCabKey=flsmMWtAKWqL7VGNDJ_8HDBITM1QvI,DestName=ottrin-office-render.exe,Attributes=512,FileSize=414579,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1751355947,HashPart2=2063332531,HashPart3=-1756253796,HashPart4=1856764632,,)
+MSI (s) (08:D4) [09:26:19:206]: Executing op: FileCopy(SourceName=4c3w8sun.exe|ottrin-priv-helper.exe,SourceCabKey=flszOA9Y3vHcmXT6QAiCNUTOdsRzj0,DestName=ottrin-priv-helper.exe,Attributes=512,FileSize=1274843,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1899096098,HashPart2=1254554547,HashPart3=1277525038,HashPart4=1333599811,,)
+MSI (s) (08:D4) [09:26:19:216]: Executing op: FileCopy(SourceName=ottrin.exe,SourceCabKey=MainExecutable,DestName=ottrin.exe,Attributes=512,FileSize=28670743,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-469224267,HashPart2=2130485428,HashPart3=-647394945,HashPart4=254342171,,)
+MSI (s) (08:D4) [09:26:19:401]: Executing op: FileCopy(SourceName=x6mrf8pe.ps1|windows-index-identity.ps1,SourceCabKey=IndexIdentityScript,DestName=windows-index-identity.ps1,Attributes=512,FileSize=5044,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1576273477,HashPart2=557303274,HashPart3=800088906,HashPart4=1220270261,,)
+MSI (s) (08:D4) [09:26:19:411]: Executing op: FileCopy(SourceName=LICENSE,SourceCabKey=fls1AiWwP0XKjtxzJfS7IJ.Gexf2qY,DestName=LICENSE,Attributes=512,FileSize=1184,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=2052335921,HashPart2=391030701,HashPart3=-1222180575,HashPart4=1609216406,,)
+MSI (s) (08:D4) [09:26:19:413]: Executing op: FileCopy(SourceName=pdfium.dll,SourceCabKey=flsGl2aYODhnYulOwdrRWY7u8D1FaY,DestName=pdfium.dll,Attributes=512,FileSize=7220736,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=152.0.7961.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (08:D4) [09:26:19:471]: Executing op: FileCopy(SourceName=abseil.txt,SourceCabKey=flsXeh73ocsqjgZsONNouw2BulFCyM,DestName=abseil.txt,Attributes=512,FileSize=11564,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=117530863,HashPart2=9939514,HashPart3=-1582858517,HashPart4=1028711568,,)
+MSI (s) (08:D4) [09:26:19:473]: Executing op: FileCopy(SourceName=agg23.txt,SourceCabKey=flsWdgHG2nUnBhlNJ4fS8gf4oJkI1o,DestName=agg23.txt,Attributes=512,FileSize=725,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1417485623,HashPart2=1274569062,HashPart3=587274716,HashPart4=-499976405,,)
+MSI (s) (08:D4) [09:26:19:475]: Executing op: FileCopy(SourceName=xphsn1hw.txt|fast_float.txt,SourceCabKey=flsOQ81YSXjs6w9URGCqnnRbZuekQ0,DestName=fast_float.txt,Attributes=512,FileSize=1106,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1368976272,HashPart2=-962214526,HashPart3=20640089,HashPart4=-1236941305,,)
+MSI (s) (08:D4) [09:26:19:477]: Executing op: FileCopy(SourceName=freetype.txt,SourceCabKey=flsyKMYUZUw7miouXIPxUnICwm0AM0,DestName=freetype.txt,Attributes=512,FileSize=6741,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=937982420,HashPart2=-23464297,HashPart3=-633848953,HashPart4=1288507357,,)
+MSI (s) (08:D4) [09:26:19:479]: Executing op: FileCopy(SourceName=icu.txt,SourceCabKey=flsdU57opLm1LzppPEQRyTXU59yj.8,DestName=icu.txt,Attributes=512,FileSize=28286,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=748568020,HashPart2=88344946,HashPart3=1701222937,HashPart4=-1995598095,,)
+MSI (s) (08:D4) [09:26:19:481]: Executing op: FileCopy(SourceName=lcms.txt,SourceCabKey=fls63mwVQOMWPYt7L5hXH.YH0VT5sk,DestName=lcms.txt,Attributes=512,FileSize=1353,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-622972265,HashPart2=-1283609292,HashPart3=681251018,HashPart4=-1177914958,,)
+MSI (s) (08:D4) [09:26:19:485]: Executing op: FileCopy(SourceName=-bmfqqqf.ijg|libjpeg_turbo.ijg,SourceCabKey=flsTqor3sCEJyanvkljGljmqeXtbGs,DestName=libjpeg_turbo.ijg,Attributes=512,FileSize=13059,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-459577221,HashPart2=-941706914,HashPart3=1095075185,HashPart4=742681015,,)
+MSI (s) (08:D4) [09:26:19:487]: Executing op: FileCopy(SourceName=bauquxez.md|libjpeg_turbo.md,SourceCabKey=fls6e5Ak60ws6ai7jvhTxZiTuKETkw,DestName=libjpeg_turbo.md,Attributes=512,FileSize=5755,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-2107036290,HashPart2=-272461776,HashPart3=1542719190,HashPart4=-1970137392,,)
+MSI (s) (08:D4) [09:26:19:489]: Executing op: FileCopy(SourceName=nem3xgjl.txt|libopenjpeg.txt,SourceCabKey=flsS_2yib0Ubq9rImrQd_29kiZj2Rw,DestName=libopenjpeg.txt,Attributes=512,FileSize=1794,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1721831870,HashPart2=470745322,HashPart3=907966349,HashPart4=-1590201475,,)
+MSI (s) (08:D4) [09:26:19:491]: Executing op: FileCopy(SourceName=libpng.txt,SourceCabKey=flsbpQu3H1JtL0I9OgR9u5eb2D8DUo,DestName=libpng.txt,Attributes=512,FileSize=5479,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-403033144,HashPart2=1748366046,HashPart3=2040166905,HashPart4=2065612265,,)
+MSI (s) (08:D4) [09:26:19:493]: Executing op: FileCopy(SourceName=libtiff.txt,SourceCabKey=flsUrjbkbvFSPCSNg1trp1GfQhYPpA,DestName=libtiff.txt,Attributes=512,FileSize=1139,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-233798638,HashPart2=41635075,HashPart3=-910993048,HashPart4=880462929,,)
+MSI (s) (08:D4) [09:26:19:495]: Executing op: FileCopy(SourceName=270iqb-k.txt|llvm-libc.txt,SourceCabKey=flsfEluz9FpOGdyAgk.auRt..Nsa1o,DestName=llvm-libc.txt,Attributes=512,FileSize=15418,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1611961147,HashPart2=2143118535,HashPart3=83256093,HashPart4=1934828855,,)
+MSI (s) (08:D4) [09:26:19:497]: Executing op: FileCopy(SourceName=pdfium.txt,SourceCabKey=flsYzbaHaykdLDieaEUvz7ijM_lCz8,DestName=pdfium.txt,Attributes=512,FileSize=12818,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1112301416,HashPart2=1485513884,HashPart3=1546513072,HashPart4=-33482968,,)
+MSI (s) (08:D4) [09:26:19:499]: Executing op: FileCopy(SourceName=simdutf.txt,SourceCabKey=fls2uGT3MNvcCKS80WWQb5gERM3rSE,DestName=simdutf.txt,Attributes=512,FileSize=1077,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=539000785,HashPart2=-12631063,HashPart3=1922714809,HashPart4=-656355797,,)
+MSI (s) (08:D4) [09:26:19:501]: Executing op: FileCopy(SourceName=zlib.txt,SourceCabKey=fls.8vsInPsKTcQrJt.KvNmdoEH9fc,DestName=zlib.txt,Attributes=512,FileSize=1332,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1667662187,HashPart2=-728149742,HashPart3=-1890642438,HashPart4=1639707163,,)
+MSI (s) (08:D4) [09:26:19:503]: Executing op: FileCopy(SourceName=yri8hovy.md|DEVELOPMENT.md,SourceCabKey=fls2lW2GbeeywRPOQBryx9jkamJl2M,DestName=DEVELOPMENT.md,Attributes=512,FileSize=46578,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=602652173,HashPart2=-420431159,HashPart3=-374842561,HashPart4=1659355999,,)
+MSI (s) (08:D4) [09:26:19:505]: Executing op: FileCopy(SourceName=63ysvbpt.md|RELEASE_CHECKLIST.md,SourceCabKey=flsh4_V94sFI75gBFX8X17OdkPmt80,DestName=RELEASE_CHECKLIST.md,Attributes=512,FileSize=9175,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1616320097,HashPart2=1970208137,HashPart3=-1114028090,HashPart4=-803599538,,)
+MSI (s) (08:D4) [09:26:19:507]: Executing op: FileCopy(SourceName=y6ux3-c2.md|RELEASE_NOTES.md,SourceCabKey=flsvcrUA26LJrg5I0H389dkn1Iudwg,DestName=RELEASE_NOTES.md,Attributes=512,FileSize=10640,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=217641519,HashPart2=-462530060,HashPart3=-236375422,HashPart4=1187529214,,)
+MSI (s) (08:D4) [09:26:19:509]: Executing op: FileCopy(SourceName=ROADMAP.md,SourceCabKey=fls8fm4FrBbmgvGAAjxD4GPnMfNRxY,DestName=ROADMAP.md,Attributes=512,FileSize=225352,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1134869146,HashPart2=-329793935,HashPart3=813537123,HashPart4=452771200,,)
+MSI (s) (08:D4) [09:26:19:513]: Executing op: FileCopy(SourceName=pzj5u5jo.md|USER_GUIDE.md,SourceCabKey=flskt9tsQwxwZNZAMt9wipYGaAxc.k,DestName=USER_GUIDE.md,Attributes=512,FileSize=32341,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-560596675,HashPart2=-1821363041,HashPart3=1567194763,HashPart4=680707261,,)
+MSI (s) (08:D4) [09:26:19:515]: Executing op: FileCopy(SourceName=MANIFEST.txt,SourceCabKey=flsyiuiLxaMkHemJ1ojh8cILO5V.jI,DestName=MANIFEST.txt,Attributes=512,FileSize=1457,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-93155996,HashPart2=1407120568,HashPart3=1067869833,HashPart4=85702534,,)
+MSI (s) (08:D4) [09:26:19:519]: Executing op: FileCopy(SourceName=cumprkgi.txt|Microsoft-DXC-LICENSE-MS.txt,SourceCabKey=flsdCAvLkpzrof8WILjS04mVVUS9mc,DestName=Microsoft-DXC-LICENSE-MS.txt,Attributes=512,FileSize=13163,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1467392268,HashPart2=79168469,HashPart3=-1492285049,HashPart4=1040458944,,)
+MSI (s) (08:D4) [09:26:19:521]: Executing op: FileCopy(SourceName=l5_dwn6p.txt|pal1000-LICENSE.txt,SourceCabKey=flslhRMia5Z9HxCzpcsEMj3aCz7X0c,DestName=pal1000-LICENSE.txt,Attributes=512,FileSize=1090,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=304888597,HashPart2=-580982129,HashPart3=890521123,HashPart4=1780031365,,)
+MSI (s) (08:D4) [09:26:19:523]: Executing op: FileCopy(SourceName=license.rst,SourceCabKey=flsyNlLl33YQT4R1ziYwMnbNyQd6J0,DestName=license.rst,Attributes=512,FileSize=1816,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1417209599,HashPart2=-1221115027,HashPart3=584175410,HashPart4=296740450,,)
+MSI (s) (08:D4) [09:26:19:527]: Executing op: FileCopy(SourceName=Apache-2.0,SourceCabKey=flsacoG0dlqKLpCpBPPhZMWOdlH4TI,DestName=Apache-2.0,Attributes=512,FileSize=10045,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1733728549,HashPart2=-1110255996,HashPart3=1906204605,HashPart4=-956383263,,)
+MSI (s) (08:D4) [09:26:19:529]: Executing op: FileCopy(SourceName=BSL-1.0,SourceCabKey=flsM6ssNGS55HjhTDdSuhQl05scfdI,DestName=BSL-1.0,Attributes=512,FileSize=1649,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-255520698,HashPart2=-2025346548,HashPart3=-1799124700,HashPart4=-928244931,,)
+MSI (s) (08:D4) [09:26:19:531]: Executing op: FileCopy(SourceName=lbjfse83.0-o|GPL-1.0-or-later,SourceCabKey=flsXr7rgln3yB_L3i.4SAUi3dYnHYA,DestName=GPL-1.0-or-later,Attributes=512,FileSize=13047,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=1739007391,HashPart2=-176072725,HashPart3=432813283,HashPart4=-1120903750,,)
+MSI (s) (08:D4) [09:26:19:533]: Executing op: FileCopy(SourceName=esqkrise.0-o|GPL-2.0-only,SourceCabKey=fls94RokVx_IxBvQn5YlN110VZR1UI,DestName=GPL-2.0-only,Attributes=512,FileSize=18424,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1227511006,HashPart2=626464450,HashPart3=1361488271,HashPart4=659935792,,)
+MSI (s) (08:D4) [09:26:19:535]: Executing op: FileCopy(SourceName=MIT,SourceCabKey=flsuv7gbOD0jLH4hWhE_kdXSDog_0U,DestName=MIT,Attributes=512,FileSize=1372,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-797051416,HashPart2=428269896,HashPart3=750662548,HashPart4=1832762689,,)
+MSI (s) (08:D4) [09:26:19:537]: Executing op: FileCopy(SourceName=SGI-B-2.0,SourceCabKey=fls5s_KDQcgyiRb7bGNxpaKaVtF_d4,DestName=SGI-B-2.0,Attributes=512,FileSize=1822,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-812455953,HashPart2=2050811990,HashPart3=1426999208,HashPart4=1060351807,,)
+MSI (s) (08:D4) [09:26:19:539]: Executing op: FileCopy(SourceName=n7ffxki9|Linux-Syscall-Note,SourceCabKey=flsIVYwMtPBiphiTO1Cvs0NgQOPnmQ,DestName=Linux-Syscall-Note,Attributes=512,FileSize=1257,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-2089966523,HashPart2=770833355,HashPart3=1726864922,HashPart4=-1103954099,,)
+MSI (s) (08:D4) [09:26:24:557]: Note: 1: 1402 2: UNKNOWN\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\InstallProperties 3: 2 
+MSI (s) (08:D4) [09:26:24:593]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\Patches 3: 2 
+MSI (s) (08:D4) [09:26:24:593]: Note: 1: 1402 2: UNKNOWN\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\Patches 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:595]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:597]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1 3: 2 
+MSI (s) (08:D4) [09:26:24:597]: Note: 1: 1402 2: UNKNOWN\Installer\Products\04E29DDDF7CF1E541A2BD9DFC5E978B1\SourceList 3: 2 
+Action ended 09:26:24: InstallExecute. Return value 1.
+Action start 09:26:24: RemoveExistingProducts.
+Action ended 09:26:24: RemoveExistingProducts. Return value 1.
+Action start 09:26:24: CommitBackgroundIndex.
+Action ended 09:26:24: CommitBackgroundIndex. Return value 1.
+Action start 09:26:24: InstallFinalize.
+Action ended 09:26:25: InstallFinalize. Return value 1.
+Action ended 09:26:25: INSTALL. Return value 1.
+MSI (s) (08:D4) [09:26:25:415]: MainEngineThread is returning 0
+MSI (s) (08:34) [09:26:25:421]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:34) [09:26:25:425]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (c) (54:94) [09:26:25:427]: MainEngineThread is returning 0

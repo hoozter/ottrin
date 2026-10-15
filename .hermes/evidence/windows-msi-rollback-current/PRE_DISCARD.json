@@ -1,0 +1,8 @@
+﻿{
+    "owned_index_task_absent":  true,
+    "existing_operator_hashes_preserved":  true,
+    "actor_terminal":  true,
+    "cleanup_method":  "Discard isolated COW guest after preserving receipts; do not repair MSI registry or alter ACL/policy",
+    "status":  "pass",
+    "owned_application_processes_absent":  true
+}

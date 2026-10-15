@@ -1,0 +1,461 @@
+MSI (s) (08:94) [09:34:04:382]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2 
+MSI (s) (08:94) [09:34:04:503]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (08:94) [09:34:04:503]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+Action start 09:34:04: INSTALL.
+Action start 09:34:04: FindRelatedProducts.
+Action ended 09:34:04: FindRelatedProducts. Return value 1.
+Action start 09:34:04: LaunchConditions.
+Action ended 09:34:04: LaunchConditions. Return value 1.
+Action start 09:34:04: ValidateProductID.
+Action ended 09:34:04: ValidateProductID. Return value 1.
+Action start 09:34:04: CostInitialize.
+Action ended 09:34:04: CostInitialize. Return value 1.
+Action start 09:34:04: FileCost.
+Action ended 09:34:04: FileCost. Return value 1.
+Action start 09:34:04: CostFinalize.
+Action ended 09:34:04: CostFinalize. Return value 1.
+Action start 09:34:04: MigrateFeatureStates.
+Action ended 09:34:04: MigrateFeatureStates. Return value 0.
+Action start 09:34:04: InstallValidate.
+Action ended 09:34:04: InstallValidate. Return value 1.
+Action start 09:34:04: RemoveExistingProducts.
+Action ended 09:34:04: RemoveExistingProducts. Return value 1.
+Action start 09:34:04: InstallInitialize.
+Action ended 09:34:04: InstallInitialize. Return value 1.
+Action start 09:34:04: ProcessComponents.
+Action ended 09:34:04: ProcessComponents. Return value 1.
+Action start 09:34:04: UnpublishFeatures.
+Action ended 09:34:04: UnpublishFeatures. Return value 1.
+Action start 09:34:04: RemoveRegistryValues.
+Action ended 09:34:04: RemoveRegistryValues. Return value 1.
+Action start 09:34:04: RemoveFiles.
+Action ended 09:34:04: RemoveFiles. Return value 1.
+Action start 09:34:04: RemoveFolders.
+Action ended 09:34:04: RemoveFolders. Return value 0.
+Action start 09:34:04: CreateFolders.
+Action ended 09:34:04: CreateFolders. Return value 0.
+Action start 09:34:04: InstallFiles.
+Action ended 09:34:04: InstallFiles. Return value 1.
+Action start 09:34:04: WriteRegistryValues.
+Action ended 09:34:04: WriteRegistryValues. Return value 1.
+Action start 09:34:04: RegisterUser.
+Action ended 09:34:04: RegisterUser. Return value 1.
+Action start 09:34:04: RegisterProduct.
+Action ended 09:34:04: RegisterProduct. Return value 1.
+Action start 09:34:04: PublishFeatures.
+Action ended 09:34:04: PublishFeatures. Return value 1.
+Action start 09:34:04: PublishProduct.
+Action ended 09:34:04: PublishProduct. Return value 1.
+MSI (s) (08:94) [09:34:04:639]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+Action start 09:34:04: InstallExecute.
+MSI (s) (08:94) [09:34:04:653]: Executing op: FileCopy(SourceName=control.txt,SourceCabKey=ControlFile,DestName=control.txt,Attributes=512,FileSize=32,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,HashOptions=0,HashPart1=-1629166196,HashPart2=1332622345,HashPart3=-1045295759,HashPart4=1081083608,,)
+MSI (s) (08:94) [09:34:04:661]: Note: 1: 1402 2: UNKNOWN\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 2 
+MSI (s) (08:94) [09:34:04:677]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches 3: 2 
+MSI (s) (08:94) [09:34:04:679]: Note: 1: 1402 2: UNKNOWN\Products\BF6DC0265672950468DA41D1C4B7233C\Patches 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:681]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 2 
+MSI (s) (08:94) [09:34:04:683]: Note: 1: 1402 2: UNKNOWN\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList 3: 2 
+MSI (s) (08:94) [09:34:04:691]: Doing action: DeliberateFailure
+Action ended 09:34:04: InstallExecute. Return value 1.
+Action start 09:34:04: DeliberateFailure.
+Action ended 09:34:04: DeliberateFailure. Return value 3.
+MSI (s) (08:94) [09:34:04:713]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList 3: 5 
+Info 1403.Could not delete value LastUsedSource from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:713]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList 3: 5 
+MSI (s) (08:94) [09:34:04:715]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:715]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value Clients from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:717]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:717]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:719]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Media 3: 5 
+Info 1403.Could not delete value 1 from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Media.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:721]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Media 3: 5 
+MSI (s) (08:94) [09:34:04:721]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Media.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:721]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Net 3: 5 
+Info 1403.Could not delete value 1 from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Net.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:723]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Net 3: 5 
+MSI (s) (08:94) [09:34:04:723]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList\Net.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:723]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList 3: 5 
+Info 1403.Could not delete value PackageName from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:725]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList 3: 5 
+MSI (s) (08:94) [09:34:04:725]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:725]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList 3: 5 
+MSI (s) (08:94) [09:34:04:727]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:727]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F 3: 5 
+Info 1403.Could not delete value BF6DC0265672950468DA41D1C4B7233C from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:727]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F 3: 5 
+MSI (s) (08:94) [09:34:04:729]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:729]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value DeploymentFlags from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:729]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:731]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:731]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value AuthorizedLUAApp from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:733]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:733]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:733]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value InstanceType from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:733]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:735]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:735]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value AdvertiseFlags from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:735]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:735]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:737]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value Assignment from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:737]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:737]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:739]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value Version from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:739]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:739]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:739]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value Language from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:741]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:741]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:741]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value PackageCode from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:743]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:743]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:743]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value ProductName from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:745]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:745]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:745]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:747]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:747]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:747]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:747]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:749]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:749]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:749]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:749]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:751]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:751]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:751]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:751]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:753]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:753]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:753]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:753]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:755]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:755]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:755]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:755]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:757]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Products\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:757]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches 3: 5 
+Info 1403.Could not delete value AllPatches from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:759]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches 3: 5 
+MSI (s) (08:94) [09:34:04:759]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:759]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches 3: 5 
+MSI (s) (08:94) [09:34:04:759]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:761]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches 3: 5 
+MSI (s) (08:94) [09:34:04:761]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Patches.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:763]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Features 3: 5 
+Info 1403.Could not delete value Main from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Features.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:765]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Features 3: 5 
+MSI (s) (08:94) [09:34:04:765]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Features.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:765]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Features\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+Info 1403.Could not delete value Main from key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Features\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:767]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Features\BF6DC0265672950468DA41D1C4B7233C 3: 5 
+MSI (s) (08:94) [09:34:04:767]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \S-1-5-21-3183210791-1673105385-3262580894-1032\Software\Microsoft\Installer\Features\BF6DC0265672950468DA41D1C4B7233C.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:769]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value DisplayName from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:771]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:771]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:773]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall 3: 5 
+MSI (s) (08:94) [09:34:04:773]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:773]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value DisplayName from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:775]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:777]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:777]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Usage 3: 5 
+MSI (s) (08:94) [09:34:04:777]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\Usage.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:779]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F 3: 5 
+Info 1403.Could not delete value BF6DC0265672950468DA41D1C4B7233C from key \Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:779]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F 3: 5 
+MSI (s) (08:94) [09:34:04:779]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\85A94833B329B034B8EAD294520CDF9F.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:781]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value Language from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:781]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:781]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:783]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value Version from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:783]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:785]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:785]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value WindowsInstaller from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:787]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:787]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:787]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value VersionMinor from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:789]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:789]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:789]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value VersionMajor from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:791]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:791]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:791]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value URLUpdateInfo from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:793]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:793]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:793]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value URLInfoAbout from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:793]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:795]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:795]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value UninstallString from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:797]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:797]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:797]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value EstimatedSize from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:799]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:799]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:799]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value Size from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:801]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:801]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:801]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value Readme from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:803]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:803]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:803]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value Publisher from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:805]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:805]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:805]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value ModifyPath from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:807]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:807]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:807]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value InstallSource from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:809]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:809]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:809]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value InstallLocation from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:811]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:811]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:811]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value InstallDate from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:813]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:813]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:813]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value HelpTelephone from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:815]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:815]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:815]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value HelpLink from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:817]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:817]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:817]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value DisplayVersion from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:819]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:819]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:819]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value Contact from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:821]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:821]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:821]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value Comments from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:821]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:823]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:823]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+Info 1403.Could not delete value AuthorizedCDFPrefix from key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:823]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3} 3: 5 
+MSI (s) (08:94) [09:34:04:823]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Uninstall\{620CD6FB-2765-4059-86AD-141D4C7B32C3}.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:825]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall 3: 5 
+MSI (s) (08:94) [09:34:04:825]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Uninstall.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:827]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value Language from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:829]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:829]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:829]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value Version from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:831]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:831]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:831]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value WindowsInstaller from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:833]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:833]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:835]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value VersionMinor from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:835]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:835]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:835]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value VersionMajor from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:837]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:837]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:837]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value URLUpdateInfo from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:839]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:839]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:841]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value URLInfoAbout from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:841]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:841]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:843]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value UninstallString from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:843]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:844]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:844]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value EstimatedSize from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:844]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:844]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:846]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value Size from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:846]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:846]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:848]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value Readme from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:848]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:848]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:851]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value Publisher from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:851]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:851]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:853]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value ModifyPath from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:853]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:853]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:855]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value InstallSource from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:855]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:855]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:855]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value InstallLocation from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:857]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:857]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:857]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value InstallDate from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:859]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:859]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:859]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value HelpTelephone from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:860]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:860]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:860]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value HelpLink from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:862]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:862]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:862]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value DisplayVersion from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:864]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:864]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:864]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value Contact from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:866]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:866]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:866]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value Comments from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:868]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:868]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:868]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value AuthorizedCDFPrefix from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:870]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:870]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:870]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+Info 1403.Could not delete value LocalPackage from key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:870]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties 3: 5 
+MSI (s) (08:94) [09:34:04:870]: Error in rollback skipped.	Return: 3
+Info 1404.Could not delete key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1032\Products\BF6DC0265672950468DA41D1C4B7233C\InstallProperties.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (08:94) [09:34:04:872]: Executing op: FileRemove(,FileName=C:\WINDOWS\Installer\1662b.msi,Elevate=1,)
+MSI (s) (08:94) [09:34:04:884]: Executing op: FileRemove(,FileName=C:\WINDOWS\Installer\1662b.msi,,)
+MSI (s) (08:94) [09:34:04:886]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\OttrinQA\RollbackControlInstall 3: 2 
+MSI (s) (08:94) [09:34:04:888]: Executing op: FileRemove(,FileName=C:\Users\OttrinDesktopQA\AppData\Local\OttrinRollbackControlInstall\control.txt,,)
+MSI (s) (08:94) [09:34:04:888]: Error in rollback skipped.	Return: 5
+Action ended 09:34:04: INSTALL. Return value 3.
+MSI (s) (08:94) [09:34:04:926]: MainEngineThread is returning 1603
+MSI (s) (08:F0) [09:34:04:934]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:F0) [09:34:04:934]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (c) (78:44) [09:34:04:938]: MainEngineThread is returning 1603

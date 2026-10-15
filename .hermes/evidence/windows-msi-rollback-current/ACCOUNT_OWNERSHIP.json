@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-msi-rollback-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinDesktopQA",
+  "account": "OttrinDesktopQA",
+  "purpose": "Native installer-controller and running-daemon upgrade acceptance",
+  "restore": "Exact nonsecret Winlogon values, remove owned password/account/profile/task/root; preserve campbell profile/installation; shut off domain",
+  "candidates": {
+    "baseline.msi": "de47dae2de001294809187d91cb981d1e3b8aa6a542f5369045453b5807421f9"
+  }
+}

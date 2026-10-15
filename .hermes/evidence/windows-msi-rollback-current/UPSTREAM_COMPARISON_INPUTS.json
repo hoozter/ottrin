@@ -1,0 +1,16 @@
+[
+  {
+    "upstream": "https://github.com/wixtoolset/issues/issues/8574",
+    "attachment": "advancedinstaller.zip",
+    "archive_sha256": "66454695e2f71fd7f4d0bf876d5e54d746270271b07174cd8d17d9cb04b90a47",
+    "msi_sha256": "89d6b3a04206ffca5e8a558fc6154bfa9fc6daf23a2d9b84168df1d39ef71a5b",
+    "scope": "Metadata-only inspection; no third-party package execution"
+  },
+  {
+    "upstream": "https://github.com/wixtoolset/issues/issues/8574",
+    "attachment": "wix.zip",
+    "archive_sha256": "bb1790feebb66d5f1e8cbee599482fd039a215a72271ed51680233ed29043b41",
+    "msi_sha256": "bcbed63a0875d03b5c5e7cd35a219df4c2d8873b85d1357e7da66b07505efd38",
+    "scope": "Metadata-only inspection; no third-party package execution"
+  }
+]

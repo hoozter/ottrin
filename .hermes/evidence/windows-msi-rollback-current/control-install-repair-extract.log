@@ -1,0 +1,58 @@
+MSI (s) (08:48) [09:34:05:060]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2 
+MSI (s) (08:48) [09:34:05:140]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (08:48) [09:34:05:140]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+Action start 09:34:05: INSTALL.
+Action start 09:34:05: FindRelatedProducts.
+Action ended 09:34:05: FindRelatedProducts. Return value 0.
+Action start 09:34:05: LaunchConditions.
+Action ended 09:34:05: LaunchConditions. Return value 1.
+Action start 09:34:05: ValidateProductID.
+Action ended 09:34:05: ValidateProductID. Return value 1.
+Action start 09:34:05: CostInitialize.
+Action ended 09:34:05: CostInitialize. Return value 1.
+Action start 09:34:05: FileCost.
+Action ended 09:34:05: FileCost. Return value 1.
+Action start 09:34:05: CostFinalize.
+Action ended 09:34:05: CostFinalize. Return value 1.
+Action start 09:34:05: MigrateFeatureStates.
+Action ended 09:34:05: MigrateFeatureStates. Return value 0.
+Action start 09:34:05: InstallValidate.
+Action ended 09:34:05: InstallValidate. Return value 1.
+Action start 09:34:05: RemoveExistingProducts.
+Action ended 09:34:05: RemoveExistingProducts. Return value 0.
+Action start 09:34:05: InstallInitialize.
+Action ended 09:34:05: InstallInitialize. Return value 1.
+Action start 09:34:05: ProcessComponents.
+Action ended 09:34:05: ProcessComponents. Return value 1.
+Action start 09:34:05: UnpublishFeatures.
+Action ended 09:34:05: UnpublishFeatures. Return value 1.
+Action start 09:34:05: RemoveRegistryValues.
+Action ended 09:34:05: RemoveRegistryValues. Return value 1.
+Action start 09:34:05: RemoveFiles.
+Action ended 09:34:05: RemoveFiles. Return value 1.
+Action start 09:34:05: RemoveFolders.
+Action ended 09:34:05: RemoveFolders. Return value 0.
+Action start 09:34:05: CreateFolders.
+Action ended 09:34:05: CreateFolders. Return value 0.
+Action start 09:34:05: InstallFiles.
+Action ended 09:34:05: InstallFiles. Return value 1.
+Action start 09:34:05: WriteRegistryValues.
+Action ended 09:34:05: WriteRegistryValues. Return value 1.
+Action start 09:34:05: RegisterUser.
+Action ended 09:34:05: RegisterUser. Return value 0.
+Action start 09:34:05: RegisterProduct.
+Action ended 09:34:05: RegisterProduct. Return value 1.
+Action start 09:34:05: PublishFeatures.
+Action ended 09:34:05: PublishFeatures. Return value 1.
+Action start 09:34:05: PublishProduct.
+Action ended 09:34:05: PublishProduct. Return value 1.
+MSI (s) (08:48) [09:34:05:226]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+Action start 09:34:05: InstallExecute.
+Action ended 09:34:05: InstallExecute. Return value 1.
+Action start 09:34:05: InstallFinalize.
+Action ended 09:34:05: InstallFinalize. Return value 1.
+Action ended 09:34:05: INSTALL. Return value 1.
+MSI (s) (08:48) [09:34:05:306]: MainEngineThread is returning 0
+MSI (s) (08:04) [09:34:05:316]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (08:04) [09:34:05:320]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (c) (BC:28) [09:34:05:324]: MainEngineThread is returning 0

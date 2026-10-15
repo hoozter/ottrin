@@ -40,7 +40,7 @@ Unzip `Ottrin-*-windows-x64-portable.zip`, then run:
 
 ### Windows Installer
 
-Run `Ottrin-*-windows-x64-setup.exe` to install under the current user's local application directory. The installer creates Start Menu shortcuts and does not request administrator access. Its uninstaller removes scheduled/background integration and generated search/preview data before removing the application; saved preferences are retained. If background cleanup cannot start or fails, uninstall stops before deleting application files. If application-file deletion cannot complete, Installed Apps registration is retained so uninstall can be retried. The per-user `Ottrin-*-windows-x64.msi` provides the same application-owned background setup and cleanup ordering. Current local MSI/NSIS builds have scoped ordinary-user native installation, indexing and uninstall checks; failed-transaction MSI rollback and the broader installer/upgrade matrix remain open. [ROADMAP.md](ROADMAP.md) identifies exact artifacts and acceptance limits.
+Run `Ottrin-*-windows-x64-setup.exe` to install under the current user's local application directory. The installer creates Start Menu shortcuts and does not request administrator access. Its uninstaller removes scheduled/background integration and generated search/preview data before removing the application; saved preferences are retained. If background cleanup cannot start or fails, uninstall stops before deleting application files. If application-file deletion cannot complete, Installed Apps registration is retained so uninstall can be retried. The per-user `Ottrin-*-windows-x64.msi` provides the same application-owned background setup and cleanup ordering. Recorded MSI/NSIS candidates have scoped ordinary-user native installation, upgrade, indexing and uninstall checks. Failed-transaction MSI rollback currently fails native tests: Windows can lose product registration even while Ottrin's files remain, and a later repair or uninstall can fail. MSI acceptance is blocked; the broader installer matrix remains incomplete. [ROADMAP.md](ROADMAP.md) identifies exact artifacts and acceptance limits.
 
 ### macOS
 
@@ -226,7 +226,7 @@ ottrin --uninstall --purge-config
 
 ## Current Limitations
 
-- Exact-current Windows portable and NSIS artifacts have automated checksum, payload/provenance, PE/installer, and Wine compatibility-smoke evidence, but no accepted CI run or real Windows desktop runtime/install smoke is claimed.
+- Windows packages have native checks for specific recorded builds; [ROADMAP.md](ROADMAP.md) binds their exact hashes and acceptance scopes. These checks do not establish complete Windows release acceptance. MSI registration rollback after a failed transaction remains a confirmed blocker.
 - Windows UAC/helper behavior still needs real Windows validation.
 - Windows GUI startup failures write `%LOCALAPPDATA%\\Ottrin\\startup.log` and
   show the local log location in a native error dialog. Wine launch evidence is
