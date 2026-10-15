@@ -2756,3 +2756,50 @@ Owned task, processes, uploads and extracted fixtures were removed and the guest
 was shut down. Stable packages remain unchanged. Full NSIS payload rollback,
 coherent package refresh, MSI registration rollback and cross-engine coordination
 retain their separate open scopes.
+
+
+### NSIS staged payload replacement — native model checkpoint, 2026-10-15
+
+NSIS now completes extraction and uninstaller construction in a sibling
+transaction directory before stopping indexing or changing the installed tree.
+Publication retains the complete previous directory and moves the candidate into
+place. The payload controller records the user, target, local volume GUID, full
+128-bit file identities, owned file hashes, typed installation-registry values
+and shortcut bytes. Integration begins only if the captured metadata is still
+current. A staging failure does not overwrite concurrent registration changes.
+
+On ordinary setup failure, the new index is stopped before restoring the previous
+payload and metadata; the existing index transaction then restores task intent.
+Only after that succeeds is the unused candidate reclaimed. Successful index
+commit is the point of no return: old managed files are retired through verified
+read/delete handles that deny writers and bind deletion to the checked object.
+Changed or unowned files remain outside the live installation with a Unicode
+notice; failed cleanup retains its record. The index snapshot now lives beside
+the payload record. Uninstall refuses a pending payload transaction, and setup
+and uninstall do not bypass an unresolved snapshot from the preceding installer.
+
+Eight isolated native model cases cover foreign-directory refusal, a forced
+staging failure with a concurrent metadata change, service and commit failures,
+a directory lock, stale-record refusal, successful replacement with unowned-file
+retention, and pending-transaction uninstall refusal. They check old directory
+identity and bytes, typed registry restoration, shortcut bytes, external fixture
+source/preferences, and phase ordering. Separate native leaf checks cover wrong
+identity, changed bytes, successful exact-object retirement, and an active
+writable mapping after its original file handle closes; late writes remain
+accessible. The fixture uses harmless mock app/index executables and isolated
+integration names. It does not accept the actual scheduled daemon, full package
+payload, arbitrary namespace races, restart recovery or power loss.
+
+The source's default NSIS construction also compiles. Native execution exposed
+and repaired the NSIS plugin System.dll shadowing the C# framework reference,
+and PowerShell's null-to-empty-string binding in atomic journal replacement.
+The helper uses the trusted CLR working directory and an explicit null-string
+argument. Fixture exit-code, Unicode source-encoding and lock-admission mistakes
+were corrected before accepting the final results.
+
+Evidence: `.hermes/evidence/windows-payload-current/ACCEPTANCE.json`. Owned
+fixture tasks, processes, integration names, profiles, uploads and staging were
+removed; the QA guest is shut off. Stable packages remain unchanged. Next work is restart/commit-boundary recovery and
+exact coherent Windows candidate construction with real scheduler, daemon and
+installation acceptance. The separate MSI registration rollback and Office
+provider gates remain open.

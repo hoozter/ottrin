@@ -1,0 +1,9 @@
+{
+  "owned_fixture_root_and_uploads_removed": true,
+  "status": "pass",
+  "scope": "Exact QA task, uploaded scripts/debug executable and task-owned fixture root only; original installation, profile and Office corpus retained",
+  "owned_task_removed": true,
+  "live_fixture_installers_and_payload_controllers": 0,
+  "guest_final_state": "shut off",
+  "host_fixture_staging_removed": true
+}

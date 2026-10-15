@@ -1,0 +1,17 @@
+Initialize exit=1 result=Add-Type : (0) : Metadata file 'c:\Users\campbell\AppData\Local\Temp\nsm9C64.tmp\System.dll' could not be opened --
+
+'An attempt was made to load a program with an incorrect format. '
+
+(1) : using System;
+
+At line:19 char:1
+
++ Add-Type -TypeDefinition @'
+
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : InvalidData: (Microsoft.Power...peCompilerError:AddTypeCompilerError) [Add-Type], Except
+
+   ion
+
+    + FullyQualifiedErrorId : SOURCE_CODE_ERROR,Microsoft.PowerShell.Commands.AddTypeCommand

@@ -1,0 +1,36 @@
+{
+  "artifacts": {
+    "baseline": "bf1be02f87a4ad24792d8c873faec138a233f9925958f5e2c91c3cac3e7518c8",
+    "fixed": "e365b47b33a69ec15e7d325a698828f5815422db5ba49f357b9749c256232649",
+    "staging-fault": "5a50bcfee7adf1477319547cb4d4a0008ff0857dadc8407ae10b2d7f394953be"
+  },
+  "source_base_revision": "644092cc8d5adf93d698bae3a0dbd2f9f0686578",
+  "build_kind": "Unpublished QA model artifacts from modified source, isolated metadata names and mock executables",
+  "source_sha256": {
+    "packaging/windows/installer.nsi": "951946f26c8d302876391d2959b23134f5c4c27b3e164262d92d770515c69eee",
+    "packaging/windows/payload-transaction.ps1": "9023ba7abe4a2095e53df6720e4b8e3cd39d787ab80d0ed4a9af68de5f88685d"
+  },
+  "fixture_sha256": {
+    "cleanup-user.ps1": "7b970bb7d142f74a60229b22780fe635900810656c169593a96b43fac937aea1",
+    "reset.ps1": "4817ff65fa796a6f27c0cb70b7953835fdcb583746baf5c215bca1ee9f145453",
+    "staging-fault.nsi": "c6cb9e86c2732dece18615efe66506bcec8107d5a1389f1e8eab6c47be4eae33",
+    "diagnose.ps1": "d97d124953626a658a137558923249edc399f07fd798fceb6ddad10feac258c7",
+    "baseline.nsi": "6335490afa2f270ac8135ad5f120ae289b07dfa34abe47905ff5f2ca9981bbda",
+    "actor.ps1": "3729d68a5a638ad2fd3970f01ec72ac5c366110a42e9a59a01429fdff681c8d0",
+    "payload-transaction.qa.ps1": "6b12c898fe632a60e9b3c2304141e05a9c54a0e3753f8a67349c58a80cc177d8",
+    "fixed.nsi": "51ee47d5ae3fe50329f22836217d179ecb295000d64ab5edfff12d4010915061",
+    "leaf.ps1": "d449be12d5adfb62fe78cb298a1b63aec8aa53c8164395463a7b67da06cfb43e",
+    "mock.c": "a986bfe5d2035d19b010f17050adc0e52e3eb64c93976a85437af9bf9bc57f51",
+    "collect.py": "441e1bc552fe97668d884cbe9b84ad1191328be71c5630b0a081bacbf45c208e",
+    "build.py": "4fc8cd047a0b984582c15d4d2e844dd3ba3bb0dab380e2a66f0fef7e5ec63e28"
+  },
+  "fixture_correspondence": "Fixed NSIS input equals current production source except isolated names and result logging; helper equals current production source except isolated registry/menu names; exact assertions pass",
+  "default_source_compile": {
+    "status": "pass",
+    "artifact_sha256": "2434008d8bddcfebe3679a156d60405a64ef345c46e6c91216d7a24ab3e55807",
+    "scope": "Production source/default helper path compiled against a mock stage; not run or published"
+  },
+  "baseline_revision": "644092c",
+  "compiler": "x86_64-w64-mingw32-gcc (GCC) 13-win32",
+  "collection_note": "Collection-only UTF16 log decoding corrected after execution; native installer/helper/actor inputs remain unchanged."
+}

@@ -1,0 +1,14 @@
+{
+  "identity": "desktop-81ghp8u\\campbell",
+  "fixture_profile_data_absent": true,
+  "fixture_shortcuts_absent": true,
+  "live_fixture_installers_or_payload_controllers": 0,
+  "fixture_registry_absent": true,
+  "status": "pass",
+  "source_artifacts": {
+    "baseline.exe": "bf1be02f87a4ad24792d8c873faec138a233f9925958f5e2c91c3cac3e7518c8",
+    "fixed.exe": "e365b47b33a69ec15e7d325a698828f5815422db5ba49f357b9749c256232649",
+    "staging-fault.exe": "5a50bcfee7adf1477319547cb4d4a0008ff0857dadc8407ae10b2d7f394953be",
+    "payload-transaction.qa.ps1": "6b12c898fe632a60e9b3c2304141e05a9c54a0e3753f8a67349c58a80cc177d8"
+  }
+}

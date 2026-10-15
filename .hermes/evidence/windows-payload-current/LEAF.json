@@ -1,0 +1,9 @@
+{
+  "exact_leaf_retired": true,
+  "closed_handle_writable_mapping_refused": true,
+  "stale_identity_refused": true,
+  "changed_bytes_refused": true,
+  "mapping_refusal": "Exception calling \"Retire\" with \"3\" argument(s): \"The process cannot access the file because it is being used by \r\nanother process\"\r\nAt C:\\OttrinQA-20261011\\payload-leaf.ps1:37 char:8\r\n+   try {$retired=[OttrinInstallIdentity]::Retire($leaf,$id,$hash);$ref ...\r\n+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException\r\n    + FullyQualifiedErrorId : Win32Exception\r\n \r\n",
+  "late_mapped_write_preserved": true,
+  "status": "pass"
+}

@@ -1,0 +1,72 @@
+{
+  "status": "pass",
+  "groups": "\r\nGROUP INFORMATION\r\n-----------------\r\n\r\nGroup Name                                                    Type             SID          Attributes                                        \r\n============================================================= ================ ============ ==================================================\r\nEveryone                                                      Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\Local account and member of Administrators group Well-known group S-1-5-114    Group used for deny only                          \r\nBUILTIN\\Administrators                                        Alias            S-1-5-32-544 Group used for deny only                          \r\nBUILTIN\\Users                                                 Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\INTERACTIVE                                      Well-known group S-1-5-4      Mandatory group, Enabled by default, Enabled group\r\nCONSOLE LOGON                                                 Well-known group S-1-2-1      Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\Authenticated Users                              Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\This Organization                                Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\Local account                                    Well-known group S-1-5-113    Mandatory group, Enabled by default, Enabled group\r\nLOCAL                                                         Well-known group S-1-2-0      Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\NTLM Authentication                              Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group\r\nMandatory Label\\Medium Mandatory Level                        Label            S-1-16-8192                                                    \r\n",
+  "cases": [
+    {
+      "case": "Foreign",
+      "unrelated_directory_and_data_preserved": true,
+      "exit": 1
+    },
+    {
+      "source_preferences_preserved": true,
+      "registry_shortcuts_checked": true,
+      "control_log": "old --installer-transaction Prepare\nold index service-install\nold --installer-transaction Commit\n",
+      "case": "Staging",
+      "exit": 1,
+      "payload_checked": true,
+      "old_root_identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000010000000026d34"
+    },
+    {
+      "source_preferences_preserved": true,
+      "registry_shortcuts_checked": true,
+      "control_log": "old --installer-transaction Prepare\nold index service-install\nold --installer-transaction Commit\nnew --installer-transaction Prepare\nnew index service-install\nnew --stop \nnew --installer-transaction Rollback\n",
+      "case": "Service",
+      "exit": 1,
+      "payload_checked": true,
+      "old_root_identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000011000000026d4b"
+    },
+    {
+      "source_preferences_preserved": true,
+      "registry_shortcuts_checked": true,
+      "control_log": "old --installer-transaction Prepare\nold index service-install\nold --installer-transaction Commit\nnew --installer-transaction Prepare\nnew index service-install\nnew --installer-transaction Commit\nnew --stop \nnew --installer-transaction Rollback\n",
+      "case": "Commit",
+      "exit": 1,
+      "payload_checked": true,
+      "old_root_identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000014000000026d95"
+    },
+    {
+      "source_preferences_preserved": true,
+      "registry_shortcuts_checked": true,
+      "control_log": "old --installer-transaction Prepare\nold index service-install\nold --installer-transaction Commit\nnew --installer-transaction Prepare\nnew --installer-transaction Rollback\n",
+      "case": "Lock",
+      "exit": 1,
+      "payload_checked": true,
+      "old_root_identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000001e000000026df1"
+    },
+    {
+      "source_preferences_preserved": true,
+      "registry_shortcuts_checked": true,
+      "control_log": "old --installer-transaction Prepare\nold index service-install\nold --installer-transaction Commit\n",
+      "case": "Stale",
+      "exit": 1,
+      "payload_checked": true,
+      "old_root_identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000001d000000026e8f"
+    },
+    {
+      "source_preferences_preserved": true,
+      "registry_shortcuts_checked": false,
+      "control_log": "old --installer-transaction Prepare\nold index service-install\nold --installer-transaction Commit\nnew --installer-transaction Prepare\nnew index service-install\nnew --installer-transaction Commit\n",
+      "case": "Success",
+      "exit": 0,
+      "payload_checked": true,
+      "old_root_identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000026f1a"
+    },
+    {
+      "application_cleanup_not_called": true,
+      "case": "PendingUninstall",
+      "installed_payload_and_pending_evidence_preserved": true,
+      "exit": 1
+    }
+  ],
+  "identity": "desktop-81ghp8u\\campbell"
+}

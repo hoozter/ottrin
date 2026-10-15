@@ -1,0 +1,9 @@
+Commit exit=0 result=Changed or unowned previous files remain at C:\OttrinQA-20261011\payload-current\Success Space ê 'copy'\install.ottrin-retained-cf90d9c596834bedb1b3d2da652909f7
+
+nged.
+At line:196 char:40
++ ... ath $Root) {throw "A previous installation transaction is retained at ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (A previous inst...t been changed.:String) [], RuntimeException
+    + FullyQualifiedErrorId : A previous installation transaction is retained at C:\OttrinQA-20261011\payload-current\
+   Stale Space ê 'copy'\install.ottrin-setup. Its files have not been changed.

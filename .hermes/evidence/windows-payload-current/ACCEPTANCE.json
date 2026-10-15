@@ -1,0 +1,56 @@
+{
+  "status": "implemented and native model verified; exact production package acceptance and restart recovery remain open",
+  "source": {
+    "packaging/windows/installer.nsi": "951946f26c8d302876391d2959b23134f5c4c27b3e164262d92d770515c69eee",
+    "packaging/windows/payload-transaction.ps1": "9023ba7abe4a2095e53df6720e4b8e3cd39d787ab80d0ed4a9af68de5f88685d"
+  },
+  "construction": {
+    "default_source_compile": "pass",
+    "mock_native_artifacts": {
+      "baseline": "bf1be02f87a4ad24792d8c873faec138a233f9925958f5e2c91c3cac3e7518c8",
+      "fixed": "e365b47b33a69ec15e7d325a698828f5815422db5ba49f357b9749c256232649",
+      "staging-fault": "5a50bcfee7adf1477319547cb4d4a0008ff0857dadc8407ae10b2d7f394953be"
+    },
+    "provenance": "BUILD.json"
+  },
+  "native": {
+    "integrated": "RESULTS.json",
+    "cases": [
+      "Foreign",
+      "Staging",
+      "Service",
+      "Commit",
+      "Lock",
+      "Stale",
+      "Success",
+      "PendingUninstall"
+    ],
+    "leaf_retirement": "LEAF.json",
+    "user_scope_cleanup": "USER_CLEANUP.json"
+  },
+  "implemented": [
+    "Complete candidate staging before quiescence and directory publication; no overlay of the live payload",
+    "User/target/volume GUID/full128-bit file IDs, file hashes, typed registry values and shortcut-byte snapshots",
+    "Integration metadata revalidation and no metadata rollback before integration intent",
+    "Stop new indexing before whole-directory and metadata rollback, then restore task intent before candidate reclamation",
+    "Co-located index/payload records, prior-snapshot refusal and pending-transaction uninstall refusal",
+    "Commit-before-reclamation boundary; object-bound deletion denies writers; changed/unowned files retained with Unicode notice"
+  ],
+  "native_scope": "Windows11 limited interactive token in the owned network-isolated QA guest; actual NSIS/PowerShell/controller filesystem and metadata code, isolated registration/menu names, harmless mock app/index processes; actual scheduler/daemon behavior is not inferred",
+  "fixture_corrections": [
+    "Initial C# compile failed because plugin System.dll shadowed framework references; helper now selects trusted CLR working directory",
+    "PowerShell coerced null backup name to empty string in File.Replace; explicit NullString fixes journal replacement",
+    "Initial negative cases did not reach intended failure phases; final cases require new service/commit/stop markers and actual opaque snapshot creation/removal",
+    "Actor source now has UTF8 BOM for Windows PowerShell Unicode fidelity",
+    "Directory lock must request DELETE access to constrain rename; earlier metadata-only handle instead blocked post-commit backup cleanup",
+    "Initial UIntPtr cast in mapping fixture was corrected; final mapped-view test passes"
+  ],
+  "limits": [
+    "Restart/commit-boundary recovery, arbitrary power loss and adversarial namespace races are not accepted",
+    "Native fixtures use mock executables; coherent real-payload installer, real scheduler/daemon and broader GUI/upgrade acceptance remain required",
+    "Stable Windows/Linux packages unchanged; no release or daily-driver completion claim",
+    "MSI failed-transaction registration rollback and Windows Office provider gates remain open"
+  ],
+  "next": "Implement and accept restart/commit-boundary recovery before coherent Windows candidate construction and real installed lifecycle acceptance",
+  "cleanup": "GUEST_CLEANUP.json and USER_CLEANUP.json; host fixture staging removed; guest final state separately recorded"
+}

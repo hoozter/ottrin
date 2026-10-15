@@ -10,12 +10,19 @@ Var CleanupUninstallerHandle
 Var IndexTransactionActive
 Var IndexTransactionSnapshot
 Var InstallerMutex
+Var PayloadTransactionActive
+Var PayloadPublished
+Var PayloadTransactionPhase
+Var PayloadTransactionResult
 
 !ifndef VERSION
   !define VERSION "0.1.0"
 !endif
 !ifndef STAGE
   !error "STAGE must point to an extracted Ottrin Windows portable directory"
+!endif
+!ifndef PAYLOAD_TRANSACTION_SCRIPT
+  !define PAYLOAD_TRANSACTION_SCRIPT "payload-transaction.ps1"
 !endif
 !ifndef OUTPUT
   !define OUTPUT "Ottrin-${VERSION}-windows-x64-setup.exe"
@@ -27,7 +34,7 @@ SetCompressor /SOLID lzma
 InstallDir "$LOCALAPPDATA\Programs\Ottrin"
 
 !define MUI_ABORTWARNING
-!define MUI_CUSTOMFUNCTION_ABORT RestoreIndexTransaction
+!define MUI_CUSTOMFUNCTION_ABORT RestoreInstallationTransaction
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\ottrin.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "Launch Ottrin"
 
@@ -41,8 +48,7 @@ InstallDir "$LOCALAPPDATA\Programs\Ottrin"
 
 !insertmacro MUI_LANGUAGE "English"
 
-!macro InstallerInitialization Prefix
-Function ${Prefix}.onInit
+!macro AcquireInstallationLock
   ; Setup and uninstall must not mutate the same payload, background task or
   ; recovery journal concurrently. Use the same lock for both entry points.
   ; Keep this handle until installer exit; Windows releases it on every exit path.
@@ -55,11 +61,46 @@ Function ${Prefix}.onInit
     Abort
   ${EndIf}
   StrCpy $InstallerMutex $0
-FunctionEnd
+  ; Never bypass an unresolved snapshot left by the preceding installer format.
+  System::Call 'kernel32::GetFileAttributesW(w "$LOCALAPPDATA\ottrin\installer-index-transaction.json") i.r0 ?e'
+  Pop $1
+  ${If} $0 == -1
+    ${If} $1 == 2
+    ${OrIf} $1 == 3
+      StrCpy $0 0
+    ${Else}
+      StrCpy $0 1
+    ${EndIf}
+  ${Else}
+    StrCpy $0 1
+  ${EndIf}
+  ${If} $0 == 1
+    MessageBox MB_OK|MB_ICONSTOP "A previous background-index installation transaction needs recovery at $LOCALAPPDATA\ottrin\installer-index-transaction.json. Its records have not been changed." /SD IDOK
+    SetErrorLevel 1
+    Abort
+  ${EndIf}
 !macroend
 
-!insertmacro InstallerInitialization ""
-!insertmacro InstallerInitialization "un"
+Function .onInit
+  !insertmacro AcquireInstallationLock
+FunctionEnd
+
+Function un.onInit
+  !insertmacro AcquireInstallationLock
+  ; A crashed setup still owns its retained payload and task snapshot. Do not
+  ; let uninstall remove the evidence needed to recover that installation.
+  System::Call 'kernel32::GetFileAttributesW(w "$INSTDIR.ottrin-setup") i.r0 ?e'
+  Pop $1
+  ${If} $0 == -1
+    ${If} $1 == 2
+    ${OrIf} $1 == 3
+      Return
+    ${EndIf}
+  ${EndIf}
+  MessageBox MB_OK|MB_ICONSTOP "An installation transaction is retained at $INSTDIR.ottrin-setup. Recover that installation before uninstalling Ottrin." /SD IDOK
+  SetErrorLevel 1
+  Abort
+FunctionEnd
 
 Section "Ottrin" SEC_MAIN
   SetShellVarContext current
@@ -69,8 +110,28 @@ Section "Ottrin" SEC_MAIN
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
   File /oname=index-controller.exe "${STAGE}\bin\ottrin-indexd.exe"
-  CreateDirectory "$LOCALAPPDATA\ottrin"
-  StrCpy $IndexTransactionSnapshot "$LOCALAPPDATA\ottrin\installer-index-transaction.json"
+  File /oname=payload-transaction.ps1 "${PAYLOAD_TRANSACTION_SCRIPT}"
+  System::Call 'kernel32::SetEnvironmentVariableW(w "OTTRIN_INSTALLER_TARGET", w "$INSTDIR") i.r0'
+  StrCmp $0 0 payload_transaction_failed
+  System::Call 'kernel32::SetEnvironmentVariableW(w "OTTRIN_INSTALLER_PAYLOAD_SCRIPT", w "$PLUGINSDIR\payload-transaction.ps1") i.r0'
+  StrCmp $0 0 payload_transaction_failed
+  System::Call 'kernel32::SetEnvironmentVariableW(w "OTTRIN_INSTALLER_PAYLOAD_NOTICE", w "$PLUGINSDIR\payload-notice.txt") i.r0'
+  StrCmp $0 0 payload_transaction_failed
+  StrCpy $PayloadTransactionPhase Initialize
+  Call RunPayloadTransaction
+  StrCmp $0 0 +2
+  Goto payload_transaction_failed
+  StrCpy $PayloadTransactionActive 1
+  ; Complete extraction and uninstaller construction before stopping indexing
+  ; or moving the old installation. Publication never overlays existing files.
+  ClearErrors
+  SetOutPath "$INSTDIR.ottrin-setup\new"
+  IfErrors index_payload_failed
+  File /r "${STAGE}\*.*"
+  WriteUninstaller "$INSTDIR.ottrin-setup\new\Uninstall.exe"
+  IfErrors index_payload_failed
+  SetOutPath "$PLUGINSDIR"
+  StrCpy $IndexTransactionSnapshot "$INSTDIR.ottrin-setup\index-transaction.json"
   StrCpy $IndexTransactionActive 1
   ClearErrors
   ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Prepare "$IndexTransactionSnapshot"' $0
@@ -79,13 +140,16 @@ Section "Ottrin" SEC_MAIN
     Goto index_prepare_failed
   ${EndIf}
 
-  SetOutPath "$INSTDIR"
+  StrCpy $PayloadTransactionPhase Publish
+  Call RunPayloadTransaction
+  StrCmp $0 0 +2
+  Goto payload_transaction_failed
+  StrCpy $PayloadPublished 1
+  StrCpy $PayloadTransactionPhase BeginIntegration
+  Call RunPayloadTransaction
+  StrCmp $0 0 +2
+  Goto payload_transaction_failed
   ClearErrors
-  File /r "${STAGE}\*.*"
-
-  IfErrors index_payload_failed
-
-  WriteUninstaller "$INSTDIR\Uninstall.exe"
   CreateDirectory "$SMPROGRAMS\Ottrin"
   CreateShortcut "$SMPROGRAMS\Ottrin\Ottrin.lnk" "$INSTDIR\bin\ottrin.exe"
   CreateShortcut "$SMPROGRAMS\Ottrin\Uninstall Ottrin.lnk" "$INSTDIR\Uninstall.exe"
@@ -99,6 +163,7 @@ Section "Ottrin" SEC_MAIN
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Ottrin" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Ottrin" "NoRepair" 1
 
+  IfErrors background_integration_launch_failed
   ClearErrors
   ExecWait '"$INSTDIR\bin\ottrin.exe" index service-install' $0
   IfErrors background_integration_launch_failed
@@ -112,6 +177,16 @@ Section "Ottrin" SEC_MAIN
     Goto index_commit_failed
   ${EndIf}
   StrCpy $IndexTransactionActive 0
+  ; Index commit is the point of no return. A cleanup failure retains previous
+  ; files for review; it must not restore an old payload under the new task.
+  StrCpy $PayloadTransactionActive 0
+  StrCpy $PayloadTransactionPhase Commit
+  Call RunPayloadTransaction
+  ${If} $0 != 0
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin is installed, but previous files could not be cleaned up. They remain at $INSTDIR.ottrin-setup for review." /SD IDOK
+  ${ElseIf} $PayloadTransactionResult != ""
+    MessageBox MB_OK|MB_ICONINFORMATION "$PayloadTransactionResult" /SD IDOK
+  ${EndIf}
   Goto background_integration_done
 
 index_prepare_failed:
@@ -119,8 +194,13 @@ index_prepare_failed:
   SetErrorLevel 1
   Abort
 
+payload_transaction_failed:
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not safely replace the installation. Previous files and recovery information are retained at $INSTDIR.ottrin-setup. $PayloadTransactionResult" /SD IDOK
+  SetErrorLevel 1
+  Abort
+
 index_payload_failed:
-  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not replace all application files. Setup is incomplete; close Ottrin and retry this installer." /SD IDOK
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not stage all application files. Setup will restore the previous installation where possible." /SD IDOK
   SetErrorLevel 1
   Abort
 
@@ -135,25 +215,71 @@ index_commit_failed:
   Abort
 
 background_integration_done:
+  SetOutPath "$INSTDIR"
 SectionEnd
 
-Function RestoreIndexTransaction
-  StrCmp $IndexTransactionActive 1 0 restore_index_done
+Function RunPayloadTransaction
+  Delete "$PLUGINSDIR\payload-notice.txt"
+  System::Call 'kernel32::SetEnvironmentVariableW(w "OTTRIN_INSTALLER_PAYLOAD_PHASE", w "$PayloadTransactionPhase") i.r0'
+  ${If} $0 == 0
+    StrCpy $0 1
+    StrCpy $PayloadTransactionResult "Could not prepare the installer process."
+    Return
+  ${EndIf}
+  nsExec::ExecToStack '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -Command "& ([scriptblock]::Create([IO.File]::ReadAllText($$env:OTTRIN_INSTALLER_PAYLOAD_SCRIPT))) -Phase $$env:OTTRIN_INSTALLER_PAYLOAD_PHASE"'
+  Pop $0
+  Pop $PayloadTransactionResult
+  ${If} $0 == 0
+    IfFileExists "$PLUGINSDIR\payload-notice.txt" 0 payload_no_notice
+    FileOpen $2 "$PLUGINSDIR\payload-notice.txt" r
+    FileReadUTF16LE $2 $PayloadTransactionResult
+    FileClose $2
+    StrCpy $PayloadTransactionResult "Changed or unowned files were retained at $PayloadTransactionResult"
+  ${EndIf}
+payload_no_notice:
+FunctionEnd
+
+Function RestoreInstallationTransaction
+  StrCmp $PayloadTransactionActive 1 0 restore_installation_done
+  SetOutPath "$PLUGINSDIR"
+  ; A new daemon may already be running. Stop it before moving its executable
+  ; or restoring the old task definition and original running intent.
+  StrCmp $PayloadPublished 1 0 restore_payload
+  ClearErrors
+  ExecWait '"$PLUGINSDIR\index-controller.exe" --stop' $0
+  IfErrors restore_installation_failed
+  StrCmp $0 0 +2
+  Goto restore_installation_failed
+restore_payload:
+  StrCpy $PayloadTransactionPhase Rollback
+  Call RunPayloadTransaction
+  StrCmp $0 0 +2
+  Goto restore_installation_failed
+  StrCpy $PayloadPublished 0
+  StrCmp $IndexTransactionActive 1 0 finish_payload_rollback
   ClearErrors
   ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Rollback "$IndexTransactionSnapshot"' $0
-  IfErrors restore_index_failed
-  ${If} $0 != 0
-    Goto restore_index_failed
-  ${EndIf}
+  IfErrors restore_installation_failed
+  StrCmp $0 0 +2
+  Goto restore_installation_failed
   StrCpy $IndexTransactionActive 0
-  Goto restore_index_done
-restore_index_failed:
-  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not restore its previous background index task. The recovery record remains at $IndexTransactionSnapshot. Application file replacement may be incomplete; retry setup before opening Ottrin." /SD IDOK
-restore_index_done:
+finish_payload_rollback:
+  StrCpy $PayloadTransactionPhase FinishRollback
+  Call RunPayloadTransaction
+  StrCmp $0 0 +2
+  Goto restore_installation_failed
+  StrCpy $PayloadTransactionActive 0
+  ${If} $PayloadTransactionResult != ""
+    MessageBox MB_OK|MB_ICONINFORMATION "$PayloadTransactionResult" /SD IDOK
+  ${EndIf}
+  Goto restore_installation_done
+restore_installation_failed:
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not fully restore the previous installation. Previous files and recovery information remain at $INSTDIR.ottrin-setup and $IndexTransactionSnapshot. Do not delete these records; retry requires recovery of the retained transaction." /SD IDOK
+restore_installation_done:
 FunctionEnd
 
 Function .onInstFailed
-  Call RestoreIndexTransaction
+  Call RestoreInstallationTransaction
 FunctionEnd
 
 Section "Uninstall"
