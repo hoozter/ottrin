@@ -1,0 +1,15 @@
+{
+  "domain": "ottrin-deb-lifecycle-qa",
+  "volumes": [
+    "ottrin-deb-lifecycle-base.qcow2",
+    "ottrin-deb-lifecycle-work.qcow2",
+    "ottrin-deb-lifecycle-seed.iso"
+  ],
+  "qa_path": ".hermes/qa/deb-lifecycle-current",
+  "existing_domains": [
+    "ottrin-index-qa",
+    "ottrin-qa-20261011",
+    "win11ltsc"
+  ],
+  "mac": "52:54:00:6f:74:46"
+}

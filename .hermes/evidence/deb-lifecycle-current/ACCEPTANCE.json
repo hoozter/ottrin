@@ -1,0 +1,27 @@
+{
+  "status": "pass within recorded scope",
+  "source_revision": "2350b212e42b637bdee51477555309707bd5b2a3",
+  "deb_sha256": "e9b1c6e7a9374b03485e8f1c787f2ad02c452ebab2dc9ebd6f83d1ecb2106504",
+  "environment": "Fresh Ubuntu 24.04 cloud-image VM; 2 CPUs, 3GiB; native APT/DPKG/systemd; no desktop claim",
+  "passed": [
+    "fresh dependency installation",
+    "multi-user active/offline native and Administrator service same-version reinstall/removal",
+    "ambiguous offline override refuses before stopping daemons",
+    "native session and controlled deleted-executable cleanup",
+    "portable service/session PID preservation",
+    "preference/source and protected SQLite integrity"
+  ],
+  "evidence": [
+    "managed/result.json",
+    "session/result.json",
+    "IMAGE.json",
+    "image-signature.log"
+  ],
+  "limits": [
+    "cross-version upgrade",
+    "full desktop and physical graphics",
+    "custom XDG/runtime namespaces",
+    "signing"
+  ],
+  "publication": "pending clean repackaging with reconciled guide"
+}
