@@ -1,0 +1,10 @@
+{
+  "source_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
+  "status": "pass",
+  "steps": {
+    "appimage": 0,
+    "portable": 0,
+    "deb": 0,
+    "rpm": 0
+  }
+}

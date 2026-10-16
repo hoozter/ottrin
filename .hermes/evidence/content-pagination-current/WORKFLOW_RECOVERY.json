@@ -1,0 +1,9 @@
+{
+  "batch_pid": 1012,
+  "package_cases": [
+    "Portable passed",
+    "NSIS passed",
+    "MSI passed"
+  ],
+  "administrative_extraction": "Blocked before execution by PowerShell script policy; rerun only this step as an encoded command; machine/user policy unchanged"
+}

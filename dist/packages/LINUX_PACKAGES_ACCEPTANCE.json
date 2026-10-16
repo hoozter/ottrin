@@ -1,25 +1,31 @@
 {
   "date": "2026-10-16",
-  "source_revision": "61bfab9d4fc7cc6b73f020d69ad1286a456a98fa",
-  "binary_build_revision": "61bfab9d4fc7cc6b73f020d69ad1286a456a98fa",
+  "status": "pass",
+  "source_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
+  "binary_build_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
   "artifacts": {
-    "Ottrin-0.1.0-x86_64.AppImage": "e9944a7b4951d4c1d233c4abdaed135954cc89d5a926709bac887ef1a3182f74",
-    "ottrin_0.1.0_amd64.deb": "c6ec483c3834d76a3f253823cd955e82c035532e2d0e9243e45be09266c1051d",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "8fb27e174c447740990822dfd46e64e1bd641f6f44c981dbc68612d8ddcbdc5d",
-    "ottrin-0.1.0-1.x86_64.rpm": "d5099fec6ff863a57ece94c2670433e08bf95345542cf992ad68942b9b272912"
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "0f8c729006d62f30f89ae04c739b8437bf2b1750b9486bbe80b8dcc8e8c98394",
+    "Ottrin-0.1.0-x86_64.AppImage": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
+    "ottrin_0.1.0_amd64.deb": "b268b1b012b38b06f206cd22f3d14f37d924ab58ba7a9354194a0d84ebed70f3",
+    "ottrin-0.1.0-1.x86_64.rpm": "85fc10ef2066018eb8c0369abb0fe2d1246d7e95f9cfd2085541ce76c9485bf6"
   },
   "checks": [
-    "Full source search suites: Linux 232 passed / 2 ignored; native ordinary-user Windows 216 passed / 6 ignored",
-    "Strict Linux and Windows app/search all-target Clippy, formatting and diff checks",
-    "All four exact extracted packages: saved-content roots independent of metadata, real watched edits/subtree moves/deletion, disable/detach, zero metadata roots",
-    "Pinned provider/notices, clean PATH, Unicode and scope/privacy policy; explicit damaged-provider errors retain indexed results",
-    "All Linux executable payloads match release binaries; RPM executable/data sections match after standard stripping",
-    "Exact current AppImage GUI: stable PDF fit, shared title bar, read-only VCF arrows/Space, explicit Edit/Save"
+    "Linux source suites: 238 search passed / 2 ignored; 378 UI passed / 1 ignored; 23 app passed",
+    "Strict Linux and Windows platform/search/UI/app all-target Clippy; formatting and diff checks",
+    "All four exact packages: ordered Name/path paging of 137 saved/live matches and 160 after new live-only matches, 17 per page, beyond-end and invalid-limit checks",
+    "All four exact packages: independent content roots, zero metadata roots, watch edit/move/delete/detach, policy, Unicode and explicit missing-provider errors",
+    "All executable payload identities match release binaries; RPM .text/.rodata match after stripping",
+    "Exact AppImage GUI Dark 200%: all pages, Previous/Next boundaries and superseded/clear/clean-window-close provider reaping",
+    "Exact AppImage GUI Dark 100%: stable PDF fit, shared Inspector title bar, read-only VCF arrows/Space and explicit Edit/Save"
   ],
-  "source_evidence": ".hermes/evidence/content-roots-current/SOURCE_ACCEPTANCE.json",
-  "package_content_evidence": ".hermes/evidence/content-roots-current/PAYLOAD_VERIFICATION.json",
-  "content_evidence": ".hermes/evidence/content-roots-current",
+  "source_evidence": ".hermes/evidence/content-pagination-current/SOURCE_ACCEPTANCE.json",
+  "package_content_evidence": ".hermes/evidence/content-pagination-current/PAYLOAD_VERIFICATION.json",
+  "content_evidence": ".hermes/evidence/content-pagination-current",
   "idle_cpu": {
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    },
     "Ottrin-0.1.0-x86_64.AppImage": {
       "percent_single_core": 0.0,
       "scope": "Five seconds after settling; tiny private two-root fixture only"
@@ -28,19 +34,49 @@
       "percent_single_core": 0.0,
       "scope": "Five seconds after settling; tiny private two-root fixture only"
     },
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
-      "percent_single_core": 0.19998633929360615,
-      "scope": "Five seconds after settling; tiny private two-root fixture only"
-    },
     "ottrin-0.1.0-1.x86_64.rpm": {
       "percent_single_core": 0.0,
       "scope": "Five seconds after settling; tiny private two-root fixture only"
     }
   },
+  "search_gui": {
+    "status": "pass",
+    "desktop_scale": 2.0,
+    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+    "sha256": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
+    "paging": {
+      "total": 23,
+      "page_size": 3,
+      "visited_offsets": [
+        0,
+        3,
+        6,
+        9,
+        12,
+        15,
+        18,
+        21,
+        18
+      ],
+      "visible_names_and_previous_next": "pass",
+      "provider": "Pinned unmodified private provider"
+    },
+    "cancellation": {
+      "superseded_provider_reaped_seconds": 0.6038670839916449,
+      "cleared_provider_reaped_seconds": 0.5193922009784728,
+      "closed_window_provider_reaped_seconds": 0.11646196700166911,
+      "controlled_provider": "Owned Python process writes 1 MiB to each pipe then sleeps; only the extracted provider was replaced",
+      "gui_exit": 0
+    },
+    "cleanup": {
+      "profile_extraction_removed": true,
+      "private_processes": []
+    }
+  },
   "preview_recheck": {
     "status": "pass",
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "sha256": "e9944a7b4951d4c1d233c4abdaed135954cc89d5a926709bac887ef1a3182f74",
+    "sha256": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
     "case": {
       "theme": "Dark",
       "desktop_scale": 1.0,
@@ -74,9 +110,9 @@
     "scope": "Private Xvfb/X11, software OpenGL, Dark 100%; no physical Wayland/GPU claim"
   },
   "limits": [
-    "Tiny fixture CPU is not live-home/content-enabled workload acceptance",
-    "No fresh distro install/upgrade, physical storage, login/reboot, broad GUI/DPI or blocked-network-IO isolation claim",
-    "Positive-content totals/pagination, configured-root ancestor/junction and other roadmap gates remain open",
-    "Windows installer rollback and public release remain separate"
+    "Tiny five-second fixture CPU is not live-home/content-enabled workload acceptance",
+    "No fresh distro install/upgrade, physical storage, login/reboot, broader themes/DPI or blocked-network-IO claim",
+    "System filename and pre-index fallback completeness, configured-root ancestor/junction and other roadmap gates remain open",
+    "Native Windows UI retains five required Copy/PLY/Affinity failures; native Windows source/package acceptance is separate"
   ]
 }

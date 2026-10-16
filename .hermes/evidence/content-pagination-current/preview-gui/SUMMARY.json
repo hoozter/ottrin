@@ -1,0 +1,30 @@
+{
+  "theme": "Dark",
+  "desktop_scale": 1.0,
+  "font_scale": 1.0,
+  "opened": "Ottrin Quick Inspector \u2014 a.vcf",
+  "header_edge_color": [
+    30,
+    34,
+    39
+  ],
+  "header_center_color": [
+    30,
+    34,
+    39
+  ],
+  "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
+  "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
+  "space_closed": true,
+  "vcf_bytes_unchanged": true,
+  "explicit_edit": {
+    "draft_kept_file_unchanged": true,
+    "explicit_save_published_marker": true
+  },
+  "settled_capture_count": 70,
+  "distinct_settled_boxes": 1,
+  "cleanup": {
+    "profile_removed": true,
+    "private_processes": []
+  }
+}

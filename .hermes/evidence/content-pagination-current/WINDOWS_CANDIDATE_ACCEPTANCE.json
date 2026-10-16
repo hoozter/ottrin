@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-16",
+  "status": "partial",
+  "package_checks_status": "pass",
+  "source_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "90f182f662bc2b0e5e646d7200054c4bace090876ac5e46c1e4a69ba41dc333c",
+    "Ottrin-0.1.0-windows-x64.msi": "29ae776e85ea96ffe7606b7b77226fa1e66324532bbe1b504802fd31ab2f3b43",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "07d0b13757954b376ffb827a0e188da066f264bff8e4119955b0ba74560911f2"
+  },
+  "payload_files": 57,
+  "content_and_lifecycle": {
+    "Portable": {
+      "mode": "Portable",
+      "checks": [
+        "All payload identities",
+        "Clean PATH and external config ignored",
+        "Unicode live-content hit outside metadata root",
+        "Size/type/exclusion policy",
+        "Current-folder scope",
+        "Filename results preserved",
+        "Saved-only queries verify extraction and watcher edits/moves/deletion",
+        "Disabled content detaches its watches",
+        "Zero metadata roots retain content without filename membership",
+        "Missing-provider error",
+        "Disabled content error"
+      ],
+      "payload_files": 57,
+      "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+      "pagination": {
+        "saved_plus_new_live_matches": 160,
+        "all_pages_and_beyond_end": "pass",
+        "invalid_limit": "rejected",
+        "page_size": 17,
+        "order": "Name then path",
+        "saved_live_matches": 137
+      },
+      "status": "pass"
+    },
+    "NSIS": {
+      "mode": "NSIS",
+      "checks": [
+        "All payload identities",
+        "Clean PATH and external config ignored",
+        "Unicode live-content hit outside metadata root",
+        "Size/type/exclusion policy",
+        "Current-folder scope",
+        "Filename results preserved",
+        "Saved-only queries verify extraction and watcher edits/moves/deletion",
+        "Disabled content detaches its watches",
+        "Zero metadata roots retain content without filename membership"
+      ],
+      "payload_files": 57,
+      "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+      "pagination": {
+        "saved_plus_new_live_matches": 160,
+        "all_pages_and_beyond_end": "pass",
+        "invalid_limit": "rejected",
+        "page_size": 17,
+        "order": "Name then path",
+        "saved_live_matches": 137
+      },
+      "scheduled_daemon_content_query": "pass",
+      "status": "pass"
+    },
+    "MSI": {
+      "mode": "MSI",
+      "checks": [
+        "All payload identities",
+        "Clean PATH and external config ignored",
+        "Unicode live-content hit outside metadata root",
+        "Size/type/exclusion policy",
+        "Current-folder scope",
+        "Filename results preserved",
+        "Saved-only queries verify extraction and watcher edits/moves/deletion",
+        "Disabled content detaches its watches",
+        "Zero metadata roots retain content without filename membership"
+      ],
+      "payload_files": 57,
+      "scope": "Public packaged CLI as ordinary user with clean PATH; bounded positive installer lifecycle only",
+      "pagination": {
+        "saved_plus_new_live_matches": 160,
+        "all_pages_and_beyond_end": "pass",
+        "invalid_limit": "rejected",
+        "page_size": 17,
+        "order": "Name then path",
+        "saved_live_matches": 137
+      },
+      "scheduled_daemon_content_query": "pass",
+      "status": "pass"
+    }
+  },
+  "native_msi_payload_identity": "Every administrative extraction payload hash equals the 57-file stage",
+  "archive_evidence": ".hermes/evidence/content-pagination-current/FINAL_ARCHIVE_CONTENTS.json",
+  "native_msi_evidence": ".hermes/evidence/content-pagination-current/MSI_ADMIN_EXTRACTION.json",
+  "source_evidence": ".hermes/evidence/content-pagination-current/SOURCE_ACCEPTANCE.json",
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "release_readiness": "Not accepted; internal candidates only",
+  "limits": [
+    "Five native Windows UI failures remain required: two Copy, two PLY, one Affinity",
+    "MSI failed-registration rollback remains open; positive install/uninstall is not rollback acceptance",
+    "No current installed GUI, reboot/login, upgrade/repair, physical storage or broad graphics/media claim",
+    "Public dist Windows deliverables remain the earlier withheld cohort; current candidates are only under .hermes/packaging-tmp/windows-current"
+  ]
+}

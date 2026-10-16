@@ -1,7 +1,7 @@
 {
   "date": "2026-10-16",
   "status": "partial",
-  "scope": "Source tests only; current package cohort remains 61bfab9 until exact rebuild acceptance",
+  "scope": "Source tests only; separate exact-package receipts define delivery acceptance",
   "source_files_sha256": {
     "Cargo.lock": "bf9abf8505ac08d738d5874b8834a2c5790b5c25522bf2f6da3b604d4b95c80f",
     "crates/ottrin-app/Cargo.toml": "40f926f809fc0690ab2fdeb0e269a709ad94cb6e1bdb5662037bc33e6d1f46eb",

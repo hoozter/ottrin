@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-16",
+  "package_source_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
+  "binary_source_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
+  "appimage": {
+    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+    "revision": "42a1bebbd8829de2e324657b94531c670c65496d",
+    "sha256": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
+    "built_from_tracked_clean_source": true
+  },
+  "packages": {
+    "portable": {
+      "artifact": "Ottrin-0.1.0-linux-x86_64-portable.tar.gz",
+      "sha256": "0f8c729006d62f30f89ae04c739b8437bf2b1750b9486bbe80b8dcc8e8c98394",
+      "binary_sha256": {
+        "libexec/ottrin/ottrin": "2ec1824e4ff13987dbb01d66f54fcb8bfc34bf35ec45c978be60cd501da3a2ba",
+        "libexec/ottrin/ottrin-indexd": "f229d1f488c6bd450b894ea1a128ce2baf19841d60f40b9dc67cdecfe9785359",
+        "libexec/ottrin/ottrin-media-playback": "9827ea355cda1dd922b6a35b1b495cd0ae4cbb30fb823e85dcc43676af8447dc",
+        "libexec/ottrin/ottrin-legacy-doc-render": "441e885e3a9a63e9382dd55a218dee1ab13568c7f6c07ae6f358b4f3f66ea59f",
+        "bin/ottrin-priv-helper": "afeb12af107b07ffd563478b5f007e66a92d8eea78223c914406f6812f5c5b6a"
+      },
+      "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 42a1bebbd8829de2e324657b94531c670c65496d\nWorking tree: clean\nTracked diff SHA-256: none\n",
+      "payload_identity": "whole-file match"
+    },
+    "deb": {
+      "artifact": "ottrin_0.1.0_amd64.deb",
+      "sha256": "b268b1b012b38b06f206cd22f3d14f37d924ab58ba7a9354194a0d84ebed70f3",
+      "binary_sha256": {
+        "usr/bin/ottrin": "2ec1824e4ff13987dbb01d66f54fcb8bfc34bf35ec45c978be60cd501da3a2ba",
+        "usr/bin/ottrin-indexd": "f229d1f488c6bd450b894ea1a128ce2baf19841d60f40b9dc67cdecfe9785359",
+        "usr/bin/ottrin-media-playback": "9827ea355cda1dd922b6a35b1b495cd0ae4cbb30fb823e85dcc43676af8447dc",
+        "usr/bin/ottrin-legacy-doc-render": "441e885e3a9a63e9382dd55a218dee1ab13568c7f6c07ae6f358b4f3f66ea59f",
+        "usr/libexec/ottrin/ottrin-priv-helper": "afeb12af107b07ffd563478b5f007e66a92d8eea78223c914406f6812f5c5b6a"
+      },
+      "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 42a1bebbd8829de2e324657b94531c670c65496d\nTracked tree: clean\n",
+      "payload_identity": "whole-file match"
+    },
+    "rpm": {
+      "artifact": "ottrin-0.1.0-1.x86_64.rpm",
+      "sha256": "85fc10ef2066018eb8c0369abb0fe2d1246d7e95f9cfd2085541ce76c9485bf6",
+      "binary_sha256": {
+        "usr/bin/ottrin": "963b2f47afc8f179c6de7c4aa9b104f38bd582c3f9c6ddfb335532dd1eb2e76c",
+        "usr/bin/ottrin-indexd": "fca366663ec0cba6fc06f901449153a9595bdd37857053765691f6774255f965",
+        "usr/bin/ottrin-media-playback": "e7c42d0f5ecfe47e6d03cf6205d34a23a6cd4e723fdbbd30ee03ae0f06a57425",
+        "usr/bin/ottrin-legacy-doc-render": "5c2179e59d21896163e804b28506b598891b076a3d57b341c6e3a8710f3b7f7f",
+        "usr/libexec/ottrin/ottrin-priv-helper": "ad2c9ed219fe6209c483c50128b482b6b93c7c4f41d460047c6a1173472d290d"
+      },
+      "source_record": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 42a1bebbd8829de2e324657b94531c670c65496d\nTracked tree: clean\n",
+      "payload_identity": ".text and .rodata match; standard RPM stripping changes whole-file hashes"
+    }
+  }
+}

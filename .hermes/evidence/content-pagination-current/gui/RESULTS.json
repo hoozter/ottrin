@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "desktop_scale": 2.0,
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "sha256": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
+  "paging": {
+    "total": 23,
+    "page_size": 3,
+    "visited_offsets": [
+      0,
+      3,
+      6,
+      9,
+      12,
+      15,
+      18,
+      21,
+      18
+    ],
+    "visible_names_and_previous_next": "pass",
+    "provider": "Pinned unmodified private provider"
+  },
+  "cancellation": {
+    "superseded_provider_reaped_seconds": 0.6038670839916449,
+    "cleared_provider_reaped_seconds": 0.5193922009784728,
+    "closed_window_provider_reaped_seconds": 0.11646196700166911,
+    "controlled_provider": "Owned Python process writes 1 MiB to each pipe then sleeps; only the extracted provider was replaced",
+    "gui_exit": 0
+  },
+  "cleanup": {
+    "profile_extraction_removed": true,
+    "private_processes": []
+  }
+}
