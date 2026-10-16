@@ -8,6 +8,22 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Windows EPS worker integration follow-up
+
+Exact portable GUI testing rejected the first `7f497e9` candidate: the renderer
+and thumbnail utilities worked, but the shared asynchronous preview worker was
+still Linux-only and returned metadata in the actual Windows Inspector. Its
+platform gate and error binding are repaired. The two existing main/Inspector
+routing checks now run on Windows, and a new production-worker regression waits
+for the expected green/red rendered pixels with the installed runtime required
+in the native lane. Linux UI passes 379 tests with one existing exclusion;
+ordinary-user Windows UI passes 343 tests with only the two required public Copy
+failures and no exclusions. Strict UI all-target Clippy passes on both targets.
+
+The rejected cohort was not promoted. Existing stable deliverables remain at
+`9df0224` until the repaired source is rebuilt and exact GUI/package checks pass.
+Evidence: `.hermes/evidence/windows-eps-worker-current/ACCEPTANCE.json`.
+
 ## Windows EPS source checkpoint
 
 The last Windows preview-suite failure, EPS routing, is implemented. Windows

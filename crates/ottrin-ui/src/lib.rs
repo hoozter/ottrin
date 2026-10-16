@@ -3346,9 +3346,13 @@ impl OttrinApp {
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
                 let mut video_error = None;
                 #[cfg(target_os = "linux")]
-                let (mut html_error, mut eps_error) = (None, None::<String>);
+                let mut html_error = None::<String>;
                 #[cfg(not(target_os = "linux"))]
-                let (html_error, eps_error) = (None::<String>, None::<String>);
+                let html_error = None::<String>;
+                #[cfg(any(target_os = "linux", target_os = "windows"))]
+                let mut eps_error = None::<String>;
+                #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+                let eps_error = None::<String>;
                 let mut office_error = None;
                 let mut office_render = None;
                 let bytes = if !generation_is_current
@@ -3795,7 +3799,7 @@ impl OttrinApp {
                         None
                     }
                 } else if eps_candidate {
-                    #[cfg(target_os = "linux")]
+                    #[cfg(any(target_os = "linux", target_os = "windows"))]
                     {
                         if req.target_dim != PREVIEW_CACHE_ORIGINAL
                             && let Some(cached) = load_cached_thumbnail(
@@ -3838,7 +3842,7 @@ impl OttrinApp {
                             }
                         }
                     }
-                    #[cfg(not(target_os = "linux"))]
+                    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
                     {
                         None
                     }
@@ -35107,7 +35111,7 @@ mod tests {
         );
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[test]
     fn preview_consistency_eps_requests_same_renderer_in_main_and_inspector() {
         let fixture = tempfile::tempdir().unwrap();
@@ -35163,13 +35167,71 @@ mod tests {
         }
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[test]
     fn eps_quick_inspector_uses_the_isolated_visual_preview_path() {
         assert!(preview_uses_visual_preview(
             Path::new("diagram.eps"),
             PreviewKind::EpsMetadata,
         ));
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[test]
+    fn eps_original_preview_worker_returns_rendered_pixels() {
+        let available = ottrin_preview::eps_preview_runtime_is_available();
+        if std::env::var_os("OTTRIN_REQUIRE_EPS_RUNTIME").is_some() {
+            assert!(available, "native EPS lane requires its installed renderer");
+        }
+        if !available {
+            return;
+        }
+        let fixture = tempfile::tempdir().unwrap();
+        let path = fixture.path().join("worker.eps");
+        let source = b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 160 100\n0 0.8 0.2 setrgbcolor 0 0 160 100 rectfill\n0.9 0.05 0.05 setrgbcolor newpath 80 50 20 0 360 arc fill\nshowpage\n";
+        std::fs::write(&path, source).unwrap();
+        let mut app = OttrinApp::new_with_config_and_graphics_status(
+            AppConfig::default(),
+            GraphicsRuntimeStatus::default(),
+        );
+        assert!(
+            app.cached_original_image_preview_widget_for_page(&path, 400.0, 300.0, 0, 0)
+                .is_none()
+        );
+        let deadline = Instant::now() + Duration::from_secs(15);
+        loop {
+            app.poll_preview_jobs();
+            if let Some(entry) = app.image_preview_cache.values().next() {
+                let pixels = image::load_from_memory(
+                    entry
+                        .bytes()
+                        .expect("production EPS worker must return pixels, not metadata"),
+                )
+                .unwrap()
+                .to_rgba8();
+                assert!(
+                    pixels
+                        .pixels()
+                        .filter(|p| p[1] > 140 && p[0] < 60 && p[2] < 140)
+                        .count()
+                        > 1000
+                );
+                assert!(
+                    pixels
+                        .pixels()
+                        .filter(|p| p[0] > 140 && p[1] < 80 && p[2] < 90)
+                        .count()
+                        > 1000
+                );
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "EPS preview worker did not finish"
+            );
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        assert_eq!(std::fs::read(&path).unwrap(), source);
     }
 
     #[cfg(target_os = "linux")]

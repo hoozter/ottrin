@@ -1,0 +1,26 @@
+{
+  "status": "partial",
+  "scope": "Production EPS worker repair, source/native tests; rebuilt packages still required",
+  "previous_source": "7f497e9ffc3e6a49ddb2ba67702036440b314f99",
+  "defect": "Actual Windows Inspector returned metadata because its async EPS worker branch was still Linux-only; direct renderer and thumbnail checks did not cover that branch",
+  "repair": "Enable shared worker and mutable error state on Windows; enable the two existing EPS UI routing tests there; add actual async worker pixel regression on both platforms",
+  "linux_ui": {
+    "passed": 379,
+    "failed": 0,
+    "ignored": 1
+  },
+  "windows_ui": {
+    "passed": 343,
+    "failed": 2,
+    "ignored": 0,
+    "required_failures": [
+      "tests::clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict",
+      "tests::clipboard_native_paste_event_starts_owned_file_operation"
+    ]
+  },
+  "required_real_worker_pixels": "pass on Linux and ordinary-user Windows with installed Ghostscript required",
+  "clippy": "UI all-targets pass on Linux and Windows",
+  "source_sha256": "c34059a48b053e67eed09d280dff820fced5dfd23583ce3ae1940d6b6a01d6a2",
+  "package_state": "7f497e9 cohort rejected and not promoted; stable cohorts remain 9df0224 until rebuilt checked replacements",
+  "native_environment": "Same owned no-NIC EPS COW remains for immediate package consumers; original profiles/installations preserved"
+}

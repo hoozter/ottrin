@@ -1,0 +1,23 @@
+{
+  "fixture_removed": true,
+  "index_stop_exit": 0,
+  "error": "Rendered fixture surface missing: eps 0",
+  "status": "fail",
+  "stack": "at <ScriptBlock>, C:\\OttrinContentQA\\windows-preview-gui.ps1: line 54\r\nat <ScriptBlock>, C:\\OttrinContentQA\\gui-runner.ps1: line 1",
+  "ordinary_user": true,
+  "screen": "{X=0,Y=0,Width=1280,Height=800}",
+  "cases": {
+    "affinity": {
+      "rendered_fixture_pixels": 167719,
+      "title": "Ottrin Quick Inspector \u2014 composite.afphoto",
+      "clean_exit": 0,
+      "source_unchanged": true
+    },
+    "ply": {
+      "rendered_fixture_pixels": 985,
+      "title": "Ottrin Quick Inspector \u2014 model.ply",
+      "clean_exit": 0,
+      "source_unchanged": true
+    }
+  }
+}

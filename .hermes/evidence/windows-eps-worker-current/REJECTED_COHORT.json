@@ -1,0 +1,15 @@
+{
+  "source_revision": "7f497e9ffc3e6a49ddb2ba67702036440b314f99",
+  "status": "not promoted",
+  "reason": "Exact portable Windows GUI found production EPS worker still gated to Linux; renderer/thumbnail tests had passed but did not exercise this async dispatch. Linux exact checks passed.",
+  "repair": "Enable Windows production worker branch and its error state; enable existing UI routing checks on Windows and add real worker pixel regression; rerun native tests and rebuild cohort.",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "5377653b427704e1e4996555f7d303aced66268e0f0a129b0c1424578f0e5454",
+    "Ottrin-0.1.0-x86_64.AppImage": "b0f21c35b7a19718bfb5a98cfbcb468a203d081915dec2da4aceff2e59ef3bc2",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "3a26a9101c71358f7bef9b5d91336b2135aa98fdc648a896bc171b9a6a759d01",
+    "ottrin_0.1.0_amd64.deb": "fd004b7df7b3f559bb65182987aea093942cc2865a6ac7e42e81f8587c75d974",
+    "windows/Ottrin-0.1.0-windows-x64-portable.zip": "e1e60ed93a3d8294b7a0bbfc1eaf76ba9ccb493022b1a6c200f9866f072915ca",
+    "windows/Ottrin-0.1.0-windows-x64.msi": "4ff11b3ab07fd56e4544a9efcce3bb1ed2d3f8eea0cd4c3cefb8b2ee35100ad2",
+    "windows/Ottrin-0.1.0-windows-x64-setup.exe": "6e0337bd0c76c08ed8b99fd25139ae98fe82d7f0b0bd9b688f698d2b7e50be04"
+  }
+}

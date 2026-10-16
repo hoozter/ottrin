@@ -1,0 +1,10 @@
+{
+  "status": "collected",
+  "ordinary_user": true,
+  "suites": {
+    "ui-worker": {
+      "exit": 101,
+      "temporary_entries": 1
+    }
+  }
+}
