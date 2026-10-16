@@ -1,0 +1,10 @@
+
+running 1 test
+test copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... FAILED
+
+failures:
+
+failures:
+    copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 160 filtered out; finished in 0.03s

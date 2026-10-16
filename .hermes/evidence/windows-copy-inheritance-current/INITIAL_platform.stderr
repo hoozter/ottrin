@@ -1,0 +1,6 @@
+
+thread 'copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_mandatory_label' (8912) panicked at crates/ottrin-platform/src/copy_transaction/windows/security.rs:465:13:
+assertion `left == right` failed: mandatory label inheritance differs for OICINP
+  left: (false, 2048, None)
+ right: (true, 2048, Some([2, 0, 28, 0, 1, 0, 0, 0, 17, 16, 20, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 16, 0, 16, 0, 0]))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

@@ -427,6 +427,7 @@ pub(super) fn stage_file_streams(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::windows_fs;
     use std::fs::OpenOptions;
     use std::io::Write;
     use std::os::windows::{ffi::OsStrExt, fs::OpenOptionsExt};
@@ -761,17 +762,17 @@ mod tests {
         let parent = parent(&destination);
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         assert_owner_only(&stage.directory);
-        let staged = stage.create_candidate().unwrap();
+        let staged = stage.create_candidate(false).unwrap();
         assert_owner_only(&staged);
         let src = root.path().join("source");
         std::fs::write(&src, b"private candidate data").unwrap();
         stage_file_streams(&source(&src), &staged, |_| Ok(())).unwrap();
         stage.validate().unwrap();
-        let collision = stage.create_candidate().unwrap_err();
+        let collision = stage.create_candidate(false).unwrap_err();
         assert!(matches!(collision, PlatformError::CleanupPending { .. }));
         let location = crate::windows_fs::location(&staged).unwrap();
         assert_eq!(std::fs::read(&location).unwrap(), b"private candidate data");
-        assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 1);
+        assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 2);
         assert!(stage.name.to_string_lossy().starts_with(".ottrin-copy-"));
         assert!(namespace::open_source(&parent, OsStr::new("missing")).is_err());
     }
@@ -829,6 +830,78 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_copy_candidate_collision_never_adopts_an_existing_entry() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        let occupied = root.path().join(&stage.candidate_name);
+        std::fs::write(&occupied, b"unrelated user data").unwrap();
+        assert!(matches!(
+            stage.create_candidate(false),
+            Err(PlatformError::CleanupPending { .. })
+        ));
+        assert_eq!(std::fs::read(occupied).unwrap(), b"unrelated user data");
+        assert_eq!(
+            std::fs::read_dir(windows_fs::location(&stage.directory).unwrap())
+                .unwrap()
+                .count(),
+            0
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_candidate_rebinding_retains_both_objects() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        let candidate = stage.create_candidate(false).unwrap();
+        (&candidate).write_all(b"verified staged data").unwrap();
+        crate::move_transaction::rename_windows_handle_no_replace(
+            &candidate,
+            &parent,
+            std::ffi::OsStr::new("retained-candidate"),
+        )
+        .unwrap();
+        let replacement = root.path().join(&stage.candidate_name);
+        std::fs::write(&replacement, b"unrelated replacement").unwrap();
+        assert!(matches!(
+            stage.validate_candidate(&candidate, false),
+            Err(PlatformError::CleanupPending { .. })
+        ));
+        assert_eq!(
+            std::fs::read(replacement).unwrap(),
+            b"unrelated replacement"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("retained-candidate")).unwrap(),
+            b"verified staged data"
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_directory_candidate_is_private_and_type_checked() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        let candidate = stage.create_candidate(true).unwrap();
+        assert_owner_only(&candidate);
+        let candidate_location = windows_fs::location(&candidate).unwrap();
+        let parent_location = windows_fs::location(&parent).unwrap();
+        assert_eq!(candidate_location.parent(), Some(parent_location.as_path()));
+        stage.validate_candidate(&candidate, true).unwrap();
+        assert!(stage.validate_candidate(&candidate, false).is_err());
+        let child = windows_fs::create_private(
+            &candidate,
+            std::ffi::OsStr::new("child"),
+            false,
+            FILE_SHARE_READ,
+        )
+        .unwrap();
+        assert_owner_only(&child);
+        (&child).write_all(b"nested private data").unwrap();
+    }
+
+    #[test]
     fn windows_native_copy_namespace_excludes_other_directory_writers() {
         let root = tempfile::tempdir().unwrap();
         let parent = parent(root.path());
@@ -852,7 +925,7 @@ mod tests {
             Some(32),
             "must refuse by sharing, not merely a fixture ACL"
         );
-        stage.create_candidate().unwrap();
+        stage.create_candidate(false).unwrap();
     }
 
     #[test]
@@ -906,16 +979,10 @@ mod tests {
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         std::fs::remove_dir(&alias).unwrap();
         std::os::windows::fs::symlink_dir(&second, &alias).unwrap();
-        let created = stage.create_candidate().unwrap();
+        let created = stage.create_candidate(false).unwrap();
         (&created).write_all(b"original parent").unwrap();
         assert_eq!(
-            std::fs::read(
-                first
-                    .join("destination")
-                    .join(&stage.name)
-                    .join("candidate")
-            )
-            .unwrap(),
+            std::fs::read(first.join("destination").join(&stage.candidate_name)).unwrap(),
             b"original parent"
         );
         assert_eq!(
@@ -942,7 +1009,7 @@ mod tests {
         let unrelated = root.path().join(&stage.name).join("keep");
         std::fs::write(&unrelated, b"unrelated").unwrap();
         assert!(matches!(
-            stage.create_candidate(),
+            stage.create_candidate(false),
             Err(PlatformError::CleanupPending { .. })
         ));
         assert_eq!(std::fs::read(&unrelated).unwrap(), b"unrelated");
@@ -1303,7 +1370,7 @@ mod metadata_tests {
         std::fs::write(&src, b"private until published").unwrap();
         let parent = parent(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
-        let candidate = stage.create_candidate().unwrap();
+        let candidate = stage.create_candidate(false).unwrap();
         let source = File::open(src).unwrap();
         metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
         assert_owner_only(&candidate);

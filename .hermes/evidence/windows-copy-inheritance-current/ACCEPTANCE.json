@@ -1,0 +1,113 @@
+{
+  "status": "pass",
+  "scope": "Source-only Windows Copy private candidate inheritance; public Copy disabled",
+  "base_revision": "affc808c5ee91d35f5dc110f85086a2ffe0536f2",
+  "sources": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "59d162b7f22108672945e4f2e5b63d697053ccc381fc98260df794d1be02112b",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "7ae222085aeaa987c74f15cf8465bea6cc9c38526af241b33be02d3158219985",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "4620268b0ef1aaa881edd5d02070438142519fab4b9c74b1c5db45393218a394"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "a6fb66bb3cbfbf7bc6eebf9fd794ec37ac4f40ad3ace7379e8f843daaa027d84",
+    "transferred_sha256": "b84635e73037049151cc61778cad925e7e36f054c3edaddb28b2f8f83d3001ba",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 4573672,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "d2915c37698be160a9c0c66fe80673e002e3cd083d9827925aa362b49704dc1d"
+      },
+      ".data": {
+        "virtual_size": 3792,
+        "virtual_address": 4579328,
+        "flags": 3221225536,
+        "raw_sha256": "530c4cfc5708ded163b202e0f033aca6c6c080529ea55d4bf91d4162cad48e72"
+      },
+      ".rdata": {
+        "virtual_size": 638168,
+        "virtual_address": 4583424,
+        "flags": 1073741888,
+        "raw_sha256": "78daefedb1f251da9d904f2e2b2dd5009e21ec2261d7dda53a2d91c266c80c8b"
+      },
+      ".pdata": {
+        "virtual_size": 115560,
+        "virtual_address": 5222400,
+        "flags": 1073741888,
+        "raw_sha256": "aea83ad3e0efa5b5e823862b0e4240441a980d7b87156bff1112970d073809af"
+      },
+      ".xdata": {
+        "virtual_size": 317028,
+        "virtual_address": 5341184,
+        "flags": 1073741888,
+        "raw_sha256": "c0bd116c8266d468c84decab91904abc7a7fd44fd0ad670b47db3a94ff612451"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 5660672,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 5664768,
+        "flags": 3221225536,
+        "raw_sha256": "dacf5ed436668b25dd8b1f4ea29f00ddeeef8ef815b84cdc5a01417ed7c8e4bb"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 5677056,
+        "flags": 3221225536,
+        "raw_sha256": "6658ba8a0a1e5e6b98d150f8e5e4a3992a76eeaaea5723b5f2a0459ca48a525c"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 5681152,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 16908,
+        "virtual_address": 5685248,
+        "flags": 1107296320,
+        "raw_sha256": "9623c995d0982026d748afa5edc768ef746e3acdbbd96f5f1b2b3a957b775408"
+      }
+    }
+  },
+  "regression_before": {
+    "ordinary_user": "33 passed, 1 failed, 1 ignored; NO_PROPAGATE mandatory-label inheritance lost",
+    "system_audit": "0 passed, 1 failed; NO_PROPAGATE audit inheritance lost"
+  },
+  "after": {
+    "ordinary_copy": "37 passed, 0 failed, 1 ignored (explicit audit fixture)",
+    "ordinary_full_windows_platform": "137 passed, 0 failed, 27 ignored",
+    "explicit_system_audit": "1 passed, 0 failed, 0 ignored",
+    "linux_platform": "411 passed, 0 failed, 3 ignored",
+    "strict_all_targets_clippy": "pass, Linux and Windows",
+    "formatting": "pass"
+  },
+  "coverage": [
+    "Native file/directory and child SACL/label comparison, including NO_PROPAGATE",
+    "Inherited security preserved after final DACL application",
+    "Private owner-only create-new file/directory roots",
+    "Occupied candidate name never adopted or overwritten",
+    "Candidate name rebound: staged and unrelated data both retained"
+  ],
+  "production_privilege_changes": false,
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "limits": [
+    "Complete tree/link staging not implemented",
+    "Sparse/EFS and non-ACL filesystem strategy remain required",
+    "Complete security/Overwrite/journal/publication/recovery/Undo remain open",
+    "No public Copy or fresh package acceptance claimed"
+  ]
+}

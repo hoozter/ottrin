@@ -268,6 +268,7 @@ mod tests {
     use crate::windows_fs::LocalSecurity;
     use std::io::Write;
     use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt};
+    use windows_sys::Win32::System::SystemServices::ACCESS_SYSTEM_SECURITY;
 
     fn parent(path: &std::path::Path) -> File {
         OpenOptions::new()
@@ -334,6 +335,280 @@ mod tests {
             FILE_SHARE_READ | FILE_SHARE_WRITE,
         )
         .unwrap()
+    }
+
+    fn set_sacl(file: &File, text: &str, information: u32) {
+        let descriptor = LocalSecurity::from_sddl(text).unwrap();
+        let (mut present, mut defaulted, mut acl) = (0, 0, ptr::null_mut());
+        assert_ne!(
+            unsafe {
+                GetSecurityDescriptorSacl(
+                    descriptor.as_raw(),
+                    &mut present,
+                    &mut acl,
+                    &mut defaulted,
+                )
+            },
+            0
+        );
+        assert_ne!(present, 0);
+        assert_eq!(
+            unsafe {
+                SetSecurityInfo(
+                    file.as_raw_handle().cast(),
+                    SE_FILE_OBJECT,
+                    information,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    ptr::null(),
+                    acl,
+                )
+            },
+            0
+        );
+    }
+
+    fn observed_sacl(file: &File, information: u32) -> (bool, u16, Option<Vec<u8>>) {
+        // The audit fixture explicitly owns SeSecurityPrivilege. Metadata access
+        // does not conflict with the candidate's data-sharing restriction.
+        let audit_handle;
+        let file = if information == SACL_SECURITY_INFORMATION {
+            audit_handle = OpenOptions::new()
+                .access_mode(READ_CONTROL | ACCESS_SYSTEM_SECURITY)
+                .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+                .open(windows_fs::location(file).unwrap())
+                .unwrap();
+            assert_eq!(
+                stable_identity_from_handle(&audit_handle).unwrap(),
+                stable_identity_from_handle(file).unwrap()
+            );
+            &audit_handle
+        } else {
+            file
+        };
+        let mut needed = 0;
+        unsafe {
+            GetKernelObjectSecurity(
+                file.as_raw_handle().cast(),
+                information,
+                ptr::null_mut(),
+                0,
+                &mut needed,
+            );
+        }
+        assert!(needed > 0 && needed <= 65536);
+        let mut storage = vec![0u64; (needed as usize).div_ceil(8)];
+        let raw = storage.as_mut_ptr().cast();
+        assert_ne!(
+            unsafe {
+                GetKernelObjectSecurity(
+                    file.as_raw_handle().cast(),
+                    information,
+                    raw,
+                    needed,
+                    &mut needed,
+                )
+            },
+            0
+        );
+        let (mut present, mut defaulted, mut acl, mut control, mut revision) =
+            (0, 0, ptr::null_mut(), 0, 0);
+        assert_ne!(
+            unsafe { GetSecurityDescriptorSacl(raw, &mut present, &mut acl, &mut defaulted) },
+            0
+        );
+        assert_ne!(
+            unsafe { GetSecurityDescriptorControl(raw, &mut control, &mut revision) },
+            0
+        );
+        let bytes = if acl.is_null() {
+            None
+        } else {
+            Some(
+                unsafe { std::slice::from_raw_parts(acl.cast::<u8>(), (*acl).AclSize as usize) }
+                    .to_vec(),
+            )
+        };
+        (
+            present != 0,
+            control & (SE_SACL_PROTECTED | SE_SACL_AUTO_INHERITED),
+            bytes,
+        )
+    }
+
+    fn check_new_child_security(parent: &File, information: u32, flags: &str) {
+        for directory in [false, true] {
+            let name = if directory {
+                "reference-directory"
+            } else {
+                "reference-file"
+            };
+            let reference = ordinary(parent, name, directory);
+            let expected = observed_sacl(&reference, information);
+            assert!(
+                expected.2.as_ref().is_some_and(|acl| acl.len() > 8),
+                "fixture must have inherited security"
+            );
+            let policy = DestinationSecurity::capture(parent, directory).unwrap();
+            let stage = super::super::namespace::PrivateStage::create(parent).unwrap();
+            let candidate = stage.create_candidate(directory).unwrap();
+            super::super::tests::assert_owner_only(&candidate);
+            assert_eq!(
+                observed_sacl(&candidate, information),
+                expected,
+                "inheritance differs for {flags}, directory={directory}"
+            );
+            let children = directory.then(|| {
+                let reference_child = ordinary(&reference, "child", false);
+                let child = private(&candidate, "child", false);
+                super::super::tests::assert_owner_only(&child);
+                assert_eq!(
+                    observed_sacl(&child, information),
+                    observed_sacl(&reference_child, information)
+                );
+                (reference_child, child)
+            });
+            policy
+                .apply(parent, &stage.candidate_name, &candidate)
+                .unwrap();
+            assert_eq!(
+                observed_sacl(&candidate, information),
+                expected,
+                "DACL finalization changed inherited security"
+            );
+            if let Some((reference_child, child)) = children {
+                assert_eq!(
+                    observed_sacl(&child, information),
+                    observed_sacl(&reference_child, information)
+                );
+                super::super::tests::assert_owner_only(&child);
+            }
+            stage.validate_candidate(&candidate, directory).unwrap();
+        }
+    }
+
+    #[test]
+    fn new_copy_candidate_inherits_the_real_parent_mandatory_label() {
+        for flags in ["OICI", "OICINP"] {
+            let root = tempfile::tempdir().unwrap();
+            let parent = OpenOptions::new()
+                .access_mode(
+                    FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC | WRITE_OWNER,
+                )
+                .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+                .open(root.path())
+                .unwrap();
+            set_sacl(
+                &parent,
+                &format!("S:(ML;{flags};NW;;;LW)"),
+                LABEL_SECURITY_INFORMATION,
+            );
+            check_new_child_security(&parent, LABEL_SECURITY_INFORMATION, flags);
+        }
+    }
+
+    #[test]
+    #[ignore = "requires SeSecurityPrivilege; selected explicitly in the native SYSTEM audit lane"]
+    fn new_copy_candidate_inherits_the_real_parent_audit_sacl() {
+        use windows_sys::Win32::Foundation::{GetLastError, SetLastError};
+        struct Privilege {
+            token: OwnedHandle,
+            previous: TOKEN_PRIVILEGES,
+        }
+        impl Drop for Privilege {
+            fn drop(&mut self) {
+                if self.previous.PrivilegeCount != 0 {
+                    assert_ne!(
+                        unsafe {
+                            AdjustTokenPrivileges(
+                                self.token.as_raw_handle().cast(),
+                                0,
+                                &self.previous,
+                                0,
+                                ptr::null_mut(),
+                                ptr::null_mut(),
+                            )
+                        },
+                        0
+                    );
+                }
+            }
+        }
+        let mut raw = ptr::null_mut();
+        assert_ne!(
+            unsafe {
+                OpenProcessToken(
+                    GetCurrentProcess(),
+                    TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES,
+                    &mut raw,
+                )
+            },
+            0
+        );
+        let token = unsafe { OwnedHandle::from_raw_handle(raw.cast()) };
+        let mut luid = Default::default();
+        let name = "SeSecurityPrivilege"
+            .encode_utf16()
+            .chain(Some(0))
+            .collect::<Vec<_>>();
+        assert_ne!(
+            unsafe { LookupPrivilegeValueW(ptr::null(), name.as_ptr(), &mut luid) },
+            0
+        );
+        let requested = TOKEN_PRIVILEGES {
+            PrivilegeCount: 1,
+            Privileges: [LUID_AND_ATTRIBUTES {
+                Luid: luid,
+                Attributes: SE_PRIVILEGE_ENABLED,
+            }],
+        };
+        let mut previous = TOKEN_PRIVILEGES::default();
+        let mut returned = 0;
+        unsafe {
+            SetLastError(0);
+        }
+        assert_ne!(
+            unsafe {
+                AdjustTokenPrivileges(
+                    token.as_raw_handle().cast(),
+                    0,
+                    &requested,
+                    std::mem::size_of::<TOKEN_PRIVILEGES>() as u32,
+                    &mut previous,
+                    &mut returned,
+                )
+            },
+            0
+        );
+        assert_eq!(
+            unsafe { GetLastError() },
+            0,
+            "SYSTEM audit fixture privilege is required"
+        );
+        let _privilege = Privilege { token, previous };
+        for flags in ["OICI", "OICINP"] {
+            let root = tempfile::tempdir().unwrap();
+            let parent = OpenOptions::new()
+                .access_mode(
+                    FILE_GENERIC_READ
+                        | FILE_GENERIC_WRITE
+                        | DELETE
+                        | WRITE_DAC
+                        | ACCESS_SYSTEM_SECURITY,
+                )
+                .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+                .open(root.path())
+                .unwrap();
+            set_sacl(
+                &parent,
+                &format!("S:(AU;{flags}SAFA;GR;;;WD)"),
+                SACL_SECURITY_INFORMATION,
+            );
+            check_new_child_security(&parent, SACL_SECURITY_INFORMATION, flags);
+        }
     }
     #[test]
     fn destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults() {

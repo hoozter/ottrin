@@ -3539,3 +3539,28 @@ Public Windows remains unchanged pending failed-registration MSI rollback.
 Exact positive-content totals/pagination is the next indexing outcome; network
 I/O isolation, configured-root ancestor/junction and the other roadmap gates
 remain separate. The full roadmap goal stays active; user testing is deferred.
+
+
+### Windows Copy direct-child security inheritance (2026-10-16)
+
+Native regression fixtures reproduced lost NO_PROPAGATE audit and integrity-label
+rules when a Copy candidate was created inside the transaction directory. The
+candidate now uses a create-new sibling name directly under the held destination
+parent. Windows supplies its natural SACL/label inheritance while the explicit
+creation DACL keeps it private. Both file and directory roots are supported;
+complete tree/link staging remains required. Existing names are never adopted or
+replaced, and identity/type rebinding checks retain all data on failure.
+
+Ordinary-user native Copy checks pass 37; the full Windows platform suite passes
+137 with 27 exclusions. The privileged audit fixture passes separately with
+SeSecurityPrivilege confined to the test. Final DACL application preserves the
+native inherited audit and label rules, including directory child behavior.
+Linux platform tests pass 411 with 3 exclusions; strict platform all-target
+Clippy passes on both targets. Source evidence and cleanup are recorded in
+`.hermes/evidence/windows-copy-inheritance-current/ACCEPTANCE.json`.
+
+This is a component checkpoint, not public Windows Copy completion. Full staging,
+special attributes, non-ACL filesystem strategy, complete security/Overwrite,
+durable publication/recovery/Undo, clipboard and package acceptance remain open.
+Public Copy remains disabled and current packages are unchanged. User testing is
+deferred; the full roadmap goal remains active.

@@ -36,7 +36,7 @@ Microsoft documents the backup stream format and context lifetime in [BackupRead
 
 ## Verified private namespace component
 
-`copy_transaction/windows/namespace.rs` pins the destination parent, creates a random private directory without replacement, and creates its candidate relative to that directory. Each native creation supplies a protected owner-only DACL atomically; there is no inherited-permission interval. The shared primitive in `windows_fs.rs` rejects non-leaf names and parents with reparse points, requires persistent filesystem ACLs, and opens entries without following reparse targets. Raw UTF-16 names are preserved. Copy source handles request read access without DELETE or data-write rights.
+`copy_transaction/windows/namespace.rs` pins the destination parent, creates a random private transaction directory without replacement, and creates its candidate as a sibling directly under the held real destination parent. Each native creation supplies a protected owner-only DACL atomically; there is no inherited-permission interval. The shared primitive in `windows_fs.rs` rejects non-leaf names and parents with reparse points, requires persistent filesystem ACLs, and opens entries without following reparse targets. Raw UTF-16 names are preserved. Copy source handles request read access without DELETE or data-write rights.
 
 Before and after candidate creation, Copy checks the held parent and stage identities and observes the stage name through the pinned parent. An ancestor alias change cannot redirect creation. A changed stage binding returns an explicit retained-data error; no path-based deletion or automatic Drop cleanup is attempted. Durable ownership records and destructive cleanup remain required before this component can become a transaction.
 
@@ -113,8 +113,46 @@ suite passes 133 with the same 26 specialized exclusions. Evidence is
 `.hermes/evidence/windows-copy-security-current/`.
 
 This is the new-copy DACL component, not complete Windows security support.
-SACL/audit and mandatory-label policy, absent/null derived DACL handling,
-Overwrite security integration and exact
-retained destination descriptors remain required. Directory/link staging,
+Absent/null derived DACL handling, Overwrite security integration and exact
+retained destination descriptors remain required. New-copy SACL and mandatory-label
+inheritance are covered by the direct-child creation checks below; complete
+security drift, publication and recovery integration remain open. Directory/link staging,
 publication journals, Undo/recovery and public clipboard/package acceptance
 also remain open. The public dispatcher still rejects all Windows Copy modes.
+
+
+## Direct-child security inheritance
+
+The private candidate is now `.ottrin-copy-ID.candidate`, beside the transaction
+folder `.ottrin-copy-ID`, directly under the held destination parent. This replaces
+the nested `transaction/candidate` layout. Windows supplies normal new-child audit
+and mandatory-label inheritance while creation supplies only the protected
+owner-only DACL. Production does not request or enable audit/security privileges.
+The extra inheritance level previously discarded NO_PROPAGATE audit and label ACEs;
+both defects were reproduced on native Windows before changing the layout.
+
+File and directory candidate creation use create-new semantics. Existing names
+are never adopted or overwritten. Binding checks compare the held candidate's type
+and file identity with the name observed through the pinned parent. They validate
+an already-owned create-new result, not ownership of arbitrary handles. Collisions
+and rebinding retain the stage and all unrelated/staged data. No automatic cleanup
+or publication is introduced. A future durable journal must own both sibling
+identities and names before destructive recovery can be allowed.
+
+Native tests compare ordinary kernel-created files and directories with private
+candidates for inheritable and NO_PROPAGATE mandatory labels and audit rules. They
+also compare directory children and verify that final DACL application preserves
+those SACLs and labels. The label case runs as an ordinary user. The audit fixture
+runs explicitly as SYSTEM with SeSecurityPrivilege enabled only by the test; it is
+excluded from the ordinary-user suite and selected separately in the audit lane.
+
+The ordinary-user Copy suite passes 37 with the audit case excluded; the full
+ordinary-user Windows platform suite passes 137 with 27 specialized exclusions.
+The explicitly selected audit test passes separately. The Linux platform suite
+passes 411 with 3 exclusions; strict all-target platform Clippy passes for Linux
+and Windows. Evidence: `.hermes/evidence/windows-copy-inheritance-current/`.
+These are source/component checks. Complete directory/link payload staging,
+special attributes, non-ACL filesystems, full security/Overwrite integration,
+journals, publication, Undo/recovery and exact-package workflows remain required.
+Public Windows Copy remains disabled; no package was rebuilt for this private
+component change.

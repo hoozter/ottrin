@@ -5,7 +5,8 @@ use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::ptr;
 use windows_sys::Win32::Storage::FileSystem::{
-    FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
+    FILE_GENERIC_READ, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
+    SYNCHRONIZE,
 };
 
 pub(super) struct PrivateStage<'a> {
@@ -13,6 +14,7 @@ pub(super) struct PrivateStage<'a> {
     parent_identity: WindowsStableIdentity,
     pub(super) directory: File,
     pub(super) name: OsString,
+    pub(super) candidate_name: OsString,
     identity: WindowsStableIdentity,
 }
 
@@ -38,11 +40,14 @@ impl<'a> PrivateStage<'a> {
         };
         let identity =
             directory_identity(&directory).map_err(|error| retained(&directory, &name, error))?;
+        let mut candidate_name = name.clone();
+        candidate_name.push(".candidate");
         let stage = Self {
             parent,
             parent_identity,
             directory,
             name,
+            candidate_name,
             identity,
         };
         stage.validate()?;
@@ -79,20 +84,69 @@ impl<'a> PrivateStage<'a> {
     }
 
     fn retained(&self, error: impl std::fmt::Display) -> PlatformError {
-        retained(&self.directory, &self.name, error)
+        retained(
+            &self.directory,
+            &self.name,
+            format!(
+                "{error}; planned destination-local candidate {:?}",
+                self.candidate_name
+            ),
+        )
     }
 
-    pub(super) fn create_candidate(&self) -> Result<File, PlatformError> {
+    /// Create beside the transaction directory, directly under the real parent.
+    /// An extra inheritance level would discard NO_PROPAGATE audit/label ACEs.
+    /// Only the DACL is supplied; Windows derives the normal new-child SACL and
+    /// mandatory label without requiring the caller to read an audit SACL.
+    /// No existing entry at the planned name is adopted or replaced.
+    pub(super) fn create_candidate(&self, directory: bool) -> Result<File, PlatformError> {
         self.validate()?;
         let file = windows_fs::create_private(
-            &self.directory,
-            OsStr::new("candidate"),
-            false,
+            self.parent,
+            &self.candidate_name,
+            directory,
             FILE_SHARE_READ,
         )
         .map_err(|error| self.retained(error))?;
-        self.validate()?;
+        self.validate_candidate(&file, directory)?;
         Ok(file)
+    }
+
+    /// Validate the private binding of an already-owned create-new result.
+    /// This does not establish ownership of an arbitrary supplied handle. After
+    /// publication the transaction must use its recorded destination binding.
+    pub(super) fn validate_candidate(
+        &self,
+        candidate: &File,
+        directory: bool,
+    ) -> Result<(), PlatformError> {
+        self.validate()?;
+        let identity = stable_identity_from_handle(candidate).map_err(|e| self.retained(e))?;
+        if if directory {
+            !identity.is_directory_without_reparse()
+        } else {
+            !identity.is_regular_file_without_reparse()
+        } {
+            return Err(self.retained("candidate type does not match creation policy"));
+        }
+        let observed = unsafe {
+            windows_fs::open_relative(
+                self.parent,
+                &self.candidate_name,
+                RelativeOptions {
+                    directory,
+                    create_new: false,
+                    access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    security: ptr::null(),
+                },
+            )
+        }
+        .map_err(|e| self.retained(e))?;
+        if stable_identity_from_handle(&observed).map_err(|e| self.retained(e))? != identity {
+            return Err(self.retained("candidate name no longer names the held object"));
+        }
+        self.validate()
     }
 }
 
