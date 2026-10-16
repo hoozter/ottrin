@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 230 with 31 specialized
+The final ordinary-user Windows platform suite passes 235 with 31 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -250,6 +250,27 @@ Initial VHD staging failed because the test backing file had Modify-only access;
 Full Control on that owned VHDX plus reattachment resolves it without a production
 ACL change. Strict all-target Windows platform/UI Clippy passes. These are
 Windows-only fixture changes; packages and production behavior are unchanged.
+
+Private Windows forward recovery now admits verified unfinished copies without
+sources. It binds native identities, the observed parent path, frozen staged
+node evidence and a fresh destination-security projection. Execution checks that
+binding before the existing publication writer handoff. Live publication and
+resume share one retained-stage constructor and security-preparation path.
+
+Completed replay never enters the journal writer epoch; a stale forward plan
+cannot republish an undone copy. Coherently rewritten frozen evidence is refused
+rather than silently adopted. Parent policy/path changes, registry replacement,
+payload changes, cancellation and incomplete staging retain data for review.
+Publication-rename and native permission failures can retry on the original
+binding. Native acceptance is recorded in
+`.hermes/evidence/windows-copy-forward-admission-current/ACCEPTANCE.json`.
+Five new ordinary-user native fixtures pass, and the full Windows platform suite
+passes 235 with 31 specialized exclusions. The separate SYSTEM audit case passes;
+Linux platform tests pass 411 with 3 exclusions. Strict all-target platform
+Clippy passes on both targets. The owned guest is removed after terminal checks.
+The forward capability remains private pending platform/Activity integration and
+remaining link, storage, interruption and package acceptance. Public Copy,
+Overwrite and cleanup gates remain closed; packages are unchanged.
 
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only

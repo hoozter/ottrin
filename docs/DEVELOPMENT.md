@@ -808,6 +808,25 @@ remain required.
 Native rename constraints:
 https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
 
+Private forward recovery admission now handles a verified unfinished Windows
+Copy without reopening its source. It captures the native header/registry IDs,
+actual parent location, a digest of the frozen node/source/candidate evidence
+and the freshly projected destination security. No handles survive admission.
+Execution reacquires permitted parent access by ID and checks the binding inside
+the retained-tree epoch before the shared publication engine obtains its journal
+writer. The existing paired byte comparison protects the reader-to-writer gap.
+Fresh coherent journal contents cannot replace an earlier admission's frozen
+proof; changed data, paths, registry objects or destination policy are refused.
+
+Live publication and admitted resume now share `PermissionStage::from_retained`
+and one security-preparation function. Forward replay after completion verifies
+read-only evidence and never enters the Copy journal writer epoch. A forward plan
+cannot republish an inverse-owned or undone copy. Publication/permission retries
+keep their original binding; cancellation before mutation retains exact journals.
+Unverified staging is not admitted. This capability remains private: platform/UI
+forward-action integration, link/specialized-storage and interruption matrices
+remain required. Copy, Overwrite and cleanup are still gated.
+
 Windows recovery admission now binds the authenticated registry/header,
 sealed immutable completion digest and actual parent location before creation
 Undo. It retains no file handles, does not read the source and does not modify

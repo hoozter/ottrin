@@ -13,6 +13,77 @@ use windows_sys::Win32::{
 const MAX_REGISTRY_ENTRIES: usize = 10_000;
 const MAX_VOLUMES: usize = 512;
 
+/// Source-free forward admission. Kept private until action integration and
+/// native acceptance are complete. This never resumes unverified staging.
+#[derive(Clone, Debug)]
+pub(super) struct RegisteredCopyResume {
+    registry: PathBuf,
+    binding: Box<CopyResumeBinding>,
+    complete: bool,
+}
+impl RegisteredCopyResume {
+    pub(super) fn admit(
+        root: &Path,
+        id: &str,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let name = OsString::from(format!("{id}.copy-journal"));
+        registry_id(&name).ok_or_else(|| io("invalid Copy transaction ID"))?;
+        progress(0)?;
+        let central = open_directory(root, FILE_GENERIC_READ).map_err(io)?;
+        let (bytes, state) = registered_journal(&central, &name)?;
+        if !state.verified || state.completion_verified || state.undo_intent {
+            return Err(io("Copy is not a verified unfinished forward transaction"));
+        }
+        let header = state.header.as_ref().unwrap();
+        let parent =
+            Volumes::new(&central)?.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
+        let retained = RetainedStage::open(&parent, &central, &header.stage_name(), &mut progress)?;
+        if retained.snapshot.bytes != bytes {
+            return Err(io("Copy journals changed during forward admission"));
+        }
+        let prepared = prepare_publication(&retained, None, progress)?;
+        Ok(Self {
+            registry: windows_fs::location(&central).map_err(io)?,
+            binding: Box::new(CopyResumeBinding {
+                header: header.clone(),
+                staged_digest: staged_digest(&state)?,
+                permissions: prepared.evidence().at_root(&header.candidate_name()),
+                parent_location: windows_fs::location(&parent).map_err(io)?,
+            }),
+            complete: false,
+        })
+    }
+    pub(super) fn complete(&self) -> bool {
+        self.complete
+    }
+    pub(super) fn resume(
+        &mut self,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if self.complete {
+            return Err(io("Copy forward recovery is already complete"));
+        }
+        progress(0)?;
+        let central = open_directory(&self.registry, FILE_GENERIC_READ).map_err(io)?;
+        if stable_identity_from_handle(&central).map_err(io)? != self.binding.header.central {
+            return Err(io("Copy registry was replaced; resume refused"));
+        }
+        let (_, state) = registered_journal(&central, &self.binding.header.central_name())?;
+        if state.header.as_ref() != Some(&self.binding.header) {
+            return Err(io("Copy journal was replaced; resume refused"));
+        }
+        let parent = Volumes::new(&central)?.resolve(
+            self.binding.header.parent,
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
+            &mut progress,
+        )?;
+        resume_bound_copy(&parent, &central, &self.binding, progress)?;
+        self.complete = true;
+        Ok(())
+    }
+}
+
 /// Opaque action admission, distinct from public presentation fields. No file
 /// handles survive admission; execution reopens and checks the bound identities.
 #[derive(Clone, Debug)]

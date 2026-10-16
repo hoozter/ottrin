@@ -1386,6 +1386,75 @@ pub(super) struct PermissionStage {
     candidates: Vec<windows_fs::PerObjectFile>,
     plan: security::TreeSecurityPlan,
 }
+
+#[derive(Clone, Debug)]
+struct CopyResumeBinding {
+    header: Header,
+    staged_digest: [u8; 32],
+    permissions: security::TreeSecurityEvidence,
+    parent_location: std::path::PathBuf,
+}
+fn staged_digest(state: &State) -> Result<[u8; 32], PlatformError> {
+    let frozen = state
+        .nodes
+        .iter()
+        .map(|node| {
+            (
+                node.parent,
+                &node.name,
+                &node.source,
+                &node.created,
+                &node.security,
+                &node.staged,
+            )
+        })
+        .collect::<Vec<_>>();
+    super::evidence_digest(&frozen)
+}
+fn prepare_publication(
+    retained: &RetainedStage<'_>,
+    binding: Option<&CopyResumeBinding>,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<security::TreeSecurityPlan, PlatformError> {
+    if retained.snapshot.state.undo_intent {
+        return Err(io("Copy is retracting or undone; use Undo recovery"));
+    }
+    if let Some(binding) = binding
+        && (retained.snapshot.state.header.as_ref() != Some(&binding.header)
+            || staged_digest(&retained.snapshot.state)? != binding.staged_digest
+            || windows_fs::location(retained.parent).map_err(io)? != binding.parent_location)
+    {
+        return Err(io("Copy resume admission changed; refresh recovery status"));
+    }
+    let prepared = retained.derive_destination_security(|| progress(0))?;
+    if let Some(binding) = binding
+        && prepared
+            .evidence()
+            .at_root(&binding.header.candidate_name())
+            != binding.permissions
+    {
+        return Err(io("Copy destination policy changed after resume admission"));
+    }
+    Ok(prepared)
+}
+
+fn resume_bound_copy(
+    parent: &File,
+    central: &File,
+    binding: &CopyResumeBinding,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<(), PlatformError> {
+    let retained =
+        RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
+    if retained.snapshot.state.completion_verified {
+        // Completed replay stays read-only, including readonly file roots.
+        prepare_publication(&retained, Some(binding), progress)?;
+        return Ok(());
+    }
+    let mut publication = PermissionStage::from_retained(retained, Some(binding), &mut progress)?;
+    publication.apply(progress)
+}
+
 impl PermissionStage {
     pub(super) fn publish(
         parent: &File,
@@ -1394,10 +1463,23 @@ impl PermissionStage {
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let retained = RetainedStage::open(parent, central, name, &mut progress)?;
-        if retained.snapshot.state.undo_intent {
-            return Err(io("Copy is retracting or undone; use Undo recovery"));
-        }
-        let prepared = retained.derive_destination_security(|| progress(0))?;
+        Self::from_retained(retained, None, progress)
+    }
+    fn from_retained(
+        retained: RetainedStage<'_>,
+        binding: Option<&CopyResumeBinding>,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let parent = retained.parent;
+        let central = retained.central;
+        let name = retained
+            .snapshot
+            .state
+            .header
+            .as_ref()
+            .unwrap()
+            .stage_name();
+        let prepared = prepare_publication(&retained, binding, &mut progress)?;
         let evidence = prepared.evidence().at_root(
             &retained
                 .snapshot
@@ -1411,7 +1493,7 @@ impl PermissionStage {
         let expected = retained.snapshot.bytes.clone();
         let root_name = retained.tree.root_name.clone();
         drop(retained);
-        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Write)?;
+        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
         if snapshot.bytes != expected {
             return Err(io(
                 "Copy journal changed between validation and writer acquisition",
@@ -2589,6 +2671,20 @@ mod tests {
         nested: bool,
         readonly: bool,
     ) -> (OsString, OsString, ReadonlyCleanup) {
+        let (name, candidate, cleanup) =
+            staged_resume_fixture_at(path, destination, nested, readonly);
+        let parent = owner(destination);
+        let central = owner(&path.join("central"));
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        app.apply(|_| Ok(())).unwrap();
+        (name, candidate, cleanup)
+    }
+    fn staged_resume_fixture_at(
+        path: &Path,
+        destination: &Path,
+        nested: bool,
+        readonly: bool,
+    ) -> (OsString, OsString, ReadonlyCleanup) {
         let mut cleanup = if readonly {
             readonly_fixture(path, nested)
         } else {
@@ -2610,9 +2706,6 @@ mod tests {
             .0
             .push(fixture_data_path(destination.join(&candidate), nested));
         drop((staged, src));
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
-        app.apply(|_| Ok(())).unwrap();
-        drop(app);
         (name, candidate, cleanup)
     }
     fn remove_undo_fixture_source(path: &Path) {
@@ -2622,6 +2715,266 @@ mod tests {
         permissions.set_readonly(false);
         std::fs::set_permissions(file, permissions).unwrap();
         std::fs::remove_dir_all(path.join("source")).unwrap();
+    }
+    #[test]
+    fn windows_native_registered_copy_resume_is_source_free_and_completed_replay_is_readonly() {
+        for (nested, readonly) in [(false, false), (true, false), (false, true), (true, true)] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, _candidate, _cleanup) = staged_resume_fixture_at(
+                root.path(),
+                &root.path().join("destination"),
+                nested,
+                readonly,
+            );
+            remove_undo_fixture_source(root.path());
+            let path = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&path).unwrap();
+            let id = decode(&before).unwrap().state.header.unwrap().transaction;
+            let mut plan =
+                discovery::RegisteredCopyResume::admit(&root.path().join("central"), &id, |_| {
+                    Ok(())
+                })
+                .unwrap();
+            let mut replay = plan.clone();
+            let mut inverse_stale = plan.clone();
+            assert!(!plan.complete());
+            assert_eq!(std::fs::read(&path).unwrap(), before);
+            plan.resume(|_| Ok(())).unwrap();
+            assert!(plan.complete());
+            assert!(plan.resume(|_| Ok(())).is_err());
+            assert_eq!(
+                std::fs::read(fixture_data_path(
+                    root.path().join("destination/copy"),
+                    nested
+                ))
+                .unwrap(),
+                b"original data"
+            );
+            let sealed = std::fs::read(&path).unwrap();
+            assert!(decode(&sealed).unwrap().state.completion_verified);
+            replay.resume(|_| Ok(())).unwrap();
+            assert_eq!(
+                std::fs::read(&path).unwrap(),
+                sealed,
+                "Completed replay must not acquire writer authority or append records"
+            );
+            assert!(
+                discovery::RegisteredCopyResume::admit(&root.path().join("central"), &id, |_| Ok(
+                    ()
+                ))
+                .is_err()
+            );
+            let mut undo =
+                crate::restore_retained_copy_undo_plan_at(&root.path().join("central"), &id)
+                    .unwrap();
+            undo.undo_next().unwrap();
+            let undone = std::fs::read(&path).unwrap();
+            assert!(
+                inverse_stale.resume(|_| Ok(())).is_err(),
+                "A forward plan must not republish an undone copy"
+            );
+            assert_eq!(std::fs::read(&path).unwrap(), undone);
+            assert!(!root.path().join("destination/copy").exists());
+        }
+    }
+    #[test]
+    fn windows_native_registered_copy_resume_refuses_coherent_rewritten_frozen_evidence() {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _, _cleanup) =
+            staged_resume_fixture_at(root.path(), &root.path().join("destination"), true, false);
+        let registry = root.path().join("central");
+        let local = root.path().join("destination").join(&name).join(LOCAL);
+        let bytes = std::fs::read(&local).unwrap();
+        let header = decode(&bytes).unwrap().state.header.unwrap();
+        let mut plan =
+            discovery::RegisteredCopyResume::admit(&registry, &header.transaction, |_| Ok(()))
+                .unwrap();
+        let mut records = journal_records(&bytes);
+        let original = if let Record::CreateIntent { source, .. } = &records[1] {
+            source.identity
+        } else {
+            unreachable!()
+        };
+        let mut value = serde_json::to_value(original).unwrap();
+        value["file_id"] = serde_json::to_value([0xabu8; 16]).unwrap();
+        let changed = serde_json::from_value(value).unwrap();
+        for record in &mut records {
+            match record {
+                Record::CreateIntent {
+                    index: 0, source, ..
+                } => source.identity = changed,
+                Record::EntryStaged { index: 0, evidence } => evidence.source.identity = changed,
+                _ => {}
+            }
+        }
+        let rewritten = encode_records(&records);
+        decode(&rewritten).unwrap();
+        std::fs::write(&local, &rewritten).unwrap();
+        std::fs::write(registry.join(header.central_name()), &rewritten).unwrap();
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&registry);
+        drop(RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap());
+        assert!(
+            plan.resume(|_| Ok(())).is_err(),
+            "Fresh coherent evidence must not replace an earlier admission's frozen evidence"
+        );
+        assert_eq!(std::fs::read(local).unwrap(), rewritten);
+        assert!(!root.path().join("destination/copy").exists());
+    }
+    #[test]
+    fn windows_native_registered_copy_resume_retries_publication_and_permission_outcomes_with_original_binding()
+     {
+        for (sequence, step) in [
+            (17, Step::PublicationRenamed),
+            (19, Step::PermissionsChanged),
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, _, _cleanup) = staged_resume_fixture_at(
+                root.path(),
+                &root.path().join("destination"),
+                true,
+                false,
+            );
+            remove_undo_fixture_source(root.path());
+            let path = root.path().join("destination").join(&name).join(LOCAL);
+            let id = decode(&std::fs::read(&path).unwrap())
+                .unwrap()
+                .state
+                .header
+                .unwrap()
+                .transaction;
+            let mut plan =
+                discovery::RegisteredCopyResume::admit(&root.path().join("central"), &id, |_| {
+                    Ok(())
+                })
+                .unwrap();
+            FAULT.with(|f| f.set(Some((sequence, step, false))));
+            let result = plan.resume(|_| Ok(()));
+            FAULT.with(|f| f.set(None));
+            assert!(result.is_err(), "{sequence} {step:?}");
+            assert!(!plan.complete());
+            plan.resume(|_| Ok(())).unwrap();
+            assert!(plan.complete());
+            assert_eq!(
+                std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+                b"original data"
+            );
+            assert!(
+                decode(&std::fs::read(path).unwrap())
+                    .unwrap()
+                    .state
+                    .completion_verified
+            );
+        }
+    }
+    #[test]
+    fn windows_native_registered_copy_resume_refuses_stale_policy_paths_registry_and_payload_before_writes()
+     {
+        for case in ["policy", "path", "registry", "payload"] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, candidate, _cleanup) = staged_resume_fixture_at(
+                root.path(),
+                &root.path().join("destination"),
+                true,
+                false,
+            );
+            let registry = root.path().join("central");
+            let destination = root.path().join("destination");
+            let journal = destination.join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            let id = decode(&before).unwrap().state.header.unwrap().transaction;
+            let mut plan =
+                discovery::RegisteredCopyResume::admit(&registry, &id, |_| Ok(())).unwrap();
+            match case {
+                "policy" => super::super::tests::set_dacl(
+                    &destination,
+                    "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)",
+                ),
+                "path" => {
+                    std::fs::rename(&destination, root.path().join("moved")).unwrap();
+                    std::fs::create_dir(&destination).unwrap();
+                }
+                "registry" => {
+                    std::fs::rename(&registry, root.path().join("saved-central")).unwrap();
+                    std::fs::create_dir(&registry).unwrap();
+                }
+                "payload" => std::fs::write(
+                    destination.join(&candidate).join("nested/file"),
+                    b"external data",
+                )
+                .unwrap(),
+                _ => unreachable!(),
+            }
+            assert!(plan.resume(|_| Ok(())).is_err(), "{case}");
+            assert!(!plan.complete());
+            let actual = if case == "path" {
+                root.path().join("moved")
+            } else {
+                destination
+            };
+            assert_eq!(
+                std::fs::read(actual.join(name).join(LOCAL)).unwrap(),
+                before
+            );
+            assert!(!actual.join("copy").exists());
+            assert_eq!(
+                std::fs::read(actual.join(candidate).join("nested/file")).unwrap(),
+                if case == "payload" {
+                    b"external data".as_slice()
+                } else {
+                    b"original data".as_slice()
+                }
+            );
+        }
+    }
+    #[test]
+    fn windows_native_registered_copy_resume_cancellation_preserves_stage_and_unverified_staging_is_not_admitted()
+     {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _, _cleanup) =
+            staged_resume_fixture_at(root.path(), &root.path().join("destination"), true, false);
+        let path = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&path).unwrap();
+        let id = decode(&before).unwrap().state.header.unwrap().transaction;
+        let registry = root.path().join("central");
+        let mut plan = discovery::RegisteredCopyResume::admit(&registry, &id, |_| Ok(())).unwrap();
+        let mut cancelled = false;
+        assert!(
+            plan.resume(|bytes| if bytes > 0 {
+                cancelled = true;
+                Err(io("cancelled"))
+            } else {
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(cancelled);
+        assert_eq!(std::fs::read(&path).unwrap(), before);
+        assert!(!root.path().join("destination/copy").exists());
+        plan.resume(|_| Ok(())).unwrap();
+        let incomplete = tempfile::tempdir().unwrap();
+        fixture(incomplete.path());
+        let src = source(&incomplete.path().join("source"));
+        let parent = owner(&incomplete.path().join("destination"));
+        let central = owner(&incomplete.path().join("central"));
+        FAULT.with(|f| f.set(Some((0, Step::CentralFlushed, false))));
+        let result = stage(&src, &parent, &central);
+        FAULT.with(|f| f.set(None));
+        assert!(result.is_err());
+        drop((result, src));
+        let name = stage_name(&incomplete.path().join("destination"));
+        let path = incomplete.path().join("destination").join(name).join(LOCAL);
+        let bytes = std::fs::read(&path).unwrap();
+        let id = decode(&bytes).unwrap().state.header.unwrap().transaction;
+        assert!(
+            discovery::RegisteredCopyResume::admit(
+                &incomplete.path().join("central"),
+                &id,
+                |_| Ok(())
+            )
+            .is_err()
+        );
+        assert_eq!(std::fs::read(path).unwrap(), bytes);
     }
     #[test]
     #[ignore = "exports an owned fixture to the native Activity integration consumer"]
