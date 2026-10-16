@@ -88,6 +88,33 @@ impl PlannedEntry {
     }
 }
 impl TreeSecurityEvidence {
+    pub(in super::super) fn validate_entry_security(
+        &self,
+        index: usize,
+        file: &File,
+        phase: PermissionProgress,
+    ) -> Result<(), PlatformError> {
+        let entry = self
+            .entries
+            .get(index)
+            .ok_or_else(|| io("missing Copy permission entry"))?;
+        let mut descriptor = capture(file)?;
+        let actual = parts(descriptor.as_mut_ptr().cast())?;
+        let valid = if index < phase.completed {
+            actual == entry.final_security
+        } else if index == phase.completed && phase.pending {
+            actual == entry.private.0 || actual == entry.final_security
+        } else {
+            actual == entry.private.0
+        };
+        if !valid {
+            return Err(io(
+                "Copy permission entry changed during readonly reopening",
+            ));
+        }
+        Ok(())
+    }
+
     pub(in super::super) fn at_root(&self, name: &OsStr) -> Self {
         let mut result = self.clone();
         if let Some(root) = result.entries.first_mut() {

@@ -171,26 +171,75 @@ impl StagedEntry {
         Ok(())
     }
 
+    fn writable_attributes(&self) -> u32 {
+        let attributes = self.source.attributes & !FILE_ATTRIBUTE_READONLY;
+        if attributes == 0 {
+            FILE_ATTRIBUTE_NORMAL
+        } else {
+            attributes
+        }
+    }
+
+    /// Called only under a paired readonly-reopen intent, through an identity-bound
+    /// candidate handle. All timestamps and all other attributes remain unchanged.
+    pub(super) fn set_reopening_attributes(
+        &self,
+        candidate: &File,
+        writable: bool,
+    ) -> Result<(), PlatformError> {
+        self.validate_reopening_metadata(candidate, true)?;
+        let info = FILE_BASIC_INFO {
+            FileAttributes: if writable {
+                self.writable_attributes()
+            } else {
+                self.source.attributes & ORDINARY_ATTRIBUTES
+            },
+            ..Default::default()
+        };
+        if unsafe {
+            SetFileInformationByHandle(
+                candidate.as_raw_handle().cast(),
+                FileBasicInfo,
+                ptr::from_ref(&info).cast(),
+                size_of::<FILE_BASIC_INFO>() as u32,
+            )
+        } == 0
+        {
+            return Err(io(std::io::Error::last_os_error()));
+        }
+        self.validate_reopening_metadata(candidate, writable)
+    }
+
     /// Metadata-only check: BackupRead may update access times through its
     /// internal stream handles. Verify streams before final metadata application.
     pub(super) fn validate_candidate_metadata(
         &self,
         candidate: &File,
     ) -> Result<(), PlatformError> {
-        self.validate_metadata(candidate, true)
+        self.validate_metadata(candidate, true, false)
     }
 
     /// Ordinary reads (including a cancelled recovery scan) may update access
     /// time. Recovery verifies persistent payload metadata without repairing or
     /// treating this filesystem-owned read timestamp as a content mutation.
     pub(super) fn validate_retained_metadata(&self, candidate: &File) -> Result<(), PlatformError> {
-        self.validate_metadata(candidate, false)
+        self.validate_metadata(candidate, false, false)
+    }
+
+    /// Only a paired readonly-reopen intent authorizes the temporary writable bit.
+    pub(super) fn validate_reopening_metadata(
+        &self,
+        candidate: &File,
+        pending: bool,
+    ) -> Result<(), PlatformError> {
+        self.validate_metadata(candidate, false, pending)
     }
 
     fn validate_metadata(
         &self,
         candidate: &File,
         require_access_time: bool,
+        readonly_reopen_pending: bool,
     ) -> Result<(), PlatformError> {
         if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity {
             return Err(io("candidate identity changed"));
@@ -199,7 +248,11 @@ impl StagedEntry {
         if observed.CreationTime != self.source.created
             || observed.LastWriteTime != self.source.modified
             || (require_access_time && observed.LastAccessTime != self.accessed)
-            || observed.FileAttributes != self.source.attributes
+            || (observed.FileAttributes != self.source.attributes
+                && !(readonly_reopen_pending
+                    && !self.source.directory
+                    && self.source.attributes & FILE_ATTRIBUTE_READONLY != 0
+                    && observed.FileAttributes == self.writable_attributes()))
             || (!self.source.directory
                 && candidate.metadata().map_err(io)?.len() != self.source.length)
             || compression(candidate)? != self.compression

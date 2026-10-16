@@ -33,18 +33,19 @@ DACL application.
 An explicit writer first validates the read-only retained stage, releases that
 epoch's locks, compares the fresh paired journal bytes, then opens new typed
 `MAXIMUM_ALLOWED` capabilities. Journal/source access contracts remain separate.
-The writer rechecks its creator context on every append and reserves the exact
-remaining publication/application tail before publication. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ03` / schema 3;
-superseded schema 2 is refused, without a compatibility reader. Frame/total-log
+The writer rechecks its creator context on every append and reserves the
+remaining publication/application tail before publication, including readonly
+reopen records. One codec supplies
+append sequence/hash state on reopen. The format is now `OTCPWJ04` / schema 4;
+superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with a distinct verification
 record after a full content/metadata/security scan. Entry acknowledgements alone
 do not report final verification. Per-entry work checks its payload and ancestry,
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-Native ordinary-user Copy tests pass 107 with 3 specialized/child exclusions;
-the full Windows platform suite passes 207 with 29 exclusions. SYSTEM audit passes
+The final ordinary-user Windows platform suite passes 210 with 29 specialized
+exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
 covered 58 injected failures and 44 real exits. Coherent records recover without sources, including after rename
@@ -56,7 +57,8 @@ pending entry, all three known link roles and ordered/sealed transitions.
 Existing streamed-plan/prefix/forged-ACL, streams, metadata and ownership tests
 still pass. The full actor pins its runtime binary. Linux platform tests pass
 411 with 3 exclusions; strict all-target platform Clippy passes on both targets.
-Evidence: `.hermes/evidence/windows-copy-permission-journal-current/ACCEPTANCE.json`.
+Earlier publication/permission receipt:
+`.hermes/evidence/windows-copy-permission-journal-current/ACCEPTANCE.json`.
 The follow-up source-free plan recovery checkpoint also passes. A fully verified
 retained stage can finish a coherent, unsealed permission-plan prefix after the
 source and original writer are gone. Live preparation and recovery share one
@@ -64,17 +66,33 @@ streaming appender, which reserves the remaining plan plus mutation tail before
 writing. Five cancellation prefixes and ten additional injected failures plus ten
 real process exits are covered, bringing combined coverage to 68 injected
 failures and 54 real exits. Local-only journal mismatches remain untouched and
-refused. Current receipt:
+refused. Source-free plan receipt:
 `.hermes/evidence/windows-copy-plan-resume-current/ACCEPTANCE.json`.
 Earlier handle-mode and streamed-plan receipts retain their original scopes.
 
-The new readonly-file fixture exposed a real native publication defect: a
-reopened readonly candidate lacks the write-data access needed for the required
-post-rename flush. It is now refused before publication or further journal writes,
-with the original source, private candidate and attributes preserved. This is a
-safety boundary, not readonly-file support. Durable readonly attribute-transition
-recovery, including interruptions after publication, remains required before
-public Windows Copy can be enabled.
+Read-only file roots and descendants now have journaled attribute-transition
+recovery. The earlier flush failure was real: a reopened readonly handle lacks
+write-data access. Paired intent now authorizes only one verified candidate's
+readonly bit to be cleared, reopens its typed capability, verifies contents and
+permissions again, restores attributes and flushes before acknowledgement. The
+writable capability survives subsequent publication/DACL work. Recovery admits
+only the one pending bit difference; sources are never made writable. A pending
+descendant is restored before other file capabilities are acquired. Completed
+reopen is idempotent and adds no records.
+
+Native ordinary-user fixtures pass for roots and nested readonly files, including
+38 new failure boundaries and 38 real process exits without the source. Coherent
+journals recover; local-only mirrors remain unchanged/refused. Payload tampering
+with the original write timestamp restored is refused without changing the
+candidate's bytes, attributes or journals. The combined explicit fault matrices
+now cover 106 injected failures and 92 real exits; the payload-tampering guard
+also injects a separate initial failure. Readonly stream revalidation honors
+cancellation; a native cancellation leaves the durable intent recoverable and
+retry restores attributes before completing. Current receipt:
+`.hermes/evidence/windows-copy-readonly-current/ACCEPTANCE.json`.
+Broader permission-denial, privileged, readonly-link, specialized storage and
+power-cut matrices remain required. Public Windows Copy remains disabled.
+
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
 recovery permits read-owned access-time updates while verifying persistent

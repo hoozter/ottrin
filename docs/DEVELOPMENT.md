@@ -710,8 +710,9 @@ root/parent flush and a bound target acknowledgement precede DACL application.
 Every entry has ordered paired intent/acknowledgement records; recovery freshly
 derives native policy and accepts private/final security only as its recorded
 phase permits. Never reapply an already exact final DACL. A final verification
-record follows the full payload/security scan, and the writer reserves the exact
-remaining journal tail before publication. The schema-3 codec returns the append
+record follows the full payload/security scan, and the writer reserves the remaining
+journal tail before publication, including a conservative readonly-reopen allowance.
+The schema-4 codec returns the append
 sequence/hash; do not reconstruct a second interpretation of the frame chain.
 Known links remain no-follow leaves. Single-link guards apply to candidates,
 not sources. This contract does not grant Overwrite, Undo or cleanup authority;
@@ -722,12 +723,30 @@ prefix after full payload verification. A single streaming appender serves both
 live preparation and recovery: freshly rederive native inheritance, compare the
 recorded prefix, reserve the remaining plan plus publication/application tail,
 then append only missing records. Do not repair mismatched mirrors or treat an
-unverified payload stage as resumable. Read-only files are currently refused
-before publication or further journal writes: a reopened readonly handle lacks
-the write-data access needed to flush the published file. Their source bytes,
-attributes and private candidate are retained. Supporting them requires durable
-attribute-transition recovery, including interruption after publication; do not
-clear attributes on a published file as an unjournaled workaround.
+unverified payload stage as resumable.
+
+Read-only file roots and descendants use paired `ReadonlyReopenIntent` /
+`ReadonlyReopened` records. Only the pending index may have its readonly bit
+cleared; creation/write times, all other attributes, streams, object identity,
+single-link status and phase-specific permissions must still match. Verify the
+retained tree before acquiring a writer. Under durable intent, clear only that
+bit, release the old handle, reopen the verified object with the typed
+`MAXIMUM_ALLOWED` contract, revalidate contents and permissions, restore the
+original attributes, then flush through the new writable capability before
+acknowledging. Retain that capability for publication and DACL flushes. An
+interrupted descendant intent is completed before acquiring other file
+capabilities. Stream revalidation uses the caller's cancellable progress path;
+cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
+changes are retained/refused; do not normalize their metadata to resume.
+
+The format is `OTCPWJ04` / schema 4; superseded schemas are refused, without a
+compatibility reader. Log reservation includes prospective readonly reopen
+records and a pending acknowledgement; repeated interruption remains bounded by
+the total log budget and must fail before an unreserved mutation. These native
+ordinary-user fixtures do not certify all inherited denial/privilege, specialized
+storage, SACL/label, readonly-link or power-cut cases. The underlying native flush
+requires write/append access:
+https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntflushbuffersfileex
 
 Copy and created-entry receipts guard the original parent and transaction
 identities with one shared, nonblocking Linux inotify instance. Watches are

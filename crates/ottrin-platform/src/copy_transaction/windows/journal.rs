@@ -22,7 +22,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ03";
+const MAGIC: &[u8; 8] = b"OTCPWJ04";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -59,7 +59,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 3
+            && self.schema == 4
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -129,6 +129,12 @@ enum Record {
         count: usize,
         digest: [u8; 32],
     },
+    ReadonlyReopenIntent {
+        index: usize,
+    },
+    ReadonlyReopened {
+        index: usize,
+    },
     PublicationIntent,
     Published,
     SecurityApplyIntent {
@@ -161,6 +167,7 @@ struct State {
     publication_intent: bool,
     published: bool,
     permissions_verified: bool,
+    readonly_pending: Option<usize>,
     source_ids: BTreeSet<(u64, [u8; 16])>,
     candidate_ids: BTreeSet<(u64, [u8; 16])>,
     names: BTreeSet<(Option<usize>, Vec<u16>)>,
@@ -262,7 +269,30 @@ fn valid_payload(evidence: &metadata::StagedEntry) -> bool {
 impl State {
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
+        if self.readonly_pending.is_some() && !matches!(record, Record::ReadonlyReopened { .. }) {
+            return Err(invalid());
+        }
         match record {
+            Record::ReadonlyReopenIntent { index } => {
+                let node = self.nodes.get(*index).ok_or_else(invalid)?;
+                if self.planned.is_none()
+                    || self.permissions_verified
+                    || self.readonly_pending.is_some()
+                    || node.source.directory
+                    || node.source.attributes
+                        & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
+                        == 0
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::ReadonlyReopened { index } => {
+                if self.readonly_pending != Some(*index) {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
             Record::PermissionsComplete { count } => {
                 if self.planned.is_none()
                     || !self.published
@@ -423,7 +453,9 @@ impl State {
                     return Err(invalid());
                 }
             }
-            Record::PermissionsComplete { .. }
+            Record::ReadonlyReopenIntent { .. }
+            | Record::ReadonlyReopened { .. }
+            | Record::PermissionsComplete { .. }
             | Record::PublicationIntent
             | Record::Published
             | Record::SecurityApplyIntent { .. }
@@ -446,6 +478,8 @@ impl State {
     fn apply(&mut self, record: Record) -> Result<(), PlatformError> {
         self.check(&record)?;
         match record {
+            Record::ReadonlyReopenIntent { index } => self.readonly_pending = Some(index),
+            Record::ReadonlyReopened { .. } => self.readonly_pending = None,
             Record::PermissionsComplete { .. } => self.permissions_verified = true,
             Record::PublicationIntent => self.publication_intent = true,
             Record::Published => self.published = true,
@@ -642,7 +676,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 3,
+            schema: 4,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -699,6 +733,19 @@ impl Journal {
             reserve(Record::SecurityApplied { index })?;
         }
         if !self.state.permissions_verified {
+            if let Some(index) = self.state.readonly_pending {
+                reserve(Record::ReadonlyReopened { index })?;
+            }
+            for (index, node) in self.state.nodes.iter().enumerate() {
+                if !node.source.directory
+                    && node.source.attributes
+                        & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
+                        != 0
+                {
+                    reserve(Record::ReadonlyReopenIntent { index })?;
+                    reserve(Record::ReadonlyReopened { index })?;
+                }
+            }
             reserve(Record::PermissionsComplete {
                 count: self.state.nodes.len(),
             })?;
@@ -792,6 +839,112 @@ impl Journal {
         }
         Ok(())
     }
+    /// A paired intent authorizes only the readonly bit transition on one
+    /// fully verified candidate. Restore and flush through the newly writable
+    /// capability before acknowledging; retain that capability for later flushes.
+    fn reopen_readonly(
+        &mut self,
+        index: usize,
+        owner: &File,
+        name: &OsStr,
+        file: windows_fs::PerObjectFile,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<windows_fs::PerObjectFile, PlatformError> {
+        let node = &self.state.nodes[index];
+        if node.source.directory
+            || node.source.attributes
+                & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
+                == 0
+            || self.state.permissions_verified
+        {
+            return Ok(file);
+        }
+        let evidence = node.staged.as_ref().unwrap().clone();
+        evidence.validate_reopening_metadata(&file, self.state.readonly_pending == Some(index))?;
+        self.state
+            .planned
+            .as_ref()
+            .unwrap()
+            .validate_entry_security(index, &file, self.state.permissions)?;
+        namespace::validate_single_link(&file)?;
+        bound(owner, name, evidence.candidate_identity)?;
+        self.reserve_permission_tail()?;
+        if self.state.readonly_pending.is_none() {
+            self.persist(Record::ReadonlyReopenIntent { index })?;
+        } else if self.state.readonly_pending != Some(index) {
+            return Err(io("another Copy readonly reopen must finish first"));
+        }
+        self.failed = true;
+        evidence.set_reopening_attributes(&file, true)?;
+        boundary(self.sequence, Step::ReadonlyWritable)?;
+        drop(file);
+        let file = windows_fs::PerObjectFile::open(owner, name).map_err(io)?;
+        bound(owner, name, evidence.candidate_identity)?;
+        namespace::validate_single_link(&file)?;
+        self.state
+            .planned
+            .as_ref()
+            .unwrap()
+            .validate_entry_security(index, &file, self.state.permissions)?;
+        evidence.validate_reopening_metadata(&file, true)?;
+        if super::transfer(&file, None, progress)? != evidence.streams {
+            return Err(io(
+                "Copy contents changed during readonly reopening; data retained",
+            ));
+        }
+        evidence.set_reopening_attributes(&file, false)?;
+        boundary(self.sequence, Step::ReadonlyRestored)?;
+        file.sync_all().map_err(io)?;
+        boundary(self.sequence, Step::ReadonlyFlushed)?;
+        evidence.validate_retained_metadata(&file)?;
+        bound(owner, name, evidence.candidate_identity)?;
+        self.bindings()?;
+        self.failed = false;
+        self.persist(Record::ReadonlyReopened { index })?;
+        Ok(file)
+    }
+
+    /// Finish the one interrupted descendant lease before opening other writable
+    /// capabilities. Ancestors are directories; no link target is traversed.
+    fn finish_pending_readonly(
+        &mut self,
+        root: &windows_fs::PerObjectFile,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let Some(index) = self.state.readonly_pending.filter(|index| *index != 0) else {
+            return Ok(());
+        };
+        let mut ancestors = Vec::new();
+        let mut parent = self.state.nodes[index].parent;
+        while let Some(index) = parent {
+            if index != 0 {
+                ancestors.push(index);
+            }
+            parent = self.state.nodes[index].parent;
+        }
+        let mut owner = root.try_clone().map_err(io)?;
+        for index in ancestors.into_iter().rev() {
+            let node = &self.state.nodes[index];
+            let name = OsString::from_wide(&node.name);
+            let file = windows_fs::PerObjectFile::open(&owner, &name).map_err(io)?;
+            bound(
+                &owner,
+                &name,
+                node.staged.as_ref().unwrap().candidate_identity,
+            )?;
+            if !node.source.directory || node.source.link.is_some() {
+                return Err(io(
+                    "Copy readonly recovery ancestor is not an ordinary directory",
+                ));
+            }
+            owner = file;
+        }
+        let name = OsString::from_wide(&self.state.nodes[index].name);
+        let file = windows_fs::PerObjectFile::open(&owner, &name).map_err(io)?;
+        drop(self.reopen_readonly(index, &owner, &name, file, progress)?);
+        Ok(())
+    }
+
     fn candidate_security(&self, index: usize) -> Result<(), PlatformError> {
         let node = self
             .state
@@ -1053,22 +1206,6 @@ impl PermissionStage {
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let retained = RetainedStage::open(parent, central, name, &mut progress)?;
-        // Reopening a readonly file loses the write-data right required by
-        // FlushFileBuffers. Do not publish or append mutation intent until the
-        // protocol can recover an attribute transition durably.
-        if !retained.snapshot.state.permissions_verified
-            && retained.snapshot.state.nodes.iter().any(|node| {
-                !node.source.directory
-                    && node.source.attributes
-                        & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
-                        != 0
-            })
-        {
-            return Err(PlatformError::UnsupportedSafeCopy(
-                "read-only file publication needs durable attribute recovery; private data retained"
-                    .into(),
-            ));
-        }
         let prepared = retained.derive_destination_security(|| progress(0))?;
         let evidence = prepared.evidence().at_root(
             &retained
@@ -1095,7 +1232,8 @@ impl PermissionStage {
         if stable_identity_from_handle(&root).map_err(io)? != root_evidence.candidate_identity {
             return Err(io("Copy publication root identity changed"));
         }
-        root_evidence.validate_retained_metadata(&root)?;
+        root_evidence
+            .validate_reopening_metadata(&root, snapshot.state.readonly_pending == Some(0))?;
         namespace::validate_single_link(&root)?;
         parent_policy.validate_parent(parent)?;
         let phase = snapshot.state.permissions;
@@ -1126,6 +1264,8 @@ impl PermissionStage {
             candidates: Vec::new(),
         };
         journal.prepare_plan(&evidence, || progress(0))?;
+        journal.finish_pending_readonly(&root, &mut progress)?;
+        let root = journal.reopen_readonly(0, parent, &root_name, root, &mut progress)?;
         journal.reserve_permission_tail()?;
         if !journal.state.published {
             if !journal.state.publication_intent {
@@ -1157,7 +1297,8 @@ impl PermissionStage {
         }
         let root_name = OsString::from_wide(&journal.header.target);
         let mut candidates = vec![root];
-        for node in journal.state.nodes.iter().skip(1) {
+        for index in 1..journal.state.nodes.len() {
+            let node = &journal.state.nodes[index];
             progress(0)?;
             let owner = &*candidates[node.parent.unwrap()];
             let file = windows_fs::PerObjectFile::open(owner, &OsString::from_wide(&node.name))
@@ -1167,6 +1308,8 @@ impl PermissionStage {
             {
                 return Err(io("Copy permission capability binding changed"));
             }
+            let name = OsString::from_wide(&node.name);
+            let file = journal.reopen_readonly(index, owner, &name, file, &mut progress)?;
             candidates.push(file);
         }
         let recorded = journal.state.planned.as_ref().unwrap().at_root(&root_name);
@@ -1575,7 +1718,10 @@ impl<'a> RetainedStage<'a> {
                     .unwrap()
                     .validate(&handle, &snapshot.state.header.as_ref().unwrap().creator)?;
             }
-            evidence.validate_retained_metadata(&handle)?;
+            evidence.validate_reopening_metadata(
+                &handle,
+                snapshot.state.readonly_pending == Some(index),
+            )?;
             let observed = super::version(&handle)?;
             if observed.link != evidence.source.link {
                 return Err(io("retained Copy link data changed; no target followed"));
@@ -1753,6 +1899,9 @@ impl<'a> RetainedStage<'a> {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Step {
+    ReadonlyWritable,
+    ReadonlyRestored,
+    ReadonlyFlushed,
     LocalFlushed,
     CentralFlushed,
     PublicationRenamed,
@@ -1962,6 +2111,9 @@ mod tests {
                 Step::PublicationFlushed => "published-flushed",
                 Step::PermissionsChanged => "changed",
                 Step::PermissionsFlushed => "permissions-flushed",
+                Step::ReadonlyWritable => "readonly-writable",
+                Step::ReadonlyRestored => "readonly-restored",
+                Step::ReadonlyFlushed => "readonly-flushed",
             };
             let status=std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])
@@ -2480,6 +2632,9 @@ mod tests {
             "published-flushed" => Step::PublicationFlushed,
             "changed" => Step::PermissionsChanged,
             "permissions-flushed" => Step::PermissionsFlushed,
+            "readonly-writable" => Step::ReadonlyWritable,
+            "readonly-restored" => Step::ReadonlyRestored,
+            "readonly-flushed" => Step::ReadonlyFlushed,
             other => panic!("Unknown owned exit boundary: {other}"),
         };
         if std::env::var_os("OTTRIN_COPY_PLAN_RECOVERY_CHILD").is_some() {
@@ -3531,68 +3686,268 @@ mod tests {
         assert_eq!(state.nodes.len(), count);
         assert_eq!(state.planned.unwrap(), complete);
     }
-    #[test]
-    fn windows_native_copy_readonly_file_refuses_before_publication_or_journal_mutation() {
-        struct RestoreWritable(Vec<std::path::PathBuf>);
-        impl Drop for RestoreWritable {
-            fn drop(&mut self) {
-                for path in &self.0 {
-                    if let Ok(metadata) = std::fs::metadata(path) {
-                        let mut permissions = metadata.permissions();
-                        // This module is Windows-only; clear the DOS readonly bit.
-                        #[allow(clippy::permissions_set_readonly_false)]
-                        permissions.set_readonly(false);
-                        if let Err(error) = std::fs::set_permissions(path, permissions) {
-                            eprintln!("owned readonly fixture cleanup: {error}");
-                        }
+    struct ReadonlyCleanup(Vec<std::path::PathBuf>);
+    impl Drop for ReadonlyCleanup {
+        fn drop(&mut self) {
+            for path in &self.0 {
+                if let Ok(metadata) = std::fs::metadata(path) {
+                    let mut permissions = metadata.permissions();
+                    // Windows-only fixture cleanup clears the DOS readonly bit.
+                    #[allow(clippy::permissions_set_readonly_false)]
+                    permissions.set_readonly(false);
+                    if let Err(error) = std::fs::set_permissions(path, permissions) {
+                        eprintln!("owned readonly fixture cleanup: {error}");
                     }
                 }
             }
         }
-        let root = tempfile::tempdir().unwrap();
-        fixture(root.path());
-        let source_path = root.path().join("source/nested/file");
-        let target = root.path().join("destination/copy");
-        let mut cleanup = RestoreWritable(vec![source_path.clone(), target.clone()]);
-        let mut permissions = std::fs::metadata(&source_path).unwrap().permissions();
+    }
+    fn readonly_fixture(path: &Path, nested: bool) -> ReadonlyCleanup {
+        fixture(path);
+        let source = path.join("source/nested/file");
+        let mut permissions = std::fs::metadata(&source).unwrap().permissions();
         permissions.set_readonly(true);
-        std::fs::set_permissions(&source_path, permissions).unwrap();
-        let src = source(&source_path);
+        std::fs::set_permissions(&source, permissions).unwrap();
+        ReadonlyCleanup(vec![
+            source,
+            path.join(if nested {
+                "destination/copy/nested/file"
+            } else {
+                "destination/copy"
+            }),
+        ])
+    }
+    #[test]
+    fn windows_native_copy_readonly_root_and_child_publish_and_reopen_with_attributes_intact() {
+        for nested in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let mut cleanup = readonly_fixture(root.path(), nested);
+            let source_path = root.path().join(if nested {
+                "source"
+            } else {
+                "source/nested/file"
+            });
+            let src = source(&source_path);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            cleanup.0.push(
+                root.path()
+                    .join("destination")
+                    .join(&staged.stage.candidate_name)
+                    .join(if nested { "nested/file" } else { "" }),
+            );
+            drop((staged, src));
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            app.apply(|_| Ok(())).unwrap();
+            assert_eq!(app.completed(), if nested { 3 } else { 1 });
+            drop(app);
+            let target = &cleanup.0[1];
+            assert!(std::fs::metadata(target).unwrap().permissions().readonly());
+            assert!(
+                std::fs::metadata(&cleanup.0[0])
+                    .unwrap()
+                    .permissions()
+                    .readonly()
+            );
+            assert_eq!(std::fs::read(target).unwrap(), b"original data");
+            assert_eq!(std::fs::read(&cleanup.0[0]).unwrap(), b"original data");
+            let journal = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            app.apply(|_| Ok(())).unwrap();
+            drop(app);
+            assert_eq!(std::fs::read(journal).unwrap(), before);
+        }
+    }
+    #[test]
+    fn windows_native_copy_readonly_reopening_failures_and_exits_resume_without_source() {
+        for nested in [false, true] {
+            let first = if nested { 18 } else { 8 };
+            let last = if nested { 26 } else { 14 };
+            let faults = (first..=last)
+                .flat_map(|sequence| {
+                    [Step::LocalFlushed, Step::CentralFlushed].map(|step| (sequence, step))
+                })
+                .chain(
+                    [
+                        Step::ReadonlyWritable,
+                        Step::ReadonlyRestored,
+                        Step::ReadonlyFlushed,
+                    ]
+                    .map(|step| (first + 1, step)),
+                )
+                .collect::<Vec<_>>();
+            for process_exit in [false, true] {
+                for &(sequence, step) in &faults {
+                    let root = tempfile::tempdir().unwrap();
+                    let mut cleanup = readonly_fixture(root.path(), nested);
+                    let src = source(&if nested {
+                        root.path().join("source")
+                    } else {
+                        cleanup.0[0].clone()
+                    });
+                    let parent = owner(&root.path().join("destination"));
+                    let central = owner(&root.path().join("central"));
+                    let staged = stage(&src, &parent, &central).unwrap();
+                    let name = staged.stage.name.clone();
+                    cleanup.0.push(
+                        root.path()
+                            .join("destination")
+                            .join(&staged.stage.candidate_name)
+                            .join(if nested { "nested/file" } else { "" }),
+                    );
+                    drop((staged, src));
+                    let mut permissions = std::fs::metadata(&cleanup.0[0]).unwrap().permissions();
+                    #[allow(clippy::permissions_set_readonly_false)]
+                    permissions.set_readonly(false);
+                    std::fs::set_permissions(&cleanup.0[0], permissions).unwrap();
+                    std::fs::remove_file(&cleanup.0[0]).unwrap();
+                    std::fs::remove_dir_all(root.path().join("source")).unwrap();
+                    if process_exit {
+                        let label = match step {
+                            Step::LocalFlushed => "local",
+                            Step::CentralFlushed => "central",
+                            Step::ReadonlyWritable => "readonly-writable",
+                            Step::ReadonlyRestored => "readonly-restored",
+                            Step::ReadonlyFlushed => "readonly-flushed",
+                            _ => unreachable!(),
+                        };
+                        let status = std::process::Command::new(std::env::current_exe().unwrap())
+                        .args(["--exact", "copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child", "--ignored", "--nocapture"])
+                        .env("OTTRIN_COPY_JOURNAL_CHILD", root.path()).env("OTTRIN_COPY_JOURNAL_SEQUENCE", sequence.to_string())
+                        .env("OTTRIN_COPY_JOURNAL_STEP", label).env("OTTRIN_COPY_PLAN_RECOVERY_CHILD", "1").status().unwrap();
+                        assert_eq!(status.code(), Some(86), "{sequence} {step:?}");
+                    } else {
+                        FAULT.with(|f| f.set(Some((sequence, step, false))));
+                        let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                            .and_then(|mut app| app.apply(|_| Ok(())));
+                        FAULT.with(|f| f.set(None));
+                        assert!(result.is_err(), "{sequence} {step:?}");
+                    }
+                    let journal = root.path().join("destination").join(&name).join(LOCAL);
+                    let before = std::fs::read(&journal).unwrap();
+                    if step == Step::LocalFlushed {
+                        assert!(
+                            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err()
+                        );
+                        assert_eq!(std::fs::read(journal).unwrap(), before);
+                    } else {
+                        let mut app =
+                            PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                                .unwrap_or_else(|error| {
+                                    panic!("resume {sequence} {step:?}: {error}")
+                                });
+                        app.apply(|_| Ok(())).unwrap();
+                        drop(app);
+                        assert!(std::fs::read(&journal).unwrap().starts_with(&before));
+                        assert!(
+                            std::fs::metadata(&cleanup.0[1])
+                                .unwrap()
+                                .permissions()
+                                .readonly()
+                        );
+                        assert_eq!(std::fs::read(&cleanup.0[1]).unwrap(), b"original data");
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_readonly_stream_revalidation_cancels_and_resumes_under_its_intent() {
+        let root = tempfile::tempdir().unwrap();
+        let mut cleanup = readonly_fixture(root.path(), false);
+        let src = source(&cleanup.0[0]);
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
         let staged = stage(&src, &parent, &central).unwrap();
         let name = staged.stage.name.clone();
-        cleanup.0.push(
-            root.path()
-                .join("destination")
-                .join(&staged.stage.candidate_name),
-        );
+        let candidate = root
+            .path()
+            .join("destination")
+            .join(&staged.stage.candidate_name);
+        cleanup.0.push(candidate.clone());
         drop((staged, src));
+        let mut cancelled = false;
+        let result = PermissionStage::publish(&parent, &central, &name, |bytes| {
+            if bytes > 0
+                && !std::fs::metadata(&candidate)
+                    .unwrap()
+                    .permissions()
+                    .readonly()
+            {
+                cancelled = true;
+                Err(io("cancelled readonly verification"))
+            } else {
+                Ok(())
+            }
+        });
+        assert!(cancelled);
+        assert!(result.is_err());
+        assert!(!root.path().join("destination/copy").exists());
+        let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+        assert_eq!(snapshot.state.readonly_pending, Some(0));
+        drop(snapshot);
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        app.apply(|_| Ok(())).unwrap();
+        assert!(
+            std::fs::metadata(&cleanup.0[1])
+                .unwrap()
+                .permissions()
+                .readonly()
+        );
+        assert_eq!(std::fs::read(&cleanup.0[1]).unwrap(), b"original data");
+    }
+
+    #[test]
+    fn windows_native_copy_pending_readonly_reopen_refuses_changed_payload_without_restoring_it() {
+        let root = tempfile::tempdir().unwrap();
+        let mut cleanup = readonly_fixture(root.path(), false);
+        let src = source(&cleanup.0[0]);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let candidate = root
+            .path()
+            .join("destination")
+            .join(&staged.stage.candidate_name);
+        cleanup.0.push(candidate.clone());
+        drop((staged, src));
+        FAULT.with(|f| f.set(Some((9, Step::ReadonlyWritable, false))));
+        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        FAULT.with(|f| f.set(None));
+        assert!(
+            !std::fs::metadata(&candidate)
+                .unwrap()
+                .permissions()
+                .readonly()
+        );
+        let modified = std::fs::metadata(&candidate).unwrap().modified().unwrap();
+        std::fs::write(&candidate, b"external data").unwrap();
+        let file = std::fs::OpenOptions::new()
+            .write(true)
+            .open(&candidate)
+            .unwrap();
+        file.set_times(std::fs::FileTimes::new().set_modified(modified))
+            .unwrap();
+        file.sync_all().unwrap();
+        drop(file);
         let journal = root.path().join("destination").join(&name).join(LOCAL);
         let before = std::fs::read(&journal).unwrap();
-        let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()));
-        assert!(
-            matches!(result, Err(PlatformError::UnsupportedSafeCopy(message))
-            if message.contains("durable attribute recovery"))
-        );
+        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
         assert_eq!(std::fs::read(journal).unwrap(), before);
-        assert!(!target.exists());
-        let candidate = cleanup.0.last().unwrap();
+        assert_eq!(std::fs::read(&candidate).unwrap(), b"external data");
         assert!(
-            std::fs::metadata(candidate)
+            !std::fs::metadata(candidate)
                 .unwrap()
                 .permissions()
                 .readonly()
         );
-        assert!(
-            std::fs::metadata(&source_path)
-                .unwrap()
-                .permissions()
-                .readonly()
-        );
-        assert_eq!(std::fs::read(&source_path).unwrap(), b"original data");
-        assert_eq!(std::fs::read(candidate).unwrap(), b"original data");
+        assert!(!root.path().join("destination/copy").exists());
     }
+
     #[test]
     fn windows_native_copy_plan_prefix_reopens_without_source_or_original_writer() {
         for stop in 4..=8 {
