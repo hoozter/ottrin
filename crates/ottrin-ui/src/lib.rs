@@ -64,6 +64,8 @@ const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer ins
 mod appearance_editor;
 mod config;
 mod copy_activity_cleanup;
+#[cfg(target_os = "windows")]
+mod copy_activity_resume;
 mod file_details;
 mod icons;
 mod image_ops;
@@ -1063,6 +1065,8 @@ struct RetainedCopyOwnership {
     blocked_by: Vec<String>,
     restored: bool,
     finalization: Option<String>,
+    #[cfg(target_os = "windows")]
+    resume: Option<ottrin_platform::RetainedCopyResumePlan>,
 }
 
 #[derive(Debug, Clone)]
@@ -1118,7 +1122,10 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
                     let admission = windows_copy_can_admit(&entry).then(|| {
                         ottrin_platform::restore_retained_copy_undo_plan(&entry.transaction_id)
                     });
-                    windows_retained_copy_activity(entry, admission)
+                    let resume = windows_copy_can_resume(&entry).then(|| {
+                        ottrin_platform::restore_retained_copy_resume_plan(&entry.transaction_id)
+                    });
+                    windows_retained_copy_activity(entry, admission, resume)
                 })
                 .collect(),
             None,
@@ -1140,12 +1147,31 @@ fn windows_copy_can_admit(entry: &ottrin_platform::WindowsRetainedCopyStatus) ->
 }
 
 #[cfg(target_os = "windows")]
+fn windows_copy_can_resume(entry: &ottrin_platform::WindowsRetainedCopyStatus) -> bool {
+    use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
+    entry.evidence == Evidence::VerifiedTree
+        && matches!(
+            entry.phase,
+            Some(
+                Phase::Staged
+                    | Phase::PlanningPermissions
+                    | Phase::ReadyToPublish
+                    | Phase::PublicationPending
+                    | Phase::ApplyingPermissions
+                    | Phase::Finalizing
+            )
+        )
+}
+
+#[cfg(target_os = "windows")]
 fn windows_retained_copy_activity(
     entry: ottrin_platform::WindowsRetainedCopyStatus,
     admission: Option<Result<ottrin_platform::RetainedCopyUndoPlan, PlatformError>>,
+    resume_admission: Option<Result<ottrin_platform::RetainedCopyResumePlan, PlatformError>>,
 ) -> RestoredCopyActivity {
     use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
     let eligible = windows_copy_can_admit(&entry);
+    let resumable = windows_copy_can_resume(&entry);
     let mut phase = match entry.phase {
         Some(Phase::Staging) => "Staging interrupted",
         Some(Phase::Staged) => "Staged copy",
@@ -1206,6 +1232,27 @@ fn windows_retained_copy_activity(
             None => {}
         }
     }
+    let mut resume = None;
+    if resumable {
+        match resume_admission {
+            Some(Ok(plan)) if plan.transaction_id() == entry.transaction_id => {
+                phase = "Verified copy · ready to resume";
+                location = Some(plan.observed_location().to_path_buf());
+                resume = Some(plan);
+            }
+            Some(Err(error)) => {
+                undo = PathMoveUndoState::Unavailable {
+                    reason: error.to_string(),
+                }
+            }
+            Some(Ok(_)) => {
+                undo = PathMoveUndoState::Unavailable {
+                    reason: "Copy transaction changed during admission; refresh its status".into(),
+                }
+            }
+            None => {}
+        }
+    }
     let mut detail = format!("{phase} · {evidence}");
     if let Some(location) = location {
         detail.push_str(&format!(" · Data: {}", path_label(&location)));
@@ -1220,6 +1267,7 @@ fn windows_retained_copy_activity(
             blocked_by: Vec::new(),
             restored: true,
             finalization: None,
+            resume,
         },
         detail,
         undo,
@@ -3201,6 +3249,8 @@ pub struct OttrinApp {
     retained_copy_activity_error: Option<String>,
     pending_retained_copy_activity: Option<Vec<RestoredCopyActivity>>,
     copy_cleanup: copy_activity_cleanup::CopyCleanupUi,
+    #[cfg(target_os = "windows")]
+    copy_resume: copy_activity_resume::CopyResumeUi,
     /// Last discovery snapshot. Roots are deliberately independent even when a
     /// backend reports the same identity at multiple mount points.
     known_storage_locations: Vec<StorageLocation>,
@@ -4142,6 +4192,8 @@ impl OttrinApp {
             retained_copy_activity_error,
             pending_retained_copy_activity: None,
             copy_cleanup: Default::default(),
+            #[cfg(target_os = "windows")]
+            copy_resume: Default::default(),
             known_storage_locations: Vec::new(),
             unavailable_locations: HashMap::new(),
             unavailable_root_tombstones: Vec::new(),
@@ -6037,6 +6089,10 @@ impl OttrinApp {
             {
                 record.message = None;
                 record.status = OperationStatus::NeedsReview;
+                #[cfg(target_os = "windows")]
+                if let Some(owner) = &mut record.retained_copy {
+                    owner.resume = None;
+                }
                 record.path_move_undo = Some(PathMoveUndoState::Unavailable { reason: "Retained Copy evidence is no longer available; data remains owned for review".into() });
             }
         }
@@ -6126,6 +6182,8 @@ impl OttrinApp {
             }
         }
         self.restore_copy_cleanup_errors();
+        #[cfg(target_os = "windows")]
+        self.restore_copy_resume_errors();
     }
 
     fn refresh_tab(&mut self, tab_id: u64, dir: PathBuf) {
@@ -6576,7 +6634,10 @@ impl OttrinApp {
     }
 
     fn path_move_undo_conflicts(&self, op_id: u64, receipt: &OperationUndoReceipt) -> bool {
-        let requested = receipt.path_pairs();
+        self.activity_paths_conflict(op_id, &receipt.path_pairs())
+    }
+
+    fn activity_paths_conflict(&self, op_id: u64, requested: &[(&Path, &Path)]) -> bool {
         self.operation_history.iter().any(|record| {
             if record.id == op_id {
                 return false;
@@ -14258,10 +14319,21 @@ impl OttrinApp {
 
         let mut undo_rename = None;
         let mut clear_copy = None;
+        #[cfg(target_os = "windows")]
+        let mut resume_copy = None;
         ScrollArea::vertical().show(ui, |ui| {
             for record in &self.operation_history {
+                let copy_resume_available = {
+                    #[cfg(target_os = "windows")]
+                    { copy_activity_resume::can_resume(record) }
+                    #[cfg(not(target_os = "windows"))]
+                    { false }
+                };
                 let (status_text, status_color, status_icon) = if self.copy_cleanup.owns(record) {
                     ("Cleaning up", c.accent_dim, MI_HISTORY)
+                } else if copy_resume_available {
+                    if record.status == OperationStatus::Queued { ("Resuming", c.accent_dim, MI_HISTORY) }
+                    else { ("Ready to resume", c.accent, MI_HISTORY) }
                 } else { match record.status {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
                     OperationStatus::Completed => ("Done", c.accent, MI_CHECK),
@@ -14304,7 +14376,23 @@ impl OttrinApp {
                             let message_color = if matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)) { c.text_muted } else { c.error };
                             ui.label(RichText::new(msg).color(message_color).size(10.0 * c.font_scale));
                         }
-                        if path_move_undo_action_is_available(
+                        if copy_resume_available {
+                            #[cfg(target_os = "windows")]
+                            {
+                                ui.add_space(4.0);
+                                if self.copy_resume.owns(record.id) {
+                                    ui.label(RichText::new("Verifying and resuming copy…").color(c.accent_dim));
+                                    if ui.add(egui::Button::new("Stop recovery").themed(&c))
+                                        .on_hover_text("Stop at the next recovery boundary and keep retained data for retry.").clicked() {
+                                        self.copy_resume.stop();
+                                    }
+                                } else if ui.add_enabled(!self.copy_resume.running() && !self.retained_copy_activity_loader.pending,
+                                    egui::Button::new("Resume copy").themed(&c))
+                                    .on_hover_text("Verify the retained copy again and finish publication without reopening its source.").clicked() {
+                                    resume_copy = Some(record.id);
+                                }
+                            }
+                        } else if path_move_undo_action_is_available(
                             record.status,
                             record.path_move_undo.as_ref(),
                         ) {
@@ -14470,6 +14558,10 @@ impl OttrinApp {
         }
         if let Some(op_id) = clear_copy {
             self.request_copy_cleanup(vec![op_id]);
+        }
+        #[cfg(target_os = "windows")]
+        if let Some(op_id) = resume_copy {
+            self.run_copy_resume(op_id);
         }
     }
 
@@ -22548,6 +22640,8 @@ impl eframe::App for OttrinApp {
         self.poll_path_move_undo_results();
         self.poll_retained_move_activity();
         self.poll_copy_cleanup();
+        #[cfg(target_os = "windows")]
+        self.poll_copy_resume();
         self.poll_retained_copy_activity();
         self.poll_trash_results();
 
@@ -25257,6 +25351,58 @@ mod tests {
     use super::*;
 
     #[cfg(target_os = "windows")]
+    pub(super) fn click_activity_action(app: &mut OttrinApp, ctx: &Context, label: &str) {
+        let frame = |app: &mut OttrinApp, events| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(900.0, 1000.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
+                },
+            )
+        };
+        frame(app, Vec::new());
+        let output = frame(app, Vec::new());
+        let point = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(t) if t.galley.job.text == label => {
+                    Some(Rect::from_min_size(t.pos, t.galley.size()).center())
+                }
+                _ => None,
+            })
+            .expect("The admitted Activity action must be rendered");
+        frame(
+            app,
+            vec![
+                egui::Event::PointerMoved(point),
+                egui::Event::PointerButton {
+                    pos: point,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: Default::default(),
+                },
+            ],
+        );
+        frame(
+            app,
+            vec![egui::Event::PointerButton {
+                pos: point,
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: Default::default(),
+            }],
+        );
+    }
+
+    #[cfg(target_os = "windows")]
     #[test]
     #[ignore = "requires the native platform fixture test executable in an owned guest"]
     fn windows_copy_recovery_activity_integration() {
@@ -25280,13 +25426,20 @@ mod tests {
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr)
             );
+            if std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE")
+                .unwrap()
+                .starts_with("resume")
+            {
+                copy_activity_resume::test_case(&root);
+                return;
+            }
             let mut wrong = ottrin_platform::discover_retained_copy_transactions()
                 .unwrap()
                 .remove(0);
             let receipt =
                 ottrin_platform::restore_retained_copy_undo_plan(&wrong.transaction_id).unwrap();
             wrong.transaction_id = "0".repeat(32);
-            let rejected = windows_retained_copy_activity(wrong, Some(Ok(receipt)));
+            let rejected = windows_retained_copy_activity(wrong, Some(Ok(receipt)), None);
             assert!(
                 rejected.receipt.is_none(),
                 "A receipt must never attach to a different transaction row"
@@ -25315,59 +25468,14 @@ mod tests {
             }
             let ctx = Context::default();
             fn click_undo(app: &mut OttrinApp, ctx: &Context, pending: bool) {
-                let frame = |app: &mut OttrinApp, events| {
-                    ctx.run(
-                        egui::RawInput {
-                            screen_rect: Some(Rect::from_min_size(
-                                egui::Pos2::ZERO,
-                                egui::vec2(900.0, 1000.0),
-                            )),
-                            events,
-                            ..Default::default()
-                        },
-                        |ctx| {
-                            egui::CentralPanel::default()
-                                .show(ctx, |ui| app.render_activity_sidebar(ui));
-                        },
-                    )
-                };
-                frame(app, Vec::new());
-                let output = frame(app, Vec::new());
-                let label = if pending {
-                    "Resume copy Undo"
-                } else {
-                    "Undo copy"
-                };
-                let point = output
-                    .shapes
-                    .iter()
-                    .find_map(|shape| match &shape.shape {
-                        egui::Shape::Text(t) if t.galley.job.text == label => {
-                            Some(Rect::from_min_size(t.pos, t.galley.size()).center())
-                        }
-                        _ => None,
-                    })
-                    .expect("The admitted Activity action must be rendered");
-                frame(
+                click_activity_action(
                     app,
-                    vec![
-                        egui::Event::PointerMoved(point),
-                        egui::Event::PointerButton {
-                            pos: point,
-                            button: egui::PointerButton::Primary,
-                            pressed: true,
-                            modifiers: Default::default(),
-                        },
-                    ],
-                );
-                frame(
-                    app,
-                    vec![egui::Event::PointerButton {
-                        pos: point,
-                        button: egui::PointerButton::Primary,
-                        pressed: false,
-                        modifiers: Default::default(),
-                    }],
+                    ctx,
+                    if pending {
+                        "Resume copy Undo"
+                    } else {
+                        "Undo copy"
+                    },
                 );
                 assert!(matches!(
                     app.operation_history[0].path_move_undo,
@@ -25486,7 +25594,16 @@ mod tests {
             drop(app);
             return;
         }
-        for case in ["success", "changed", "moved", "pending"] {
+        for case in [
+            "success",
+            "changed",
+            "moved",
+            "pending",
+            "resume-staged",
+            "resume-finalizing",
+            "resume-changed",
+            "resume-moved",
+        ] {
             let root = tempfile::tempdir().unwrap();
             let destination_root = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_VOLUME")
                 .map(|volume| tempfile::tempdir_in(PathBuf::from(volume)).unwrap());
@@ -25606,6 +25723,7 @@ mod tests {
                         evidence,
                     },
                     None,
+                    None,
                 );
                 assert!(activity.receipt.is_none());
                 assert!(restored_copy_token(activity.receipt.clone()).is_none());
@@ -25640,6 +25758,7 @@ mod tests {
                     reason: "invalid journal".into(),
                 },
             },
+            None,
             None,
         );
         assert!(unknown.detail.contains("Copy journal needs review"));
@@ -30888,6 +31007,8 @@ mod tests {
                 blocked_by: Vec::new(),
                 restored: true,
                 finalization: None,
+                #[cfg(target_os = "windows")]
+                resume: None,
             },
             detail: "restored".into(),
             undo: PathMoveUndoState::Undone,

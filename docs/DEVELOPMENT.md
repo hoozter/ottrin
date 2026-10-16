@@ -808,10 +808,11 @@ remain required.
 Native rename constraints:
 https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
 
-Private forward recovery admission now handles a verified unfinished Windows
+Forward recovery admission now handles a verified unfinished Windows
 Copy without reopening its source. It captures the native header/registry IDs,
 actual parent location, a digest of the frozen node/source/candidate evidence
-and the freshly projected destination security. No handles survive admission.
+and a digest of the freshly projected destination security. No handles or
+per-entry security trees survive admission.
 Execution reacquires permitted parent access by ID and checks the binding inside
 the retained-tree epoch before the shared publication engine obtains its journal
 writer. The existing paired byte comparison protects the reader-to-writer gap.
@@ -823,9 +824,16 @@ and one security-preparation function. Forward replay after completion verifies
 read-only evidence and never enters the Copy journal writer epoch. A forward plan
 cannot republish an inverse-owned or undone copy. Publication/permission retries
 keep their original binding; cancellation before mutation retains exact journals.
-Unverified staging is not admitted. This capability remains private: platform/UI
-forward-action integration, link/specialized-storage and interruption matrices
-remain required. Copy, Overwrite and cleanup are still gated.
+Unverified staging is not admitted. The public `RetainedCopyResumePlan` is opaque;
+its factory freshly admits one transaction by ID. Activity offers **Resume copy**
+only after that admission succeeds for a verified unfinished transaction, and
+rejects a plan for another row. Its background worker revalidates before mutation,
+uses the shared Activity overlap check for its observed candidate/publication
+paths, supports cooperative **Stop recovery**, and requests fresh discovery
+after success, failure or cancellation. Only fresh completion admission offers
+Undo. Failures remain visible after discovery; Clear finished retains the owner.
+Link/specialized-storage and interruption matrices remain required. Public new
+Copy, Overwrite and cleanup are still gated.
 
 Native finalization recovery is also covered after the last permission
 acknowledgement and after the first final-version record, for plain files,

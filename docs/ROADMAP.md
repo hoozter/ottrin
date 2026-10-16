@@ -268,9 +268,9 @@ Five new ordinary-user native fixtures pass, and the full Windows platform suite
 passes 235 with 31 specialized exclusions. The separate SYSTEM audit case passes;
 Linux platform tests pass 411 with 3 exclusions. Strict all-target platform
 Clippy passes on both targets. The owned guest is removed after terminal checks.
-The forward capability remains private pending platform/Activity integration and
-remaining link, storage, interruption and package acceptance. Public Copy,
-Overwrite and cleanup gates remain closed; packages are unchanged.
+At that checkpoint the forward capability remained private pending
+platform/Activity integration and remaining link, storage, interruption and
+package acceptance. Public Copy, Overwrite and cleanup gates remained closed.
 
 The finalization restart gate now passes eight native combinations: after the
 last permission acknowledgement and after the first final-version record, for
@@ -283,6 +283,28 @@ checks pass. Only regression coverage and documentation change here; Activity
 forward actions and packages remain unchanged. Receipt:
 `.hermes/evidence/windows-copy-readonly-finalization-current/ACCEPTANCE.json`.
 
+Windows Activity now exposes **Resume copy** for freshly admitted, verified
+unfinished transactions. Its opaque platform plan revalidates the original
+binding in the existing publication engine; the UI worker uses the shared path
+overlap check, supports cooperative **Stop recovery** and refreshes admission
+after every outcome. Successful completion can then offer Undo; changed payloads
+and stale parent paths refuse before journal writes. The admitted security
+projection is retained as a digest, avoiding a per-entry tree in each history row.
+
+Native source acceptance passes all eight rendered-button scenarios: the four
+existing creation-Undo cases plus staged resume, finalization resume, changed-data
+refusal and moved-parent refusal/fresh retry. Completed forward cases also Undo
+through the rendered action. Wrong-row plans are rejected, Clear finished keeps
+recovery ownership, and failures remain visible after discovery. The full native
+platform suite passes 236 with 31 specialized exclusions; two focused UI checks
+pass. Linux platform/UI suites pass 411/379 with 3/1 exclusions, and strict
+all-target platform/UI Clippy passes on both targets. Receipt:
+`.hermes/evidence/windows-copy-resume-action-current/ACCEPTANCE.json`.
+These are source-built native checks, not rebuilt-package or desktop visual
+acceptance. Public new Copy, Overwrite and cleanup remain gated. Bound link,
+separate-volume and specialized-storage resume, actual interruption/power-cut,
+resource and packaged acceptance remain open. Packages are unchanged.
+
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
 recovery permits read-owned access-time updates while verifying persistent
@@ -291,7 +313,7 @@ privileges. Developer Mode-off link evidence remains separately scoped to
 `windows-copy-links-current/ACCEPTANCE.json`.
 
 Public Windows Copy stays disabled. Overwrite restoration, session receipt/batch
-integration, guarded cleanup, forward recovery actions and interrupted-staging policy, complete
+integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete
 SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive directories,
 specialized storage/properties, real large-tree budgets, guest power-cut acceptance,
 clipboard/Tandem, positive native Copy UI and rebuilt-package acceptance remain

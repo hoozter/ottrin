@@ -24,10 +24,12 @@ use windows_sys::Win32::Storage::FileSystem::{
 
 mod discovery;
 pub use discovery::{
-    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
+    WindowsRetainedCopyStatus,
 };
 pub(crate) use discovery::{
-    discover, discover_at, discover_at_with_progress, restore_undo, restore_undo_at,
+    discover, discover_at, discover_at_with_progress, restore_resume, restore_resume_at,
+    restore_undo, restore_undo_at,
 };
 
 const MAGIC: &[u8; 8] = b"OTCPWJ06";
@@ -1391,7 +1393,7 @@ pub(super) struct PermissionStage {
 struct CopyResumeBinding {
     header: Header,
     staged_digest: [u8; 32],
-    permissions: security::TreeSecurityEvidence,
+    permissions_digest: [u8; 32],
     parent_location: std::path::PathBuf,
 }
 fn staged_digest(state: &State) -> Result<[u8; 32], PlatformError> {
@@ -1428,10 +1430,11 @@ fn prepare_publication(
     }
     let prepared = retained.derive_destination_security(|| progress(0))?;
     if let Some(binding) = binding
-        && prepared
-            .evidence()
-            .at_root(&binding.header.candidate_name())
-            != binding.permissions
+        && super::evidence_digest(
+            &prepared
+                .evidence()
+                .at_root(&binding.header.candidate_name()),
+        )? != binding.permissions_digest
     {
         return Err(io("Copy destination policy changed after resume admission"));
     }
@@ -2731,7 +2734,7 @@ mod tests {
             let before = std::fs::read(&path).unwrap();
             let id = decode(&before).unwrap().state.header.unwrap().transaction;
             let mut plan =
-                discovery::RegisteredCopyResume::admit(&root.path().join("central"), &id, |_| {
+                discovery::RetainedCopyResumePlan::admit(&root.path().join("central"), &id, |_| {
                     Ok(())
                 })
                 .unwrap();
@@ -2759,9 +2762,11 @@ mod tests {
                 "Completed replay must not acquire writer authority or append records"
             );
             assert!(
-                discovery::RegisteredCopyResume::admit(&root.path().join("central"), &id, |_| Ok(
-                    ()
-                ))
+                discovery::RetainedCopyResumePlan::admit(
+                    &root.path().join("central"),
+                    &id,
+                    |_| Ok(())
+                )
                 .is_err()
             );
             let mut undo =
@@ -2817,7 +2822,7 @@ mod tests {
                     .header
                     .unwrap()
                     .transaction;
-                let mut plan = discovery::RegisteredCopyResume::admit(
+                let mut plan = discovery::RetainedCopyResumePlan::admit(
                     &root.path().join("central"),
                     &id,
                     |_| Ok(()),
@@ -2859,7 +2864,7 @@ mod tests {
         let bytes = std::fs::read(&local).unwrap();
         let header = decode(&bytes).unwrap().state.header.unwrap();
         let mut plan =
-            discovery::RegisteredCopyResume::admit(&registry, &header.transaction, |_| Ok(()))
+            discovery::RetainedCopyResumePlan::admit(&registry, &header.transaction, |_| Ok(()))
                 .unwrap();
         let mut records = journal_records(&bytes);
         let original = if let Record::CreateIntent { source, .. } = &records[1] {
@@ -2916,7 +2921,7 @@ mod tests {
                 .unwrap()
                 .transaction;
             let mut plan =
-                discovery::RegisteredCopyResume::admit(&root.path().join("central"), &id, |_| {
+                discovery::RetainedCopyResumePlan::admit(&root.path().join("central"), &id, |_| {
                     Ok(())
                 })
                 .unwrap();
@@ -2956,7 +2961,7 @@ mod tests {
             let before = std::fs::read(&journal).unwrap();
             let id = decode(&before).unwrap().state.header.unwrap().transaction;
             let mut plan =
-                discovery::RegisteredCopyResume::admit(&registry, &id, |_| Ok(())).unwrap();
+                discovery::RetainedCopyResumePlan::admit(&registry, &id, |_| Ok(())).unwrap();
             match case {
                 "policy" => super::super::tests::set_dacl(
                     &destination,
@@ -3009,7 +3014,8 @@ mod tests {
         let before = std::fs::read(&path).unwrap();
         let id = decode(&before).unwrap().state.header.unwrap().transaction;
         let registry = root.path().join("central");
-        let mut plan = discovery::RegisteredCopyResume::admit(&registry, &id, |_| Ok(())).unwrap();
+        let mut plan =
+            discovery::RetainedCopyResumePlan::admit(&registry, &id, |_| Ok(())).unwrap();
         let mut cancelled = false;
         assert!(
             plan.resume(|bytes| if bytes > 0 {
@@ -3039,7 +3045,7 @@ mod tests {
         let bytes = std::fs::read(&path).unwrap();
         let id = decode(&bytes).unwrap().state.header.unwrap().transaction;
         assert!(
-            discovery::RegisteredCopyResume::admit(
+            discovery::RetainedCopyResumePlan::admit(
                 &incomplete.path().join("central"),
                 &id,
                 |_| Ok(())
@@ -3069,8 +3075,42 @@ mod tests {
             );
             assert!(destination.starts_with(volume));
         }
-        let (name, candidate, _cleanup) =
-            completed_undo_fixture_at(&fixture_root, &destination, true, false);
+        let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
+        let (name, candidate, _cleanup) = if case.starts_with("resume") {
+            staged_resume_fixture_at(&fixture_root, &destination, true, false)
+        } else {
+            completed_undo_fixture_at(&fixture_root, &destination, true, false)
+        };
+        if case == "resume-finalizing" {
+            let reference = tempfile::tempdir().unwrap();
+            let (reference_name, _, _reference_cleanup) =
+                completed_undo_fixture(reference.path(), true, false);
+            let records = journal_records(
+                &std::fs::read(
+                    reference
+                        .path()
+                        .join("destination")
+                        .join(reference_name)
+                        .join(LOCAL),
+                )
+                .unwrap(),
+            );
+            let sequence = records
+                .iter()
+                .position(|record| matches!(record, Record::SecurityApplied { index: 2 }))
+                .unwrap() as u64;
+            FAULT.with(|f| f.set(Some((sequence, Step::CentralFlushed, false))));
+            let parent = owner(&destination);
+            let central = owner(&fixture_root.join("central"));
+            let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                .and_then(|mut stage| stage.apply(|_| Ok(())));
+            FAULT.with(|f| f.set(None));
+            assert!(result.is_err());
+            let state = decode(&std::fs::read(destination.join(&name).join(LOCAL)).unwrap())
+                .unwrap()
+                .state;
+            assert!(state.native_complete() && !state.completion_verified);
+        }
         if destination != fixture_root.join("destination") {
             assert_ne!(
                 stable_identity_from_handle(&owner(&destination))

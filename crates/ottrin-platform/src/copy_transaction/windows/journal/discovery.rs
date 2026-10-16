@@ -13,15 +13,19 @@ use windows_sys::Win32::{
 const MAX_REGISTRY_ENTRIES: usize = 10_000;
 const MAX_VOLUMES: usize = 512;
 
-/// Source-free forward admission. Kept private until action integration and
-/// native acceptance are complete. This never resumes unverified staging.
+/// Source-free forward admission. Presentation fields cannot construct a plan.
+/// This never resumes unverified staging or retains open file handles.
 #[derive(Clone, Debug)]
-pub(super) struct RegisteredCopyResume {
+pub struct RetainedCopyResumePlan {
     registry: PathBuf,
     binding: Box<CopyResumeBinding>,
     complete: bool,
+    admitted_phase: WindowsCopyPhase,
+    observed_location: PathBuf,
+    publication: PathBuf,
+    retention: PathBuf,
 }
-impl RegisteredCopyResume {
+impl RetainedCopyResumePlan {
     pub(super) fn admit(
         root: &Path,
         id: &str,
@@ -43,21 +47,40 @@ impl RegisteredCopyResume {
             return Err(io("Copy journals changed during forward admission"));
         }
         let prepared = prepare_publication(&retained, None, progress)?;
+        let location = windows_fs::location(&parent).map_err(io)?;
         Ok(Self {
             registry: windows_fs::location(&central).map_err(io)?,
             binding: Box::new(CopyResumeBinding {
                 header: header.clone(),
                 staged_digest: staged_digest(&state)?,
-                permissions: prepared.evidence().at_root(&header.candidate_name()),
-                parent_location: windows_fs::location(&parent).map_err(io)?,
+                permissions_digest: super::super::evidence_digest(
+                    &prepared.evidence().at_root(&header.candidate_name()),
+                )?,
+                parent_location: location.clone(),
             }),
             complete: false,
+            admitted_phase: phase(&retained.snapshot.state),
+            observed_location: location.join(retained.snapshot.root_name(&parent)?),
+            publication: location.join(OsString::from_wide(&header.target)),
+            retention: location.join(header.candidate_name()),
         })
     }
-    pub(super) fn complete(&self) -> bool {
+    pub fn transaction_id(&self) -> &str {
+        &self.binding.header.transaction
+    }
+    pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
+        vec![(&self.retention, &self.publication)]
+    }
+    pub fn admitted_phase(&self) -> WindowsCopyPhase {
+        self.admitted_phase
+    }
+    pub fn observed_location(&self) -> &Path {
+        &self.observed_location
+    }
+    pub fn complete(&self) -> bool {
         self.complete
     }
-    pub(super) fn resume(
+    pub fn resume(
         &mut self,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
@@ -485,4 +508,14 @@ pub(crate) fn restore_undo_at(
 }
 pub(crate) fn restore_undo(id: &str) -> Result<RetainedCopyUndoPlan, PlatformError> {
     restore_undo_at(&configured_root()?, id)
+}
+
+pub(crate) fn restore_resume_at(
+    root: &Path,
+    id: &str,
+) -> Result<RetainedCopyResumePlan, PlatformError> {
+    RetainedCopyResumePlan::admit(root, id, |_| Ok(()))
+}
+pub(crate) fn restore_resume(id: &str) -> Result<RetainedCopyResumePlan, PlatformError> {
+    restore_resume_at(&configured_root()?, id)
 }

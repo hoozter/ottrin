@@ -273,7 +273,18 @@ acquisition, Overwrite/publication/Undo and public workflows remain required.
 
 ## Acceptance and limits
 
-Current source receipt: `.hermes/evidence/windows-copy-streamed-plan-current/ACCEPTANCE.json`.
+Activity forward recovery now consumes an opaque `RetainedCopyResumePlan` admitted
+from the configured registry. It binds the frozen staging evidence, observed
+parent location and projected-security digest, and revalidates before entering
+the shared publication engine. Verified unfinished transactions can resume;
+unverified staging cannot. Completion enables fresh Undo admission. Current
+source-built action acceptance, including changed-data refusal and moved-parent
+retry, is recorded in
+`.hermes/evidence/windows-copy-resume-action-current/ACCEPTANCE.json`.
+Public new Copy, Overwrite, cleanup and broader release acceptance remain gated;
+packages have not been rebuilt for this action.
+
+Streamed-plan checkpoint receipt: `.hermes/evidence/windows-copy-streamed-plan-current/ACCEPTANCE.json`.
 The ordinary-user Copy suite passes 91 with 3 specialized/child exclusions; the
 full native Windows platform suite passes 191 with 29 exclusions. SYSTEM audit
 passes separately. Linux platform tests pass 411 with 3 exclusions, and strict

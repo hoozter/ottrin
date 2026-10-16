@@ -11,13 +11,16 @@
 
 mod journal;
 pub use journal::{
-    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
+    WindowsRetainedCopyStatus,
 };
 pub(crate) use journal::{
     discover as discover_windows_copy_transactions,
     discover_at as discover_windows_copy_transactions_at,
     discover_at_with_progress as discover_windows_copy_transactions_at_with_progress,
-    restore_undo as restore_windows_copy_undo, restore_undo_at as restore_windows_copy_undo_at,
+    restore_resume as restore_windows_copy_resume,
+    restore_resume_at as restore_windows_copy_resume_at, restore_undo as restore_windows_copy_undo,
+    restore_undo_at as restore_windows_copy_undo_at,
 };
 mod links;
 mod metadata;

@@ -307,6 +307,8 @@ impl OttrinApp {
                             blocked_by: Vec::new(),
                             restored: true,
                             finalization: None,
+                            #[cfg(target_os = "windows")]
+                            resume: None,
                         });
                     }
                     if let Some(owner) = &mut record.retained_copy {

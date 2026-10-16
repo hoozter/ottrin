@@ -13,13 +13,14 @@ use std::path::{Path, PathBuf};
 mod windows;
 #[cfg(target_os = "windows")]
 pub use windows::{
-    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
+    WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub(super) use windows::{
     discover_windows_copy_transactions, discover_windows_copy_transactions_at,
-    discover_windows_copy_transactions_at_with_progress, restore_windows_copy_undo,
-    restore_windows_copy_undo_at,
+    discover_windows_copy_transactions_at_with_progress, restore_windows_copy_resume,
+    restore_windows_copy_resume_at, restore_windows_copy_undo, restore_windows_copy_undo_at,
 };
 
 /// Session identity guards for a published Copy/create transaction's directories.
