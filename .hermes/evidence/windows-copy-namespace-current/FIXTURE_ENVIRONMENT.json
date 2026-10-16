@@ -1,0 +1,5 @@
+{
+  "scope": "Symlink fixtures only, disposable COW guest",
+  "cleanup": "COW domain and volume disposal restores all original state",
+  "previous": null
+}

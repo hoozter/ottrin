@@ -12,6 +12,9 @@ use std::sync::{OnceLock, RwLock};
 use std::time::SystemTime;
 use thiserror::Error;
 
+#[cfg(target_os = "windows")]
+mod windows_fs;
+
 #[cfg(target_os = "linux")]
 pub use copy_transaction::RetainedCopyTransaction;
 #[cfg(target_os = "linux")]

@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::tests::windows_native_copy_namespace_excludes_other_directory_writers' (7208) panicked at crates/ottrin-platform/src/copy_transaction/windows.rs:848:14:
+an unrelated directory writer could change reparse metadata: File { handle: 0x248, path: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.tmpYpsgqM\\.ottrin-copy-2f430cf53eea2f2e5e2d1f84531067f5" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

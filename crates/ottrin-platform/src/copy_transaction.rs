@@ -331,7 +331,7 @@ pub(super) fn create_symlink(
     linux::create_symlink(destination_dir, name, target)
 }
 
-#[cfg(any(target_os = "linux", test))]
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub(super) fn random_transaction_id() -> Result<String, PlatformError> {
     let mut random = [0_u8; 16];
     getrandom::fill(&mut random).map_err(|error| PlatformError::Io(error.to_string()))?;

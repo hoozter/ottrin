@@ -1,26 +1,21 @@
-//! Native candidate, deliberately unreachable through the public acceptance gate.
+//! Native Windows text-save transactions with retained originals and drafts.
 //! All namespace changes are relative to directory handles and refuse replacement.
 use super::windows_contract::{self, Step};
 use super::{MAX_EDITABLE_TEXT_BYTES, TextEditError};
 use crate::move_transaction::rename_windows_handle_no_replace;
+#[cfg(test)]
+use crate::windows_fs::LocalSecurity as PrivateSecurity;
+use crate::windows_fs::{self, RelativeOptions};
 use std::ffi::{OsStr, OsString};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::mem::size_of;
-use std::os::windows::{
-    ffi::OsStrExt,
-    fs::OpenOptionsExt,
-    io::{AsRawHandle, FromRawHandle},
-};
+use std::os::windows::{fs::OpenOptionsExt, io::AsRawHandle};
 use std::path::{Path, PathBuf};
 use std::ptr;
-use windows_sys::Wdk::Foundation::OBJECT_ATTRIBUTES;
 use windows_sys::Wdk::Storage::FileSystem::*;
-use windows_sys::Win32::Foundation::{HANDLE, LocalFree, RtlNtStatusToDosError, UNICODE_STRING};
-use windows_sys::Win32::Security::Authorization::{
-    ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1, SE_FILE_OBJECT,
-    SetSecurityInfo,
-};
+use windows_sys::Win32::Foundation::{HANDLE, RtlNtStatusToDosError};
+use windows_sys::Win32::Security::Authorization::{SE_FILE_OBJECT, SetSecurityInfo};
 use windows_sys::Win32::Security::{
     DACL_SECURITY_INFORMATION, GROUP_SECURITY_INFORMATION, GetKernelObjectSecurity,
     GetSecurityDescriptorControl, GetSecurityDescriptorDacl, GetSecurityDescriptorSacl,
@@ -102,8 +97,13 @@ impl Session {
             return Ok(());
         }
         let name = random_name()?;
-        let private = PrivateSecurity::new()?;
-        let stage = relative(&self.parent, &name, true, true, private.0.cast())?;
+        let stage = windows_fs::create_private(
+            &self.parent,
+            &name,
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+        )
+        .map_err(write_error)?;
         let recovery = location(&stage)?;
         let retained = |error: TextEditError| {
             let recovery = location(&stage).unwrap_or_else(|_| recovery.clone());
@@ -227,22 +227,9 @@ fn nt_result(status: i32) -> Result<(), TextEditError> {
     }
 }
 fn valid_name(name: &OsStr) -> Result<Vec<u16>, TextEditError> {
-    let wide: Vec<u16> = name.encode_wide().collect();
-    if wide.is_empty()
-        || wide.len() > 255
-        || wide
-            .iter()
-            .any(|c| [0, b':' as u16, b'/' as u16, b'\\' as u16].contains(c))
-        || name == "."
-        || name == ".."
-    {
-        return Err(TextEditError::NotRegularFile);
-    }
-    Ok(wide)
+    windows_fs::valid_component(name).map_err(|_| TextEditError::NotRegularFile)
 }
 
-/// FILE_CREATE never opens or overwrites an existing entry. FILE_OPEN_REPARSE_POINT
-/// and a single leaf name prevent following a source/stage reparse point.
 fn relative(
     parent: &File,
     name: &OsStr,
@@ -250,59 +237,35 @@ fn relative(
     create: bool,
     security: *const windows_sys::Win32::Security::SECURITY_DESCRIPTOR,
 ) -> Result<File, TextEditError> {
-    let mut wide = valid_name(name)?;
-    let unicode = UNICODE_STRING {
-        Length: (wide.len() * 2) as u16,
-        MaximumLength: (wide.len() * 2) as u16,
-        Buffer: wide.as_mut_ptr(),
-    };
-    let attributes = OBJECT_ATTRIBUTES {
-        Length: size_of::<OBJECT_ATTRIBUTES>() as u32,
-        RootDirectory: handle(parent),
-        ObjectName: &unicode,
-        SecurityDescriptor: security,
-        ..Default::default()
-    };
-    let mut raw = ptr::null_mut();
-    let mut status = IO_STATUS_BLOCK::default();
-    let access = if directory {
-        FILE_GENERIC_READ | FILE_GENERIC_WRITE
-    } else if create {
-        FILE_GENERIC_READ
-            | FILE_GENERIC_WRITE
-            | DELETE
-            | if security.is_null() { 0 } else { WRITE_DAC }
-    } else {
-        FILE_GENERIC_READ | DELETE
-    };
-    // Deny write/delete sharing on file handles for the duration of save. This
-    // excludes ordinary writers, not pre-existing writable memory mappings.
-    nt_result(unsafe {
-        NtCreateFile(
-            &mut raw,
-            access,
-            &attributes,
-            &mut status,
-            ptr::null(),
-            FILE_ATTRIBUTE_NORMAL,
-            if directory {
-                FILE_SHARE_READ | FILE_SHARE_WRITE
-            } else {
-                FILE_SHARE_READ
-            },
-            if create { FILE_CREATE } else { FILE_OPEN },
-            FILE_OPEN_REPARSE_POINT
-                | FILE_SYNCHRONOUS_IO_NONALERT
-                | if directory {
-                    FILE_DIRECTORY_FILE
+    // The descriptor is null, owned by this save, or captured from the source
+    // by GetKernelObjectSecurity; it remains valid throughout the native call.
+    unsafe {
+        windows_fs::open_relative(
+            parent,
+            name,
+            RelativeOptions {
+                directory,
+                create_new: create,
+                access: if directory {
+                    FILE_GENERIC_READ | FILE_GENERIC_WRITE
+                } else if create {
+                    FILE_GENERIC_READ
+                        | FILE_GENERIC_WRITE
+                        | DELETE
+                        | if security.is_null() { 0 } else { WRITE_DAC }
                 } else {
-                    FILE_NON_DIRECTORY_FILE
+                    FILE_GENERIC_READ | DELETE
                 },
-            ptr::null(),
-            0,
+                sharing: if directory {
+                    FILE_SHARE_READ | FILE_SHARE_WRITE
+                } else {
+                    FILE_SHARE_READ
+                },
+                security,
+            },
         )
-    })?;
-    Ok(unsafe { File::from_raw_handle(raw.cast()) })
+    }
+    .map_err(write_error)
 }
 // Preserve an already exact descriptor. Reapplying an unprotected DACL can
 // inherit additional parent ACEs and change a private file's security. Only
@@ -607,22 +570,7 @@ fn require_local_ntfs(parent: &File) -> Result<(), TextEditError> {
     Ok(())
 }
 fn location(file: &File) -> Result<PathBuf, TextEditError> {
-    use std::os::windows::ffi::OsStringExt;
-    let mut buffer = vec![0u16; 32768];
-    let length = unsafe {
-        GetFinalPathNameByHandleW(
-            handle(file),
-            buffer.as_mut_ptr(),
-            buffer.len() as u32,
-            FILE_NAME_NORMALIZED,
-        )
-    };
-    if length == 0 || length as usize >= buffer.len() {
-        return Err(last_error());
-    }
-    Ok(PathBuf::from(OsString::from_wide(
-        &buffer[..length as usize],
-    )))
+    windows_fs::location(file).map_err(write_error)
 }
 fn sync_directories(stage: &File, parent: &File) -> Result<(), TextEditError> {
     stage.sync_all().map_err(write_error)?;
@@ -636,32 +584,6 @@ fn random_name() -> Result<OsString, TextEditError> {
         bytes.iter().map(|b| format!("{b:02x}")).collect::<String>()
     )
     .into())
-}
-struct PrivateSecurity(*mut std::ffi::c_void);
-impl PrivateSecurity {
-    fn new() -> Result<Self, TextEditError> {
-        let text: Vec<u16> = "D:P(A;OICI;FA;;;OW)\0".encode_utf16().collect();
-        let mut descriptor = ptr::null_mut();
-        if unsafe {
-            ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                text.as_ptr(),
-                SDDL_REVISION_1,
-                &mut descriptor,
-                ptr::null_mut(),
-            )
-        } == 0
-        {
-            return Err(last_error());
-        }
-        Ok(Self(descriptor))
-    }
-}
-impl Drop for PrivateSecurity {
-    fn drop(&mut self) {
-        unsafe {
-            LocalFree(self.0);
-        }
-    }
 }
 fn link_no_replace(source: &File, parent: &File, name: &OsStr) -> Result<(), TextEditError> {
     let wide = valid_name(name)?;
@@ -694,6 +616,9 @@ fn link_no_replace(source: &File, parent: &File, name: &OsStr) -> Result<(), Tex
 mod tests {
     use super::*;
     use windows_sys::Win32::Security::ATTRIBUTE_SECURITY_INFORMATION;
+    use windows_sys::Win32::Security::Authorization::{
+        ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
+    };
 
     struct Fixture(PathBuf);
     impl Fixture {
@@ -1268,8 +1193,8 @@ mod tests {
             },
             0
         );
-        let control = PrivateSecurity(descriptor);
-        assert!(can_read(control.0));
+        let control = unsafe { PrivateSecurity::from_local_alloc(descriptor) };
+        assert!(can_read(control.as_raw()));
         let recovery = fixture.recovery();
         for path in [&recovery, &recovery.join("edits")] {
             let file = OpenOptions::new()
@@ -1295,9 +1220,9 @@ mod tests {
                 },
                 0
             );
-            let security = PrivateSecurity(descriptor);
+            let security = unsafe { PrivateSecurity::from_local_alloc(descriptor) };
             assert!(
-                !can_read(security.0),
+                !can_read(security.as_raw()),
                 "private recovery ACL allowed a restricted reader"
             );
         }
@@ -1326,12 +1251,13 @@ mod tests {
             },
             0
         );
-        let descriptor = PrivateSecurity(descriptor);
-        let size =
-            unsafe { windows_sys::Win32::Security::GetSecurityDescriptorLength(descriptor.0) };
+        let descriptor = unsafe { PrivateSecurity::from_local_alloc(descriptor) };
+        let size = unsafe {
+            windows_sys::Win32::Security::GetSecurityDescriptorLength(descriptor.as_raw())
+        };
         assert!(size > 0);
         let security =
-            unsafe { std::slice::from_raw_parts(descriptor.0.cast::<u8>(), size as usize) };
+            unsafe { std::slice::from_raw_parts(descriptor.as_raw().cast::<u8>(), size as usize) };
         let file = OpenOptions::new()
             .access_mode(READ_CONTROL | WRITE_DAC)
             .open(fixture.source())
@@ -1391,13 +1317,18 @@ mod tests {
                 "parse resource attribute fixture: {}",
                 std::io::Error::last_os_error()
             );
-            let descriptor = PrivateSecurity(descriptor);
+            let descriptor = unsafe { PrivateSecurity::from_local_alloc(descriptor) };
             let mut present = 0;
             let mut defaulted = 0;
             let mut sacl = ptr::null_mut();
             assert_ne!(
                 unsafe {
-                    GetSecurityDescriptorSacl(descriptor.0, &mut present, &mut sacl, &mut defaulted)
+                    GetSecurityDescriptorSacl(
+                        descriptor.as_raw(),
+                        &mut present,
+                        &mut sacl,
+                        &mut defaulted,
+                    )
                 },
                 0
             );

@@ -10,15 +10,18 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Windows Copy — native staging in progress
 
-The next required Windows Copy implementation is under construction; the public
-backend still rejects every Copy mode. Its new handle-based stream component
-passes 13 ordinary-user native tests, including named streams, extended
-attributes, read-only source ACLs without delete rights, empty files, source
-changes and cancellation/error cleanup. Private namespace creation, complete
-metadata/tree/link staging, durable publication, Undo/recovery and public UI/
-package integration remain required. The broader native platform suite passes
-113 with 26 exclusions; its symlink-creation fixture uses Developer Mode only
-in the disposable guest. The existing positive clipboard failures
+The native stream component and private namespace staging now pass 21
+ordinary-user native tests. Copy opens sources without delete/data-write rights,
+creates owner-only entries atomically beneath pinned parent handles, validates
+stage identity/name bindings, and excludes ordinary directory writers during
+its current create-only staging phase. Text saving shares the native creation
+primitive with the write sharing required for retained-original rename.
+The full native platform suite passes 121 with 26 specialized exclusions;
+Developer Mode is enabled only in the disposable guest for symlink fixtures.
+
+The public backend still rejects every Copy mode. Complete metadata/tree/link
+staging, non-ACL filesystem strategy, durable publication, Undo/recovery and UI/
+package integration remain required. The existing positive clipboard failures
 remain active. Full scope and source boundaries: [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md).
 Current usable Linux packages and internal Windows candidates below remain
 `42a1beb`; this unfinished source component has not been packaged as a Copy fix.

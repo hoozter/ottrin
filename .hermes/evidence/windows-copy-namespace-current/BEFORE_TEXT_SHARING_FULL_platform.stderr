@@ -1,0 +1,42 @@
+
+thread 'text_edit::windows::tests::windows_native_closed_handle_writable_mapping_blocks_save_until_unmapped' (1900) panicked at crates/ottrin-platform/src/text_edit/windows.rs:1055:22:
+retry after unmapping without source edits: RecoveryConflict { recovery: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.ottrin-text-edit-b797ad00a7ca7163bba948e89ead876d\\.ottrin-text-edit-7d86311d9178771f6c5cd42f10edc23f", detail: "Windows save stopped at RetainSource: could not save the edited text: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32); vacant-name restoration: Err(Write(\"Cannot create a file when that file already exists. (os error 183)\")); all retained versions must be inspected" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'text_edit::windows::tests::windows_native_failure_after_withdrawal_restores_without_removing_recovery' (8656) panicked at crates/ottrin-platform/src/text_edit/windows.rs:906:65:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "The system cannot find the file specified." }
+
+thread 'text_edit::windows::tests::windows_native_occupied_name_is_never_replaced_by_publication_or_recovery' (4988) panicked at crates/ottrin-platform/src/text_edit/windows.rs:929:9:
+assertion `left == right` failed
+  left: [111, 114, 105, 103, 105, 110, 97, 108, 13, 10]
+ right: [116, 104, 105, 114, 100, 32, 119, 114, 105, 116, 101, 114]
+
+thread 'text_edit::windows::tests::windows_native_post_publication_failure_keeps_all_versions' (988) panicked at crates/ottrin-platform/src/text_edit/windows.rs:955:9:
+assertion `left == right` failed
+  left: [111, 114, 105, 103, 105, 110, 97, 108, 13, 10]
+ right: [100, 114, 97, 102, 116]
+
+thread 'text_edit::windows::tests::windows_native_process_exit_preserves_original_and_draft_at_every_step' (7868) panicked at crates/ottrin-platform/src/text_edit/windows.rs:816:13:
+process did not exit at VerifyRetained: Err(RecoveryConflict { recovery: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.ottrin-text-edit-0a6af4e64b3b56158d155f8142ad5404\\.ottrin-text-edit-3c0f7bd8623b439d68578dc9294fe1e1", detail: "Windows save stopped at RetainSource: could not save the edited text: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32); vacant-name restoration: Err(Write(\"Cannot create a file when that file already exists. (os error 183)\")); all retained versions must be inspected" })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'text_edit::windows::tests::windows_native_process_exit_preserves_original_and_draft_at_every_step' (2248) panicked at crates/ottrin-platform/src/text_edit/windows.rs:835:13:
+assertion `left == right` failed: exit at VerifyRetained
+  left: Some(101)
+ right: Some(86)
+
+thread 'text_edit::windows::tests::windows_native_public_session_saves_and_preserves_external_edits' (7644) panicked at crates/ottrin-platform/src/text_edit/windows.rs:688:38:
+called `Result::unwrap()` on an `Err` value: RecoveryConflict { recovery: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.ottrin-text-edit-744a3db17baf9234f6a613efaeba2f80\\.ottrin-text-edit-05a0417d09634139e37d6237f8932db5", detail: "Windows save stopped at RetainSource: could not save the edited text: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32); vacant-name restoration: Err(Write(\"Cannot create a file when that file already exists. (os error 183)\")); all retained versions must be inspected" }
+
+thread 'text_edit::windows::tests::windows_native_recovery_dacl_denies_restricted_reader' (7968) panicked at crates/ottrin-platform/src/text_edit/windows.rs:1090:14:
+called `Result::unwrap()` on an `Err` value: RecoveryConflict { recovery: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.ottrin-text-edit-85acf920ae389a5226226926e80ea09a\\.ottrin-text-edit-9cc1eb801d9b22d019ca654500acfa6e", detail: "Windows save stopped at RetainSource: could not save the edited text: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32); vacant-name restoration: Err(Write(\"Cannot create a file when that file already exists. (os error 183)\")); all retained versions must be inspected" }
+
+thread 'text_edit::windows::tests::windows_native_save_retains_original_and_independent_draft' (2132) panicked at crates/ottrin-platform/src/text_edit/windows.rs:727:18:
+native publication and directory flush: RecoveryConflict { recovery: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.ottrin-text-edit-7c8d2f0a2bf21c8c9a993f94401e0a78\\.ottrin-text-edit-e94a7d48f53c4e794399006449d87e65", detail: "Windows save stopped at RetainSource: could not save the edited text: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32); vacant-name restoration: Err(Write(\"Cannot create a file when that file already exists. (os error 183)\")); all retained versions must be inspected" }
+
+thread 'text_edit::windows::tests::windows_native_text_save_preserves_metadata_inside_private_temp_directory' (5960) panicked at crates/ottrin-platform/src/text_edit/windows.rs:662:17:
+save failed: RecoveryConflict { recovery: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.tmpHSQ9bh\\.ottrin-text-edit-a46c6bceb68c1a89ec1cfeb263619825", detail: "Windows save stopped at RetainSource: could not save the edited text: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32); vacant-name restoration: Err(Write(\"Cannot create a file when that file already exists. (os error 183)\")); all retained versions must be inspected" }; source/candidate creation=134365927267243416/134365927267243416 attributes=20/20 security_lengths=164/164 controls=[1, 0, 4, 128]/[1, 0, 4, 128] security_equal=true
+native ancestor rename refused: Access is denied. (os error 5)
+
+thread 'text_edit::windows::tests::windows_native_unicode_and_ancestor_paths_remain_handle_bound' (2340) panicked at crates/ottrin-platform/src/text_edit/windows.rs:775:48:
+called `Result::unwrap()` on an `Err` value: RecoveryConflict { recovery: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.ottrin-text-edit-6162b8f78b144e873d708e237dc13432\\å-文件-😀\\parent\\.ottrin-text-edit-7308c5411157b9540ac7945492b103b3", detail: "Windows save stopped at RetainSource: could not save the edited text: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32); vacant-name restoration: Err(Write(\"Cannot create a file when that file already exists. (os error 183)\")); all retained versions must be inspected" }

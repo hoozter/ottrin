@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-windows-copy-namespace-qa",
+  "volume": "ottrin-init-windows-copy-namespace-qa.qcow2",
+  "backing_volume": "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+  "scope": "Task-owned disposable overlay; original QA parent remains shut off/read-only as backing",
+  "cleanup": "Stop domain, undefine with owned NVRAM/TPM, delete only this exact owned volume"
+}

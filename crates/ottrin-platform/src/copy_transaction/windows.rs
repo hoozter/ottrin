@@ -1,10 +1,12 @@
-//! Handle-bound Windows Copy staging. This module never publishes or removes names.
+//! Handle-bound Windows Copy staging. This module never publishes or mutates sources.
 //!
 //! Backup streams preserve named data and extended attributes that ordinary
 //! ReadFile/WriteFile copying loses. Security, reparse and other unsupported
 //! backup records are refused rather than silently omitted. Final file metadata,
-//! private staging, publication journals and Undo remain separate required work.
+//! publication journals and Undo remain separate required work.
 #![cfg_attr(not(test), allow(dead_code))]
+
+mod namespace;
 
 use super::PlatformError;
 use crate::move_recovery::{WindowsStableIdentity, stable_identity_from_handle};
@@ -665,10 +667,300 @@ mod tests {
         }
         assert!(OpenOptions::new().access_mode(DELETE).open(&src).is_err());
         assert!(OpenOptions::new().write(true).open(&src).is_err());
-        stage_file_streams(&source(&src), &candidate(&dst), |_| Ok(())).unwrap();
+        let parent_handle = OpenOptions::new()
+            .read(true)
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(&parent)
+            .unwrap();
+        let read = namespace::open_source(&parent_handle, std::ffi::OsStr::new("source")).unwrap();
+        stage_file_streams(&read, &candidate(&dst), |_| Ok(())).unwrap();
         assert_eq!(std::fs::read(&src).unwrap(), b"readable source");
         assert_eq!(std::fs::read(&dst).unwrap(), b"readable source");
         drop(guard);
+    }
+
+    fn parent(path: &Path) -> File {
+        use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_READ, FILE_GENERIC_WRITE};
+        OpenOptions::new()
+            .access_mode(FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(path)
+            .unwrap()
+    }
+
+    fn assert_owner_only(file: &File) {
+        use windows_sys::Win32::Security::{
+            ACCESS_ALLOWED_ACE, DACL_SECURITY_INFORMATION, GetAce, GetKernelObjectSecurity,
+            GetLengthSid, GetSecurityDescriptorControl, GetSecurityDescriptorDacl,
+            SE_DACL_PROTECTED,
+        };
+        use windows_sys::Win32::Storage::FileSystem::FILE_ALL_ACCESS;
+        use windows_sys::Win32::System::SystemServices::ACCESS_ALLOWED_ACE_TYPE;
+        let mut length = 0;
+        unsafe {
+            GetKernelObjectSecurity(
+                file.as_raw_handle().cast(),
+                DACL_SECURITY_INFORMATION,
+                ptr::null_mut(),
+                0,
+                &mut length,
+            );
+        }
+        assert!(length > 0 && length <= 65536);
+        let mut storage = vec![0u64; (length as usize).div_ceil(8)];
+        let descriptor = storage.as_mut_ptr().cast();
+        assert_ne!(
+            unsafe {
+                GetKernelObjectSecurity(
+                    file.as_raw_handle().cast(),
+                    DACL_SECURITY_INFORMATION,
+                    descriptor,
+                    length,
+                    &mut length,
+                )
+            },
+            0
+        );
+        let mut control = 0;
+        let mut revision = 0;
+        assert_ne!(
+            unsafe { GetSecurityDescriptorControl(descriptor, &mut control, &mut revision) },
+            0
+        );
+        assert_ne!(
+            control & SE_DACL_PROTECTED,
+            0,
+            "private DACL must not inherit public parent entries"
+        );
+        let mut present = 0;
+        let mut defaulted = 0;
+        let mut acl = ptr::null_mut();
+        assert_ne!(
+            unsafe {
+                GetSecurityDescriptorDacl(descriptor, &mut present, &mut acl, &mut defaulted)
+            },
+            0
+        );
+        assert_ne!(present, 0);
+        assert!(!acl.is_null());
+        assert_eq!(unsafe { (*acl).AceCount }, 1);
+        let mut raw = ptr::null_mut();
+        assert_ne!(unsafe { GetAce(acl, 0, &mut raw) }, 0);
+        let ace = unsafe { &*raw.cast::<ACCESS_ALLOWED_ACE>() };
+        assert_eq!(u32::from(ace.Header.AceType), ACCESS_ALLOWED_ACE_TYPE);
+        assert_eq!(ace.Mask, FILE_ALL_ACCESS);
+        let sid: *mut c_void = ptr::from_ref(&ace.SidStart).cast_mut().cast();
+        let bytes =
+            unsafe { std::slice::from_raw_parts(sid.cast::<u8>(), GetLengthSid(sid) as usize) };
+        assert_eq!(
+            bytes,
+            &[1, 1, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0],
+            "only OWNER RIGHTS may be granted access"
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_is_private_at_creation_in_public_parent() {
+        use std::ffi::OsStr;
+        let root = tempfile::tempdir().unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        set_dacl(&destination, "D:P(A;OICI;FA;;;WD)");
+        let parent = parent(&destination);
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        assert_owner_only(&stage.directory);
+        let staged = stage.create_candidate().unwrap();
+        assert_owner_only(&staged);
+        let src = root.path().join("source");
+        std::fs::write(&src, b"private candidate data").unwrap();
+        stage_file_streams(&source(&src), &staged, |_| Ok(())).unwrap();
+        stage.validate().unwrap();
+        let collision = stage.create_candidate().unwrap_err();
+        assert!(matches!(collision, PlatformError::CleanupPending { .. }));
+        let location = crate::windows_fs::location(&staged).unwrap();
+        assert_eq!(std::fs::read(&location).unwrap(), b"private candidate data");
+        assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 1);
+        assert!(stage.name.to_string_lossy().starts_with(".ottrin-copy-"));
+        assert!(namespace::open_source(&parent, OsStr::new("missing")).is_err());
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_rejects_non_leaf_names_without_mutation() {
+        use std::ffi::OsStr;
+        let root = tempfile::tempdir().unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let parent = parent(&destination);
+        for name in [
+            "",
+            ".",
+            "..",
+            "../escape",
+            "sub\\file",
+            "file:stream",
+            "nul\0name",
+            &"x".repeat(256),
+        ] {
+            let error = crate::windows_fs::create_private(
+                &parent,
+                OsStr::new(name),
+                false,
+                FILE_SHARE_READ,
+            )
+            .unwrap_err();
+            assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput);
+            assert!(namespace::open_source(&parent, OsStr::new(name)).is_err());
+        }
+        assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 0);
+        assert!(!root.path().join("escape").exists());
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_create_never_replaces_existing_entries() {
+        use std::ffi::OsStr;
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        std::fs::create_dir(root.path().join("occupied")).unwrap();
+        std::fs::write(root.path().join("occupied/keep"), b"user data").unwrap();
+        let error = crate::windows_fs::create_private(
+            &parent,
+            OsStr::new("occupied"),
+            true,
+            FILE_SHARE_READ,
+        )
+        .unwrap_err();
+        assert_eq!(error.kind(), std::io::ErrorKind::AlreadyExists);
+        assert_eq!(
+            std::fs::read(root.path().join("occupied/keep")).unwrap(),
+            b"user data"
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_excludes_other_directory_writers() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let open_writer = |path: &Path| {
+            OpenOptions::new()
+                .write(true)
+                .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+                .open(path)
+        };
+        assert!(
+            open_writer(root.path()).is_ok(),
+            "control directory is writable"
+        );
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        let path = crate::windows_fs::location(&stage.directory).unwrap();
+        let error = open_writer(&path)
+            .expect_err("an unrelated directory writer could change reparse metadata");
+        assert_eq!(
+            error.raw_os_error(),
+            Some(32),
+            "must refuse by sharing, not merely a fixture ACL"
+        );
+        stage.create_candidate().unwrap();
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_keeps_raw_utf16_names() {
+        use std::ffi::OsString;
+        use std::os::windows::ffi::OsStringExt;
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let name = OsString::from_wide(&[102, 111, 0xd800, 111]);
+        let created =
+            crate::windows_fs::create_private(&parent, &name, false, FILE_SHARE_READ).unwrap();
+        (&created).write_all(b"native name").unwrap();
+        drop(created);
+        let opened = namespace::open_source(&parent, &name).unwrap();
+        let candidate = candidate(&root.path().join("candidate"));
+        stage_file_streams(&opened, &candidate, |_| Ok(())).unwrap();
+        assert_eq!(
+            std::fs::read(root.path().join("candidate")).unwrap(),
+            b"native name"
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_rejects_reparse_sources_and_parents() {
+        use std::ffi::OsStr;
+        let root = tempfile::tempdir().unwrap();
+        let outside = root.path().join("outside");
+        std::fs::create_dir(&outside).unwrap();
+        std::fs::write(outside.join("keep"), b"unchanged").unwrap();
+        std::os::windows::fs::symlink_file(outside.join("keep"), root.path().join("link")).unwrap();
+        std::os::windows::fs::symlink_dir(&outside, root.path().join("directory-link")).unwrap();
+        let parent_handle = parent(root.path());
+        assert!(namespace::open_source(&parent_handle, OsStr::new("link")).is_err());
+        let linked_parent = parent(&root.path().join("directory-link"));
+        assert!(namespace::PrivateStage::create(&linked_parent).is_err());
+        assert_eq!(std::fs::read(outside.join("keep")).unwrap(), b"unchanged");
+        assert_eq!(std::fs::read_dir(&outside).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_alias_retarget_cannot_redirect_creation() {
+        let root = tempfile::tempdir().unwrap();
+        let first = root.path().join("first");
+        let second = root.path().join("second");
+        for base in [&first, &second] {
+            std::fs::create_dir_all(base.join("destination")).unwrap();
+        }
+        let alias = root.path().join("alias");
+        std::os::windows::fs::symlink_dir(&first, &alias).unwrap();
+        let parent = parent(&alias.join("destination"));
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        std::fs::remove_dir(&alias).unwrap();
+        std::os::windows::fs::symlink_dir(&second, &alias).unwrap();
+        let created = stage.create_candidate().unwrap();
+        (&created).write_all(b"original parent").unwrap();
+        assert_eq!(
+            std::fs::read(
+                first
+                    .join("destination")
+                    .join(&stage.name)
+                    .join("candidate")
+            )
+            .unwrap(),
+            b"original parent"
+        );
+        assert_eq!(
+            std::fs::read_dir(second.join("destination"))
+                .unwrap()
+                .count(),
+            0
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_namespace_binding_change_preserves_both_directories() {
+        use std::ffi::OsStr;
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        crate::move_transaction::rename_windows_handle_no_replace(
+            &stage.directory,
+            &parent,
+            OsStr::new("retained"),
+        )
+        .unwrap();
+        std::fs::create_dir(root.path().join(&stage.name)).unwrap();
+        let unrelated = root.path().join(&stage.name).join("keep");
+        std::fs::write(&unrelated, b"unrelated").unwrap();
+        assert!(matches!(
+            stage.create_candidate(),
+            Err(PlatformError::CleanupPending { .. })
+        ));
+        assert_eq!(std::fs::read(&unrelated).unwrap(), b"unrelated");
+        assert_eq!(
+            std::fs::read_dir(root.path().join("retained"))
+                .unwrap()
+                .count(),
+            0
+        );
     }
 
     #[test]

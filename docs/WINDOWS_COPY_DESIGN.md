@@ -1,6 +1,6 @@
 # Native Windows Copy
 
-Status: native stream staging verified; public Copy remains disabled until the complete transaction is accepted.
+Status: native stream staging and private namespace creation verified; public Copy remains disabled until the complete transaction is accepted.
 
 Copy must leave the original namespace and bytes untouched. It must not simulate a Move followed by restoration, or require source delete/data-write access merely because Move uses those rights. The existing Windows Move identity and handle-relative rename primitives can be reused where their contracts apply.
 
@@ -18,7 +18,7 @@ Before enabling the public path, implement and accept:
 
 ## Verified stream component
 
-`crates/ottrin-platform/src/copy_transaction/windows.rs` operates only on already-open regular file handles and an empty, independently owned candidate supplied by the transaction owner. It does not create, publish, rename or remove filesystem entries. The public Windows dispatcher still rejects Copy; this component is not a usable Copy implementation by itself.
+`crates/ottrin-platform/src/copy_transaction/windows.rs` operates only on already-open regular file handles and an empty, independently owned candidate supplied by the transaction owner. The stream component does not create, publish, rename or remove filesystem entries. The private namespace component below supplies its owned candidate. The public Windows dispatcher still rejects Copy; this component is not a usable Copy implementation by itself.
 
 The component:
 
@@ -33,3 +33,15 @@ Thirteen ordinary-user native tests cover Unicode and empty alternate streams, e
 ## Native API references
 
 Microsoft documents the backup stream format and context lifetime in [BackupRead](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-backupread) and [BackupWrite](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-backupwrite). Both require synchronous handles and explicit context release; EFS uses separate APIs. [CopyFile2](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfile2) documents Windows preservation of named streams and extended attributes, which a primary-stream-only copy does not provide. These references inform the implementation; native tests establish the current verified scope.
+
+## Verified private namespace component
+
+`copy_transaction/windows/namespace.rs` pins the destination parent, creates a random private directory without replacement, and creates its candidate relative to that directory. Each native creation supplies a protected owner-only DACL atomically; there is no inherited-permission interval. The shared primitive in `windows_fs.rs` rejects non-leaf names and parents with reparse points, requires persistent filesystem ACLs, and opens entries without following reparse targets. Raw UTF-16 names are preserved. Copy source handles request read access without DELETE or data-write rights.
+
+Before and after candidate creation, Copy checks the held parent and stage identities and observes the stage name through the pinned parent. An ancestor alias change cannot redirect creation. A changed stage binding returns an explicit retained-data error; no path-based deletion or automatic Drop cleanup is attempted. Durable ownership records and destructive cleanup remain required before this component can become a transaction.
+
+Sharing is explicit per operation. Copy's current create-only staging holds read sharing, excluding ordinary new directory writers. Text saving reuses the same atomic private creation but requires read/write directory sharing so Windows can rename the retained original into it. A native regression caught that rename failing with error 32 when the directory was locked too tightly; the final full suite passes without weakening that test. Future Copy retention/publication must select and verify its own sharing policy. These locks do not claim exclusion of pre-existing writable mappings or same-user changes through independently held authority.
+
+Eight added native tests cover immediate protected DACLs in a permissive parent, create-new collisions, invalid and raw UTF-16 names, reparse refusal, ancestor alias changes, replaced stage bindings and directory writer exclusion. Together with the stream cases, 21 tests pass as an ordinary Windows user. The full native platform suite passes 121 with 26 specialized exclusions, including the existing text-save cases. Developer Mode is enabled only in the owned COW guest for symlink fixtures. Strict Windows and Linux platform all-target Clippy passes. Evidence: `.hermes/evidence/windows-copy-namespace-current/`.
+
+This remains source-only evidence. Final attributes/security, directory/link staging, journals, publication, Undo/recovery, clipboard integration and exact-package acceptance remain open. Non-ACL filesystem staging needs an explicit safe strategy; refusal is not completion of that requirement. Existing Windows Move private-directory creation has not been migrated to this shared atomic primitive and requires separate hardening and acceptance.

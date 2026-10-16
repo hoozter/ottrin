@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-windows-copy-namespace-qa",
+  "guest_root": "C:\\OttrinContentQA",
+  "account": "OttrinContentQA",
+  "purpose": "Ordinary-user native Windows Copy private namespace and text-save regression acceptance",
+  "restore": "Dispose the entire owned COW guest, volume, NVRAM and TPM after terminal tasks and unchanged original-profile/install checks; preserve backing image and original domains"
+}
