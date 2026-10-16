@@ -177,13 +177,28 @@ impl StagedEntry {
         &self,
         candidate: &File,
     ) -> Result<(), PlatformError> {
+        self.validate_metadata(candidate, true)
+    }
+
+    /// Ordinary reads (including a cancelled recovery scan) may update access
+    /// time. Recovery verifies persistent payload metadata without repairing or
+    /// treating this filesystem-owned read timestamp as a content mutation.
+    pub(super) fn validate_retained_metadata(&self, candidate: &File) -> Result<(), PlatformError> {
+        self.validate_metadata(candidate, false)
+    }
+
+    fn validate_metadata(
+        &self,
+        candidate: &File,
+        require_access_time: bool,
+    ) -> Result<(), PlatformError> {
         if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity {
             return Err(io("candidate identity changed"));
         }
         let observed = basic(candidate)?;
         if observed.CreationTime != self.source.created
             || observed.LastWriteTime != self.source.modified
-            || observed.LastAccessTime != self.accessed
+            || (require_access_time && observed.LastAccessTime != self.accessed)
             || observed.FileAttributes != self.source.attributes
             || (!self.source.directory
                 && candidate.metadata().map_err(io)?.len() != self.source.length)

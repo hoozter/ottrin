@@ -1,0 +1,162 @@
+{
+  "status": "pass",
+  "scope": "Completed retained-stage payload/namespace validation without source access or write/delete rights; public Windows Copy remains disabled",
+  "base_revision": "98eb52378a34a3ea111bd948df1f12897a1d6ce8",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "78eeaad9c28af98069d74bef9607e91bb6c5ca440ff2309e97fef08293f3bfc9",
+    "crates/ottrin-platform/src/move_recovery.rs": "6073c39e6305868490056d350942fa2ccd999b6135a17f17c3b88734fd2a487d",
+    "crates/ottrin-platform/src/windows_fs.rs": "6b519d86ad58ef2ad61c9a5757882f83d2548974160735e3ee7741b984b2f538",
+    "crates/ottrin-platform/src/copy_transaction/windows/links.rs": "79d53671363e20857d56cb71522f321a0007e04da1e6e3a473793edf184a16e3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "5fcd528f8da45a7c9b9dc4cbf986009c3ea12c13272b5d5381912fd6f5b3e0f3",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "958243209837563a476b1b3d2017b2633cdf200273fcc8a688eec248ac72c93d",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "f7b88c375b0c61f792403fdbe8cf5651e1b08f707cdf9f995726848e48a9dd2d",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "0299f8d3bbfcf3e2925543d0eacd0d2cc9f8e6ad9c151bcccaddbc69578e5941",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "937ae848c5d6828e45a4bba47d946b551f7a0c2343ac27cd0c2c24c7d3b8af6d"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "774eac426925d03ab09e3cfc390881f9377c8e8e134801171051aeee3ac6bbe7",
+    "transferred_sha256": "9be8d782fd430fd33e69877f0ac58b0dda0a07dbffa51cc398598afd858c273b",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 8244008,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "ff1b49a7778dac00b983517c6eabd7609185616e32618a9b4081ef5fb2696c4b"
+      },
+      ".data": {
+        "virtual_size": 3824,
+        "virtual_address": 8249344,
+        "flags": 3221225536,
+        "raw_sha256": "c5a9fa638eaa34d2c72f6d7e275b97d6d6486a40ed29c3f8feddbef21c25f986"
+      },
+      ".rdata": {
+        "virtual_size": 711224,
+        "virtual_address": 8253440,
+        "flags": 1073741888,
+        "raw_sha256": "304d16b629f1d30aa1de4ad11ea6d48ace101da01fe5209aa034a44e3d6c03da"
+      },
+      ".pdata": {
+        "virtual_size": 146604,
+        "virtual_address": 8966144,
+        "flags": 1073741888,
+        "raw_sha256": "152f14fa7ea55797ac433f5729a0c35f65af3d6ce6ac5789e49f04c65eca7eb3"
+      },
+      ".xdata": {
+        "virtual_size": 492076,
+        "virtual_address": 9113600,
+        "flags": 1073741888,
+        "raw_sha256": "361beb3a520d5c99d53cf3ff3b9954277fb028c540dbe7440b7d9b4b7b793a34"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 9609216,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 9613312,
+        "flags": 3221225536,
+        "raw_sha256": "329c51f51eed81112f8c61a3bdd1cdfdd085bf475688525a4ef033949534c66b"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 9625600,
+        "flags": 3221225536,
+        "raw_sha256": "17cddf577cf428a6695d6471c62c07509541af852fdd089224235b125ccf2e1f"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 9629696,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 19456,
+        "virtual_address": 9633792,
+        "flags": 1107296320,
+        "raw_sha256": "623ec19a2b79bd3c2d224e74fbddd7013dd5aafb33250bd08ec14c337cee2536"
+      }
+    }
+  },
+  "native_copy": {
+    "passed": 74,
+    "failed": 0,
+    "ignored": 3,
+    "ordinary_user": true,
+    "new_validation_cases": 6,
+    "existing_flush_failures_exercised": 22,
+    "existing_process_exits_exercised": 8,
+    "expected_child_exit": 86,
+    "exit_parent_validates_retained_candidate": true,
+    "temporary_entries": 0
+  },
+  "native_full_platform": {
+    "passed": 174,
+    "failed": 0,
+    "ignored": 29,
+    "temporary_entries": 0
+  },
+  "native_system_audit": {
+    "passed": 1,
+    "failed": 0,
+    "temporary_entries": 0
+  },
+  "linux_platform": {
+    "passed": 411,
+    "failed": 0,
+    "ignored": 3
+  },
+  "strict_clippy": {
+    "linux_all_targets": "pass",
+    "windows_all_targets": "pass"
+  },
+  "validated_behaviors": [
+    "Completed paired journal required; active writer and incomplete staging refused",
+    "Original source deleted before successful retained validation",
+    "Read-only candidate handles exclude new writers and release after cancellation",
+    "Raw UTF-16 directory membership and exact identity bindings",
+    "Same-size primary/ADS edits with restored metadata fail through content-hash refusal",
+    "Extra/missing/replaced entries and extra transaction records retained",
+    "File and directory dangling links validate without target access",
+    "Only fully recorded completed staging validates after real process exits"
+  ],
+  "rejected_first_candidate": {
+    "native_passed": 72,
+    "native_failed": 2,
+    "cause": "Ordinary reads update access timestamps; strict staging-time access metadata was incorrectly used for recovery",
+    "repair": "Staging still verifies exact access time; recovery verifies persistent payload metadata and hashes while permitting read-owned access-time updates",
+    "evidence": "REJECTED_COPY_* and REJECTED_TEST_BINARY.json"
+  },
+  "fixture_environment": {
+    "disposable_no_network_windows_overlay": true,
+    "ordinary_user": "OttrinContentQA",
+    "developer_mode": "Enabled only in owned disposable overlay for existing native symlink fixtures",
+    "mode_off_policy": "Not rerun; distinct earlier links checkpoint retains that acceptance"
+  },
+  "limits": [
+    "No publication, Overwrite, Undo, automatic repair or deletion authority",
+    "Content validation does not complete private/final security or write/delete-right acquisition for guarded mutation",
+    "Incomplete-entry recovery, central discovery and broader source-root/journal placement remain open",
+    "Sparse/EFS, case-sensitive directories, specialized providers/storage, final tree security and privilege workflow remain open",
+    "Read-only validation can permit filesystem-maintained access-time updates; it never writes timestamps back",
+    "No exact package replaced and no user/physical desktop acceptance claimed"
+  ],
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "preservation": {
+    "actor_state": "Ready",
+    "actor_result": 0,
+    "owned_product_processes": 0,
+    "original_profile_and_installation": "unchanged"
+  }
+}

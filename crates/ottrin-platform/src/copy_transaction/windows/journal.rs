@@ -376,13 +376,18 @@ fn decode(bytes: &[u8]) -> Result<State, PlatformError> {
     }
     Ok(state)
 }
-fn open(parent: &File, name: &OsStr, directory: bool, access: u32) -> Result<File, PlatformError> {
+fn open(
+    parent: &File,
+    name: &OsStr,
+    directory: Option<bool>,
+    access: u32,
+) -> Result<File, PlatformError> {
     unsafe {
         windows_fs::open_relative(
             parent,
             name,
             RelativeOptions {
-                directory: Some(directory),
+                directory,
                 create_new: false,
                 access,
                 sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -397,12 +402,7 @@ fn bound(
     name: &OsStr,
     identity: WindowsStableIdentity,
 ) -> Result<(), PlatformError> {
-    let actual = open(
-        parent,
-        name,
-        identity.is_directory_without_reparse(),
-        FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-    )?;
+    let actual = open(parent, name, None, FILE_READ_ATTRIBUTES | SYNCHRONIZE)?;
     if stable_identity_from_handle(&actual).map_err(io)? != identity {
         return Err(io("Copy journal namespace binding changed; data retained"));
     }
@@ -671,50 +671,231 @@ fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
         return Err(io("invalid Copy journal size"));
     }
     let mut bytes = Vec::new();
-    file.take(size + 1).read_to_end(&mut bytes).map_err(io)?;
+    let mut reader = file;
+    reader.seek(SeekFrom::Start(0)).map_err(io)?;
+    reader.take(size + 1).read_to_end(&mut bytes).map_err(io)?;
     if bytes.len() as u64 != size || file.metadata().map_err(io)?.len() != size {
         return Err(io("Copy journal changed while reading"));
     }
     Ok(bytes)
 }
-/// Inspection validates paired records and native directory/file bindings. It
-/// does not acquire source handles, publish, rename, remove, repair or authorize
-/// cleanup. Incomplete/torn/foreign/rebound records remain retained.
+/// Held journal evidence. A recovery validator uses read-sharing only, refusing
+/// an active writer rather than racing its in-progress append or payload writes.
+struct Snapshot {
+    stage: File,
+    local: File,
+    mirror: File,
+    bytes: Vec<u8>,
+    state: State,
+}
+impl Snapshot {
+    fn load(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        lock: bool,
+    ) -> Result<Self, PlatformError> {
+        let entry = |parent: &File, name: &OsStr, directory| {
+            if lock {
+                namespace::open_source(parent, name, Some(directory))
+            } else {
+                open(parent, name, Some(directory), FILE_GENERIC_READ)
+            }
+        };
+        let stage = entry(parent, name, true)?;
+        let local = entry(&stage, OsStr::new(LOCAL), false)?;
+        let bytes = read(&local)?;
+        let state = decode(&bytes)?;
+        let header = state.header.as_ref().unwrap();
+        if name != header.stage_name() {
+            return Err(io("Copy journal name does not match its transaction"));
+        }
+        let mirror = entry(central, &header.central_name(), false)?;
+        let result = Self {
+            stage,
+            local,
+            mirror,
+            bytes,
+            state,
+        };
+        result.revalidate(parent, central)?;
+        Ok(result)
+    }
+    fn revalidate(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
+        let header = self.state.header.as_ref().unwrap();
+        for (file, expected) in [
+            (parent, header.parent),
+            (&self.stage, header.stage),
+            (central, header.central),
+            (&self.local, header.local_file),
+            (&self.mirror, header.central_file),
+        ] {
+            if stable_identity_from_handle(file).map_err(io)? != expected {
+                return Err(io("Copy journal header does not match held namespace"));
+            }
+        }
+        if read(&self.local)? != self.bytes || read(&self.mirror)? != self.bytes {
+            return Err(io("Copy journal mirrors differ or changed; data retained"));
+        }
+        bound(parent, &header.stage_name(), header.stage)?;
+        bound(&self.stage, OsStr::new(LOCAL), header.local_file)?;
+        bound(central, &header.central_name(), header.central_file)?;
+        Ok(())
+    }
+}
+/// Journal-only inspection never grants publication, restoration or deletion.
 pub(super) fn inspect(
     parent: &File,
     central: &File,
     name: &OsStr,
 ) -> Result<Inspection, PlatformError> {
-    let stage = open(parent, name, true, FILE_GENERIC_READ)?;
-    let local = open(&stage, OsStr::new(LOCAL), false, FILE_GENERIC_READ)?;
-    let local_bytes = read(&local)?;
-    let state = decode(&local_bytes)?;
-    let header = state.header.as_ref().unwrap();
-    if name != header.stage_name()
-        || stable_identity_from_handle(parent).map_err(io)? != header.parent
-        || stable_identity_from_handle(&stage).map_err(io)? != header.stage
-        || stable_identity_from_handle(central).map_err(io)? != header.central
-        || stable_identity_from_handle(&local).map_err(io)? != header.local_file
-    {
-        return Err(io("Copy journal header does not match held namespace"));
-    }
-    let mirror = open(central, &header.central_name(), false, FILE_GENERIC_READ)?;
-    if stable_identity_from_handle(&mirror).map_err(io)? != header.central_file
-        || read(&mirror)? != local_bytes
-    {
-        return Err(io(
-            "Copy journal mirrors differ or were rebound; data retained",
-        ));
-    }
-    bound(parent, name, header.stage)?;
-    bound(&stage, OsStr::new(LOCAL), header.local_file)?;
-    bound(central, &header.central_name(), header.central_file)?;
+    let snapshot = Snapshot::load(parent, central, name, false)?;
     Ok(Inspection {
-        entries: state.nodes.len(),
-        created: state.nodes.iter().filter(|n| n.created.is_some()).count(),
-        staged: state.nodes.iter().filter(|n| n.staged.is_some()).count(),
-        verified: state.verified,
+        entries: snapshot.state.nodes.len(),
+        created: snapshot
+            .state
+            .nodes
+            .iter()
+            .filter(|n| n.created.is_some())
+            .count(),
+        staged: snapshot
+            .state
+            .nodes
+            .iter()
+            .filter(|n| n.staged.is_some())
+            .count(),
+        verified: snapshot.state.verified,
     })
+}
+
+struct RetainedEntry {
+    handle: File,
+    observed: EntryVersion,
+    children: Vec<OsString>,
+}
+/// Content/namespace validation of a completed private stage, without acquiring
+/// source handles or write/delete rights. This is not cleanup authority. Keep
+/// handles alive and revalidate before any later transaction phase; publication
+/// and guarded mutation require their own state/rights/namespace protocol.
+pub(super) struct RetainedStage<'a> {
+    parent: &'a File,
+    central: &'a File,
+    snapshot: Snapshot,
+    entries: Vec<RetainedEntry>,
+}
+impl<'a> RetainedStage<'a> {
+    pub(super) fn open(
+        parent: &'a File,
+        central: &'a File,
+        name: &OsStr,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let snapshot = Snapshot::load(parent, central, name, true)?;
+        if !snapshot.state.verified {
+            return Err(io(
+                "Copy staging was interrupted before full verification; retain for recovery",
+            ));
+        }
+        let mut children = vec![Vec::new(); snapshot.state.nodes.len()];
+        for node in &snapshot.state.nodes {
+            if let Some(parent) = node.parent {
+                children[parent].push(OsString::from_wide(&node.name));
+            }
+        }
+        for names in &mut children {
+            names.sort_unstable_by(|left, right| left.encode_wide().cmp(right.encode_wide()));
+        }
+        let mut entries: Vec<RetainedEntry> = Vec::with_capacity(children.len());
+        for (index, node) in snapshot.state.nodes.iter().enumerate() {
+            progress(0)?;
+            let owner = node.parent.map(|p| &entries[p].handle).unwrap_or(parent);
+            let handle = namespace::open_source(owner, &OsString::from_wide(&node.name), None)?;
+            let evidence = node.staged.as_ref().unwrap();
+            evidence.validate_retained_metadata(&handle)?;
+            let observed = super::version(&handle)?;
+            if observed.link != evidence.source.link {
+                return Err(io("retained Copy link data changed; no target followed"));
+            }
+            entries.push(RetainedEntry {
+                handle,
+                observed,
+                children: std::mem::take(&mut children[index]),
+            });
+        }
+        let result = Self {
+            parent,
+            central,
+            snapshot,
+            entries,
+        };
+        result.revalidate(progress)?;
+        Ok(result)
+    }
+    pub(super) fn entry_count(&self) -> usize {
+        self.entries.len()
+    }
+    fn namespace(&self) -> Result<(), PlatformError> {
+        self.snapshot.revalidate(self.parent, self.central)?;
+        if windows_fs::directory_children_limited(&self.snapshot.stage, 1).map_err(io)?
+            != [OsString::from(LOCAL)]
+        {
+            return Err(io("unexpected Copy transaction entries; all data retained"));
+        }
+        for (node, entry) in self.snapshot.state.nodes.iter().zip(&self.entries) {
+            let owner = node
+                .parent
+                .map(|p| &self.entries[p].handle)
+                .unwrap_or(self.parent);
+            bound(
+                owner,
+                &OsString::from_wide(&node.name),
+                entry.observed.identity,
+            )?;
+            if super::version(&entry.handle)? != entry.observed {
+                return Err(io("retained Copy entry changed during validation"));
+            }
+            if entry.observed.directory
+                && entry.observed.link.is_none()
+                && windows_fs::directory_children_limited(
+                    &entry.handle,
+                    entry.children.len().saturating_add(1),
+                )
+                .map_err(io)?
+                    != entry.children
+            {
+                return Err(io("retained Copy directory membership changed"));
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn revalidate(
+        &self,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.namespace()?;
+        let mut total = 0u64;
+        for (node, entry) in self.snapshot.state.nodes.iter().zip(&self.entries) {
+            let evidence = node.staged.as_ref().unwrap();
+            let actual = super::transfer(&entry.handle, None, &mut |count| {
+                progress(
+                    total
+                        .checked_add(count)
+                        .ok_or_else(|| io("Copy recovery progress overflow"))?,
+                )
+            })?;
+            if actual != evidence.streams {
+                return Err(io(
+                    "retained Copy stream contents changed; all data retained",
+                ));
+            }
+            total = actual.iter().try_fold(total, |sum, stream| {
+                sum.checked_add(stream.bytes)
+                    .ok_or_else(|| io("Copy recovery stream length overflow"))
+            })?;
+        }
+        self.namespace()?;
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1000,6 +1181,8 @@ mod tests {
                     b"original data"
                 );
                 assert!(!root.path().join("destination/copy").exists());
+                let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
+                assert_eq!(retained.is_ok(), step == "central" && sequence == 10);
             }
         }
     }
@@ -1125,5 +1308,283 @@ mod tests {
                 .unwrap()
                 .same_object(node.staged.as_ref().unwrap().candidate_identity)
         );
+    }
+    #[test]
+    fn windows_native_copy_retained_validation_needs_no_source_and_holds_read_only_handles() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        std::fs::write(
+            root.path().join("source/nested/file:note:$DATA"),
+            b"named data",
+        )
+        .unwrap();
+        for name in [
+            OsString::from_wide(&[0xd800]),
+            OsString::from("🦀"),
+            OsString::from("\u{e000}"),
+        ] {
+            std::fs::write(root.path().join("source").join(name), b"raw-name data").unwrap();
+        }
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let candidate = root
+            .path()
+            .join("destination")
+            .join(&staged.stage.candidate_name);
+        drop((staged, src));
+        std::fs::remove_dir_all(root.path().join("source")).unwrap();
+        let validated = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        assert_eq!(validated.entry_count(), 6);
+        validated.revalidate(|_| Ok(())).unwrap();
+        assert!(
+            OpenOptions::new()
+                .write(true)
+                .open(candidate.join("nested/file"))
+                .is_err()
+        );
+        assert_eq!(
+            std::fs::read(candidate.join("nested/file")).unwrap(),
+            b"original data"
+        );
+        assert_eq!(
+            std::fs::read(candidate.join("nested/file:note:$DATA")).unwrap(),
+            b"named data"
+        );
+        drop(validated);
+        assert!(
+            OpenOptions::new()
+                .write(true)
+                .open(candidate.join("nested/file"))
+                .is_ok()
+        );
+    }
+    #[test]
+    fn windows_native_copy_retained_validation_refuses_active_writer_and_unverified_journal() {
+        for interrupted in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            if interrupted {
+                FAULT.with(|f| f.set(Some((6, Step::CentralFlushed, false))));
+                let result = stage(&src, &parent, &central);
+                FAULT.with(|f| f.set(None));
+                assert!(result.is_err());
+                let name = stage_name(&root.path().join("destination"));
+                assert!(!inspect(&parent, &central, &name).unwrap().verified);
+                assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err());
+            } else {
+                let staged = stage(&src, &parent, &central).unwrap();
+                let name = staged.stage.name.clone();
+                assert!(staged.inspect(&central).unwrap().verified);
+                assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err());
+                drop(staged);
+                assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_ok());
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_retained_validation_hashes_streams_even_with_restored_metadata() {
+        for named in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            std::fs::write(
+                root.path().join("source/nested/file:note:$DATA"),
+                b"named data",
+            )
+            .unwrap();
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            let candidate = root
+                .path()
+                .join("destination")
+                .join(&staged.stage.candidate_name);
+            let evidence = staged
+                .journal
+                .state
+                .nodes
+                .last()
+                .unwrap()
+                .staged
+                .clone()
+                .unwrap();
+            drop(staged);
+            let file = candidate.join("nested/file");
+            let changed = if named {
+                candidate.join("nested/file:note:$DATA")
+            } else {
+                file.clone()
+            };
+            std::fs::write(
+                &changed,
+                if named {
+                    b"changed!!!".as_slice()
+                } else {
+                    b"tampered data".as_slice()
+                },
+            )
+            .unwrap();
+            let handle = owner(&file);
+            evidence.apply_final_metadata(&handle).unwrap();
+            drop(handle);
+            let error = RetainedStage::open(&parent, &central, &name, |_| Ok(()))
+                .err()
+                .expect("altered stream must be refused");
+            assert!(
+                error.to_string().contains("stream contents changed"),
+                "expected content hash refusal, got: {error}"
+            );
+            assert_eq!(
+                std::fs::read(&changed).unwrap(),
+                if named {
+                    b"changed!!!".as_slice()
+                } else {
+                    b"tampered data".as_slice()
+                }
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+        }
+    }
+    #[test]
+    fn windows_native_copy_retained_validation_refuses_membership_rebinding_and_extra_records() {
+        for mode in 0..5 {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            let transaction = root.path().join("destination").join(&name);
+            let candidate = root
+                .path()
+                .join("destination")
+                .join(&staged.stage.candidate_name);
+            drop(staged);
+            match mode {
+                0 => std::fs::write(candidate.join("extra"), b"unexpected data").unwrap(),
+                1 => std::fs::remove_file(candidate.join("nested/file")).unwrap(),
+                2 => {
+                    std::fs::rename(
+                        candidate.join("nested/file"),
+                        root.path().join("retained-original"),
+                    )
+                    .unwrap();
+                    std::fs::write(candidate.join("nested/file"), b"original data").unwrap();
+                }
+                3 => std::fs::write(transaction.join("extra"), b"unexpected transaction entry")
+                    .unwrap(),
+                _ => std::fs::write(
+                    candidate.join("nested/file:extra:$DATA"),
+                    b"extra named stream",
+                )
+                .unwrap(),
+            }
+            assert!(
+                RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err(),
+                "mode {mode}"
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            assert!(transaction.join(LOCAL).exists());
+            assert!(candidate.exists());
+            if mode == 0 {
+                assert_eq!(
+                    std::fs::read(candidate.join("extra")).unwrap(),
+                    b"unexpected data"
+                );
+            }
+            if mode == 2 {
+                assert_eq!(
+                    std::fs::read(root.path().join("retained-original")).unwrap(),
+                    b"original data"
+                );
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_retained_validation_never_follows_a_dangling_link() {
+        for directory in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let target = root.path().join("target");
+            let link = root.path().join("link");
+            if directory {
+                std::fs::create_dir(&target).unwrap();
+                std::fs::write(target.join("file"), b"target bytes").unwrap();
+                std::os::windows::fs::symlink_dir(&target, &link).unwrap();
+            } else {
+                std::fs::write(&target, b"target bytes").unwrap();
+                std::os::windows::fs::symlink_file(&target, &link).unwrap();
+            }
+            let src = source(&link);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            drop((staged, src));
+            if directory {
+                std::fs::remove_dir(&link).unwrap();
+                std::fs::remove_dir_all(&target).unwrap();
+            } else {
+                std::fs::remove_file(&link).unwrap();
+                std::fs::remove_file(&target).unwrap();
+            }
+            let validated = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            assert_eq!(validated.entry_count(), 1);
+            validated.revalidate(|_| Ok(())).unwrap();
+            assert!(!target.exists());
+        }
+    }
+    #[test]
+    fn windows_native_copy_retained_validation_cancellation_releases_without_mutation() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let original = vec![93; 200_000];
+        std::fs::write(root.path().join("source/nested/file"), &original).unwrap();
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let candidate = root
+            .path()
+            .join("destination")
+            .join(&staged.stage.candidate_name);
+        drop(staged);
+        let mut cancelled = false;
+        assert!(
+            RetainedStage::open(&parent, &central, &name, |bytes| if bytes > 0 {
+                cancelled = true;
+                Err(io("cancelled retained scan"))
+            } else {
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(cancelled);
+        assert_eq!(
+            std::fs::read(candidate.join("nested/file")).unwrap(),
+            original
+        );
+        assert!(
+            OpenOptions::new()
+                .write(true)
+                .open(candidate.join("nested/file"))
+                .is_ok()
+        );
+        assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_ok());
     }
 }

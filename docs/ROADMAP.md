@@ -10,43 +10,50 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
-Windows Copy now owns paired append-only staging journals bound to native parent,
-transaction-directory and journal-file identities. Both records are flushed before
-candidate creation is acknowledged or payload writes begin. Source discovery is
-read-only and finishes before destination mutation; destination and central-store
-locations inside the source tree are refused before creation. Per-entry planned
-link data and actual staged stream/metadata evidence lead to a terminal whole-tree
-verification record. An uncertain writer cannot retry or repair divergent mirrors.
-Read-only inspection rejects torn, modified, reordered, foreign and rebound logs.
-It does not authorize cleanup from a journal alone.
+Windows Copy now validates completed retained candidates against the paired
+staging journals without source handles or source paths. It reopens journals and
+candidates through held parents with read-sharing only, refuses active writers or
+unfinished staging, and checks native identities, exact raw-UTF-16 directory
+membership, persistent payload metadata, complete stream hashes and known-link
+records. The returned read handles support revalidation; they grant no cleanup or
+publication authority. Unexpected entries and edited/replaced data are retained.
 
-Native ordinary-user Copy tests pass 68 with 3 specialized/child exclusions;
-the full Windows platform suite passes 168 with 29 exclusions. The separate SYSTEM
-audit test passes. Twenty-two injected flush failures and eight actual process
-exits retain unpublished staging and unchanged source bytes. Paired journals reopen
-with and without their writer; exact-byte replacement fails native identity checks.
+Native ordinary-user Copy tests pass 74 with 3 specialized/child exclusions;
+the full Windows platform suite passes 174 with 29 exclusions. The separate SYSTEM
+audit case passes. Six new validation cases cover source disappearance, raw names,
+restored-metadata content edits, named streams, membership/rebinding, extra
+transaction records, dangling file/directory links and cancellation/retry. Existing
+22 flush-failure and eight process-exit checks also run; the exit parent now checks
+that only fully recorded completed staging admits retained-content validation.
 Linux platform tests pass 411 with 3 exclusions; strict platform all-target Clippy
 passes on both targets. Evidence:
-`.hermes/evidence/windows-copy-journal-current/ACCEPTANCE.json`.
+`.hermes/evidence/windows-copy-retained-current/ACCEPTANCE.json`.
 
-Existing recursive staging preserves known symbolic links and junctions as leaves,
-including root links, exact reparse records and their own named streams, without
-following targets. Ordinary trees retain exact child membership/bindings,
-bottom-up metadata and destination-security component checks. Earlier Developer
-Mode-off denial/junction acceptance remains recorded in
-`.hermes/evidence/windows-copy-links-current/ACCEPTANCE.json`; that separate boot
-configuration was not repeated for the journal change. Production never changes
-Developer Mode or enables privileges.
+The first native candidate failed two checks because ordinary reads updated
+access timestamps. Recovery now allows those read-owned updates while staging
+still verifies the exact timestamp when applying final metadata. Creation/write
+times, attributes, size, compression, identities and every stream hash remain
+checked. No recovery timestamp repair is performed. Rejected logs and binary pins
+are retained with the accepted checkpoint.
+
+Paired append-only journal ownership precedes candidate payload writes; source
+discovery is read-only and finishes before destination mutation. Source-contained
+destination/central stores are refused before creation. Recursive staging preserves
+known symbolic links and junction records as leaves without following targets,
+including their own named streams and metadata. Earlier Developer Mode-off
+policy acceptance remains in `windows-copy-links-current/ACCEPTANCE.json`; that
+separate boot configuration was not repeated for this reader change. Production
+never changes Developer Mode or enables privileges.
 
 Public Windows Copy remains disabled. Existing-token privilege/elevation workflow,
 sparse/EFS, directory case-sensitivity and specialized storage/property semantics,
-tree-wide final security, broader central-store placement, complete Overwrite
-retention and publication transitions, live candidate recovery validation,
-central recovery discovery, guarded cleanup/Undo, clipboard/Tandem and rebuilt
-package acceptance remain required. Positive Windows Copy UI tests remain required;
-this source-only component run does not replace them. Current packages stay at the
-separate delivery checkpoint below. User testing is deferred and the full roadmap
-goal remains active.
+private/final tree security, broader central-store placement, complete Overwrite
+retention/publication transitions, central recovery discovery, interrupted-entry
+recovery, rights acquisition with revalidation for guarded mutation/cleanup/Undo,
+clipboard/Tandem and rebuilt package acceptance remain required. Positive Windows
+Copy UI tests remain required; this source-only component run does not replace
+them. Current packages stay at the separate delivery checkpoint below. User testing
+is deferred and the full roadmap goal remains active.
 
 ## Current delivered preview checkpoint
 

@@ -1,0 +1,7 @@
+
+thread 'copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_cancellation_releases_without_mutation' (6964) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:1588:9:
+assertion failed: RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_ok()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_hashes_streams_even_with_restored_metadata' (6528) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:1440:13:
+expected content hash refusal, got: filesystem operation failed: Windows Copy stream staging: candidate file metadata did not match: creation 134366125136807429/134366125136807429, modified 134366125136827984/134366125136827984, accessed 134366125138650618/134366125137225686, attributes 10/10, length 0/0
