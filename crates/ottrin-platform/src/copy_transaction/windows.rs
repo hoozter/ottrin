@@ -8,6 +8,7 @@
 
 mod metadata;
 mod namespace;
+mod security;
 
 use super::PlatformError;
 use crate::move_recovery::{WindowsStableIdentity, stable_identity_from_handle};

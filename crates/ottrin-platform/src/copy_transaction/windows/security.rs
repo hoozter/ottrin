@@ -1,0 +1,464 @@
+//! Destination DACL policy for new copies, bound to the actual destination parent.
+//! This is not the complete publication transaction or SACL/audit policy.
+use super::{PlatformError, WindowsStableIdentity, io, stable_identity_from_handle};
+use crate::windows_fs::{self, RelativeOptions};
+use std::{
+    ffi::OsStr,
+    fs::File,
+    os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle},
+    ptr,
+};
+use windows_sys::Win32::Foundation::{ERROR_NO_TOKEN, HANDLE};
+use windows_sys::Win32::Security::Authorization::{SE_FILE_OBJECT, SetSecurityInfo};
+use windows_sys::Win32::Security::*;
+use windows_sys::Win32::Storage::FileSystem::*;
+use windows_sys::Win32::System::Threading::{
+    GetCurrentProcess, GetCurrentThread, OpenProcessToken, OpenThreadToken,
+};
+
+const INFORMATION: u32 =
+    OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
+
+#[derive(Debug, PartialEq, Eq)]
+struct Parts {
+    owner: Vec<u8>,
+    group: Vec<u8>,
+    present: bool,
+    dacl: Option<Vec<u8>>,
+    control: u16,
+}
+
+fn parts(raw: PSECURITY_DESCRIPTOR) -> Result<Parts, PlatformError> {
+    let (mut owner, mut group, mut dacl) = (ptr::null_mut(), ptr::null_mut(), ptr::null_mut());
+    let (mut defaulted, mut present, mut control, mut revision) = (0, 0, 0, 0);
+    if unsafe { GetSecurityDescriptorOwner(raw, &mut owner, &mut defaulted) } == 0
+        || unsafe { GetSecurityDescriptorGroup(raw, &mut group, &mut defaulted) } == 0
+        || unsafe { GetSecurityDescriptorDacl(raw, &mut present, &mut dacl, &mut defaulted) } == 0
+        || unsafe { GetSecurityDescriptorControl(raw, &mut control, &mut revision) } == 0
+    {
+        return Err(io(std::io::Error::last_os_error()));
+    }
+    if owner.is_null() || group.is_null() {
+        return Err(io("destination security has no owner/group"));
+    }
+    let sid = |raw: PSID| unsafe {
+        std::slice::from_raw_parts(raw.cast::<u8>(), GetLengthSid(raw) as usize).to_vec()
+    };
+    let acl = if dacl.is_null() {
+        None
+    } else {
+        Some(
+            unsafe { std::slice::from_raw_parts(dacl.cast::<u8>(), (*dacl).AclSize as usize) }
+                .to_vec(),
+        )
+    };
+    Ok(Parts {
+        owner: sid(owner),
+        group: sid(group),
+        present: present != 0,
+        dacl: acl,
+        control: control & (SE_DACL_PROTECTED | SE_DACL_AUTO_INHERITED),
+    })
+}
+
+fn capture(file: &File) -> Result<Vec<u64>, PlatformError> {
+    let mut needed = 0;
+    unsafe {
+        GetKernelObjectSecurity(
+            file.as_raw_handle().cast(),
+            INFORMATION,
+            ptr::null_mut(),
+            0,
+            &mut needed,
+        );
+    }
+    if needed == 0 || needed > 65536 {
+        return Err(io("invalid native destination security length"));
+    }
+    let mut storage = vec![0u64; (needed as usize).div_ceil(8)];
+    if unsafe {
+        GetKernelObjectSecurity(
+            file.as_raw_handle().cast(),
+            INFORMATION,
+            storage.as_mut_ptr().cast(),
+            needed,
+            &mut needed,
+        )
+    } == 0
+    {
+        return Err(io(std::io::Error::last_os_error()));
+    }
+    Ok(storage)
+}
+
+fn current_token() -> Result<OwnedHandle, PlatformError> {
+    let mut token: HANDLE = ptr::null_mut();
+    if unsafe { OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, 1, &mut token) } == 0 {
+        let error = std::io::Error::last_os_error();
+        if error.raw_os_error() != Some(ERROR_NO_TOKEN as i32) {
+            return Err(io(error));
+        }
+        if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) } == 0 {
+            return Err(io(std::io::Error::last_os_error()));
+        }
+    }
+    Ok(unsafe { OwnedHandle::from_raw_handle(token.cast()) })
+}
+
+struct Derived(PSECURITY_DESCRIPTOR);
+impl Drop for Derived {
+    fn drop(&mut self) {
+        unsafe {
+            DestroyPrivateObjectSecurity(&self.0);
+        }
+    }
+}
+
+/// New-copy ownership and DACL follow an ordinary new child at the destination.
+/// Source ACLs and the private staging DACL are deliberately not creator inputs.
+pub(super) struct DestinationSecurity {
+    parent: WindowsStableIdentity,
+    parent_security: Parts,
+    directory: bool,
+    derived: Derived,
+    expected: Parts,
+}
+impl DestinationSecurity {
+    pub(super) fn capture(parent: &File, directory: bool) -> Result<Self, PlatformError> {
+        let identity = stable_identity_from_handle(parent).map_err(io)?;
+        if !identity.is_directory_without_reparse() {
+            return Err(io("security parent is not a non-reparse directory"));
+        }
+        let mut security = capture(parent)?;
+        let parent_security = parts(security.as_mut_ptr().cast())?;
+        let token = current_token()?;
+        let mapping = GENERIC_MAPPING {
+            GenericRead: FILE_GENERIC_READ,
+            GenericWrite: FILE_GENERIC_WRITE,
+            GenericExecute: FILE_GENERIC_EXECUTE,
+            GenericAll: FILE_ALL_ACCESS,
+        };
+        let mut raw = ptr::null_mut();
+        if unsafe {
+            CreatePrivateObjectSecurityEx(
+                security.as_mut_ptr().cast(),
+                ptr::null_mut(),
+                &mut raw,
+                ptr::null(),
+                i32::from(directory),
+                SEF_DACL_AUTO_INHERIT,
+                token.as_raw_handle().cast(),
+                &mapping,
+            )
+        } == 0
+        {
+            return Err(io(std::io::Error::last_os_error()));
+        }
+        let derived = Derived(raw);
+        let expected = parts(raw)?;
+        if !expected.present || expected.dacl.is_none() {
+            return Err(PlatformError::UnsupportedSafeCopy(
+                "derived destination DACL is absent/null".into(),
+            ));
+        }
+        let result = Self {
+            parent: identity,
+            parent_security,
+            directory,
+            derived,
+            expected,
+        };
+        result.validate_parent(parent)?;
+        Ok(result)
+    }
+    pub(super) fn validate_parent(&self, parent: &File) -> Result<(), PlatformError> {
+        let mut security = capture(parent)?;
+        if stable_identity_from_handle(parent).map_err(io)? != self.parent
+            || parts(security.as_mut_ptr().cast())? != self.parent_security
+        {
+            return Err(io("destination parent identity or permissions changed"));
+        }
+        Ok(())
+    }
+    fn binding(&self, parent: &File, name: &OsStr, candidate: &File) -> Result<(), PlatformError> {
+        self.validate_parent(parent)?;
+        let identity = stable_identity_from_handle(candidate).map_err(io)?;
+        if if self.directory {
+            !identity.is_directory_without_reparse()
+        } else {
+            !identity.is_regular_file_without_reparse()
+        } {
+            return Err(io("destination entry type does not match security policy"));
+        }
+        let observed = unsafe {
+            windows_fs::open_relative(
+                parent,
+                name,
+                RelativeOptions {
+                    directory: self.directory,
+                    create_new: false,
+                    access: FILE_READ_ATTRIBUTES | READ_CONTROL | SYNCHRONIZE,
+                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    security: ptr::null(),
+                },
+            )
+        }
+        .map_err(io)?;
+        if stable_identity_from_handle(&observed).map_err(io)? != identity {
+            return Err(io("destination name no longer names candidate"));
+        }
+        Ok(())
+    }
+    pub(super) fn validate_candidate(&self, candidate: &File) -> Result<(), PlatformError> {
+        let mut security = capture(candidate)?;
+        if parts(security.as_mut_ptr().cast())? != self.expected {
+            return Err(io(
+                "published owner/group/DACL does not match destination policy",
+            ));
+        }
+        Ok(())
+    }
+    /// Only after publication beneath the real parent. A durable publication
+    /// owner must retain/recover this entry on every failure, including after
+    /// SetSecurityInfo succeeds. This method never removes or rolls back data.
+    pub(super) fn apply(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        candidate: &File,
+    ) -> Result<(), PlatformError> {
+        self.binding(parent, name, candidate)?;
+        let mut actual = capture(candidate)?;
+        let actual = parts(actual.as_mut_ptr().cast())?;
+        if actual.owner != self.expected.owner || actual.group != self.expected.group {
+            return Err(io(
+                "candidate owner/group differ from new-copy token policy",
+            ));
+        }
+        let (mut present, mut defaulted, mut dacl) = (0, 0, ptr::null_mut());
+        if unsafe {
+            GetSecurityDescriptorDacl(self.derived.0, &mut present, &mut dacl, &mut defaulted)
+        } == 0
+        {
+            return Err(io(std::io::Error::last_os_error()));
+        }
+        let error = unsafe {
+            SetSecurityInfo(
+                candidate.as_raw_handle().cast(),
+                SE_FILE_OBJECT,
+                DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                dacl,
+                ptr::null(),
+            )
+        };
+        if error != 0 {
+            return Err(io(std::io::Error::from_raw_os_error(error as i32)));
+        }
+        self.validate_candidate(candidate)?;
+        self.binding(parent, name, candidate)?;
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::windows_fs::LocalSecurity;
+    use std::io::Write;
+    use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt};
+
+    fn parent(path: &std::path::Path) -> File {
+        OpenOptions::new()
+            .access_mode(FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(path)
+            .unwrap()
+    }
+    fn dacl(file: &File, sddl: &str) {
+        let descriptor = LocalSecurity::from_sddl(sddl).unwrap();
+        let (mut present, mut defaulted, mut acl) = (0, 0, ptr::null_mut());
+        assert_ne!(
+            unsafe {
+                GetSecurityDescriptorDacl(
+                    descriptor.as_raw(),
+                    &mut present,
+                    &mut acl,
+                    &mut defaulted,
+                )
+            },
+            0
+        );
+        assert_eq!(
+            unsafe {
+                SetSecurityInfo(
+                    file.as_raw_handle().cast(),
+                    SE_FILE_OBJECT,
+                    DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    acl,
+                    ptr::null(),
+                )
+            },
+            0
+        );
+    }
+    fn ordinary(parent: &File, name: &str, directory: bool) -> File {
+        unsafe {
+            windows_fs::open_relative(
+                parent,
+                OsStr::new(name),
+                RelativeOptions {
+                    directory,
+                    create_new: true,
+                    access: FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
+                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    security: ptr::null(),
+                },
+            )
+        }
+        .unwrap()
+    }
+    fn observed(file: &File) -> Parts {
+        let mut value = capture(file).unwrap();
+        parts(value.as_mut_ptr().cast()).unwrap()
+    }
+    fn private(parent: &File, name: &str, directory: bool) -> File {
+        windows_fs::create_private(
+            parent,
+            OsStr::new(name),
+            directory,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+        )
+        .unwrap()
+    }
+    #[test]
+    fn destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults() {
+        let root = tempfile::tempdir().unwrap();
+        for (index, sddl) in [
+            "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)",
+            "D:P(A;;FA;;;OW)",
+            "D:P(A;OICI;FA;;;CO)(A;;FA;;;OW)",
+            "D:P(D;OICI;GW;;;BG)(A;OICI;FA;;;OW)",
+        ]
+        .iter()
+        .enumerate()
+        {
+            let path = root.path().join(index.to_string());
+            std::fs::create_dir(&path).unwrap();
+            let parent = parent(&path);
+            dacl(&parent, sddl);
+            let policy = DestinationSecurity::capture(&parent, false).unwrap();
+            let reference = ordinary(&parent, "reference", false);
+            let candidate = private(&parent, "candidate", false);
+            assert_ne!(observed(&candidate), observed(&reference));
+            policy
+                .apply(&parent, OsStr::new("candidate"), &candidate)
+                .unwrap();
+            assert_eq!(
+                observed(&candidate),
+                observed(&reference),
+                "native child differs for {sddl}"
+            );
+            policy.validate_candidate(&candidate).unwrap();
+            dacl(&parent, "D:P(A;OICI;FA;;;OW)(A;OICI;FRFX;;;WD)");
+            assert_eq!(
+                observed(&candidate),
+                observed(&reference),
+                "later parent ACL changes must propagate normally"
+            );
+            assert!(policy.validate_parent(&parent).is_err());
+        }
+    }
+    #[test]
+    fn destination_directory_dacl_and_child_inheritance_match_native_creation() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        dacl(&parent, "D:P(A;OICI;FA;;;CO)(A;;FA;;;OW)(A;OICI;FR;;;WD)");
+        let policy = DestinationSecurity::capture(&parent, true).unwrap();
+        let reference = ordinary(&parent, "reference", true);
+        let candidate = private(&parent, "candidate", true);
+        policy
+            .apply(&parent, OsStr::new("candidate"), &candidate)
+            .unwrap();
+        assert_eq!(observed(&candidate), observed(&reference));
+        let actual_child = ordinary(&candidate, "child", false);
+        let reference_child = ordinary(&reference, "child", false);
+        assert_eq!(observed(&actual_child), observed(&reference_child));
+    }
+    #[test]
+    fn destination_security_refuses_changed_parent_permissions_without_mutation() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        dacl(&parent, "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)");
+        let policy = DestinationSecurity::capture(&parent, false).unwrap();
+        let candidate = private(&parent, "candidate", false);
+        let before = observed(&candidate);
+        dacl(&parent, "D:P(A;OICI;FA;;;OW)(A;OICI;FW;;;WD)");
+        assert!(
+            policy
+                .apply(&parent, OsStr::new("candidate"), &candidate)
+                .unwrap_err()
+                .to_string()
+                .contains("parent identity or permissions changed")
+        );
+        assert_eq!(observed(&candidate), before);
+    }
+    #[test]
+    fn destination_security_refuses_private_stage_as_publication_parent() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let policy = DestinationSecurity::capture(&parent, false).unwrap();
+        let stage = private(&parent, "stage", true);
+        let candidate = private(&stage, "candidate", false);
+        let before = observed(&candidate);
+        assert!(
+            policy
+                .apply(&stage, OsStr::new("candidate"), &candidate)
+                .is_err()
+        );
+        assert_eq!(observed(&candidate), before);
+    }
+    #[test]
+    fn destination_security_refuses_wrong_name_identity_and_type() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let policy = DestinationSecurity::capture(&parent, false).unwrap();
+        let candidate = private(&parent, "candidate", false);
+        let unrelated = private(&parent, "unrelated", false);
+        let directory = private(&parent, "directory", true);
+        let before = observed(&candidate);
+        for name in ["unrelated", "../candidate", "candidate:stream"] {
+            assert!(policy.apply(&parent, OsStr::new(name), &candidate).is_err());
+        }
+        assert!(
+            policy
+                .apply(&parent, OsStr::new("directory"), &directory)
+                .is_err()
+        );
+        assert_eq!(observed(&candidate), before);
+        assert_eq!(observed(&unrelated), before);
+    }
+    #[test]
+    fn destination_security_reports_write_dac_denial_without_changing_bytes_or_acl() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let path = root.path().join("candidate");
+        let policy = DestinationSecurity::capture(&parent, false).unwrap();
+        let candidate = private(&parent, "candidate", false);
+        let before = observed(&candidate);
+        (&candidate).write_all(b"retained candidate bytes").unwrap();
+        drop(candidate);
+        let read = File::open(&path).unwrap();
+        assert!(
+            policy
+                .apply(&parent, OsStr::new("candidate"), &read)
+                .is_err()
+        );
+        assert_eq!(observed(&read), before);
+        assert_eq!(std::fs::read(path).unwrap(), b"retained candidate bytes");
+    }
+}

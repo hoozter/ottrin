@@ -1,6 +1,6 @@
 # Native Windows Copy
 
-Status: native streams, private namespace and regular-file metadata staging verified; public Copy remains disabled until the complete transaction is accepted.
+Status: native streams, private namespace, regular-file metadata and new-copy destination DACL policy verified; public Copy remains disabled until the complete transaction is accepted.
 
 Copy must leave the original namespace and bytes untouched. It must not simulate a Move followed by restoration, or require source delete/data-write access merely because Move uses those rights. The existing Windows Move identity and handle-relative rename primitives can be reused where their contracts apply.
 
@@ -44,7 +44,7 @@ Sharing is explicit per operation. Copy's current create-only staging holds read
 
 Eight added native tests cover immediate protected DACLs in a permissive parent, create-new collisions, invalid and raw UTF-16 names, reparse refusal, ancestor alias changes, replaced stage bindings and directory writer exclusion. Together with the stream cases, 21 tests pass as an ordinary Windows user. The full native platform suite passes 121 with 26 specialized exclusions, including the existing text-save cases. Developer Mode is enabled only in the owned COW guest for symlink fixtures. Strict Windows and Linux platform all-target Clippy passes. Evidence: `.hermes/evidence/windows-copy-namespace-current/`.
 
-This remains source-only evidence. Final attributes/security, directory/link staging, journals, publication, Undo/recovery, clipboard integration and exact-package acceptance remain open. Non-ACL filesystem staging needs an explicit safe strategy; refusal is not completion of that requirement. Existing Windows Move private-directory creation has not been migrated to this shared atomic primitive and requires separate hardening and acceptance.
+This remains source-only evidence. Specialized attributes, complete final security, directory/link staging, journals, publication, Undo/recovery, clipboard integration and exact-package acceptance remain open. Non-ACL filesystem staging needs an explicit safe strategy; refusal is not completion of that requirement. Existing Windows Move private-directory creation has not been migrated to this shared atomic primitive and requires separate hardening and acceptance.
 
 ## Regular-file metadata staging
 
@@ -70,8 +70,8 @@ and [compression API](https://learn.microsoft.com/en-us/windows/win32/api/winioc
 contracts define the metadata operations used here.
 
 The candidate remains protected by its private staging DACL throughout this
-phase. Final destination inheritance/permissions are still required and must
-not inherit the private transaction's owner-only DACL accidentally. Public Copy,
+phase. The new-copy DACL component below handles destination inheritance.
+Complete security and publication integration remain required; copies must not inherit the private transaction's owner-only DACL accidentally. Public Copy,
 publication, recovery and package acceptance remain open.
 
 Six new native metadata cases pass, bringing the Copy component suite to 27.
@@ -80,3 +80,41 @@ exclusions; strict Windows and Linux platform all-target Clippy passes.
 The source without final-metadata ordering reproduces the historical access-time
 mismatch. Evidence is `.hermes/evidence/windows-copy-metadata-current/`.
 No public Copy or rebuilt package is claimed by these component results.
+
+## New-copy destination DACL policy
+
+New copies use the effective caller token's default owner and group and the
+real destination parent's DACL inheritance, as an ordinary child created there
+would. Source ACLs and the private staging DACL are not creator inputs. The
+native component in `copy_transaction/windows/security.rs` uses
+[CreatePrivateObjectSecurityEx](https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createprivateobjectsecurityex)
+with file generic-right mappings to derive this policy, including token defaults
+when the parent has no inheritable ACEs. The allocated descriptor and effective
+thread/process token have owned native lifetimes.
+
+Application requires the candidate already to be under the real destination
+parent: its exact name binding, type and identity must match the held handle.
+Parent identity and owner/group/DACL are checked before and after the mutation.
+Only then does the component apply the DACL with `SetSecurityInfo`, enabling
+normal inheritance. Applying it under the private stage is refused. It compares
+the resulting owner, group, DACL bytes and protection/auto-inheritance flags to
+the derived result. It never renames, deletes, cleans up or restores an entry.
+The complete journal owner must retain an entry on every failure, including
+failure after the security mutation, and provide durability/recovery ordering.
+No publication durability is claimed by this component alone.
+
+Six new ordinary-user native cases compare against actual kernel-created files
+and directories. They cover four parent ACL configurations (inheritable allow,
+no inheritance/token defaults, creator-owner substitution, and deny entries),
+directory child inheritance, later parent ACL propagation, changed-parent
+refusal, private-stage/wrong-name/type refusal and missing WRITE_DAC with exact
+byte/ACL retention. The full Copy component suite passes 33; the native platform
+suite passes 133 with the same 26 specialized exclusions. Evidence is
+`.hermes/evidence/windows-copy-security-current/`.
+
+This is the new-copy DACL component, not complete Windows security support.
+SACL/audit and mandatory-label policy, absent/null derived DACL handling,
+Overwrite security integration and exact
+retained destination descriptors remain required. Directory/link staging,
+publication journals, Undo/recovery and public clipboard/package acceptance
+also remain open. The public dispatcher still rejects all Windows Copy modes.

@@ -10,24 +10,26 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Windows Copy — native staging in progress
 
-The native stream component and private namespace staging now pass 27
+The native stream component and private namespace staging now pass 33
 ordinary-user native tests, including regular-file metadata staging. Copy opens
-sources without delete/data-write rights,
-creates owner-only entries atomically beneath pinned parent handles, validates
+sources without delete/data-write rights, creates owner-only entries atomically beneath pinned parent handles, validates
 stage identity/name bindings, and excludes ordinary directory writers during
 its current create-only staging phase. Regular-file staging now preserves
-creation/access/modification times, ordinary
-attributes and NTFS compression while keeping the private candidate DACL.
+creation/access/modification times, ordinary attributes and NTFS compression while keeping the private candidate DACL.
 Stream verification precedes final timestamp application because native backup
 reads otherwise update access time. Text saving shares the native creation
 primitive with the write sharing required for retained-original rename.
-The full native platform suite passes 127 with 26 specialized exclusions;
+New-copy owner/group and destination DACL inheritance now match native child
+creation, including creator-owner, deny-entry and token-default cases. Wrong
+parent/name/type, changed ACLs and missing WRITE_DAC refuse safely; later parent
+ACL changes propagate normally. Application requires the real destination
+binding, never the private staging parent.
+The full native platform suite passes 133 with 26 specialized exclusions;
 Developer Mode is enabled only in the disposable guest for symlink fixtures.
 
-The public backend still rejects every Copy mode. Final permissions, specialized
-metadata/tree/link staging, non-ACL filesystem strategy, durable publication,
-Undo/recovery and UI/
-package integration remain required. The existing positive clipboard failures
+The public backend still rejects every Copy mode. SACL/audit/label and Overwrite
+security policy, specialized metadata/tree/link staging, non-ACL filesystem strategy, durable publication,
+Undo/recovery and UI/package integration remain required. The existing positive clipboard failures
 remain active. Full scope and source boundaries: [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md).
 Current usable Linux packages and internal Windows candidates below remain
 `42a1beb`; this unfinished source component has not been packaged as a Copy fix.

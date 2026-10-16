@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-16",
+  "status": "partial",
+  "source_check_status": "pass",
+  "base_revision": "79e5669e754b22fff4ed6a93c133f8ba8bf61757",
+  "scope": "New-copy destination owner/group/DACL policy; complete publication and Windows security remain required; public Copy still rejected",
+  "source_files_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "ea454ccd389d543e6f4e2e530edccdc5eb969cd327bc2264a7e10a47c9c242d2",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "b7a94ab6341ef8be2cd4cd396b208f0653cd0bae006b5dc96bc562fbaa37be36"
+  },
+  "native_copy": {
+    "passed": 33,
+    "failed": 0,
+    "ignored": 0
+  },
+  "native_platform": {
+    "passed": 133,
+    "failed": 0,
+    "ignored": 26
+  },
+  "test_identity": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "82061896476ef9be28eb65e7d8c0e741951d7baecfafe3172cadbf7b65f8e90d",
+    "transferred_sha256": "8c6d2001abc08d481fa6e91de0dfb7676f4fd5237bab106f14b9d939aa23a640",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 4553640,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "1636b5467725c88fc8cb97f70d3d227069a183d3bbee0ec86e20f69308b96f2c"
+      },
+      ".data": {
+        "virtual_size": 3792,
+        "virtual_address": 4558848,
+        "flags": 3221225536,
+        "raw_sha256": "3e3113ff29799b68c1475cf30a41ca45a798c79530b92b604e40631aea4cef42"
+      },
+      ".rdata": {
+        "virtual_size": 633368,
+        "virtual_address": 4562944,
+        "flags": 1073741888,
+        "raw_sha256": "518713098e1f0b20b02e2b21536e112cb4cb9ad2cee2b72a8aa7ab3bf818651d"
+      },
+      ".pdata": {
+        "virtual_size": 115296,
+        "virtual_address": 5197824,
+        "flags": 1073741888,
+        "raw_sha256": "b2740078ad214a5c71c1a5e57b14951e4db4a7a34a7eb197d10b1a0c4bace3cd"
+      },
+      ".xdata": {
+        "virtual_size": 314864,
+        "virtual_address": 5316608,
+        "flags": 1073741888,
+        "raw_sha256": "fb28f5012a4ac766e28d84016c4f57ac20692a1ed1b3e826b62611ac174ffe63"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 5632000,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11740,
+        "virtual_address": 5636096,
+        "flags": 3221225536,
+        "raw_sha256": "140853e50e152b242893ed4e53c6232c946b0b3515461e296bb958f62eab1be4"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 5648384,
+        "flags": 3221225536,
+        "raw_sha256": "237db18df6aa2f6e10a0223586c35d7c28a8c7b0acab0de98d5ec3be86671169"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 5652480,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 16684,
+        "virtual_address": 5656576,
+        "flags": 1107296320,
+        "raw_sha256": "4730e85da2454ba10dc219e0be957a6266d0dde0ada1d0a75211057eae3e9e02"
+      }
+    }
+  },
+  "oracle": "Owner, group, DACL bytes and protection/auto-inheritance flags compared to independent ordinary kernel-created children",
+  "tested": [
+    "Inheritable allow, no-inheritance/token-default, creator-owner and deny-entry parent DACLs",
+    "Directory and child inheritance",
+    "Later parent DACL changes propagate identically to native reference",
+    "Changed parent ACL rejected without candidate ACL mutation",
+    "Private stage cannot substitute for real publication parent",
+    "Wrong name/identity/type and alternate stream or nonleaf names rejected",
+    "WRITE_DAC denial preserves exact candidate bytes and DACL"
+  ],
+  "checks": {
+    "windows_platform_all_targets_clippy": "pass",
+    "linux_platform_all_targets_clippy": "pass",
+    "formatting": "pass",
+    "diff": "pass"
+  },
+  "evidence_format": "Guest JSON and stdout normalized to LF; trailing whitespace removed without changing outcomes",
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "remaining": [
+    "SACL/audit/mandatory label policy",
+    "Absent/null derived DACL handling",
+    "Overwrite security integration and exact displaced descriptor retention",
+    "Durable publication ordering, journal ownership and recovery after security mutation",
+    "Specialized attributes and directory/link staging",
+    "Non-ACL filesystem strategy, Undo and public UI/clipboard/package acceptance"
+  ],
+  "deliverables": "Current usable Linux packages and internal Windows candidates remain source 42a1beb; no new package claim"
+}
