@@ -189,20 +189,22 @@ pub(super) struct PinnedTree {
 /// Frozen observations of an existing destination, separate from newly staged
 /// Copy data. They grant no rename, permission-write, Undo or cleanup authority.
 /// Root-name binding belongs to the enclosing held-parent transaction.
-#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct ExistingTreeEvidence {
-    entries: Vec<ExistingEntry>,
+    pub(super) entries: Vec<ExistingEntry>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
-struct ExistingEntry {
-    parent: Option<usize>,
-    name: Vec<u16>,
-    version: EntryVersion,
-    streams: Vec<super::StreamEvidence>,
-    compression: u16,
-    links: u32,
-    owner_group_dacl: [u8; 32],
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct ExistingEntry {
+    pub(super) parent: Option<usize>,
+    pub(super) name: Vec<u16>,
+    pub(super) version: EntryVersion,
+    pub(super) streams: Vec<super::StreamEvidence>,
+    pub(super) compression: u16,
+    pub(super) links: u32,
+    pub(super) owner_group_dacl: [u8; 32],
 }
 
 impl PinnedTree {

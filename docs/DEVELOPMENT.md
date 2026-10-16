@@ -740,7 +740,7 @@ capabilities. Stream revalidation uses the caller's cancellable progress path;
 cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
 changes are retained/refused; do not normalize their metadata to resume.
 
-The format is `OTCPWJ06` / schema 6; superseded schemas are refused, without a
+The format is `OTCPWJ07` / schema 7; superseded schemas are refused, without a
 compatibility reader. Log reservation includes prospective readonly reopen
 records and a pending acknowledgement; repeated interruption remains bounded by
 the total log budget and must fail before an unreserved mutation. These native
@@ -819,7 +819,21 @@ cancellation and entry-budget failures preserve the original graph. Native
 receipt: `.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
 The observations alone grant no mutation authority. Paired original-retention
 records, handoff/root binding, overwrite publication/restoration and complete
-audit-SACL/label handling are still required; the journal remains schema 6.
+audit-SACL/label handling are still required. The observation alone grants no
+retention authority.
+
+Schema 7 now records original-destination preparation in both journals: a begin
+count/digest, ordered per-entry evidence and a completion seal. The begin digest
+binds the whole observed tree, including unwritten children of an interrupted
+prefix. Source/candidate aliases and intersections with journal ownership refuse
+before append. Recording uses the held parent/target binding and revalidates the
+live original before sealing; source-free prefixes can resume without rebasing.
+Sealed replay adds no records, and local-only tails are never repaired.
+Partial or sealed original evidence blocks creation-only publication/admission.
+Original retention intent, mutation acknowledgement, full overwrite-tail
+reservation and inverse restoration remain required before Overwrite can run.
+Current receipt:
+`.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
 
 Forward recovery admission now handles a verified unfinished Windows
 Copy without reopening its source. It captures the native header/registry IDs,

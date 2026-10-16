@@ -36,7 +36,7 @@ epoch's locks, compares the fresh paired journal bytes, then opens new typed
 The writer rechecks its creator context on every append and reserves the
 remaining publication/application tail before publication, including readonly
 reopen records. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ06` / schema 6;
+append sequence/hash state on reopen. The format is now `OTCPWJ07` / schema 7;
 superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with ordered immutable final-version records and a digest seal after a full
 content/metadata/security scan. Entry acknowledgements alone
@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 239 with 31 specialized
+The final ordinary-user Windows platform suite passes 242 with 31 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -327,9 +327,27 @@ timestamps, and cancellation/entry-budget refusal. The full ordinary-user platfo
 suite passes 239 with 31 specialized exclusions; the separate SYSTEM audit case
 and strict platform Clippy on both targets pass. Receipt:
 `.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
-This is an Overwrite prerequisite, not retention or publication authority. Paired
+That observation-only checkpoint is an Overwrite prerequisite, not retention or publication authority. Paired
 retention records, root/writer handoff, restoration and full SACL/label protection
-remain unimplemented; the journal/schema and packages are unchanged.
+remained unimplemented; that checkpoint did not change the journal/schema or packages.
+
+Original-evidence preparation is now paired and streamed in schema 7. Its begin
+record binds the complete original-tree digest before individual entries are
+written, preventing changed unwritten children from being silently adopted on
+restart. Ordered records and a seal resume source-free from every coherent paired
+prefix; sealed replay adds no records. Local-only tails remain untouched and
+refused. Source/candidate/journal ownership aliases refuse before append, and
+recorded original evidence blocks creation-only publication/admission.
+Native cases cover original file/folder roots, five paired failure boundaries,
+one local-only boundary, unwritten-child drift, source aliasing and pre-append
+budget refusal. The full native suite passes 242 with 31 exclusions; Linux passes
+411 with three exclusions. SYSTEM audit, strict platform Clippy on both targets
+and Windows UI Clippy pass. Receipt:
+`.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
+The original stays in place: retention intent/acknowledgement, the native writer
+handoff, full overwrite-tail reservation and inverse restoration remain required.
+There is no compatibility reader for prior schemas. Public Copy/Overwrite and
+cleanup remain gated; packages are unchanged.
 
 Public Windows Copy stays disabled. Overwrite restoration, session receipt/batch
 integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete

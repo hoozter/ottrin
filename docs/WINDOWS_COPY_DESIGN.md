@@ -61,8 +61,8 @@ times; the observer never writes metadata, permissions or payloads.
 evidence is serializable for the forthcoming retention journal, but grants no
 rename, Undo or deletion authority. The enclosing transaction must still bind the
 root through its held destination parent, persist paired retention intent and
-revalidate across the reader-to-writer handoff. No journal/schema change or
-Overwrite mutation has been introduced by this component.
+revalidate across the reader-to-writer handoff. The observer alone introduces no
+Overwrite mutation authority.
 
 Native component checks cover populated folders, raw UTF-16 names, named data,
 extended attributes and original hard links; changed data, permissions, aliases,
@@ -71,6 +71,31 @@ metadata is refreshed. Entry-budget and cancellation refusals preserve the
 observed graph. Audit-SACL/mandatory-label completeness, broader original-object
 matrices and the durable retention/publication/Undo protocol remain required.
 Receipt: `.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
+
+## Paired original-evidence preparation
+
+Schema 7 (`OTCPWJ07`) adds a begin record with count and whole-tree digest, one
+ordered original-entry record per node, and a completion seal to the existing
+paired journal. Entries share the staged-stream/version validator; original
+hard-link aliases remain valid. Source/candidate aliases and journal/directory
+ownership intersections are refused before the begin record is appended.
+The full-tree digest is fixed at begin, so recovery cannot silently adopt a
+changed child whose individual record was not written before interruption.
+
+`Journal::prepare_original` opens the recorded target through the held parent,
+observes it without following links, validates the frozen prefix and rechecks
+the live tree/binding before sealing. It reserves remaining evidence frames plus
+the existing permission tail before appending. A coherent paired prefix resumes
+without sources; sealed replay adds no records. Divergent mirrors stay untouched.
+The codec refuses prior schemas without converting or deleting their data.
+
+Partial or sealed original evidence blocks creation-only publication and forward
+admission. A completion seal describes recorded observations, not permission to
+rename an original. Retention intent/acknowledgement, whole-overwrite mutation-tail
+reservation, the writer handoff, publication, restoration and full security
+acceptance are still required. Public Copy/Overwrite and cleanup remain gated.
+Native preparation and regression receipt:
+`.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
 
 ## Native namespace and sharing
 
@@ -305,7 +330,7 @@ parent location and projected-security digest, and revalidates before entering
 the shared publication engine. Verified unfinished transactions can resume;
 unverified staging cannot. Completion enables fresh Undo admission. Current
 source-built action acceptance, including changed-data refusal, moved-parent
-retry and pre-mutation Stop/retry, is recorded in
+retry and pre-mutation Stop/retry, retains its preceding source scope in
 `.hermes/evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
 The same nine populated-folder scenarios pass on one volume and with recovery
 records/data on distinct NTFS volumes. Root-file, readonly, link, specialized

@@ -32,7 +32,7 @@ pub(crate) use discovery::{
     restore_undo, restore_undo_at,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ06";
+const MAGIC: &[u8; 8] = b"OTCPWJ07";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -69,7 +69,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 6
+            && self.schema == 7
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -145,6 +145,18 @@ enum Record {
     ReadonlyReopened {
         index: usize,
     },
+    OriginalPlanBegin {
+        count: usize,
+        digest: [u8; 32],
+    },
+    OriginalPlanEntry {
+        index: usize,
+        entry: Box<tree::ExistingEntry>,
+    },
+    OriginalPlanComplete {
+        count: usize,
+        digest: [u8; 32],
+    },
     PublicationIntent,
     Published,
     SecurityApplyIntent {
@@ -183,6 +195,7 @@ struct State {
     planned: Option<security::TreeSecurityEvidence>,
     planning: Option<Planning>,
     permissions: security::PermissionProgress,
+    original: Option<OriginalPlan>,
     publication_intent: bool,
     published: bool,
     completion_verified: bool,
@@ -192,6 +205,14 @@ struct State {
     readonly_pending: Option<usize>,
     source_ids: BTreeSet<(u64, [u8; 16])>,
     candidate_ids: BTreeSet<(u64, [u8; 16])>,
+    names: BTreeSet<(Option<usize>, Vec<u16>)>,
+}
+#[derive(Debug)]
+struct OriginalPlan {
+    expected: usize,
+    digest: [u8; 32],
+    evidence: tree::ExistingTreeEvidence,
+    sealed: bool,
     names: BTreeSet<(Option<usize>, Vec<u16>)>,
 }
 #[derive(Debug)]
@@ -221,17 +242,25 @@ fn valid_source(source: &EntryVersion) -> bool {
     }
 }
 fn valid_payload(evidence: &metadata::StagedEntry) -> bool {
-    let source = &evidence.source;
+    evidence
+        .candidate_identity
+        .same_type(evidence.source.identity)
+        && valid_streams(&evidence.source, &evidence.streams, evidence.compression)
+}
+fn valid_streams(
+    source: &EntryVersion,
+    streams: &[super::StreamEvidence],
+    compression: u16,
+) -> bool {
     if !valid_source(source)
-        || ![0, 2].contains(&evidence.compression)
-        || (source.attributes & FILE_ATTRIBUTE_COMPRESSED != 0) != (evidence.compression != 0)
-        || !evidence.candidate_identity.same_type(source.identity)
+        || ![0, 2].contains(&compression)
+        || (source.attributes & FILE_ATTRIBUTE_COMPRESSED != 0) != (compression != 0)
     {
         return false;
     }
     let mut primary = 0;
     let mut reparse = 0;
-    for stream in &evidence.streams {
+    for stream in streams {
         if stream.sha256.len() != 64
             || !stream
                 .sha256
@@ -283,12 +312,48 @@ fn valid_payload(evidence: &metadata::StagedEntry) -> bool {
     }
     primary == usize::from(!source.directory)
         && reparse == usize::from(source.link.is_some())
-        && evidence
-            .streams
+        && streams
             .windows(2)
             .all(|p| (p[0].kind, &p[0].name) < (p[1].kind, &p[1].name))
 }
 impl State {
+    fn valid_original_entry(
+        &self,
+        previous: &[tree::ExistingEntry],
+        names: &BTreeSet<(Option<usize>, Vec<u16>)>,
+        entry: &tree::ExistingEntry,
+    ) -> bool {
+        let Some(header) = &self.header else {
+            return false;
+        };
+        let id = entry.version.identity;
+        let key = id.object_key();
+        if entry.links == 0
+            || !valid_streams(&entry.version, &entry.streams, entry.compression)
+            || self.source_ids.contains(&key)
+            || self.candidate_ids.contains(&key)
+            || [
+                header.parent,
+                header.stage,
+                header.central,
+                header.local_file,
+                header.central_file,
+            ]
+            .iter()
+            .any(|reserved| reserved.same_object(id))
+        {
+            return false;
+        }
+        if previous.is_empty() {
+            return entry.parent.is_none() && entry.name.is_empty();
+        }
+        entry
+            .parent
+            .and_then(|p| previous.get(p))
+            .is_some_and(|parent| parent.version.directory && parent.version.link.is_none())
+            && valid_leaf(&entry.name)
+            && !names.contains(&(entry.parent, entry.name.clone()))
+    }
     fn native_complete(&self) -> bool {
         self.verified
             && self.planned.is_some()
@@ -402,8 +467,47 @@ impl State {
                 }
                 return Ok(());
             }
+            Record::OriginalPlanBegin { count, .. } => {
+                if !self.verified
+                    || self.original.is_some()
+                    || self.publication_intent
+                    || *count == 0
+                    || *count > (MAX_LOG / FRAME_HEADER as u64) as usize
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::OriginalPlanEntry { index, entry } => {
+                let plan = self.original.as_ref().ok_or_else(invalid)?;
+                if plan.sealed
+                    || self.publication_intent
+                    || *index != plan.evidence.entries.len()
+                    || *index >= plan.expected
+                    || !self.valid_original_entry(&plan.evidence.entries, &plan.names, entry)
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::OriginalPlanComplete { count, digest } => {
+                let plan = self.original.as_ref().ok_or_else(invalid)?;
+                if plan.sealed
+                    || *count != plan.expected
+                    || *count != plan.evidence.entries.len()
+                    || *digest != plan.digest
+                    || *digest != super::evidence_digest(&plan.evidence)?
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
             Record::PublicationIntent => {
-                if self.planned.is_none() || self.publication_intent || self.published {
+                if self.planned.is_none()
+                    || self.original.is_some()
+                    || self.publication_intent
+                    || self.published
+                {
                     return Err(invalid());
                 }
                 return Ok(());
@@ -550,7 +654,10 @@ impl State {
                     return Err(invalid());
                 }
             }
-            Record::UndoIntent
+            Record::OriginalPlanBegin { .. }
+            | Record::OriginalPlanEntry { .. }
+            | Record::OriginalPlanComplete { .. }
+            | Record::UndoIntent
             | Record::Undone { .. }
             | Record::ReadonlyReopenIntent { .. }
             | Record::ReadonlyReopened { .. }
@@ -578,6 +685,23 @@ impl State {
     fn apply(&mut self, record: Record) -> Result<(), PlatformError> {
         self.check(&record)?;
         match record {
+            Record::OriginalPlanBegin { count, digest } => {
+                self.original = Some(OriginalPlan {
+                    expected: count,
+                    digest,
+                    evidence: tree::ExistingTreeEvidence {
+                        entries: Vec::new(),
+                    },
+                    sealed: false,
+                    names: BTreeSet::new(),
+                })
+            }
+            Record::OriginalPlanEntry { entry, .. } => {
+                let plan = self.original.as_mut().unwrap();
+                plan.names.insert((entry.parent, entry.name.clone()));
+                plan.evidence.entries.push(*entry);
+            }
+            Record::OriginalPlanComplete { .. } => self.original.as_mut().unwrap().sealed = true,
             Record::UndoIntent => self.undo_intent = true,
             Record::Undone { root_version } => self.undone = Some(*root_version),
             Record::ReadonlyReopenIntent { index } => self.readonly_pending = Some(index),
@@ -779,7 +903,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 6,
+            schema: 7,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -1021,6 +1145,105 @@ impl Journal {
         }
         for record in records() {
             progress()?;
+            self.persist(record)?;
+        }
+        Ok(())
+    }
+    /// Record the existing destination without changing it. This is evidence
+    /// preparation, not authority to displace or publish either version.
+    fn prepare_original(
+        &mut self,
+        max_entries: usize,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress(0)?;
+        if self.failed
+            || !self.state.verified
+            || self.state.publication_intent
+            || self.state.undo_intent
+            || self.state.readonly_pending.is_some()
+        {
+            return Err(io(
+                "original destination planning requires verified unpublished Copy data",
+            ));
+        }
+        self.bindings()?;
+        let target = OsString::from_wide(&self.header.target);
+        let root = namespace::open_source(&self.parent_dir, &target, None)?;
+        let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
+        namespace::validate_binding(&self.parent_dir, &target, tree.root().identity)?;
+        let evidence = tree.freeze_existing(&mut progress)?;
+        let mut names = BTreeSet::new();
+        for (index, entry) in evidence.entries.iter().enumerate() {
+            if !self
+                .state
+                .valid_original_entry(&evidence.entries[..index], &names, entry)
+            {
+                return Err(io(
+                    "original destination aliases Copy data, its source or journal ownership, or has invalid evidence",
+                ));
+            }
+            names.insert((entry.parent, entry.name.clone()));
+        }
+        let digest = super::evidence_digest(&evidence)?;
+        if self.state.original.as_ref().is_some_and(|plan| {
+            plan.expected != evidence.entries.len()
+                || plan.digest != digest
+                || !evidence.entries.starts_with(&plan.evidence.entries)
+                || (plan.sealed && plan.evidence != evidence)
+        }) {
+            return Err(io(
+                "recorded original destination changed; all versions retained",
+            ));
+        }
+        let sealed = self.state.original.as_ref().is_some_and(|plan| plan.sealed);
+        let begin = self.state.original.is_none();
+        let written = self
+            .state
+            .original
+            .as_ref()
+            .map_or(0, |plan| plan.evidence.entries.len());
+
+        let records =
+            || {
+                begin
+                    .then_some(Record::OriginalPlanBegin {
+                        count: evidence.entries.len(),
+                        digest,
+                    })
+                    .into_iter()
+                    .chain(evidence.entries.iter().enumerate().skip(written).map(
+                        |(index, entry)| Record::OriginalPlanEntry {
+                            index,
+                            entry: Box::new(entry.clone()),
+                        },
+                    ))
+                    .chain((!sealed).then_some(Record::OriginalPlanComplete {
+                        count: evidence.entries.len(),
+                        digest,
+                    }))
+            };
+        let required = records().try_fold(self.permission_tail_size()?, |sum, record| {
+            sum.checked_add(FRAME_HEADER as u64 + record_payload(&record)?.len() as u64)
+                .ok_or_else(|| io("original plan reservation overflow"))
+        })?;
+        if self
+            .length
+            .checked_add(required)
+            .is_none_or(|size| size > MAX_LOG)
+        {
+            return Err(io(
+                "Copy journal has insufficient space for original destination evidence",
+            ));
+        }
+        for record in records() {
+            progress(0)?;
+            // Complete observations still need live validation; a seal alone
+            // cannot turn an external change into an owned original version.
+            if matches!(record, Record::OriginalPlanComplete { .. }) {
+                tree.validate_existing(&evidence, &mut progress)?;
+                namespace::validate_binding(&self.parent_dir, &target, tree.root().identity)?;
+            }
             self.persist(record)?;
         }
         Ok(())
@@ -1418,6 +1641,11 @@ fn prepare_publication(
     binding: Option<&CopyResumeBinding>,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<security::TreeSecurityPlan, PlatformError> {
+    if retained.snapshot.state.original.is_some() {
+        return Err(io(
+            "Overwrite original evidence requires the retention protocol; all data retained",
+        ));
+    }
     if retained.snapshot.state.undo_intent {
         return Err(io("Copy is retracting or undone; use Undo recovery"));
     }
@@ -2468,6 +2696,211 @@ mod tests {
             .collect();
         assert_eq!(names.len(), 1);
         names[0].clone()
+    }
+
+    fn original_fixture(root: &Path, directory: bool) -> OsString {
+        fixture(root);
+        let target = root.join("destination/copy");
+        if directory {
+            std::fs::create_dir(&target).unwrap();
+            std::fs::write(target.join("old"), b"old destination").unwrap();
+            std::fs::write(target.join("second"), b"other destination").unwrap();
+        } else {
+            std::fs::write(&target, b"old destination").unwrap();
+        }
+        let src = source(&root.join("source"));
+        let parent = owner(&root.join("destination"));
+        let central = owner(&root.join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        staged.stage.name.clone()
+    }
+    fn original_journal(root: &Path, name: &OsStr) -> Journal {
+        let parent = owner(&root.join("destination"));
+        let central = owner(&root.join("central"));
+        let snapshot = Snapshot::load(&parent, &central, name, SnapshotAccess::Write).unwrap();
+        Journal::from_snapshot(&parent, &central, snapshot).unwrap()
+    }
+
+    #[test]
+    fn windows_native_original_plan_is_paired_source_free_and_blocks_creation_publication() {
+        for directory in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let name = original_fixture(root.path(), directory);
+            remove_undo_fixture_source(root.path());
+            let mut journal = original_journal(root.path(), &name);
+            journal.prepare_original(100, |_| Ok(())).unwrap();
+            assert!(journal.state.original.as_ref().unwrap().sealed);
+            assert!(journal.state.check(&Record::PublicationIntent).is_err());
+            let local = root.path().join("destination").join(&name).join(LOCAL);
+            let central = root
+                .path()
+                .join("central")
+                .join(journal.header.central_name());
+            let before = std::fs::read(&local).unwrap();
+            assert_eq!(before, std::fs::read(central).unwrap());
+            journal.prepare_original(100, |_| Ok(())).unwrap();
+            assert_eq!(std::fs::read(&local).unwrap(), before);
+            drop(journal);
+            assert!(
+                PermissionStage::publish(
+                    &owner(&root.path().join("destination")),
+                    &owner(&root.path().join("central")),
+                    &name,
+                    |_| Ok(())
+                )
+                .is_err()
+            );
+            assert_eq!(std::fs::read(&local).unwrap(), before);
+            assert_eq!(
+                std::fs::read(root.path().join(if directory {
+                    "destination/copy/old"
+                } else {
+                    "destination/copy"
+                }))
+                .unwrap(),
+                b"old destination"
+            );
+            let mut old = before.clone();
+            old[..8].copy_from_slice(b"OTCPWJ06");
+            assert!(decode(&old).is_err(), "No superseded-schema reader");
+        }
+    }
+
+    #[test]
+    fn windows_native_original_plan_resumes_every_paired_prefix_and_refuses_local_only_tail() {
+        for (offset, step) in (0..5)
+            .map(|offset| (offset, Step::CentralFlushed))
+            .chain([(1, Step::LocalFlushed)])
+        {
+            let root = tempfile::tempdir().unwrap();
+            let name = original_fixture(root.path(), true);
+            remove_undo_fixture_source(root.path());
+            let mut journal = original_journal(root.path(), &name);
+            let sequence = journal.sequence + offset;
+            let local = root.path().join("destination").join(&name).join(LOCAL);
+            let central = root
+                .path()
+                .join("central")
+                .join(journal.header.central_name());
+            FAULT.with(|f| f.set(Some((sequence, step, false))));
+            let result = journal.prepare_original(100, |_| Ok(()));
+            FAULT.with(|f| f.set(None));
+            assert!(result.is_err(), "{offset} {step:?}");
+            drop(journal);
+            let before = std::fs::read(&local).unwrap();
+            let mirror = std::fs::read(&central).unwrap();
+            if step == Step::LocalFlushed {
+                assert_ne!(before, mirror);
+                let parent = owner(&root.path().join("destination"));
+                let central_dir = owner(&root.path().join("central"));
+                assert!(
+                    Snapshot::load(&parent, &central_dir, &name, SnapshotAccess::Write).is_err()
+                );
+                assert_eq!(std::fs::read(&local).unwrap(), before);
+                assert_eq!(std::fs::read(&central).unwrap(), mirror);
+            } else {
+                let mut journal = original_journal(root.path(), &name);
+                journal.prepare_original(100, |_| Ok(())).unwrap();
+                assert!(journal.state.original.as_ref().unwrap().sealed);
+                let records = journal_records(&std::fs::read(&local).unwrap());
+                assert_eq!(
+                    records
+                        .iter()
+                        .filter(|record| matches!(record, Record::OriginalPlanBegin { .. }))
+                        .count(),
+                    1
+                );
+                assert_eq!(
+                    records
+                        .iter()
+                        .filter(|record| matches!(record, Record::OriginalPlanEntry { .. }))
+                        .count(),
+                    3
+                );
+                assert_eq!(
+                    records
+                        .iter()
+                        .filter(|record| matches!(record, Record::OriginalPlanComplete { .. }))
+                        .count(),
+                    1
+                );
+            }
+            assert_eq!(
+                std::fs::read(root.path().join("destination/copy/old")).unwrap(),
+                b"old destination"
+            );
+        }
+    }
+
+    #[test]
+    fn windows_native_original_plan_binds_unwritten_children_and_refuses_source_alias_and_budget() {
+        for case in ["unwritten", "source-alias", "budget"] {
+            let root = tempfile::tempdir().unwrap();
+            let name = original_fixture(root.path(), true);
+            if case == "source-alias" {
+                std::fs::remove_dir_all(root.path().join("destination/copy")).unwrap();
+                std::fs::hard_link(
+                    root.path().join("source/nested/file"),
+                    root.path().join("destination/copy"),
+                )
+                .unwrap();
+            }
+            let mut journal = original_journal(root.path(), &name);
+            if case == "unwritten" {
+                let sequence = journal.sequence + 1;
+                FAULT.with(|f| f.set(Some((sequence, Step::CentralFlushed, false))));
+                assert!(journal.prepare_original(100, |_| Ok(())).is_err());
+                FAULT.with(|f| f.set(None));
+                drop(journal);
+                std::fs::write(
+                    root.path().join("destination/copy/old"),
+                    b"external modification",
+                )
+                .unwrap();
+                journal = original_journal(root.path(), &name);
+                assert_eq!(
+                    journal
+                        .state
+                        .original
+                        .as_ref()
+                        .unwrap()
+                        .evidence
+                        .entries
+                        .len(),
+                    1
+                );
+                let current = tree::PinnedTree::open(
+                    &source(&root.path().join("destination/copy")),
+                    100,
+                    |_| Ok(()),
+                )
+                .unwrap()
+                .freeze_existing(|_| Ok(()))
+                .unwrap();
+                let partial = journal.state.original.as_ref().unwrap();
+                assert_eq!(
+                    partial.evidence.entries[0], current.entries[0],
+                    "Written prefix must stay unchanged in this fixture"
+                );
+                assert_ne!(
+                    partial.digest,
+                    super::super::evidence_digest(&current).unwrap()
+                );
+            }
+            let local = root.path().join("destination").join(&name).join(LOCAL);
+            let central = root
+                .path()
+                .join("central")
+                .join(journal.header.central_name());
+            let before = std::fs::read(&local).unwrap();
+            if case == "budget" {
+                journal.length = MAX_LOG - 1;
+            }
+            assert!(journal.prepare_original(100, |_| Ok(())).is_err(), "{case}");
+            assert_eq!(std::fs::read(&local).unwrap(), before);
+            assert_eq!(std::fs::read(&central).unwrap(), before);
+        }
     }
     #[test]
     fn windows_native_copy_publication_and_permissions_are_source_free_and_idempotent() {
