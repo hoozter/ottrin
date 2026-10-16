@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-windows-copy-metadata-qa",
+  "guest_root": "C:\\OttrinContentQA",
+  "account": "OttrinContentQA",
+  "purpose": "Ordinary-user native Copy regular-file metadata and full platform regression acceptance",
+  "restore": "Dispose entire owned COW domain, volume, NVRAM and TPM after terminal actor and unchanged original-profile/install checks"
+}

@@ -1,6 +1,6 @@
 # Native Windows Copy
 
-Status: native stream staging and private namespace creation verified; public Copy remains disabled until the complete transaction is accepted.
+Status: native streams, private namespace and regular-file metadata staging verified; public Copy remains disabled until the complete transaction is accepted.
 
 Copy must leave the original namespace and bytes untouched. It must not simulate a Move followed by restoration, or require source delete/data-write access merely because Move uses those rights. The existing Windows Move identity and handle-relative rename primitives can be reused where their contracts apply.
 
@@ -45,3 +45,38 @@ Sharing is explicit per operation. Copy's current create-only staging holds read
 Eight added native tests cover immediate protected DACLs in a permissive parent, create-new collisions, invalid and raw UTF-16 names, reparse refusal, ancestor alias changes, replaced stage bindings and directory writer exclusion. Together with the stream cases, 21 tests pass as an ordinary Windows user. The full native platform suite passes 121 with 26 specialized exclusions, including the existing text-save cases. Developer Mode is enabled only in the owned COW guest for symlink fixtures. Strict Windows and Linux platform all-target Clippy passes. Evidence: `.hermes/evidence/windows-copy-namespace-current/`.
 
 This remains source-only evidence. Final attributes/security, directory/link staging, journals, publication, Undo/recovery, clipboard integration and exact-package acceptance remain open. Non-ACL filesystem staging needs an explicit safe strategy; refusal is not completion of that requirement. Existing Windows Move private-directory creation has not been migrated to this shared atomic primitive and requires separate hardening and acceptance.
+
+## Regular-file metadata staging
+
+The metadata component stages ordinary regular-file timestamps and attributes,
+then revalidates the source and candidate. It preserves creation, access and
+modification times; the copy retains its own change history. Supported ordinary
+attributes are read-only, hidden, system, archive, temporary, offline and
+not-content-indexed. Unknown attributes are refused explicitly rather than
+silently dropped. Sparse, EFS and specialized storage attributes remain required
+future work. NTFS compression is queried and applied through native handles;
+both compressed sources and uncompressed sources staged into compressed
+candidates are covered. This does not claim broader filesystem acceptance.
+
+Stream and compression verification precede final timestamp application.
+Native backup-stream reads update access time even when the supplied handle
+suppresses it. Final metadata checks therefore query attributes and identity
+without rereading file data. Any later publication phase that rereads data must
+apply and recheck final timestamps afterward. A native negative control catches
+the exact access-time mismatch; neither the assertion nor system access-time
+policy is weakened.
+The [FILE_BASIC_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_basic_info)
+and [compression API](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_set_compression)
+contracts define the metadata operations used here.
+
+The candidate remains protected by its private staging DACL throughout this
+phase. Final destination inheritance/permissions are still required and must
+not inherit the private transaction's owner-only DACL accidentally. Public Copy,
+publication, recovery and package acceptance remain open.
+
+Six new native metadata cases pass, bringing the Copy component suite to 27.
+The full ordinary-user native platform suite passes 127 with 26 specialized
+exclusions; strict Windows and Linux platform all-target Clippy passes.
+The source without final-metadata ordering reproduces the historical access-time
+mismatch. Evidence is `.hermes/evidence/windows-copy-metadata-current/`.
+No public Copy or rebuilt package is claimed by these component results.

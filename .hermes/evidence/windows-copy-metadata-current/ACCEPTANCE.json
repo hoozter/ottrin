@@ -1,0 +1,129 @@
+{
+  "date": "2026-10-16",
+  "status": "partial",
+  "source_check_status": "pass",
+  "base_revision": "9fcef9604c4c4372458ef942ec8ec0342630dce1",
+  "scope": "Native Windows regular-file metadata staging; public Copy still rejected; no package claim",
+  "source_files_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "d81b318d4ddb8f0820699e49b8f18f75d4512984de1f2eb882d0efb8b579fa44",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "b97e8434789dd2f483c7e9d3536fd79ac028cb76ba26e1dedd13a918b7ac63b2"
+  },
+  "native_copy": {
+    "passed": 27,
+    "failed": 0,
+    "ignored": 0
+  },
+  "native_platform": {
+    "passed": 127,
+    "failed": 0,
+    "ignored": 26
+  },
+  "test_identity": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "674b30e04edd1f59eef4948ce5ee179a0e0976ce601865454283399fd2650766",
+    "transferred_sha256": "87778ffce9294c6ed8a833cd719fac8aab0e96e60e4fe34434fea9cd01df658f",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 4519624,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "2a6ae6a4ec7fae0f704fb77387365593766ee73380fb961645c7e9ee5d9fd0ff"
+      },
+      ".data": {
+        "virtual_size": 3792,
+        "virtual_address": 4526080,
+        "flags": 3221225536,
+        "raw_sha256": "0138effcc1f8224a0976b8be2d81900a48f1bb4efafb8775d186aae628280d94"
+      },
+      ".rdata": {
+        "virtual_size": 622872,
+        "virtual_address": 4530176,
+        "flags": 1073741888,
+        "raw_sha256": "bd55cea12cc76ac70084cba540971b40c41d765fdb2113920102f42a28c0a100"
+      },
+      ".pdata": {
+        "virtual_size": 114888,
+        "virtual_address": 5156864,
+        "flags": 1073741888,
+        "raw_sha256": "397b8dcd76e56029024bd7f7bbc02a9507632a96c09ac7cd081f6052c78a8cc9"
+      },
+      ".xdata": {
+        "virtual_size": 311660,
+        "virtual_address": 5275648,
+        "flags": 1073741888,
+        "raw_sha256": "be44da47d7192d37012ec0c21b3c950fc860d0ed9375a80d4def8e703a5ecad1"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 5591040,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11496,
+        "virtual_address": 5595136,
+        "flags": 3221225536,
+        "raw_sha256": "e8d45b541f04d83a7b81080e4d1c806711652c66b668a19f41f55d032c842d4e"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 5607424,
+        "flags": 3221225536,
+        "raw_sha256": "c761ba333bc27efe072b86cdb5aba8cf372f8e523c363a118c63531f82c1e2dd"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 5611520,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 16408,
+        "virtual_address": 5615616,
+        "flags": 1107296320,
+        "raw_sha256": "61da016c9b77eda1ea6ec056ed667c85852af10766ccfd8d3c0905fae0df42c9"
+      }
+    }
+  },
+  "negative_controls": {
+    "BEFORE_platform.stderr": "Exact historical access-time preservation fails after BackupRead verification",
+    "DIAGNOSTIC_platform.stderr": "Exact expected/observed values identify access time only; other timestamps and attributes match",
+    "attempted_handle_suppression": "Same access-time assertion still fails; suppression removed in final source",
+    "final_repair": "Stream verification before final metadata application; metadata-only final check retains exact assertion"
+  },
+  "tested": [
+    "Creation/access/modification time and read-only/hidden/system/archive/not-content-indexed attributes",
+    "Named-stream preservation together with metadata",
+    "Compressed source and uncompressed source into compressed candidate",
+    "Private staging DACL unchanged",
+    "Changed source/candidate metadata refusal",
+    "Wrong candidate identity and same-size byte tampering refusal",
+    "Cancellation without final metadata publication",
+    "Source read ACL without DELETE/data-write rights"
+  ],
+  "checks": {
+    "windows_platform_all_targets_clippy": "pass",
+    "linux_platform_all_targets_clippy": "pass",
+    "formatting": "pass",
+    "diff": "pass"
+  },
+  "evidence_format": "Guest JSON and stdout normalized to LF; trailing whitespace removed without changing outcomes",
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "limits": [
+    "Ordinary local NTFS fixtures only; no broad storage/network or package acceptance",
+    "Final permission inheritance remains required",
+    "Sparse/EFS/specialized metadata and directory/link staging remain required",
+    "Durable publication, Undo/recovery and public UI/clipboard integration remain required",
+    "Further data rereads must precede final timestamp application; final metadata validation does not reread bytes"
+  ],
+  "current_usable_packages": "Source 42a1beb unchanged"
+}

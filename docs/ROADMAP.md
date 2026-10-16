@@ -10,17 +10,23 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Windows Copy — native staging in progress
 
-The native stream component and private namespace staging now pass 21
-ordinary-user native tests. Copy opens sources without delete/data-write rights,
+The native stream component and private namespace staging now pass 27
+ordinary-user native tests, including regular-file metadata staging. Copy opens
+sources without delete/data-write rights,
 creates owner-only entries atomically beneath pinned parent handles, validates
 stage identity/name bindings, and excludes ordinary directory writers during
-its current create-only staging phase. Text saving shares the native creation
+its current create-only staging phase. Regular-file staging now preserves
+creation/access/modification times, ordinary
+attributes and NTFS compression while keeping the private candidate DACL.
+Stream verification precedes final timestamp application because native backup
+reads otherwise update access time. Text saving shares the native creation
 primitive with the write sharing required for retained-original rename.
-The full native platform suite passes 121 with 26 specialized exclusions;
+The full native platform suite passes 127 with 26 specialized exclusions;
 Developer Mode is enabled only in the disposable guest for symlink fixtures.
 
-The public backend still rejects every Copy mode. Complete metadata/tree/link
-staging, non-ACL filesystem strategy, durable publication, Undo/recovery and UI/
+The public backend still rejects every Copy mode. Final permissions, specialized
+metadata/tree/link staging, non-ACL filesystem strategy, durable publication,
+Undo/recovery and UI/
 package integration remain required. The existing positive clipboard failures
 remain active. Full scope and source boundaries: [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md).
 Current usable Linux packages and internal Windows candidates below remain

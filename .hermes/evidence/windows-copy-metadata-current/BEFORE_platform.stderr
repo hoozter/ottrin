@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::metadata_tests::windows_native_copy_metadata_preserves_times_attributes_and_streams' (7336) panicked at crates/ottrin-platform/src/copy_transaction/windows.rs:1255:78:
+called `Result::unwrap()` on an `Err` value: Io("Windows Copy stream staging: candidate file metadata did not match")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

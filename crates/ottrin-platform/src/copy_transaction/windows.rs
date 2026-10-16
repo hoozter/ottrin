@@ -6,6 +6,7 @@
 //! publication journals and Undo remain separate required work.
 #![cfg_attr(not(test), allow(dead_code))]
 
+mod metadata;
 mod namespace;
 
 use super::PlatformError;
@@ -24,7 +25,7 @@ use windows_sys::Wdk::Storage::FileSystem::{
 use windows_sys::Win32::Foundation::RtlNtStatusToDosError;
 use windows_sys::Win32::Storage::FileSystem::{
     BackupRead, BackupWrite, FILE_ATTRIBUTE_DEVICE, FILE_ATTRIBUTE_ENCRYPTED,
-    FILE_ATTRIBUTE_SPARSE_FILE, FILE_BASIC_INFO, FileBasicInfo, GetFileInformationByHandleEx,
+    FILE_ATTRIBUTE_SPARSE_FILE,
 };
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 
@@ -86,18 +87,7 @@ fn version(file: &File) -> Result<FileVersion, PlatformError> {
         ));
     }
     let identity = stable_identity_from_handle(file).map_err(io)?;
-    let mut basic = FILE_BASIC_INFO::default();
-    if unsafe {
-        GetFileInformationByHandleEx(
-            file.as_raw_handle().cast(),
-            FileBasicInfo,
-            ptr::from_mut(&mut basic).cast(),
-            size_of::<FILE_BASIC_INFO>() as u32,
-        )
-    } == 0
-    {
-        return Err(io(std::io::Error::last_os_error()));
-    }
+    let basic = metadata::basic(file)?;
     if !identity.is_regular_file_without_reparse()
         || basic.FileAttributes
             & (FILE_ATTRIBUTE_DEVICE | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE)
@@ -673,13 +663,13 @@ mod tests {
             .open(&parent)
             .unwrap();
         let read = namespace::open_source(&parent_handle, std::ffi::OsStr::new("source")).unwrap();
-        stage_file_streams(&read, &candidate(&dst), |_| Ok(())).unwrap();
+        metadata::stage_file(&read, &candidate(&dst), |_| Ok(())).unwrap();
         assert_eq!(std::fs::read(&src).unwrap(), b"readable source");
         assert_eq!(std::fs::read(&dst).unwrap(), b"readable source");
         drop(guard);
     }
 
-    fn parent(path: &Path) -> File {
+    pub(super) fn parent(path: &Path) -> File {
         use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_READ, FILE_GENERIC_WRITE};
         OpenOptions::new()
             .access_mode(FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE)
@@ -689,7 +679,7 @@ mod tests {
             .unwrap()
     }
 
-    fn assert_owner_only(file: &File) {
+    pub(super) fn assert_owner_only(file: &File) {
         use windows_sys::Win32::Security::{
             ACCESS_ALLOWED_ACE, DACL_SECURITY_INFORMATION, GetAce, GetKernelObjectSecurity,
             GetLengthSid, GetSecurityDescriptorControl, GetSecurityDescriptorDacl,
@@ -1165,5 +1155,204 @@ mod tests {
             header[16..].copy_from_slice(&name.to_le_bytes());
             assert!(validate_header(&header).is_err());
         }
+    }
+}
+
+#[cfg(test)]
+mod metadata_tests {
+    use super::*;
+    use std::{
+        fs::OpenOptions,
+        os::windows::{ffi::OsStrExt, fs::OpenOptionsExt},
+        path::Path,
+    };
+    use windows_sys::Win32::Storage::FileSystem::*;
+    use windows_sys::Win32::System::IO::DeviceIoControl;
+    use windows_sys::Win32::System::Ioctl::FSCTL_SET_COMPRESSION;
+
+    struct ResetAttributes<'a>(&'a Path, &'a Path);
+    impl Drop for ResetAttributes<'_> {
+        fn drop(&mut self) {
+            for path in [self.0, self.1] {
+                let wide = path
+                    .as_os_str()
+                    .encode_wide()
+                    .chain(Some(0))
+                    .collect::<Vec<_>>();
+                assert_ne!(
+                    unsafe { SetFileAttributesW(wide.as_ptr(), FILE_ATTRIBUTE_NORMAL) },
+                    0
+                );
+            }
+        }
+    }
+    fn rw(path: &Path) -> File {
+        OpenOptions::new()
+            .read(true)
+            .write(true)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+            .open(path)
+            .unwrap()
+    }
+    fn set_basic(file: &File, info: &FILE_BASIC_INFO) {
+        assert_ne!(
+            unsafe {
+                SetFileInformationByHandle(
+                    file.as_raw_handle().cast(),
+                    FileBasicInfo,
+                    ptr::from_ref(info).cast(),
+                    size_of::<FILE_BASIC_INFO>() as u32,
+                )
+            },
+            0
+        );
+    }
+    fn compress(file: &File, format: u16) {
+        let mut returned = 0;
+        assert_ne!(
+            unsafe {
+                DeviceIoControl(
+                    file.as_raw_handle().cast(),
+                    FSCTL_SET_COMPRESSION,
+                    ptr::from_ref(&format).cast(),
+                    2,
+                    ptr::null_mut(),
+                    0,
+                    &mut returned,
+                    ptr::null_mut(),
+                )
+            },
+            0
+        );
+    }
+    fn paths(root: &Path) -> (std::path::PathBuf, std::path::PathBuf) {
+        let src = root.join("source");
+        let dst = root.join("candidate");
+        std::fs::write(&src, b"source primary data").unwrap();
+        std::fs::write(&dst, b"").unwrap();
+        (src, dst)
+    }
+    #[test]
+    fn windows_native_copy_metadata_preserves_times_attributes_and_streams() {
+        let root = tempfile::tempdir().unwrap();
+        let (src, dst) = paths(root.path());
+        let _reset = ResetAttributes(&src, &dst);
+        std::fs::write(format!("{}:named:$DATA", src.display()), b"alternate").unwrap();
+        let info = FILE_BASIC_INFO {
+            CreationTime: 132_000_000_000_000_000,
+            LastAccessTime: 132_100_000_000_000_000,
+            LastWriteTime: 132_200_000_000_000_000,
+            ChangeTime: 0,
+            FileAttributes: FILE_ATTRIBUTE_READONLY
+                | FILE_ATTRIBUTE_HIDDEN
+                | FILE_ATTRIBUTE_SYSTEM
+                | FILE_ATTRIBUTE_ARCHIVE
+                | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED,
+        };
+        set_basic(&rw(&src), &info);
+        let source = File::open(&src).unwrap();
+        let candidate = rw(&dst);
+        let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        assert_eq!(evidence.streams.len(), 2);
+        evidence.validate_source(&source).unwrap();
+        evidence.validate_candidate_metadata(&candidate).unwrap();
+        assert_eq!(std::fs::read(&src).unwrap(), std::fs::read(&dst).unwrap());
+        assert_eq!(
+            std::fs::read(format!("{}:named:$DATA", dst.display())).unwrap(),
+            b"alternate"
+        );
+        drop((source, candidate));
+    }
+    #[test]
+    fn windows_native_copy_metadata_preserves_compression_and_removes_inherited_compression() {
+        let root = tempfile::tempdir().unwrap();
+        for compressed_source in [true, false] {
+            let folder = root.path().join(if compressed_source {
+                "compressed"
+            } else {
+                "ordinary"
+            });
+            std::fs::create_dir(&folder).unwrap();
+            let (src, dst) = paths(&folder);
+            let source = rw(&src);
+            let candidate = rw(&dst);
+            compress(
+                if compressed_source {
+                    &source
+                } else {
+                    &candidate
+                },
+                COMPRESSION_FORMAT_LZNT1,
+            );
+            let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+            evidence.validate_candidate_metadata(&candidate).unwrap();
+            assert_eq!(
+                metadata::basic(&candidate).unwrap().FileAttributes & FILE_ATTRIBUTE_COMPRESSED
+                    != 0,
+                compressed_source
+            );
+            assert_eq!(std::fs::read(&src).unwrap(), std::fs::read(&dst).unwrap());
+        }
+    }
+    #[test]
+    fn windows_native_copy_metadata_keeps_private_candidate_security() {
+        use super::tests::{assert_owner_only, parent};
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source");
+        std::fs::write(&src, b"private until published").unwrap();
+        let parent = parent(root.path());
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        let candidate = stage.create_candidate().unwrap();
+        let source = File::open(src).unwrap();
+        metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        assert_owner_only(&candidate);
+        assert_owner_only(&stage.directory);
+    }
+    #[test]
+    fn windows_native_copy_metadata_detects_changed_source_and_candidate() {
+        let root = tempfile::tempdir().unwrap();
+        let (src, dst) = paths(root.path());
+        let source = rw(&src);
+        let candidate = rw(&dst);
+        let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        let mut info = metadata::basic(&candidate).unwrap();
+        info.LastWriteTime -= 10_000_000;
+        set_basic(&candidate, &info);
+        assert!(evidence.validate_candidate_metadata(&candidate).is_err());
+        let mut info = metadata::basic(&source).unwrap();
+        info.FileAttributes = FILE_ATTRIBUTE_HIDDEN;
+        set_basic(&source, &info);
+        assert!(evidence.validate_source(&source).is_err());
+    }
+    #[test]
+    fn windows_native_copy_metadata_refuses_candidate_alias_and_same_size_tampering() {
+        use std::io::{Seek, SeekFrom, Write};
+        let root = tempfile::tempdir().unwrap();
+        let (src, dst) = paths(root.path());
+        let source = rw(&src);
+        let mut candidate = rw(&dst);
+        let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        assert!(evidence.validate_candidate_metadata(&source).is_err());
+        let before = metadata::basic(&candidate).unwrap();
+        candidate.seek(SeekFrom::Start(0)).unwrap();
+        candidate.write_all(b"edited primary data").unwrap();
+        set_basic(&candidate, &before);
+        assert!(evidence.validate_candidate_streams(&candidate).is_err());
+        assert_eq!(std::fs::read(src).unwrap(), b"source primary data");
+    }
+
+    #[test]
+    fn windows_native_copy_metadata_cancellation_never_applies_final_metadata() {
+        let root = tempfile::tempdir().unwrap();
+        let (src, dst) = paths(root.path());
+        let source = rw(&src);
+        let candidate = rw(&dst);
+        let mut info = metadata::basic(&source).unwrap();
+        info.CreationTime = 132_000_000_000_000_000;
+        set_basic(&source, &info);
+        let before = metadata::basic(&candidate).unwrap().CreationTime;
+        assert!(metadata::stage_file(&source, &candidate, |_| Err(io("cancelled"))).is_err());
+        assert_eq!(metadata::basic(&candidate).unwrap().CreationTime, before);
+        assert_eq!(std::fs::read(src).unwrap(), b"source primary data");
     }
 }

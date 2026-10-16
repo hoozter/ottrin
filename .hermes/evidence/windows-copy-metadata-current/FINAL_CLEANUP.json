@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+  "backing_image": "preserved",
+  "original_domains": {
+    "ottrin-qa-20261011": "shut off",
+    "ottrin-index-qa": "shut off",
+    "win11ltsc": "shut off"
+  }
+}

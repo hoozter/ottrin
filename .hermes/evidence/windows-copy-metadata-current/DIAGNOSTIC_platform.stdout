@@ -1,0 +1,35 @@
+
+running 26 tests
+test copy_transaction::windows::metadata_tests::windows_native_copy_metadata_cancellation_never_applies_final_metadata ... ok
+test copy_transaction::windows::metadata_tests::windows_native_copy_metadata_detects_changed_source_and_candidate ... ok
+test copy_transaction::windows::metadata_tests::windows_native_copy_metadata_keeps_private_candidate_security ... ok
+test copy_transaction::windows::metadata_tests::windows_native_copy_metadata_preserves_compression_and_removes_inherited_compression ... ok
+test copy_transaction::windows::metadata_tests::windows_native_copy_metadata_preserves_times_attributes_and_streams ... FAILED
+test copy_transaction::windows::tests::windows_native_copy_namespace_alias_retarget_cannot_redirect_creation ... ok
+test copy_transaction::windows::tests::windows_native_copy_namespace_binding_change_preserves_both_directories ... ok
+test copy_transaction::windows::tests::windows_native_copy_namespace_create_never_replaces_existing_entries ... ok
+test copy_transaction::windows::tests::windows_native_copy_namespace_excludes_other_directory_writers ... ok
+test copy_transaction::windows::tests::windows_native_copy_namespace_is_private_at_creation_in_public_parent ... ok
+test copy_transaction::windows::tests::windows_native_copy_namespace_keeps_raw_utf16_names ... ok
+test copy_transaction::windows::tests::windows_native_copy_namespace_rejects_non_leaf_names_without_mutation ... ok
+test copy_transaction::windows::tests::windows_native_copy_namespace_rejects_reparse_sources_and_parents ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_accepts_a_hard_link_source_as_independent_data ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_cancellation_releases_contexts_and_keeps_source ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_detects_changes_during_copy ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_handles_small_and_buffer_boundary_tails ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_keeps_empty_files_and_named_streams ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_preserves_extended_attributes ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_preserves_large_unicode_and_empty_streams ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_reads_without_source_write_or_delete_access ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_refuses_a_hard_link_to_the_empty_source ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_refuses_occupied_or_named_stream_candidates ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_refuses_overlapped_and_unbuffered_handles ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_rejects_unknown_security_link_and_malformed_headers ... ok
+test copy_transaction::windows::tests::windows_native_copy_staging_write_failure_releases_native_contexts ... ok
+
+failures:
+
+failures:
+    copy_transaction::windows::metadata_tests::windows_native_copy_metadata_preserves_times_attributes_and_streams
+
+test result: FAILED. 25 passed; 1 failed; 0 ignored; 0 measured; 126 filtered out; finished in 0.62s
