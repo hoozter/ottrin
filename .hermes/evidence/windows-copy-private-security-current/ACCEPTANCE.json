@@ -1,0 +1,171 @@
+{
+  "status": "pass",
+  "scope": "Private owner/group/DACL records and validation for Windows Copy staging/recovery; no public Copy or package completion",
+  "base_revision": "d47e848dfb4e730e79ae2480a69d37e37b025639",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "78eeaad9c28af98069d74bef9607e91bb6c5ca440ff2309e97fef08293f3bfc9",
+    "crates/ottrin-platform/src/move_recovery.rs": "6073c39e6305868490056d350942fa2ccd999b6135a17f17c3b88734fd2a487d",
+    "crates/ottrin-platform/src/windows_fs.rs": "6b519d86ad58ef2ad61c9a5757882f83d2548974160735e3ee7741b984b2f538",
+    "crates/ottrin-platform/src/copy_transaction/windows/links.rs": "79d53671363e20857d56cb71522f321a0007e04da1e6e3a473793edf184a16e3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "70a8e81035555b1304f496df8560d892ea6ef8f830f4aeb1d2c95385312ef2c3",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "958243209837563a476b1b3d2017b2633cdf200273fcc8a688eec248ac72c93d",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "f7b88c375b0c61f792403fdbe8cf5651e1b08f707cdf9f995726848e48a9dd2d",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "0299f8d3bbfcf3e2925543d0eacd0d2cc9f8e6ad9c151bcccaddbc69578e5941",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "72a881b5e75935f6f960efce02b911d5da928514774c95a1c83537c35e6efeb9"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "3e7da129d11f4df8a868f30512b122a757fbf6a5c231251e8d81ce7de0c789db",
+    "transferred_sha256": "65a555274b21c50fb515fb4cc4c5e931443daa8a4098f3607cd630c21df4fcc8",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 8543064,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "a87ef988f9aac0530836444e7a4e10a6e9a64ede1965f4d2fb0594283bfc89d3"
+      },
+      ".data": {
+        "virtual_size": 3888,
+        "virtual_address": 8548352,
+        "flags": 3221225536,
+        "raw_sha256": "ef7bad93b5cc6862028ab8a9009d58b27a60920ea671aa7439c3b35227b71096"
+      },
+      ".rdata": {
+        "virtual_size": 724536,
+        "virtual_address": 8552448,
+        "flags": 1073741888,
+        "raw_sha256": "fb934a1aa20ac824d1d2b06841360fd90b0c59ee53d2bad72480a1b9ca9e5fea"
+      },
+      ".pdata": {
+        "virtual_size": 150456,
+        "virtual_address": 9277440,
+        "flags": 1073741888,
+        "raw_sha256": "01f37b587ce4df26c08db0a96183e8bb1db2f62fb358367d8aa6b48469a445c8"
+      },
+      ".xdata": {
+        "virtual_size": 511956,
+        "virtual_address": 9428992,
+        "flags": 1073741888,
+        "raw_sha256": "08cce3564bb2662760362d78b43b8adf3ba4f1a09ac4a5a3ce3dde5366b61052"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 9940992,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 9945088,
+        "flags": 3221225536,
+        "raw_sha256": "81d5bdc2379c67eb71a68e479f3763fa0e27c491ac9c0492045563b0fb676b4a"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 9957376,
+        "flags": 3221225536,
+        "raw_sha256": "414caaf602a33c42b3d3d50d98a5e74b6464d45d9f58a54a40e1fafe477108d6"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 9961472,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 19876,
+        "virtual_address": 9965568,
+        "flags": 1107296320,
+        "raw_sha256": "7db2641e81e79cdfb3e45391e24e0648a67d107b8cdfaa1e2a6ea75e5a849627"
+      }
+    }
+  },
+  "journal_format": {
+    "magic": "OTCPWJ02",
+    "schema": 2,
+    "compatibility_reader": false,
+    "old_or_unknown_records": "Retained without mutation"
+  },
+  "native_copy": {
+    "passed": 79,
+    "failed": 0,
+    "ignored": 3,
+    "ordinary_user": true,
+    "new_security_cases": 5,
+    "existing_flush_failures": 22,
+    "existing_real_process_exits": 8,
+    "temporary_entries": 0
+  },
+  "native_full_platform": {
+    "passed": 179,
+    "failed": 0,
+    "ignored": 29,
+    "ordinary_user": true,
+    "runtime_test_binary_hash": "65a555274b21c50fb515fb4cc4c5e931443daa8a4098f3607cd630c21df4fcc8",
+    "temporary_entries": 0
+  },
+  "native_system_audit": {
+    "passed": 1,
+    "failed": 0,
+    "temporary_entries": 0
+  },
+  "linux_platform": {
+    "passed": 411,
+    "failed": 0,
+    "ignored": 3
+  },
+  "strict_clippy": {
+    "linux_all_targets": "pass",
+    "windows_all_targets": "pass"
+  },
+  "validated_behaviors": [
+    "Protected creator-owned OWNER RIGHTS full-access policy checked structurally without applying serialized descriptors",
+    "Private transaction and journal owner/group/DACL evidence checked around appends and inspection",
+    "Candidate private owner/group/DACL recorded before payload acknowledgement",
+    "Parent security checked before child creation and candidate security before payload success/tree verification",
+    "Completed retained validation checks creator context at each revalidation and exact private security around payload scans",
+    "DACL drift on root/file/transaction/local/central journal entries and still-private flag changes retained",
+    "Permission edits during staging cannot record payload success; edits during readonly validation refused without repair",
+    "Native primary-group drift detected with identical owner/DACL/payload and retained new group",
+    "Malformed/foreign/missing security records and old schema refused"
+  ],
+  "first_rejected_native_candidate": {
+    "passed": 78,
+    "failed": 1,
+    "cause": "Group-change fixture used a least-privilege staging handle lacking WRITE_OWNER (error 5)",
+    "repair": "Separate test-only handle requests WRITE_OWNER; production creation/recovery access masks unchanged",
+    "evidence": "REJECTED_COPY_* and REJECTED_TEST_BINARY.json"
+  },
+  "fixture_environment": {
+    "disposable_no_network_windows_overlay": true,
+    "ordinary_user": "OttrinContentQA",
+    "developer_mode": "Enabled only in disposable overlay for existing native link fixtures",
+    "group_setter": "Separate WRITE_OWNER handle only in native controlled test; no privileges enabled",
+    "developer_mode_off_policy": "Not repeated; earlier links checkpoint remains distinct"
+  },
+  "limits": [
+    "No publication, Overwrite, Undo, automatic repair or deletion authority",
+    "Final tree security, complete SACL/audit/label drift and privilege/elevation/impersonation workflows remain required",
+    "Central/interrupted-entry recovery and guarded write/delete-right acquisition remain required",
+    "Sparse/EFS, case-sensitive directories, specialized storage/providers and broader central-store placement remain required",
+    "Read sharing does not exclude independently authorized WRITE_DAC handles or pre-existing writable mappings; post-scan checks detect tested drift",
+    "No exact package replaced; no user/physical desktop acceptance claimed"
+  ],
+  "api_reference": "https://learn.microsoft.com/en-us/windows/win32/secauthz/security-information",
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "preservation": {
+    "actor_state": "Ready",
+    "actor_result": 0,
+    "owned_product_processes": 0,
+    "original_profile_and_installation": "unchanged"
+  }
+}

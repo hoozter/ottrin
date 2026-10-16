@@ -1,5 +1,5 @@
-//! Destination DACL policy for new copies, bound to the actual destination parent.
-//! This is not the complete publication transaction or SACL/audit policy.
+//! Private staging ownership and final destination DACL policy.
+//! No publication/cleanup or complete SACL/audit recovery policy.
 use super::{PlatformError, WindowsStableIdentity, io, stable_identity_from_handle};
 use crate::windows_fs::{self, RelativeOptions};
 use std::{
@@ -19,7 +19,8 @@ use windows_sys::Win32::System::Threading::{
 const INFORMATION: u32 =
     OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Parts {
     owner: Vec<u8>,
     group: Vec<u8>,
@@ -39,7 +40,7 @@ fn parts(raw: PSECURITY_DESCRIPTOR) -> Result<Parts, PlatformError> {
         return Err(io(std::io::Error::last_os_error()));
     }
     if owner.is_null() || group.is_null() {
-        return Err(io("destination security has no owner/group"));
+        return Err(io("native file security has no owner/group"));
     }
     let sid = |raw: PSID| unsafe {
         std::slice::from_raw_parts(raw.cast::<u8>(), GetLengthSid(raw) as usize).to_vec()
@@ -73,7 +74,7 @@ fn capture(file: &File) -> Result<Vec<u64>, PlatformError> {
         );
     }
     if needed == 0 || needed > 65536 {
-        return Err(io("invalid native destination security length"));
+        return Err(io("invalid native file security length"));
     }
     let mut storage = vec![0u64; (needed as usize).div_ceil(8)];
     if unsafe {
@@ -103,6 +104,99 @@ fn current_token() -> Result<OwnedHandle, PlatformError> {
         }
     }
     Ok(unsafe { OwnedHandle::from_raw_handle(token.cast()) })
+}
+
+/// Private staging security is recorded separately from final destination
+/// inheritance. Serialized ACLs are validated as bytes, never passed to Windows.
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub(super) struct PrivateSecurity(Parts);
+
+fn valid_sid(sid: &[u8]) -> bool {
+    sid.len() >= 8 && sid[0] == 1 && sid[1] <= 15 && sid.len() == 8 + usize::from(sid[1]) * 4
+}
+impl PrivateSecurity {
+    pub(super) fn valid_for(&self, creator: &[u8]) -> bool {
+        let parts = &self.0;
+        let Some(acl) = &parts.dacl else {
+            return false;
+        };
+        // One explicit OWNER RIGHTS full-access ACE. Only its normal child
+        // inheritance flags are admitted; inherited/inherit-only ACEs are not.
+        valid_sid(creator)
+            && parts.owner == creator
+            && valid_sid(&parts.group)
+            && parts.present
+            && parts.control & SE_DACL_PROTECTED != 0
+            && parts.control & !(SE_DACL_PROTECTED | SE_DACL_AUTO_INHERITED) == 0
+            && acl.len() == 28
+            && acl[0] == 2
+            && acl[1] == 0
+            && u16::from_le_bytes([acl[2], acl[3]]) == 28
+            && acl[4..8] == [1, 0, 0, 0]
+            && acl[8] == 0
+            && matches!(acl[9], 0 | 3)
+            && u16::from_le_bytes([acl[10], acl[11]]) == 20
+            && u32::from_le_bytes(acl[12..16].try_into().unwrap()) == FILE_ALL_ACCESS
+            && acl[16..] == [1, 1, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0]
+    }
+    pub(super) fn capture(file: &File, creator: &[u8]) -> Result<Self, PlatformError> {
+        let mut raw = capture(file)?;
+        let result = Self(parts(raw.as_mut_ptr().cast())?);
+        if !result.valid_for(creator) {
+            return Err(io(
+                "Copy staging security is not protected creator-owned OWNER RIGHTS access; data retained",
+            ));
+        }
+        Ok(result)
+    }
+    pub(super) fn validate(&self, file: &File, creator: &[u8]) -> Result<(), PlatformError> {
+        if Self::capture(file, creator)? != *self {
+            return Err(io("private Copy owner/group/DACL changed; data retained"));
+        }
+        Ok(())
+    }
+}
+
+pub(super) fn current_owner() -> Result<Vec<u8>, PlatformError> {
+    let token = current_token()?;
+    let mut needed = 0;
+    unsafe {
+        GetTokenInformation(
+            token.as_raw_handle().cast(),
+            TokenOwner,
+            ptr::null_mut(),
+            0,
+            &mut needed,
+        );
+    }
+    if needed == 0 || needed > 65536 {
+        return Err(io("invalid effective token owner size"));
+    }
+    let mut storage = vec![0u64; (needed as usize).div_ceil(8)];
+    if unsafe {
+        GetTokenInformation(
+            token.as_raw_handle().cast(),
+            TokenOwner,
+            storage.as_mut_ptr().cast(),
+            needed,
+            &mut needed,
+        )
+    } == 0
+    {
+        return Err(io(std::io::Error::last_os_error()));
+    }
+    let owner = unsafe { &*storage.as_ptr().cast::<TOKEN_OWNER>() }.Owner;
+    if owner.is_null() {
+        return Err(io("effective token has no default owner"));
+    }
+    let sid =
+        unsafe { std::slice::from_raw_parts(owner.cast::<u8>(), GetLengthSid(owner) as usize) }
+            .to_vec();
+    if !valid_sid(&sid) {
+        return Err(io("effective token owner SID is invalid"));
+    }
+    Ok(sid)
 }
 
 struct Derived(PSECURITY_DESCRIPTOR);
@@ -735,5 +829,61 @@ mod tests {
         );
         assert_eq!(observed(&read), before);
         assert_eq!(std::fs::read(path).unwrap(), b"retained candidate bytes");
+    }
+    #[test]
+    fn windows_native_copy_private_group_drift_is_detected_without_payload_mutation() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let file = private(&parent, "private", false);
+        std::fs::write(root.path().join("private"), b"private bytes").unwrap();
+        let creator = current_owner().unwrap();
+        let expected = PrivateSecurity::capture(&file, &creator).unwrap();
+        assert_ne!(
+            expected.0.owner, expected.0.group,
+            "owned ordinary-user fixture must have a distinct primary group"
+        );
+        let mut raw = capture(&file).unwrap();
+        let (mut owner, mut defaulted) = (ptr::null_mut(), 0);
+        assert_ne!(
+            unsafe {
+                GetSecurityDescriptorOwner(raw.as_mut_ptr().cast(), &mut owner, &mut defaulted)
+            },
+            0
+        );
+        // Production staging deliberately does not request WRITE_OWNER.
+        // Only this controlled group-change fixture opens that extra right.
+        let mutation = OpenOptions::new()
+            .access_mode(WRITE_OWNER | READ_CONTROL)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+            .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(root.path().join("private"))
+            .unwrap();
+        assert_eq!(
+            unsafe {
+                SetSecurityInfo(
+                    mutation.as_raw_handle().cast(),
+                    SE_FILE_OBJECT,
+                    GROUP_SECURITY_INFORMATION,
+                    ptr::null_mut(),
+                    owner,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                )
+            },
+            0
+        );
+        let changed = PrivateSecurity::capture(&file, &creator).unwrap();
+        assert_eq!(changed.0.owner, expected.0.owner);
+        assert_eq!(changed.0.group, expected.0.owner);
+        assert!(expected.validate(&file, &creator).is_err());
+        assert_eq!(
+            std::fs::read(root.path().join("private")).unwrap(),
+            b"private bytes"
+        );
+        assert_eq!(
+            PrivateSecurity::capture(&file, &creator).unwrap(),
+            changed,
+            "validation must not restore the old group"
+        );
     }
 }

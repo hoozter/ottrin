@@ -2,7 +2,7 @@
 
 Status: file/directory streams, ordinary metadata, private namespace, recursive
 known-link staging, new-copy security inheritance components, paired staging
-journals and completed retained-candidate validation have native component
+journals and completed retained-candidate/private-DACL validation have native component
 acceptance. Public Windows Copy remains disabled until the complete transaction
 and normal workflows are implemented and accepted. Current counts and scope are
 in the acceptance section below and the roadmap checkpoint.
@@ -164,23 +164,31 @@ runs separately as SYSTEM with test-owned SeSecurityPrivilege; mandatory-label
 cases run as an ordinary user. Applying the final DACL preserves SACLs/labels.
 
 This remains a component policy. Absent/null derived DACLs, complete security drift,
-private ownership/security recovery validation, Overwrite descriptors and tree-wide
-final inheritance remain required. Descendant final permissions must derive from
+complete SACL/audit/label recovery drift validation, Overwrite descriptors and tree-wide
+final inheritance remain required. Private owner/group/DACL validation is described
+with journal ownership below. Descendant final permissions must derive from
 final destination inheritance, not private parent DACLs. Missing WRITE_DAC and
 changed parents must fail with exact bytes/ACLs retained.
 
 ## Paired staging journals
 
 `journal.rs::DurableStage` owns separate append-only local and central journals,
-bound to native parents/directories/file identities. Copy's strict schema has no
-source-deletion event. Diagnostic parent paths and source labels do not authorize
+bound to native parents/directories/file identities. Format v2 also records the
+effective token's default owner SID, private transaction/journal security and each
+candidate's private security at acknowledged creation. Owner/group SIDs, a protected
+explicit OWNER RIGHTS full-access DACL and its inheritance flags are validated;
+exact native owner/group/DACL/control evidence is rechecked. Old private formats
+are rejected without a compatibility reader or mutation. Copy's strict schema has
+no source-deletion event. Diagnostic parent paths and source labels do not authorize
 source access/removal. Frames have monotonic sequences, a SHA-256 chain, a 16 MiB
 frame budget and a 64 MiB log budget.
 
 Both journals flush creation intent and acknowledged native identity before a
 candidate receives payload writes. Expected link data precedes its type change;
 staged identity must name the same object with the planned final type. Per-entry
-payload evidence precedes terminal whole-tree verification. An uncertain append
+payload evidence precedes terminal whole-tree verification. Candidate security is
+checked before acknowledging payload success; parent security is checked before
+child creation and all candidates are checked before terminal verification. An uncertain append
 poisons its writer: torn, foreign, reordered, rebound or unequal mirrors are
 retained, never automatically repaired or retried under a second interpretation.
 
@@ -196,6 +204,12 @@ partial bytes or later user data.
 transaction/journals with read-sharing only, refusing an active writer. Each
 candidate opens through its recorded parent/raw leaf without following links or
 requesting write/delete rights. Original sources are never opened or required.
+The effective default owner must match the creator; private transaction/journal
+and candidate owner/group/DACL/control evidence must match before and after the
+scan. Broadening permissions, changing even still-private inheritance flags or
+altering the group is retained as a conflict. No recorded descriptor is applied.
+A read-sharing handle does not exclude a separately authorized WRITE_DAC change;
+post-scan security revalidation detects that drift without repairing it.
 
 Before hashing, native identities, creation/write times, attributes, length and
 compression must match the evidence. Raw known-link records must match. Exact
@@ -207,16 +221,16 @@ bytes, observed versions and bindings/membership are checked around the scan.
 Returned read handles support revalidation before a later phase. Windows maintains
 access times during ordinary reads, so recovery allows those updates. Strict
 staging still checks access time when applying final metadata. Recovery never
-repairs timestamps or changed data. Completed content validation is not security,
-publication or cleanup authority: rights acquisition with revalidation, guarded
+repairs timestamps, permissions or changed data. Completed payload/private-DACL
+validation is not final security, publication or cleanup authority: rights acquisition with revalidation, guarded
 mutation, Overwrite retention, central discovery, interrupted-entry recovery, Undo
 and public/package workflows remain required.
 
 ## Acceptance and limits
 
-Current source receipt: `.hermes/evidence/windows-copy-retained-current/ACCEPTANCE.json`.
-The ordinary-user Copy suite passes 74 with 3 specialized/child exclusions; the
-full native Windows platform suite passes 174 with 29 exclusions. SYSTEM audit
+Current source receipt: `.hermes/evidence/windows-copy-private-security-current/ACCEPTANCE.json`.
+The ordinary-user Copy suite passes 79 with 3 specialized/child exclusions; the
+full native Windows platform suite passes 179 with 29 exclusions. SYSTEM audit
 passes separately. Linux platform tests pass 411 with 3 exclusions, and strict
 all-target platform Clippy passes for both targets. These are component/native
 results, not public Copy, refreshed package, user or physical-platform acceptance.
@@ -228,8 +242,14 @@ journal corruption/replacement; 22 injected flush failures and eight real proces
 exits. Retained validation additionally covers source disappearance, restored-time
 content edits, ADS/membership/rebinding/extra records, dangling file/directory
 links and cancellation/retry. Only a fully recorded completed stage validates
-after a child exit. The initial two access-time failures are retained with the
-rejected binary pin; the corrected run checks hashes explicitly and passes.
+after a child exit. Private security cases cover extra ACEs and exact inheritance
+flag drift on candidates/journals/transaction directories, permission changes
+during staging and validation, malformed/foreign records and an isolated native
+primary-group change. The initial group fixture's missing WRITE_OWNER right is
+recorded with rejected logs/binary; only that test setter requests the added right.
+Production creation/recovery rights and validation assertions remain intact.
+The preceding access-time correction retains distinct evidence in
+`.hermes/evidence/windows-copy-retained-current/ACCEPTANCE.json`.
 
 Separate earlier Developer Mode-off acceptance (ordinary-user symlink denial with
 error 1314 and positive junction staging after reboot) remains in
@@ -254,3 +274,8 @@ Link contracts are the [native record layout](https://learn.microsoft.com/en-us/
 [handle-based installation](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_set_reparse_point)
 and [reparse restrictions](https://learn.microsoft.com/en-us/windows/win32/fileio/reparse-points).
 Native tests establish the verified implementation scope; references alone do not.
+
+Group/owner queries need READ_CONTROL; setters need WRITE_OWNER, as specified by
+[SECURITY_INFORMATION](https://learn.microsoft.com/en-us/windows/win32/secauthz/security-information).
+Only the native group-drift fixture opens the setter right. Production records
+security through read queries and never applies serialized descriptors.

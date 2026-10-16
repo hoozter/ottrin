@@ -1,0 +1,552 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.44s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-ae68b2dc04dbe44d)
+
+running 414 tests
+test copy_recovery::cleanup::finalization::tests::finalization_scaling_profile ... ignored, explicit multi-size resource profile
+test copy_recovery::cleanup::finalization::tests::finalization_sigkill_child ... ok
+test copy_recovery::cleanup::finalization::tests::cached_metadata_detects_alias_writes_even_when_stamps_compare_equal ... ok
+test copy_recovery::cleanup::finalization::tests::group_finalization_removes_all_private_metadata_and_preserves_visible_data ... ok
+test copy_recovery::cleanup::finalization::tests::mount_guard_private_child ... ok
+test copy_recovery::cleanup::finalization::tests::mount_rebinding_invalidates_finalization_before_any_metadata_is_removed ... ignored, requires unprivileged private mount namespaces
+test copy_recovery::cleanup::finalization::tests::finalization_refuses_metadata_rewritten_through_an_outside_alias ... ok
+test copy_recovery::cleanup::finalization::tests::monitored_finalization_refuses_an_unselected_dependency_rewritten_through_an_alias ... ok
+test copy_recovery::cleanup::finalization::tests::finalization_lock_excludes_other_workers_and_unlocks_with_an_inherited_descriptor ... ok
+test copy_recovery::cleanup::finalization::tests::monitored_finalization_refuses_another_parents_ancestor_rebinding ... ok
+test copy_recovery::cleanup::finalization::tests::monitored_finalization_refuses_another_stage_reappearing_before_canonical_retirement ... ok
+test copy_recovery::cleanup::tests::cached_registry_reads_reject_changed_and_invalid_bytes_without_reusing_old_values ... ok
+test copy_recovery::cleanup::finalization::tests::missing_canonical_or_manifest_cannot_authorize_deleting_surviving_stages ... ok
+test copy_recovery::cleanup::tests::ancestor_overwrite_cannot_discard_a_nested_transactions_private_backup ... ok
+test copy_recovery::cleanup::tests::cleanup_never_adopts_changed_observations_journals_or_stage_paths ... ok
+test copy_recovery::cleanup::tests::ancestor_replacement_after_claim_preserves_quarantined_data ... ok
+test copy_recovery::cleanup::tests::changed_quarantine_and_ledger_are_retained_instead_of_deleted ... ok
+test copy_recovery::cleanup::tests::cleanup_checks_nested_backup_contents_and_symlink_entries_without_following_targets ... ok
+test copy_recovery::cleanup::tests::cleanup_rejects_changed_central_records_and_interrupted_phases ... ok
+test copy_recovery::cleanup::tests::cleanup_sigkill_child ... ok
+test copy_recovery::cleanup::finalization::tests::final_checks_refuse_replaced_empty_stage_and_late_unknown_children ... ok
+test copy_recovery::cleanup::tests::completed_undo_cleanup_does_not_adopt_the_reused_destination ... ok
+test copy_recovery::cleanup::finalization::tests::recursive_payload_and_finalization_preserve_symlink_targets_and_visible_edits ... ok
+test copy_recovery::cleanup::tests::cleanup_requires_the_whole_batch_and_protects_external_copy_dependencies ... ok
+test copy_recovery::cleanup::finalization::tests::interrupted_finalization_refuses_reused_stage_and_parent_names ... ok
+test copy_recovery::cleanup::finalization::tests::symlink_ancestor_uses_full_validation_and_still_finishes_safely ... ok
+test copy_recovery::cleanup::tests::payload_cleanup_refuses_dependency_changes_through_an_outside_journal_alias_before_unlink ... ok
+test copy_recovery::cleanup::tests::cleanup_observation_refuses_interrupted_phases_without_reading_publications ... ok
+test copy_recovery::cleanup::tests::active_cleanup_refuses_ledger_and_metadata_mutation_before_unlink ... ok
+test copy_recovery::cleanup::tests::payload_monitor_fallback_rechecks_dependencies_without_notifications ... ok
+test copy_recovery::cleanup::finalization::tests::a_transaction_cannot_belong_to_overlapping_finalizations ... ok
+test copy_recovery::cleanup::tests::explicit_cleanup_readmission_recovers_a_mixed_batch_with_one_sided_intent ... ok
+test copy_recovery::cleanup::tests::payload_reclamation_preserves_visible_edits_and_revokes_undo ... ok
+test copy_recovery::cleanup::tests::cleanup_observation_never_reads_selected_publication_or_unrelated_payloads ... ok
+test copy_recovery::tests::content_sampling_never_traverses_a_directory_redirected_to_an_outside_symlink ... ok
+test copy_recovery::tests::content_sampling_refuses_a_file_binding_swapped_to_fifo_after_open ... ok
+test copy_recovery::cleanup::tests::root_symlink_cleanup_removes_only_the_link_entry ... ok
+test copy_recovery::cleanup::tests::recursive_payload_cleanup_uses_compact_progress_and_never_follows_symlinks ... ok
+
+running 1 test
+test copy_recovery::cleanup::tests::payload_cleanup_reconciles_one_sided_intent_and_completion_journals ... ok
+test copy_recovery::tests::completed_copy_inverse_releases_publication_names_but_preserves_retained_validation ... ok
+test copy_recovery::tests::interrupted_copy_inverse_still_requires_the_full_withdrawn_namespace ... ok
+test copy_recovery::tests::object_handles_preserve_rename_identity_and_distinguish_symlinks_and_replacements ... ok
+test copy_recovery::tests::copy_batch_order_and_skipped_slots_survive_a_fresh_process_and_undo ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.01s
+
+test copy_recovery::cleanup::tests::published_cleanup_uses_retained_data_without_reading_changed_publication ... ok
+test copy_recovery::tests::partial_copy_batch_retains_original_count_without_claiming_missing_items_completed ... ok
+test copy_recovery::tests::copy_undo_refuses_changed_evidence_and_competing_workers_without_repair ... ok
+test copy_recovery::tests::invalid_or_missing_copy_operation_metadata_is_retained_for_review_without_mutation ... ok
+test copy_recovery::cleanup::finalization::tests::monitored_finalization_refuses_other_stage_and_registry_changes_before_unlink ... ok
+test copy_recovery::cleanup::finalization::tests::final_checks_preserve_metadata_modified_after_it_was_pinned ... ok
+test copy_recovery::tests::restore_copy_receipt_rejects_invalid_ids_without_creating_registry_state ... ok
+test copy_recovery::tests::copy_batch_order_and_skipped_slots_survive_a_fresh_process_and_undo ... ok
+test copy_recovery::tests::overlapping_copy_dependencies_refuse_changed_or_missing_evidence ... ok
+test copy_recovery::tests::plan_admission_refuses_changed_public_observation_and_stale_journals ... ok
+
+running 1 test
+test copy_transaction::tests::anchored_parent_path_rename_and_replacement_cannot_redirect_publish ... ok
+test copy_recovery::tests::copy_undo_retries_durable_boundaries_without_repeating_the_withdrawal ... ok
+test copy_transaction::tests::completed_copy_journal_binds_publication_and_overwrite_backup ... ok
+
+running 1 test
+test copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.01s
+
+test copy_transaction::tests::copy_and_move_registry_markers_coexist_and_replaced_roots_are_rejected ... ok
+test copy_transaction::tests::copy_registry_discovery_is_read_only_when_root_is_missing_or_journal_is_corrupt ... ok
+
+running 1 test
+test copy_transaction::tests::copy_registry_discovery_survives_a_fresh_process_and_does_not_modify_data ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.00s
+
+test copy_transaction::tests::copy_registry_discovery_survives_a_fresh_process_and_does_not_modify_data ... ok
+test copy_recovery::tests::restore_copy_receipt_is_read_only_and_revalidates_changes_before_undo ... ok
+test copy_transaction::tests::deterministic_failure_never_publishes_partial_output ... ok
+test copy_transaction::tests::copy_registry_discovery_reports_changed_or_missing_local_evidence_without_repairs ... ok
+test copy_transaction::tests::failed_copy_journal_write_refuses_publication_and_preserves_both_versions ... ok
+
+running 1 test
+test copy_transaction::tests::non_utf8_rename_candidate_is_lossless ... ok
+test copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.00s
+
+test copy_transaction::tests::overwrite_destination_racer_is_preserved_after_exchange ... ok
+test copy_transaction::tests::independent_copies_share_registry_without_contending_on_one_global_lock ... ok
+test copy_transaction::tests::overwrite_exchange_never_exposes_a_missing_destination ... ok
+
+running 1 test
+test copy_transaction::tests::overwrite_is_typed_warning_and_keeps_displaced_entry ... ok
+test copy_transaction::tests::post_exchange_identity_check_failure_retains_displaced_entry ... ok
+test copy_recovery::tests::overlapping_copy_chain_is_read_only_and_unblocks_after_reverse_undo ... ok
+test copy_transaction::tests::prepublication_failure_preserves_existing_destination ... ok
+test copy_transaction::tests::skip_and_rename_publication_races_do_not_clobber ... ok
+test copy_transaction::tests::stage_open_failure_retains_the_just_created_stage ... ok
+test copy_transaction::tests::transaction_directory_is_private ... ok
+test directory_watch::tests::deletion_invalidates_cloned_watch_without_invalidating_other_directory ... ok
+
+running 1 test
+test copy_transaction::tests::overwrite_supports_all_file_directory_symlink_kind_pairs ... ok
+
+running 1 test
+test helper_setup::tests::launch_failure_retains_cause_and_removes_staging ... ok
+test helper_setup::tests::stages_private_executable_and_cleans_up_after_every_result ... ok
+test local_storage::tests::invalid_paths_are_not_converted_to_parent_provenance ... ok
+test local_storage::tests::newly_created_ancestor_is_resolved_again_instead_of_binding_its_old_parent ... ok
+test local_storage::tests::opened_mount_identity_follows_the_descriptor_after_unlink_and_for_symlinks ... ok
+test local_storage::tests::source_links_bind_their_own_mount_and_destinations_follow_the_target ... ok
+test copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.00s
+
+test copy_recovery::tests::restored_batch_plan_refuses_changed_paired_journals_without_advancing ... ok
+test copy_recovery::cleanup::finalization::tests::changed_or_replaced_metadata_and_unknown_children_are_never_retired ... ok
+test move_recovery::tests::anchored_prepared_pair_advances_to_identical_claim_intent_without_source_mutation ... ok
+test move_recovery::tests::central_discovery_classifies_published_as_source_cleanup_pending_without_paths ... ok
+test move_recovery::tests::central_discovery_ignores_stale_updates_and_returns_valid_transaction_without_mutation ... ok
+test move_recovery::tests::central_discovery_reports_malformed_non_utf8_filename_losslessly_without_mutation ... ok
+test move_recovery::tests::central_claimed_persistence_failure_returns_exact_unchanged_claim_intent_pair ... ok
+test move_recovery::tests::central_discovery_surfaces_malformed_stale_update_name_without_mutation ... ok
+test move_recovery::tests::central_discovery_surfaces_malformed_journal_filename_without_mutation ... ok
+test move_recovery::tests::claim_intent_can_advance_to_unexpected_claim_retention ... ok
+test move_recovery::tests::claim_intent_record_rejects_expected_identity_that_differs_from_prepared_source ... ok
+test move_recovery::tests::central_discovery_surfaces_filename_record_transaction_mismatch_without_mutation ... ok
+test move_recovery::tests::claim_intent_record_rejects_phase_inappropriate_evidence ... ok
+test move_recovery::tests::claim_intent_advance_rejects_same_id_with_different_source_evidence ... ok
+
+running 1 test
+test move_recovery::tests::claim_intent_schema_requires_and_round_trips_expected_source_identity ... ok
+test move_recovery::tests::claim_intent_record_rejects_transaction_name_for_another_id ... ok
+test move_recovery::tests::claimed_record_rejects_identity_that_differs_from_claim_intent ... ok
+test move_recovery::tests::claimed_record_rejects_phase_inappropriate_evidence ... ok
+test move_recovery::tests::claimed_replacement_distinguishes_post_rename_directory_sync_failure ... ok
+test move_recovery::tests::claimed_advance_resumes_central_claimed_local_claim_intent_after_write_failure ... ok
+test move_recovery::tests::claimed_advance_resumes_by_inspecting_live_journal_after_post_rename_sync_uncertainty ... ok
+test move_recovery::tests::claimed_restart_loader_returns_exact_cross_transaction_claimed_evidence ... ok
+test move_recovery::tests::claimed_schema_preserves_claim_intent_evidence_and_verified_identity ... ok
+test move_recovery::tests::claimed_restart_loader_returns_exact_cross_transaction_claim_intent_evidence ... ok
+test move_recovery::tests::claimed_restart_loader_returns_exact_matching_and_partial_evidence_without_mutation ... ok
+test move_recovery::tests::configured_central_root_opening_rejects_corrupted_anchor ... ok
+test move_recovery::tests::cleanup_pending_restart_classifies_central_durable_local_published_without_cleanup ... ok
+test move_recovery::tests::configured_central_root_opening_rejects_non_directory_path ... ok
+test move_recovery::tests::configured_central_root_opening_rejects_identity_mismatch_anchor ... ok
+
+running 1 test
+test move_recovery::tests::configured_central_root_opening_rejects_replaced_parent ... ok
+test move_recovery::tests::configured_central_root_opening_stays_fail_closed_across_path_replacement ... ok
+test move_recovery::tests::direct_claimed_deserialization_validates_claimed_identity ... ok
+test move_recovery::tests::cross_device_overwrite_published_record_requires_matching_observed_displaced_identity ... ok
+test move_recovery::tests::direct_serde_deserialization_enforces_header_invariants ... ok
+test move_recovery::tests::foreign_platform_path_encoding_is_rejected ... ok
+test move_recovery::tests::header_round_trips_and_uses_fixed_width_lowercase_id ... ok
+test move_recovery::tests::journal_phase_can_be_rewritten_without_phase_regression ... ok
+test move_recovery::tests::journal_phases_accept_the_durable_forward_sequence ... ok
+test move_recovery::tests::journal_phases_reject_every_undocumented_edge ... ok
+test move_recovery::tests::local_failure_reports_a_durable_central_only_preparation ... ok
+test move_recovery::tests::malformed_native_path_units_are_rejected ... ok
+test copy_transaction::tests::copy_restart_data_validation_preserves_changed_publications_and_backups ... ok
+test move_recovery::tests::malformed_transaction_id_is_rejected ... ok
+test move_recovery::tests::native_path_round_trips_non_utf8_bytes ... ok
+
+running 1 test
+test copy_recovery::tests::plan_admission_does_not_reread_unrelated_publication_contents ... ok
+test move_recovery::tests::open_journal_directory_cannot_be_retargeted_by_path_replacement ... ok
+test move_recovery::tests::matching_claim_intent_pair_loads_exact_record_without_mutation ... ok
+test move_recovery::tests::local_claim_intent_failure_returns_exact_durable_central_evidence ... ok
+test copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks ... ok
+test copy_transaction::tests::sigkill_immediately_before_and_after_exchange_preserves_both_entries ...
+oktest result:
+ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.00s
+
+test move_recovery::tests::pending_destination_advance_rejects_incomplete_metadata ... ok
+test move_recovery::tests::pending_destination_record_rejects_phase_inappropriate_evidence ... ok
+test move_recovery::tests::pending_destination_advance_reports_central_update_uncertainty_without_mutation ... ok
+test move_recovery::tests::pending_destination_restart_rejects_core_matching_destination_name_mismatch ... ok
+test move_recovery::tests::pending_destination_advance_reports_partial_state_and_resumes_safely_on_restart ... ok
+test move_recovery::tests::pending_destination_restart_rejects_mismatched_claimed_identity ... ok
+test move_recovery::tests::pending_destination_schema_preserves_claimed_identity_and_lossless_target_name ... ok
+test move_recovery::tests::prepared_journals_persist_the_same_record_centrally_and_source_locally ... ok
+test move_recovery::tests::prepared_pair_load_accepts_matching_anchored_records_without_mutation ... ok
+test move_recovery::tests::prepared_pair_validation_accepts_matching_valid_records ... ok
+test move_recovery::tests::prepared_pair_load_reports_missing_central_without_mutation ... ok
+test move_recovery::tests::prepared_pair_load_rejects_matching_records_for_another_transaction ... ok
+test move_recovery::tests::prepared_pair_load_reports_missing_local_without_mutation ... ok
+test move_recovery::tests::prepared_pair_validation_identifies_central_corruption ... ok
+test move_recovery::tests::prepared_pair_validation_identifies_local_corruption ... ok
+test move_recovery::tests::prepared_phase_advances_to_durable_claim_intent ... ok
+test move_recovery::tests::prepared_pair_validation_rejects_disagreeing_valid_records ... ok
+test move_recovery::tests::pending_destination_advance_with_metadata_round_trips ... ok
+test move_recovery::tests::prepared_record_persists_lossless_linux_source_identity ... ok
+test move_recovery::tests::prepared_record_is_persisted_as_complete_central_discovery_record ... ok
+test move_recovery::tests::prepared_record_rejects_a_later_phase_without_required_fields ... ok
+test move_recovery::tests::prepared_record_is_persisted_to_anchored_source_local_journal ... ok
+test move_recovery::tests::prepared_record_rejects_root_as_original_name ... ok
+test move_recovery::tests::prepared_record_rejects_non_directory_transaction_identity ... ok
+test move_recovery::tests::prepared_record_rejects_transaction_name_with_separator ... ok
+test move_recovery::tests::prepared_record_schema_marks_transaction_identity_as_breaking_change ... ok
+test move_recovery::tests::prepared_record_round_trips_source_transaction_directory_identity ... ok
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+test move_recovery::tests::process_termination_after_local_claimed_flush_retains_exact_matching_restart_evidence ... ok
+test move_recovery::tests::process_termination_after_claim_directory_sync_recovers_exact_claim_intent_evidence ... ok
+test move_recovery::tests::process_termination_after_source_parent_sync_recovers_exact_claim_intent_evidence ... ok
+test move_recovery::tests::published_restart_rejects_matching_destination_name_mismatch ... ok
+
+running 1 test
+test move_recovery::tests::published_restart_rejects_mismatched_claimed_identity ... ok
+test move_recovery::tests::published_advance_reports_partial_state_and_resumes_safely_on_restart ... ok
+test move_recovery::tests::published_restart_rejects_mismatched_transaction_identity ... ok
+test copy_recovery::tests::restored_overlapping_batch_plan_admits_each_inverse_lazily ... ok
+
+running 1 test
+test move_recovery::tests::recovery_lock_advances_matching_claim_intent_pair_to_identical_claimed_evidence ... ok
+test move_recovery::tests::process_termination_after_central_claimed_flush_retains_exact_restart_evidence ... ok
+test move_recovery::tests::recovery_lock_child_process_helper ... ok
+test move_recovery::tests::recovery_lock_advances_matching_claimed_pair_to_identical_pending_destination_record ... ok
+test move_recovery::tests::recovery_lock_advances_matching_pending_destination_pair_to_identical_published_record ... ok
+test move_recovery::tests::recovery_lock_advances_matching_pending_pair_to_matching_pending_pair_with_updated_destination ... ok
+
+running 1 test
+test move_recovery::tests::recovery_lock_claim_evidence_preserves_dangling_symlink_entry_kind ... ok
+
+running 1 test
+test move_recovery::tests::recovery_lock_claim_evidence_preserves_directory_entry_kind_and_payload ... ok
+test move_recovery::tests::process_termination_after_claim_rename_recovers_exact_claim_intent_evidence ... ok
+test move_recovery::tests::recovery_lock_claim_evidence_preserves_multiply_linked_file_identity ... ok
+test move_recovery::tests::recovery_lock_claims_the_expected_original_without_replacement ... ok
+test move_recovery::tests::recovery_lock_completes_a_partial_claim_intent_pair_after_restart ... ok
+test move_recovery::tests::recovery_lock_does_not_flush_source_deletion_when_claim_sync_fails ... ok
+test move_recovery::tests::recovery_lock_claim_evidence_preserves_non_utf8_original_name_and_entry_kind ... ok
+test move_recovery::tests::recovery_lock_does_not_flush_source_deletion_when_transaction_moves_during_claim ... ok
+test move_recovery::tests::recovery_lock_is_released_when_its_raii_token_is_dropped ... ok
+test move_recovery::tests::recovery_lock_does_not_replace_an_occupied_claim_name ... ok
+test move_recovery::tests::process_termination_before_claim_rename_recovers_original_and_missing_claim ... ok
+test move_recovery::tests::recovery_lock_rejects_a_second_context_without_changing_journals ... ok
+test move_recovery::tests::recovery_lock_observes_claimed_symlinks_without_following_them ... ok
+test move_recovery::tests::recovery_lock_observes_original_symlinks_without_following_them ... ok
+test move_recovery::tests::recovery_lock_observes_replaced_source_before_flushing_source_deletion ... ok
+test move_recovery::tests::recovery_lock_rejects_reacquisition_through_the_same_context ... ok
+test move_recovery::tests::recovery_lock_rejects_a_substituted_local_transaction_directory ... ok
+test move_recovery::tests::recovery_lock_rejects_a_substituted_source_parent_before_observing_original ... ok
+test move_recovery::tests::recovery_lock_rejects_reparented_transaction_before_claiming_source ... ok
+test move_recovery::tests::recovery_lock_reports_expected_original_identity_without_mutation ... ok
+test move_recovery::tests::recovery_lock_reports_expected_claim_identity_without_mutation ... ok
+test move_recovery::tests::recovery_lock_reports_missing_claim_without_mutation ... ok
+test move_recovery::tests::recursive_cleanup_does_not_unlink_a_child_replaced_after_inspection ... ok
+test move_recovery::tests::recovery_lock_reports_missing_original_without_mutation ... ok
+test move_recovery::tests::restart_loader_preserves_both_local_corruption_diagnostics ... ok
+test move_recovery::tests::recovery_lock_reports_unexpected_claim_identity_without_mutation ... ok
+test move_recovery::tests::recovery_lock_reports_unexpected_original_identity_without_mutation ... ok
+test move_recovery::tests::restart_loader_rejects_a_different_local_transaction_without_mutation ... ok
+test move_recovery::tests::restart_loader_reports_requested_and_recorded_central_transaction_ids ... ok
+test move_recovery::tests::restart_loader_returns_both_records_for_same_transaction_claim_mismatch ... ok
+test move_recovery::tests::restart_loader_returns_both_records_for_same_transaction_prepared_mismatch ... ok
+test move_recovery::tests::source_parent_sync_uses_the_anchored_directory_after_path_replacement ... ok
+test move_recovery::tests::restart_loader_returns_exact_central_claim_and_local_prepared_evidence ... ok
+test move_recovery::tests::source_transaction_is_created_through_anchored_parent_with_verified_identity ... ok
+test move_recovery::tests::source_transaction_rejects_an_existing_directory_without_mutation ... ok
+test move_recovery::tests::source_transaction_rejects_an_existing_symlink_without_mutation ... ok
+test move_recovery::tests::source_transaction_reports_retained_name_when_post_create_setup_fails ... ok
+test move_recovery::tests::source_transaction_replacement_after_creation_is_only_an_unproven_candidate ... ok
+test move_recovery::tests::source_transaction_retains_identity_handle_separately_after_identity_open_failure ... ok
+test move_recovery::tests::unknown_header_fields_are_rejected ... ok
+test move_recovery::tests::unknown_native_path_fields_are_rejected ... ok
+test copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks ... ok
+
+test result: oktest move_recovery::tests::transaction_headers_create_independent_central_discovery_records ... . 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered outok
+; finished in 0.01s
+
+test move_recovery::tests::unproven_source_transaction_does_not_create_a_journal ... ok
+test move_recovery::tests::unproven_source_transaction_does_not_chmod_a_replacement ... ok
+test move_recovery::tests::unsupported_major_version_is_rejected ... ok
+test move_recovery::tests::stale_fixed_next_entry_does_not_block_journal_replacement ... ok
+
+running 1 test
+test directory_watch::tests::large_batches_share_one_instance_and_releasing_one_owner_keeps_other_proofs ... ok
+test copy_recovery::cleanup::tests::large_tree_cleanup_does_not_reread_full_journals_for_every_entry ... ok
+test move_transaction::tests::cross_filesystem_cleanup_preserves_quarantine_replacement ... ok
+
+running 1 test
+test move_recovery::tests::cross_device_overwrite_exchange_interruption_retains_all_entries_with_matching_published_evidence ... ok
+test move_recovery::tests::unproven_source_transaction_preserves_restrictive_umask_result ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.00s
+
+test move_recovery::tests::recovery_lock_is_released_after_a_lock_holding_process_is_killed ... ok
+test move_transaction::tests::cross_filesystem_overwrite_interruption_after_exchange_preserves_all_three_entries ...
+running 1 test
+ok
+test move_recovery::tests::unproven_source_transaction_preserves_restrictive_umask_result ... ok
+test move_transaction::tests::cross_filesystem_directory_move_preserves_nested_files_and_symlinks ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_move_durably_records_publication_before_source_cleanup ... ok
+test move_transaction::tests::cross_filesystem_move_publishes_destination_metadata_with_snapshot ... ok
+test copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.00s
+
+test move_transaction::tests::cross_filesystem_destination_parent_is_synced_after_publication_before_source_cleanup ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_recovery_requires_destination_transaction ... test move_transaction::tests::cross_filesystem_overwrite_recovery_resumes_after_source_restore ... ok
+test copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks ... ok
+test move_transaction::tests::cross_filesystem_overwrite_success_retains_displaced_destination_and_recovery_evidence ... ok
+test move_transaction::tests::cross_filesystem_published_overwrite_restart_finishes_source_cleanup_and_retains_undo_data ... ok
+test move_transaction::tests::cross_filesystem_recovery_finishes_cleanup_after_source_was_unlinked ... ok
+test move_transaction::tests::cross_filesystem_recovery_finishes_published_move_source_cleanup ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_recovery_requires_destination_transaction ... ok
+test move_transaction::tests::cross_filesystem_recovery_handles_source_cleanup_quarantine ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name ... test copy_recovery::cleanup::tests::payload_cleanup_restarts_at_each_durable_boundary_without_repeating_unlinks ... ok
+test move_transaction::tests::cross_filesystem_source_mutation_after_publication_preserves_both_entries ... ok
+test move_transaction::tests::cross_filesystem_source_mutation_at_cleanup_boundary_preserves_both_entries ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_source_replacement_after_revalidation_is_not_deleted ... ok
+test move_transaction::tests::cross_filesystem_staged_content_mutation_before_publication_preserves_source ... ok
+test move_transaction::tests::same_filesystem_overwrite_publication_interruption_is_committed_and_retained ... ok
+test move_transaction::tests::cross_filesystem_retry_through_public_api_recovers_claimed_source ... ok
+test move_transaction::tests::test_dir_restores_outer_recovery_root_after_nested_scope ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_candidate_handle_denies_all_concurrent_mutation ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_completion_flushes_source_namespace_before_cleanup ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_destination_parent_handle_can_flush_publication_namespace ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_directories_require_no_data_streams ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_directory_overwrite_retains_before_publishing ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_link_overwrite_resumes_after_displaced_retention ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_overwrite_restart_requires_retained_displaced_identity ... ok
+test move_transaction::tests::cross_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_does_not_flush_namespace_after_file_flush_failure ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_flushes_file_and_namespace_after_rename ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_requires_the_recorded_destination_parent ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_recovery_flushes_retained_and_namespace_before_recording ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_regular_file_rejects_named_data_streams ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_rename_advances_from_latest_durable_candidate ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_rename_candidate_journals_reconcile_only_by_prefix ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_restart_flushes_unrecorded_publication_before_source_removal ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_restart_uses_durable_identity_topology ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_skip_finishes_without_mutating_an_existing_destination ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_source_handle_denies_write_and_delete_sharing ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_source_kind_accepts_supported_entries_only ... ok
+test move_transaction::windows_source_tests::windows_directory_cleanup_accepts_only_manifest_subsets_and_orders_children_first ... ok
+test move_transaction::windows_source_tests::windows_directory_cleanup_claims_once_and_resumes_only_the_pinned_claim ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_accepts_and_binds_nested_symbolic_links ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_evidence_is_order_independent_and_path_bound ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_rejects_missing_or_nondirectory_ancestors ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_rejects_paths_that_escape_or_alias_tree_entries ... ok
+test move_transaction::windows_source_tests::windows_directory_slice_allows_verified_publication_but_keeps_source_removal_fail_closed ... ok
+test move_transaction::windows_source_tests::windows_incomplete_private_directory_candidate_is_discarded_before_retry ... ok
+test move_transaction::windows_source_tests::windows_incomplete_staging_cleanup_is_bound_to_its_transaction_directory ... ok
+test move_transaction::windows_source_tests::windows_move_route_distinguishes_same_and_cross_volume_paths ... ok
+test move_transaction::windows_source_tests::windows_overwrite_requires_published_source_and_retained_displaced_identity ... ok
+test move_transaction::windows_source_tests::windows_overwrite_restart_uses_durable_identities_not_advisory_phase ... ok
+test move_transaction::windows_source_tests::windows_recovery_discovery_accepts_only_exact_durable_journal_names ... ok
+test move_transaction::windows_source_tests::windows_recovery_lock_denies_concurrent_recovery_owners ... ok
+test move_transaction::windows_source_tests::windows_retained_move_discovery_does_not_initialize_missing_state ... ok
+test move_transaction::windows_source_tests::windows_same_volume_overwrite_uses_rename_publication_for_non_file_entries ... ok
+test move_transaction::tests::same_filesystem_publication_uses_verified_destination_parent_after_destination_alias_retarget ... ok
+test move_transaction::tests::same_filesystem_restore_uses_verified_source_parent_after_source_alias_retarget ... ok
+test move_transaction::windows_source_tests::windows_same_volume_source_kind_accepts_links_but_rejects_other_reparse_points ... ok
+test move_transaction::windows_source_tests::windows_source_removal_requires_identity_and_content_evidence ... ok
+test move_transaction::windows_source_tests::windows_symbolic_link_evidence_preserves_raw_utf16_target ... ok
+test move_transaction::windows_source_tests::windows_symbolic_link_snapshot_requires_target_and_kind_to_match ... ok
+test storage_location_tests::linux_storage_discovery_exposes_user_visible_mounts_without_home ... ok
+test storage_location_tests::windows_storage_display_name_prefers_volume_or_share_over_drive_identity ... ok
+test tests::batch_failure_before_any_completion_retains_normal_error_semantics ... ok
+test tests::chmod_undo_receipt_restores_the_prior_mode_of_the_exact_unchanged_entry ... ok
+test tests::chmod_command_rejects_symlinks_without_changing_the_target ... ok
+test tests::chmod_undo_refuses_to_mutate_a_pathname_replacement ... ok
+test tests::copy_batch_failure_after_a_completed_item_is_typed_as_partial_completion ... ok
+test tests::committed_trash_delete_does_not_become_failure_when_receipt_discovery_fails ... ok
+test tests::copy_receipt_does_not_pin_mount_and_refuses_after_unmount_and_replacement ... ignored, requires an explicitly owned private user/mount namespace
+test tests::copy_receipt_is_not_issued_for_an_entry_replaced_after_publication ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_replay_rejects_staged_content_changed_without_identity_change ... test tests::conflict_renamed_copy_undo_removes_the_exact_published_entry ... ok
+test tests::copy_undo_follows_destination_directory_alias_across_filesystems ... ok
+test tests::copy_batch_publishes_every_item_before_reporting_retained_stages ... ok
+test tests::copy_undo_rejects_a_replaced_published_entry_without_mutation ... ok
+test tests::copy_undo_receipt_removes_the_exact_published_entry ... ok
+test move_transaction::tests::cross_filesystem_replay_rejects_staged_content_changed_without_identity_change ... ok
+test tests::copy_undo_preserves_backup_edits_from_an_original_open_writer ... ok
+test copy_recovery::cleanup::tests::fresh_process_resumes_payload_after_sigkill_at_durable_boundaries ... ok
+test tests::copy_withdrawal_remains_in_original_directory_when_alias_changes_after_validation ... ok
+test tests::copying_file_symlink_preserves_exact_link_target ... ok
+test tests::create_file_undo_refuses_to_withdraw_an_edited_file ... ok
+test tests::create_file_undo_receipt_withdraws_only_the_exact_unchanged_entry ... ok
+test tests::create_folder_undo_receipt_withdraws_the_exact_unchanged_empty_directory ... ok
+test tests::copy_undo_rejects_same_filesystem_destination_alias_retarget_with_identical_file_inode ... ok
+test tests::creation_commands_reject_names_that_escape_the_requested_parent ... ok
+test tests::creation_commands_reject_parent_traversal_without_mutating_an_external_sibling ... ok
+test tests::create_folder_undo_refuses_to_withdraw_a_populated_directory ... ok
+test tests::copy_undo_rejects_replaced_retained_directory_and_parent_even_with_published_hardlink ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_replay_syncs_destination_parent_before_completion ... test tests::copy_undo_preserves_in_place_edits_and_original_overwrite_backups ... ok
+
+running 1 test
+test tests::cross_filesystem_copy_preserves_directory_mode_and_source_across_conflicts ... ok
+test move_transaction::tests::cross_filesystem_replay_syncs_destination_parent_before_completion ... ok
+test tests::dangling_symlink_is_accepted_as_copy_source ... ok
+test tests::directory_copy_into_self_or_descendant_is_rejected_before_creation ... ok
+test tests::execute_command_with_move_dispositions_defaults_with_empty_dispositions ... ok
+test tests::hardlink_self_copy_is_rejected_without_changing_the_entry ... ok
+test tests::invalid_later_copy_source_is_rejected_before_any_source_is_copied ... ok
+
+running 1 test
+test move_transaction::tests::cross_filesystem_skip_pending_destination_kill_child_process_restores_source_on_recovery ... test move_transaction::tests::cross_filesystem_skip_pending_destination_kill_child_process_restores_source_on_recovery ... ok
+test move_transaction::tests::cross_filesystem_symlink_move_preserves_link_without_touching_target ... ok
+test tests::linux_same_filesystem_move_preserves_a_dangling_symlink ... ok
+test tests::linux_same_filesystem_move_uses_native_rename_without_recovery_artifacts ... ok
+test tests::move_batch_claimed_recovery_does_not_count_the_stopped_item_as_completed ... ok
+test tests::linux_same_filesystem_move_conflicts_are_explicit_and_non_copying ... ok
+test tests::move_batch_committed_warning_counts_the_stopped_item_as_completed ... ok
+test tests::move_batch_does_not_count_skipped_sources_as_completed ... ok
+test tests::move_undo_receipt_restores_the_original_entry ... ok
+test tests::native_home_trash_proof_rejects_traversal_and_symlink_payloads ... ok
+test tests::nested_special_file_is_rejected_before_destination_tree_is_created ... ok
+test tests::open_with_native_choices_bind_target_deduplicate_and_sort ... ok
+test tests::open_with_native_choices_bind_target_filter_deduplicate_and_sort ... ok
+test tests::open_with_native_selection_rejects_stale_ids_and_launches_the_requeried_object ... ok
+test tests::open_with_selection_rejects_stale_ids_and_launches_the_requeried_object ... ok
+
+running 1 test
+test move_transaction::tests::same_filesystem_overwrite_publication_sigkill_recovers_both_entries_after_restart ...
+running 1 test
+
+running 1 test
+test move_transaction::tests::same_filesystem_overwrite_publication_sigkill_recovers_both_entries_after_restart ... ok
+test tests::overwritten_copy_undo_refuses_a_replaced_displaced_destination ... ok
+test tests::open_with_hides_nodisplay_handlers_in_an_isolated_gio_environment ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.01s
+
+
+running 1 test
+test move_transaction::tests::same_filesystem_publication_kill_child_process_after_publication_preserves_volatile_state ... test tests::open_with_hides_nodisplay_handlers_in_an_isolated_gio_environment ... ok
+test tests::overwritten_copy_undo_restores_the_exact_displaced_destination ... ok
+test move_transaction::tests::same_filesystem_publication_kill_child_process_after_publication_preserves_volatile_state ... ok
+
+running 1 test
+test move_transaction::tests::same_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name ...
+running 1 test
+test move_transaction::tests::same_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name ... ok
+test copy_recovery::cleanup::finalization::tests::finalization_reopens_after_every_metadata_retirement_boundary ... ok
+
+running 1 test
+test tests::cross_filesystem_directory_move_undo_restores_exact_tree_and_withdraws_destination ... ok
+test tests::partial_copy_batch_reports_every_retained_recovery_path ... ok
+test tests::cross_filesystem_move_undo_rejects_published_content_edited_in_place ... ok
+
+running 1 test
+
+running 1 test
+test tests::cross_filesystem_overwrite_move_is_undoable ... ok
+test copy_recovery::cleanup::finalization::tests::group_finalization_resumes_after_sigkill_with_a_canonical_member_already_gone ... ok
+test tests::cross_filesystem_overwrite_undo_rejects_stale_retained_destination_before_restoring_source ... ok
+
+running 1 test
+
+running 1 test
+test tests::default_retained_move_status_uses_isolated_state_home_without_initializing_it ... ok
+test tests::cross_filesystem_overwrite_undo_retries_after_exchange_interruption ... ok
+test tests::rename_collision_does_not_overwrite_either_file ... ok
+test tests::rename_command_rejects_a_cross_parent_name_without_mutation ... ok
+test tests::rename_undo_collision_preserves_both_entries ... ok
+test tests::rename_undo_preserves_symlink_entries_without_dereferencing ... ok
+test tests::rename_undo_receipt_restores_the_original_entry ... ok
+test tests::rename_undo_rejects_a_cross_parent_receipt_before_mutation ... ok
+test tests::rename_undo_rejects_a_missing_destination_without_creating_the_original_name ... ok
+test tests::recursive_copy_preserves_tree_symlinks_without_traversing_them ... ok
+test tests::rename_undo_rejects_a_replaced_destination_without_mutation ... ok
+test tests::renamed_move_undo_restores_the_exact_original_entry ... ok
+test tests::retained_move_status_facade_never_initializes_an_unanchored_root ... ok
+test tests::linux_cross_filesystem_regular_file_move_supports_skip_and_rename ... ok
+test tests::overwrite_move_without_a_conflict_remains_a_plain_undoable_move ... ok
+test tests::renamed_copy_target_skips_dangling_symlink_candidate ... ok
+test tests::symlink_undo_receipt_withdraws_the_exact_unchanged_link_entry ... ok
+test tests::symlink_undo_refuses_to_withdraw_a_pathname_replacement ... ok
+test tests::unsupported_special_file_is_rejected_without_creating_destination ... ok
+test tests::windows_reserved_creation_names_reject_documented_superscript_device_aliases ... ok
+test text_edit::tests::canceling_a_session_never_mutates_the_source ... ok
+test text_edit::tests::changed_source_refuses_overwrite_and_keeps_the_callers_buffer ... ok
+test text_edit::tests::failed_publication_keeps_the_source_and_callers_buffer ... ok
+test text_edit::tests::fiemap_extent_coverage_rejects_ambiguous_or_incomplete_layouts ... ok
+test tests::overwritten_move_undo_cleanup_failure_is_retryable_after_paths_are_restored ... ok
+test text_edit::tests::binary_controls_and_oversized_edits_are_not_admitted ... ok
+test text_edit::tests::hard_linked_text_remains_read_only ... ok
+test tests::overwritten_move_undo_rejects_a_replaced_published_entry_without_mutation ... ok
+test text_edit::tests::invalid_or_incomplete_sources_remain_read_only ... ok
+test text_edit::tests::late_source_replacement_is_a_conflict_and_retains_private_staging ... ok
+test text_edit::tests::missing_source_is_a_conflict_not_a_new_file_save ... ok
+test text_edit::tests::parent_path_replacement_cannot_redirect_publication ... ok
+
+running 1 test
+
+running 1 test
+test text_edit::tests::identical_content_replacement_and_restored_mtime_are_conflicts ... ok
+test tests::overwritten_move_undo_rejects_a_replaced_retained_entry_without_mutation ... ok
+test text_edit::tests::replaced_stage_name_is_never_unlinked_during_failed_save_cleanup ... ok
+test tests::overwritten_move_undo_restores_moved_and_displaced_entries ... ok
+test text_edit::tests::source_replaced_after_final_check_publishes_with_a_recovery_conflict ... ok
+test tests::overwritten_move_undo_source_collision_refuses_without_mutation ... ok
+test text_edit::tests::special_mode_text_remains_read_only_when_supported_by_the_fixture ... ok
+test text_edit::tests::sparse_text_with_preallocation_past_eof_remains_read_only ... ok
+test text_edit::tests::symbolic_links_remain_read_only ... ok
+test text_edit::tests::unicode_text_can_be_saved_without_normalizing_line_endings ... ok
+test text_edit::tests::final_window_identical_bytes_replacement_preserves_inode_identity_check ... ok
+test text_edit::tests::xattr_bearing_text_remains_read_only_when_supported_by_the_fixture ... ok
+test text_edit::windows_contract::tests::windows_collision_keeps_external_target_and_retained_original ... ok
+test text_edit::windows_contract::tests::windows_failure_at_every_boundary_preserves_recovery_and_stops ... ok
+test text_edit::tests::final_window_permission_change_is_retained_and_reported ... ok
+test text_edit::windows_contract::tests::windows_publication_retains_and_flushes_before_publishing ... ok
+test text_edit::windows_contract::tests::windows_withdrawal_error_requires_reload_even_if_namespace_outcome_is_uncertain ... ok
+test text_edit::tests::source_change_at_publication_is_refused ... ok
+test text_edit::tests::publication_followed_by_another_writer_is_a_recovery_conflict ... ok
+test text_edit::tests::successful_save_retains_both_versions_for_late_descriptor_writers ... ok
+test text_edit::tests::unsupported_exchange_retains_draft_without_touching_source ... ok
+test copy_recovery::tests::sigkill_copy_undo_boundaries_recover_in_a_new_process ... ok
+test text_edit::tests::recovery_only_restores_a_vacant_name_and_never_overwrites_a_third_writer ... ok
+test tests::plain_cross_filesystem_move_undo_retries_after_destination_quarantine_interruption ... ok
+test tests::plain_cross_filesystem_move_undo_retries_after_source_restore_interruption ... ok
+test tests::public_move_batch_reports_only_published_sources_as_completed ... ok
+test tests::recover_retained_move_known_pending_destination_replays_claimed_source ... ok
+test tests::test_dir_isolates_retained_move_journals_from_outer_discovery ... ok
+test tests::recover_retained_move_unknown_transaction_is_rejected ... ok
+test tests::single_home_trash_delete_returns_a_receipt_that_restores_the_exact_item ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 413 filtered out; finished in 0.34s
+
+test tests::single_home_trash_delete_returns_a_receipt_that_restores_the_exact_item ... ok
+test copy_recovery::cleanup::finalization::tests::finalizing_large_groups_does_not_reread_every_journal_per_item ... ok
+
+test result: ok. 411 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.99s

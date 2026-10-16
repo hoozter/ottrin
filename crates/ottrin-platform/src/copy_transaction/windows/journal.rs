@@ -1,6 +1,6 @@
 //! Paired, append-only Copy staging records. Inspection never grants deletion.
 use super::{
-    EntryVersion, PlatformError, WindowsStableIdentity, io, links, metadata, namespace,
+    EntryVersion, PlatformError, WindowsStableIdentity, io, links, metadata, namespace, security,
     stable_identity_from_handle, tree,
 };
 use crate::{
@@ -22,7 +22,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     SYNCHRONIZE,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ01";
+const MAGIC: &[u8; 8] = b"OTCPWJ02";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -42,6 +42,10 @@ struct Header {
     parent_location: NativePath,
     target: Vec<u16>,
     source_label: Vec<u16>,
+    creator: Vec<u8>,
+    stage_security: security::PrivateSecurity,
+    local_security: security::PrivateSecurity,
+    central_security: security::PrivateSecurity,
 }
 impl Header {
     fn stage_name(&self) -> OsString {
@@ -55,7 +59,10 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 1
+            && self.schema == 2
+            && self.stage_security.valid_for(&self.creator)
+            && self.local_security.valid_for(&self.creator)
+            && self.central_security.valid_for(&self.creator)
             && self.transaction.len() == 32
             && self
                 .transaction
@@ -91,7 +98,7 @@ fn valid_leaf(name: &[u16]) -> bool {
 #[serde(tag = "event", rename_all = "kebab-case", deny_unknown_fields)]
 enum Record {
     Begin {
-        header: Header,
+        header: Box<Header>,
     },
     CreateIntent {
         index: usize,
@@ -102,6 +109,7 @@ enum Record {
     Created {
         index: usize,
         identity: WindowsStableIdentity,
+        security: security::PrivateSecurity,
     },
     EntryStaged {
         index: usize,
@@ -117,6 +125,7 @@ struct Node {
     name: Vec<u16>,
     source: EntryVersion,
     created: Option<WindowsStableIdentity>,
+    security: Option<security::PrivateSecurity>,
     staged: Option<metadata::StagedEntry>,
 }
 #[derive(Default, Debug)]
@@ -260,10 +269,15 @@ impl State {
                     }
                 }
             }
-            Record::Created { index, identity } => {
+            Record::Created {
+                index,
+                identity,
+                security,
+            } => {
                 let node = self.nodes.get(*index).ok_or_else(invalid)?;
                 let header = self.header.as_ref().ok_or_else(invalid)?;
-                if node.created.is_some()
+                if !security.valid_for(&header.creator)
+                    || node.created.is_some()
                     || identity.volume_serial_number() != header.parent.volume_serial_number()
                     || self.nodes.iter().any(|n| {
                         n.created.is_some_and(|id| id.same_object(*identity))
@@ -305,7 +319,7 @@ impl State {
     fn apply(&mut self, record: Record) -> Result<(), PlatformError> {
         self.check(&record)?;
         match record {
-            Record::Begin { header } => self.header = Some(header),
+            Record::Begin { header } => self.header = Some(*header),
             Record::CreateIntent {
                 parent,
                 name,
@@ -316,9 +330,17 @@ impl State {
                 name,
                 source,
                 created: None,
+                security: None,
                 staged: None,
             }),
-            Record::Created { index, identity } => self.nodes[index].created = Some(identity),
+            Record::Created {
+                index,
+                identity,
+                security,
+            } => {
+                self.nodes[index].created = Some(identity);
+                self.nodes[index].security = Some(security);
+            }
             Record::EntryStaged { index, evidence } => self.nodes[index].staged = Some(evidence),
             Record::TreeVerified { .. } => self.verified = true,
         }
@@ -421,6 +443,7 @@ struct Journal {
     previous: [u8; 32],
     length: u64,
     failed: bool,
+    candidates: Vec<File>,
 }
 impl Journal {
     fn create(
@@ -448,9 +471,14 @@ impl Journal {
         let central_file =
             windows_fs::create_private(central, &central_name, false, FILE_SHARE_READ)
                 .map_err(io)?;
+        let creator = security::current_owner()?;
         let header = Header {
+            stage_security: security::PrivateSecurity::capture(&stage.directory, &creator)?,
+            local_security: security::PrivateSecurity::capture(&local, &creator)?,
+            central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
+            creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 1,
+            schema: 2,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -476,14 +504,42 @@ impl Journal {
             previous: [0; 32],
             length: 0,
             failed: false,
+            candidates: Vec::new(),
         };
         result.stage_dir.sync_all().map_err(io)?;
         result.central_dir.sync_all().map_err(io)?;
         stage.parent().sync_all().map_err(io)?;
-        result.persist(Record::Begin { header })?;
+        result.persist(Record::Begin {
+            header: Box::new(header),
+        })?;
         Ok(result)
     }
+    fn candidate_security(&self, index: usize) -> Result<(), PlatformError> {
+        let node = self
+            .state
+            .nodes
+            .get(index)
+            .ok_or_else(|| io("missing Copy security record"))?;
+        let security = node
+            .security
+            .as_ref()
+            .ok_or_else(|| io("missing private Copy security evidence"))?;
+        let candidate = self
+            .candidates
+            .get(index)
+            .ok_or_else(|| io("missing held Copy candidate"))?;
+        security.validate(candidate, &self.header.creator)
+    }
     fn bindings(&self) -> Result<(), PlatformError> {
+        self.header
+            .stage_security
+            .validate(&self.stage_dir, &self.header.creator)?;
+        self.header
+            .local_security
+            .validate(&self.local, &self.header.creator)?;
+        self.header
+            .central_security
+            .validate(&self.central, &self.header.creator)?;
         if stable_identity_from_handle(&self.stage_dir).map_err(io)? != self.header.stage
             || stable_identity_from_handle(&self.central_dir).map_err(io)? != self.header.central
         {
@@ -559,6 +615,9 @@ impl tree::StagingJournal for Journal {
         name: &OsStr,
         source: &EntryVersion,
     ) -> Result<(), PlatformError> {
+        if let Some(parent) = parent {
+            self.candidate_security(parent)?;
+        }
         self.persist(Record::CreateIntent {
             index,
             parent,
@@ -582,23 +641,50 @@ impl tree::StagingJournal for Journal {
             .get(index)
             .is_some_and(|node| node.created == Some(identity) && node.staged.is_none())
         {
+            self.candidate_security(index)?;
             return self.bindings();
         }
+        if index != self.candidates.len() {
+            return Err(io("Copy candidate security order changed"));
+        }
+        let node = self
+            .state
+            .nodes
+            .get(index)
+            .ok_or_else(|| io("Copy creation has no durable intent"))?;
+        if let Some(parent) = node.parent {
+            self.candidate_security(parent)?;
+        }
+        let security = security::PrivateSecurity::capture(candidate, &self.header.creator)?;
+        let held = candidate.try_clone().map_err(io)?;
         candidate.sync_all().map_err(io)?;
         parent.sync_all().map_err(io)?;
-        self.persist(Record::Created { index, identity })
+        self.persist(Record::Created {
+            index,
+            identity,
+            security,
+        })?;
+        self.candidates.push(held);
+        self.candidate_security(index)
     }
     fn staged(
         &mut self,
         index: usize,
         evidence: &metadata::StagedEntry,
     ) -> Result<(), PlatformError> {
+        self.candidate_security(index)?;
         self.persist(Record::EntryStaged {
             index,
             evidence: evidence.clone(),
         })
     }
     fn verified(&mut self, count: usize) -> Result<(), PlatformError> {
+        if count != self.candidates.len() {
+            return Err(io("Copy security candidate count changed"));
+        }
+        for index in 0..count {
+            self.candidate_security(index)?;
+        }
         self.persist(Record::TreeVerified { count })
     }
 }
@@ -687,6 +773,7 @@ struct Snapshot {
     mirror: File,
     bytes: Vec<u8>,
     state: State,
+    requires_creator: bool,
 }
 impl Snapshot {
     fn load(
@@ -717,12 +804,27 @@ impl Snapshot {
             mirror,
             bytes,
             state,
+            requires_creator: lock,
         };
         result.revalidate(parent, central)?;
         Ok(result)
     }
     fn revalidate(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
         let header = self.state.header.as_ref().unwrap();
+        if self.requires_creator && security::current_owner()? != header.creator {
+            return Err(io(
+                "retained Copy creator does not match the effective token owner",
+            ));
+        }
+        header
+            .stage_security
+            .validate(&self.stage, &header.creator)?;
+        header
+            .local_security
+            .validate(&self.local, &header.creator)?;
+        header
+            .central_security
+            .validate(&self.mirror, &header.creator)?;
         for (file, expected) in [
             (parent, header.parent),
             (&self.stage, header.stage),
@@ -811,6 +913,10 @@ impl<'a> RetainedStage<'a> {
             let owner = node.parent.map(|p| &entries[p].handle).unwrap_or(parent);
             let handle = namespace::open_source(owner, &OsString::from_wide(&node.name), None)?;
             let evidence = node.staged.as_ref().unwrap();
+            node.security
+                .as_ref()
+                .unwrap()
+                .validate(&handle, &snapshot.state.header.as_ref().unwrap().creator)?;
             evidence.validate_retained_metadata(&handle)?;
             let observed = super::version(&handle)?;
             if observed.link != evidence.source.link {
@@ -842,6 +948,10 @@ impl<'a> RetainedStage<'a> {
             return Err(io("unexpected Copy transaction entries; all data retained"));
         }
         for (node, entry) in self.snapshot.state.nodes.iter().zip(&self.entries) {
+            node.security.as_ref().unwrap().validate(
+                &entry.handle,
+                &self.snapshot.state.header.as_ref().unwrap().creator,
+            )?;
             let owner = node
                 .parent
                 .map(|p| &self.entries[p].handle)
@@ -1586,5 +1696,185 @@ mod tests {
                 .is_ok()
         );
         assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_ok());
+    }
+    #[test]
+    fn windows_native_copy_private_security_records_and_rejects_permission_drift() {
+        for mode in 0..6 {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            let candidate = root
+                .path()
+                .join("destination")
+                .join(&staged.stage.candidate_name);
+            let dir = root.path().join("destination").join(&name);
+            let mirror = root
+                .path()
+                .join("central")
+                .join(staged.journal.header.central_name());
+            let file = candidate.join("nested/file");
+            let recorded = staged
+                .journal
+                .state
+                .nodes
+                .last()
+                .unwrap()
+                .security
+                .as_ref()
+                .unwrap();
+            let raw = serde_json::to_value(recorded).unwrap();
+            let flags = raw["dacl"][9].as_u64().unwrap();
+            let changed = match mode {
+                0 => candidate.clone(),
+                1 => file.clone(),
+                2 => dir.clone(),
+                3 => dir.join(LOCAL),
+                4 => mirror.clone(),
+                _ => file.clone(),
+            };
+            drop(staged);
+            let dacl = if mode == 5 {
+                if flags == 0 {
+                    "D:P(A;OICI;FA;;;OW)"
+                } else {
+                    "D:P(A;;FA;;;OW)"
+                }
+            } else {
+                "D:P(A;OICI;FA;;;OW)(A;;FR;;;WD)"
+            };
+            super::super::tests::set_dacl(&changed, dacl);
+            let creator = security::current_owner().unwrap();
+            let changed_handle = owner(&changed);
+            if mode == 5 {
+                assert!(security::PrivateSecurity::capture(&changed_handle, &creator).is_ok());
+            } else {
+                assert!(security::PrivateSecurity::capture(&changed_handle, &creator).is_err());
+            }
+            drop(changed_handle);
+            assert!(
+                RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err(),
+                "mode {mode}"
+            );
+            assert_eq!(std::fs::read(&file).unwrap(), b"original data");
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            // Failed inspection must not repair permissions.
+            let changed_handle = owner(&changed);
+            if mode != 5 {
+                assert!(security::PrivateSecurity::capture(&changed_handle, &creator).is_err());
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_private_security_drift_during_validation_is_retained() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let file = root
+            .path()
+            .join("destination")
+            .join(&staged.stage.candidate_name)
+            .join("nested/file");
+        drop(staged);
+        let mut changed = false;
+        let result = RetainedStage::open(&parent, &central, &name, |bytes| {
+            if bytes > 0 && !changed {
+                super::super::tests::set_dacl(&file, "D:P(A;OICI;FA;;;OW)(A;;FR;;;WD)");
+                changed = true;
+            }
+            Ok(())
+        });
+        assert!(changed);
+        let error = result.err().expect("permission drift must be refused");
+        assert!(error.to_string().contains("security"), "{error}");
+        assert_eq!(std::fs::read(&file).unwrap(), b"original data");
+    }
+    #[test]
+    fn windows_native_copy_private_security_staging_drift_never_records_success() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source/nested/file"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut changed = None;
+        let result = DurableStage::create(
+            &src,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            OsStr::new("file"),
+            100,
+            |bytes| {
+                if bytes > 0 && changed.is_none() {
+                    let file = std::fs::read_dir(root.path().join("destination"))
+                        .unwrap()
+                        .map(|e| e.unwrap().path())
+                        .find(|p| p.to_string_lossy().ends_with(".candidate"))
+                        .unwrap();
+                    super::super::tests::set_dacl(&file, "D:P(A;OICI;FA;;;OW)(A;;FR;;;WD)");
+                    changed = Some(file);
+                }
+                Ok(())
+            },
+        );
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+        let file = changed.expect("injected security change");
+        assert_eq!(std::fs::read(&file).unwrap(), b"original data");
+        let name = stage_name(&root.path().join("destination"));
+        let report = inspect(&parent, &central, &name).unwrap();
+        assert_eq!(
+            (report.created, report.staged, report.verified),
+            (1, 0, false)
+        );
+        assert!(!root.path().join("destination/copy").exists());
+    }
+    #[test]
+    fn windows_native_copy_private_security_rejects_foreign_creator_and_malformed_records() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let staged = stage(&src, &parent, &central).unwrap();
+        let header = &staged.journal.header;
+        assert!(header.valid());
+        for field in ["stage_security", "local_security", "central_security"] {
+            for bad in [
+                serde_json::json!([]),
+                serde_json::json!([1]),
+                serde_json::json!(vec![0; 28]),
+            ] {
+                let mut value = serde_json::to_value(header).unwrap();
+                value[field]["dacl"] = bad;
+                let header: Header = serde_json::from_value(value).unwrap();
+                assert!(!header.valid());
+                assert!(
+                    State::default()
+                        .apply(Record::Begin {
+                            header: Box::new(header)
+                        })
+                        .is_err()
+                );
+            }
+        }
+        let mut old = header.clone();
+        old.schema = 1;
+        assert!(!old.valid());
+        let mut foreign = header.clone();
+        foreign.creator[8] ^= 1;
+        assert!(!foreign.valid());
+        let mut missing = serde_json::to_value(header).unwrap();
+        missing.as_object_mut().unwrap().remove("stage_security");
+        assert!(serde_json::from_value::<Header>(missing).is_err());
     }
 }
