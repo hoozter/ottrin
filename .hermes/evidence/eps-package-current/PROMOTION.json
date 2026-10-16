@@ -1,0 +1,18 @@
+{
+  "status": "pass",
+  "source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+  "linux_stable": "/home/campbell/Projects/Ottrin/dist/packages",
+  "windows_internal_stable": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-current",
+  "superseded_generated_packages": "Replaced; previous internal Windows cohort removed after consumer check",
+  "operator_service_and_profiles": "Not mutated",
+  "candidate_directory_removed": true,
+  "artifacts": {
+    "Ottrin-0.1.0-x86_64.AppImage": "1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "dd10eaa71dc686240256b0bb0e0d1299a0ebacc7642c717ae1e7e079371cb06c",
+    "ottrin_0.1.0_amd64.deb": "32a263b632b84fa4d7a8c89042199fb60fb9ef5e182786d07186c722a8ceaa28",
+    "ottrin-0.1.0-1.x86_64.rpm": "8db5b1f88c77c6c986fb9117526d5b7243ea426832a2c44f17b13daa5c4aa743",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "28293264d72fe35dd02f6f6c4909e6c158b9bfc14e40fd15d17e552f8ca144b0",
+    "Ottrin-0.1.0-windows-x64.msi": "5cfc47f45100305a6255db355cfceed7caaceaedaef560e722d6e2d14fdd0283",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ee0cb8c88069e9a66fb2f99b0099b08a5a260b63bbb940da8277711e4bd8ab31"
+  }
+}

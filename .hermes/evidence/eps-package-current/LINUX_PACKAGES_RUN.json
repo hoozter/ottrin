@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "artifacts": {
+    "Ottrin-0.1.0-x86_64.AppImage": {
+      "exit": 0
+    },
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "exit": 0
+    },
+    "ottrin_0.1.0_amd64.deb": {
+      "exit": 0
+    },
+    "ottrin-0.1.0-1.x86_64.rpm": {
+      "exit": 0
+    }
+  }
+}

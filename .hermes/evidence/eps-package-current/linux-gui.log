@@ -1,0 +1,45 @@
+{
+  "status": "pass",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "sha256": "b0f21c35b7a19718bfb5a98cfbcb468a203d081915dec2da4aceff2e59ef3bc2",
+  "scope": "Private Xvfb/X11 and profile, software OpenGL, Dark 100%; shared user manager control bus for transient EPS sandbox units; no physical GPU claim",
+  "cases": {
+    "ply": {
+      "title": "Ottrin Quick Inspector \u2014 model.ply",
+      "rendered_fixture_pixels": 728,
+      "colored_pixel_span": [
+        283,
+        245
+      ],
+      "oracle": "Blue wireframe edges spanning both projected axes",
+      "source_unchanged": true,
+      "clean_exit": 0
+    },
+    "affinity": {
+      "title": "Ottrin Quick Inspector \u2014 composite.afphoto",
+      "rendered_fixture_pixels": 184892,
+      "colored_pixel_span": [
+        543,
+        339
+      ],
+      "oracle": "Green embedded composite",
+      "source_unchanged": true,
+      "clean_exit": 0
+    },
+    "eps": {
+      "title": "Ottrin Quick Inspector \u2014 drawing.eps",
+      "rendered_fixture_pixels": 151945,
+      "colored_pixel_span": [
+        564,
+        300
+      ],
+      "oracle": "Green/red PostScript drawing",
+      "source_unchanged": true,
+      "clean_exit": 0
+    }
+  },
+  "cleanup": {
+    "profile_extraction_removed": true,
+    "private_processes": []
+  }
+}

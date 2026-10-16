@@ -1,0 +1,27 @@
+{
+  "fixture_removed": true,
+  "index_stop_exit": 0,
+  "status": "pass",
+  "ordinary_user": true,
+  "screen": "{X=0,Y=0,Width=1280,Height=800}",
+  "cases": {
+    "ply": {
+      "rendered_fixture_pixels": 1512,
+      "title": "Ottrin Quick Inspector \u2014 model.ply",
+      "clean_exit": 0,
+      "source_unchanged": true
+    },
+    "affinity": {
+      "rendered_fixture_pixels": 333284,
+      "title": "Ottrin Quick Inspector \u2014 composite.afphoto",
+      "clean_exit": 0,
+      "source_unchanged": true
+    },
+    "eps": {
+      "rendered_fixture_pixels": 277327,
+      "title": "Ottrin Quick Inspector \u2014 drawing.eps",
+      "clean_exit": 0,
+      "source_unchanged": true
+    }
+  }
+}

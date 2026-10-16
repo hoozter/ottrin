@@ -1,0 +1,5 @@
+{
+  "status": "actor passed",
+  "controller": "Observation timeout after short-lived mapped windows closed; authoritative scheduled task terminal and GUI_PREVIEWS pass. No relaunch.",
+  "source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9"
+}

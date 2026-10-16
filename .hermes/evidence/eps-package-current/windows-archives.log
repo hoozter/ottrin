@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "source_revision": "7f497e9ffc3e6a49ddb2ba67702036440b314f99",
+  "portable_and_nsis_payload_files": 57,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "e1e60ed93a3d8294b7a0bbfc1eaf76ba9ccb493022b1a6c200f9866f072915ca",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "6e0337bd0c76c08ed8b99fd25139ae98fe82d7f0b0bd9b688f698d2b7e50be04"
+  },
+  "checks": [
+    "Every portable payload file exactly equals stage; no extra archive files",
+    "Every expected NSIS payload file exactly equals stage",
+    "Current packaged docs and clean source revision match"
+  ],
+  "scope": "Package contents only; native lifecycle and current GUI acceptance remain separate"
+}

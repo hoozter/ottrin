@@ -1,0 +1,11 @@
+uploaded model.ply 314
+uploaded composite.afphoto 1379
+uploaded drawing.eps 170
+uploaded windows-preview-gui.ps1 7451
+uploaded gui-runner.ps1 137
+uploaded gui-config.json 1887
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/eps-package-current/dispatch-preview-gui.py", line 20, in <module>
+    if time.monotonic()>deadline:raise TimeoutError('Owned GUI has not appeared; inspect actor, do not relaunch')
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: Owned GUI has not appeared; inspect actor, do not relaunch

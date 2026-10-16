@@ -8,6 +8,36 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Current delivered preview checkpoint
+
+Clean runtime source `e9e6783` is now the stable four-format Linux cohort at
+`dist/packages/` and three-format internal Windows cohort at
+`.hermes/packaging-tmp/windows-current/`. The AppImage SHA-256 is
+`1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608`.
+All four Linux formats pass exact content/provider/watch/paging checks and release
+payload identity; RPM code/data sections agree after normal stripping. The exact
+AppImage passes PLY, Affinity and actual EPS rendering with unchanged source
+bytes and clean exits. VCF arrows/Space, shared titlebar and 70 settled PDF
+captures with one stable size also pass in private Dark 100% X11/software OpenGL.
+
+The corrected Windows portable GUI passes PLY/Affinity/EPS rendering, unchanged
+sources and clean close as an ordinary user in the owned VM with the bundled
+OpenGL override. Portable, NSIS and MSI pass current content/watch/paging and
+positive installer lifecycle checks. All 57 payload files agree across portable,
+NSIS and native MSI extraction. The first `7f497e9` candidate was rejected before
+promotion; the actual worker regression and rebuilt GUI now cover that gap.
+Ghostscript is a separate fixture capability and is absent from deliverables.
+
+The owned COW guest, volume, NVRAM and TPM were removed after normal shutdown;
+original profiles/installations and stopped guests are preserved. Host fixtures,
+extractions and scoped tools were removed; superseded cohorts were replaced.
+These targeted checks do not close physical GPU/Wayland, broader theme/DPI,
+installed Windows GUI, upgrade/repair/reboot/login or MSI failed-registration
+rollback gates. Windows public Copy still has two required native UI failures and
+remains agent-executable implementation work. User testing is deferred; no
+release or daily-driver completion is claimed. Current receipt and all hashes:
+`.hermes/evidence/eps-package-current/ACCEPTANCE.json`.
+
 ## Windows EPS worker integration follow-up
 
 Exact portable GUI testing rejected the first `7f497e9` candidate: the renderer

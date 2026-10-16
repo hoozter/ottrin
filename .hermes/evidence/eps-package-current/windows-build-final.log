@@ -1,0 +1,27 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 3m 49s
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `release` profile [optimized] target(s) in 0.38s
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+/tmp/tmp.6axw7U1nme/pdfium.tgz: OK
+/tmp/tmp.7wAuMER37g/mesa.7z: OK
+/tmp/tmp.7wAuMER37g/mesa-source.tar.gz: OK
+/tmp/tmp.7wAuMER37g/pal1000-LICENSE.txt: OK
+/tmp/tmp.7wAuMER37g/dxc.zip: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/eps-refresh/windows/windows-payload/Ottrin-0.1.0-windows-x64/bin/opengl32.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/eps-refresh/windows/windows-payload/Ottrin-0.1.0-windows-x64/bin/libEGL.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/eps-refresh/windows/windows-payload/Ottrin-0.1.0-windows-x64/bin/libGLESv2.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/eps-refresh/windows/windows-payload/Ottrin-0.1.0-windows-x64/bin/libgallium_wgl.dll: OK
+/tmp/tmp.7wAuMER37g/dxc/LICENSE-MS.txt: OK
+/tmp/tmp.7wAuMER37g/dxc/bin/x64/dxil.dll: OK
+/tmp/tmp.iejklWKGBF/archive: OK
+/tmp/tmp.iejklWKGBF/extract/ripgrep-15.2.0-x86_64-pc-windows-msvc/rg.exe: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/eps-refresh/windows/Ottrin-0.1.0-windows-x64-portable.zip

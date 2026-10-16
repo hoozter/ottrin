@@ -1,0 +1,85 @@
+{
+  "status": "partial",
+  "package_checks": "pass",
+  "runtime_source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+  "artifacts": {
+    "Ottrin-0.1.0-x86_64.AppImage": "1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "dd10eaa71dc686240256b0bb0e0d1299a0ebacc7642c717ae1e7e079371cb06c",
+    "ottrin_0.1.0_amd64.deb": "32a263b632b84fa4d7a8c89042199fb60fb9ef5e182786d07186c722a8ceaa28",
+    "ottrin-0.1.0-1.x86_64.rpm": "8db5b1f88c77c6c986fb9117526d5b7243ea426832a2c44f17b13daa5c4aa743",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "28293264d72fe35dd02f6f6c4909e6c158b9bfc14e40fd15d17e552f8ca144b0",
+    "Ottrin-0.1.0-windows-x64.msi": "5cfc47f45100305a6255db355cfceed7caaceaedaef560e722d6e2d14fdd0283",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ee0cb8c88069e9a66fb2f99b0099b08a5a260b63bbb940da8277711e4bd8ab31"
+  },
+  "source_evidence": {
+    "folder_size": ".hermes/evidence/windows-folder-size-current/ACCEPTANCE.json",
+    "eps_renderer_and_isolation": ".hermes/evidence/windows-eps-current/ACCEPTANCE.json",
+    "production_eps_worker": ".hermes/evidence/windows-eps-worker-current/ACCEPTANCE.json"
+  },
+  "linux": {
+    "status": "pass",
+    "source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+    "artifacts": {
+      "Ottrin-0.1.0-x86_64.AppImage": "1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "dd10eaa71dc686240256b0bb0e0d1299a0ebacc7642c717ae1e7e079371cb06c",
+      "ottrin_0.1.0_amd64.deb": "32a263b632b84fa4d7a8c89042199fb60fb9ef5e182786d07186c722a8ceaa28",
+      "ottrin-0.1.0-1.x86_64.rpm": "8db5b1f88c77c6c986fb9117526d5b7243ea426832a2c44f17b13daa5c4aa743"
+    },
+    "checks": [
+      "All four exact extracted-package content/provider/notices/watch/paging checks pass",
+      "Release executable payload identity passes; RPM .text/.rodata match after standard stripping",
+      "Exact AppImage PLY/Affinity/EPS Inspector pixels, unchanged sources and clean close pass",
+      "Exact AppImage VCF read-only arrows/Space, shared titlebar and stable PDF bounds pass"
+    ],
+    "scope": "Targeted private X11/software OpenGL Dark 100% and CLI fixture checks; not physical GPU/Wayland, broad theme/DPI, explicit edit/save or complete distro acceptance"
+  },
+  "windows": {
+    "status": "partial",
+    "source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+    "artifacts": {
+      "Ottrin-0.1.0-windows-x64-portable.zip": "28293264d72fe35dd02f6f6c4909e6c158b9bfc14e40fd15d17e552f8ca144b0",
+      "Ottrin-0.1.0-windows-x64.msi": "5cfc47f45100305a6255db355cfceed7caaceaedaef560e722d6e2d14fdd0283",
+      "Ottrin-0.1.0-windows-x64-setup.exe": "ee0cb8c88069e9a66fb2f99b0099b08a5a260b63bbb940da8277711e4bd8ab31"
+    },
+    "package_checks": "pass",
+    "payload_files": 57,
+    "payload_identity": "All portable/NSIS/native MSI extracted files exactly equal stage",
+    "native_checks": {
+      "ordinary_user_content_watch_paging": "all three formats pass",
+      "positive_per_user_install_and_uninstall": "NSIS and MSI pass",
+      "portable_gui": "PLY wireframe, Affinity composite and green/red EPS pixels; original sources unchanged, all exits zero",
+      "external_eps_runtime": "Separately prepared official Ghostscript 10.08.0 only in owned COW; absent from Ottrin deliverables"
+    },
+    "scope_limits": [
+      "Public Windows Copy remains incomplete; two required native UI failures",
+      "Physical GPU/DPI and installed GUI acceptance remain open",
+      "Upgrade/repair/reboot/login and MSI failed-registration rollback not proved by these positive checks",
+      "Not release or daily-driver readiness; user acceptance deferred"
+    ],
+    "evidence": ".hermes/evidence/eps-package-current/ACCEPTANCE.json"
+  },
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "delivery": {
+    "linux": "dist/packages/ stable latest four formats",
+    "windows": ".hermes/packaging-tmp/windows-current/ stable internal three-format cohort; public withheld Windows artifacts unchanged",
+    "superseded_output": "Replaced after checks; candidate, scoped RPM wrapper and owned guest removed",
+    "operator_service_and_preferences": "Not mutated"
+  },
+  "acceptance_limits": [
+    "Windows Copy remains incomplete with two required native UI failures; continue agent work",
+    "Positive installer/content checks do not prove failed-registration rollback, upgrade/repair/reboot/login or installed GUI",
+    "Physical Linux GPU/Wayland, operator workload and broader theme/DPI/platform acceptance remain separate",
+    "User testing deferred; no release or daily-driver readiness claim"
+  ],
+  "rejected_first_cohort": "7f497e9 exact Windows GUI exposed Linux-only production worker; not promoted. Fixed in e9e6783, production worker tested natively and packages rebuilt/rechecked.",
+  "gui_harness_observations": "Initial Start-menu overlay rejected; mapped-window synchronization added. Final actor completed and passed before controller observed its short-lived windows; terminal success and screenshots collected without restarting."
+}

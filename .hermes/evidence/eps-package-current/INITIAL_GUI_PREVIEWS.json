@@ -1,0 +1,10 @@
+{
+  "fixture_removed": true,
+  "index_stop": "not running",
+  "error": "Rendered fixture surface missing: ply 0",
+  "status": "fail",
+  "stack": "at <ScriptBlock>, C:\\OttrinContentQA\\windows-preview-gui.ps1: line 53\r\nat <ScriptBlock>, C:\\OttrinContentQA\\gui-runner.ps1: line 1",
+  "ordinary_user": true,
+  "screen": "{X=0,Y=0,Width=1280,Height=800}",
+  "cases": {}
+}

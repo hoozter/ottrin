@@ -1,0 +1,35 @@
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 35.01s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-79a909d55133516b)
+
+running 26 tests
+test preview_render::tests::archive_tree_preserves_nesting_and_keeps_hostile_names_inert ... ok
+test preview_render::tests::visual_sizing_policy_keeps_images_whole_and_documents_width_fitted ... ok
+test preview_render::tests::spreadsheet_grid_keeps_hostile_values_in_one_typed_cell ... ok
+test semantic_style::tests::colorize_disabled_keeps_neutral_text_color ... ok
+skipping Quick Inspector text-edit fixture: FIEMAP is unavailable
+test tests::collapsed_locations_tile_accessibility_label_keeps_name_and_path ... ok
+test tests::compact_locations_tile_detail_keeps_the_full_name_and_mount_path ... ok
+test tests::eps_quick_inspector_uses_the_isolated_visual_preview_path ... ok
+test tests::html_preview_failure_is_truthful_and_keeps_the_external_fallback_actionable ... ok
+test tests::kind_sort_keeps_group_order_and_flips_names_within_group ... ok
+test tests::quick_inspector_text_save_conflict_keeps_the_editor_buffer ... ok
+test tests::search_result_entry_conversion_keeps_path_and_kind ... ok
+test tests::failed_search_replaces_stale_rows_and_keeps_current_partial_results ... ok
+test tests::ordinary_startup_keeps_settings_closed_for_pending_and_completed_setup ... ok
+test appearance_editor::tests::deleting_active_saved_theme_keeps_its_visible_mode_for_the_base_palette ... ok
+test widget_style::tests::action_menu_omits_unused_check_column_and_keeps_icons_near_edge ... ok
+test appearance_editor::tests::invalid_hex_entry_is_safe_visible_and_keeps_the_applied_color ... ok
+test widget_style::tests::rendered_button_feedback_keeps_its_surface_and_menu_labels_use_button_text ... ok
+test widget_style::tests::narrow_destination_row_keeps_trailing_actions_inside_the_row ... ok
+test widget_style::tests::page_navigation_keeps_reading_order_and_wraps_without_clipping ... ok
+test tests::recovery_conflict_keeps_editor_buffer_and_persistent_error ... ok
+test tests::preview_consistency_eps_requests_same_renderer_in_main_and_inspector ... ok
+test appearance_editor::tests::appearance_inspector_exposes_all_properties_and_keeps_rows_aligned ... ok
+test tests::admitted_text_stays_read_only_until_explicit_edit_and_refresh_keeps_edits ... ok
+test thumbnail_cache::tests::eps_rejects_stale_raster_cache_and_uses_only_the_isolated_renderer ... ok
+test tests::eps_original_preview_worker_returns_rendered_pixels ... ok
+test tests::startup_file_selection_reveals_preview_and_keeps_vertical_navigation_horizontal_position ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 354 filtered out; finished in 1.25s

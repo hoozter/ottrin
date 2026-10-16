@@ -1,0 +1,9 @@
+{
+  "source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/eps-refresh",
+  "guest": "ottrin-init-windows-eps-qa",
+  "guest_owner_receipt": ".hermes/evidence/windows-eps-current/ottrin-init-windows-eps-qa-OWNERSHIP.json",
+  "scope": "Existing owned EPS COW reused for package compiler and exact native QA; original domains remain off",
+  "cleanup": "Dispose existing owned guest after terminal consumers; remove scoped tools/extractions/fixtures and replace superseded generated cohort after acceptance",
+  "rejected_prior_source": "7f497e9ffc3e6a49ddb2ba67702036440b314f99"
+}

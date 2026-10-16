@@ -1,0 +1,5 @@
+{
+  "initial_failure": "Start menu overlaid native preview; click sent after process launch but before mapped window readiness",
+  "repair": "Actor announces visible moved window and PID; dispatcher checks current matching app process and live task before guarded loopback titlebar click",
+  "acceptance": "Initial attempt rejected; full GUI rerun required; product source unchanged"
+}

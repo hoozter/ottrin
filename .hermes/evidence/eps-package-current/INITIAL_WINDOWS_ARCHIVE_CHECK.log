@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/eps-package-current/check_archives.py", line 5, in <module>
+    revision=json.loads((pathlib.Path(__file__).parent/'WINDOWS_BUILD.json').read_text())['source_revision'];source=(stage/'SOURCE_REVISION.txt').read_text();assert 'Git revision: '+revision in source.splitlines() and 'Working tree: clean' in source.splitlines()
+                                                                                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
