@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 230 with 30 specialized
+The final ordinary-user Windows platform suite passes 230 with 31 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -153,7 +153,7 @@ exits. Separate adversarial setup/cancellation/handoff cases retain their own
 scope. Current receipt:
 `.hermes/evidence/windows-copy-undo-current/ACCEPTANCE.json`.
 
-Public Copy/Undo remains disabled. Overwrite restoration, public receipt and
+At that creation-Undo checkpoint public integration was still disabled. Overwrite restoration, session receipt and
 Activity/clipboard/Tandem integration, cleanup, central discovery, broader
 permissions/storage matrices and guest power-cut acceptance remain required.
 Packages are unchanged. The owned VM and disposable fixtures are removed after
@@ -184,11 +184,11 @@ targets. The second-volume fixture is selected separately as an ordinary user;
 SYSTEM audit remains a distinct lane. Owned virtual storage, the guest and test
 profiles are removed after terminal verification. Current receipt:
 `.hermes/evidence/windows-copy-discovery-current/ACCEPTANCE.json`.
-UI worker/Activity integration, action admission, native package acceptance and
-the remaining public Copy gates are still required; the mutating Windows Copy/Undo
-facade stays disabled and packages are unchanged.
+That discovery checkpoint left UI/Activity and action admission for the following
+work below. Native package acceptance and the remaining public Copy gates stay
+required; public Copy remains disabled and packages are unchanged.
 
-Private Windows creation-Undo admission now binds the authenticated journal
+The creation-Undo admission checkpoint bound the authenticated journal
 header, sealed completion digest and observed destination parent location. It
 holds no filesystem handles between admission and execution. Execution resolves
 native identities again, refuses replaced registry/journal objects and checks
@@ -198,7 +198,8 @@ identity/creator/security validator. Presentation fields still grant no authorit
 A moved display path requires fresh admission; an unrelated occupant of the old
 path stays untouched. Interrupted retraction can retry with the original binding;
 changed payloads and cancellation retain the data and pending plan. The action
-capability remains private pending platform and Activity action integration.
+capability was private at that checkpoint; the following Activity work now
+exposes it through fresh platform admission.
 Native testing caught and corrected a read-only parent-handle flush refusal:
 admission stays read-only, while explicit execution reopens the same bound parent
 with its normally permitted writer access. Four native ordinary-user admission
@@ -210,17 +211,26 @@ retry, moved destinations, changed bytes and replaced registries. Full-suite
 and cleanup evidence is recorded in
 `.hermes/evidence/windows-copy-admission-current/ACCEPTANCE.json`.
 
-Windows Activity now consumes central Copy discovery through its existing
-background loader at startup and refresh. Rows keep the authenticated phase,
-current evidence and identity-bound data location distinct. A verified tree does
-not produce an Undo receipt or enable cleanup; interrupted/unverified and changed
-records remain review items, and verified completed inverses show as undone.
-Transaction IDs stay visible even when a journal cannot be authenticated. The
-platform mutation gate remains closed. Two ordinary-user native Windows adapter/worker
-tests and 379 Linux UI tests pass (one Linux exclusion); strict all-target UI
-Clippy passes on both targets. This is a source/UI-adapter checkpoint;
-installed GUI/package acceptance and recovery actions remain required. Evidence:
-`.hermes/evidence/windows-copy-activity-current/ACCEPTANCE.json`.
+Windows Activity consumes central Copy discovery through its background loader
+and freshly admits opaque Undo plans only for completed creations or interrupted
+creation inverses. The admitted plan supplies the current displayed phase and data
+location; an unrelated transaction's receipt cannot attach to another row.
+Incomplete/changed records remain review items and verified completed inverses
+show as undone. A plain discovery observation never authorizes an action.
+
+The existing Activity worker executes the plan with conflict reservations,
+retains retry progress and refreshes refused/stale observations. Single-item
+creations show Undo copy; interrupted inverses show Resume copy Undo. Retained
+recovery survives Clear finished and cannot be reclaimed by Windows cleanup.
+Public Windows Copy/Overwrite and cleanup remain gated. Native integration
+exercises the rendered buttons and actual filesystem/worker path with separate
+owned profiles; installed/package GUI acceptance remains required. Current action
+receipt: `.hermes/evidence/windows-copy-action-current/ACCEPTANCE.json`.
+The exact native platform suite passes 230 with 31 specialized exclusions; the
+separate SYSTEM audit case passes. Two native presentation/worker tests pass,
+and the explicit integration consumer passes four rendered-button scenarios.
+Linux passes 411 platform and 379 UI tests (3 and 1 exclusions); strict all-target
+platform/UI Clippy passes on both targets. Packages are unchanged.
 
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
@@ -229,8 +239,8 @@ metadata and stream hashes. Production never enables Developer Mode or token
 privileges. Developer Mode-off link evidence remains separately scoped to
 `windows-copy-links-current/ACCEPTANCE.json`.
 
-Public Windows Copy stays disabled. Overwrite restoration, public receipt/Undo
-integration, guarded cleanup, recovery UI/action integration and interrupted-staging policy, complete
+Public Windows Copy stays disabled. Overwrite restoration, session receipt/batch
+integration, guarded cleanup, forward recovery actions and interrupted-staging policy, complete
 SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive directories,
 specialized storage/properties, real large-tree budgets, guest power-cut acceptance,
 clipboard/Tandem, positive native Copy UI and rebuilt-package acceptance remain

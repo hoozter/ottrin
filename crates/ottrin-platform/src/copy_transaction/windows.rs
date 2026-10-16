@@ -1,19 +1,23 @@
 //! Handle-bound Windows Copy staging, journaled no-replace publication and DACL application.
-//! Sources are never mutated; public Copy, Overwrite, cleanup and Undo remain gated.
+//! Sources are never mutated; public Copy, Overwrite and cleanup remain gated.
+//! Sealed creation recovery exposes only freshly admitted, identity-bound Undo plans.
 //!
 //! Backup streams preserve directory/file named data and extended attributes that ordinary
 //! ReadFile/WriteFile copying loses. Known link records are validated and installed
 //! through native handles; security and other unsupported
 //! backup records are refused rather than silently omitted. Final file metadata,
-//! guarded cleanup, Overwrite and Undo remain separate required work.
+//! guarded cleanup, Overwrite and session receipt integration remain required work.
 #![cfg_attr(not(test), allow(dead_code))]
 
 mod journal;
-pub use journal::{WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus};
+pub use journal::{
+    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+};
 pub(crate) use journal::{
     discover as discover_windows_copy_transactions,
     discover_at as discover_windows_copy_transactions_at,
     discover_at_with_progress as discover_windows_copy_transactions_at_with_progress,
+    restore_undo as restore_windows_copy_undo, restore_undo_at as restore_windows_copy_undo_at,
 };
 mod links;
 mod metadata;

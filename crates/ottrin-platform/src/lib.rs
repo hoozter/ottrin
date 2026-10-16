@@ -27,7 +27,7 @@ pub use copy_recovery::{
 
 #[cfg(target_os = "windows")]
 pub use copy_transaction::{
-    WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub fn discover_retained_copy_transactions_at(
@@ -47,6 +47,22 @@ pub fn discover_retained_copy_transactions_at_with_progress(
 pub fn discover_retained_copy_transactions() -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError>
 {
     copy_transaction::discover_windows_copy_transactions()
+}
+
+/// Fresh read-only admission of one completed Windows creation Copy by ID.
+/// The opaque plan binds native objects and revalidates them before mutation.
+#[cfg(target_os = "windows")]
+pub fn restore_retained_copy_undo_plan_at(
+    root: &Path,
+    transaction_id: &str,
+) -> Result<RetainedCopyUndoPlan, PlatformError> {
+    copy_transaction::restore_windows_copy_undo_at(root, transaction_id)
+}
+#[cfg(target_os = "windows")]
+pub fn restore_retained_copy_undo_plan(
+    transaction_id: &str,
+) -> Result<RetainedCopyUndoPlan, PlatformError> {
+    copy_transaction::restore_windows_copy_undo(transaction_id)
 }
 
 /// Reads retained Copy status without creating recovery data or granting Undo authority.

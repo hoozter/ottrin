@@ -23,8 +23,12 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 
 mod discovery;
-pub use discovery::{WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus};
-pub(crate) use discovery::{discover, discover_at, discover_at_with_progress};
+pub use discovery::{
+    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+};
+pub(crate) use discovery::{
+    discover, discover_at, discover_at_with_progress, restore_undo, restore_undo_at,
+};
 
 const MAGIC: &[u8; 8] = b"OTCPWJ06";
 const FRAME_HEADER: usize = 84;
@@ -2612,6 +2616,33 @@ mod tests {
         std::fs::remove_dir_all(path.join("source")).unwrap();
     }
     #[test]
+    #[ignore = "exports an owned fixture to the native Activity integration consumer"]
+    fn windows_copy_activity_fixture() {
+        let root = std::path::PathBuf::from(
+            std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_ROOT")
+                .expect("owned fixture root missing"),
+        );
+        let local = std::path::PathBuf::from(std::env::var_os("LOCALAPPDATA").unwrap());
+        assert_eq!(local, root.join("profile"), "Refuse a real user profile");
+        let fixture_root = root.join("fixture");
+        std::fs::create_dir(&fixture_root).unwrap();
+        let (name, candidate, _cleanup) = completed_undo_fixture(&fixture_root, true, false);
+        remove_undo_fixture_source(&fixture_root);
+        if std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").as_deref() == Ok("pending") {
+            let parent = owner(&fixture_root.join("destination"));
+            let central = owner(&fixture_root.join("central"));
+            FAULT.with(|f| f.set(Some((29, Step::UndoRenamed, false))));
+            let result = undo_completed_copy(&parent, &central, &name, |_| Ok(()));
+            FAULT.with(|f| f.set(None));
+            assert!(result.is_err());
+            assert!(fixture_root.join("destination").join(candidate).exists());
+        }
+        let registry = local.join("Ottrin/State/copies");
+        std::fs::create_dir_all(registry.parent().unwrap()).unwrap();
+        std::fs::rename(fixture_root.join("central"), registry).unwrap();
+        // The calling UI test owns root and tears it down after its child exits.
+    }
+    #[test]
     fn windows_native_registered_copy_undo_admission_is_readonly_and_source_free() {
         for (nested, readonly) in [(false, false), (true, false), (false, true), (true, true)] {
             let root = tempfile::tempdir().unwrap();
@@ -2621,15 +2652,17 @@ mod tests {
             let journal = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&journal).unwrap();
             let id = decode(&before).unwrap().state.header.unwrap().transaction;
-            let mut plan =
-                discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
-            assert!(plan.remaining());
-            assert_eq!(plan.path_pair().0.file_name(), Some(candidate.as_os_str()));
-            assert_eq!(plan.path_pair().1.file_name(), Some(OsStr::new("copy")));
+            let mut plan = crate::restore_retained_copy_undo_plan_at(&registry, &id).unwrap();
+            assert_eq!(plan.remaining(), 1);
+            assert_eq!(
+                plan.path_pairs()[0].0.file_name(),
+                Some(candidate.as_os_str())
+            );
+            assert_eq!(plan.path_pairs()[0].1.file_name(), Some(OsStr::new("copy")));
             assert_eq!(std::fs::read(&journal).unwrap(), before);
-            plan.undo(|_| Ok(())).unwrap();
-            assert!(!plan.remaining());
-            assert!(plan.undo(|_| Ok(())).is_err());
+            plan.undo_next_with_progress(|_| Ok(())).unwrap();
+            assert_eq!(plan.remaining(), 0);
+            assert!(plan.undo_next_with_progress(|_| Ok(())).is_err());
             assert!(!root.path().join("destination/copy").exists());
             assert_eq!(
                 std::fs::read(fixture_data_path(
@@ -2639,7 +2672,7 @@ mod tests {
                 .unwrap(),
                 b"original data"
             );
-            assert!(discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).is_err());
+            assert!(crate::restore_retained_copy_undo_plan_at(&registry, &id).is_err());
         }
     }
     #[test]
@@ -2650,13 +2683,13 @@ mod tests {
         let original = root.path().join("destination");
         let before = std::fs::read(original.join(&name).join(LOCAL)).unwrap();
         let id = decode(&before).unwrap().state.header.unwrap().transaction;
-        let mut plan = discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+        let mut plan = crate::restore_retained_copy_undo_plan_at(&registry, &id).unwrap();
         let moved = root.path().join("moved");
         std::fs::rename(&original, &moved).unwrap();
         std::fs::create_dir(&original).unwrap();
         std::fs::write(original.join("copy"), b"unrelated new name").unwrap();
-        assert!(plan.undo(|_| Ok(())).is_err());
-        assert!(plan.remaining());
+        assert!(plan.undo_next_with_progress(|_| Ok(())).is_err());
+        assert_eq!(plan.remaining(), 1);
         assert_eq!(
             std::fs::read(moved.join(&name).join(LOCAL)).unwrap(),
             before
@@ -2665,9 +2698,9 @@ mod tests {
             std::fs::read(original.join("copy")).unwrap(),
             b"unrelated new name"
         );
-        let mut fresh = discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
-        assert!(fresh.path_pair().1.ends_with(Path::new("moved/copy")));
-        fresh.undo(|_| Ok(())).unwrap();
+        let mut fresh = crate::restore_retained_copy_undo_plan_at(&registry, &id).unwrap();
+        assert!(fresh.path_pairs()[0].1.ends_with(Path::new("moved/copy")));
+        fresh.undo_next_with_progress(|_| Ok(())).unwrap();
         assert_eq!(
             std::fs::read(moved.join(candidate).join("nested/file")).unwrap(),
             b"original data"
@@ -2686,8 +2719,7 @@ mod tests {
             let journal = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&journal).unwrap();
             let id = decode(&before).unwrap().state.header.unwrap().transaction;
-            let mut plan =
-                discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+            let mut plan = crate::restore_retained_copy_undo_plan_at(&registry, &id).unwrap();
             if replace_registry {
                 std::fs::rename(&registry, root.path().join("saved-central")).unwrap();
                 std::fs::create_dir(&registry).unwrap();
@@ -2698,13 +2730,13 @@ mod tests {
                 )
                 .unwrap();
             }
-            assert!(plan.undo(|_| Ok(())).is_err());
-            assert!(plan.remaining());
+            assert!(plan.undo_next_with_progress(|_| Ok(())).is_err());
+            assert_eq!(plan.remaining(), 1);
             assert_eq!(std::fs::read(&journal).unwrap(), before);
             assert!(root.path().join("destination/copy").exists());
         }
         let error =
-            discovery::RegisteredCopyUndo::admit(Path::new("Z:\\absent"), "../outside", |_| Ok(()))
+            crate::restore_retained_copy_undo_plan_at(Path::new("Z:\\absent"), "../outside")
                 .unwrap_err();
         assert!(error.to_string().contains("invalid Copy transaction ID"));
     }
@@ -2716,10 +2748,10 @@ mod tests {
         let journal = root.path().join("destination").join(&name).join(LOCAL);
         let before = std::fs::read(&journal).unwrap();
         let id = decode(&before).unwrap().state.header.unwrap().transaction;
-        let mut plan = discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+        let mut plan = crate::restore_retained_copy_undo_plan_at(&registry, &id).unwrap();
         let mut cancelled = false;
         assert!(
-            plan.undo(|bytes| if bytes > 0 {
+            plan.undo_next_with_progress(|bytes| if bytes > 0 {
                 cancelled = true;
                 Err(io("cancelled"))
             } else {
@@ -2730,12 +2762,12 @@ mod tests {
         assert!(cancelled);
         assert_eq!(std::fs::read(&journal).unwrap(), before);
         FAULT.with(|f| f.set(Some((29, Step::UndoRenamed, false))));
-        assert!(plan.undo(|_| Ok(())).is_err());
+        assert!(plan.undo_next_with_progress(|_| Ok(())).is_err());
         FAULT.with(|f| f.set(None));
-        assert!(plan.remaining());
+        assert_eq!(plan.remaining(), 1);
         assert!(root.path().join("destination").join(&candidate).exists());
-        plan.undo(|_| Ok(())).unwrap();
-        assert!(!plan.remaining());
+        plan.undo_next_with_progress(|_| Ok(())).unwrap();
+        assert_eq!(plan.remaining(), 0);
     }
     #[test]
     fn windows_native_copy_undo_retains_files_trees_and_readonly_data_without_source() {

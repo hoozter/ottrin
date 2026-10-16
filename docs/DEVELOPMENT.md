@@ -808,7 +808,7 @@ remain required.
 Native rename constraints:
 https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
 
-Private Windows recovery admission now binds the authenticated registry/header,
+Windows recovery admission now binds the authenticated registry/header,
 sealed immutable completion digest and actual parent location before creation
 Undo. It retains no file handles, does not read the source and does not modify
 journals at admission. Execution reopens the registry and destination through
@@ -820,9 +820,9 @@ A moved display path requires fresh admission even if its original object is
 still found by ID; a new occupant at the old name is never adopted. Changed
 payloads, replaced registries and journals refuse before intent. Cancellation
 keeps the plan pending; an inverse interrupted after rename can retry against
-the original completion binding. These private capabilities are not yet exposed
-through the platform/UI action facade. No mutation authority is derived from
-public discovery fields.
+the original completion binding. The platform exposes this through the opaque `RetainedCopyUndoPlan` and fresh
+`restore_retained_copy_undo_plan[_at]` admission. No mutation authority is derived
+from public discovery fields.
 
 Windows central Copy discovery is exposed through the platform's read-only
 `discover_retained_copy_transactions[_at]` facade, with a cancellable explicit-root
@@ -853,14 +853,29 @@ review rows instead of hiding other records. Incomplete payload staging is shown
 as unverified, with no claim that it can be resumed. UI worker integration, action
 admission and native package acceptance remain separate required work.
 
-Windows Activity uses this discovery through the existing asynchronous retained
-history loader. The adapter deliberately creates no receipt from presentation
-fields: even `VerifiedTree` cannot admit Undo/cleanup. Only a verified `Undone`
-phase is shown as an already completed inverse. Other rows remain owned review
-items and survive Clear finished. The detail uses the actual observed root
-location, never the cached publication/retention hint; unknown records retain
-their transaction ID and original inspection failure. A fresh discovery replaces
-the observation on refresh, without granting any action capability.
+Windows Activity uses the existing asynchronous history loader. Only verified
+completed creations or interrupted creation inverses attempt fresh admission.
+The resulting plan supplies the displayed phase/location and execution receipt;
+a plan for another transaction is rejected. A verified tree alone cannot enable
+Undo. Incomplete or changed copies remain owned review rows; a verified completed
+inverse shows as undone. Cleanup and public Windows Copy/Overwrite stay gated.
+The existing operation worker and path-conflict checks execute the plan, retain
+retry progress and refresh status after refusal. The plan revalidates its native
+binding before writing. Retained entries survive Clear finished, including after
+Undo while their data and bookkeeping remain owned.
+
+Native Activity integration uses an ignored platform fixture producer and a UI
+consumer. The producer only accepts a root/profile owned by that consumer. The
+consumer creates separate child processes and private profiles, renders Activity,
+clicks its actual Undo/Resume action and verifies exact data/history outcomes for
+normal Undo, changed payload, moved destination and interrupted inverse. A forged
+row cannot adopt another transaction's valid receipt. Run in an owned guest with
+`OTTRIN_TEST_WINDOWS_PLATFORM_FIXTURE_EXE` pointing to the same-source platform test
+binary, selecting `tests::windows_copy_recovery_activity_integration --ignored`
+in the UI test binary. The consumer owns fixture teardown; the native controller
+also watches and terminates its owned process tree on timeout before removing its
+private temp namespace. This accepts the source UI/worker path, not a packaged
+native window or physical desktop interaction.
 
 Native ID API contract:
 https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-openfilebyid

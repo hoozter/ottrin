@@ -817,7 +817,7 @@ enum CopyBatchUndoReceipt {
         receipts: Vec<PathMoveUndoReceipt>,
         remaining: usize,
     },
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     Retained(ottrin_platform::RetainedCopyUndoPlan),
 }
 
@@ -825,7 +825,7 @@ impl CopyBatchUndoReceipt {
     fn remaining(&self) -> usize {
         match self {
             Self::Session { remaining, .. } => *remaining,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Retained(plan) => plan.remaining(),
         }
     }
@@ -835,7 +835,7 @@ impl CopyBatchUndoReceipt {
                 .iter()
                 .map(|r| (r.before_path(), r.after_path()))
                 .collect(),
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Retained(plan) => plan.path_pairs(),
         }
     }
@@ -849,7 +849,7 @@ impl CopyBatchUndoReceipt {
                 *remaining -= 1;
                 Ok(())
             }
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Retained(plan) => plan.undo_next(),
         }
     }
@@ -1114,7 +1114,12 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
         Ok(entries) => (
             entries
                 .into_iter()
-                .map(windows_retained_copy_activity)
+                .map(|entry| {
+                    let admission = windows_copy_can_admit(&entry).then(|| {
+                        ottrin_platform::restore_retained_copy_undo_plan(&entry.transaction_id)
+                    });
+                    windows_retained_copy_activity(entry, admission)
+                })
                 .collect(),
             None,
         ),
@@ -1123,11 +1128,25 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
 }
 
 #[cfg(target_os = "windows")]
+fn windows_copy_can_admit(entry: &ottrin_platform::WindowsRetainedCopyStatus) -> bool {
+    entry.evidence == ottrin_platform::WindowsCopyRecoveryEvidence::VerifiedTree
+        && matches!(
+            entry.phase,
+            Some(
+                ottrin_platform::WindowsCopyPhase::Completed
+                    | ottrin_platform::WindowsCopyPhase::UndoPending
+            )
+        )
+}
+
+#[cfg(target_os = "windows")]
 fn windows_retained_copy_activity(
     entry: ottrin_platform::WindowsRetainedCopyStatus,
+    admission: Option<Result<ottrin_platform::RetainedCopyUndoPlan, PlatformError>>,
 ) -> RestoredCopyActivity {
     use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
-    let phase = match entry.phase {
+    let eligible = windows_copy_can_admit(&entry);
+    let mut phase = match entry.phase {
         Some(Phase::Staging) => "Staging interrupted",
         Some(Phase::Staged) => "Staged copy",
         Some(Phase::PlanningPermissions) => "Permission planning interrupted",
@@ -1140,14 +1159,14 @@ fn windows_retained_copy_activity(
         Some(Phase::Undone) => "Copy undone · retained data",
         None => "Copy journal needs review",
     };
-    let (evidence, undo) = match entry.evidence {
+    let (evidence, mut undo) = match entry.evidence {
         Evidence::VerifiedTree if entry.phase == Some(Phase::Undone) => {
             ("Retained data verified", PathMoveUndoState::Undone)
         }
         Evidence::VerifiedTree => (
             "Current data verified",
             PathMoveUndoState::Unavailable {
-                reason: "Windows Copy recovery actions are not available yet. Retained data is preserved; verification does not authorize Undo or cleanup.".into(),
+                reason: "This copy has no freshly admitted Undo receipt. Retained data is preserved; verification alone does not authorize Undo or cleanup.".into(),
             },
         ),
         Evidence::UnverifiedStage => (
@@ -1161,8 +1180,34 @@ fn windows_retained_copy_activity(
             PathMoveUndoState::Unavailable { reason },
         ),
     };
+    let mut location = entry.owned_location;
+    let mut receipt = None;
+    if eligible {
+        match admission {
+            Some(Ok(plan)) if plan.transaction_ids() == vec![entry.transaction_id.as_str()] => {
+                phase = match plan.admitted_phase() {
+                    Phase::UndoPending => "Undo interrupted · ready to resume",
+                    _ => "Completed copy · ready to undo",
+                };
+                location = Some(plan.observed_location().to_path_buf());
+                undo = PathMoveUndoState::Available;
+                receipt = Some(CopyBatchUndoReceipt::Retained(plan));
+            }
+            Some(Err(error)) => {
+                undo = PathMoveUndoState::Unavailable {
+                    reason: error.to_string(),
+                }
+            }
+            Some(Ok(_)) => {
+                undo = PathMoveUndoState::Unavailable {
+                    reason: "Copy transaction changed during admission; refresh its status".into(),
+                }
+            }
+            None => {}
+        }
+    }
     let mut detail = format!("{phase} · {evidence}");
-    if let Some(location) = entry.owned_location {
+    if let Some(location) = location {
         detail.push_str(&format!(" · Data: {}", path_label(&location)));
     } else if let Some(location) = entry.transaction {
         detail.push_str(&format!(" · Recovery folder: {}", path_label(&location)));
@@ -1178,7 +1223,7 @@ fn windows_retained_copy_activity(
         },
         detail,
         undo,
-        receipt: None,
+        receipt,
     }
 }
 
@@ -1285,6 +1330,14 @@ fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
     };
     if record.undo_kind != Some(PathMoveUndoKind::Copy) {
         return Vec::new();
+    }
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    if let OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Retained(plan)) = &token.receipt {
+        return plan
+            .transaction_ids()
+            .into_iter()
+            .map(str::to_owned)
+            .collect();
     }
     token
         .receipt
@@ -14285,7 +14338,12 @@ impl OttrinApp {
                                     "Undo rename",
                                     "Restore this renamed entry if it has not changed or been replaced.",
                                 ),
-                                PathMoveUndoKind::Copy if matches!(&record.path_move_undo_token.as_ref().map(|token| &token.receipt), Some(OperationUndoReceipt::CopyBatch(_))) => (
+                                #[cfg(target_os = "windows")]
+                                PathMoveUndoKind::Copy if matches!(&record.path_move_undo_token.as_ref().map(|token| &token.receipt), Some(OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Retained(plan))) if plan.admitted_phase() == ottrin_platform::WindowsCopyPhase::UndoPending) => (
+                                    "Resume copy Undo",
+                                    "Finish the interrupted Undo after verifying the retained copied data again.",
+                                ),
+                                PathMoveUndoKind::Copy if matches!(&record.path_move_undo_token.as_ref().map(|token| &token.receipt), Some(OperationUndoReceipt::CopyBatch(batch)) if batch.path_pairs().len() > 1) => (
                                     "Undo copied items",
                                     "Reverse the remaining copied entries; already completed Undos are not repeated.",
                                 ),
@@ -25200,6 +25258,261 @@ mod tests {
 
     #[cfg(target_os = "windows")]
     #[test]
+    #[ignore = "requires the native platform fixture test executable in an owned guest"]
+    fn windows_copy_recovery_activity_integration() {
+        const ROOT: &str = "OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_ROOT";
+        if let Some(root) = std::env::var_os(ROOT) {
+            let root = PathBuf::from(root);
+            let platform = std::env::var_os("OTTRIN_TEST_WINDOWS_PLATFORM_FIXTURE_EXE")
+                .expect("fixture executable missing");
+            let output = std::process::Command::new(platform)
+                .args([
+                    "--exact",
+                    "copy_transaction::windows::journal::tests::windows_copy_activity_fixture",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "{}\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+            let mut wrong = ottrin_platform::discover_retained_copy_transactions()
+                .unwrap()
+                .remove(0);
+            let receipt =
+                ottrin_platform::restore_retained_copy_undo_plan(&wrong.transaction_id).unwrap();
+            wrong.transaction_id = "0".repeat(32);
+            let rejected = windows_retained_copy_activity(wrong, Some(Ok(receipt)));
+            assert!(
+                rejected.receipt.is_none(),
+                "A receipt must never attach to a different transaction row"
+            );
+            let mut app = OttrinApp::default();
+            app.operation_history.clear();
+            app.retained_copy_activity_loader =
+                RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+            app.refresh_retained_copy_activity();
+            fn wait(app: &mut OttrinApp) {
+                let deadline = Instant::now() + Duration::from_secs(10);
+                loop {
+                    app.poll_path_move_undo_results();
+                    app.poll_retained_copy_activity();
+                    if !app.retained_copy_activity_loader.pending
+                        && !app.operation_history.iter().any(|r| {
+                            matches!(r.path_move_undo, Some(PathMoveUndoState::UndoQueued))
+                        })
+                    {
+                        break;
+                    }
+                    assert!(Instant::now() < deadline, "Activity worker did not finish");
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+                assert!(app.retained_copy_activity_error.is_none());
+            }
+            let ctx = Context::default();
+            fn click_undo(app: &mut OttrinApp, ctx: &Context, pending: bool) {
+                let frame = |app: &mut OttrinApp, events| {
+                    ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                egui::vec2(900.0, 1000.0),
+                            )),
+                            events,
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default()
+                                .show(ctx, |ui| app.render_activity_sidebar(ui));
+                        },
+                    )
+                };
+                frame(app, Vec::new());
+                let output = frame(app, Vec::new());
+                let label = if pending {
+                    "Resume copy Undo"
+                } else {
+                    "Undo copy"
+                };
+                let point = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(t) if t.galley.job.text == label => {
+                            Some(Rect::from_min_size(t.pos, t.galley.size()).center())
+                        }
+                        _ => None,
+                    })
+                    .expect("The admitted Activity action must be rendered");
+                frame(
+                    app,
+                    vec![
+                        egui::Event::PointerMoved(point),
+                        egui::Event::PointerButton {
+                            pos: point,
+                            button: egui::PointerButton::Primary,
+                            pressed: true,
+                            modifiers: Default::default(),
+                        },
+                    ],
+                );
+                frame(
+                    app,
+                    vec![egui::Event::PointerButton {
+                        pos: point,
+                        button: egui::PointerButton::Primary,
+                        pressed: false,
+                        modifiers: Default::default(),
+                    }],
+                );
+                assert!(matches!(
+                    app.operation_history[0].path_move_undo,
+                    Some(PathMoveUndoState::UndoQueued)
+                ));
+            }
+            wait(&mut app);
+            assert_eq!(app.operation_history.len(), 1);
+            let id = app.operation_history[0].id;
+            assert!(matches!(
+                app.operation_history[0].path_move_undo,
+                Some(PathMoveUndoState::Available)
+            ));
+            assert!(app.operation_history[0].path_move_undo_token.is_some());
+            assert!(!copy_activity_cleanup::can_cleanup(
+                &app.operation_history[0]
+            ));
+            app.clear_finished_activity();
+            assert_eq!(
+                app.operation_history.len(),
+                1,
+                "Owned recovery must survive Clear finished"
+            );
+            let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
+            let destination = root.join("fixture/destination");
+            let journal = std::fs::read_dir(&destination)
+                .unwrap()
+                .map(|e| e.unwrap().path())
+                .find(|p| {
+                    p.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .starts_with(".ottrin-copy-")
+                        && p.join("journal").is_file()
+                })
+                .unwrap()
+                .join("journal");
+            let before = std::fs::read(&journal).unwrap();
+            let actual = if case == "moved" {
+                let moved = root.join("moved");
+                std::fs::rename(&destination, &moved).unwrap();
+                std::fs::create_dir(&destination).unwrap();
+                std::fs::write(destination.join("copy"), b"unrelated new occupant").unwrap();
+                moved
+            } else {
+                if case == "changed" {
+                    std::fs::write(destination.join("copy/nested/file"), b"external data").unwrap();
+                }
+                destination.clone()
+            };
+            click_undo(&mut app, &ctx, case == "pending");
+            wait(&mut app);
+            assert_eq!(app.operation_history[0].id, id);
+            if case == "changed" {
+                assert!(matches!(
+                    app.operation_history[0].path_move_undo,
+                    Some(PathMoveUndoState::Unavailable { .. })
+                ));
+                assert!(app.operation_history[0].path_move_undo_token.is_none());
+                assert_eq!(
+                    std::fs::read(destination.join("copy/nested/file")).unwrap(),
+                    b"external data"
+                );
+                assert_eq!(std::fs::read(journal).unwrap(), before);
+            } else {
+                if case == "moved" {
+                    assert!(matches!(
+                        app.operation_history[0].path_move_undo,
+                        Some(PathMoveUndoState::Available)
+                    ));
+                    assert!(
+                        app.operation_history[0]
+                            .path_move_undo_token
+                            .as_ref()
+                            .unwrap()
+                            .receipt
+                            .after_path()
+                            .ends_with(Path::new("moved/copy"))
+                    );
+                    assert_eq!(
+                        std::fs::read(
+                            actual
+                                .join(journal.parent().unwrap().file_name().unwrap())
+                                .join("journal")
+                        )
+                        .unwrap(),
+                        before
+                    );
+                    click_undo(&mut app, &ctx, false);
+                    wait(&mut app);
+                    assert_eq!(
+                        std::fs::read(destination.join("copy")).unwrap(),
+                        b"unrelated new occupant"
+                    );
+                }
+                assert!(matches!(
+                    app.operation_history[0].path_move_undo,
+                    Some(PathMoveUndoState::Undone)
+                ));
+                assert!(!actual.join("copy").exists());
+                let retained = app.operation_history[0]
+                    .path_move_undo_token
+                    .as_ref()
+                    .unwrap()
+                    .receipt
+                    .before_path();
+                assert_eq!(
+                    std::fs::read(retained.join("nested/file")).unwrap(),
+                    b"original data"
+                );
+                app.clear_finished_activity();
+                assert_eq!(app.operation_history.len(), 1);
+            }
+            drop(app);
+            return;
+        }
+        for case in ["success", "changed", "moved", "pending"] {
+            let root = tempfile::tempdir().unwrap();
+            std::fs::create_dir(root.path().join("userprofile")).unwrap();
+            let output = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "tests::windows_copy_recovery_activity_integration",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .current_dir(root.path())
+                .env(ROOT, root.path())
+                .env("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE", case)
+                .env("LOCALAPPDATA", root.path().join("profile"))
+                .env("APPDATA", root.path().join("roaming"))
+                .env("USERPROFILE", root.path().join("userprofile"))
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "{case}: {}\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
     fn windows_retained_copy_activity_missing_registry_worker_is_read_only() {
         const FIXTURE: &str = "OTTRIN_COPY_ACTIVITY_EMPTY_FIXTURE";
         if let Some(root) = std::env::var_os(FIXTURE) {
@@ -25269,8 +25582,8 @@ mod tests {
             ] {
                 let undone = phase == Phase::Undone && evidence == Evidence::VerifiedTree;
                 let review = matches!(evidence, Evidence::NeedsReview { .. });
-                let activity =
-                    windows_retained_copy_activity(ottrin_platform::WindowsRetainedCopyStatus {
+                let activity = windows_retained_copy_activity(
+                    ottrin_platform::WindowsRetainedCopyStatus {
                         transaction_id: "a".repeat(32),
                         phase: Some(phase),
                         publication: Some(PathBuf::from(r"C:\old\copy")),
@@ -25279,7 +25592,9 @@ mod tests {
                         transaction: Some(PathBuf::from(r"C:\moved\journal")),
                         source_label: None,
                         evidence,
-                    });
+                    },
+                    None,
+                );
                 assert!(activity.receipt.is_none());
                 assert!(restored_copy_token(activity.receipt.clone()).is_none());
                 assert!(!path_move_undo_action_is_available(
@@ -25300,18 +25615,21 @@ mod tests {
                 }
             }
         }
-        let unknown = windows_retained_copy_activity(ottrin_platform::WindowsRetainedCopyStatus {
-            transaction_id: "b".repeat(32),
-            phase: None,
-            publication: None,
-            retained: None,
-            owned_location: None,
-            transaction: None,
-            source_label: None,
-            evidence: Evidence::NeedsReview {
-                reason: "invalid journal".into(),
+        let unknown = windows_retained_copy_activity(
+            ottrin_platform::WindowsRetainedCopyStatus {
+                transaction_id: "b".repeat(32),
+                phase: None,
+                publication: None,
+                retained: None,
+                owned_location: None,
+                transaction: None,
+                source_label: None,
+                evidence: Evidence::NeedsReview {
+                    reason: "invalid journal".into(),
+                },
             },
-        });
+            None,
+        );
         assert!(unknown.detail.contains("Copy journal needs review"));
         assert!(unknown.detail.contains(&"b".repeat(32)));
         assert!(!unknown.detail.contains("Data:"));

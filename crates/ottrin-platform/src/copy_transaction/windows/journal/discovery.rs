@@ -1,4 +1,4 @@
-//! Read-only central Copy discovery. Presentation fields grant no mutation authority.
+//! Central Copy discovery and opaque Undo admission. Presentation fields grant no mutation authority.
 use super::*;
 use std::{
     collections::BTreeMap,
@@ -13,18 +13,20 @@ use windows_sys::Win32::{
 const MAX_REGISTRY_ENTRIES: usize = 10_000;
 const MAX_VOLUMES: usize = 512;
 
-/// Private action admission, distinct from public presentation fields. No file
+/// Opaque action admission, distinct from public presentation fields. No file
 /// handles survive admission; execution reopens and checks the bound identities.
 #[derive(Clone, Debug)]
-pub(super) struct RegisteredCopyUndo {
+pub struct RetainedCopyUndoPlan {
     registry: PathBuf,
-    binding: CopyUndoBinding,
+    binding: Box<CopyUndoBinding>,
     publication: PathBuf,
     retention: PathBuf,
     remaining: bool,
+    admitted_phase: WindowsCopyPhase,
+    observed_location: PathBuf,
 }
-impl RegisteredCopyUndo {
-    pub(super) fn admit(
+impl RetainedCopyUndoPlan {
+    pub(crate) fn admit(
         root: &Path,
         transaction_id: &str,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
@@ -50,23 +52,39 @@ impl RegisteredCopyUndo {
         let location = windows_fs::location(&parent).map_err(io)?;
         Ok(Self {
             registry: windows_fs::location(&central).map_err(io)?,
-            binding: CopyUndoBinding {
+            binding: Box::new(CopyUndoBinding {
                 header: header.clone(),
                 completion_digest: super::super::evidence_digest(&state.final_versions)?,
                 parent_location: location.clone(),
-            },
+            }),
             publication: location.join(OsString::from_wide(&header.target)),
             retention: location.join(header.candidate_name()),
             remaining: true,
+            admitted_phase: phase(&retained.snapshot.state),
+            observed_location: location.join(retained.snapshot.root_name(&parent)?),
         })
     }
-    pub(super) fn path_pair(&self) -> (&Path, &Path) {
-        (&self.retention, &self.publication)
+    pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
+        vec![(&self.retention, &self.publication)]
     }
-    pub(super) fn remaining(&self) -> bool {
-        self.remaining
+    pub fn transaction_ids(&self) -> Vec<&str> {
+        vec![&self.binding.header.transaction]
     }
-    pub(super) fn undo(
+    pub fn remaining(&self) -> usize {
+        usize::from(self.remaining)
+    }
+    /// Phase observed during read-only admission, before any inverse execution.
+    pub fn admitted_phase(&self) -> WindowsCopyPhase {
+        self.admitted_phase
+    }
+    /// Identity-bound data location observed at admission, never action authority.
+    pub fn observed_location(&self) -> &Path {
+        &self.observed_location
+    }
+    pub fn undo_next(&mut self) -> Result<(), PlatformError> {
+        self.undo_next_with_progress(|_| Ok(()))
+    }
+    pub fn undo_next_with_progress(
         &mut self,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
@@ -377,13 +395,23 @@ pub fn discover_at_with_progress(
     }
     Ok(output)
 }
-pub fn discover() -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
+pub(crate) fn configured_root() -> Result<PathBuf, PlatformError> {
     let local =
         std::env::var_os("LOCALAPPDATA").ok_or_else(|| io("LOCALAPPDATA is unavailable"))?;
-    discover_at(
-        &PathBuf::from(local)
-            .join("Ottrin")
-            .join("State")
-            .join("copies"),
-    )
+    Ok(PathBuf::from(local)
+        .join("Ottrin")
+        .join("State")
+        .join("copies"))
+}
+pub fn discover() -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
+    discover_at(&configured_root()?)
+}
+pub(crate) fn restore_undo_at(
+    root: &Path,
+    id: &str,
+) -> Result<RetainedCopyUndoPlan, PlatformError> {
+    RetainedCopyUndoPlan::admit(root, id, |_| Ok(()))
+}
+pub(crate) fn restore_undo(id: &str) -> Result<RetainedCopyUndoPlan, PlatformError> {
+    restore_undo_at(&configured_root()?, id)
 }
