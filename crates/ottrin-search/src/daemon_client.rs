@@ -2,16 +2,13 @@ use crate::daemon_protocol::{
     DaemonRequest, DaemonResponse, PROTOCOL_VERSION, RequestFrame, ResponseFrame, read_frame,
     write_frame,
 };
+use crate::daemon_transport::{DaemonStream, QueryFinished};
 use crate::{SearchIndexDiagnostics, SearchQueryResult};
 use ottrin_core::{SearchConfig, SearchQuery};
 #[cfg(unix)]
 use std::os::unix::net::UnixStream;
-#[cfg(unix)]
-type DaemonStream = UnixStream;
-#[cfg(target_os = "windows")]
-type DaemonStream = crate::WindowsIndexPipeStream;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 #[cfg(unix)]
 use std::{thread, time::Instant};
@@ -201,6 +198,51 @@ impl SearchDaemonClient {
         }
     }
 
+    /// Interrupt the authenticated connection when the UI abandons this query.
+    /// The server observes disconnect and cancels its reader/provider before exit.
+    pub fn query_cancellable(
+        &self,
+        query: SearchQuery,
+        cancelled: &AtomicBool,
+    ) -> Result<SearchQueryResult, String> {
+        if cancelled.load(Ordering::Acquire) {
+            return Err("Search cancelled".into());
+        }
+        let stream = self.connect_stream()?;
+        let monitor = stream.try_clone().map_err(|error| error.to_string())?;
+        let done = AtomicBool::new(false);
+        let response = std::thread::scope(|scope| {
+            let watcher = std::thread::Builder::new()
+                .name("ottrin-query-cancel".into())
+                .spawn_scoped(scope, || {
+                    while !done.load(Ordering::Acquire) {
+                        if cancelled.load(Ordering::Acquire) {
+                            crate::daemon_transport::interrupt(&monitor).map_err(|error| {
+                                format!("Cannot interrupt search connection: {error}")
+                            })?;
+                        }
+                        std::thread::sleep(Duration::from_millis(10));
+                    }
+                    Ok::<_, String>(())
+                })
+                .map_err(|error| format!("Cannot start query monitor: {error}"))?;
+            let finished = QueryFinished(&done);
+            let response = self.transact_stream(stream, DaemonRequest::Query { query });
+            drop(finished);
+            watcher
+                .join()
+                .map_err(|_| "Search cancellation monitor failed".to_string())??;
+            if cancelled.load(Ordering::Acquire) {
+                return Err("Search cancelled".into());
+            }
+            response
+        })?;
+        match response {
+            DaemonResponse::Query { result } => Ok(result),
+            response => Err(unexpected_response(response)),
+        }
+    }
+
     pub fn update_config(&self, config: SearchConfig) -> Result<(), String> {
         self.expect_complete(DaemonRequest::UpdateConfig { config })
     }
@@ -324,6 +366,10 @@ impl SearchDaemonClient {
     }
 
     fn transact(&self, request: DaemonRequest) -> Result<DaemonResponse, String> {
+        self.transact_stream(self.connect_stream()?, request)
+    }
+
+    fn connect_stream(&self) -> Result<DaemonStream, String> {
         #[cfg(unix)]
         let stream = UnixStream::connect(&self.socket_path).map_err(|error| {
             format!(
@@ -334,7 +380,7 @@ impl SearchDaemonClient {
         #[cfg(target_os = "windows")]
         let stream = crate::WindowsIndexPipeStream::connect(&self.identity, CLIENT_IO_TIMEOUT)
             .map_err(|error| error.to_string())?;
-        self.transact_stream(stream, request)
+        Ok(stream)
     }
 
     fn transact_stream(
@@ -347,6 +393,8 @@ impl SearchDaemonClient {
             DaemonRequest::Reconcile { .. } | DaemonRequest::Rebuild { .. }
         ) {
             OPERATION_IO_TIMEOUT
+        } else if matches!(request, DaemonRequest::Query { .. }) {
+            Duration::from_secs(60)
         } else {
             CLIENT_IO_TIMEOUT
         };
@@ -390,4 +438,130 @@ impl SearchDaemonClient {
 
 fn unexpected_response(response: DaemonResponse) -> String {
     format!("unexpected index daemon response: {response:?}")
+}
+
+#[cfg(test)]
+mod query_lifetime_tests {
+    use super::*;
+    use ottrin_core::{SearchIndexStatus, SearchResponse, SearchScope, SearchSort};
+    use std::time::Instant;
+
+    #[test]
+    fn abandoned_remote_query_reaps_provider_on_cancel_and_disconnect() {
+        let root = crate::test_temp_dir().join("remote-query-cancel");
+        std::fs::create_dir(&root).unwrap();
+        for mode in ["cancel", "disconnect"] {
+            let marker = root.join(mode);
+            #[cfg(unix)]
+            let listener =
+                std::os::unix::net::UnixListener::bind(root.join(format!("{mode}.sock"))).unwrap();
+            #[cfg(unix)]
+            listener.set_nonblocking(true).unwrap();
+            #[cfg(unix)]
+            let client = SearchDaemonClient::new(root.join(format!("{mode}.sock")));
+            #[cfg(target_os = "windows")]
+            let mut listener = crate::WindowsIndexPipeListener::bind(
+                crate::IndexDaemonIdentity::for_current_user().unwrap(),
+            )
+            .unwrap();
+            #[cfg(target_os = "windows")]
+            let client = SearchDaemonClient::connect_default().unwrap();
+            let cancelled = AtomicBool::new(false);
+            let shutdown = AtomicBool::new(false);
+            let query = SearchQuery {
+                text: "needle".into(),
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Name,
+                limit: 1,
+                offset: 0,
+                content_search: true,
+            };
+            let started = Instant::now();
+            let deadline = started + Duration::from_secs(10);
+            std::thread::scope(|scope| {
+                let server = scope.spawn(|| {
+                    #[cfg(unix)]
+                    let mut stream = {
+                        let deadline = Instant::now() + Duration::from_secs(5);
+                        loop {
+                            match listener.accept() {
+                                Ok((stream, _)) => break stream,
+                                Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                                    assert!(Instant::now() < deadline);
+                                    std::thread::sleep(Duration::from_millis(5));
+                                }
+                                Err(error) => panic!("accept query: {error}"),
+                            }
+                        }
+                    };
+                    #[cfg(target_os = "windows")]
+                    let mut stream = listener.accept(Duration::from_secs(5)).unwrap().unwrap();
+                    crate::daemon_transport::monitor_timeout(&mut stream, Duration::from_secs(5))
+                        .unwrap();
+                    let frame: RequestFrame = read_frame(&mut stream).unwrap();
+                    assert!(matches!(frame.request, DaemonRequest::Query { .. }));
+                    crate::daemon_server::with_connected_query(&stream, &shutdown, |cancelled| {
+                        let mut command = crate::internal_command(std::env::current_exe().unwrap());
+                        command
+                            .args([
+                                "--exact",
+                                "tests::content_provider_wait_fixture",
+                                "--nocapture",
+                            ])
+                            .env("OTTRIN_TEST_CONTENT_WAIT", &marker);
+                        let error =
+                            crate::run_content_provider(command, Some(cancelled)).unwrap_err();
+                        assert_eq!(error, "Search cancelled");
+                        crate::SearchQueryResult {
+                            response: SearchResponse {
+                                items: Vec::new(),
+                                total: 0,
+                                status: SearchIndexStatus::Unavailable,
+                                error: Some(error),
+                            },
+                            warning: None,
+                        }
+                    })
+                    .unwrap()
+                });
+                if mode == "cancel" {
+                    scope.spawn(|| {
+                        while !marker.exists() && Instant::now() < deadline {
+                            std::thread::sleep(Duration::from_millis(5));
+                        }
+                        cancelled.store(true, Ordering::Release);
+                    });
+                    assert_eq!(
+                        client.query_cancellable(query, &cancelled).unwrap_err(),
+                        "Search cancelled"
+                    );
+                } else {
+                    let mut stream = client.connect_stream().unwrap();
+                    write_frame(
+                        &mut stream,
+                        &RequestFrame {
+                            version: PROTOCOL_VERSION,
+                            request: DaemonRequest::Query { query },
+                        },
+                    )
+                    .unwrap();
+                    while !marker.exists() && Instant::now() < deadline {
+                        std::thread::sleep(Duration::from_millis(5));
+                    }
+                    drop(stream);
+                }
+                assert!(marker.exists(), "provider never drained both pipes");
+                assert_eq!(
+                    server.join().unwrap().response.error.as_deref(),
+                    Some("Search cancelled")
+                );
+            });
+            assert!(
+                started.elapsed() < Duration::from_secs(12),
+                "remote query retained its provider"
+            );
+        }
+    }
 }

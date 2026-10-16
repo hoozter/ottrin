@@ -4,6 +4,10 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Windows text editing preserves already exact file permissions instead of reapplying inheritance. This repairs safe-save refusals in private folders while retaining exact metadata checks.
+
+- Positive literal content queries count and sort their complete saved/live match set before paging, deduplicate overlapping sources and use a path tie-breaker for stable pages. Query failures replace stale rows with current partial results and an explicit error. Search exposes Previous/Next and visible ranges; the CLI accepts `--limit` and `--offset`. Superseded content queries interrupt the live provider and release their saved-generation reader. Bounded system-filename/fallback completeness remains a separate gate.
+
 - Saved content indexing and file watching now cover selected folders independently of filename-index roots, including configurations with no metadata roots. Content-only files stay out of global native filename results, and disabling content releases its watches. Missing content-only folders no longer prevent healthy filename indexing; watcher status reports the failure and retries automatically. This update rebuilds the derived search cache once; saved preferences and source files are preserved.
 
 - Linux and Windows packages include the pinned live-content search provider. Provider failures are reported with repair/access guidance instead of silently returning empty matches. `ottrin search QUERY --content [--json]` uses the configured content policy, including content folders outside the native metadata roots and terminal current-folder scope.

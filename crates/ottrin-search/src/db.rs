@@ -1159,29 +1159,31 @@ fn load_generation(
     load_generation_inner(conn, plan, None)
 }
 
-/// Query one ordered page from the completed active FTS generation. The reader
-/// opens a separate SQLite connection so UI queries never share the worker's
-/// write connection.
-pub(crate) fn query_indexed_content_page(
+/// Stream every candidate from one completed FTS generation. The caller keeps
+/// only its requested page window, while counting and sorting the full match set.
+pub(crate) fn stream_indexed_content(
     db_path: &Path,
     plan: &ScanPlan,
     fts_query: &str,
-    limit: usize,
-    offset: usize,
-) -> Result<Vec<IndexedContentHit>, SearchDbError> {
-    query_indexed_content_page_then(db_path, plan, fts_query, limit, offset, || {})
+    cancelled: Option<&AtomicBool>,
+    visit: impl FnMut(IndexedContentHit),
+) -> Result<(), SearchDbError> {
+    stream_indexed_content_then(db_path, plan, fts_query, cancelled, visit, || {})
 }
 
-fn query_indexed_content_page_then(
+fn stream_indexed_content_then(
     db_path: &Path,
     plan: &ScanPlan,
     fts_query: &str,
-    limit: usize,
-    offset: usize,
+    cancelled: Option<&AtomicBool>,
+    mut visit: impl FnMut(IndexedContentHit),
     after_content_attach: impl FnOnce(),
-) -> Result<Vec<IndexedContentHit>, SearchDbError> {
-    if fts_query.trim().is_empty() || limit == 0 {
-        return Ok(Vec::new());
+) -> Result<(), SearchDbError> {
+    if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+        return Err(SearchDbError::ContentQueryCancelled);
+    }
+    if fts_query.trim().is_empty() {
+        return Ok(());
     }
     let mut conn = Connection::open_with_flags(
         db_path,
@@ -1197,7 +1199,7 @@ fn query_indexed_content_page_then(
         )
         .optional()?
     else {
-        return Ok(Vec::new());
+        return Ok(());
     };
     attach_generation_content_db(&tx, &generation_content_db_path(db_path, generation))?;
     after_content_attach();
@@ -1212,37 +1214,71 @@ fn query_indexed_content_page_then(
          JOIN search_generation_items i
            ON i.generation_id = f.generation_id AND i.path = f.path
          WHERE g.completed = 1 AND g.plan_identity = ?1
-           AND search_generation_content MATCH ?2
-         ORDER BY rank, f.rowid
-         LIMIT ?3 OFFSET ?4",
+           AND search_generation_content MATCH ?2",
     )?;
-    let rows = stmt.query_map(
-        params![plan.identity(), fts_query, limit as i64, offset as i64],
-        |row| {
-            let raw_snippet: String = row.get(7)?;
-            Ok(IndexedContentHit {
-                item: SearchResultItem {
-                    path: decode_path(row.get(0)?)?,
-                    parent_path: PathBuf::new(),
-                    name: row.get(1)?,
-                    kind: entry_kind_from_i64(row.get(2)?),
-                    size_bytes: row.get(3)?,
-                    modified_unix_secs: row.get(4)?,
-                    is_executable: row.get::<_, i64>(5)? != 0,
-                    symlink_target_is_dir: row.get::<_, Option<i64>>(6)?.map(|value| value != 0),
-                    content_snippet: None,
-                    name_lower: String::new(),
-                    path_str: String::new(),
-                    path_lower: String::new(),
-                },
-                snippet: content_snippet_line(&raw_snippet, &fts_query_terms(fts_query)),
-                content: row.get(8)?,
-                relevance: fts_rank_relevance(row.get(9)?),
-                metadata_indexed: row.get(10)?,
-            })
-        },
+    let rows = stmt.query_map(params![plan.identity(), fts_query], |row| {
+        let raw_snippet: String = row.get(7)?;
+        Ok(IndexedContentHit {
+            item: SearchResultItem {
+                path: decode_path(row.get(0)?)?,
+                parent_path: PathBuf::new(),
+                name: row.get(1)?,
+                kind: entry_kind_from_i64(row.get(2)?),
+                size_bytes: row.get(3)?,
+                modified_unix_secs: row.get(4)?,
+                is_executable: row.get::<_, i64>(5)? != 0,
+                symlink_target_is_dir: row.get::<_, Option<i64>>(6)?.map(|value| value != 0),
+                content_snippet: None,
+                name_lower: String::new(),
+                path_str: String::new(),
+                path_lower: String::new(),
+            },
+            snippet: content_snippet_line(&raw_snippet, &fts_query_terms(fts_query)),
+            content: row.get(8)?,
+            relevance: fts_rank_relevance(row.get(9)?),
+            metadata_indexed: row.get(10)?,
+        })
+    })?;
+    for row in rows {
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+            return Err(SearchDbError::ContentQueryCancelled);
+        }
+        visit(row?);
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+            return Err(SearchDbError::ContentQueryCancelled);
+        }
+    }
+    drop(stmt);
+    tx.commit()?;
+    Ok(())
+}
+
+#[cfg(test)]
+pub(crate) fn indexed_content_hits(
+    db_path: &Path,
+    plan: &ScanPlan,
+    fts_query: &str,
+) -> Result<Vec<IndexedContentHit>, SearchDbError> {
+    indexed_content_hits_then(db_path, plan, fts_query, || {})
+}
+
+#[cfg(test)]
+fn indexed_content_hits_then(
+    db_path: &Path,
+    plan: &ScanPlan,
+    fts_query: &str,
+    after_content_attach: impl FnOnce(),
+) -> Result<Vec<IndexedContentHit>, SearchDbError> {
+    let mut hits = Vec::new();
+    stream_indexed_content_then(
+        db_path,
+        plan,
+        fts_query,
+        None,
+        |hit| hits.push(hit),
+        after_content_attach,
     )?;
-    rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+    Ok(hits)
 }
 
 /// Execute the overwhelmingly common single-literal query inside SQLite. This
@@ -2335,9 +2371,7 @@ mod generation_tests {
                 1
             );
             assert_eq!(
-                query_indexed_content_page(&path, &plan, "needle", 10, 0)
-                    .unwrap()
-                    .len(),
+                indexed_content_hits(&path, &plan, "needle").unwrap().len(),
                 1
             );
             if metadata {
@@ -2692,7 +2726,7 @@ mod generation_tests {
             1
         );
         assert_eq!(
-            query_indexed_content_page(&db_path, &plan, "staged", 10, 0)
+            indexed_content_hits(&db_path, &plan, "staged")
                 .expect("query active content")
                 .len(),
             1
@@ -2971,6 +3005,56 @@ mod generation_tests {
     }
 
     #[test]
+    fn positive_content_stream_cancellation_releases_its_snapshot() {
+        let db_path = temp_db_path("positive-content-cancel");
+        let root = db_path.with_extension("root");
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(root.join("first.txt"), "shared needle").unwrap();
+        std::fs::write(root.join("second.txt"), "shared needle").unwrap();
+        let scan_plan = plan(&root);
+        let mut store = SearchStore::open(db_path.clone()).unwrap();
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![
+                    owned(&root, "first.txt", 1),
+                    owned(&root, "second.txt", 2),
+                ]),
+            )
+            .unwrap();
+        let cancelled = AtomicBool::new(true);
+        let mut visited = 0;
+        assert!(matches!(
+            stream_indexed_content(&db_path, &scan_plan, "needle", Some(&cancelled), |_| {
+                visited += 1
+            }),
+            Err(SearchDbError::ContentQueryCancelled)
+        ));
+        assert_eq!(visited, 0);
+        cancelled.store(false, Ordering::Release);
+        assert!(matches!(
+            stream_indexed_content(&db_path, &scan_plan, "needle", Some(&cancelled), |_| {
+                visited += 1;
+                cancelled.store(true, Ordering::Release);
+            }),
+            Err(SearchDbError::ContentQueryCancelled)
+        ));
+        assert_eq!(visited, 1);
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "second.txt", 2)]),
+            )
+            .unwrap();
+        assert_eq!(
+            indexed_content_hits(&db_path, &scan_plan, "needle")
+                .unwrap()
+                .len(),
+            1
+        );
+    }
+
+    #[test]
     fn content_query_started_before_replacement_reads_one_complete_generation() {
         let db_path = temp_db_path("generation-fts-reader-replacement");
         let root = db_path.with_extension("root");
@@ -2986,7 +3070,7 @@ mod generation_tests {
             )
             .expect("commit old generation");
 
-        let hits = query_indexed_content_page_then(&db_path, &scan_plan, "needle", 10, 0, || {
+        let hits = indexed_content_hits_then(&db_path, &scan_plan, "needle", || {
             store
                 .commit(
                     &scan_plan,
@@ -2999,8 +3083,7 @@ mod generation_tests {
         assert_eq!(hits.len(), 1);
         assert_eq!(hits[0].item.path, root.join("old.txt"));
         assert_eq!(
-            query_indexed_content_page(&db_path, &scan_plan, "needle", 10, 0)
-                .expect("query replacement")[0]
+            indexed_content_hits(&db_path, &scan_plan, "needle").expect("query replacement")[0]
                 .item
                 .path,
             root.join("new.txt")
@@ -3090,8 +3173,7 @@ mod generation_tests {
                 IndexMutation::ReplaceAll(vec![owned(&root, "old.txt", 22)]),
             )
             .expect("commit old generation");
-        let old_hits =
-            query_indexed_content_page(&db_path, &scan_plan, "retired", 10, 0).expect("query old");
+        let old_hits = indexed_content_hits(&db_path, &scan_plan, "retired").expect("query old");
         assert_eq!(old_hits.len(), 1);
         assert_eq!(old_hits[0].item.path, old);
         assert_eq!(old_hits[0].snippet, "retired unique content");
@@ -3104,12 +3186,11 @@ mod generation_tests {
             )
             .expect("commit new generation");
         assert!(
-            query_indexed_content_page(&db_path, &scan_plan, "retired", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "retired")
                 .expect("query stale")
                 .is_empty()
         );
-        let new_hits =
-            query_indexed_content_page(&db_path, &scan_plan, "fresh", 10, 0).expect("query fresh");
+        let new_hits = indexed_content_hits(&db_path, &scan_plan, "fresh").expect("query fresh");
         assert_eq!(new_hits.len(), 1);
         assert_eq!(new_hits[0].item.path, new);
         assert_eq!(new_hits[0].snippet, "fresh unique content");
@@ -3259,10 +3340,10 @@ mod generation_tests {
             .expect("commit replacement generation");
         let replacement_elapsed = replacement_started.elapsed();
         let replacement = store.diagnostics().expect("measure replacement storage");
-        let retired_hits = query_indexed_content_page(&db_path, &scan_plan, "retired", 1, 0)
-            .expect("query retired content");
-        let fresh_hits = query_indexed_content_page(&db_path, &scan_plan, "fresh", 1, 0)
-            .expect("query replacement content");
+        let retired_hits =
+            indexed_content_hits(&db_path, &scan_plan, "retired").expect("query retired content");
+        let fresh_hits =
+            indexed_content_hits(&db_path, &scan_plan, "fresh").expect("query replacement content");
 
         println!(
             "FTS_REPLACEMENT_MEASUREMENT files={FILES} payload_bytes={} initial_ms={} replacement_ms={} initial_db_bytes={} replacement_db_bytes={} initial_wal_bytes={} replacement_wal_bytes={} freelist_pages={}",
@@ -3345,13 +3426,13 @@ mod generation_tests {
 
         assert_eq!(updated.generation(), initial.generation());
         assert!(
-            query_indexed_content_page(&db_path, &scan_plan, "oldcontent", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "oldcontent")
                 .expect("query stale content")
                 .is_empty(),
             "a metadata-equal upsert must remove its stale positive FTS hit"
         );
         assert_eq!(
-            query_indexed_content_page(&db_path, &scan_plan, "newcontent", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "newcontent")
                 .expect("query refreshed content")
                 .len(),
             1
@@ -3368,13 +3449,13 @@ mod generation_tests {
             .expect("commit authoritative root replacement");
         assert_eq!(replaced.generation(), initial.generation());
         assert!(
-            query_indexed_content_page(&db_path, &scan_plan, "newcontent", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "newcontent")
                 .expect("query superseded replacement content")
                 .is_empty(),
             "a metadata-equal root replacement must remove its stale positive FTS hit"
         );
         assert_eq!(
-            query_indexed_content_page(&db_path, &scan_plan, "oldcontent", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "oldcontent")
                 .expect("query root replacement content")
                 .len(),
             1
@@ -3433,13 +3514,13 @@ mod generation_tests {
             .expect("commit generation");
 
         assert_eq!(
-            query_indexed_content_page(&db_path, &scan_plan, "smallneedle", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "smallneedle")
                 .expect("query admitted content")
                 .len(),
             1
         );
         assert!(
-            query_indexed_content_page(&db_path, &scan_plan, "largeneedle", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "largeneedle")
                 .expect("query excluded content")
                 .is_empty()
         );
@@ -3475,13 +3556,13 @@ mod generation_tests {
             .expect("commit generation");
 
         assert_eq!(
-            query_indexed_content_page(&db_path, &scan_plan, "documentneedle", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "documentneedle")
                 .expect("query selected document group")
                 .len(),
             1
         );
         assert!(
-            query_indexed_content_page(&db_path, &scan_plan, "sourceneedle", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "sourceneedle")
                 .expect("query unselected source group")
                 .is_empty()
         );
@@ -3529,12 +3610,12 @@ mod generation_tests {
             .expect("commit generation");
 
         assert!(
-            query_indexed_content_page(&db_path, &scan_plan, "needle", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "needle")
                 .expect("query binary")
                 .is_empty()
         );
         assert!(
-            query_indexed_content_page(&db_path, &scan_plan, "growthneedle", 10, 0)
+            indexed_content_hits(&db_path, &scan_plan, "growthneedle")
                 .expect("query file that grew after scan")
                 .is_empty(),
             "content reads must enforce their byte cap even when the file grows after metadata scan"
@@ -4128,13 +4209,13 @@ mod generation_tests {
             )
             .expect("commit enabled content");
         assert_eq!(
-            query_indexed_content_page(&db_path, &enabled_plan, "\"included-needle\"", 10, 0)
+            indexed_content_hits(&db_path, &enabled_plan, "\"included-needle\"")
                 .expect("query included")
                 .len(),
             1
         );
         assert!(
-            query_indexed_content_page(&db_path, &enabled_plan, "\"excluded-needle\"", 10, 0)
+            indexed_content_hits(&db_path, &enabled_plan, "\"excluded-needle\"")
                 .expect("query excluded")
                 .is_empty()
         );
@@ -4153,7 +4234,7 @@ mod generation_tests {
             )
             .expect("commit disabled content");
         assert!(
-            query_indexed_content_page(&db_path, &disabled_plan, "\"included-needle\"", 10, 0)
+            indexed_content_hits(&db_path, &disabled_plan, "\"included-needle\"")
                 .expect("query disabled")
                 .is_empty()
         );

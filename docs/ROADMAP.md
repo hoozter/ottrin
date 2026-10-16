@@ -8,6 +8,38 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Pending source update — content paging, cancellation and Windows text save
+
+The working source now scans the completed saved/live positive-literal content
+match set before its final sort and page selection, deduplicates overlapping
+sources and breaks sort ties by path. The UI exposes Previous/Next and visible
+ranges, preserves the page during index refresh, resets changed queries to page
+one and recovers when a deleted tail page disappears. The CLI accepts validated
+`--limit` and `--offset` arguments. Query cancellation and client disconnect now
+release the daemon query, saved-generation reader and live-provider child on
+Unix sockets and native Windows named pipes. Current query errors replace stale
+rows with the current partial results or an empty result, with the error visible.
+
+The Windows native suite exposed a separate text-save defect in private folders:
+reapplying an already exact DACL inherited additional permissions and caused the
+publication safety check to refuse the save. Exact descriptors are now retained;
+metadata equality and unsafe-source refusals remain enforced. The new private
+folder regression and 19 native text-edit tests pass; one privileged audit fixture
+remains excluded. Linux source suites pass 238 search, 378 UI and 23 app tests;
+strict platform/search/UI/app Clippy passes for both targets. Native Windows source verification passes 222 search and 20 app tests. Its UI
+suite passes 336 and retains five required failures (two Copy, two PLY, one
+Affinity); the Inspector text-save/Undo regression now passes. Six specialized
+search tests remain excluded. Exact package delivery is in progress. Current packages below
+still use `61bfab9`; these source changes are not yet packaged acceptance.
+
+The broader native Windows UI audit also confirmed required unfinished work:
+Copy is rejected by the portable safe-copy backend in all conflict modes, and
+PLY/Affinity previews await native file admission. These positive tests remain
+active and failing; they must be implemented, not excluded to obtain a green
+suite. Complete/lower-bound reporting for bounded system filename discovery and
+pre-index fallback also remains required. User testing stays deferred; these
+agent-executable requirements are not waiting on it.
+
 ## Current Linux delivery status
 
 The current local Linux artifacts, exact revisions, checksums and scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM use clean source `61bfab9` at stable paths under `dist/packages/`. All four exact extracted packages pass independent saved-content extraction/watch checks, edits, subtree moves/deletion, disabled-watch removal and content-only operation with zero metadata roots. Clean-PATH provider, scope/privacy and damaged-provider checks also pass. Executable payload identity is verified across all four formats. Five-second settled tiny-fixture CPU samples range from 0% to 0.2% of one core; this is not acceptance for the operator's full workload. The exact AppImage also passes isolated Dark 100% PDF stability, shared Inspector title bar, read-only VCF navigation/Space and explicit Edit/Save checks. Earlier theme/DPI, distro lifecycle and broader GUI receipts retain their original exact artifact scopes. These focused checks do not close the broader release gates below.

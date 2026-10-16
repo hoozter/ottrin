@@ -27,6 +27,8 @@ mod daemon_client;
 mod daemon_protocol;
 #[cfg(any(unix, target_os = "windows"))]
 mod daemon_server;
+#[cfg(any(unix, target_os = "windows"))]
+mod daemon_transport;
 mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
 mod mutation;
@@ -51,8 +53,8 @@ pub use windows_pipe::{WindowsIndexPipeListener, WindowsIndexPipeStream};
 
 use db::{
     SearchStore, SimpleTermPage, active_generation_contains_paths, generation_content_db_paths,
-    query_indexed_content_page, query_simple_term_page, search_db_path,
-    stream_generation_content_items, stream_generation_items,
+    query_simple_term_page, search_db_path, stream_generation_content_items,
+    stream_generation_items, stream_indexed_content,
 };
 
 #[cfg(test)]
@@ -706,13 +708,14 @@ impl SearchHandle {
     }
 
     pub fn query(&self, query: SearchQuery) -> SearchResponse {
-        self.query_with_system_locate(query, query_system_locate)
+        self.query_with_system_locate(query, query_system_locate, None)
     }
 
     fn query_with_system_locate(
         &self,
         query: SearchQuery,
         system_locate: fn(&str, Option<&Path>, bool, usize) -> Vec<SearchResultItem>,
+        cancelled: Option<&AtomicBool>,
     ) -> SearchResponse {
         #[cfg(target_os = "windows")]
         let query = resolved_search_query(query);
@@ -721,6 +724,14 @@ impl SearchHandle {
             (idx.status, Arc::clone(&idx.items))
         };
         let cfg = self.config.read().expect("cfg read").clone();
+        if search_is_cancelled(cancelled) {
+            return SearchResponse {
+                items: Vec::new(),
+                total: 0,
+                status,
+                error: Some("Search cancelled".into()),
+            };
+        }
         if query.text.trim().is_empty() {
             return SearchResponse {
                 items: Vec::new(),
@@ -744,7 +755,7 @@ impl SearchHandle {
 
         if query.content_search && expr_contains_negated_content(&expr) {
             return self
-                .query_negated_content_snapshot(&query, &expr, status, &cfg, None)
+                .query_negated_content_snapshot(&query, &expr, status, &cfg, cancelled)
                 .response;
         }
 
@@ -830,13 +841,16 @@ impl SearchHandle {
                         .map(|item| (relevance_score(&query, &item), item))
                         .collect()
                 } else {
-                    let fuzzy_query =
-                        is_simple_single_word(&query.text).then(|| query.text.trim().to_string());
+                    let fuzzy_query = (!query.content_search && is_simple_single_word(&query.text))
+                        .then(|| query.text.trim().to_string());
                     let mut exact = Vec::with_capacity(result_capacity);
                     let mut fuzzy = Vec::with_capacity(query.limit.saturating_mul(2).max(200));
                     let mut exact_total = 0usize;
-                    let stream_result =
-                        stream_generation_items(self.store_path.as_ref(), &plan, None, |item| {
+                    let stream_result = stream_generation_items(
+                        self.store_path.as_ref(),
+                        &plan,
+                        cancelled,
+                        |item| {
                             if !scope_match(&query, &item)
                                 || (!query.include_hidden_system && item.name.starts_with('.'))
                             {
@@ -857,7 +871,8 @@ impl SearchHandle {
                             {
                                 fuzzy.push((score, item));
                             }
-                        });
+                        },
+                    );
                     if let Err(error) = stream_result {
                         return SearchResponse {
                             items: Vec::new(),
@@ -932,7 +947,6 @@ impl SearchHandle {
                 result_capacity.max(50),
             );
             let persisted_native = if matches!(status, SearchIndexStatus::Ready)
-                && items.is_empty()
                 && self.store_path.exists()
             {
                 plan::ScanPlan::new(&cfg).ok().and_then(|plan| {
@@ -965,7 +979,11 @@ impl SearchHandle {
 
         // ── Fuzzy pass: supplement with subsequence-matched filenames ─────────
         // Only runs when query is a single bare word and exact results are sparse.
-        if !streamed_index && is_simple_single_word(&query.text) && matched.len() < query.limit {
+        if !query.content_search
+            && !streamed_index
+            && is_simple_single_word(&query.text)
+            && matched.len() < query.limit
+        {
             let q = query.text.trim();
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
@@ -993,31 +1011,23 @@ impl SearchHandle {
         // disabled, avoid both indexed payloads and the live ripgrep fallback.
         let mut live_content_error = None;
         if query.content_search && cfg.content_indexing_enabled && query.text.trim().len() >= 2 {
-            let mut seen: HashSet<PathBuf> =
+            let filename_candidates: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
+            let mut seen = HashSet::new();
             let fts_query = fts_content_match(&expr);
             if matches!(status, SearchIndexStatus::Ready)
                 && let Some(fts_query) = fts_query.as_deref()
                 && let Ok(plan) = plan::ScanPlan::new(&cfg)
             {
-                let desired_hits = query.offset.saturating_add(query.limit).max(1);
-                let mut accepted_hits = 0;
-                let mut fts_offset = 0;
-                const FTS_PAGE_SIZE: usize = 50;
-                loop {
-                    let Ok(fts_hits) = query_indexed_content_page(
-                        self.store_path.as_ref(),
-                        &plan,
-                        fts_query,
-                        FTS_PAGE_SIZE,
-                        fts_offset,
-                    ) else {
-                        break;
-                    };
-                    let fetched = fts_hits.len();
-                    for hit in fts_hits {
+                let result = stream_indexed_content(
+                    self.store_path.as_ref(),
+                    &plan,
+                    fts_query,
+                    cancelled,
+                    |hit| {
                         let mut item = hit.item;
-                        let filename_match = hit.metadata_indexed && eval_expr(&expr, &item);
+                        let filename_match = filename_candidates.contains(&item.path)
+                            || (hit.metadata_indexed && eval_expr(&expr, &item));
                         // Evaluate against the bounded indexed content, not the short
                         // display snippet: boolean and negated terms can occur on a
                         // different line than the snippet selected for presentation.
@@ -1025,6 +1035,7 @@ impl SearchHandle {
                         if scope_match(&query, &item)
                             && (query.include_hidden_system || !item.name.starts_with('.'))
                             && eval_expr(&expr, &item)
+                            && seen.insert(item.path.clone())
                         {
                             item.content_snippet = Some(hit.snippet);
                             let score = 8_000_i64.saturating_add(hit.relevance);
@@ -1034,73 +1045,89 @@ impl SearchHandle {
                             {
                                 *existing_score = (*existing_score).max(score);
                                 *existing_item = item;
-                            } else if seen.insert(item.path.clone()) {
+                            } else {
                                 push_bounded_result(
                                     &mut matched,
                                     (score, item),
                                     result_capacity,
                                     query.sort,
                                 );
-                                if !filename_match {
-                                    total_matches = total_matches.saturating_add(1);
-                                }
                             }
-                            accepted_hits += 1;
+                            if !filename_match {
+                                total_matches = total_matches.saturating_add(1);
+                            }
                         }
-                    }
-                    if fetched < FTS_PAGE_SIZE || accepted_hits >= desired_hits {
-                        break;
-                    }
-                    fts_offset = fts_offset.saturating_add(fetched);
+                    },
+                );
+                if let Err(error) = result {
+                    live_content_error =
+                        Some(format!("Indexed content search could not finish: {error}"));
                 }
             }
             let roots = match query.scope {
                 SearchScope::Global => cfg.content_include_roots.clone(),
                 SearchScope::CurrentFolder => query.root_path.iter().cloned().collect(),
             };
-            let content_limit = query.limit.max(50);
-            let rg_items = query_content_ripgrep(
+            let result = stream_content_ripgrep(
                 &expr,
                 &roots,
                 &cfg,
                 query.include_hidden_system,
-                content_limit,
                 &content_search_program(),
-            )
-            .unwrap_or_else(|error| {
-                live_content_error = Some(error);
-                Vec::new()
-            });
-            let filename_memberships = if streamed_index && !rg_items.is_empty() {
-                let paths = rg_items
-                    .iter()
-                    .map(|item| item.path.clone())
-                    .collect::<Vec<_>>();
-                plan::ScanPlan::new(&cfg)
-                    .and_then(|plan| {
-                        active_generation_contains_paths(self.store_path.as_ref(), &plan, &paths)
-                            .map_err(|error| error.to_string())
-                    })
-                    .unwrap_or_else(|error| {
-                        live_content_error = Some(format!(
-                            "Content search could not verify filename membership: {error}"
-                        ));
+                cancelled,
+                |rg_items| {
+                    let filename_memberships = if streamed_index {
+                        let paths = rg_items
+                            .iter()
+                            .map(|item| item.path.clone())
+                            .collect::<Vec<_>>();
+                        plan::ScanPlan::new(&cfg)
+                            .and_then(|plan| {
+                                active_generation_contains_paths(
+                                    self.store_path.as_ref(),
+                                    &plan,
+                                    &paths,
+                                )
+                                .map_err(|error| error.to_string())
+                            })
+                            .map_err(|error| {
+                                format!(
+                                    "Content search could not verify filename membership: {error}"
+                                )
+                            })?
+                    } else {
                         vec![false; rg_items.len()]
-                    })
-            } else {
-                vec![false; rg_items.len()]
-            };
-            for (item, filename_indexed) in rg_items.into_iter().zip(filename_memberships) {
-                if scope_match(&query, &item) && seen.insert(item.path.clone()) {
-                    let mut filename_item = item.clone();
-                    filename_item.content_snippet = None;
-                    let filename_match = filename_indexed && eval_expr(&expr, &filename_item);
-                    // Content matches get a high base score — they are strong signals.
-                    push_bounded_result(&mut matched, (8_000, item), result_capacity, query.sort);
-                    if !filename_match {
-                        total_matches = total_matches.saturating_add(1);
+                    };
+                    for (item, filename_indexed) in rg_items.into_iter().zip(filename_memberships) {
+                        if scope_match(&query, &item) && seen.insert(item.path.clone()) {
+                            let mut filename_item = item.clone();
+                            filename_item.content_snippet = None;
+                            let filename_match = filename_candidates.contains(&filename_item.path)
+                                || (filename_indexed && eval_expr(&expr, &filename_item));
+                            if let Some((score, existing)) = matched
+                                .iter_mut()
+                                .find(|(_, existing)| existing.path == item.path)
+                            {
+                                *score = (*score).max(8_000);
+                                *existing = item;
+                            } else {
+                                push_bounded_result(
+                                    &mut matched,
+                                    (8_000, item),
+                                    result_capacity,
+                                    query.sort,
+                                );
+                            }
+                            if !filename_match {
+                                total_matches = total_matches.saturating_add(1);
+                            }
+                        }
                     }
-                }
+                    Ok(())
+                },
+            );
+            if let Err(error) = result {
+                live_content_error = Some(error);
             }
         }
 
@@ -1217,7 +1244,14 @@ impl SearchHandle {
         if expr_contains_negated_content(&expr) {
             self.query_negated_content_snapshot(&query, &expr, status, &cfg, Some(cancelled))
         } else {
-            self.query_with_diagnostics(query)
+            SearchQueryResult {
+                response: self.query_with_system_locate(
+                    query,
+                    query_system_locate,
+                    Some(cancelled),
+                ),
+                warning: None,
+            }
         }
     }
 
@@ -4101,33 +4135,122 @@ fn relative_path_to_ripgrep_globs(path: &Path) -> Option<[String; 2]> {
     (!path.is_empty()).then(|| [format!("!{path}"), format!("!{path}/**")])
 }
 
+fn search_is_cancelled(cancelled: Option<&AtomicBool>) -> bool {
+    cancelled.is_some_and(|flag| flag.load(std::sync::atomic::Ordering::Acquire))
+}
+
+/// Drain both pipes while observing cancellation. The pinned provider is one
+/// process with worker threads; cancellation kills and reaps it before returning.
+struct ContentProviderChild(std::process::Child);
+impl Drop for ContentProviderChild {
+    fn drop(&mut self) {
+        if matches!(self.0.try_wait(), Ok(Some(_))) {
+            return;
+        }
+        let kill_error = self.0.kill().err();
+        if let Err(error) = self.0.wait() {
+            eprintln!("Content provider cleanup failed: {error}; termination: {kill_error:?}");
+        }
+    }
+}
+
+fn run_content_provider(
+    mut command: std::process::Command,
+    cancelled: Option<&AtomicBool>,
+) -> Result<std::process::Output, String> {
+    if search_is_cancelled(cancelled) {
+        return Err("Search cancelled".into());
+    }
+    let mut child = command.stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::piped()).spawn()
+        .map_err(|error| format!("Live content search could not start: {error}. Check access to the selected folders or repair Ottrin."))?;
+    let mut stdout = child.stdout.take().expect("piped provider stdout");
+    let mut stderr = child.stderr.take().expect("piped provider stderr");
+    std::thread::scope(|scope| {
+        // The guard drops before scoped-thread joins on error or unwind.
+        let mut child = ContentProviderChild(child);
+        let out = std::thread::Builder::new()
+            .name("ottrin-content-stdout".into())
+            .spawn_scoped(scope, move || {
+                let mut bytes = Vec::new();
+                stdout.read_to_end(&mut bytes).map(|_| bytes)
+            })
+            .map_err(|error| format!("Cannot start content stdout reader: {error}"))?;
+        let err = std::thread::Builder::new()
+            .name("ottrin-content-stderr".into())
+            .spawn_scoped(scope, move || {
+                let mut bytes = Vec::new();
+                stderr.read_to_end(&mut bytes).map(|_| bytes)
+            })
+            .map_err(|error| format!("Cannot start content stderr reader: {error}"))?;
+        let status = loop {
+            match child.0.try_wait() {
+                Ok(Some(status)) => break Ok(status),
+                Ok(None) => {}
+                Err(error) => {
+                    break Err(format!(
+                        "Live content search process status failed: {error}"
+                    ));
+                }
+            }
+            if search_is_cancelled(cancelled) {
+                break Err("Search cancelled".to_string());
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        };
+        if status.is_err() {
+            // A concurrent ordinary exit can make kill fail; wait still proves cleanup.
+            let kill_error = child.0.kill().err();
+            child.0.wait().map_err(|error| {
+                format!("Live content search cleanup failed: {error}; termination: {kill_error:?}")
+            })?;
+        }
+        let stdout = out
+            .join()
+            .map_err(|_| "Live content stdout reader failed".to_string())?
+            .map_err(|error| format!("Live content stdout failed: {error}"))?;
+        let stderr = err
+            .join()
+            .map_err(|_| "Live content stderr reader failed".to_string())?
+            .map_err(|error| format!("Live content stderr failed: {error}"))?;
+        Ok(std::process::Output {
+            status: status?,
+            stdout,
+            stderr,
+        })
+    })
+}
+
 /// Run ripgrep to find files whose *contents* match positive parsed content literals.
 /// Returns items with `content_snippet` populated (first matching line, trimmed).
 /// Regex-style queries are intentionally left unchanged here.
-fn query_content_ripgrep(
+fn stream_content_ripgrep(
     expr: &Expr,
     roots: &[PathBuf],
     config: &SearchConfig,
     include_hidden: bool,
-    limit: usize,
     program: &std::ffi::OsStr,
-) -> Result<Vec<SearchResultItem>, String> {
+    cancelled: Option<&AtomicBool>,
+    mut visit: impl FnMut(Vec<SearchResultItem>) -> Result<(), String>,
+) -> Result<(), String> {
+    if search_is_cancelled(cancelled) {
+        return Err("Search cancelled".into());
+    }
     if roots.is_empty() {
-        return Ok(Vec::new());
+        return Ok(());
     }
 
     let mut terms = Vec::new();
     let mut seen_terms = HashSet::new();
     collect_positive_content_literals(expr, false, &mut terms, &mut seen_terms);
     if terms.is_empty() {
-        return Ok(Vec::new());
+        return Ok(());
     }
     let traversal_plan = content_ripgrep_traversal_plan(roots, config);
     if traversal_plan.is_empty() {
-        return Ok(Vec::new());
+        return Ok(());
     }
 
-    let mut matching_paths: Option<HashSet<PathBuf>> = None;
+    let mut matching_paths = HashSet::new();
     for term in &terms {
         let mut term_paths = HashSet::new();
         for traversal in &traversal_plan {
@@ -4163,9 +4286,7 @@ fn query_content_ripgrep(
                 cmd.arg("--glob").arg(glob);
             }
             cmd.arg("-e").arg(term).arg("--").arg(".");
-            let file_output = cmd.output().map_err(|error| {
-                format!("Live content search could not start: {error}. Check access to the selected folders or repair Ottrin.")
-            })?;
+            let file_output = run_content_provider(cmd, cancelled)?;
             if !file_output.status.success() && file_output.status.code() != Some(1) {
                 let detail = String::from_utf8_lossy(&file_output.stderr)
                     .trim()
@@ -4215,22 +4336,16 @@ fn query_content_ripgrep(
                 }
             }
         }
-        if term_paths.is_empty() {
-            return Ok(Vec::new());
-        }
-        matching_paths = Some(match matching_paths.take() {
-            Some(existing) => existing.intersection(&term_paths).cloned().collect(),
-            None => term_paths,
-        });
-        if matching_paths.as_ref().is_none_or(|set| set.is_empty()) {
-            return Ok(Vec::new());
-        }
+        // Candidate paths are a union. Full expression evaluation below enforces
+        // AND/OR; intersecting all literals wrongly discards every OR-only match.
+        matching_paths.extend(term_paths);
     }
 
-    let mut matching_paths: Vec<PathBuf> = matching_paths.unwrap_or_default().into_iter().collect();
+    let mut matching_paths: Vec<PathBuf> = matching_paths.into_iter().collect();
     matching_paths.sort();
-    let mut items: Vec<SearchResultItem> = matching_paths
+    let items = matching_paths
         .into_iter()
+        .take_while(|_| !search_is_cancelled(cancelled))
         .filter_map(|path| {
             let meta = std::fs::metadata(&path).ok()?;
             if meta.len() > config.content_max_file_size_bytes {
@@ -4293,10 +4408,24 @@ fn query_content_ripgrep(
                 });
             item.content_snippet = snippet;
             Some(item)
-        })
-        .collect();
-    items.truncate(limit);
-    Ok(items)
+        });
+    let mut batch = Vec::with_capacity(50);
+    for item in items {
+        if search_is_cancelled(cancelled) {
+            return Err("Search cancelled".into());
+        }
+        batch.push(item);
+        if batch.len() == 50 {
+            visit(std::mem::take(&mut batch))?;
+        }
+    }
+    if search_is_cancelled(cancelled) {
+        return Err("Search cancelled".into());
+    }
+    if !batch.is_empty() {
+        visit(batch)?;
+    }
+    Ok(())
 }
 
 fn content_indexing_allows_path(config: &SearchConfig, path: &Path) -> bool {
@@ -4361,27 +4490,51 @@ fn push_bounded_result(
 }
 
 fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
-    match sort {
-        SearchSort::Relevance => {
-            v.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.name.cmp(&b.1.name)))
-        }
-        SearchSort::Name => v.sort_by(|a, b| compare_ascii_case_insensitive(&a.1.name, &b.1.name)),
-        SearchSort::Path => v.sort_by(|a, b| a.1.path.cmp(&b.1.path)),
-        SearchSort::Modified => v.sort_by(|a, b| {
-            b.1.modified_unix_secs
-                .unwrap_or(0)
-                .cmp(&a.1.modified_unix_secs.unwrap_or(0))
-        }),
-        SearchSort::Size => v.sort_by(|a, b| {
-            b.1.size_bytes
-                .unwrap_or(0)
-                .cmp(&a.1.size_bytes.unwrap_or(0))
-        }),
-    }
+    v.sort_by(|a, b| {
+        let order = match sort {
+            SearchSort::Relevance => b.0.cmp(&a.0).then_with(|| a.1.name.cmp(&b.1.name)),
+            SearchSort::Name => compare_ascii_case_insensitive(&a.1.name, &b.1.name),
+            SearchSort::Path => a.1.path.cmp(&b.1.path),
+            SearchSort::Modified => {
+                b.1.modified_unix_secs
+                    .unwrap_or(0)
+                    .cmp(&a.1.modified_unix_secs.unwrap_or(0))
+            }
+            SearchSort::Size => {
+                b.1.size_bytes
+                    .unwrap_or(0)
+                    .cmp(&a.1.size_bytes.unwrap_or(0))
+            }
+        };
+        order.then_with(|| a.1.path.cmp(&b.1.path))
+    });
 }
 
 #[cfg(test)]
 mod tests {
+    fn live_content_hits(
+        expr: &Expr,
+        roots: &[PathBuf],
+        config: &SearchConfig,
+        include_hidden: bool,
+        program: &std::ffi::OsStr,
+    ) -> Result<Vec<SearchResultItem>, String> {
+        let mut items = Vec::new();
+        stream_content_ripgrep(
+            expr,
+            roots,
+            config,
+            include_hidden,
+            program,
+            None,
+            |batch| {
+                items.extend(batch);
+                Ok(())
+            },
+        )?;
+        Ok(items)
+    }
+
     use super::*;
     use std::fs;
 
@@ -5871,6 +6024,7 @@ mod tests {
                 content_search: false,
             },
             system_results,
+            None,
         );
 
         assert_eq!(response.total, 2);
@@ -5947,6 +6101,7 @@ mod tests {
                 content_search: false,
             },
             duplicate_system_result,
+            None,
         );
 
         assert_eq!(
@@ -6199,6 +6354,105 @@ mod tests {
     }
 
     #[test]
+    fn content_provider_wait_fixture() {
+        let Some(marker) = std::env::var_os("OTTRIN_TEST_CONTENT_WAIT") else {
+            return;
+        };
+        // Fill both pipes before signalling readiness, proving concurrent drain.
+        use std::io::Write;
+        std::io::stdout()
+            .write_all(&vec![b'x'; 1024 * 1024])
+            .unwrap();
+        std::io::stderr()
+            .write_all(&vec![b'x'; 1024 * 1024])
+            .unwrap();
+        fs::write(marker, std::process::id().to_string()).unwrap();
+        std::thread::sleep(Duration::from_secs(30));
+    }
+
+    #[test]
+    fn cancelled_live_content_provider_is_reaped_after_both_pipes_are_drained() {
+        let root = crate::test_temp_dir().join("provider-cancel");
+        fs::create_dir(&root).unwrap();
+        let marker = root.join("ready");
+        let cancelled = AtomicBool::new(false);
+        let started = Instant::now();
+        std::thread::scope(|scope| {
+            scope.spawn(|| {
+                let deadline = Instant::now() + Duration::from_secs(10);
+                while !marker.exists() && Instant::now() < deadline {
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+                cancelled.store(true, std::sync::atomic::Ordering::Release);
+            });
+            let mut command = internal_command(std::env::current_exe().unwrap());
+            command
+                .args([
+                    "--exact",
+                    "tests::content_provider_wait_fixture",
+                    "--nocapture",
+                ])
+                .env("OTTRIN_TEST_CONTENT_WAIT", &marker);
+            let error = run_content_provider(command, Some(&cancelled)).unwrap_err();
+            assert_eq!(error, "Search cancelled");
+        });
+        assert!(marker.exists(), "child never drained both pipes");
+        assert!(
+            started.elapsed() < Duration::from_secs(12),
+            "child was not interrupted"
+        );
+        // The runner waits for its child before returning; no later writes or child
+        // lifetime can retain this owned temporary namespace.
+    }
+
+    #[test]
+    fn live_content_or_counts_each_branch_and_ignores_fuzzy_filename_suggestions() {
+        let root = crate::test_temp_dir().join("content-or-pages");
+        fs::create_dir_all(&root).unwrap();
+        for (name, body) in [
+            ("one.txt", "firstneedle"),
+            ("two.txt", "secondneedle"),
+            ("both.txt", "firstneedle secondneedle"),
+            ("f_i_r_s_t_n_e_e_d_l_e.txt", "unrelated"),
+        ] {
+            fs::write(root.join(name), body).unwrap();
+        }
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        };
+        let mut service = SearchService::new_with_store_path(config, root.join("index.db"));
+        for ready in [false, true] {
+            if ready {
+                service.start();
+                service.rebuild_index_blocking().unwrap();
+                service.stop();
+            }
+            let mut query = query_by_name("firstneedle | secondneedle");
+            query.content_search = true;
+            query.limit = 1;
+            for offset in 0..4 {
+                query.offset = offset;
+                let answer = service.query(query.clone());
+                assert!(answer.error.is_none(), "{:?}", answer.error);
+                assert_eq!(answer.total, 3);
+                assert_eq!(answer.items.len(), usize::from(offset < 3));
+            }
+            query.text = "firstneedle".into();
+            query.offset = 0;
+            query.limit = 20;
+            let answer = service.query(query);
+            assert_eq!(
+                answer.total, 2,
+                "content matching must obey the expression, not add fuzzy suggestions"
+            );
+        }
+    }
+
+    #[test]
     fn live_content_provider_failures_are_not_empty_matches() {
         let root = crate::test_temp_dir().join("provider-errors");
         fs::create_dir(&root).unwrap();
@@ -6210,12 +6464,11 @@ mod tests {
         };
         let expr = parse_query("provider-needle").unwrap();
         let missing = root.join("missing-provider");
-        let error = query_content_ripgrep(
+        let error = live_content_hits(
             &expr,
             std::slice::from_ref(&root),
             &config,
             false,
-            10,
             missing.as_os_str(),
         )
         .expect_err("missing provider must report a failure");
@@ -6224,12 +6477,11 @@ mod tests {
         // A real executable that rejects the search-provider arguments exercises
         // nonzero process exit handling on both Unix and Windows.
         let other_program = std::env::current_exe().unwrap();
-        let error = query_content_ripgrep(
+        let error = live_content_hits(
             &expr,
             std::slice::from_ref(&root),
             &config,
             false,
-            10,
             other_program.as_os_str(),
         )
         .expect_err("failed provider must report a failure");
@@ -6238,12 +6490,11 @@ mod tests {
         // Disabled content search must never try to start even a missing tool.
         config.content_indexing_enabled = false;
         assert!(
-            query_content_ripgrep(
+            live_content_hits(
                 &expr,
                 std::slice::from_ref(&root),
                 &config,
                 false,
-                10,
                 missing.as_os_str(),
             )
             .unwrap()
@@ -6298,12 +6549,11 @@ mod tests {
             ..SearchConfig::default()
         };
         let expr = parse_query("filename-probe").unwrap();
-        let results = query_content_ripgrep(
+        let results = live_content_hits(
             &expr,
             std::slice::from_ref(&root),
             &config,
             false,
-            10,
             &content_search_program(),
         )
         .unwrap();
@@ -6335,12 +6585,11 @@ mod tests {
         let expr = parse_query("privacy-probe").unwrap();
         // Opening the excluded body would make the real provider fail with
         // Permission Denied, even if a later result filter hid that pathname.
-        let results = query_content_ripgrep(
+        let results = live_content_hits(
             &expr,
             std::slice::from_ref(&root),
             &config,
             false,
-            10,
             &content_search_program(),
         )
         .unwrap();
@@ -6874,11 +7123,111 @@ mod tests {
         });
         assert!(answer.error.is_none(), "{:?}", answer.error);
         assert_eq!(answer.items.len(), 20);
-        assert!(
-            answer.total >= 20 && answer.total <= 70,
-            "{} results for 70 paths",
-            answer.total
+        assert_eq!(
+            answer.total, 70,
+            "Every distinct saved/live match must count once"
         );
+    }
+
+    #[test]
+    fn positive_content_pages_cover_every_match_in_requested_order() {
+        let root = crate::test_temp_dir().join("content-pagination");
+        let bodies = root.join("bodies");
+        fs::create_dir_all(&bodies).unwrap();
+        let mut expected = Vec::new();
+        for index in 0..137 {
+            // Repeated names, sizes and timestamps require a path tie-breaker.
+            let folder = bodies.join(format!("group-{}", index % 3));
+            fs::create_dir_all(&folder).unwrap();
+            let prefix = if index % 3 == 0 {
+                "bodyneedle-document"
+            } else {
+                "document"
+            };
+            let file = folder.join(format!("{prefix}-{:03}.txt", index / 3));
+            fs::write(&file, format!("bodyneedle {}", "x".repeat(index % 5))).unwrap();
+            File::options()
+                .write(true)
+                .open(&file)
+                .unwrap()
+                .set_times(std::fs::FileTimes::new().set_modified(
+                    UNIX_EPOCH + Duration::from_secs(1_700_000_000 + (index % 4) as u64),
+                ))
+                .unwrap();
+            expected.push(file);
+        }
+        let config = SearchConfig {
+            include_roots: vec![bodies.clone()],
+            content_indexing_enabled: true,
+            content_include_roots: vec![bodies.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        };
+        let store = root.join("search.db");
+        let mut service = SearchService::new_with_store_path(config.clone(), store.clone());
+        // Verify live-only, then overlapping saved/live and finally saved-only.
+        for mode in ["live", "merged", "saved"] {
+            if mode == "merged" {
+                service.start();
+                service.rebuild_index_blocking().unwrap();
+                service.stop();
+                service = SearchService::load_persisted(config.clone(), store.clone()).unwrap();
+            } else if mode == "saved" {
+                for path in &expected {
+                    fs::remove_file(path).unwrap();
+                }
+            }
+            for sort in [
+                SearchSort::Name,
+                SearchSort::Path,
+                SearchSort::Size,
+                SearchSort::Modified,
+                SearchSort::Relevance,
+            ] {
+                let mut query = query_by_name("bodyneedle");
+                query.content_search = true;
+                query.sort = sort;
+                query.limit = 1_000;
+                let all = service.query(query.clone());
+                assert!(all.error.is_none(), "{mode}: {:?}", all.error);
+                assert_eq!(all.total, expected.len(), "{mode}: {sort:?}");
+                let all_paths = all
+                    .items
+                    .iter()
+                    .map(|item| item.path.clone())
+                    .collect::<Vec<_>>();
+                assert_eq!(
+                    all_paths.iter().collect::<HashSet<_>>(),
+                    expected.iter().collect::<HashSet<_>>()
+                );
+                let mut pages = Vec::new();
+                query.limit = 17;
+                for offset in (0..expected.len() + 17).step_by(17) {
+                    query.offset = offset;
+                    let page = service.query(query.clone());
+                    assert!(page.error.is_none(), "{mode}: {:?}", page.error);
+                    assert_eq!(
+                        page.total,
+                        expected.len(),
+                        "{mode}: {sort:?} offset {offset}"
+                    );
+                    let end = offset.saturating_add(query.limit).min(all_paths.len());
+                    assert_eq!(
+                        page.items
+                            .iter()
+                            .map(|item| item.path.clone())
+                            .collect::<Vec<_>>(),
+                        all_paths[offset.min(all_paths.len())..end],
+                        "{mode}: {sort:?} offset {offset}"
+                    );
+                    pages.extend(page.items.into_iter().map(|item| item.path));
+                }
+                assert_eq!(
+                    pages, all_paths,
+                    "{mode}: {sort:?}: gaps, duplicates or unstable order"
+                );
+            }
+        }
     }
 
     #[test]
@@ -7085,8 +7434,7 @@ mod tests {
         // Preserve the production 60-second registration backoff.
         let until = Instant::now() + Duration::from_secs(75);
         loop {
-            let hits =
-                db::query_indexed_content_page(&store, &plan, "returnneedle", 20, 0).unwrap();
+            let hits = db::indexed_content_hits(&store, &plan, "returnneedle").unwrap();
             if hits.len() == 1 && service.diagnostics().watcher_ready {
                 assert_eq!(hits[0].item.path, file);
                 break;
@@ -7102,7 +7450,7 @@ mod tests {
         fs::write(&file, "afterreturnneedle").unwrap();
         let until = Instant::now() + Duration::from_secs(10);
         loop {
-            if db::query_indexed_content_page(&store, &plan, "afterreturnneedle", 20, 0)
+            if db::indexed_content_hits(&store, &plan, "afterreturnneedle")
                 .unwrap()
                 .len()
                 == 1
@@ -7140,7 +7488,7 @@ mod tests {
             let plan = plan::ScanPlan::new(&config).unwrap();
             let deadline = Instant::now() + Duration::from_secs(10);
             loop {
-                let hits = db::query_indexed_content_page(&store, &plan, term, 20, 0).unwrap();
+                let hits = db::indexed_content_hits(&store, &plan, term).unwrap();
                 let got = hits
                     .into_iter()
                     .map(|hit| hit.item.path)
@@ -7816,12 +8164,11 @@ mod tests {
             content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         };
-        let results = query_content_ripgrep(
+        let results = live_content_hits(
             &expr,
             std::slice::from_ref(&root),
             &config,
             false,
-            10,
             &content_search_program(),
         )
         .expect("live content search");

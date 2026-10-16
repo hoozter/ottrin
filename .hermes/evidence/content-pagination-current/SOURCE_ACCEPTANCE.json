@@ -1,0 +1,236 @@
+{
+  "date": "2026-10-16",
+  "status": "partial",
+  "scope": "Source tests only; current package cohort remains 61bfab9 until exact rebuild acceptance",
+  "source_files_sha256": {
+    "Cargo.lock": "bf9abf8505ac08d738d5874b8834a2c5790b5c25522bf2f6da3b604d4b95c80f",
+    "crates/ottrin-app/Cargo.toml": "40f926f809fc0690ab2fdeb0e269a709ad94cb6e1bdb5662037bc33e6d1f46eb",
+    "crates/ottrin-app/src/main.rs": "a8acdf85e0c57a9a6c194240ae985946d872ddcc4c0b75c282c38fe5d3ad8601",
+    "crates/ottrin-platform/Cargo.toml": "f5afe779460a0992051cd7e3362ac3d467f3a22674a69163afc9c038785fea1e",
+    "crates/ottrin-platform/src/text_edit/windows.rs": "20ee00f800e5c6bba3de9a9bf9d29ad94ec94ba4465c118509c298ceef570d48",
+    "crates/ottrin-search/src/daemon_client.rs": "f0ae00628cf1e8ad9d5397f9714bcd7486ab38c6f4a5dbbea5aac1def89cb9ee",
+    "crates/ottrin-search/src/daemon_server.rs": "3a048c6bfb6181e1c5d2368cc6af8bb51a67d9b3cd63657a3a217909b9c07bca",
+    "crates/ottrin-search/src/db.rs": "0e097099c3fce54e83dfd1e5b8f8a8560197d173531948b4345e42b3491aebe2",
+    "crates/ottrin-search/src/lib.rs": "32a6c2121afc772df81468715ade9646f8823b46a0eae8d4c96d0d32b5db6834",
+    "crates/ottrin-search/src/windows_pipe.rs": "d22851a80e4781b04d66107f08f81ed8981f600d3511116bf653b3779daa6e89",
+    "crates/ottrin-ui/src/lib.rs": "858c48421fe555e92a90f96d9d50df1ba1ba5425258a9952c47b894c181cba4f",
+    "crates/ottrin-ui/src/preview_render.rs": "461b1a47ec3ea0099b0f8c2c2ed955eb395fcf9acad8904f4470940023cd9d68",
+    "crates/ottrin-ui/src/thumbnail_cache.rs": "605872c7202e08506c65ab6be50285feda4818cf01b68dc19ccacddbace56b5f",
+    "crates/ottrin-search/src/daemon_transport.rs": "9c21d599ec1170252801136f10ffaf3b0ac34607fd2d2421558f3b22cf40708a"
+  },
+  "linux": {
+    "status": "pass",
+    "scope": "Full Linux search, UI and CLI suites, serial, private TMPDIR and owned process groups",
+    "suites": {
+      "search": {
+        "passed": 238,
+        "failed": 0,
+        "ignored": 2,
+        "exit": 0
+      },
+      "ui": {
+        "passed": 378,
+        "failed": 0,
+        "ignored": 1,
+        "exit": 0
+      },
+      "app": {
+        "passed": 23,
+        "failed": 0,
+        "ignored": 0,
+        "exit": 0
+      }
+    },
+    "performance_isolation": "Search suite with owned guest suspended; UI/CLI rerun after paging input-race fix",
+    "cleanup": "Each owned process group stopped before private TMPDIR removal"
+  },
+  "windows": {
+    "search": {
+      "passed": 222,
+      "failed": 0,
+      "ignored": 6,
+      "note": "Unchanged search test binary from full native source run; identity rechecked by refreshed-test uploader"
+    },
+    "ui": {
+      "passed": 336,
+      "failed": 5,
+      "ignored": 0,
+      "failures": [
+        "tests::clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict",
+        "tests::clipboard_native_paste_event_starts_owned_file_operation",
+        "tests::ply_response_from_an_intermediate_generation_is_rejected_after_a_to_b_to_a",
+        "thumbnail_cache::tests::affinity_preview_never_returns_raw_container_or_stale_cache_after_replacement",
+        "thumbnail_cache::tests::ply_thumbnail_compact_and_full_routes_use_only_content_keyed_pngs"
+      ],
+      "text_save_undo": "pass"
+    },
+    "app": {
+      "passed": 20,
+      "failed": 0,
+      "ignored": 0
+    },
+    "text_edit": {
+      "passed": 19,
+      "failed": 0,
+      "ignored": 1,
+      "new_private_folder_regression": "red before runtime fix, green after",
+      "audit_fixture": "requires separate privileged seeding; excluded"
+    },
+    "test_binaries": {
+      "search": {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-01e23ea6a9e24f4f.exe",
+        "sha256": "1de10dd3bfe4dbaa5002e0604566cfd1a21bc35a0b997eb7cd45c7e979d6d897"
+      },
+      "ui": {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-90fe1e60973fc3af.exe",
+        "compiler_sha256": "d055ebd3228da54f2a27f274b4e96bb00964678b2a4099664394d5420be63341",
+        "sha256": "4b1882f7dbe943532493d3e76ed6c70af6516cb24c231a28a1b40e79a01885a8",
+        "transform": "GNU strip --strip-debug; every retained PE section retains size/address/flags and raw bytes",
+        "retained_sections": {
+          ".text": {
+            "virtual_size": 46140856,
+            "virtual_address": 4096,
+            "flags": 1610612832,
+            "raw_sha256": "48e63244e7c8498c65ef5faa589b76321313a4bd2d6c1950780e3a522345f6a8"
+          },
+          ".data": {
+            "virtual_size": 40512,
+            "virtual_address": 46145536,
+            "flags": 3221225536,
+            "raw_sha256": "e62d6b131bcbf4dcc4e3856785883b444b1c38c6b37648af4bb9defa191db48d"
+          },
+          ".rdata": {
+            "virtual_size": 20502368,
+            "virtual_address": 46186496,
+            "flags": 1073741888,
+            "raw_sha256": "562fdf147575f526fe513c3a4ef08784c0a8fdbf63905a55a0f6e3c90e387420"
+          },
+          ".pdata": {
+            "virtual_size": 1469064,
+            "virtual_address": 66691072,
+            "flags": 1073741888,
+            "raw_sha256": "7a5d25e7d6f27c7b0022b5248f7a6aff5ff850cb44e3b2cc0b6e2437ed224490"
+          },
+          ".xdata": {
+            "virtual_size": 3806664,
+            "virtual_address": 68161536,
+            "flags": 1073741888,
+            "raw_sha256": "2e80c8aa2a34fd0435d16075d5b433528ad20a84c635607bd1f9bed4c13d9084"
+          },
+          ".bss": {
+            "virtual_size": 992,
+            "virtual_address": 71970816,
+            "flags": 3221225600,
+            "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          ".idata": {
+            "virtual_size": 21908,
+            "virtual_address": 71974912,
+            "flags": 3221225536,
+            "raw_sha256": "1f6b3b1d2eac18914c389271f1f0a19fb67cecdcc1288f5b7c54306fb8a9a261"
+          },
+          ".CRT": {
+            "virtual_size": 112,
+            "virtual_address": 71999488,
+            "flags": 3221225536,
+            "raw_sha256": "bf02bb702a2af77cd4f1d44151069327b51822760e25e90c64a9b8b42262e1df"
+          },
+          ".tls": {
+            "virtual_size": 16,
+            "virtual_address": 72003584,
+            "flags": 3221225536,
+            "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+          },
+          ".reloc": {
+            "virtual_size": 249416,
+            "virtual_address": 72007680,
+            "flags": 1107296320,
+            "raw_sha256": "257209f0846507eea4e75bb3cc34ec07dc66971c087e06013b572283fc8e4dae"
+          }
+        }
+      },
+      "app": {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-4fe7eb5594090e1c.exe",
+        "compiler_sha256": "c29a1f55947f6ad6de02f7b2f4592b3e52b5589c10ae9f2d81a67ed0c82741f2",
+        "sha256": "df56e555abde861c0212507e8c3778a9366e5816792addf9268a351b55cc695b",
+        "transform": "GNU strip --strip-debug; every retained PE section retains size/address/flags and raw bytes",
+        "retained_sections": {
+          ".text": {
+            "virtual_size": 45191160,
+            "virtual_address": 4096,
+            "flags": 1610612832,
+            "raw_sha256": "94f45407e9261c2ecfc92c703c46962246f85851880247f177ab35b04baffa11"
+          },
+          ".data": {
+            "virtual_size": 42336,
+            "virtual_address": 45195264,
+            "flags": 3221225536,
+            "raw_sha256": "d36a848ddb274a1e25354f574e6c257b43dc624ca57ca00c50e868e84b404b4f"
+          },
+          ".rdata": {
+            "virtual_size": 18818048,
+            "virtual_address": 45240320,
+            "flags": 1073741888,
+            "raw_sha256": "a4188276ada858fa52c169e70ca574c5acf7f9d0c72731104908c9f52ade645c"
+          },
+          ".pdata": {
+            "virtual_size": 1457244,
+            "virtual_address": 64061440,
+            "flags": 1073741888,
+            "raw_sha256": "132f197b465fbb32474cfab5a04f8cc41fcb202e88a226a75b2e7a89133da030"
+          },
+          ".xdata": {
+            "virtual_size": 3720180,
+            "virtual_address": 65519616,
+            "flags": 1073741888,
+            "raw_sha256": "0e8b3efff60ebf9390bc9c844cd67e1cc88f2b06d70c99f9cdc927c30ee90ba4"
+          },
+          ".bss": {
+            "virtual_size": 992,
+            "virtual_address": 69242880,
+            "flags": 3221225600,
+            "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          ".idata": {
+            "virtual_size": 21904,
+            "virtual_address": 69246976,
+            "flags": 3221225536,
+            "raw_sha256": "d93e1fd03ea5ae95de385100ed1da064b28d2511c85cd489ee03a084e73858a1"
+          },
+          ".CRT": {
+            "virtual_size": 112,
+            "virtual_address": 69271552,
+            "flags": 3221225536,
+            "raw_sha256": "e7bfd74a3877ded3e1fb5eb5ef4d922c602fcde260921eee84946caf760f81bd"
+          },
+          ".tls": {
+            "virtual_size": 16,
+            "virtual_address": 69275648,
+            "flags": 3221225536,
+            "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+          },
+          ".reloc": {
+            "virtual_size": 240228,
+            "virtual_address": 69279744,
+            "flags": 1107296320,
+            "raw_sha256": "7557bba56b002cd34a19315fe5c12b803afe5a3092aabcead1ef660459843853"
+          }
+        }
+      },
+      "provider_sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680"
+    },
+    "token": "Disposable ordinary interactive user in owned COW Windows VM"
+  },
+  "strict_checks": {
+    "linux": "pass; platform/search/UI/app all-target Clippy -D warnings",
+    "windows": "pass; platform/search/UI/app all-target Clippy -D warnings",
+    "formatting": "pass",
+    "diff_whitespace": "pass"
+  },
+  "limits": [
+    "Windows UI is not fully passing: required safe-copy and PLY/Affinity admission remain unimplemented",
+    "No exact new package claim; no GUI, installed-app, reboot/login or physical storage claim from source tests",
+    "Bounded system filename and pre-index fallback completeness remain open",
+    "Positive content ordering test covers 137 files across five sorts and pages; live candidate OR union and remote cancellation use separate regressions"
+  ]
+}

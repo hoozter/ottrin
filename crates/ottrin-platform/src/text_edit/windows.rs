@@ -304,9 +304,9 @@ fn relative(
     })?;
     Ok(unsafe { File::from_raw_handle(raw.cast()) })
 }
-// NtCreateFile preserves the ACL entries but does not retain the automatic
-// inheritance state of a supplied descriptor. Finalize
-// the new file's security through the filesystem API before exact comparison.
+// Preserve an already exact descriptor. Reapplying an unprotected DACL can
+// inherit additional parent ACEs and change a private file's security. Only
+// finalize inheritance when NtCreateFile did not retain the supplied state.
 fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEditError> {
     let descriptor = security.as_ptr().cast_mut().cast();
     let mut control = 0;
@@ -324,6 +324,9 @@ fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEd
         return Err(TextEditError::UnsupportedMetadata);
     }
     require_absent_sacl(security)?;
+    if metadata(file)?.5 == security {
+        return Ok(());
+    }
     let protection = if control & SE_DACL_PROTECTED != 0 {
         PROTECTED_DACL_SECURITY_INFORMATION
     } else {
@@ -715,6 +718,46 @@ mod tests {
         fn drop(&mut self) {
             std::fs::remove_dir_all(&self.0).unwrap();
         }
+    }
+
+    #[test]
+    fn windows_native_text_save_preserves_metadata_inside_private_temp_directory() {
+        let fixture = tempfile::tempdir().unwrap();
+        let path = fixture.path().join("notes.txt");
+        std::fs::write(&path, "original\n").unwrap();
+        let session = Session::open(&path).unwrap();
+        let result = session.save("saved edit\n");
+        if let Err(error) = &result {
+            let publication = std::fs::read_dir(fixture.path())
+                .unwrap()
+                .filter_map(Result::ok)
+                .find(|entry| {
+                    entry
+                        .file_name()
+                        .to_string_lossy()
+                        .ends_with("-publication")
+                });
+            if let Some(publication) = publication {
+                let mut file = open_source(&session.parent, &publication.file_name()).unwrap();
+                let candidate = Snapshot::capture(&mut file).unwrap();
+                panic!(
+                    "save failed: {error:?}; source/candidate creation={:?}/{:?} attributes={:x}/{:x} security_lengths={}/{} controls={:?}/{:?} security_equal={}",
+                    session.source.creation,
+                    candidate.creation,
+                    session.source.attributes,
+                    candidate.attributes,
+                    session.source.security.len(),
+                    candidate.security.len(),
+                    &session.source.security[..4],
+                    &candidate.security[..4],
+                    session.source.security == candidate.security
+                );
+            }
+        }
+        result.unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), b"saved edit\n");
+        let saved = Session::open(&path).unwrap();
+        assert_eq!(saved.source.security, session.source.security);
     }
 
     #[test]

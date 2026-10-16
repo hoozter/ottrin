@@ -79,6 +79,12 @@ Native rows carry richer metadata and live freshness. System rows extend coverag
 
 Result details may identify `Live index`, `System filename index`, or `Content match`, but the main list remains unified rather than split into separate result screens.
 
+Positive literal content queries visit all saved candidates in one generation read transaction and all admitted live matches before final sorting and paging. A source cannot truncate to the UI page size. Exact-path deduplication spans saved/live/filename matches; content expressions do not add unrelated fuzzy filename suggestions. Every sort has a path tie-breaker so static results have the same order across page sizes. The retained result payload is bounded by `offset + limit`; saved content streams one record at a time and live content is merged in batches of 50. Deduplication/provider path sets still scale with matching paths; this is not constant-memory traversal.
+
+The results view exposes Previous/Next and the visible range. The CLI accepts `--limit N` and zero-based `--offset N`. Changing the query/filter/sort starts at the first page; a snapshot refresh retains the requested page or returns to the last nonempty page after deletion. Superseded content queries release SQLite readers and kill/reap the live provider while draining both output pipes. The production client interrupts its authenticated connection on cancellation; the daemon observes disconnect or shutdown and passes cancellation into the query. Queries retain no detached registry job. A client waits at most 60 seconds for a query reply.
+
+This does not establish complete totals for bounded system-filename discovery or filesystem fallback while native indexing is incomplete. Their coverage/completeness reporting, query composition and paging remain separate required work. Live files can change during a query; pages are recomputed, not held by a cursor across filesystem mutations.
+
 ## Root execution and escalation
 
 Intentional root use is supported and must not be shamed or rejected. The safety rule is that Ottrin never creates persistent privileged state by surprise.

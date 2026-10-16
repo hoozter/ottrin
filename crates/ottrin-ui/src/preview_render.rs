@@ -2211,8 +2211,13 @@ mod tests {
 
     #[test]
     fn docx_list_layout_uses_resolved_marker_and_level_indentation() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../ottrin-preview/tests/fixtures/docx-lists.docx");
+        let fixture = tempfile::tempdir().expect("owned DOCX fixture");
+        let path = fixture.path().join("docx-lists.docx");
+        std::fs::write(
+            &path,
+            include_bytes!("../../ottrin-preview/tests/fixtures/docx-lists.docx"),
+        )
+        .expect("write embedded DOCX fixture");
         let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
             path,
             kind_hint: ottrin_core::EntryKind::File,
@@ -2230,8 +2235,13 @@ mod tests {
 
     #[test]
     fn docx_baseline_renders_the_native_structured_body() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../ottrin-preview/tests/fixtures/docx-baseline.docx");
+        let fixture = tempfile::tempdir().expect("owned DOCX fixture");
+        let path = fixture.path().join("docx-baseline.docx");
+        std::fs::write(
+            &path,
+            include_bytes!("../../ottrin-preview/tests/fixtures/docx-baseline.docx"),
+        )
+        .expect("write embedded DOCX fixture");
         let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
             path,
             kind_hint: ottrin_core::EntryKind::File,
@@ -2260,8 +2270,13 @@ mod tests {
 
     #[test]
     fn docx_inline_image_is_admitted_to_the_real_egui_texture_route() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../ottrin-preview/tests/fixtures/docx-inline-images.docx");
+        let fixture = tempfile::tempdir().expect("owned DOCX fixture");
+        let path = fixture.path().join("docx-inline-images.docx");
+        std::fs::write(
+            &path,
+            include_bytes!("../../ottrin-preview/tests/fixtures/docx-inline-images.docx"),
+        )
+        .expect("write embedded DOCX fixture");
         let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
             path,
             kind_hint: ottrin_core::EntryKind::File,

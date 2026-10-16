@@ -1,0 +1,41 @@
+
+running 20 tests
+test text_edit::windows::tests::windows_native_alternate_streams_and_hard_links_are_rejected ... ok
+test text_edit::windows::tests::windows_native_closed_handle_writable_mapping_blocks_save_until_unmapped ... ok
+test text_edit::windows::tests::windows_native_extended_attributes_are_refused_without_mutation ... ok
+test text_edit::windows::tests::windows_native_external_change_refuses_save_before_staging ... ok
+test text_edit::windows::tests::windows_native_failure_after_withdrawal_restores_without_removing_recovery ... ok
+test text_edit::windows::tests::windows_native_invalid_text_and_stream_paths_are_rejected ... ok
+test text_edit::windows::tests::windows_native_object_ids_are_refused_without_changing_source ... ok
+test text_edit::windows::tests::windows_native_occupied_name_is_never_replaced_by_publication_or_recovery ... ok
+test text_edit::windows::tests::windows_native_open_writer_blocks_save_without_touching_source ... ok
+test text_edit::windows::tests::windows_native_post_publication_failure_keeps_all_versions ... ok
+test text_edit::windows::tests::windows_native_preseeded_audit_is_refused_before_staging ... ignored, requires an owned audit fixture seeded and inspected by a separate privileged test process
+test text_edit::windows::tests::windows_native_process_exit_preserves_original_and_draft_at_every_step ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test text_edit::windows::tests::windows_native_public_session_saves_and_preserves_external_edits ... ok
+test text_edit::windows::tests::windows_native_recovery_dacl_denies_restricted_reader ... ok
+test text_edit::windows::tests::windows_native_resource_attribute_is_refused_before_staging ... ok
+test text_edit::windows::tests::windows_native_save_retains_original_and_independent_draft ... ok
+test text_edit::windows::tests::windows_native_scoped_policy_refuses_security_preparation_without_mutation ... ok
+test text_edit::windows::tests::windows_native_text_save_preserves_metadata_inside_private_temp_directory ... ok
+test text_edit::windows::tests::windows_native_unchanged_save_creates_no_recovery_files ... ok
+test text_edit::windows::tests::windows_native_unicode_and_ancestor_paths_remain_handle_bound ... ok
+
+test result: ok. 19 passed; 0 failed; 1 ignored; 0 measured; 106 filtered out; finished in 0.81s
+

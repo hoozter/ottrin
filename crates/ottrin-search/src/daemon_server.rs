@@ -2,15 +2,16 @@ use crate::daemon_protocol::{
     DaemonRequest, DaemonResponse, PROTOCOL_VERSION, RequestFrame, ResponseFrame, read_frame,
     write_frame,
 };
+use crate::daemon_transport::{DaemonStream, QueryFinished};
 use crate::{SearchHandle, SearchService};
-use std::io::{Read, Write};
+use std::io::Read;
 use std::sync::{
     Arc, Mutex,
     atomic::{AtomicBool, Ordering},
 };
 
 pub(super) fn serve_frame(
-    stream: &mut (impl Read + Write),
+    stream: &mut DaemonStream,
     service: &Arc<Mutex<SearchService>>,
     search: &SearchHandle,
     shutdown: &AtomicBool,
@@ -25,7 +26,7 @@ pub(super) fn serve_frame(
             ),
         }
     } else {
-        dispatch_request(frame.request, service, search, shutdown)
+        dispatch_request(frame.request, stream, service, search, shutdown)
     };
     write_frame(
         stream,
@@ -36,8 +37,59 @@ pub(super) fn serve_frame(
     )
 }
 
+/// A query has exactly the lifetime of its requesting connection. No registry,
+/// detached job or cancellation RPC survives an abandoned client.
+pub(super) fn with_connected_query(
+    stream: &DaemonStream,
+    shutdown: &AtomicBool,
+    run: impl FnOnce(&AtomicBool) -> crate::SearchQueryResult,
+) -> Result<crate::SearchQueryResult, String> {
+    let mut monitor = stream.try_clone().map_err(|error| error.to_string())?;
+    crate::daemon_transport::monitor_timeout(&mut monitor, std::time::Duration::from_millis(50))
+        .map_err(|error| error.to_string())?;
+    let cancelled = AtomicBool::new(false);
+    let done = AtomicBool::new(false);
+    std::thread::scope(|scope| {
+        let watcher = std::thread::Builder::new()
+            .name("ottrin-query-connection".into())
+            .spawn_scoped(scope, || {
+                let mut byte = [0];
+                while !done.load(Ordering::Acquire) {
+                    if shutdown.load(Ordering::Acquire) {
+                        cancelled.store(true, Ordering::Release);
+                        break;
+                    }
+                    match monitor.read(&mut byte) {
+                        Err(error)
+                            if matches!(
+                                error.kind(),
+                                std::io::ErrorKind::TimedOut
+                                    | std::io::ErrorKind::WouldBlock
+                                    | std::io::ErrorKind::Interrupted
+                            ) => {}
+                        // After a complete request frame, clients only read a reply.
+                        // EOF, extra bytes or a broken connection end that query.
+                        _ => {
+                            cancelled.store(true, Ordering::Release);
+                            break;
+                        }
+                    }
+                }
+            })
+            .map_err(|error| format!("Cannot start query monitor: {error}"))?;
+        let finished = QueryFinished(&done);
+        let result = run(&cancelled);
+        drop(finished);
+        watcher
+            .join()
+            .map_err(|_| "Search connection monitor failed".to_string())?;
+        Ok(result)
+    })
+}
+
 fn dispatch_request(
     request: DaemonRequest,
+    stream: &mut DaemonStream,
     service: &Arc<Mutex<SearchService>>,
     search: &SearchHandle,
     shutdown: &AtomicBool,
@@ -50,8 +102,14 @@ fn dispatch_request(
             };
         }
         DaemonRequest::Query { query } => {
-            return DaemonResponse::Query {
-                result: search.query_with_diagnostics(query),
+            return match with_connected_query(stream, shutdown, |cancelled| {
+                search.query_cancellable_with_diagnostics(query, cancelled)
+            }) {
+                Ok(result) => DaemonResponse::Query { result },
+                Err(message) => DaemonResponse::Error {
+                    code: "query_failed".into(),
+                    message,
+                },
             };
         }
         DaemonRequest::UpdateConfig { config } => {

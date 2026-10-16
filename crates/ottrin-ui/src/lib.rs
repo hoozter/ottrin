@@ -2573,7 +2573,7 @@ impl UiSearchHandle {
                     "Administrator indexing is disabled until explicitly enabled".to_string(),
                 );
             };
-            match remote.query(query) {
+            match remote.query_cancellable(query, cancelled) {
                 Ok(result) if !cancelled.load(Ordering::Acquire) => result,
                 Ok(_) => unavailable_search_result("Search cancelled".to_string()),
                 Err(error) => unavailable_search_result(error),
@@ -2868,6 +2868,7 @@ struct SearchUiState {
     selected: Option<usize>,
     scroll_to_selected: bool,
     total: usize,
+    page_offset: usize,
     last_error: Option<String>,
     last_warning: Option<String>,
     request_focus: bool,
@@ -2907,6 +2908,7 @@ impl Default for SearchUiState {
             selected: None,
             scroll_to_selected: false,
             total: 0,
+            page_offset: 0,
             last_error: None,
             last_warning: None,
             request_focus: false,
@@ -3136,6 +3138,9 @@ impl Drop for OttrinApp {
     fn drop(&mut self) {
         #[cfg(not(test))]
         self.persist_config();
+        if let Some(cancelled) = self.search_cancellation.take() {
+            cancelled.store(true, Ordering::Release);
+        }
         self.search_service.stop();
     }
 }
@@ -10410,6 +10415,15 @@ impl OttrinApp {
     }
 
     fn run_search_query(&mut self) {
+        self.run_search_query_page(0);
+    }
+
+    fn run_search_query_page(&mut self, offset: usize) {
+        let offset = if self.search_ui.query == self.search_ui.last_executed_query {
+            offset
+        } else {
+            0
+        };
         self.search_ui.pending_query_since = None;
         self.search_ui.last_executed_query = self.search_ui.query.clone();
         self.ensure_search_started();
@@ -10425,6 +10439,7 @@ impl OttrinApp {
             }
             self.search_ui.results.clear();
             self.search_ui.total = 0;
+            self.search_ui.page_offset = 0;
             self.search_ui.selected = None;
             self.search_ui.last_error = None;
             self.search_ui.last_warning = None;
@@ -10440,7 +10455,7 @@ impl OttrinApp {
             include_hidden_system: self.search_ui.include_hidden,
             sort: self.search_ui.sort,
             limit: self.state.config.search.result_limit.max(1),
-            offset: 0,
+            offset,
             content_search: self.search_ui.content_search,
         };
         let request_id = self.next_request_id;
@@ -10477,27 +10492,36 @@ impl OttrinApp {
             {
                 continue;
             }
+            if result.result.response.error.is_none()
+                && result.query.offset > 0
+                && result.result.response.items.is_empty()
+            {
+                let limit = result.query.limit.max(1);
+                let last_page = result.result.response.total.saturating_sub(1) / limit * limit;
+                self.run_search_query_page(last_page);
+                continue;
+            }
             self.search_ui.last_query_root = result.root;
             self.search_cancellation = None;
             self.search_ui.last_error = result.result.response.error;
             self.search_ui.last_warning = result.result.warning;
-            if self.search_ui.last_error.is_none() {
-                self.search_ui.results = result.result.response.items;
-                self.search_ui.total = result.result.response.total;
-                let new_selected = result
-                    .previously_selected_path
-                    .and_then(|path| self.search_ui.results.iter().position(|it| it.path == path))
-                    .or(if self.search_ui.results.is_empty() {
-                        None
-                    } else {
-                        Some(0)
-                    });
-                if new_selected != self.search_ui.selected {
-                    self.search_ui.result_preview = None;
-                }
-                self.search_ui.selected = new_selected;
-                self.search_ui.scroll_to_selected = true;
+            // Even a partial or failed query replaces the previous query's rows.
+            self.search_ui.results = result.result.response.items;
+            self.search_ui.total = result.result.response.total;
+            self.search_ui.page_offset = result.query.offset;
+            let new_selected = result
+                .previously_selected_path
+                .and_then(|path| self.search_ui.results.iter().position(|it| it.path == path))
+                .or(if self.search_ui.results.is_empty() {
+                    None
+                } else {
+                    Some(0)
+                });
+            if new_selected != self.search_ui.selected {
+                self.search_ui.result_preview = None;
             }
+            self.search_ui.selected = new_selected;
+            self.search_ui.scroll_to_selected = true;
         }
     }
 
@@ -14394,7 +14418,9 @@ impl OttrinApp {
                     }
                     self.search_ui.input_focused = resp.has_focus();
                     if resp.changed() {
-                        self.search_ui.pending_query_since = Some(Instant::now());
+                        self.search_ui.pending_query_since = (self.search_ui.query
+                            != self.search_ui.last_executed_query)
+                            .then(Instant::now);
                         ui.ctx().request_repaint_after(Duration::from_millis(140));
                     }
                 });
@@ -14517,7 +14543,7 @@ impl OttrinApp {
             diag.snapshot_revision,
             has_query,
         ) {
-            self.run_search_query();
+            self.run_search_query_page(self.search_ui.page_offset);
         }
         if has_query {
             // The worker has no UI context, so poll cheaply while search is open. Queries only
@@ -14609,7 +14635,8 @@ impl OttrinApp {
             return;
         }
 
-        // ── Results header (count + error) ───────────────────────────────
+        // ── Results header (count, pagination and error) ──────────────────
+        let mut requested_page = None;
         {
             let n = self.search_ui.total;
             ui.horizontal(|ui| {
@@ -14647,6 +14674,45 @@ impl OttrinApp {
                     ui.add(egui::Spinner::new().size(10.0 * c.font_scale).color(c.text_muted));
                 }
             });
+            let shown = self.search_ui.results.len();
+            let offset = self.search_ui.page_offset;
+            let page_size = self.state.config.search.result_limit.max(1);
+            if offset > 0 || shown < n {
+                ui.horizontal(|ui| {
+                    let ready = !self.search_ui.search_inflight
+                        && self.search_ui.pending_query_since.is_none()
+                        && self.search_ui.query == self.search_ui.last_executed_query;
+                    if ui
+                        .add_enabled(
+                            ready && offset > 0,
+                            egui::Button::new(format!("{MI_ARROW_BACK}  Previous")).themed(&c),
+                        )
+                        .clicked()
+                    {
+                        requested_page = Some(offset.saturating_sub(page_size));
+                    }
+                    let end = offset.saturating_add(shown);
+                    let range = if shown == 0 {
+                        "No entries on this page".to_string()
+                    } else {
+                        format!("{}–{end} shown", offset + 1)
+                    };
+                    ui.label(
+                        RichText::new(range)
+                            .color(c.text_muted)
+                            .size(10.5 * c.font_scale),
+                    );
+                    if ui
+                        .add_enabled(
+                            ready && shown > 0 && end < n,
+                            egui::Button::new(format!("Next  {MI_ARROW_FORWARD}")).themed(&c),
+                        )
+                        .clicked()
+                    {
+                        requested_page = Some(end);
+                    }
+                });
+            }
             if let Some(err) = &self.search_ui.last_error {
                 ui.label(RichText::new(err).color(c.error).size(10.5 * c.font_scale));
             }
@@ -14658,6 +14724,10 @@ impl OttrinApp {
                 );
             }
             ui.add_space(2.0);
+        }
+
+        if let Some(offset) = requested_page {
+            self.run_search_query_page(offset);
         }
 
         {
@@ -26053,10 +26123,9 @@ mod tests {
             std::thread::sleep(Duration::from_millis(10));
             app.poll_op_results();
         }
-        assert_eq!(
-            std::fs::read(destination.join("source.txt")).unwrap(),
-            b"clipboard fixture"
-        );
+        let copied = std::fs::read(destination.join("source.txt"));
+        assert!(copied.is_ok(), "Copy failed: {:?}", app.operation_history);
+        assert_eq!(copied.unwrap(), b"clipboard fixture");
         assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
     }
 
@@ -26156,7 +26225,8 @@ mod tests {
         assert_eq!(
             paths.len(),
             2,
-            "Copy/Rename conflict must create a second file"
+            "Copy/Rename conflict must create a second file: {:?}",
+            app.operation_history
         );
         assert_eq!(
             std::fs::read(destination.join("source.txt")).unwrap(),
@@ -26222,6 +26292,16 @@ mod tests {
         fn root(&self) -> &Path {
             self.temp_dir.path()
         }
+    }
+
+    fn text_edit_fixture_root() -> tempfile::TempDir {
+        // Linux's real text-edit fixtures need a filesystem supporting FIEMAP.
+        // A native Windows test process may have a read-only working directory.
+        #[cfg(target_os = "linux")]
+        let root = tempfile::tempdir_in(std::env::current_dir().expect("current directory"));
+        #[cfg(not(target_os = "linux"))]
+        let root = tempfile::tempdir();
+        root.expect("owned text-edit fixture root")
     }
 
     fn text_edit_fixture_supported() -> bool {
@@ -26734,7 +26814,9 @@ mod tests {
         std::fs::hard_link(&source, &alias).expect("create source hard-link alias");
         std::fs::write(&alias, b"SQLite format 3\0next--generation")
             .expect("replace preview bytes through hard-link alias");
-        std::fs::File::open(&source)
+        std::fs::File::options()
+            .write(true)
+            .open(&source)
             .expect("open source to restore mtime")
             .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
             .expect("restore source mtime");
@@ -27075,8 +27157,13 @@ mod tests {
 
     #[test]
     fn disabling_libreoffice_does_not_hide_an_ottrin_native_doc_page() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../ottrin-preview/tests/fixtures/legacy-doc-nested-tables.doc");
+        let fixture = tempfile::tempdir().expect("owned legacy DOC fixture");
+        let path = fixture.path().join("legacy-doc-nested-tables.doc");
+        std::fs::write(
+            &path,
+            include_bytes!("../../ottrin-preview/tests/fixtures/legacy-doc-nested-tables.doc"),
+        )
+        .expect("write embedded DOC fixture");
         let generation = ottrin_preview::office_preview_source_generation(&path)
             .expect("capture native DOC generation");
         let mut app = OttrinApp::default();
@@ -29247,7 +29334,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn admitted_text_stays_read_only_until_explicit_edit_and_refresh_keeps_edits() {
-        let fixture = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
+        let fixture = text_edit_fixture_root();
         for name in [
             "notes.txt",
             "main.rs",
@@ -29429,7 +29516,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn conflict_reload_refreshes_the_session_and_failed_reload_preserves_edits() {
-        let fixture = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
+        let fixture = text_edit_fixture_root();
         let path = fixture.path().join("notes.txt");
         std::fs::write(&path, "original\n").unwrap();
         let mut app = OttrinApp::default();
@@ -29467,7 +29554,7 @@ mod tests {
 
     #[test]
     fn recovery_conflict_keeps_editor_buffer_and_persistent_error() {
-        let fixture = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
+        let fixture = text_edit_fixture_root();
         let path = fixture.path().join("notes.txt");
         std::fs::write(&path, "original\n").unwrap();
         let mut app = OttrinApp::default();
@@ -29505,8 +29592,7 @@ mod tests {
 
     #[test]
     fn unchanged_quick_inspector_text_save_does_not_create_an_undo_operation() {
-        let fixture = tempfile::tempdir_in(std::env::current_dir().expect("current directory"))
-            .expect("create text-edit fixture root");
+        let fixture = text_edit_fixture_root();
         let path = fixture.path().join("notes.txt");
         std::fs::write(&path, "unchanged\n").expect("write original text");
         let Ok(session) = TextEditSession::open(&path) else {
@@ -29536,8 +29622,7 @@ mod tests {
 
     #[test]
     fn quick_inspector_text_save_is_session_undoable() {
-        let fixture = tempfile::tempdir_in(std::env::current_dir().expect("current directory"))
-            .expect("create text-edit fixture root");
+        let fixture = text_edit_fixture_root();
         let path = fixture.path().join("notes.txt");
         std::fs::write(&path, "original\n").expect("write source text");
         let Ok(session) = TextEditSession::open(&path) else {
@@ -29558,7 +29643,16 @@ mod tests {
 
         app.save_preview_text_edit();
 
-        assert_eq!(std::fs::read_to_string(&path).unwrap(), "saved edit\n");
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "saved edit\n",
+            "editor error: {:?}; activity: {:?}",
+            app.preview
+                .text_editor
+                .as_ref()
+                .and_then(|editor| editor.error.as_ref()),
+            app.operation_history
+        );
         let record = app.operation_history.front().expect("text edit activity");
         assert_eq!(record.title, "Edit text");
         assert_eq!(record.status, OperationStatus::Completed);
@@ -34650,6 +34744,156 @@ mod tests {
             &second,
             slot.as_ref().expect("current request token")
         ));
+    }
+
+    #[test]
+    fn failed_search_replaces_stale_rows_and_keeps_current_partial_results() {
+        let mut app = OttrinApp::default();
+        let item = |name: &str| SearchResultItem {
+            path: PathBuf::from(name),
+            parent_path: PathBuf::new(),
+            name: name.into(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+            content_snippet: None,
+            name_lower: name.into(),
+            path_str: name.into(),
+            path_lower: name.into(),
+        };
+        app.search_ui.results = vec![item("old-query.txt")];
+        app.search_ui.total = 1;
+        app.search_ui.selected = Some(0);
+        for (text, items) in [
+            ("new-query", vec![item("new-query.txt")]),
+            ("invalid expression", Vec::new()),
+        ] {
+            app.search_ui.query = text.into();
+            app.search_ui.latest_request_id += 1;
+            app.search_result_tx
+                .send(SearchQueryResponse {
+                    request_id: app.search_ui.latest_request_id,
+                    query: SearchQuery {
+                        text: text.into(),
+                        scope: app.search_ui.scope,
+                        sort: app.search_ui.sort,
+                        include_hidden_system: app.search_ui.include_hidden,
+                        content_search: app.search_ui.content_search,
+                        root_path: None,
+                        limit: 10,
+                        offset: 0,
+                    },
+                    root: None,
+                    previously_selected_path: Some(PathBuf::from("old-query.txt")),
+                    result: SearchQueryResult {
+                        response: ottrin_core::SearchResponse {
+                            total: items.len(),
+                            items: items.clone(),
+                            status: SearchIndexStatus::Ready,
+                            error: Some("query could not complete".into()),
+                        },
+                        warning: None,
+                    },
+                })
+                .unwrap();
+            app.poll_search_results();
+            assert_eq!(app.search_ui.results, items);
+            assert_eq!(app.search_ui.total, items.len());
+            assert_eq!(
+                app.search_ui.selected,
+                if items.is_empty() { None } else { Some(0) }
+            );
+            assert!(app.search_ui.last_error.is_some());
+        }
+    }
+
+    #[test]
+    fn ui_content_pages_navigate_refresh_and_reset_with_the_query() {
+        fn settle(app: &mut OttrinApp) {
+            let deadline = Instant::now() + Duration::from_secs(5);
+            let mut tokens = Vec::<Arc<AtomicBool>>::new();
+            loop {
+                if let Some(token) = app.search_cancellation.as_ref()
+                    && !tokens.iter().any(|old| Arc::ptr_eq(old, token))
+                {
+                    tokens.push(Arc::clone(token));
+                }
+                app.poll_search_results();
+                if !app.search_ui.search_inflight
+                    && tokens.iter().all(|token| Arc::strong_count(token) == 1)
+                {
+                    break;
+                }
+                assert!(
+                    Instant::now() < deadline,
+                    "query worker did not release its fixture"
+                );
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            assert!(
+                app.search_ui.last_error.is_none(),
+                "{:?}",
+                app.search_ui.last_error
+            );
+        }
+        let fixture = SearchTestFixture::new("positive-search-pages");
+        let files = fixture.root().join("files");
+        std::fs::create_dir(&files).unwrap();
+        for index in 0..23 {
+            std::fs::write(files.join(format!("item-{index:02}.txt")), "bodyneedle").unwrap();
+        }
+        let config = SearchConfig {
+            include_roots: vec![files.clone()],
+            content_indexing_enabled: true,
+            content_include_roots: vec![files.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        };
+        let mut service =
+            SearchService::new_with_store_path(config, fixture.root().join("search.db"));
+        service.start();
+        service.rebuild_index_blocking().unwrap();
+        let mut app = OttrinApp::default();
+        app.search_service = UiSearchService { local: service };
+        app.search_started = true;
+        app.state.active_tab_mut().current_dir = files.clone();
+        app.state.config.search.result_limit = 7;
+        app.search_ui.query = "bodyneedle".into();
+        app.search_ui.content_search = true;
+        app.search_ui.sort = SearchSort::Name;
+        for offset in [0, 7, 14, 21, 14, 7, 0] {
+            app.run_search_query_page(offset);
+            settle(&mut app);
+            assert_eq!(app.search_ui.total, 23);
+            assert_eq!(app.search_ui.page_offset, offset);
+            assert_eq!(
+                app.search_ui.results[0].name,
+                format!("item-{offset:02}.txt")
+            );
+            assert_eq!(app.search_ui.results.len(), 7.min(23 - offset));
+        }
+        for index in 10..23 {
+            std::fs::remove_file(files.join(format!("item-{index:02}.txt"))).unwrap();
+        }
+        app.search_service.local.rebuild_index_blocking().unwrap();
+        app.run_search_query_page(21);
+        settle(&mut app);
+        assert_eq!(app.search_ui.total, 10);
+        assert_eq!(
+            app.search_ui.page_offset, 7,
+            "a removed final page returns to the last nonempty page"
+        );
+        assert_eq!(app.search_ui.results.len(), 3);
+        app.search_ui.query = "absentneedle".into();
+        // A paging action racing the input debounce must start the new query at zero.
+        app.run_search_query_page(7);
+        settle(&mut app);
+        assert_eq!(app.search_ui.page_offset, 0);
+        assert_eq!(app.search_ui.total, 0);
+        assert!(app.search_ui.results.is_empty());
+        drop(app);
     }
 
     #[test]

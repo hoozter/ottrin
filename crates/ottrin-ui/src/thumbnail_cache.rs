@@ -1562,10 +1562,8 @@ mod tests {
     }
 
     fn write_material_font(path: &Path) {
-        let font_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../ottrin-ui/assets/MaterialSymbolsFilled.ttf");
-        std::fs::write(path, std::fs::read(font_path).expect("read material font"))
-            .expect("write font fixture");
+        std::fs::write(path, include_bytes!("../assets/MaterialSymbolsFilled.ttf"))
+            .expect("write embedded font fixture");
     }
 
     #[test]
@@ -1903,7 +1901,9 @@ mod tests {
         std::fs::hard_link(&source, &alias).expect("create hard-link alias");
         std::fs::write(&alias, b"SQLite format 3\0next--generation")
             .expect("replace bytes through hard-link alias");
-        std::fs::File::open(&source)
+        std::fs::File::options()
+            .write(true)
+            .open(&source)
             .expect("open source to restore mtime")
             .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
             .expect("restore source mtime");
@@ -2471,7 +2471,9 @@ mod tests {
             "replacement stays same-sized"
         );
         std::fs::write(&alias, replacement).expect("replace through hard-link alias");
-        std::fs::File::open(&path)
+        std::fs::File::options()
+            .write(true)
+            .open(&path)
             .expect("open source")
             .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
             .expect("restore source mtime");

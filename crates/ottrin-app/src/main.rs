@@ -53,6 +53,8 @@ enum HeadlessAction {
         query: String,
         json: bool,
         content: bool,
+        limit: Option<usize>,
+        offset: usize,
     },
     Preview(PathBuf),
     OpenPath(PathBuf),
@@ -533,6 +535,7 @@ fn print_cli_help() {
     println!("  ottrin --select <FILE>         Open the parent folder with the file selected");
     println!("  ottrin search <QUERY> [--json] Search indexed files (-s)");
     println!("                       [--content] Also search the configured content folders");
+    println!("                       [--limit N] [--offset N] Select a result page");
     println!("  ottrin index [update] [--json]");
     println!("                                 Update the configured search index");
     println!("  ottrin index status [--json]   Show persisted index status without starting it");
@@ -549,30 +552,77 @@ fn print_cli_help() {
     println!("  --purge-config     With --uninstall, also remove saved preferences");
 }
 
+fn parse_search_action(args: &[String]) -> HeadlessAction {
+    let (mut json, mut content, mut limit, mut offset, mut query) =
+        (false, false, None, None, None);
+    let mut args = args.iter();
+    while let Some(argument) = args.next() {
+        match argument.as_str() {
+            "--json" => json = true,
+            "--content" => content = true,
+            "--limit" | "--offset" => {
+                let value = args.next().and_then(|value| value.parse::<usize>().ok());
+                let valid = match (argument.as_str(), value) {
+                    ("--limit", Some(value)) if value > 0 && limit.is_none() => {
+                        limit = Some(value);
+                        true
+                    }
+                    ("--offset", Some(value)) if offset.is_none() => {
+                        offset = Some(value);
+                        true
+                    }
+                    _ => false,
+                };
+                if !valid {
+                    return HeadlessAction::Invalid(format!(
+                        "{argument} requires one valid {} integer and cannot be repeated",
+                        if argument == "--limit" {
+                            "positive"
+                        } else {
+                            "nonnegative"
+                        }
+                    ));
+                }
+            }
+            "--" => {
+                if query.is_some() {
+                    return HeadlessAction::Invalid(
+                        "search accepts exactly one query argument".into(),
+                    );
+                }
+                query = args.next().cloned();
+                if args.next().is_some() {
+                    return HeadlessAction::Invalid(
+                        "search accepts exactly one query argument".into(),
+                    );
+                }
+                break;
+            }
+            argument if argument.starts_with("--") => {
+                return HeadlessAction::Invalid(format!("Unknown search option: {argument}"));
+            }
+            _ if query.is_none() => query = Some(argument.clone()),
+            _ => {
+                return HeadlessAction::Invalid("search accepts exactly one query argument".into());
+            }
+        }
+    }
+    match query {
+        Some(query) if !query.is_empty() => HeadlessAction::Search {
+            query,
+            json,
+            content,
+            limit,
+            offset: offset.unwrap_or(0),
+        },
+        _ => HeadlessAction::Invalid("search requires a query".into()),
+    }
+}
+
 fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
     let command = args.first().map(String::as_str)?;
     match command {
-        "search" | "-s" => {
-            let json = args[1..].iter().any(|arg| arg == "--json");
-            let content = args[1..].iter().any(|arg| arg == "--content");
-            let values = args[1..]
-                .iter()
-                .filter(|arg| !matches!(arg.as_str(), "--json" | "--content"))
-                .collect::<Vec<_>>();
-            match values.as_slice() {
-                [query] if !query.is_empty() => Some(HeadlessAction::Search {
-                    query: (*query).clone(),
-                    json,
-                    content,
-                }),
-                [] => Some(HeadlessAction::Invalid(
-                    "search requires a query".to_string(),
-                )),
-                _ => Some(HeadlessAction::Invalid(
-                    "search accepts exactly one query argument".to_string(),
-                )),
-            }
-        }
+        "search" | "-s" => Some(parse_search_action(&args[1..])),
         "index" => Some(parse_index_action(&args[1..])),
         "preview" | "-p" => Some(match &args[1..] {
             [path] if !path.is_empty() => HeadlessAction::Preview(PathBuf::from(path)),
@@ -867,6 +917,8 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             query,
             json,
             content,
+            limit,
+            offset,
         } => {
             let config = configured_search_config();
             if content
@@ -888,8 +940,8 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                 root_path,
                 include_hidden_system: config.include_hidden_system,
                 sort: config.default_sort,
-                limit: config.result_limit.max(1),
-                offset: 0,
+                limit: limit.unwrap_or(config.result_limit).max(1),
+                offset,
                 content_search: content,
             };
             #[cfg(any(unix, target_os = "windows"))]
@@ -1493,6 +1545,43 @@ mod tests {
     }
 
     #[test]
+    fn search_page_options_are_validated_before_query_execution() {
+        let args = [
+            "--content",
+            "--offset",
+            "17",
+            "needle",
+            "--limit",
+            "7",
+            "--json",
+        ]
+        .map(String::from);
+        assert_eq!(
+            parse_search_action(&args),
+            HeadlessAction::Search {
+                query: "needle".into(),
+                content: true,
+                json: true,
+                limit: Some(7),
+                offset: 17
+            }
+        );
+        for args in [
+            vec!["needle", "--limit", "0"],
+            vec!["needle", "--offset", "-1"],
+            vec!["needle", "--limit"],
+            vec!["needle", "--offset", "3", "--offset", "4"],
+            vec!["needle", "--limit", "999999999999999999999999"],
+            vec!["needle", "--unknown"],
+        ] {
+            assert!(matches!(
+                parse_search_action(&args.into_iter().map(String::from).collect::<Vec<_>>()),
+                HeadlessAction::Invalid(_)
+            ));
+        }
+    }
+
+    #[test]
     fn canonical_search_and_index_commands_are_recognized_before_the_gui_starts() {
         for command in ["search", "-s"] {
             assert_eq!(
@@ -1501,6 +1590,8 @@ mod tests {
                     query: "invoice".into(),
                     json: false,
                     content: false,
+                    limit: None,
+                    offset: 0,
                 })
             );
         }
@@ -1510,6 +1601,8 @@ mod tests {
                 query: "invoice".into(),
                 json: true,
                 content: false,
+                limit: None,
+                offset: 0,
             })
         );
         assert_eq!(
@@ -1522,7 +1615,9 @@ mod tests {
             Some(HeadlessAction::Search {
                 query: "invoice".into(),
                 json: true,
-                content: true
+                content: true,
+                limit: None,
+                offset: 0,
             })
         );
         assert_eq!(
@@ -1699,10 +1794,8 @@ mod tests {
 
     #[test]
     fn startup_failure_diagnostic_is_durable_and_names_its_location() {
-        let directory = std::env::temp_dir().join(format!(
-            "ottrin-startup-diagnostic-test-{}",
-            std::process::id()
-        ));
+        let fixture = tempfile::tempdir().expect("owned startup diagnostic fixture");
+        let directory = fixture.path().to_path_buf();
         let log = write_startup_failure_log_in(
             &directory,
             "WGPU initialization failed",

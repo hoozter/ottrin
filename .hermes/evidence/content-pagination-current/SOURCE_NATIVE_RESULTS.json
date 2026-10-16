@@ -1,0 +1,26 @@
+﻿{
+    "scope":  "Full native search, UI and CLI unit suites as an ordinary interactive user; not GUI or installed-app acceptance",
+    "status":  "fail",
+    "provider_sha256":  "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680",
+    "suites":  {
+                   "search":  {
+                                  "listed":  228,
+                                  "ignored":  6,
+                                  "temporary_entries_after_tests":  0,
+                                  "failed":  0,
+                                  "passed":  222
+                              },
+                   "app":  {
+                               "passed":  20,
+                               "temporary_entries_after_tests":  0,
+                               "failed":  0,
+                               "listed":  20,
+                               "ignored":  0,
+                               "status":  "pass"
+                           },
+                   "ui":  {
+                              "error":  "Suite failed --nocapture --test-threads=1 (101): reemf_thumbnail_compact_and_full_routes_use_only_content_keyed_pngs ... ok\ntest thumbnail_cache::tests::unsafe_svg_thumbnail_response_rejects_raw_fallback_and_stale_raw_cache ... ok\ntest thumbnail_cache::tests::video_candidate_never_falls_back_to_raw_container_bytes ... ok\ntest widget_style::tests::action_menu_omits_unused_check_column_and_keeps_icons_near_edge ... ok\ntest widget_style::tests::button_theme_changes_do_not_recolor_or_round_inputs_and_body_labels ... ok\ntest widget_style::tests::input_focus_uses_accent_without_recoloring_selected_text ... ok\ntest widget_style::tests::menu_rows_align_labels_and_icons_across_states_themes_and_text_scales ... ok\ntest widget_style::tests::narrow_destination_row_keeps_trailing_actions_inside_the_row ... ok\ntest widget_style::tests::page_navigation_keeps_reading_order_and_wraps_without_clipping ... ok\ntest widget_style::tests::preview_toolbar_controls_wrap_inside_narrow_panes ... ok\ntest widget_style::tests::rendered_button_feedback_keeps_its_surface_and_menu_labels_use_button_text ... ok\ntest widget_style::tests::sort_headers_keep_supported_direction_icons_inside_narrow_columns ... ok\ntest widget_style::tests::themed_controls_keep_the_resolved_palette_when_system_appearance_changes ... ok\ntest window_chrome::tests::custom_titlebar_does_not_draw_a_full_width_separator_below_the_chrome ... ok\ntest window_chrome::tests::resize_direction_detects_edges_and_corners ... ok\n\nfailures:\n\nfailures:\n    tests::clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict\n    tests::clipboard_native_paste_event_starts_owned_file_operation\n    tests::ply_response_from_an_intermediate_generation_is_rejected_after_a_to_b_to_a\n    thumbnail_cache::tests::affinity_preview_never_returns_raw_container_or_stale_cache_after_replacement\n    thumbnail_cache::tests::ply_thumbnail_compact_and_full_routes_use_only_content_keyed_pngs\n\ntest result: FAILED. 336 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.34s\n\n",
+                              "status":  "fail"
+                          }
+               }
+}

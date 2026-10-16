@@ -1,0 +1,25 @@
+
+running 20 tests
+test tests::canonical_drop_actions_are_recognized_before_the_gui_starts ... ok
+test tests::canonical_preview_command_and_alias_preserve_the_requested_path ... ok
+test tests::canonical_search_and_index_commands_are_recognized_before_the_gui_starts ... ok
+test tests::cargo_helper_artifact_parser_rejects_missing_or_wrong_artifacts ... ok
+test tests::cargo_helper_artifact_parser_uses_cargo_reported_executable_for_all_target_modes ... ok
+test tests::direct_directory_argument_is_a_gui_open_path ... ok
+test tests::direct_file_argument_opens_quick_inspector_without_an_index_command ... ok
+test tests::direct_path_resolution_distinguishes_files_and_directories ... ok
+test tests::graphics_recovery_override_accepts_both_cli_forms ... ok
+test tests::graphics_recovery_override_can_select_opengl_without_changing_windows_default ... ok
+test tests::invalid_renderer_override_is_rejected_instead_of_silently_using_wgpu ... ok
+test tests::native_renderer_uses_wgpu_on_windows_and_glow_elsewhere ... ok
+test tests::preview_path_resolution_rejects_missing_and_non_file_paths ... ok
+test tests::search_page_options_are_validated_before_query_execution ... ok
+test tests::select_option_reveals_exactly_one_file_in_the_main_window ... ok
+test tests::standalone_inspector_keeps_a_mapped_root_for_secondary_viewport_painting ... ok
+test tests::startup_failure_diagnostic_is_durable_and_names_its_location ... ok
+test tests::unknown_cli_syntax_is_rejected_instead_of_opening_the_gui ... ok
+test tests::unowned_index_modifiers_are_rejected ... ok
+test tests::windows_composition_is_opaque_while_other_platforms_keep_transparency ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

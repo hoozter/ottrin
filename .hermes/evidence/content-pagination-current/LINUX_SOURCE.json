@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "scope": "Full Linux search, UI and CLI suites, serial, private TMPDIR and owned process groups",
+  "suites": {
+    "search": {
+      "passed": 238,
+      "failed": 0,
+      "ignored": 2,
+      "exit": 0
+    },
+    "ui": {
+      "passed": 378,
+      "failed": 0,
+      "ignored": 1,
+      "exit": 0
+    },
+    "app": {
+      "passed": 23,
+      "failed": 0,
+      "ignored": 0,
+      "exit": 0
+    }
+  },
+  "performance_isolation": "Search suite with owned guest suspended; UI/CLI rerun after paging input-race fix",
+  "cleanup": "Each owned process group stopped before private TMPDIR removal"
+}

@@ -113,6 +113,28 @@ impl WindowsIndexPipeStream {
             peer_pid: pid,
         })
     }
+    pub(crate) fn try_clone(&self) -> io::Result<Self> {
+        Ok(Self {
+            handle: self.handle.try_clone()?,
+            timeout: self.timeout,
+            peer_pid: self.peer_pid,
+        })
+    }
+
+    pub(crate) fn cancel_pending_io(&self) -> io::Result<()> {
+        // SAFETY: the duplicated owned handle stays live; null selects pending
+        // operations on this connection. Each operation drains cancellation.
+        if unsafe { CancelIoEx(self.handle.as_raw_handle(), ptr::null()) } != 0 {
+            return Ok(());
+        }
+        let error = io::Error::last_os_error();
+        if error.raw_os_error() == Some(ERROR_NOT_FOUND as i32) {
+            Ok(())
+        } else {
+            Err(error)
+        }
+    }
+
     pub fn set_io_timeout(&mut self, timeout: Duration) {
         self.timeout = timeout;
     }

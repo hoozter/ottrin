@@ -1,0 +1,21 @@
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Finished `test` profile [optimized + debuginfo] target(s) in 11.39s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_search-27d1aa83ebd4686f)
+
+running 1 test
+
+thread 'tests::positive_content_pages_cover_every_match_in_requested_order' (2771068) panicked at crates/ottrin-search/src/lib.rs:6932:21:
+assertion `left == right` failed: live: Name offset 0
+  left: 50
+ right: 137
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::positive_content_pages_cover_every_match_in_requested_order ... FAILED
+
+failures:
+
+failures:
+    tests::positive_content_pages_cover_every_match_in_requested_order
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 234 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p ottrin-search --lib`

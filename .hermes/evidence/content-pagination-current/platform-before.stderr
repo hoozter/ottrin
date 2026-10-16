@@ -1,0 +1,4 @@
+
+thread 'text_edit::windows::tests::windows_native_text_save_preserves_metadata_inside_private_temp_directory' (8728) panicked at crates/ottrin-platform/src/text_edit/windows.rs:740:17:
+save failed: StageRetentionRequired("this file has metadata that safe text editing cannot preserve; recovery directory: \"\\\\\\\\?\\\\C:\\\\Users\\\\OttrinContentQA\\\\AppData\\\\Local\\\\Temp\\\\.tmpsgI6gw\\\\.ottrin-text-edit-d0842ce42499471205e1c8fba2529269\"; sibling publication file: \".ottrin-text-edit-d0842ce42499471205e1c8fba2529269-publication\"; no cleanup attempted"); source/candidate creation=134365852140063756/134365852140063756 attributes=20/20 security_lengths=164/244 controls=[1, 0, 4, 128]/[1, 0, 4, 132] security_equal=false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
