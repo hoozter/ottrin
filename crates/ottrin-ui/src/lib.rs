@@ -1136,14 +1136,14 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
 
 #[cfg(target_os = "windows")]
 fn windows_copy_can_admit(entry: &ottrin_platform::WindowsRetainedCopyStatus) -> bool {
-    entry.evidence == ottrin_platform::WindowsCopyRecoveryEvidence::VerifiedTree
-        && matches!(
-            entry.phase,
-            Some(
-                ottrin_platform::WindowsCopyPhase::Completed
-                    | ottrin_platform::WindowsCopyPhase::UndoPending
-            )
-        )
+    use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
+    match entry.evidence {
+        Evidence::VerifiedTree => {
+            matches!(entry.phase, Some(Phase::Completed | Phase::UndoPending))
+        }
+        Evidence::VerifiedOriginal => entry.phase == Some(Phase::UndoPending),
+        _ => false,
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -1189,6 +1189,15 @@ fn windows_retained_copy_activity(
         Evidence::VerifiedTree if entry.phase == Some(Phase::Undone) => {
             ("Retained data verified", PathMoveUndoState::Undone)
         }
+        Evidence::VerifiedOriginal if entry.phase == Some(Phase::Undone) => {
+            ("Original restored · replacement withdrawn", PathMoveUndoState::Undone)
+        }
+        Evidence::VerifiedOriginal => (
+            "Original verified · replacement already withdrawn",
+            PathMoveUndoState::Unavailable {
+                reason: "Original restoration requires a freshly admitted Undo receipt. Restoration does not change retained replacement data.".into(),
+            },
+        ),
         Evidence::VerifiedTree => (
             "Current data verified",
             PathMoveUndoState::Unavailable {
@@ -25712,12 +25721,17 @@ mod tests {
         ] {
             for evidence in [
                 Evidence::VerifiedTree,
+                Evidence::VerifiedOriginal,
                 Evidence::UnverifiedStage,
                 Evidence::NeedsReview {
                     reason: "changed retained bytes".into(),
                 },
             ] {
-                let undone = phase == Phase::Undone && evidence == Evidence::VerifiedTree;
+                let undone = phase == Phase::Undone
+                    && matches!(
+                        evidence,
+                        Evidence::VerifiedTree | Evidence::VerifiedOriginal
+                    );
                 let review = matches!(evidence, Evidence::NeedsReview { .. });
                 let activity = windows_retained_copy_activity(
                     ottrin_platform::WindowsRetainedCopyStatus {

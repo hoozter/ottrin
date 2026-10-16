@@ -36,7 +36,7 @@ epoch's locks, compares the fresh paired journal bytes, then opens new typed
 The writer rechecks its creator context on every append and reserves the
 remaining publication/application tail before publication, including readonly
 reopen records. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ08` / schema 8;
+append sequence/hash state on reopen. The format is now `OTCPWJ09` / schema 9;
 superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with ordered immutable final-version records and a digest seal after a full
 content/metadata/security scan. Entry acknowledgements alone
@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 247 with 32 specialized
+The final ordinary-user Windows platform suite passes 253 with 33 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -363,12 +363,34 @@ passes 247 with 32 exclusions, Linux passes 411 with three exclusions, and the
 separate SYSTEM audit and strict Clippy checks pass. The disposable VM, disk,
 NVRAM and TPM were removed; the original profile and installation stayed intact.
 Receipt: `.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
-This implements pre-publication cancellation/restoration only. Publication of the
-new copy over a retained original, subsequent Undo, complete overwrite-tail
-reservation and broader security/storage acceptance remain required. Packages
-are unchanged.
+That schema-8 checkpoint implemented pre-publication cancellation/restoration
+only; packages were unchanged.
 
-Public Windows Copy stays disabled. Post-publication Overwrite restoration, session receipt/batch
+Schema 9 extends the existing publication, completion and Undo engines to retained
+originals. Publication holds and revalidates the original and uses no-replace
+rename for the new copy. Undo durably withdraws the replacement before restoring
+the original; withdrawal alone remains `UndoPending`. Source-free recovery can
+finish the remaining restoration after private replacement changes. Discovery
+and Activity distinguish verified original evidence from a fully verified copied
+tree. Opaque forward/Undo admission binds original evidence and includes its
+retention slot in operation conflict checks. The full application, finalization,
+withdrawal and restoration tail is reserved before the original moves.
+Native regressions exercise 92 injected failures and 92 real process exits,
+original file/folder roots, occupied names, data drift, replay, forward/Undo
+admission and inverse-space refusal. A valid-journal ceiling fixture also proves
+that the full reserved amount carries publication and complete Undo to the end;
+original preparation/retention failures assert their actual space-check errors.
+All six new native tests pass. The full
+ordinary-user platform suite passes 253 with 33 exclusions; Linux passes 411
+with three exclusions. The separate SYSTEM audit and native Activity state test
+pass, as do strict Clippy checks. The disposable guest and its disk/NVRAM/TPM
+were removed, with the original installation and preferences unchanged.
+Evidence: `.hermes/evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
+Readonly-original access strategy, broader security/storage, initial conflict
+admission and public session/batch integration remain required. Packages are
+unchanged.
+
+Public Windows Copy stays disabled. Session receipt/batch
 integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete
 SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive directories,
 specialized storage/properties, real large-tree budgets, guest power-cut acceptance,

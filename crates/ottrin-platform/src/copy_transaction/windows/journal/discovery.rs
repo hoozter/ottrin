@@ -24,6 +24,7 @@ pub struct RetainedCopyResumePlan {
     observed_location: PathBuf,
     publication: PathBuf,
     retention: PathBuf,
+    original: Option<PathBuf>,
 }
 impl RetainedCopyResumePlan {
     pub(super) fn admit(
@@ -63,13 +64,21 @@ impl RetainedCopyResumePlan {
             observed_location: location.join(retained.snapshot.root_name(&parent)?),
             publication: location.join(OsString::from_wide(&header.target)),
             retention: location.join(header.candidate_name()),
+            original: state
+                .original
+                .as_ref()
+                .map(|_| location.join(header.original_name())),
         })
     }
     pub fn transaction_id(&self) -> &str {
         &self.binding.header.transaction
     }
     pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
-        vec![(&self.retention, &self.publication)]
+        let mut pairs = vec![(self.retention.as_path(), self.publication.as_path())];
+        if let Some(original) = &self.original {
+            pairs.push((original.as_path(), self.publication.as_path()));
+        }
+        pairs
     }
     pub fn admitted_phase(&self) -> WindowsCopyPhase {
         self.admitted_phase
@@ -115,6 +124,7 @@ pub struct RetainedCopyUndoPlan {
     binding: Box<CopyUndoBinding>,
     publication: PathBuf,
     retention: PathBuf,
+    original: Option<PathBuf>,
     remaining: bool,
     admitted_phase: WindowsCopyPhase,
     observed_location: PathBuf,
@@ -134,32 +144,48 @@ impl RetainedCopyUndoPlan {
         let header = state.header.as_ref().unwrap();
         let parent =
             Volumes::new(&central)?.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
-        let retained = RetainedStage::open(&parent, &central, &header.stage_name(), progress)?;
-        if retained.snapshot.bytes != bytes || !retained.snapshot.state.completion_verified {
+        let snapshot = read_undo_snapshot(&parent, &central, &header.stage_name(), &mut progress)?;
+        if snapshot.bytes != bytes || !snapshot.state.completion_verified {
             return Err(io(
                 "Copy has no stable completed receipt; Undo admission refused",
             ));
         }
-        if retained.snapshot.state.undone.is_some() {
+        if snapshot.state.undo_complete() {
             return Err(io("Copy Undo is already complete"));
         }
         let location = windows_fs::location(&parent).map_err(io)?;
+        let observed_name = if snapshot.state.undone.is_some() && snapshot.state.original.is_some()
+        {
+            HeldOriginal::open(&parent, &snapshot.state, &mut progress)?
+                .unwrap()
+                .name
+        } else {
+            snapshot.root_name(&parent)?
+        };
         Ok(Self {
             registry: windows_fs::location(&central).map_err(io)?,
             binding: Box::new(CopyUndoBinding {
                 header: header.clone(),
-                completion_digest: super::super::evidence_digest(&state.final_versions)?,
+                completion_digest: completion_digest(&state)?,
                 parent_location: location.clone(),
             }),
             publication: location.join(OsString::from_wide(&header.target)),
             retention: location.join(header.candidate_name()),
+            original: state
+                .original
+                .as_ref()
+                .map(|_| location.join(header.original_name())),
             remaining: true,
-            admitted_phase: phase(&retained.snapshot.state),
-            observed_location: location.join(retained.snapshot.root_name(&parent)?),
+            admitted_phase: phase(&snapshot.state),
+            observed_location: location.join(observed_name),
         })
     }
     pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
-        vec![(&self.retention, &self.publication)]
+        let mut pairs = vec![(self.retention.as_path(), self.publication.as_path())];
+        if let Some(original) = &self.original {
+            pairs.push((original.as_path(), self.publication.as_path()));
+        }
+        pairs
     }
     pub fn transaction_ids(&self) -> Vec<&str> {
         vec![&self.binding.header.transaction]
@@ -228,7 +254,11 @@ pub enum WindowsCopyPhase {
 pub enum WindowsCopyRecoveryEvidence {
     UnverifiedStage,
     VerifiedTree,
-    NeedsReview { reason: String },
+    /// The replacement was durably withdrawn; only the original is verified.
+    VerifiedOriginal,
+    NeedsReview {
+        reason: String,
+    },
 }
 /// A temporary observation, never an Undo/cleanup token. Discovery retains no
 /// file handles and never creates the configured registry or repairs its data.
@@ -244,8 +274,8 @@ pub struct WindowsRetainedCopyStatus {
     pub source_label: Option<OsString>,
     pub evidence: WindowsCopyRecoveryEvidence,
 }
-fn phase(state: &State) -> WindowsCopyPhase {
-    if state.undone.is_some() {
+pub(super) fn phase(state: &State) -> WindowsCopyPhase {
+    if state.undo_complete() {
         WindowsCopyPhase::Undone
     } else if state.undo_intent {
         WindowsCopyPhase::UndoPending
@@ -449,6 +479,13 @@ pub fn discover_at_with_progress(
             )?;
             if snapshot.bytes != bytes {
                 return Err(io("Copy mirror changed during discovery"));
+            }
+            if snapshot.state.undone.is_some() && snapshot.state.original.is_some() {
+                let original = HeldOriginal::open(&parent, &snapshot.state, &mut progress)?
+                    .ok_or_else(|| io("withdrawn overwrite has no original evidence"))?;
+                status.owned_location = Some(location.join(&original.name));
+                snapshot.revalidate(&parent, &central)?;
+                return Ok(WindowsCopyRecoveryEvidence::VerifiedOriginal);
             }
             if let Some(root) = snapshot
                 .state

@@ -740,7 +740,7 @@ capabilities. Stream revalidation uses the caller's cancellable progress path;
 cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
 changes are retained/refused; do not normalize their metadata to resume.
 
-The format is `OTCPWJ08` / schema 8; superseded schemas are refused, without a
+The format is `OTCPWJ09` / schema 9; superseded schemas are refused, without a
 compatibility reader. Log reservation includes prospective readonly reopen
 records and a pending acknowledgement; repeated interruption remains bounded by
 the total log budget and must fail before an unreserved mutation. These native
@@ -847,13 +847,32 @@ still public. If an interrupted rename already retained the original, finishing
 its acknowledgement remains possible when the private copy changed; verified
 restoration can then return the original while preserving that changed copy.
 Space for pre-publication restoration is reserved before retention. Readonly
-original file roots refuse without attribute clearing. Publication over the
-retained original, Undo after new-copy publication, complete overwrite-tail
-reservation and broader rights/storage/security acceptance remain required.
-Native evidence: `.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
+original file roots refuse without attribute clearing. At that checkpoint,
+publication over the retained original and Undo after new-copy publication were
+not implemented. Native evidence:
+`.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
+
+Schema 9 extends the existing publication, completion and Undo engines to retained
+originals. Original evidence is revalidated and held through publication and
+permission application. Forward and Undo admissions include its digest and expose
+its retention slot to conflict detection. No-replace publication refuses unrelated
+occupants. Undo first acknowledges withdrawal of the new copy, then restores the
+original through `move_original`; it stays pending until both phases are durable.
+Restart can finish original restoration without sources, even after private
+replacement drift; discovery reports original-only verification and Activity
+admits that remaining inverse. Completed replay remains read-only.
+Full application/finalization/withdrawal/restoration journal space is
+reserved before original retention. The native space regression lowers a
+test-only reservation ceiling while leaving the real journal bytes/lengths valid;
+it verifies both pre-retention refusal and complete publication/Undo within the
+full reserved amount. Production keeps the 64 MiB ceiling. Readonly-original rights, complete audit/label
+protection, initial admission, session/batch integration, cleanup, power-cut and
+exact-package acceptance remain required. Public Windows Copy remains disabled.
+Native evidence: `.hermes/evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
 
 Forward recovery admission now handles a verified unfinished Windows
-Copy without reopening its source. It captures the native header/registry IDs,
+creation or an original-retention-acknowledged overwrite without reopening its source.
+Admission/controller integration for interrupted original retention remains required. It captures the native header/registry IDs,
 actual parent location, a digest of the frozen node/source/candidate evidence
 and a digest of the freshly projected destination security. No handles or
 per-entry security trees survive admission.

@@ -124,11 +124,44 @@ records, pre-publication restoration records and the existing permission tail
 before intent. Readonly original file roots are explicitly unsupported by this
 access strategy; no attribute clearing is attempted on an original.
 
-This does not implement publication over the retained original or Undo after new
-copy publication. Full overwrite/Undo-tail reservation, readonly/rights strategies,
-complete audit/label protection, broader storage and package acceptance remain
-required. Public Copy/Overwrite and cleanup stay gated. Native evidence:
+That schema-8 checkpoint did not implement publication over the retained original
+or Undo after new-copy publication; the schema-9 engine below adds those phases.
+Readonly/rights strategies, complete audit/label protection, broader storage and
+package acceptance remain required. Public Copy/Overwrite and cleanup stay gated.
+Schema-8 native evidence:
 `.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
+
+### Publication and Undo over a retained original
+
+Schema 9 permits the shared publication engine to continue only after original
+retention is acknowledged and before restoration has begun. It holds and
+revalidates the exact original tree throughout the publication/permission epoch.
+The new copy still publishes with a no-replace native rename: an unrelated
+occupant is preserved and stops recovery. Original bytes, native versions,
+membership, hard-link counts, compression and owner/group/DACL remain bound.
+Forward and Undo admissions bind original evidence as well as the new copy;
+both expose the original retention slot to operation conflict checks. Forward
+admission currently starts after original retention is acknowledged; exposing
+interrupted retention through the public recovery controller remains required.
+
+The existing Undo engine first withdraws the verified new copy to its candidate
+slot and records that native result, then invokes the shared original restoration
+engine. A withdrawn replacement alone is `UndoPending`, not `Undone`. Source-free
+restart can finish restoration, including when the public name was occupied in
+the meantime; it never replaces that occupant. After durable withdrawal, changes
+to the private replacement do not block restoring the verified original. Discovery
+reports `VerifiedOriginal` rather than claiming both trees are unchanged, and
+Activity can admit the remaining restoration. Complete replay adds no records.
+All retained versions remain available, with automatic cleanup separately gated.
+
+Retention/publication reserve permission application, final-version sealing,
+replacement withdrawal, readonly-root reopen records and original restoration
+before the original moves. Begin-only original-evidence prefixes grant no move
+authority and can still resume preparation. Public Windows Copy remains disabled
+pending session/batch integration, initial conflict admission, security/storage,
+power-cut and exact-package acceptance. Native file/folder original and all-prefix
+injected/process-exit evidence is recorded at
+`.hermes/evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
 
 ### Private candidate namespace
 
