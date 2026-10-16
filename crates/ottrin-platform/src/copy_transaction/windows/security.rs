@@ -932,4 +932,74 @@ mod tests {
             "validation must not restore the old group"
         );
     }
+    #[test]
+    fn windows_native_copy_maximum_allowed_dacl_is_per_object_after_handle_clone() {
+        // SetSecurityInfo documents MAXIMUM_ALLOWED as suppressing descendant
+        // propagation. Check the real Copy creation path as well as an ordinary
+        // Win32 directory, with automatic-inheritance children and a duplicated
+        // handle (the whole-tree plan retains duplicates).
+        for native in [false, true] {
+            for cloned in [false, true] {
+                let root = tempfile::tempdir().unwrap();
+                let parent = parent(root.path());
+                dacl(&parent, "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)");
+                let access = windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED;
+                let candidate = if native {
+                    let descriptor = LocalSecurity::private().unwrap();
+                    unsafe {
+                        windows_fs::open_relative(
+                            &parent,
+                            OsStr::new("candidate"),
+                            RelativeOptions {
+                                directory: Some(true),
+                                create_new: true,
+                                access: access | SYNCHRONIZE,
+                                sharing: FILE_SHARE_READ,
+                                security: descriptor.as_raw().cast(),
+                            },
+                        )
+                    }
+                    .unwrap()
+                } else {
+                    std::fs::create_dir(root.path().join("candidate")).unwrap();
+                    let file = OpenOptions::new()
+                        .access_mode(access)
+                        .share_mode(FILE_SHARE_READ)
+                        .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+                        .open(root.path().join("candidate"))
+                        .unwrap();
+                    dacl(&file, "D:P(A;OICI;FA;;;OW)");
+                    file
+                };
+                let child = ordinary(&candidate, "native-child", false);
+                let nested = ordinary(&candidate, "native-directory", true);
+                let leaf = ordinary(&nested, "leaf", false);
+                let path = root.path().join("candidate/win32-child");
+                std::fs::write(&path, b"must not change").unwrap();
+                let win32 = OpenOptions::new().read(true).open(&path).unwrap();
+                let before = [&child, &nested, &leaf, &win32].map(observed);
+                let policy = DestinationSecurity::capture(&parent, true).unwrap();
+                let private = observed(&candidate);
+                assert_ne!(
+                    private, policy.expected,
+                    "fixture must change root permissions"
+                );
+                let duplicate = cloned.then(|| candidate.try_clone().unwrap());
+                policy
+                    .apply(
+                        &parent,
+                        OsStr::new("candidate"),
+                        duplicate.as_ref().unwrap_or(&candidate),
+                    )
+                    .unwrap();
+                policy.validate_candidate(&candidate).unwrap();
+                assert_eq!(
+                    [&child, &nested, &leaf, &win32].map(observed),
+                    before,
+                    "native={native}, cloned={cloned}: unrecorded descendants changed"
+                );
+                assert_eq!(std::fs::read(&path).unwrap(), b"must not change");
+            }
+        }
+    }
 }

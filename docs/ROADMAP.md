@@ -10,6 +10,24 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
+A native ordinary-user regression now checks `SetSecurityInfo` with a handle
+opened using the documented `MAXIMUM_ALLOWED` mode: final root permissions match
+the destination policy while unrecorded file/directory/leaf permissions and file
+bytes remain unchanged. It covers atomic native private creation, ordinary Win32
+directory creation and cloned handles retained by a tree plan. All nine focused
+security tests pass; the privileged audit test is excluded in this run. Strict
+Windows all-target platform Clippy passes. Receipt:
+`.hermes/evidence/windows-copy-permission-apply-current/ACCEPTANCE.json`.
+
+This establishes bounded component evidence, not durable permission application.
+Production Copy candidate creation still requests explicit read/write/delete/DACL
+rights. It must adopt the documented handle mode with an enforceable application
+contract, then implement journaled per-entry intent/acknowledgement and recovery
+from partially applied permissions. Tests on this Windows build also showed no
+child propagation with explicit full-access handles; they do not establish a
+causal difference between those modes. Link-target, broader storage and platform
+behavior remain separate. No package changed for this test-only checkpoint.
+
 Windows Copy permission intent now streams as a header, ordered per-entry records
 and a final count/digest seal. The existing 16 MiB frame and 64 MiB total-log
 budgets remain. No whole-plan frame is materialized for appending or hashing.
