@@ -10,31 +10,40 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
-Ordinary recursive tree staging is implemented through pinned native handles.
-Source discovery completes before creating candidate children, with an explicit
-entry/handle budget and identity-based rejection of a destination inside its
-source. Private candidates preserve file/folder streams and ordinary metadata;
-final timestamps are applied bottom-up after verification. Source/candidate child
-membership, held identities and name bindings are checked. Read-only source ACLs,
-raw UTF-16 names, multi-buffer enumeration, independent hard-link copies,
-cancellation, changes/rebinding and ancestor alias retargeting have native tests.
-Move and Copy now use one shared native directory enumeration/parser.
+Recursive tree staging now preserves known Windows symbolic links and junction
+records as leaves, including root links, relative/absolute and dangling links.
+It validates bounded native reparse data, copies the link's own large Unicode and
+empty named streams, installs the record on the held private candidate and checks
+its exact bytes and native object identity. It never follows a target or falls
+back to copying target contents. Native file/directory targets with denied data
+and listing access remain unchanged; retargeted source/candidate links are detected
+and retained. Unsupported/provider-managed reparse semantics stay explicit.
 
-The complete Copy component suite passes 53 ordinary-user tests with the audit
-case excluded. The full Windows platform suite passes 153 with 27 specialized
-exclusions; the explicitly selected audit case passes separately. Linux platform
-tests pass 411 with 3 exclusions; strict platform all-target Clippy passes on both
-targets. Evidence: `.hermes/evidence/windows-copy-tree-current/ACCEPTANCE.json`.
-The alias/ACL fixtures needed setup corrections; no production guard or assertion
-was weakened. The owned no-NIC COW guest is removed after the completed run.
+Ordinary trees retain pinned read-only source handles, an explicit entry budget,
+identity-based self-descendant refusal, exact child membership/bindings and
+bottom-up final metadata. Move and Copy share one native enumeration/parser.
+Ordinary file/directory named streams, extended attributes, compression and
+metadata, plus new-copy DACL/audit/label inheritance retain their component checks.
 
-Public Windows Copy remains disabled. Link/reparse preservation, sparse/EFS and
-specialized properties (including directory case-sensitivity policy), tree-wide
-final security, complete Overwrite retention, journals/publication/recovery/Undo,
-clipboard/Tandem and rebuilt-package acceptance remain required. Existing positive
-Windows Copy UI tests remain required and failing. Shared Move/text-save native
-regressions pass; their refactored source has no new exact-package acceptance.
-Current delivered packages remain at the separate checkpoint below. User testing
+The complete ordinary-user Copy suite passes 60, excluding the separate SYSTEM
+audit and Developer Mode-off denial cases. The full native Windows platform suite
+passes 160 with 28 specialized exclusions. SYSTEM audit passes separately. With
+Developer Mode disabled and a fresh ordinary-user login after reboot, symbolic
+link creation correctly fails with error 1314 while retaining private candidate
+named data and the target; junction staging still passes. Production never changes
+Developer Mode, enables privileges or substitutes a junction for a symbolic link.
+Linux platform tests pass 411 with 3 exclusions; strict platform all-target Clippy
+passes on both targets. The unreadable-target fixture's security-update rights
+were corrected without relaxing its data/listing-denial assertions. Evidence:
+`.hermes/evidence/windows-copy-links-current/ACCEPTANCE.json`.
+
+Public Windows Copy remains disabled. Existing-token privilege/elevation workflow,
+sparse/EFS and specialized storage/properties (including directory case-sensitivity
+policy), tree-wide final security, complete Overwrite retention, durable ownership
+and transition journals, publication/recovery/Undo, clipboard/Tandem and rebuilt
+package acceptance remain required. Positive Windows Copy UI tests remain required;
+this component run does not replace them. Current packages stay at the separate
+delivery checkpoint below. The owned COW is removed after checks, user testing
 is deferred and the full roadmap goal remains active.
 
 ## Current delivered preview checkpoint
@@ -79,8 +88,9 @@ in the native lane. Linux UI passes 379 tests with one existing exclusion;
 ordinary-user Windows UI passes 343 tests with only the two required public Copy
 failures and no exclusions. Strict UI all-target Clippy passes on both targets.
 
-The rejected cohort was not promoted. Existing stable deliverables remain at
-`9df0224` until the repaired source is rebuilt and exact GUI/package checks pass.
+The rejected cohort was not promoted. This source checkpoint preceded the
+`e9e6783` package promotion and exact checks recorded in the current delivery
+checkpoint above.
 Evidence: `.hermes/evidence/windows-eps-worker-current/ACCEPTANCE.json`.
 
 ## Windows EPS source checkpoint
@@ -106,10 +116,9 @@ the paging failure on a complete rerun. No positive test was excluded. The
 external renderer exists only in the owned COW fixture, in the official layout;
 its interactive-forced installer is not counted as accepted.
 
-This remains source/native-test evidence. Existing stable cohorts still carry
-runtime source `9df0224`; current package rebuilding and exact-artifact checks
-follow. Original profiles/installations are unchanged; the owned COW is retained
-for those immediate package consumers. Evidence:
+This is the initial renderer source/native-test checkpoint. The later worker
+correction and verified package promotion above supersede its unpublished
+candidates. Current delivery and final COW cleanup are recorded above. Evidence:
 `.hermes/evidence/windows-eps-current/ACCEPTANCE.json`.
 
 ## Windows recursive folder-size source checkpoint

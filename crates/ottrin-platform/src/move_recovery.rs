@@ -291,6 +291,11 @@ impl WindowsStableIdentity {
         self.volume_serial_number
     }
 
+    /// Native object identity survives an intentional reparse-type transition.
+    pub(crate) fn same_object(self, other: Self) -> bool {
+        self.volume_serial_number == other.volume_serial_number && self.file_id == other.file_id
+    }
+
     pub(crate) fn is_regular_file_without_reparse(self) -> bool {
         self.file_type == WindowsFileType::File && self.reparse_tag.is_none()
     }

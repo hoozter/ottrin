@@ -1,6 +1,6 @@
 # Native Windows Copy
 
-Status: native file/directory payloads, private namespace, ordinary tree staging and new-copy destination security inheritance verified; public Copy remains disabled until the complete transaction is accepted.
+Status: native file/directory payloads, private namespace, tree/known-link staging and new-copy destination security inheritance verified; public Copy remains disabled until the complete transaction is accepted.
 
 Copy must leave the original namespace and bytes untouched. It must not simulate a Move followed by restoration, or require source delete/data-write access merely because Move uses those rights. The existing Windows Move identity and handle-relative rename primitives can be reused where their contracts apply.
 
@@ -18,15 +18,15 @@ Before enabling the public path, implement and accept:
 
 ## Verified stream component
 
-`crates/ottrin-platform/src/copy_transaction/windows.rs` operates on already-open non-reparse file or directory handles and a payload-empty, independently owned candidate of the same type supplied by the transaction owner. It does not enumerate or copy directory children. The stream component does not create, publish, rename or remove filesystem entries. The private namespace component below supplies its owned candidate. The public Windows dispatcher still rejects Copy; this component is not a usable Copy implementation by itself.
+`crates/ottrin-platform/src/copy_transaction/windows.rs` operates on already-open ordinary file/directory or known-link handles and a payload-empty, independently owned candidate with the matching underlying file/directory type supplied by the transaction owner. It does not enumerate or copy directory children. The stream component does not create, publish, rename or remove filesystem entries. The private namespace component below supplies its owned candidate. The public Windows dispatcher still rejects Copy; this component is not a usable Copy implementation by itself.
 
 The component:
 
 - Reuses the native volume/file identity implementation, rejects source/candidate aliases and pre-existing candidate data or named streams, and checks source versions around copying.
-- Streams primary data, alternate data, extended attributes and admitted property records through bounded buffers. UTF-16 stream names are retained without lossy conversion. Security, link, reparse, sparse and unknown backup records are refused; sparse and EFS inputs remain unimplemented requirements.
+- Streams primary data, alternate data, extended attributes and admitted property records through bounded buffers. UTF-16 stream names are retained without lossy conversion. Security, hard-link relation, sparse and unknown backup records are refused; known symbolic-link/junction reparse records use the validated handle-only path below; sparse and EFS inputs remain unimplemented requirements.
 - Captures each stream's size and SHA-256, compares the candidate and a reread source, and represents an empty file primary stream explicitly even when the native backup enumeration omits it. Directories have no synthetic primary stream.
 - Requires buffered synchronous handles, reports read/write failures, and releases native backup contexts on success, cancellation, error and unwind. Only normal completion flushes buffered output. Cancellation is checked at local chunk boundaries; this is not blocked-device/network I/O isolation.
-- Stream staging does not apply final attributes/security, stage directory children or links, journal, publish, Undo or clean up recovery entries. The caller remains responsible for the candidate after failure.
+- Stream staging does not apply final attributes/security, journal, publish, Undo or clean up recovery entries; tree orchestration is separate. The caller remains responsible for the candidate after failure.
 
 Thirteen ordinary-user native tests cover Unicode and empty alternate streams, extended attributes, large and empty primary data, tiny files and buffer-boundary tails, source ACLs without delete/data-write rights, hard-link independence/alias refusal, occupied candidates, mid-copy changes, cancellation, write failure and incompatible I/O modes. This is bounded source evidence, not exact-package or release acceptance. The broader native platform suite passes 113 with 26 specialized tests excluded. Its symlink-creation fixture requires Developer Mode, enabled only inside the disposable COW guest; the 13 stream tests also passed before that setting. Evidence: `.hermes/evidence/windows-copy-current/`.
 
@@ -44,7 +44,7 @@ Sharing is explicit per operation. Copy's current create-only staging holds read
 
 Eight added native tests cover immediate protected DACLs in a permissive parent, create-new collisions, invalid and raw UTF-16 names, reparse refusal, ancestor alias changes, replaced stage bindings and directory writer exclusion. Together with the stream cases, 21 tests pass as an ordinary Windows user. The full native platform suite passes 121 with 26 specialized exclusions, including the existing text-save cases. Developer Mode is enabled only in the owned COW guest for symlink fixtures. Strict Windows and Linux platform all-target Clippy passes. Evidence: `.hermes/evidence/windows-copy-namespace-current/`.
 
-This remains source-only evidence. Specialized attributes, complete final security, directory/link staging, journals, publication, Undo/recovery, clipboard integration and exact-package acceptance remain open. Non-ACL filesystem staging needs an explicit safe strategy; refusal is not completion of that requirement. Existing Windows Move private-directory creation has not been migrated to this shared atomic primitive and requires separate hardening and acceptance.
+This remains source-only evidence. Specialized attributes, broader link/provider/permission coverage, complete final security, journals, publication, Undo/recovery, clipboard integration and exact-package acceptance remain open. Non-ACL filesystem staging needs an explicit safe strategy; refusal is not completion of that requirement. Existing Windows Move private-directory creation has not been migrated to this shared atomic primitive and requires separate hardening and acceptance.
 
 ## File and directory payload metadata staging
 
@@ -116,7 +116,7 @@ This is the new-copy DACL component, not complete Windows security support.
 Absent/null derived DACL handling, Overwrite security integration and exact
 retained destination descriptors remain required. New-copy SACL and mandatory-label
 inheritance are covered by the direct-child creation checks below; complete
-security drift, publication and recovery integration remain open. Directory/link staging,
+security drift, publication and recovery integration remain open. Tree-wide security,
 publication journals, Undo/recovery and public clipboard/package acceptance
 also remain open. The public dispatcher still rejects all Windows Copy modes.
 
@@ -182,8 +182,8 @@ source and candidate combinations, timestamps/ordinary attributes, same-size
 stream tampering, source/candidate alias or type mismatch, occupied payloads and
 cancellation with exclusive reopening afterward. Public Copy is still disabled.
 Ordinary recursive child staging and bottom-up metadata now have the component
-implementation below. Link preservation, durable tree evidence and all
-publication/recovery requirements remain open. Evidence is `.hermes/evidence/windows-copy-directory-current/`.
+implementation below. Known link payloads now use the component below; broader provider/permission
+coverage, durable tree evidence and publication/recovery requirements remain open. Evidence is `.hermes/evidence/windows-copy-directory-current/`.
 
 The final ordinary-user Copy suite passes 43 with the explicit audit case
 excluded. The full ordinary-user Windows platform suite passes 143 with 27
@@ -206,7 +206,7 @@ identities/versions and exact UTF-16 child names, and enforces the caller's expl
 entry/handle budget. Native enumeration itself enforces the remaining name budget.
 A candidate found anywhere in the source tree is rejected by held identity before
 any candidate children are created. Occupied candidate directories are refused.
-Links/reparse entries are not followed. Traversal is iterative rather than recursive.
+Known links are retained as leaves without following their targets; unknown reparse tags are refused. Traversal is iterative rather than recursive.
 
 Child source opens request generic read, without data-write or DELETE. Each child
 candidate is created new with its owner-only DACL, relative to its held candidate
@@ -239,7 +239,8 @@ source/candidate child changes, child rebinding with both versions retained,
 ancestor alias retargeting and read-only source ACLs including parent delete-child
 permissions. These are private-component checks; they do not enable public Copy.
 
-Remaining staging work includes link preservation, sparse/EFS and other specialized
+Known-link staging now uses the component below. Remaining work includes full
+permission/provider coverage, sparse/EFS and other specialized
 storage, case-sensitive directory policy and complete supported property semantics.
 Tree-wide final security must derive child permissions from final destination
 inheritance rather than private candidate DACLs. Journals, Overwrite retention,
@@ -257,3 +258,80 @@ an ancestor alias; the ACL fixture first left delete-child authority on the sour
 parent. The corrected fixtures exercise the intended contracts without relaxing
 production checks or removing assertions. Formatting and diff checks pass.
 These source/native results are not rebuilt-package or full Windows acceptance.
+
+
+## Known link payloads and non-traversal
+
+`copy_transaction/windows/links.rs` captures and validates bounded native reparse
+records for `IO_REPARSE_TAG_SYMLINK` and directory `IO_REPARSE_TAG_MOUNT_POINT`.
+It checks the 16KiB bound, header lengths/reserved fields, tag/type, supported
+symbolic-link flags and counted UTF-16 name ranges. Relative/absolute form,
+print/substitute names and raw UTF-16 data are preserved without decoding or
+normalization. Unknown tags/flags or malformed records are refused explicitly.
+The source is opened without following its reparse point.
+
+The payload engine includes the exact reparse record in stream evidence and
+compares the BackupRead record with the separately captured native record. It
+copies ordinary payload records first, finishes their native writer, and installs
+the validated link data through FSCTL_SET_REPARSE_POINT on the already held
+candidate. Opaque reparse records are never passed to BackupWrite. The candidate
+must still be an ordinary object of the expected underlying file/directory type;
+files must have an empty primary stream and directories must have no children.
+Existing reparse entries are never adopted or retargeted. Named streams remain
+attached to the same native object. The operation checks exact installed bytes
+and stable volume/file ID after the intentional type transition and flushes.
+
+The full file/directory identity, including type and tag, remains the binding
+and verification evidence afterward. `same_object` compares volume/file ID only
+for alias refusal and the intentional transition; it is not a general recovery
+ownership or cleanup bypass. A durable transaction must record the intended link
+transition and expected record before mutation. No source-removal, pathname-based
+mutation or cleanup authority is introduced here.
+
+Tree discovery treats known file/directory links as leaves, including a directory
+link pointing back outside the source tree. Root links use the same payload path.
+Native tests deny target file data and directory listing while keeping
+only the descriptor rights needed to restore the owned fixture ACL. Copying the
+link still succeeds; targets remain unchanged. Source/candidate retargeting with
+unchanged file ID/tag is detected through version and stream evidence, preserving
+both records. Large Unicode and empty named streams on the link itself survive
+staging even when its target is missing. Ordinary-file extended attributes remain
+covered separately; NTFS reparse/EA restrictions are not worked around by dropping
+metadata.
+
+Native installation uses the caller's current Windows policy and token. It never
+enables Developer Mode or token privileges, requests elevation, substitutes a
+junction for a symbolic link or follows a target on permission failure. Positive
+symbolic-link tests require Developer Mode in the owned test COW; ordinary default
+policy and existing-token privilege/elevation integration retain separate scope.
+Unsupported/provider-managed reparse semantics and broader storage acceptance
+remain explicit requirements before public Copy can be enabled.
+
+API references: [native reparse record layout](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_reparse_data_buffer),
+[handle-based reparse installation](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_set_reparse_point),
+and [reparse-point restrictions](https://learn.microsoft.com/en-us/windows/win32/fileio/reparse-points).
+Source/native evidence: `.hermes/evidence/windows-copy-links-current/`.
+Public Windows Copy, durable journals/Overwrite/publication/recovery/Undo and
+rebuilt-package workflows remain incomplete.
+
+
+The full ordinary-user Copy component suite now passes 60 with two specialized
+cases excluded from that lane: SYSTEM audit setup and Developer Mode-off symbolic
+link denial. The full ordinary-user Windows platform suite passes 160 with 28
+specialized exclusions. SYSTEM audit passes separately. After an actual reboot
+with Developer Mode disabled, an ordinary user passes the explicitly selected
+symbolic-link denial case (error 1314; candidate named payload, privacy and target
+retained) and the positive junction staging case. The same native binary hash is
+verified before and after the policy transition. Linux platform tests pass 411
+with 3 exclusions; strict platform all-target Clippy passes on both targets.
+Formatting and diff checks pass. The owned no-NIC Windows 11 build 26100/NTFS COW
+is removed after native runs; original profiles/installations and backing guests
+are preserved.
+
+The first unreadable-target fixture used an owner-rights DACL with WRITE_DAC
+alone, and its security-update helper failed with error 5. A targeted backtrace
+records that failure. The fixture now keeps READ_CONTROL/WRITE_DAC for security
+maintenance while its actual data/listing-denial assertions remain unchanged;
+both file and directory link cases pass. No production data-access check was
+relaxed. Existing exact Linux/internal Windows packages are unchanged; these are
+source/component results and do not claim public Copy or refreshed package QA.

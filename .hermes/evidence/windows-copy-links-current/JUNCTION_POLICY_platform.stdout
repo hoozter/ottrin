@@ -1,0 +1,5 @@
+
+running 1 test
+test copy_transaction::windows::links::tests::windows_native_copy_junction_record_preserves_target_and_private_security ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 187 filtered out; finished in 0.05s

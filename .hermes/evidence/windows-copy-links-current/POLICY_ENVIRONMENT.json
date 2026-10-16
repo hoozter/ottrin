@@ -1,0 +1,7 @@
+{
+    "configured":  0,
+    "cleanup":  "Whole overlay disposal",
+    "scope":  "Owned COW only; ordinary-user negative symlink policy and positive junction lane",
+    "previous_boot":  "2026-10-16T08:36:02.5000000+02:00",
+    "previous":  1
+}

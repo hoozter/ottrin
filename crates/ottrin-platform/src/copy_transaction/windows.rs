@@ -1,11 +1,13 @@
 //! Handle-bound Windows Copy staging. This module never publishes or mutates sources.
 //!
 //! Backup streams preserve directory/file named data and extended attributes that ordinary
-//! ReadFile/WriteFile copying loses. Security, reparse and other unsupported
+//! ReadFile/WriteFile copying loses. Known link records are validated and installed
+//! through native handles; security and other unsupported
 //! backup records are refused rather than silently omitted. Final file metadata,
 //! publication journals and Undo remain separate required work.
 #![cfg_attr(not(test), allow(dead_code))]
 
+mod links;
 mod metadata;
 mod namespace;
 mod security;
@@ -38,6 +40,7 @@ const DATA: u32 = 1;
 const EXTENDED_ATTRIBUTES: u32 = 2;
 const ALTERNATE_DATA: u32 = 4;
 const PROPERTY_DATA: u32 = 6;
+const REPARSE_DATA: u32 = 8;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct StreamEvidence {
@@ -52,6 +55,7 @@ pub(super) struct StreamEvidence {
 struct EntryVersion {
     identity: WindowsStableIdentity,
     directory: bool,
+    link: Option<links::Link>,
     length: u64,
     created: i64,
     modified: i64,
@@ -91,19 +95,32 @@ fn version(file: &File) -> Result<EntryVersion, PlatformError> {
     }
     let identity = stable_identity_from_handle(file).map_err(io)?;
     let basic = metadata::basic(file)?;
-    let directory = identity.is_directory_without_reparse();
-    if !(identity.is_regular_file_without_reparse() || directory)
+    let directory = basic.FileAttributes
+        & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_DIRECTORY
+        != 0;
+    let link = if basic.FileAttributes
+        & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_REPARSE_POINT
+        != 0
+    {
+        links::capture(file)?
+    } else {
+        None
+    };
+    if !(identity.is_regular_file_without_reparse()
+        || identity.is_directory_without_reparse()
+        || link.is_some())
         || basic.FileAttributes
             & (FILE_ATTRIBUTE_DEVICE | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE)
             != 0
     {
         return Err(PlatformError::UnsupportedSafeCopy(
-            "this staging engine requires an ordinary non-reparse, non-sparse, unencrypted file or directory".into(),
+            "this staging engine requires an ordinary file/directory or supported link, without sparse/EFS data".into(),
         ));
     }
     Ok(EntryVersion {
         identity,
         directory,
+        link,
         length: if directory {
             0
         } else {
@@ -136,9 +153,9 @@ impl<'a> Backup<'a> {
     fn new(file: &'a File, direction: Direction) -> Result<Self, PlatformError> {
         // Directory handles have no byte offset. BackupRead/BackupWrite still
         // preserve their named streams and extended attributes.
-        if !stable_identity_from_handle(file)
-            .map_err(io)?
-            .is_directory_without_reparse()
+        if metadata::basic(file)?.FileAttributes
+            & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_DIRECTORY
+            == 0
         {
             let mut position = file;
             position.seek(SeekFrom::Start(0)).map_err(io)?;
@@ -305,7 +322,7 @@ fn validate_header(header: &[u8; HEADER_BYTES]) -> Result<(u32, u32, u64, usize)
     let name = u32::from_le_bytes(header[16..20].try_into().unwrap()) as usize;
     if !matches!(
         kind,
-        DATA | EXTENDED_ATTRIBUTES | ALTERNATE_DATA | PROPERTY_DATA
+        DATA | EXTENDED_ATTRIBUTES | ALTERNATE_DATA | PROPERTY_DATA | REPARSE_DATA
     ) || bytes > i64::MAX as u64
         || name > MAX_NAME_BYTES
         || !name.is_multiple_of(2)
@@ -323,9 +340,9 @@ fn transfer(
     target: Option<&File>,
     progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Vec<StreamEvidence>, PlatformError> {
-    let directory = stable_identity_from_handle(source)
-        .map_err(io)?
-        .is_directory_without_reparse();
+    let source_version = version(source)?;
+    let directory = source_version.directory;
+    let mut saw_reparse = false;
     let mut reader = Backup::new(source, Direction::Read)?;
     let mut writer = target
         .map(|file| Backup::new(file, Direction::Write))
@@ -361,6 +378,35 @@ fn transfer(
         {
             return Err(io("invalid alternate stream name"));
         }
+        if kind == REPARSE_DATA {
+            let expected = source_version
+                .link
+                .as_ref()
+                .ok_or_else(|| io("unexpected reparse stream on an ordinary entry"))?;
+            if saw_reparse || bytes != expected.bytes.len() as u64 {
+                return Err(io("duplicate or inconsistent native link record"));
+            }
+            let mut record = vec![0u8; expected.bytes.len()];
+            reader.read_exact(&mut record, false)?;
+            if record != expected.bytes {
+                return Err(io("backup link record differs from held source"));
+            }
+            saw_reparse = true;
+            total = total
+                .checked_add(bytes)
+                .ok_or_else(|| io("stream length overflow"))?;
+            progress(total)?;
+            evidence.push(StreamEvidence {
+                kind,
+                attributes,
+                name: name_units,
+                bytes,
+                sha256: format!("{:x}", Sha256::digest(&record)),
+            });
+            // Never pass opaque reparse records to BackupWrite. After ordinary
+            // payload copying, install this validated record on the held inode.
+            continue;
+        }
         if let Some(writer) = &mut writer {
             writer.write_all(&header)?;
             writer.write_all(&name)?;
@@ -391,6 +437,12 @@ fn transfer(
     reader.finish()?;
     if let Some(writer) = &mut writer {
         writer.finish()?;
+    }
+    if source_version.link.is_some() != saw_reparse {
+        return Err(io("native backup omitted the held link reparse record"));
+    }
+    if let (Some(link), Some(candidate)) = (&source_version.link, target) {
+        link.install(candidate)?;
     }
     // BackupRead omits an empty unnamed stream. The transaction manifest still
     // needs its logical existence, independent of native record enumeration.
@@ -427,9 +479,10 @@ pub(super) fn stage_entry_streams(
 ) -> Result<Vec<StreamEvidence>, PlatformError> {
     let before = version(source)?;
     let target = version(candidate)?;
-    if before.identity == target.identity
+    if before.identity.same_object(target.identity)
         || before.directory != target.directory
         || target.length != 0
+        || target.link.is_some()
     {
         return Err(io(
             "candidate aliases the source, has a different type, or is not empty",
@@ -443,7 +496,10 @@ pub(super) fn stage_entry_streams(
     }
     let copied = transfer(source, Some(candidate), &mut progress)?;
     candidate.sync_all().map_err(io)?;
-    if version(source)? != before
+    if !target
+        .identity
+        .same_object(stable_identity_from_handle(candidate).map_err(io)?)
+        || version(source)? != before
         || transfer(source, None, &mut |_| Ok(()))? != copied
         || version(source)? != before
         || transfer(candidate, None, &mut |_| Ok(()))? != copied
@@ -1306,7 +1362,7 @@ mod tests {
 
     #[test]
     fn windows_native_copy_staging_rejects_unknown_security_link_and_malformed_headers() {
-        for kind in [0u32, 3, 5, 7, 8, 9, u32::MAX] {
+        for kind in [0u32, 3, 5, 7, 9, u32::MAX] {
             let mut header = [0u8; HEADER_BYTES];
             header[..4].copy_from_slice(&kind.to_le_bytes());
             assert!(validate_header(&header).is_err());

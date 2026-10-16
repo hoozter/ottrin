@@ -16,7 +16,8 @@ const ORDINARY_ATTRIBUTES: u32 = FILE_ATTRIBUTE_READONLY
 const ADMITTED_ATTRIBUTES: u32 = ORDINARY_ATTRIBUTES
     | FILE_ATTRIBUTE_NORMAL
     | FILE_ATTRIBUTE_COMPRESSED
-    | FILE_ATTRIBUTE_DIRECTORY;
+    | FILE_ATTRIBUTE_DIRECTORY
+    | FILE_ATTRIBUTE_REPARSE_POINT;
 
 pub(super) fn basic(file: &File) -> Result<FILE_BASIC_INFO, PlatformError> {
     let mut info = FILE_BASIC_INFO::default();
@@ -140,7 +141,8 @@ impl StagedEntry {
         if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity
             || actual.CreationTime != self.source.created
             || actual.FileAttributes != self.source.attributes
-            || (!self.source.directory && actual.LastWriteTime != self.source.modified)
+            || (!(self.source.directory && self.source.link.is_none())
+                && actual.LastWriteTime != self.source.modified)
             || compression(candidate)? != self.compression
         {
             return Err(io("candidate metadata changed during child staging"));
@@ -225,9 +227,10 @@ pub(super) fn stage_entry_payload(
     }
     // Admission and alias/empty-candidate validation happen before any mutation.
     let target = version(candidate)?;
-    if target.identity == before.identity
+    if target.identity.same_object(before.identity)
         || target.directory != before.directory
         || target.length != 0
+        || target.link.is_some()
     {
         return Err(io(
             "candidate aliases the source, has a different type, or is not empty",
@@ -240,7 +243,7 @@ pub(super) fn stage_entry_payload(
     let result = StagedEntry {
         streams,
         source: before,
-        candidate_identity: target.identity,
+        candidate_identity: super::stable_identity_from_handle(candidate).map_err(io)?,
         accessed,
         compression: format,
     };

@@ -92,6 +92,7 @@ impl StagedTree {
         self.bindings()?;
         for entry in &self.entries {
             if entry.source.before.directory
+                && entry.source.before.link.is_none()
                 && (children(
                     &entry.source.handle,
                     entry.source.children.len().saturating_add(1),
@@ -154,11 +155,11 @@ impl StagedTree {
     }
 }
 
-/// Stage ordinary files/directories without ever following links. Source handles
+/// Stage ordinary files/directories and known links without following targets. Source handles
 /// are read-only and remain pinned until the result is dropped. `max_entries` is
 /// the transaction owner's explicit handle/memory budget (including the root).
 /// Every failure retains the independently owned candidate; no Drop cleanup.
-/// Links/special storage remain required work, explicitly refused by admission.
+/// Unknown reparse tags and specialized storage are explicitly refused.
 pub(super) fn stage_tree(
     source: &File,
     candidate: &File,
@@ -171,8 +172,9 @@ pub(super) fn stage_tree(
     let source_version = version(source)?;
     let target = version(candidate)?;
     if source_version.directory != target.directory
-        || source_version.identity == target.identity
+        || source_version.identity.same_object(target.identity)
         || target.length != 0
+        || target.link.is_some()
         || (target.directory && !children(candidate, 0)?.is_empty())
     {
         return Err(io(
@@ -191,7 +193,7 @@ pub(super) fn stage_tree(
     let mut index = 0;
     while index < sources.len() {
         progress(0)?;
-        if sources[index].before.directory {
+        if sources[index].before.directory && sources[index].before.link.is_none() {
             let names = children(
                 &sources[index].handle,
                 max_entries.saturating_sub(sources.len()),
@@ -200,7 +202,7 @@ pub(super) fn stage_tree(
                 progress(0)?;
                 let handle = namespace::open_source(&sources[index].handle, name, None)?;
                 let before = version(&handle)?;
-                if before.identity == target.identity {
+                if before.identity.same_object(target.identity) {
                     return Err(io(
                         "Copy destination is inside the source tree; candidate retained",
                     ));
@@ -418,7 +420,7 @@ mod tests {
     }
 
     #[test]
-    fn windows_native_copy_tree_budget_and_reparse_preflight_leave_candidate_empty() {
+    fn windows_native_copy_tree_budget_preflight_and_known_links_never_follow_targets() {
         let root = tempfile::tempdir().unwrap();
         let src = root.path().join("source");
         populate(&src);
@@ -440,8 +442,19 @@ mod tests {
         std::os::windows::fs::symlink_dir(root.path(), src.join("dir-link")).unwrap();
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        assert!(stage_tree(&read(&src), &candidate, 100, |_| Ok(())).is_err());
-        assert!(children(&candidate, 0).unwrap().is_empty());
+        let staged = stage_tree(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
+        assert_eq!(staged.entry_count(), 6);
+        staged.verify_and_finalize(|_| Ok(())).unwrap();
+        for entry in &staged.entries {
+            if let Some(expected) = &entry.source.before.link {
+                assert_eq!(
+                    super::super::links::capture(&entry.candidate)
+                        .unwrap()
+                        .as_ref(),
+                    Some(expected)
+                );
+            }
+        }
         assert_eq!(std::fs::read(outside).unwrap(), b"keep outside bytes");
     }
 

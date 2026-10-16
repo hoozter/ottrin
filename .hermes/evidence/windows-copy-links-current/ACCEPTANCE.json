@@ -1,0 +1,175 @@
+{
+  "status": "pass",
+  "scope": "Known symbolic-link/junction payload and tree staging; public Windows Copy disabled",
+  "base_revision": "8422139bf25828e35d716bd7853ef695db8115d5",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/links.rs": "6e50ac78a88a29037fb486a75ebdb361a154043e5e19af19c8e15ea1fb352c1e",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "fc0aa51ac3ce207ef1cd69a9c3280168f583d1f68fbd7b2fdcb5e1512b2dd855",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "bbf781e273d48e6e324129c41a978ea41f0eefcbc199c5f96aac543f21889f44",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "937ae848c5d6828e45a4bba47d946b551f7a0c2343ac27cd0c2c24c7d3b8af6d",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "c06798f7d245582bb56d40b7994a2abe9069acc84743a79aa1798190767e9527",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "6975c11cebd096dcda67ab4e3ce652e13e4c27fdd6ccb23435d531ce1a3e954d",
+    "crates/ottrin-platform/src/move_recovery.rs": "f8ab7024ce0419087d9386c60b9cf420e105249329d03d7cf5041942e8f7760e"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "2c51b97682f1840a0764bbf5c0be49732350f5270f82b7079a177767a9ad3da7",
+    "transferred_sha256": "1ce158f4091898f9c1fce21d88562a901af2c2c1d241687e29bebf5ba06653fa",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 7364136,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "bba7de3bb7d07521b8ffb42e072e7547f8a4191ec4e10b71cc850f065d993ddd"
+      },
+      ".data": {
+        "virtual_size": 3792,
+        "virtual_address": 7368704,
+        "flags": 3221225536,
+        "raw_sha256": "cbbe730f1c9f4214aa55c2ad20edc44ff2aaa03d970ab5b770ffa79f0d4560d9"
+      },
+      ".rdata": {
+        "virtual_size": 677720,
+        "virtual_address": 7372800,
+        "flags": 1073741888,
+        "raw_sha256": "dd644ffdb261c720ed873e0eeccdcb2e68ddf65b606624fe5d273bc3a9058708"
+      },
+      ".pdata": {
+        "virtual_size": 136932,
+        "virtual_address": 8052736,
+        "flags": 1073741888,
+        "raw_sha256": "e470ca7297dd087eaafbf4c12e3d1e55a4fe9ca89a898f7aa9a77e098c9a7468"
+      },
+      ".xdata": {
+        "virtual_size": 442924,
+        "virtual_address": 8192000,
+        "flags": 1073741888,
+        "raw_sha256": "684ae7a52ca4dec6666affb0b7ec5b75fe6e2a0a6b62938c46f26c0aa222e530"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 8638464,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 8642560,
+        "flags": 3221225536,
+        "raw_sha256": "c3d68e83d9d42a33e4f09084d1acfac1244951594144e63cdfdc04b09d4a1237"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 8654848,
+        "flags": 3221225536,
+        "raw_sha256": "2b139e2a4a5716b08918ae530924e32a28d9900642903103fab94cf1a07594dc"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 8658944,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 18396,
+        "virtual_address": 8663040,
+        "flags": 1107296320,
+        "raw_sha256": "a7cc2098c81cb91e3fb06130f22d16e9d501ec2dc2244326a9eb9f5ad50b40f7"
+      }
+    }
+  },
+  "final_binary": {
+    "actor_state": "Ready",
+    "sha256": "1ce158f4091898f9c1fce21d88562a901af2c2c1d241687e29bebf5ba06653fa",
+    "developer_mode": 0
+  },
+  "environment": {
+    "volume": {
+      "FileSystemType": "NTFS"
+    },
+    "os": {
+      "Caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+      "Version": "10.0.26100",
+      "BuildNumber": "26100"
+    },
+    "developer_mode": 1
+  },
+  "results": {
+    "ordinary_user_copy_developer_mode_enabled": {
+      "passed": 60,
+      "failed": 0,
+      "ignored": 2
+    },
+    "ordinary_user_full_windows_platform": {
+      "passed": 160,
+      "failed": 0,
+      "ignored": 28
+    },
+    "explicit_system_audit": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ordinary_user_developer_mode_disabled_symlink_denial": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ordinary_user_developer_mode_disabled_junction": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "linux_platform": {
+      "passed": 411,
+      "failed": 0,
+      "ignored": 3
+    },
+    "strict_all_targets_platform_clippy": "pass, Linux and Windows",
+    "formatting": "pass",
+    "diff_check": "pass"
+  },
+  "policy_reboot": {
+    "new_boot": "2026-10-16T09:16:48.5000000+02:00",
+    "ordinary_login": "DESKTOP-81GHP8U\\OttrinContentQA",
+    "previous_boot": "2026-10-16T08:36:02.5000000+02:00",
+    "developer_mode": 0
+  },
+  "coverage": [
+    "Relative/absolute file and directory symbolic links, dangling targets, Unicode and raw UTF-16 targets",
+    "Native directory junction record, exact bytes and private DACL preserved",
+    "Known directory links are tree leaves; back/outside-root target is not traversed",
+    "Root links stage successfully despite denied target data/listing access",
+    "Large Unicode and empty named streams belong to the link itself and survive Copy",
+    "Same-ID/tag source and candidate retargeting is detected; both versions retained",
+    "Malformed/unknown tags, reserved fields, flags, lengths and name ranges rejected",
+    "Occupied primary data, wrong underlying type and existing reparse entries never adopted or retargeted",
+    "Developer Mode off: error 1314 retains ordinary private candidate and named payload; junction still copies"
+  ],
+  "fixture_correction": {
+    "initial_expanded_suite": "59 passed, 1 failed, 2 ignored",
+    "cause": "Unreadable-target fixture owner-rights DACL granted WRITE_DAC alone; security-update helper failed error 5",
+    "evidence": "ACL_BACKTRACE_platform.stderr",
+    "correction": "Retain READ_CONTROL/WRITE_DAC for fixture security maintenance while data/listing assertions remain denied",
+    "production_validation_relaxed": false
+  },
+  "production_policy": "No token privilege enablement, elevation, Developer Mode mutation, target-follow fallback or symbolic-link-to-junction substitution",
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "delivery": "Existing e9e6783 Linux/internal Windows packages unchanged; source/native component acceptance only",
+  "remaining": [
+    "Existing-token privilege/elevation workflow; unknown/provider-managed reparse semantics",
+    "Sparse/EFS, case-sensitive directories and other supported storage/property requirements",
+    "Tree-wide final security independent of private staging DACLs",
+    "Durable ownership/type-transition journals, exact Overwrite retention, publication/recovery/Undo",
+    "Public clipboard/Tandem, required Windows Copy UI tests and exact rebuilt-package acceptance"
+  ]
+}

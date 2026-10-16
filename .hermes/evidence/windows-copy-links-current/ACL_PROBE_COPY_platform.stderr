@@ -1,0 +1,6 @@
+
+thread 'copy_transaction::windows::links::tests::windows_native_copy_link_root_staging_does_not_read_unreadable_targets' (3192) panicked at crates/ottrin-platform/src/copy_transaction/windows.rs:711:9:
+assertion `left == right` failed
+  left: 5
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

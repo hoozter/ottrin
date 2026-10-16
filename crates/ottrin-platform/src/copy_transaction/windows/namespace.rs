@@ -122,11 +122,22 @@ impl<'a> PrivateStage<'a> {
     ) -> Result<(), PlatformError> {
         self.validate()?;
         let identity = stable_identity_from_handle(candidate).map_err(|e| self.retained(e))?;
-        if if directory {
-            !identity.is_directory_without_reparse()
+        let supported = if super::links::capture(candidate)
+            .map_err(|e| self.retained(e))?
+            .is_some()
+        {
+            let is_directory = super::metadata::basic(candidate)
+                .map_err(|e| self.retained(e))?
+                .FileAttributes
+                & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_DIRECTORY
+                != 0;
+            is_directory == directory
+        } else if directory {
+            identity.is_directory_without_reparse()
         } else {
-            !identity.is_regular_file_without_reparse()
-        } {
+            identity.is_regular_file_without_reparse()
+        };
+        if !supported {
             return Err(self.retained("candidate type does not match creation policy"));
         }
         let observed = unsafe {
@@ -185,11 +196,13 @@ pub(super) fn open_source(
         Some(true) => identity.is_directory_without_reparse(),
         Some(false) => identity.is_regular_file_without_reparse(),
         None => {
-            identity.is_directory_without_reparse() || identity.is_regular_file_without_reparse()
+            identity.is_directory_without_reparse()
+                || identity.is_regular_file_without_reparse()
+                || super::links::capture(&file)?.is_some()
         }
     };
     if !correct_type || directory_identity(parent)? != expected {
-        return Err(io("Copy source is a reparse entry or its parent changed"));
+        return Err(io("Copy source type is unsupported or its parent changed"));
     }
     Ok(file)
 }
