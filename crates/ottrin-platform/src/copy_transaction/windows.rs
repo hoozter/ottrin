@@ -71,6 +71,23 @@ fn io(error: impl std::fmt::Display) -> PlatformError {
     PlatformError::Io(format!("Windows Copy stream staging: {error}"))
 }
 
+/// Hash serialized evidence without allocating its complete JSON representation.
+fn evidence_digest(value: &(impl serde::Serialize + ?Sized)) -> Result<[u8; 32], PlatformError> {
+    struct Writer(Sha256);
+    impl std::io::Write for Writer {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.0.update(bytes);
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut writer = Writer(Sha256::new());
+    serde_json::to_writer(&mut writer, value).map_err(io)?;
+    Ok(writer.0.finalize().into())
+}
+
 fn version(file: &File) -> Result<EntryVersion, PlatformError> {
     // The backup API does not validate overlapped handles and documents subtle
     // failures for them. Enforce its buffered synchronous contract ourselves.

@@ -155,19 +155,7 @@ impl TreeSecurityEvidence {
             && complete.entries.starts_with(&self.entries)
     }
     pub(in super::super) fn digest(&self) -> Result<[u8; 32], PlatformError> {
-        struct Writer(sha2::Sha256);
-        impl std::io::Write for Writer {
-            fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
-                sha2::Digest::update(&mut self.0, bytes);
-                Ok(bytes.len())
-            }
-            fn flush(&mut self) -> std::io::Result<()> {
-                Ok(())
-            }
-        }
-        let mut writer = Writer(<sha2::Sha256 as sha2::Digest>::new());
-        serde_json::to_writer(&mut writer, self).map_err(io)?;
-        Ok(sha2::Digest::finalize(writer.0).into())
+        super::super::evidence_digest(self)
     }
 }
 
@@ -189,6 +177,10 @@ pub(in super::super) struct TreeSecurityPlan {
     entries: Vec<Entry>,
 }
 impl TreeSecurityPlan {
+    pub(in super::super) fn final_versions(&self) -> impl ExactSizeIterator<Item = &EntryVersion> {
+        self.entries.iter().map(|entry| &entry.before)
+    }
+
     pub(in super::super) fn capture<'a>(
         parent: &File,
         inputs: impl IntoIterator<Item = SecurityEntry<'a>>,

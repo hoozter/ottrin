@@ -693,8 +693,9 @@ Activity reports progress and retains the remaining action for retry.
 
 Safe expiry/reclamation of Copy transaction stages is still open. Receipt
 ownership and successful Undo do not establish that transaction storage has
-been reclaimed. Native Windows has no Copy Undo receipts yet; cross-compilation
-does not establish Windows Copy acceptance.
+been reclaimed. Native Windows now has journaled completion evidence, but no guarded Copy Undo
+implementation or public Copy receipts yet; cross-compilation does not establish
+Windows Copy acceptance.
 
 Windows Copy candidates use `windows_fs::PerObjectFile` for the documented
 `MAXIMUM_ALLOWED` per-object permission-update contract. Keep its constructor
@@ -712,7 +713,7 @@ derives native policy and accepts private/final security only as its recorded
 phase permits. Never reapply an already exact final DACL. A final verification
 record follows the full payload/security scan, and the writer reserves the remaining
 journal tail before publication, including a conservative readonly-reopen allowance.
-The schema-4 codec returns the append
+The schema-5 codec returns the append
 sequence/hash; do not reconstruct a second interpretation of the frame chain.
 Known links remain no-follow leaves. Single-link guards apply to candidates,
 not sources. This contract does not grant Overwrite, Undo or cleanup authority;
@@ -739,7 +740,7 @@ capabilities. Stream revalidation uses the caller's cancellable progress path;
 cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
 changes are retained/refused; do not normalize their metadata to resume.
 
-The format is `OTCPWJ04` / schema 4; superseded schemas are refused, without a
+The format is `OTCPWJ05` / schema 5; superseded schemas are refused, without a
 compatibility reader. Log reservation includes prospective readonly reopen
 records and a pending acknowledgement; repeated interruption remains bounded by
 the total log budget and must fail before an unreserved mutation. These native
@@ -747,6 +748,31 @@ ordinary-user fixtures do not certify all inherited denial/privilege, specialize
 storage, SACL/label, readonly-link or power-cut cases. The underlying native flush
 requires write/append access:
 https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntflushbuffersfileex
+
+Native Windows Copy finishes with ordered `FinalEntry` records and a `Finalized`
+seal. Final entries freeze the native identity, directory/link role, length,
+creation/write/change times and attributes after all DACL acknowledgements.
+Stream hashes, namespace topology and final security remain in the authoritative
+staging/permission records. Finalization validates the complete tree before
+recording, checks the frozen epoch again before sealing, and records a streamed
+SHA-256 digest of the final versions. Missing or mismatched seals do not produce
+a completed receipt. Cancellation and process-exit recovery append only missing
+final entries; an already recorded version is never replaced with a new baseline.
+
+`CompletedCopy` opens the paired journal and retained tree read-only, requires the
+seal, and verifies every frozen version, contents, membership and freshly derived
+permissions. Native change time protects against rewriting identical bytes and
+restoring the visible write timestamp. The completion reader is a temporary
+validation epoch, not a long-lived UI file lock, external persistence format or
+permission to delete anything. A future inverse must acquire its own explicit
+journaled mutation authority after validating this evidence. Unknown changes
+remain untouched/refused. Undo, Overwrite and cleanup remain required.
+
+Journal reservation covers the final-entry frames and seal before publication.
+Unknown future native change times and digest decimal widths use bounded maximum
+JSON encodings, rather than assuming an exact future length. Evidence digests
+share one streaming serializer/hash implementation with the permission plan;
+no whole serialized evidence buffer is required.
 
 Copy and created-entry receipts guard the original parent and transaction
 identities with one shared, nonblocking Linux inotify instance. Watches are

@@ -22,7 +22,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ04";
+const MAGIC: &[u8; 8] = b"OTCPWJ05";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -59,7 +59,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 4
+            && self.schema == 5
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -143,8 +143,13 @@ enum Record {
     SecurityApplied {
         index: usize,
     },
-    PermissionsComplete {
+    FinalEntry {
+        index: usize,
+        version: Box<EntryVersion>,
+    },
+    Finalized {
         count: usize,
+        digest: [u8; 32],
     },
 }
 #[derive(Debug)]
@@ -166,7 +171,8 @@ struct State {
     permissions: security::PermissionProgress,
     publication_intent: bool,
     published: bool,
-    permissions_verified: bool,
+    completion_verified: bool,
+    final_versions: Vec<EntryVersion>,
     readonly_pending: Option<usize>,
     source_ids: BTreeSet<(u64, [u8; 16])>,
     candidate_ids: BTreeSet<(u64, [u8; 16])>,
@@ -267,6 +273,13 @@ fn valid_payload(evidence: &metadata::StagedEntry) -> bool {
             .all(|p| (p[0].kind, &p[0].name) < (p[1].kind, &p[1].name))
 }
 impl State {
+    fn native_complete(&self) -> bool {
+        self.verified
+            && self.planned.is_some()
+            && self.published
+            && !self.permissions.pending
+            && self.permissions.completed == self.nodes.len()
+    }
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
         if self.readonly_pending.is_some() && !matches!(record, Record::ReadonlyReopened { .. }) {
@@ -276,7 +289,8 @@ impl State {
             Record::ReadonlyReopenIntent { index } => {
                 let node = self.nodes.get(*index).ok_or_else(invalid)?;
                 if self.planned.is_none()
-                    || self.permissions_verified
+                    || self.native_complete()
+                    || self.completion_verified
                     || self.readonly_pending.is_some()
                     || node.source.directory
                     || node.source.attributes
@@ -293,13 +307,26 @@ impl State {
                 }
                 return Ok(());
             }
-            Record::PermissionsComplete { count } => {
-                if self.planned.is_none()
-                    || !self.published
-                    || self.permissions.pending
-                    || self.permissions_verified
+            Record::FinalEntry { index, version } => {
+                let node = self.nodes.get(*index).ok_or_else(invalid)?;
+                let mut expected = node.source.clone();
+                expected.identity = node.staged.as_ref().ok_or_else(invalid)?.candidate_identity;
+                expected.changed = version.changed;
+                if !self.native_complete()
+                    || self.completion_verified
+                    || *index != self.final_versions.len()
+                    || **version != expected
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::Finalized { count, digest } => {
+                if !self.native_complete()
+                    || self.completion_verified
                     || *count != self.nodes.len()
-                    || self.permissions.completed != *count
+                    || *count != self.final_versions.len()
+                    || *digest != super::evidence_digest(&self.final_versions)?
                 {
                     return Err(invalid());
                 }
@@ -455,7 +482,8 @@ impl State {
             }
             Record::ReadonlyReopenIntent { .. }
             | Record::ReadonlyReopened { .. }
-            | Record::PermissionsComplete { .. }
+            | Record::FinalEntry { .. }
+            | Record::Finalized { .. }
             | Record::PublicationIntent
             | Record::Published
             | Record::SecurityApplyIntent { .. }
@@ -480,7 +508,8 @@ impl State {
         match record {
             Record::ReadonlyReopenIntent { index } => self.readonly_pending = Some(index),
             Record::ReadonlyReopened { .. } => self.readonly_pending = None,
-            Record::PermissionsComplete { .. } => self.permissions_verified = true,
+            Record::FinalEntry { version, .. } => self.final_versions.push(*version),
+            Record::Finalized { .. } => self.completion_verified = true,
             Record::PublicationIntent => self.publication_intent = true,
             Record::Published => self.published = true,
             Record::SecurityApplyIntent { .. } => self.permissions.pending = true,
@@ -676,7 +705,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 4,
+            schema: 5,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -732,22 +761,42 @@ impl Journal {
             }
             reserve(Record::SecurityApplied { index })?;
         }
-        if !self.state.permissions_verified {
-            if let Some(index) = self.state.readonly_pending {
-                reserve(Record::ReadonlyReopened { index })?;
-            }
-            for (index, node) in self.state.nodes.iter().enumerate() {
-                if !node.source.directory
-                    && node.source.attributes
-                        & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
-                        != 0
-                {
-                    reserve(Record::ReadonlyReopenIntent { index })?;
+        if !self.state.completion_verified {
+            if !self.state.native_complete() {
+                if let Some(index) = self.state.readonly_pending {
                     reserve(Record::ReadonlyReopened { index })?;
                 }
+                for (index, node) in self.state.nodes.iter().enumerate() {
+                    if !node.source.directory
+                        && node.source.attributes
+                            & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
+                            != 0
+                    {
+                        reserve(Record::ReadonlyReopenIntent { index })?;
+                        reserve(Record::ReadonlyReopened { index })?;
+                    }
+                }
             }
-            reserve(Record::PermissionsComplete {
+            for (index, node) in self
+                .state
+                .nodes
+                .iter()
+                .enumerate()
+                .skip(self.state.final_versions.len())
+            {
+                let mut version = node.source.clone();
+                version.identity = node.staged.as_ref().unwrap().candidate_identity;
+                // The native DACL change time is not known until application.
+                // A signed i64's minimum is its longest possible JSON encoding.
+                version.changed = i64::MIN;
+                reserve(Record::FinalEntry {
+                    index,
+                    version: Box::new(version),
+                })?;
+            }
+            reserve(Record::Finalized {
                 count: self.state.nodes.len(),
+                digest: [255; 32],
             })?;
         }
         Ok(total)
@@ -855,7 +904,7 @@ impl Journal {
             || node.source.attributes
                 & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
                 == 0
-            || self.state.permissions_verified
+            || self.state.native_complete()
         {
             return Ok(file);
         }
@@ -1351,6 +1400,16 @@ impl PermissionStage {
         }
         self.journal.bindings()?;
         self.plan.validate_at(self.journal.state.permissions)?;
+        if self
+            .journal
+            .state
+            .final_versions
+            .iter()
+            .zip(self.plan.final_versions())
+            .any(|(recorded, current)| recorded != current)
+        {
+            return Err(io("Copy final receipt prefix changed; all data retained"));
+        }
         for index in 0..self.candidates.len() {
             self.validate_payload(index, progress)?;
         }
@@ -1417,9 +1476,24 @@ impl PermissionStage {
             self.journal.persist(Record::SecurityApplied { index })?;
         }
         self.validate(&mut progress)?;
-        if !self.journal.state.permissions_verified {
-            self.journal.persist(Record::PermissionsComplete {
+        if !self.journal.state.completion_verified {
+            self.journal.reserve_permission_tail()?;
+            for (index, version) in self
+                .plan
+                .final_versions()
+                .enumerate()
+                .skip(self.journal.state.final_versions.len())
+            {
+                progress(0)?;
+                self.journal.persist(Record::FinalEntry {
+                    index,
+                    version: Box::new(version.clone()),
+                })?;
+            }
+            self.validate(&mut progress)?;
+            self.journal.persist(Record::Finalized {
                 count: self.candidates.len(),
+                digest: super::evidence_digest(&self.journal.state.final_versions)?,
             })?;
         }
         Ok(())
@@ -1447,7 +1521,9 @@ pub(super) struct Inspection {
     pub(super) security_planned: bool,
     pub(super) published: bool,
     pub(super) publication_pending: bool,
-    pub(super) permissions_verified: bool,
+    pub(super) completion_verified: bool,
+    pub(super) completion_entries: usize,
+    pub(super) readonly_reopening: Option<usize>,
     pub(super) permissions_completed: usize,
     pub(super) permission_pending: bool,
 }
@@ -1656,7 +1732,9 @@ pub(super) fn inspect(
         security_planned: snapshot.state.planned.is_some(),
         published: snapshot.state.published,
         publication_pending: snapshot.state.publication_intent && !snapshot.state.published,
-        permissions_verified: snapshot.state.permissions_verified,
+        completion_verified: snapshot.state.completion_verified,
+        completion_entries: snapshot.state.final_versions.len(),
+        readonly_reopening: snapshot.state.readonly_pending,
         permissions_completed: snapshot.state.permissions.completed,
         permission_pending: snapshot.state.permissions.pending,
     })
@@ -1840,6 +1918,15 @@ impl<'a> RetainedStage<'a> {
                 },
                 entry.observed.identity,
             )?;
+            if self
+                .snapshot
+                .state
+                .final_versions
+                .get(index)
+                .is_some_and(|version| version != &entry.observed)
+            {
+                return Err(io("Copy final receipt version changed; all data retained"));
+            }
             if super::version(&entry.handle)? != entry.observed {
                 return Err(io("retained Copy entry changed during validation"));
             }
@@ -1894,6 +1981,39 @@ impl<'a> RetainedStage<'a> {
         }
         self.namespace()?;
         Ok(())
+    }
+}
+
+/// An opened, source-free, native-validated durable completion receipt.
+/// This read-only proof alone does not grant Undo, deletion or cleanup authority.
+/// The paired journal remains the only persisted representation.
+pub(super) struct CompletedCopy<'a> {
+    retained: RetainedStage<'a>,
+}
+impl<'a> CompletedCopy<'a> {
+    pub(super) fn open(
+        parent: &'a File,
+        central: &'a File,
+        name: &OsStr,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let retained = RetainedStage::open(parent, central, name, progress)?;
+        if !retained.snapshot.state.completion_verified {
+            return Err(io("Copy has no sealed completion receipt; data retained"));
+        }
+        Ok(Self { retained })
+    }
+    pub(super) fn entry_count(&self) -> usize {
+        self.retained.snapshot.state.final_versions.len()
+    }
+    pub(super) fn root_version(&self) -> &EntryVersion {
+        &self.retained.snapshot.state.final_versions[0]
+    }
+    pub(super) fn revalidate(
+        &self,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.retained.revalidate(progress)
     }
 }
 
@@ -2001,15 +2121,19 @@ mod tests {
         application.apply(|_| Ok(())).unwrap();
         assert_eq!(application.completed(), 3);
         let length = application.journal.length;
-        assert_eq!(
-            length - initial_length,
-            reserved,
-            "reservation must cover exactly the native publication/application records"
+        let actual = length - initial_length;
+        assert!(
+            reserved >= actual,
+            "all native publication/completion records must fit"
+        );
+        assert!(
+            reserved - actual <= 19 * 3 + 64,
+            "only signed change-time and digest decimal widths may over-reserve"
         );
         assert_eq!(application.journal.permission_tail_size().unwrap(), 0);
         drop(application);
         let report = inspect(&parent, &central, &name).unwrap();
-        assert!(report.permissions_verified);
+        assert!(report.completion_verified);
         assert_eq!(
             (
                 report.published,
@@ -2036,9 +2160,133 @@ mod tests {
         again.apply(|_| Ok(())).unwrap();
         assert_eq!(again.journal.length, length);
     }
+    #[test]
+    fn windows_native_copy_completion_prefix_resumes_after_failure_or_cancellation_without_source()
+    {
+        for cancel in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            drop((staged, src));
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            if !cancel {
+                FAULT.with(|f| f.set(Some((24, Step::CentralFlushed, false))));
+            }
+            let result = app.apply(|_| {
+                if cancel
+                    && inspect(&parent, &central, &name)
+                        .unwrap()
+                        .completion_entries
+                        == 1
+                {
+                    Err(io("cancelled completion recording"))
+                } else {
+                    Ok(())
+                }
+            });
+            FAULT.with(|f| f.set(None));
+            assert!(result.is_err());
+            drop(app);
+            let report = inspect(&parent, &central, &name).unwrap();
+            assert_eq!(report.completion_entries, 1);
+            assert!(!report.completion_verified);
+            assert!(CompletedCopy::open(&parent, &central, &name, |_| Ok(())).is_err());
+            let journal = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            std::fs::remove_dir_all(root.path().join("source")).unwrap();
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            app.apply(|_| Ok(())).unwrap();
+            drop(app);
+            let after = std::fs::read(journal).unwrap();
+            assert!(after.starts_with(&before));
+            let records = journal_records(&after);
+            assert_eq!(
+                records
+                    .iter()
+                    .filter(|record| matches!(record, Record::FinalEntry { .. }))
+                    .count(),
+                3
+            );
+            assert_eq!(
+                records
+                    .iter()
+                    .filter(|record| matches!(record, Record::Finalized { .. }))
+                    .count(),
+                1
+            );
+            let receipt = CompletedCopy::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            assert_eq!(receipt.entry_count(), 3);
+            assert!(receipt.root_version().directory);
+            receipt.revalidate(|_| Ok(())).unwrap();
+        }
+    }
+    #[test]
+    fn windows_native_copy_final_versions_refuse_same_bytes_and_restored_write_time() {
+        for sealed in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source/nested/file"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            drop((staged, src));
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            if !sealed {
+                FAULT.with(|f| f.set(Some((12, Step::CentralFlushed, false))));
+            }
+            let result = app.apply(|_| Ok(()));
+            FAULT.with(|f| f.set(None));
+            assert_eq!(result.is_ok(), sealed);
+            drop(app);
+            let journal = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            let state = decode(&before).unwrap().state;
+            let recorded = &state.final_versions[0];
+            if sealed {
+                let receipt = CompletedCopy::open(&parent, &central, &name, |_| Ok(())).unwrap();
+                assert_eq!(receipt.root_version(), recorded);
+                receipt.revalidate(|_| Ok(())).unwrap();
+            }
+            std::fs::remove_dir_all(root.path().join("source")).unwrap();
+            let target = root.path().join("destination/copy");
+            let modified = std::fs::metadata(&target).unwrap().modified().unwrap();
+            std::thread::sleep(std::time::Duration::from_millis(5));
+            let mut file = std::fs::OpenOptions::new()
+                .write(true)
+                .open(&target)
+                .unwrap();
+            file.write_all(b"original data").unwrap();
+            file.set_times(std::fs::FileTimes::new().set_modified(modified))
+                .unwrap();
+            file.sync_all().unwrap();
+            drop(file);
+            let observed = super::super::version(&source(&target)).unwrap();
+            assert_ne!(observed.changed, recorded.changed);
+            let mut comparable = observed;
+            comparable.changed = recorded.changed;
+            assert_eq!(
+                &comparable, recorded,
+                "only the native change time may differ"
+            );
+            assert!(CompletedCopy::open(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+            assert_eq!(std::fs::read(journal).unwrap(), before);
+            assert_eq!(std::fs::read(&target).unwrap(), b"original data");
+            assert_eq!(
+                std::fs::metadata(target).unwrap().modified().unwrap(),
+                modified
+            );
+        }
+    }
+
     fn application_faults() -> Vec<(u64, Step)> {
         let mut result = Vec::new();
-        for sequence in 16..25 {
+        for sequence in 16..28 {
             for step in [Step::LocalFlushed, Step::CentralFlushed] {
                 result.push((sequence, step));
             }
@@ -2301,7 +2549,7 @@ mod tests {
             drop(app);
             let report = inspect(&parent, &central, &name).unwrap();
             assert!(!report.permission_pending);
-            assert!(!report.permissions_verified);
+            assert!(!report.completion_verified);
             assert_eq!(
                 std::fs::read(root.path().join("source/nested/file")).unwrap(),
                 b"original data"
@@ -2395,7 +2643,10 @@ mod tests {
         let mut state = decode(&bytes).unwrap().state;
         assert!(
             state
-                .check(&Record::PermissionsComplete { count: 3 })
+                .check(&Record::Finalized {
+                    count: 3,
+                    digest: [0; 32]
+                })
                 .is_err()
         );
         assert!(
@@ -2430,13 +2681,50 @@ mod tests {
                 .is_err()
         );
         assert!(state.check(&Record::SecurityApplied { index: 2 }).is_err());
-        state
-            .apply(Record::PermissionsComplete { count: 3 })
-            .unwrap();
-        assert!(state.permissions_verified);
         assert!(
             state
-                .check(&Record::PermissionsComplete { count: 3 })
+                .check(&Record::Finalized {
+                    count: 3,
+                    digest: [0; 32]
+                })
+                .is_err()
+        );
+        for index in 0..3 {
+            let node = &state.nodes[index];
+            let mut version = node.source.clone();
+            version.identity = node.staged.as_ref().unwrap().candidate_identity;
+            assert!(
+                state
+                    .check(&Record::FinalEntry {
+                        index: index + 1,
+                        version: Box::new(version.clone())
+                    })
+                    .is_err()
+            );
+            state
+                .apply(Record::FinalEntry {
+                    index,
+                    version: Box::new(version),
+                })
+                .unwrap();
+        }
+        let digest = super::super::evidence_digest(&state.final_versions).unwrap();
+        assert!(
+            state
+                .check(&Record::Finalized {
+                    count: 3,
+                    digest: [0; 32]
+                })
+                .is_err()
+        );
+        state.apply(Record::Finalized { count: 3, digest }).unwrap();
+        assert!(state.completion_verified);
+        assert!(
+            state
+                .check(&Record::Finalized {
+                    count: 3,
+                    digest: [0; 32]
+                })
                 .is_err()
         );
         let mut old = journal_records(&bytes);
@@ -3765,7 +4053,7 @@ mod tests {
     fn windows_native_copy_readonly_reopening_failures_and_exits_resume_without_source() {
         for nested in [false, true] {
             let first = if nested { 18 } else { 8 };
-            let last = if nested { 26 } else { 14 };
+            let last = if nested { 29 } else { 15 };
             let faults = (first..=last)
                 .flat_map(|sequence| {
                     [Step::LocalFlushed, Step::CentralFlushed].map(|step| (sequence, step))
@@ -3886,9 +4174,10 @@ mod tests {
         assert!(cancelled);
         assert!(result.is_err());
         assert!(!root.path().join("destination/copy").exists());
-        let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
-        assert_eq!(snapshot.state.readonly_pending, Some(0));
-        drop(snapshot);
+        let report = inspect(&parent, &central, &name).unwrap();
+        assert_eq!(report.readonly_reopening, Some(0));
+        assert_eq!(report.completion_entries, 0);
+        assert!(!report.completion_verified);
         let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
         app.apply(|_| Ok(())).unwrap();
         assert!(
@@ -3983,7 +4272,7 @@ mod tests {
             let after = std::fs::read(path).unwrap();
             assert!(after.starts_with(&before));
             let records = journal_records(&after);
-            assert_eq!(records.len(), 25);
+            assert_eq!(records.len(), 28);
             assert_eq!(
                 records
                     .iter()
