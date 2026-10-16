@@ -1,0 +1,7 @@
+{
+  "actor_state": "Ready",
+  "next_consumer": "Current package compiler and exact-artifact QA",
+  "scope": "Same owned COW retained for active package work",
+  "owned_test_processes": 0,
+  "original_profile_and_installation": "unchanged"
+}

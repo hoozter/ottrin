@@ -1,0 +1,22 @@
+{
+  "status": "collected",
+  "ordinary_user": true,
+  "suites": {
+    "preview": {
+      "exit": 0,
+      "temporary_entries": 0
+    },
+    "eps": {
+      "exit": 0,
+      "temporary_entries": 0
+    },
+    "ui": {
+      "exit": 101,
+      "temporary_entries": 1
+    },
+    "job": {
+      "exit": 0,
+      "temporary_entries": 0
+    }
+  }
+}

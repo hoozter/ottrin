@@ -78,16 +78,26 @@ system:
 - installed `libspectre` is GPL-2+ rather than LGPL; and
 - installed Ghostscript is AGPL/commercially dual-licensed.
 
-On Linux, Ottrin may ask a separately installed Ghostscript executable to
-render EPS as an optional host capability. Ottrin does not bundle, link,
-download, or install Ghostscript, and EPS metadata/external-open remains usable
-without it. The subprocess runs behind Ottrin's non-networked bubblewrap and
-systemd resource boundary with fixed input/output mounts, no shell, and bounded
-source bytes, output bytes/pixels, CPU time, memory, process count, and
-lifetime. Renderer absence or failure falls back truthfully rather than making
-Ghostscript a launch dependency. This component-boundary description is
-factual interoperability policy, not a claim that Ghostscript is LGPL or legal
-advice.
+On Linux and Windows, Ottrin may ask a separately installed Ghostscript
+executable to render EPS as an optional host capability. Ottrin does not bundle,
+link, download, or install Ghostscript, and EPS metadata/external-open remains
+usable without it. Windows discovers console executables in versioned
+`Program Files/gs` installations and absolute PATH entries; relative PATH entries
+and shell launchers are not candidates.
+
+Linux uses Ottrin's non-networked bubblewrap/systemd boundary. Windows uses a
+fresh AppContainer without network capabilities, private profile/output access,
+a read-only input copy and a kill-on-close Job Object. Both launch directly
+without a shell, with bounded source/output bytes, output dimensions/pixels,
+memory, process count and child lifetime. Linux additionally sets a CPU-time
+limit. Windows bounds elapsed child time rather than claiming a separate CPU-time
+quota. Each renderer receives a bounded, identity-checked EPS snapshot; PNG reads
+also reject oversized or redirected final entries before decoding. Snapshot I/O,
+like other filesystem reads, has no independent remote-storage timeout.
+
+Renderer absence, sandbox setup failure or render failure falls back truthfully;
+there is no unrestricted retry or Ghostscript launch dependency. This describes
+component interoperability, not a claim that Ghostscript is LGPL or legal advice.
 
 ## Documentation language
 

@@ -1,0 +1,67 @@
+{
+  "status": "partial",
+  "scope": "EPS source/native-test checkpoint; exact package rebuild and acceptance follow",
+  "previous_source": "72d8fd0",
+  "linux": {
+    "preview": {
+      "passed": 201,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ui": {
+      "passed": 378,
+      "failed": 0,
+      "ignored": 1
+    },
+    "real_eps_render": "pass; installed system Ghostscript and bubblewrap/systemd"
+  },
+  "windows": {
+    "ordinary_user": true,
+    "preview": {
+      "passed": 199,
+      "failed": 0,
+      "ignored": 0
+    },
+    "eps_render": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "process_isolation": {
+      "passed": 10,
+      "failed": 0,
+      "ignored": 3,
+      "explanation": "Three child fixture entry points are selected explicitly by the parent tests"
+    },
+    "ui": {
+      "passed": 340,
+      "failed": 2,
+      "ignored": 0,
+      "required_failures": [
+        "tests::clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict",
+        "tests::clipboard_native_paste_event_starts_owned_file_operation"
+      ]
+    },
+    "real_eps_render": "Official external Ghostscript 10.08.0 runtime; AppContainer and Job Object; temporary path contains percent and spaces"
+  },
+  "strict_clippy": "preview/UI all-targets pass on Linux and Windows",
+  "format": "pass",
+  "initial_ui_run": "339 passes, three failures: two required Copy gaps and missing bundled rg.exe fixture. Pinned provider restored beside native test exe; full suites rerun, no exclusions added.",
+  "initial_runtime_setup": "Installer /S remained live because official NSIS script forces interactive mode; guarded owned PID was stopped. Official pinned runtime files prepared in normal Program Files layout for QA; no installer acceptance claim.",
+  "cleanup": {
+    "actor_state": "Ready",
+    "next_consumer": "Current package compiler and exact-artifact QA",
+    "scope": "Same owned COW retained for active package work",
+    "owned_test_processes": 0,
+    "original_profile_and_installation": "unchanged"
+  },
+  "package_state": "Existing stable Linux and internal Windows cohort remains runtime source 9df0224. Owned COW retained for immediate compiler/exact-package work; external renderer is never included in Ottrin deliverables.",
+  "source_files": {
+    "crates/ottrin-preview/src/eps_visual.rs": "4339aa465055c978341538909d9262cf78211690e56bd445e6d87102324778cd",
+    "crates/ottrin-preview/src/lib.rs": "9a650159741122fbfbacc3679be9c934dbc471dfcb5592a6bf04363952b69acc",
+    "crates/ottrin-preview/src/preview_source.rs": "0f5eb3e939d9104991ec0ee860043e9882fe2220e2763d7d56ce30bab7cdfa12",
+    "crates/ottrin-preview/src/isolated_process.rs": "0839b456dde8a94e718ca0488d690b9e8143cf4cffecc9e3401cb2ffb657547d",
+    "crates/ottrin-ui/src/thumbnail_cache.rs": "4f9373dba85e91ad3a6e8369e21f42827d48398aa332cc491da9541dbf0fa500",
+    "crates/ottrin-preview/tests/eps_visual.rs": "208dda30d50c4ecd997557d98da96a1fb0265801acafc3c73aaa62057ffee994"
+  }
+}

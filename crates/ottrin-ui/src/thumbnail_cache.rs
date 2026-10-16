@@ -29,9 +29,9 @@ const MAX_SVG_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_SVG_CACHE_PNG_DIMENSION: u32 = 2_048;
 const MAX_PDF_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_PDF_CACHE_PNG_DIMENSION: u32 = 2_048;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 const MAX_EPS_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 const MAX_EPS_CACHE_PNG_DIMENSION: u32 = 4_096;
 const MAX_VIDEO_CACHE_PNG_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_VIDEO_CACHE_PNG_DIMENSION: u32 = 2_048;
@@ -599,7 +599,7 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             ottrin_preview::PreviewVisualRenderer::Eps => {
                 match ottrin_preview::render_eps_content_preview_png(path, target_dim) {
                     Ok(bytes) => Some(bytes),
@@ -858,7 +858,7 @@ fn cached_thumbnail_is_safe_for_path_with_pdfium_runtime(
                 MAX_PDF_CACHE_PNG_DIMENSION,
             );
     }
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Eps {
         return ottrin_preview::eps_preview_runtime_is_available()
             && bounded_cached_png_is_safe(
@@ -1024,7 +1024,7 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Eps {
         return match ottrin_preview::render_eps_content_preview_png(path, target_dim) {
             Ok(bytes) => Some(bytes),
@@ -2216,7 +2216,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     fn eps_rejects_stale_raster_cache_and_uses_only_the_isolated_renderer() {
         if !ottrin_preview::eps_preview_runtime_is_available() {
             return;

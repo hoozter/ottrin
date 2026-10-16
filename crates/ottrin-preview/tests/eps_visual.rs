@@ -1,22 +1,22 @@
-#![cfg(target_os = "linux")]
+#![cfg(any(target_os = "linux", target_os = "windows"))]
 
 use ottrin_preview::{eps_preview_runtime_is_available, render_eps_content_preview_png};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 #[test]
 fn installed_ghostscript_renders_a_representative_eps_inside_isolation() {
-    if !eps_preview_runtime_is_available() {
+    let available = eps_preview_runtime_is_available();
+    if std::env::var_os("OTTRIN_REQUIRE_EPS_RUNTIME").is_some() {
+        assert!(
+            available,
+            "the configured native lane requires its installed renderer"
+        );
+    }
+    if !available {
         return;
     }
 
-    let unique = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
-    let path = std::env::temp_dir().join(format!(
-        "ottrin-eps-visual-contract-{}-{unique}.eps",
-        std::process::id()
-    ));
+    let fixture = tempfile::tempdir().expect("private EPS fixture");
+    let path = fixture.path().join("drawing.eps");
     std::fs::write(
         &path,
         b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 300 180\n/Courier findfont 24 scalefont setfont\n20 100 moveto (Ottrin EPS Preview) show\nnewpath 20 20 moveto 280 20 lineto 280 160 lineto 20 160 lineto closepath stroke\nshowpage\n%%EOF\n",
@@ -32,6 +32,4 @@ fn installed_ghostscript_renders_a_representative_eps_inside_isolation() {
         rendered.len() > 1_000,
         "render must contain visible EPS content"
     );
-
-    let _ = std::fs::remove_file(path);
 }

@@ -1,0 +1,7 @@
+{
+  "scope": "Official external runtime files in normal layout, owned COW only; not installer acceptance",
+  "status": "pass",
+  "path": "C:\\Program Files\\gs\\gs10.08.0\\bin\\gswin64c.exe",
+  "sha256": "9b29d3b5128c6d53bb4e9eee77e3919d05038cdfdd8e07697af4d9c319f9d5ad",
+  "files": 531
+}

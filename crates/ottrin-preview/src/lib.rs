@@ -31,7 +31,7 @@ use std::os::unix::fs::OpenOptionsExt;
 use sha2::{Digest, Sha256};
 
 mod affinity_visual;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 mod eps_visual;
 #[cfg(windows)]
 mod folder_size_windows;
@@ -55,7 +55,7 @@ pub use affinity_visual::{
     affinity_preview_is_available, affinity_preview_source_generation,
     render_affinity_embedded_preview_png, render_affinity_embedded_preview_png_with_generation,
 };
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub use eps_visual::{
     EpsVisualError, eps_preview_runtime_is_available, render_eps_content_preview_png,
 };
@@ -1092,8 +1092,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
         },
         PreviewKind::EpsMetadata => PreviewProfile {
             kind,
-            views: [true, false, cfg!(target_os = "linux")],
-            visual_renderer: if cfg!(target_os = "linux") {
+            views: [
+                true,
+                false,
+                cfg!(any(target_os = "linux", target_os = "windows")),
+            ],
+            visual_renderer: if cfg!(any(target_os = "linux", target_os = "windows")) {
                 PreviewVisualRenderer::Eps
             } else {
                 PreviewVisualRenderer::None

@@ -1,0 +1,9 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `test` profile [optimized + debuginfo] target(s) in 28.17s
+     Running tests/eps_visual.rs (target/debug/deps/eps_visual-3eaab3c067d4c766)
+
+running 1 test
+test installed_ghostscript_renders_a_representative_eps_inside_isolation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s

@@ -1,0 +1,24 @@
+
+thread 'tests::clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict' (8164) panicked at crates/ottrin-ui/src/lib.rs:26225:9:
+assertion `left == right` failed: Copy/Rename conflict must create a second file: [OperationRecord { id: 3, title: "Copy", detail: "source.txt to C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-96g0wp\\destination", status: Failed, recoverability: SessionTracked, queued_at: Instant { t: 140.5524692s }, finished_at: Some(Instant { t: 140.5627476s }), message: Some("safe copy is unsupported on this platform: C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-96g0wp\\source.txt"), path_move_paths: Some(("C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-96g0wp\\destination", "C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-96g0wp\\destination")), path_move_undo: None, undo_kind: None, path_move_undo_token: None, retained_copy: None }]
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::clipboard_native_paste_event_starts_owned_file_operation' (3956) panicked at crates/ottrin-ui/src/lib.rs:26127:9:
+Copy failed: [OperationRecord { id: 3, title: "Copy", detail: "source.txt to C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-2PC5bf\\destination", status: Failed, recoverability: SessionTracked, queued_at: Instant { t: 140.5986848s }, finished_at: Some(Instant { t: 140.6090928s }), message: Some("safe copy is unsupported on this platform: C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-2PC5bf\\source.txt"), path_move_paths: Some(("C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-2PC5bf\\destination", "C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-2PC5bf\\destination")), path_move_undo: None, undo_kind: None, path_move_undo_token: None, retained_copy: None }]
+PDF preview render failed for /not-loaded-yet.pdf: PDFium runtime is unavailable; set OTTRIN_PDFIUM_DIR or package pdfium/lib beside Ottrin
+
+thread 'tests::ui_content_pages_navigate_refresh_and_reset_with_the_query' (8532) panicked at crates/ottrin-ui/src/lib.rs:34835:13:
+Some("Live content search could not start: program not found. Check access to the selected folders or repair Ottrin.")
+Affinity preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-affinity-8480-1792126147847806700.AfDeSiGn: Affinity input contains no qualifying complete embedded PNG
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-blocked-svg-raster-cache-8480.svg: SVG contains blocked references (file/http/https image references are not permitted)
+PLY preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-ply-preview-8480.ply: PLY header is invalid or outside bounded preview limits: header line is unterminated or too long
+SQLite thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-replaced-8480-1792126148863947000.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-replaced-8480-1792126148863947000.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-replaced-8480-1792126148863947000.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-replaced-8480-1792126148863947000.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+STL thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-stl-preview-8480.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+STL preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-stl-preview-8480.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-blocked-svg-thumbnail-8480.svg: SVG contains blocked references (file/http/https image references are not permitted)
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-Eps% Rendering\ui\ottrin-oversized-svg-thumbnail-8480.svg: SVG could not be parsed for visual preview: SVG data parsing failed cause the document does not have a root node

@@ -7,13 +7,13 @@ use crate::office_provider::{
 #[derive(Debug, Clone, Copy, Default)]
 pub struct LinuxBubblewrapIsolation;
 
-/// Windows process-lifetime and resource boundary for installed Office providers.
+/// Windows isolation and resource boundary for installed preview providers.
 ///
-/// The child starts inside a kill-on-close Job Object with aggregate memory and
-/// active-process limits. Only its three standard-I/O handles are inherited.
-/// This is deliberately not a filesystem sandbox or a network-isolation claim;
-/// provider admission remains fail-closed until the native acceptance lane has
-/// exercised this boundary on supported Windows hosts.
+/// The child starts in a fresh AppContainer without capabilities and a
+/// kill-on-close Job Object with aggregate memory and active-process limits.
+/// Private ACLs admit its profile/output and read-only input copy; only its
+/// three standard-I/O handles are inherited. Provider compatibility still needs
+/// native acceptance; sandbox/launch failure never enables an unrestricted retry.
 #[cfg(target_os = "windows")]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct WindowsJobObjectIsolation;

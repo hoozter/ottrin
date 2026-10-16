@@ -1,0 +1,17 @@
+
+running 13 tests
+test fixture_descendant ... ignored, subprocess fixture selected explicitly by fixture_root
+test fixture_environment_parent ... ignored, subprocess fixture with a deliberately contaminated parent environment
+test fixture_root ... ignored, subprocess fixture selected explicitly by native_job tests
+test native_job_cancellation_kills_parent_and_descendant ... ok
+test native_job_captures_output_and_cleans_diagnostics ... ok
+test native_job_denies_private_files_source_writes_and_network ... ok
+test native_job_does_not_inherit_parent_environment ... ok
+test native_job_enforces_aggregate_memory_across_descendants ... ok
+test native_job_enforces_memory_and_process_limits ... ok
+test native_job_enforces_output_budget ... ok
+test native_job_isolates_ipc_pipe_namespace ... ok
+test native_job_restricts_inherited_handles ... ok
+test native_job_timeout_kills_descendant_after_parent_exit ... ok
+
+test result: ok. 10 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 26.56s

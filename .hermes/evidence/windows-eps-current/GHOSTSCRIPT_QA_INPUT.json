@@ -1,0 +1,7 @@
+{
+  "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/gs10080w64.exe",
+  "sha256": "52a91b8bf09298788d7a57b9206127026c23eacd75405f0a131e26dc381dce50",
+  "bytes": 65093120,
+  "release": "gs10080",
+  "scope": "External renderer installed only in disposable test guest; never included in Ottrin deliverables"
+}

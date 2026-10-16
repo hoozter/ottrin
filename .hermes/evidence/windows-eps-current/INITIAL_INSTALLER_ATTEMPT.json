@@ -1,0 +1,10 @@
+{
+  "controller": {
+    "pid": 6076,
+    "exit": 1,
+    "status": "terminal result collected; QGA handle no longer exists"
+  },
+  "installer_pid": 5200,
+  "cause": "Official NSIS script forces SetSilent normal in .onInit; /S did not enter silent mode",
+  "source": "https://github.com/ArtifexSoftware/ghostpdl/blob/master/psi/nsisinst.nsi"
+}

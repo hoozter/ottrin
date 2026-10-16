@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-windows-eps-qa",
+  "guest_root": "C:\\OttrinContentQA",
+  "account": "OttrinContentQA",
+  "purpose": "Ordinary-user EPS and process isolation acceptance, followed by current exact-package QA",
+  "restore": "Dispose owned COW domain, volume, NVRAM and TPM after all test/package consumers are terminal and original profile/install checks pass"
+}

@@ -1,4 +1,4 @@
-//! Regular-file admission shared by bounded PLY and Affinity snapshots.
+//! Regular-file admission shared by bounded preview snapshots.
 use std::{
     fs::{File, OpenOptions},
     path::Path,

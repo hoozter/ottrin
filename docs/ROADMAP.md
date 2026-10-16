@@ -8,6 +8,35 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Windows EPS source checkpoint
+
+The last Windows preview-suite failure, EPS routing, is implemented. Windows
+finds a separately installed Ghostscript console executable in versioned Program
+Files installations or absolute PATH entries and launches it through the shared
+AppContainer/Job boundary. Thumbnail, full-preview and runtime/cache checks use
+the same path. Both platforms render an identity-checked bounded EPS snapshot,
+request only the first page, bound PNG reads before decoding and clean their
+private render trees. Windows output arguments preserve literal percent signs.
+Ghostscript remains optional and is never bundled, linked, downloaded or installed
+by Ottrin; absent or failed isolated rendering keeps metadata/external-open.
+
+Linux passes 201 preview tests and 378 UI tests, with one existing UI exclusion;
+its actual isolated EPS render also passes. An ordinary Windows user passes all
+199 preview tests, the required actual Ghostscript EPS render, ten native
+AppContainer/Job tests and 340 UI tests. Three job fixture entry points are invoked
+explicitly by parent tests. The two required public Copy UI failures remain.
+Strict preview/UI all-target Clippy passes for both platforms. The first native
+UI run lacked its bundled search helper; restoring that pinned fixture cleared
+the paging failure on a complete rerun. No positive test was excluded. The
+external renderer exists only in the owned COW fixture, in the official layout;
+its interactive-forced installer is not counted as accepted.
+
+This remains source/native-test evidence. Existing stable cohorts still carry
+runtime source `9df0224`; current package rebuilding and exact-artifact checks
+follow. Original profiles/installations are unchanged; the owned COW is retained
+for those immediate package consumers. Evidence:
+`.hermes/evidence/windows-eps-current/ACCEPTANCE.json`.
+
 ## Windows recursive folder-size source checkpoint
 
 The Windows stub has been replaced with a bounded, read-only native scan. It
