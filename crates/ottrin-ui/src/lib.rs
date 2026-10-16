@@ -1156,6 +1156,7 @@ fn windows_copy_can_resume(entry: &ottrin_platform::WindowsRetainedCopyStatus) -
                 Phase::Staged
                     | Phase::PlanningPermissions
                     | Phase::ReadyToPublish
+                    | Phase::RetainingOriginal
                     | Phase::PublicationPending
                     | Phase::ApplyingPermissions
                     | Phase::Finalizing
@@ -1177,6 +1178,7 @@ fn windows_retained_copy_activity(
         Some(Phase::Staged) => "Staged copy",
         Some(Phase::PlanningPermissions) => "Permission planning interrupted",
         Some(Phase::ReadyToPublish) => "Prepared copy",
+        Some(Phase::RetainingOriginal) => "Original retention interrupted",
         Some(Phase::PublicationPending) => "Publication interrupted",
         Some(Phase::ApplyingPermissions) => "Permission application interrupted",
         Some(Phase::Finalizing) => "Final verification interrupted",
@@ -25712,6 +25714,7 @@ mod tests {
             Phase::Staged,
             Phase::PlanningPermissions,
             Phase::ReadyToPublish,
+            Phase::RetainingOriginal,
             Phase::PublicationPending,
             Phase::ApplyingPermissions,
             Phase::Finalizing,

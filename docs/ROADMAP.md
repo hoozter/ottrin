@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 253 with 33 specialized
+The final ordinary-user Windows platform suite passes 256 with 33 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -389,6 +389,24 @@ Evidence: `.hermes/evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
 Readonly-original access strategy, broader security/storage, initial conflict
 admission and public session/batch integration remain required. Packages are
 unchanged.
+
+Forward recovery now also admits interrupted original retention after durable
+intent, including a rename whose acknowledgement is missing. Admission remains
+read-only, binds an already-retained root's observed version, and does not treat
+original observations as authorization. Execution reuses the original-move engine
+before fresh publication verification. Discovery and Activity expose the new
+`RetainingOriginal` phase. Cancellation retries the same opaque plan; changed
+original/copy data, retained-root versions, locations, mirrors and restoration
+state refuse. Native source-free injected/process-exit, guard and cancellation
+checks pass: three new tests cover 14 injected failures and 14 real exits,
+including coherent resume through publication/Undo and untouched refusal of
+mismatched mirrors. The final native platform suite passes 256 with 33 exclusions;
+Linux passes 411 with three exclusions. Activity state mapping, SYSTEM audit,
+strict Clippy and format checks pass. The owned guest/disk/NVRAM/TPM were removed;
+the original profile/installation remained unchanged. Receipt:
+`.hermes/evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`.
+Initial user-conflict admission and public Copy/session/batch integration remain
+required; packages are unchanged.
 
 Public Windows Copy stays disabled. Session receipt/batch
 integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete

@@ -141,8 +141,15 @@ occupant is preserved and stops recovery. Original bytes, native versions,
 membership, hard-link counts, compression and owner/group/DACL remain bound.
 Forward and Undo admissions bind original evidence as well as the new copy;
 both expose the original retention slot to operation conflict checks. Forward
-admission currently starts after original retention is acknowledged; exposing
-interrupted retention through the public recovery controller remains required.
+admission accepts pending retention only after its durable intent exists. It
+freezes an already-retained original's observed version even before acknowledgement.
+Execution compares the admitted proof and paired bytes, invokes the same original
+move engine, then opens a new verified epoch for publication. Observation-only
+original preparation cannot authorize retention. `RetainingOriginal` remains
+resumable through discovery and Activity; restoration owns its transaction and
+prevents forward resumption. Native injected/process-exit, read-only admission,
+version-drift and same-plan cancellation evidence:
+`.hermes/evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`.
 
 The existing Undo engine first withdraws the verified new copy to its candidate
 slot and records that native result, then invokes the shared original restoration

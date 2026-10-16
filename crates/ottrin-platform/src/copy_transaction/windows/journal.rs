@@ -347,10 +347,14 @@ impl State {
     fn undo_complete(&self) -> bool {
         self.undone.is_some() && (self.original.is_none() || self.original_restored.is_some())
     }
-    fn original_ready_for_publication(&self) -> bool {
+    fn original_ready_for_forward(&self) -> bool {
         self.original.as_ref().is_none_or(|plan| {
-            plan.sealed && self.original_retained.is_some() && !self.original_restore_intent
+            plan.sealed && self.original_retain_intent && !self.original_restore_intent
         })
+    }
+    fn original_ready_for_publication(&self) -> bool {
+        self.original_ready_for_forward()
+            && (self.original.is_none() || self.original_retained.is_some())
     }
     fn valid_original_entry(
         &self,
@@ -2000,6 +2004,8 @@ pub(super) struct PermissionStage {
 struct CopyResumeBinding {
     header: Header,
     staged_digest: [u8; 32],
+    // Observed retained-root version, including a rename not yet acknowledged.
+    original_retained: Option<EntryVersion>,
     permissions_digest: [u8; 32],
     parent_location: std::path::PathBuf,
 }
@@ -2018,11 +2024,7 @@ fn staged_digest(state: &State) -> Result<[u8; 32], PlatformError> {
             )
         })
         .collect::<Vec<_>>();
-    super::evidence_digest(&(
-        frozen,
-        state.original.as_ref().map(|plan| &plan.evidence),
-        &state.original_retained,
-    ))
+    super::evidence_digest(&(frozen, state.original.as_ref().map(|plan| &plan.evidence)))
 }
 fn completion_digest(state: &State) -> Result<[u8; 32], PlatformError> {
     super::evidence_digest(&(
@@ -2031,14 +2033,14 @@ fn completion_digest(state: &State) -> Result<[u8; 32], PlatformError> {
         &state.original_retained,
     ))
 }
-fn prepare_publication(
+fn prepare_forward(
     retained: &RetainedStage<'_>,
     binding: Option<&CopyResumeBinding>,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<security::TreeSecurityPlan, PlatformError> {
-    if !retained.snapshot.state.original_ready_for_publication() {
+    if !retained.snapshot.state.original_ready_for_forward() {
         return Err(io(
-            "Overwrite original has not been retained or restoration already owns it",
+            "Overwrite retention has no durable intent or restoration already owns it",
         ));
     }
     if retained.snapshot.state.undo_intent {
@@ -2047,6 +2049,10 @@ fn prepare_publication(
     if let Some(binding) = binding
         && (retained.snapshot.state.header.as_ref() != Some(&binding.header)
             || staged_digest(&retained.snapshot.state)? != binding.staged_digest
+            || binding
+                .original_retained
+                .as_ref()
+                .is_some_and(|expected| retained.retained_original_version() != Some(expected))
             || windows_fs::location(retained.parent).map_err(io)? != binding.parent_location)
     {
         return Err(io("Copy resume admission changed; refresh recovery status"));
@@ -2070,11 +2076,36 @@ fn resume_bound_copy(
     binding: &CopyResumeBinding,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
-    let retained =
+    let mut retained =
         RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
+    if retained.snapshot.state.original_retain_intent
+        && retained.snapshot.state.original_retained.is_none()
+    {
+        // Validate the admitted copy, original and destination policy read-only
+        // before releasing this epoch. Preparation alone grants no retention.
+        drop(prepare_forward(&retained, Some(binding), &mut progress)?);
+        let expected = retained.snapshot.bytes.clone();
+        drop(retained);
+        let snapshot = Snapshot::load(
+            parent,
+            central,
+            &binding.header.stage_name(),
+            SnapshotAccess::Write,
+        )?;
+        if snapshot.bytes != expected {
+            return Err(io(
+                "Copy journal changed before original-retention recovery",
+            ));
+        }
+        let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+        journal.move_original(OriginalMove::Retain, &mut progress)?;
+        drop(journal);
+        retained =
+            RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
+    }
     if retained.snapshot.state.completion_verified {
         // Completed replay stays read-only, including readonly file roots.
-        prepare_publication(&retained, Some(binding), progress)?;
+        prepare_forward(&retained, Some(binding), progress)?;
         return Ok(());
     }
     let mut publication = PermissionStage::from_retained(retained, Some(binding), &mut progress)?;
@@ -2105,7 +2136,12 @@ impl PermissionStage {
             .as_ref()
             .unwrap()
             .stage_name();
-        let prepared = prepare_publication(&retained, binding, &mut progress)?;
+        if !retained.snapshot.state.original_ready_for_publication() {
+            return Err(io(
+                "Original retention must be acknowledged before publication",
+            ));
+        }
+        let prepared = prepare_forward(&retained, binding, &mut progress)?;
         let evidence = prepared.evidence().at_root(
             &retained
                 .snapshot
@@ -2717,6 +2753,14 @@ impl<'a> RetainedStage<'a> {
         };
         result.revalidate(progress)?;
         Ok(result)
+    }
+    fn retained_original_version(&self) -> Option<&EntryVersion> {
+        self.original
+            .as_ref()
+            .filter(|original| {
+                original.name == self.snapshot.state.header.as_ref().unwrap().original_name()
+            })
+            .map(|original| &original.evidence.entries[0].version)
     }
     pub(super) fn plan_destination_security(
         &self,
@@ -3723,6 +3767,273 @@ mod tests {
                 assert_overwrite_versions(root.path(), &name, true);
             }
         }
+    }
+
+    fn pending_retention_fixture(root: &Path, directory: bool) -> OsString {
+        let name = original_move_fixture(root, directory, false);
+        let mut journal = original_journal(root, &name);
+        FAULT.with(|fault| fault.set(Some((journal.sequence, Step::CentralFlushed, false))));
+        assert!(
+            journal
+                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .is_err()
+        );
+        FAULT.with(|fault| fault.set(None));
+        name
+    }
+    #[test]
+    fn windows_native_retention_resume_recovers_injected_and_real_exit_prefixes_without_source() {
+        for real_exit in [false, true] {
+            for directory in [false, true] {
+                for (index, (offset, step)) in move_faults().into_iter().enumerate() {
+                    let root = tempfile::tempdir().unwrap();
+                    let name = if real_exit {
+                        let status = std::process::Command::new(std::env::current_exe().unwrap())
+                            .args(["--exact", "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child", "--ignored", "--nocapture"])
+                            .env("OTTRIN_ORIGINAL_MOVE_CHILD", root.path())
+                            .env("OTTRIN_ORIGINAL_MOVE_DIRECTORY", if directory {"1"} else {"0"})
+                            .env("OTTRIN_ORIGINAL_MOVE_RESTORE", "0")
+                            .env("OTTRIN_ORIGINAL_MOVE_FAULT", index.to_string()).status().unwrap();
+                        assert_eq!(status.code(), Some(86));
+                        stage_name(&root.path().join("destination"))
+                    } else {
+                        let name = original_move_fixture(root.path(), directory, false);
+                        let mut journal = original_journal(root.path(), &name);
+                        FAULT.with(|fault| {
+                            fault.set(Some((journal.sequence + offset, step, false)))
+                        });
+                        assert!(
+                            journal
+                                .move_original(OriginalMove::Retain, |_| Ok(()))
+                                .is_err()
+                        );
+                        FAULT.with(|fault| fault.set(None));
+                        name
+                    };
+                    let local = root.path().join("destination").join(&name).join(LOCAL);
+                    let bytes = std::fs::read(&local).unwrap();
+                    let decoded = decode(&bytes).unwrap();
+                    let header = decoded.state.header.as_ref().unwrap();
+                    let mirror = root.path().join("central").join(header.central_name());
+                    let mirror_bytes = std::fs::read(&mirror).unwrap();
+                    let admission = RetainedCopyResumePlan::admit(
+                        &root.path().join("central"),
+                        &header.transaction,
+                        |_| Ok(()),
+                    );
+                    let public = root.path().join("destination/copy");
+                    let original = if public.exists() {
+                        public
+                    } else {
+                        root.path().join("destination").join(header.original_name())
+                    };
+                    assert_eq!(
+                        std::fs::read(if directory {
+                            original.join("old")
+                        } else {
+                            original
+                        })
+                        .unwrap(),
+                        b"old destination"
+                    );
+                    assert_eq!(
+                        std::fs::read(
+                            root.path()
+                                .join("destination")
+                                .join(header.candidate_name())
+                                .join("nested/file")
+                        )
+                        .unwrap(),
+                        b"original data"
+                    );
+                    if step == Step::LocalFlushed {
+                        assert!(admission.is_err());
+                        assert_ne!(bytes, mirror_bytes);
+                        assert_eq!(std::fs::read(local).unwrap(), bytes);
+                        assert_eq!(std::fs::read(mirror).unwrap(), mirror_bytes);
+                    } else {
+                        let mut resume = admission.unwrap();
+                        let expected_phase = if decoded.state.original_retained.is_none() {
+                            WindowsCopyPhase::RetainingOriginal
+                        } else {
+                            WindowsCopyPhase::ReadyToPublish
+                        };
+                        assert_eq!(resume.admitted_phase(), expected_phase);
+                        let status = discover_at(&root.path().join("central")).unwrap();
+                        assert_eq!(status[0].phase, Some(expected_phase));
+                        assert_eq!(
+                            status[0].evidence,
+                            WindowsCopyRecoveryEvidence::VerifiedTree
+                        );
+                        assert_eq!(resume.path_pairs().len(), 2);
+                        // Read-only admission cannot finish retention or append records.
+                        assert_eq!(std::fs::read(&local).unwrap(), bytes);
+                        assert_eq!(std::fs::read(&mirror).unwrap(), mirror_bytes);
+                        resume.resume(|_| Ok(())).unwrap();
+                        assert!(resume.complete());
+                        assert_overwrite_versions(root.path(), &name, directory);
+                        overwrite_undo(root.path(), &name).unwrap();
+                        assert_overwrite_versions(root.path(), &name, directory);
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn windows_native_retention_resume_refuses_observation_only_drift_and_restoration() {
+        for case in [
+            "observation-only",
+            "original-drift",
+            "candidate-drift",
+            "moved-original",
+            "retained-time-drift",
+            "restored",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let name = if case == "observation-only" {
+                original_move_fixture(root.path(), true, false)
+            } else {
+                pending_retention_fixture(root.path(), true)
+            };
+            if case == "retained-time-drift" {
+                let mut journal = original_journal(root.path(), &name);
+                FAULT.with(|fault| {
+                    fault.set(Some((journal.sequence, Step::OriginalRenamed, false)))
+                });
+                assert!(
+                    journal
+                        .move_original(OriginalMove::Retain, |_| Ok(()))
+                        .is_err()
+                );
+                FAULT.with(|fault| fault.set(None));
+            }
+            let journal = original_journal(root.path(), &name);
+            let header = journal.header.clone();
+            drop(journal);
+            let local = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&local).unwrap();
+            let admission = RetainedCopyResumePlan::admit(
+                &root.path().join("central"),
+                &header.transaction,
+                |_| Ok(()),
+            );
+            if case == "observation-only" {
+                assert!(
+                    admission
+                        .unwrap_err()
+                        .to_string()
+                        .contains("no durable intent")
+                );
+                assert_eq!(std::fs::read(local).unwrap(), before);
+                continue;
+            }
+            let mut resume = admission.unwrap();
+            let target = root.path().join("destination/copy");
+            let candidate = root
+                .path()
+                .join("destination")
+                .join(header.candidate_name());
+            match case {
+                "original-drift" => {
+                    std::fs::write(target.join("old"), b"external original").unwrap()
+                }
+                "candidate-drift" => {
+                    std::fs::write(candidate.join("nested/file"), b"external copy").unwrap()
+                }
+                "moved-original" => {
+                    std::fs::rename(&target, root.path().join("destination/elsewhere")).unwrap()
+                }
+                "retained-time-drift" => {
+                    let original = root.path().join("destination").join(header.original_name());
+                    let elsewhere = root.path().join("destination/elsewhere");
+                    let observed = super::super::version(&source(&original)).unwrap();
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                    std::fs::rename(&original, &elsewhere).unwrap();
+                    std::fs::rename(&elsewhere, &original).unwrap();
+                    let actual = super::super::version(&source(&original)).unwrap();
+                    let mut expected = observed.clone();
+                    expected.changed = actual.changed;
+                    assert_eq!(
+                        actual, expected,
+                        "Fixture changes only the retained root change time"
+                    );
+                    assert_ne!(actual.changed, observed.changed);
+                }
+                "restored" => {
+                    let mut journal = original_journal(root.path(), &name);
+                    journal
+                        .move_original(OriginalMove::Retain, |_| Ok(()))
+                        .unwrap();
+                    journal
+                        .move_original(OriginalMove::Restore, |_| Ok(()))
+                        .unwrap();
+                }
+                _ => unreachable!(),
+            }
+            let before = std::fs::read(&local).unwrap();
+            assert!(resume.resume(|_| Ok(())).is_err());
+            assert!(!resume.complete());
+            assert_eq!(std::fs::read(local).unwrap(), before);
+            assert_eq!(
+                std::fs::read(candidate.join("nested/file")).unwrap(),
+                if case == "candidate-drift" {
+                    b"external copy".as_slice()
+                } else {
+                    b"original data".as_slice()
+                }
+            );
+            let old = if case == "moved-original" {
+                root.path().join("destination/elsewhere/old")
+            } else if case == "retained-time-drift" {
+                root.path()
+                    .join("destination")
+                    .join(header.original_name())
+                    .join("old")
+            } else {
+                target.join("old")
+            };
+            assert_eq!(
+                std::fs::read(old).unwrap(),
+                if case == "original-drift" {
+                    b"external original".as_slice()
+                } else {
+                    b"old destination".as_slice()
+                }
+            );
+        }
+    }
+    #[test]
+    fn windows_native_retention_resume_cancellation_retries_the_same_admission() {
+        let root = tempfile::tempdir().unwrap();
+        let name = pending_retention_fixture(root.path(), true);
+        let journal = original_journal(root.path(), &name);
+        let id = journal.header.transaction.clone();
+        drop(journal);
+        let mut plan =
+            RetainedCopyResumePlan::admit(&root.path().join("central"), &id, |_| Ok(())).unwrap();
+        let cancel = std::rc::Rc::new(std::cell::Cell::new(false));
+        let handoff = cancel.clone();
+        ORIGINAL_HANDOFF
+            .with(|hook| *hook.borrow_mut() = Some(Box::new(move || handoff.set(true))));
+        assert!(
+            plan.resume(|_| if cancel.get() {
+                Err(io("cancel retention resume"))
+            } else {
+                Ok(())
+            })
+            .is_err()
+        );
+        ORIGINAL_HANDOFF.with(|hook| hook.borrow_mut().take());
+        assert!(
+            cancel.get(),
+            "The cancellation fixture must reach original handoff"
+        );
+        assert!(!plan.complete());
+        plan.resume(|_| Ok(())).unwrap();
+        assert!(plan.complete());
+        assert_overwrite_versions(root.path(), &name, true);
+        overwrite_undo(root.path(), &name).unwrap();
+        assert_overwrite_versions(root.path(), &name, true);
     }
 
     fn move_faults() -> [(u64, Step); 7] {

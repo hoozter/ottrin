@@ -870,9 +870,23 @@ protection, initial admission, session/batch integration, cleanup, power-cut and
 exact-package acceptance remain required. Public Windows Copy remains disabled.
 Native evidence: `.hermes/evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
 
-Forward recovery admission now handles a verified unfinished Windows
-creation or an original-retention-acknowledged overwrite without reopening its source.
-Admission/controller integration for interrupted original retention remains required. It captures the native header/registry IDs,
+Forward recovery admission handles verified unfinished Windows creation and
+overwrite transactions without reopening their sources. Overwrite requires a
+sealed original graph and a durable retention intent; observation alone grants
+no mutation authority. A pending retention acknowledgement resumes through the
+existing original-move engine after read-only admission, paired-byte comparison
+and fresh writer acquisition, then reacquires/revalidates both trees before the
+shared publication engine runs. Publication itself still requires the original
+retention acknowledgement.
+
+Admission binds the staged/original graphs and destination policy. If the original
+is already at its retention slot, its observed root version is frozen even when
+the acknowledgement is pending. A root still public has its pre-move version
+bound by original evidence; its native post-rename change time is acknowledged
+by the existing protocol. Discovery/Activity expose `RetainingOriginal` as a
+resumable phase. Cancellation leaves the same admitted action retryable; changed
+originals, copies, recorded versions or restoration state refuse without writes.
+Native receipt: `.hermes/evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`. It captures the native header/registry IDs,
 actual parent location, a digest of the frozen node/source/candidate evidence
 and a digest of the freshly projected destination security. No handles or
 per-entry security trees survive admission.

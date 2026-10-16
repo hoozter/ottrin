@@ -47,13 +47,14 @@ impl RetainedCopyResumePlan {
         if retained.snapshot.bytes != bytes {
             return Err(io("Copy journals changed during forward admission"));
         }
-        let prepared = prepare_publication(&retained, None, progress)?;
+        let prepared = prepare_forward(&retained, None, progress)?;
         let location = windows_fs::location(&parent).map_err(io)?;
         Ok(Self {
             registry: windows_fs::location(&central).map_err(io)?,
             binding: Box::new(CopyResumeBinding {
                 header: header.clone(),
                 staged_digest: staged_digest(&state)?,
+                original_retained: retained.retained_original_version().cloned(),
                 permissions_digest: super::super::evidence_digest(
                     &prepared.evidence().at_root(&header.candidate_name()),
                 )?,
@@ -243,6 +244,7 @@ pub enum WindowsCopyPhase {
     Staged,
     PlanningPermissions,
     ReadyToPublish,
+    RetainingOriginal,
     PublicationPending,
     ApplyingPermissions,
     Finalizing,
@@ -287,6 +289,8 @@ pub(super) fn phase(state: &State) -> WindowsCopyPhase {
         WindowsCopyPhase::ApplyingPermissions
     } else if state.publication_intent {
         WindowsCopyPhase::PublicationPending
+    } else if state.original_retain_intent && state.original_retained.is_none() {
+        WindowsCopyPhase::RetainingOriginal
     } else if state.planned.is_some() {
         WindowsCopyPhase::ReadyToPublish
     } else if state.planning.is_some() {
