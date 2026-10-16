@@ -1,5 +1,6 @@
-//! Regular-file staging metadata. Security remains private until publication.
-use super::{FileVersion, PlatformError, StreamEvidence, io, stage_file_streams, version};
+//! File/directory payload metadata. Directory children are staged separately.
+//! Security remains private until publication.
+use super::{EntryVersion, PlatformError, StreamEvidence, io, stage_entry_streams, version};
 use std::{fs::File, mem::size_of, os::windows::io::AsRawHandle, ptr};
 use windows_sys::Win32::Storage::FileSystem::*;
 use windows_sys::Win32::System::IO::DeviceIoControl;
@@ -12,8 +13,10 @@ const ORDINARY_ATTRIBUTES: u32 = FILE_ATTRIBUTE_READONLY
     | FILE_ATTRIBUTE_TEMPORARY
     | FILE_ATTRIBUTE_OFFLINE
     | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-const ADMITTED_ATTRIBUTES: u32 =
-    ORDINARY_ATTRIBUTES | FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_COMPRESSED;
+const ADMITTED_ATTRIBUTES: u32 = ORDINARY_ATTRIBUTES
+    | FILE_ATTRIBUTE_NORMAL
+    | FILE_ATTRIBUTE_COMPRESSED
+    | FILE_ATTRIBUTE_DIRECTORY;
 
 pub(super) fn basic(file: &File) -> Result<FILE_BASIC_INFO, PlatformError> {
     let mut info = FILE_BASIC_INFO::default();
@@ -83,15 +86,15 @@ fn set_compression(file: &File, format: u16) -> Result<(), PlatformError> {
 }
 
 #[derive(Debug)]
-pub(super) struct StagedFile {
+pub(super) struct StagedEntry {
     pub(super) streams: Vec<StreamEvidence>,
-    source: FileVersion,
+    source: EntryVersion,
     candidate_identity: crate::move_recovery::WindowsStableIdentity,
     accessed: i64,
     compression: u16,
 }
 
-impl StagedFile {
+impl StagedEntry {
     pub(super) fn validate_source(&self, source: &File) -> Result<(), PlatformError> {
         if version(source)? != self.source
             || compression(source)? != self.compression
@@ -126,7 +129,8 @@ impl StagedFile {
             || observed.LastWriteTime != self.source.modified
             || observed.LastAccessTime != self.accessed
             || observed.FileAttributes != self.source.attributes
-            || candidate.metadata().map_err(io)?.len() != self.source.length
+            || (!self.source.directory
+                && candidate.metadata().map_err(io)?.len() != self.source.length)
             || compression(candidate)? != self.compression
         {
             return Err(io(format!(
@@ -148,12 +152,13 @@ impl StagedFile {
 }
 
 /// Stage data and ordinary metadata while retaining the candidate's private
-/// security descriptor. The caller owns retained data on every failure.
-pub(super) fn stage_file(
+/// security descriptor. This does not enumerate or stage directory children.
+/// The caller owns retained data on every failure.
+pub(super) fn stage_entry_payload(
     source: &File,
     candidate: &File,
     progress: impl FnMut(u64) -> Result<(), PlatformError>,
-) -> Result<StagedFile, PlatformError> {
+) -> Result<StagedEntry, PlatformError> {
     let before = version(source)?;
     if before.attributes & !ADMITTED_ATTRIBUTES != 0 {
         return Err(PlatformError::UnsupportedSafeCopy(
@@ -167,14 +172,19 @@ pub(super) fn stage_file(
     }
     // Admission and alias/empty-candidate validation happen before any mutation.
     let target = version(candidate)?;
-    if target.identity == before.identity || target.length != 0 {
-        return Err(io("candidate aliases the source or is not empty"));
+    if target.identity == before.identity
+        || target.directory != before.directory
+        || target.length != 0
+    {
+        return Err(io(
+            "candidate aliases the source, has a different type, or is not empty",
+        ));
     }
-    let streams = stage_file_streams(source, candidate, progress)?;
+    let streams = stage_entry_streams(source, candidate, progress)?;
     if compression(candidate)? != format {
         set_compression(candidate, format)?;
     }
-    let result = StagedFile {
+    let result = StagedEntry {
         streams,
         source: before,
         candidate_identity: target.identity,

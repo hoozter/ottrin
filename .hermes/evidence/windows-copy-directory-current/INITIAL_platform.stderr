@@ -1,0 +1,7 @@
+
+thread 'copy_transaction::windows::tests::windows_native_copy_namespace_alias_retarget_cannot_redirect_creation' (8456) panicked at crates/ottrin-platform/src/copy_transaction/windows.rs:1008:59:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'copy_transaction::windows::tests::windows_native_copy_namespace_rejects_reparse_sources_and_parents' (8508) panicked at crates/ottrin-platform/src/copy_transaction/windows.rs:989:92:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }

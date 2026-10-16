@@ -1,6 +1,6 @@
 //! Handle-bound Windows Copy staging. This module never publishes or mutates sources.
 //!
-//! Backup streams preserve named data and extended attributes that ordinary
+//! Backup streams preserve directory/file named data and extended attributes that ordinary
 //! ReadFile/WriteFile copying loses. Security, reparse and other unsupported
 //! backup records are refused rather than silently omitted. Final file metadata,
 //! publication journals and Undo remain separate required work.
@@ -48,8 +48,9 @@ pub(super) struct StreamEvidence {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct FileVersion {
+struct EntryVersion {
     identity: WindowsStableIdentity,
+    directory: bool,
     length: u64,
     created: i64,
     modified: i64,
@@ -61,7 +62,7 @@ fn io(error: impl std::fmt::Display) -> PlatformError {
     PlatformError::Io(format!("Windows Copy stream staging: {error}"))
 }
 
-fn version(file: &File) -> Result<FileVersion, PlatformError> {
+fn version(file: &File) -> Result<EntryVersion, PlatformError> {
     // The backup API does not validate overlapped handles and documents subtle
     // failures for them. Enforce its buffered synchronous contract ourselves.
     let mut mode = 0u32;
@@ -89,18 +90,24 @@ fn version(file: &File) -> Result<FileVersion, PlatformError> {
     }
     let identity = stable_identity_from_handle(file).map_err(io)?;
     let basic = metadata::basic(file)?;
-    if !identity.is_regular_file_without_reparse()
+    let directory = identity.is_directory_without_reparse();
+    if !(identity.is_regular_file_without_reparse() || directory)
         || basic.FileAttributes
             & (FILE_ATTRIBUTE_DEVICE | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE)
             != 0
     {
         return Err(PlatformError::UnsupportedSafeCopy(
-            "this staging engine requires an ordinary non-sparse, unencrypted file".into(),
+            "this staging engine requires an ordinary non-reparse, non-sparse, unencrypted file or directory".into(),
         ));
     }
-    Ok(FileVersion {
+    Ok(EntryVersion {
         identity,
-        length: file.metadata().map_err(io)?.len(),
+        directory,
+        length: if directory {
+            0
+        } else {
+            file.metadata().map_err(io)?.len()
+        },
         created: basic.CreationTime,
         modified: basic.LastWriteTime,
         changed: basic.ChangeTime,
@@ -126,8 +133,15 @@ struct Backup<'a> {
 
 impl<'a> Backup<'a> {
     fn new(file: &'a File, direction: Direction) -> Result<Self, PlatformError> {
-        let mut position = file;
-        position.seek(SeekFrom::Start(0)).map_err(io)?;
+        // Directory handles have no byte offset. BackupRead/BackupWrite still
+        // preserve their named streams and extended attributes.
+        if !stable_identity_from_handle(file)
+            .map_err(io)?
+            .is_directory_without_reparse()
+        {
+            let mut position = file;
+            position.seek(SeekFrom::Start(0)).map_err(io)?;
+        }
         Ok(Self {
             file,
             direction,
@@ -308,6 +322,9 @@ fn transfer(
     target: Option<&File>,
     progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Vec<StreamEvidence>, PlatformError> {
+    let directory = stable_identity_from_handle(source)
+        .map_err(io)?
+        .is_directory_without_reparse();
     let mut reader = Backup::new(source, Direction::Read)?;
     let mut writer = target
         .map(|file| Backup::new(file, Direction::Write))
@@ -322,6 +339,11 @@ fn transfer(
             break;
         }
         let (kind, attributes, bytes, name_bytes) = validate_header(&header)?;
+        if directory && kind == DATA {
+            return Err(io(
+                "directory backup unexpectedly contains unnamed file data",
+            ));
+        }
         let mut name = vec![0u8; name_bytes];
         reader.read_exact(&mut name, false)?;
         let name_units = name
@@ -371,7 +393,7 @@ fn transfer(
     }
     // BackupRead omits an empty unnamed stream. The transaction manifest still
     // needs its logical existence, independent of native record enumeration.
-    if !evidence.iter().any(|stream| stream.kind == DATA) {
+    if !directory && !evidence.iter().any(|stream| stream.kind == DATA) {
         if source.metadata().map_err(io)?.len() != 0 {
             return Err(io("native backup omitted nonempty primary data"));
         }
@@ -393,18 +415,24 @@ fn transfer(
     Ok(evidence)
 }
 
-/// Copy only into an independently created, empty private candidate held open
+/// Copy one entry's streams, not directory children, into an independently
+/// created, payload-empty private candidate held open
 /// by the transaction owner. No pathname is reopened or removed here. Sharing
 /// policy and ownership of that candidate are the caller's native stage boundary.
-pub(super) fn stage_file_streams(
+pub(super) fn stage_entry_streams(
     source: &File,
     candidate: &File,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Vec<StreamEvidence>, PlatformError> {
     let before = version(source)?;
     let target = version(candidate)?;
-    if before.identity == target.identity || target.length != 0 {
-        return Err(io("candidate aliases the source or is not empty"));
+    if before.identity == target.identity
+        || before.directory != target.directory
+        || target.length != 0
+    {
+        return Err(io(
+            "candidate aliases the source, has a different type, or is not empty",
+        ));
     }
     if transfer(candidate, None, &mut |_| Ok(()))?
         .iter()
@@ -469,7 +497,7 @@ mod tests {
         let read = source(&src);
         let staged = candidate(&dst);
         let before = version(&read).unwrap();
-        let streams = stage_file_streams(&read, &staged, |_| Ok(())).unwrap();
+        let streams = stage_entry_streams(&read, &staged, |_| Ok(())).unwrap();
         assert_eq!(streams.len(), 3);
         assert_eq!(
             streams.iter().filter(|s| s.kind == ALTERNATE_DATA).count(),
@@ -504,7 +532,7 @@ mod tests {
         let dst = root.path().join("candidate");
         std::fs::write(&src, b"").unwrap();
         std::fs::write(format!("{}:note:$DATA", src.display()), b"only in ADS").unwrap();
-        let streams = stage_file_streams(&source(&src), &candidate(&dst), |_| Ok(())).unwrap();
+        let streams = stage_entry_streams(&source(&src), &candidate(&dst), |_| Ok(())).unwrap();
         assert!(streams.iter().any(|s| s.kind == DATA && s.bytes == 0));
         assert_eq!(
             std::fs::read(format!("{}:note:$DATA", dst.display())).unwrap(),
@@ -527,24 +555,13 @@ mod tests {
             let dst = root.path().join(format!("candidate-{length}"));
             let bytes = vec![93u8; length];
             std::fs::write(&src, &bytes).unwrap();
-            stage_file_streams(&source(&src), &candidate(&dst), |_| Ok(())).unwrap();
+            stage_entry_streams(&source(&src), &candidate(&dst), |_| Ok(())).unwrap();
             assert_eq!(std::fs::read(&dst).unwrap(), bytes);
         }
     }
 
-    #[test]
-    fn windows_native_copy_staging_preserves_extended_attributes() {
+    pub(super) fn set_fixture_ea(file: &File) {
         use windows_sys::Wdk::Storage::FileSystem::NtSetEaFile;
-        use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
-        let root = tempfile::tempdir().unwrap();
-        let src = root.path().join("source");
-        let dst = root.path().join("candidate");
-        std::fs::write(&src, b"primary").unwrap();
-        let file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open(&src)
-            .unwrap();
         let mut ea = [0u8; 16];
         ea[5] = 4;
         ea[6..8].copy_from_slice(&3u16.to_le_bytes());
@@ -561,8 +578,22 @@ mod tests {
                 )
             } >= 0
         );
+    }
+
+    #[test]
+    fn windows_native_copy_staging_preserves_extended_attributes() {
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source");
+        let dst = root.path().join("candidate");
+        std::fs::write(&src, b"primary").unwrap();
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(&src)
+            .unwrap();
+        set_fixture_ea(&file);
         drop(file);
-        let streams = stage_file_streams(&source(&src), &candidate(&dst), |_| Ok(())).unwrap();
+        let streams = stage_entry_streams(&source(&src), &candidate(&dst), |_| Ok(())).unwrap();
         assert!(
             streams
                 .iter()
@@ -664,10 +695,67 @@ mod tests {
             .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
             .open(&parent)
             .unwrap();
-        let read = namespace::open_source(&parent_handle, std::ffi::OsStr::new("source")).unwrap();
-        metadata::stage_file(&read, &candidate(&dst), |_| Ok(())).unwrap();
+        let read =
+            namespace::open_source(&parent_handle, std::ffi::OsStr::new("source"), false).unwrap();
+        metadata::stage_entry_payload(&read, &candidate(&dst), |_| Ok(())).unwrap();
         assert_eq!(std::fs::read(&src).unwrap(), b"readable source");
         assert_eq!(std::fs::read(&dst).unwrap(), b"readable source");
+        drop(guard);
+    }
+
+    #[test]
+    fn windows_native_copy_directory_payload_uses_read_only_source_and_private_candidate() {
+        let root = tempfile::tempdir().unwrap();
+        let source_parent = root.path().join("read-only-parent");
+        let src = source_parent.join("source");
+        std::fs::create_dir(&source_parent).unwrap();
+        std::fs::create_dir(&src).unwrap();
+        std::fs::write(
+            format!("{}:note:$DATA", src.display()),
+            b"private directory payload",
+        )
+        .unwrap();
+        let guard = ReadOnlyAcl(vec![source_parent.clone(), src.clone()]);
+        for path in &guard.0 {
+            set_dacl(path, "D:P(A;OICI;FRWD;;;OW)");
+        }
+        for access in [
+            DELETE,
+            windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+        ] {
+            assert!(
+                OpenOptions::new()
+                    .access_mode(access)
+                    .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+                    .open(&src)
+                    .is_err()
+            );
+        }
+        let parent_read = source(&source_parent);
+        let read =
+            namespace::open_source(&parent_read, std::ffi::OsStr::new("source"), true).unwrap();
+        assert!(
+            namespace::open_source(&parent_read, std::ffi::OsStr::new("source"), false).is_err()
+        );
+        let parent = parent(root.path());
+        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        let candidate = stage.create_candidate(true).unwrap();
+        metadata::stage_entry_payload(&read, &candidate, |_| Ok(())).unwrap();
+        stage.validate_candidate(&candidate, true).unwrap();
+        assert_owner_only(&candidate);
+        assert_eq!(
+            std::fs::read(format!(
+                "{}:note:$DATA",
+                windows_fs::location(&candidate).unwrap().display()
+            ))
+            .unwrap(),
+            b"private directory payload"
+        );
+        assert_eq!(
+            std::fs::read(format!("{}:note:$DATA", src.display())).unwrap(),
+            b"private directory payload"
+        );
+        drop((read, parent_read));
         drop(guard);
     }
 
@@ -766,7 +854,7 @@ mod tests {
         assert_owner_only(&staged);
         let src = root.path().join("source");
         std::fs::write(&src, b"private candidate data").unwrap();
-        stage_file_streams(&source(&src), &staged, |_| Ok(())).unwrap();
+        stage_entry_streams(&source(&src), &staged, |_| Ok(())).unwrap();
         stage.validate().unwrap();
         let collision = stage.create_candidate(false).unwrap_err();
         assert!(matches!(collision, PlatformError::CleanupPending { .. }));
@@ -774,7 +862,7 @@ mod tests {
         assert_eq!(std::fs::read(&location).unwrap(), b"private candidate data");
         assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 2);
         assert!(stage.name.to_string_lossy().starts_with(".ottrin-copy-"));
-        assert!(namespace::open_source(&parent, OsStr::new("missing")).is_err());
+        assert!(namespace::open_source(&parent, OsStr::new("missing"), false).is_err());
     }
 
     #[test]
@@ -802,7 +890,7 @@ mod tests {
             )
             .unwrap_err();
             assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput);
-            assert!(namespace::open_source(&parent, OsStr::new(name)).is_err());
+            assert!(namespace::open_source(&parent, OsStr::new(name), false).is_err());
         }
         assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 0);
         assert!(!root.path().join("escape").exists());
@@ -939,9 +1027,9 @@ mod tests {
             crate::windows_fs::create_private(&parent, &name, false, FILE_SHARE_READ).unwrap();
         (&created).write_all(b"native name").unwrap();
         drop(created);
-        let opened = namespace::open_source(&parent, &name).unwrap();
+        let opened = namespace::open_source(&parent, &name, false).unwrap();
         let candidate = candidate(&root.path().join("candidate"));
-        stage_file_streams(&opened, &candidate, |_| Ok(())).unwrap();
+        stage_entry_streams(&opened, &candidate, |_| Ok(())).unwrap();
         assert_eq!(
             std::fs::read(root.path().join("candidate")).unwrap(),
             b"native name"
@@ -958,7 +1046,10 @@ mod tests {
         std::os::windows::fs::symlink_file(outside.join("keep"), root.path().join("link")).unwrap();
         std::os::windows::fs::symlink_dir(&outside, root.path().join("directory-link")).unwrap();
         let parent_handle = parent(root.path());
-        assert!(namespace::open_source(&parent_handle, OsStr::new("link")).is_err());
+        assert!(namespace::open_source(&parent_handle, OsStr::new("link"), false).is_err());
+        assert!(
+            namespace::open_source(&parent_handle, OsStr::new("directory-link"), true).is_err()
+        );
         let linked_parent = parent(&root.path().join("directory-link"));
         assert!(namespace::PrivateStage::create(&linked_parent).is_err());
         assert_eq!(std::fs::read(outside.join("keep")).unwrap(), b"unchanged");
@@ -1029,7 +1120,7 @@ mod tests {
         std::fs::write(&src, b"new").unwrap();
         let file = candidate(&dst);
         (&file).write_all(b"existing").unwrap();
-        assert!(stage_file_streams(&source(&src), &file, |_| Ok(())).is_err());
+        assert!(stage_entry_streams(&source(&src), &file, |_| Ok(())).is_err());
         assert_eq!(std::fs::read(&dst).unwrap(), b"existing");
         drop(file);
         std::fs::write(&dst, b"").unwrap();
@@ -1039,7 +1130,7 @@ mod tests {
             .write(true)
             .open(&dst)
             .unwrap();
-        assert!(stage_file_streams(&source(&src), &file, |_| Ok(())).is_err());
+        assert!(stage_entry_streams(&source(&src), &file, |_| Ok(())).is_err());
         assert_eq!(
             std::fs::read(format!("{}:keep:$DATA", dst.display())).unwrap(),
             b"keep"
@@ -1064,7 +1155,7 @@ mod tests {
             .write(true)
             .open(&alias)
             .unwrap();
-        assert!(stage_file_streams(&src_file, &alias_file, |_| Ok(())).is_err());
+        assert!(stage_entry_streams(&src_file, &alias_file, |_| Ok(())).is_err());
         assert_eq!(std::fs::read(&src).unwrap(), b"");
     }
 
@@ -1076,7 +1167,7 @@ mod tests {
         let original = vec![17u8; BUFFER_BYTES * 3 + 1];
         std::fs::write(&src, &original).unwrap();
         let staged = candidate(&dst);
-        let result = stage_file_streams(&source(&src), &staged, |copied| {
+        let result = stage_entry_streams(&source(&src), &staged, |copied| {
             if copied >= BUFFER_BYTES as u64 {
                 Err(io("injected cancellation"))
             } else {
@@ -1110,7 +1201,7 @@ mod tests {
         std::fs::write(&dst, b"").unwrap();
         let read_only_candidate = source(&dst);
         let error =
-            stage_file_streams(&source(&src), &read_only_candidate, |_| Ok(())).unwrap_err();
+            stage_entry_streams(&source(&src), &read_only_candidate, |_| Ok(())).unwrap_err();
         assert!(error.to_string().contains("staging"));
         assert_eq!(std::fs::read(&src).unwrap(), b"original");
         assert_eq!(std::fs::read(&dst).unwrap(), b"");
@@ -1134,7 +1225,7 @@ mod tests {
         std::fs::hard_link(&src, &alias).unwrap();
         let read = source(&alias);
         let copied = candidate(&dst);
-        stage_file_streams(&read, &copied, |_| Ok(())).unwrap();
+        stage_entry_streams(&read, &copied, |_| Ok(())).unwrap();
         assert_ne!(
             version(&read).unwrap().identity,
             version(&copied).unwrap().identity
@@ -1163,7 +1254,7 @@ mod tests {
             let dst = root.path().join(format!("candidate-{index}"));
             let staged = candidate(&dst);
             assert!(
-                stage_file_streams(&read, &staged, |_| Ok(()))
+                stage_entry_streams(&read, &staged, |_| Ok(()))
                     .unwrap_err()
                     .to_string()
                     .contains("buffered synchronous")
@@ -1185,7 +1276,7 @@ mod tests {
             .open(&src)
             .unwrap();
         let mut changed = false;
-        let result = stage_file_streams(&read, &candidate(&dst), |bytes| {
+        let result = stage_entry_streams(&read, &candidate(&dst), |bytes| {
             if bytes > 0 && !changed {
                 let mut writer = OpenOptions::new()
                     .write(true)
@@ -1259,6 +1350,7 @@ mod metadata_tests {
             .read(true)
             .write(true)
             .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
             .open(path)
             .unwrap()
     }
@@ -1301,6 +1393,226 @@ mod metadata_tests {
         (src, dst)
     }
     #[test]
+    fn windows_native_copy_directory_payload_preserves_streams_eas_and_times() {
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source-directory");
+        let dst = root.path().join("candidate-directory");
+        std::fs::create_dir(&src).unwrap();
+        std::fs::create_dir(&dst).unwrap();
+        let _reset = ResetAttributes(&src, &dst);
+        std::fs::write(src.join("child"), b"source child must stay untouched").unwrap();
+        let named = ":réservé-🦀:$DATA";
+        std::fs::write(format!("{}{named}", src.display()), b"directory ADS").unwrap();
+        std::fs::write(format!("{}:empty:$DATA", src.display()), b"").unwrap();
+        let source = rw(&src);
+        super::tests::set_fixture_ea(&source);
+        set_basic(
+            &source,
+            &FILE_BASIC_INFO {
+                CreationTime: 132_000_000_000_000_000,
+                LastAccessTime: 132_100_000_000_000_000,
+                LastWriteTime: 132_200_000_000_000_000,
+                ChangeTime: 0,
+                FileAttributes: FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED,
+            },
+        );
+        drop(source);
+        let source = OpenOptions::new()
+            .read(true)
+            .share_mode(FILE_SHARE_READ)
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(&src)
+            .unwrap();
+        let candidate = rw(&dst);
+        let staged = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+        assert!(staged.streams.iter().all(|stream| stream.kind != DATA));
+        assert!(
+            staged
+                .streams
+                .iter()
+                .any(|stream| stream.kind == EXTENDED_ATTRIBUTES)
+        );
+        assert_eq!(
+            staged
+                .streams
+                .iter()
+                .filter(|stream| stream.kind == ALTERNATE_DATA)
+                .count(),
+            2
+        );
+        staged.validate_source(&source).unwrap();
+        staged.validate_candidate_streams(&candidate).unwrap();
+        // Stream rereads may update access time. The operation itself checked
+        // final metadata after stream verification; compare the stable fields.
+        let before = metadata::basic(&source).unwrap();
+        let after = metadata::basic(&candidate).unwrap();
+        assert_eq!(
+            (
+                before.CreationTime,
+                before.LastWriteTime,
+                before.FileAttributes
+            ),
+            (
+                after.CreationTime,
+                after.LastWriteTime,
+                after.FileAttributes
+            )
+        );
+        assert_eq!(
+            std::fs::read(format!("{}{named}", dst.display())).unwrap(),
+            b"directory ADS"
+        );
+        assert_eq!(
+            std::fs::metadata(format!("{}:empty:$DATA", dst.display()))
+                .unwrap()
+                .len(),
+            0
+        );
+        assert_eq!(
+            std::fs::read(src.join("child")).unwrap(),
+            b"source child must stay untouched"
+        );
+        assert_eq!(
+            std::fs::read_dir(&dst).unwrap().count(),
+            0,
+            "payload staging must not claim tree staging"
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_directory_payload_handles_compression_and_empty_directories() {
+        let root = tempfile::tempdir().unwrap();
+        for compressed_source in [true, false] {
+            let folder = root.path().join(if compressed_source {
+                "compressed"
+            } else {
+                "ordinary"
+            });
+            std::fs::create_dir(&folder).unwrap();
+            let src = folder.join("source");
+            let dst = folder.join("candidate");
+            std::fs::create_dir(&src).unwrap();
+            std::fs::create_dir(&dst).unwrap();
+            let source = rw(&src);
+            let candidate = rw(&dst);
+            let yes = COMPRESSION_FORMAT_LZNT1;
+            let no = COMPRESSION_FORMAT_NONE;
+            compress(&source, if compressed_source { yes } else { no });
+            compress(&candidate, if compressed_source { no } else { yes });
+            let staged = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+            assert!(
+                staged.streams.is_empty(),
+                "directories have no synthetic unnamed stream"
+            );
+            staged.validate_candidate_metadata(&candidate).unwrap();
+            staged.validate_source(&source).unwrap();
+        }
+    }
+
+    #[test]
+    fn windows_native_copy_directory_payload_rejects_type_alias_and_occupied_streams() {
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source");
+        let dst = root.path().join("candidate");
+        let regular = root.path().join("file");
+        std::fs::create_dir(&src).unwrap();
+        std::fs::create_dir(&dst).unwrap();
+        std::fs::write(&regular, b"").unwrap();
+        std::fs::write(format!("{}:keep:$DATA", dst.display()), b"unrelated").unwrap();
+        let source = rw(&src);
+        let candidate = rw(&dst);
+        assert!(metadata::stage_entry_payload(&source, &source, |_| Ok(())).is_err());
+        assert!(metadata::stage_entry_payload(&source, &rw(&regular), |_| Ok(())).is_err());
+        assert!(metadata::stage_entry_payload(&rw(&regular), &candidate, |_| Ok(())).is_err());
+        assert!(metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).is_err());
+        assert_eq!(
+            std::fs::read(format!("{}:keep:$DATA", dst.display())).unwrap(),
+            b"unrelated"
+        );
+        assert!(std::fs::read_dir(src).unwrap().next().is_none());
+    }
+
+    #[test]
+    fn windows_native_copy_directory_payload_detects_same_size_stream_tampering() {
+        let root = tempfile::tempdir().unwrap();
+        for mutate_source in [true, false] {
+            let folder = root.path().join(if mutate_source {
+                "source-change"
+            } else {
+                "candidate-change"
+            });
+            std::fs::create_dir(&folder).unwrap();
+            let src = folder.join("source");
+            let dst = folder.join("candidate");
+            std::fs::create_dir(&src).unwrap();
+            std::fs::create_dir(&dst).unwrap();
+            std::fs::write(format!("{}:note:$DATA", src.display()), b"original").unwrap();
+            let source = rw(&src);
+            let candidate = rw(&dst);
+            let staged = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+            let changed = if mutate_source { &src } else { &dst };
+            std::fs::write(format!("{}:note:$DATA", changed.display()), b"modified").unwrap();
+            if mutate_source {
+                assert!(staged.validate_source(&source).is_err());
+                staged.validate_candidate_streams(&candidate).unwrap();
+            } else {
+                assert!(staged.validate_candidate_streams(&candidate).is_err());
+                staged.validate_source(&source).unwrap();
+            }
+            let retained = if mutate_source { &dst } else { &src };
+            assert_eq!(
+                std::fs::read(format!("{}:note:$DATA", retained.display())).unwrap(),
+                b"original"
+            );
+            assert_eq!(
+                std::fs::read(format!("{}:note:$DATA", changed.display())).unwrap(),
+                b"modified"
+            );
+        }
+    }
+
+    #[test]
+    fn windows_native_copy_directory_payload_cancellation_preserves_the_source() {
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source");
+        let dst = root.path().join("candidate");
+        std::fs::create_dir(&src).unwrap();
+        std::fs::create_dir(&dst).unwrap();
+        let bytes = vec![47u8; BUFFER_BYTES * 3];
+        std::fs::write(format!("{}:large:$DATA", src.display()), &bytes).unwrap();
+        let source = rw(&src);
+        let candidate = rw(&dst);
+        assert!(
+            metadata::stage_entry_payload(&source, &candidate, |copied| {
+                if copied > 0 {
+                    Err(io("injected directory cancellation"))
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err()
+            .to_string()
+            .contains("injected directory cancellation")
+        );
+        drop((source, candidate));
+        assert_eq!(
+            std::fs::read(format!("{}:large:$DATA", src.display())).unwrap(),
+            bytes
+        );
+        // Native backup contexts were aborted; both entries remain owned by
+        // their caller and can be reopened exclusively after failure.
+        for path in [&src, &dst] {
+            OpenOptions::new()
+                .read(true)
+                .write(true)
+                .share_mode(0)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+                .open(path)
+                .unwrap();
+        }
+    }
+
+    #[test]
     fn windows_native_copy_metadata_preserves_times_attributes_and_streams() {
         let root = tempfile::tempdir().unwrap();
         let (src, dst) = paths(root.path());
@@ -1320,7 +1632,7 @@ mod metadata_tests {
         set_basic(&rw(&src), &info);
         let source = File::open(&src).unwrap();
         let candidate = rw(&dst);
-        let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
         assert_eq!(evidence.streams.len(), 2);
         evidence.validate_source(&source).unwrap();
         evidence.validate_candidate_metadata(&candidate).unwrap();
@@ -1352,7 +1664,7 @@ mod metadata_tests {
                 },
                 COMPRESSION_FORMAT_LZNT1,
             );
-            let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+            let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
             evidence.validate_candidate_metadata(&candidate).unwrap();
             assert_eq!(
                 metadata::basic(&candidate).unwrap().FileAttributes & FILE_ATTRIBUTE_COMPRESSED
@@ -1372,7 +1684,7 @@ mod metadata_tests {
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(false).unwrap();
         let source = File::open(src).unwrap();
-        metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
         assert_owner_only(&candidate);
         assert_owner_only(&stage.directory);
     }
@@ -1382,7 +1694,7 @@ mod metadata_tests {
         let (src, dst) = paths(root.path());
         let source = rw(&src);
         let candidate = rw(&dst);
-        let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
         let mut info = metadata::basic(&candidate).unwrap();
         info.LastWriteTime -= 10_000_000;
         set_basic(&candidate, &info);
@@ -1399,7 +1711,7 @@ mod metadata_tests {
         let (src, dst) = paths(root.path());
         let source = rw(&src);
         let mut candidate = rw(&dst);
-        let evidence = metadata::stage_file(&source, &candidate, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
         assert!(evidence.validate_candidate_metadata(&source).is_err());
         let before = metadata::basic(&candidate).unwrap();
         candidate.seek(SeekFrom::Start(0)).unwrap();
@@ -1419,7 +1731,9 @@ mod metadata_tests {
         info.CreationTime = 132_000_000_000_000_000;
         set_basic(&source, &info);
         let before = metadata::basic(&candidate).unwrap().CreationTime;
-        assert!(metadata::stage_file(&source, &candidate, |_| Err(io("cancelled"))).is_err());
+        assert!(
+            metadata::stage_entry_payload(&source, &candidate, |_| Err(io("cancelled"))).is_err()
+        );
         assert_eq!(metadata::basic(&candidate).unwrap().CreationTime, before);
         assert_eq!(std::fs::read(src).unwrap(), b"source primary data");
     }

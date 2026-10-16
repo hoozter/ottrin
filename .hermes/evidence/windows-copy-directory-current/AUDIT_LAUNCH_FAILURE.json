@@ -1,0 +1,1 @@
+{"pid": 1756, "exit": 1, "cause": "PowerShell execution policy refused script-file invocation; no test started", "correction": "Pass the exact owned actor text through the existing encoded-command transport; no machine policy change"}

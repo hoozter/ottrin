@@ -3564,3 +3564,31 @@ special attributes, non-ACL filesystem strategy, complete security/Overwrite,
 durable publication/recovery/Undo, clipboard and package acceptance remain open.
 Public Copy remains disabled and current packages are unchanged. User testing is
 deferred; the full roadmap goal remains active.
+
+
+### Windows Copy directory payload staging (2026-10-16)
+
+The shared native Copy stream/metadata engine now handles directory payloads as
+well as files. It preserves the folder's Unicode/empty named streams, extended
+attributes, ordinary timestamps/attributes and compression state. Directories
+bypass file seeking and have no fabricated unnamed stream. Candidate/source type
+mismatches, aliases, existing payloads and same-size named-stream changes are
+rejected with both versions retained. Directory source opens use the pinned
+parent and read-only rights; an ACL fixture denies deletion and data writes while
+copying into an owner-only private candidate. Reparse directories are not followed.
+
+Six new ordinary-user native directory cases pass. The full Copy suite passes 43
+with the explicit audit case excluded; the full Windows platform suite passes 143
+with 27 specialized exclusions. The SYSTEM audit fixture passes separately. Linux
+platform tests pass 411 with 3 exclusions; strict platform all-target Clippy on
+Linux/Windows, formatting and diff checks pass. The first fresh guest was missing
+Developer Mode: existing symlink setup failed while all directory payload cases
+passed. Restoring the fixture-only prerequisite made the full native suite pass.
+Evidence: `.hermes/evidence/windows-copy-directory-current/ACCEPTANCE.json`.
+
+This stages one folder's own payload; recursive children, bottom-up final metadata
+after child changes and link preservation still need implementation and native
+acceptance. Complete security/Overwrite, durable publication/recovery/Undo,
+clipboard and exact-package requirements remain open. Public Windows Copy stays
+disabled and current packages are unchanged. User testing remains deferred;
+the full roadmap goal is active.

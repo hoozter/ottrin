@@ -160,14 +160,18 @@ fn retained(directory: &File, name: &OsStr, error: impl std::fmt::Display) -> Pl
 }
 
 /// A Copy source needs read access, never the DELETE right needed by Move.
-pub(super) fn open_source(parent: &File, name: &OsStr) -> Result<File, PlatformError> {
+pub(super) fn open_source(
+    parent: &File,
+    name: &OsStr,
+    directory: bool,
+) -> Result<File, PlatformError> {
     let expected = directory_identity(parent)?;
     let file = unsafe {
         windows_fs::open_relative(
             parent,
             name,
             RelativeOptions {
-                directory: false,
+                directory,
                 create_new: false,
                 access: FILE_GENERIC_READ,
                 sharing: FILE_SHARE_READ,
@@ -177,7 +181,12 @@ pub(super) fn open_source(parent: &File, name: &OsStr) -> Result<File, PlatformE
     }
     .map_err(io)?;
     let identity = stable_identity_from_handle(&file).map_err(io)?;
-    if !identity.is_regular_file_without_reparse() || directory_identity(parent)? != expected {
+    let correct_type = if directory {
+        identity.is_directory_without_reparse()
+    } else {
+        identity.is_regular_file_without_reparse()
+    };
+    if !correct_type || directory_identity(parent)? != expected {
         return Err(io("Copy source is a reparse entry or its parent changed"));
     }
     Ok(file)
