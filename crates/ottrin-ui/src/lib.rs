@@ -1108,7 +1108,81 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
     }
 }
 
-#[cfg(all(not(target_os = "linux"), not(test)))]
+#[cfg(target_os = "windows")]
+fn load_retained_copy_activity() -> RetainedCopySnapshot {
+    match ottrin_platform::discover_retained_copy_transactions() {
+        Ok(entries) => (
+            entries
+                .into_iter()
+                .map(windows_retained_copy_activity)
+                .collect(),
+            None,
+        ),
+        Err(error) => (Vec::new(), Some(error.to_string())),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_retained_copy_activity(
+    entry: ottrin_platform::WindowsRetainedCopyStatus,
+) -> RestoredCopyActivity {
+    use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
+    let phase = match entry.phase {
+        Some(Phase::Staging) => "Staging interrupted",
+        Some(Phase::Staged) => "Staged copy",
+        Some(Phase::PlanningPermissions) => "Permission planning interrupted",
+        Some(Phase::ReadyToPublish) => "Prepared copy",
+        Some(Phase::PublicationPending) => "Publication interrupted",
+        Some(Phase::ApplyingPermissions) => "Permission application interrupted",
+        Some(Phase::Finalizing) => "Final verification interrupted",
+        Some(Phase::Completed) => "Completed copy",
+        Some(Phase::UndoPending) => "Undo interrupted",
+        Some(Phase::Undone) => "Copy undone · retained data",
+        None => "Copy journal needs review",
+    };
+    let (evidence, undo) = match entry.evidence {
+        Evidence::VerifiedTree if entry.phase == Some(Phase::Undone) => {
+            ("Retained data verified", PathMoveUndoState::Undone)
+        }
+        Evidence::VerifiedTree => (
+            "Current data verified",
+            PathMoveUndoState::Unavailable {
+                reason: "Windows Copy recovery actions are not available yet. Retained data is preserved; verification does not authorize Undo or cleanup.".into(),
+            },
+        ),
+        Evidence::UnverifiedStage => (
+            "Staging incomplete · payload not verified",
+            PathMoveUndoState::Unavailable {
+                reason: "The copy was interrupted before payload verification. Retained data is preserved for review.".into(),
+            },
+        ),
+        Evidence::NeedsReview { reason } => (
+            "Current data needs review",
+            PathMoveUndoState::Unavailable { reason },
+        ),
+    };
+    let mut detail = format!("{phase} · {evidence}");
+    if let Some(location) = entry.owned_location {
+        detail.push_str(&format!(" · Data: {}", path_label(&location)));
+    } else if let Some(location) = entry.transaction {
+        detail.push_str(&format!(" · Recovery folder: {}", path_label(&location)));
+    }
+    detail.push_str(&format!(" · Transaction: {}", entry.transaction_id));
+    RestoredCopyActivity {
+        ownership: RetainedCopyOwnership {
+            key: format!("transaction:{}", entry.transaction_id),
+            transactions: vec![entry.transaction_id],
+            blocked_by: Vec::new(),
+            restored: true,
+            finalization: None,
+        },
+        detail,
+        undo,
+        receipt: None,
+    }
+}
+
+#[cfg(all(not(any(target_os = "linux", target_os = "windows")), not(test)))]
 fn load_retained_copy_activity() -> RetainedCopySnapshot {
     (Vec::new(), None)
 }
@@ -25123,6 +25197,125 @@ fn format_search_duration(duration_ms: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_retained_copy_activity_missing_registry_worker_is_read_only() {
+        const FIXTURE: &str = "OTTRIN_COPY_ACTIVITY_EMPTY_FIXTURE";
+        if let Some(root) = std::env::var_os(FIXTURE) {
+            let root = PathBuf::from(root);
+            assert_eq!(
+                std::env::var_os("LOCALAPPDATA"),
+                Some(root.clone().into_os_string())
+            );
+            let mut loader = RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+            loader.request().unwrap();
+            let deadline = Instant::now() + Duration::from_secs(5);
+            loop {
+                if let Some(result) = loader.poll() {
+                    let (entries, error) = result.unwrap();
+                    assert!(entries.is_empty());
+                    assert!(error.is_none(), "{error:?}");
+                    break;
+                }
+                assert!(Instant::now() < deadline, "Discovery worker timed out");
+                std::thread::yield_now();
+            }
+            assert!(!root.join("Ottrin").exists());
+            return;
+        }
+        let root = tempfile::tempdir().unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "tests::windows_retained_copy_activity_missing_registry_worker_is_read_only",
+                "--nocapture",
+            ])
+            .env(FIXTURE, root.path())
+            .env("LOCALAPPDATA", root.path())
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 0);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_retained_copy_activity_keeps_evidence_and_actions_separate() {
+        use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
+        for phase in [
+            Phase::Staging,
+            Phase::Staged,
+            Phase::PlanningPermissions,
+            Phase::ReadyToPublish,
+            Phase::PublicationPending,
+            Phase::ApplyingPermissions,
+            Phase::Finalizing,
+            Phase::Completed,
+            Phase::UndoPending,
+            Phase::Undone,
+        ] {
+            for evidence in [
+                Evidence::VerifiedTree,
+                Evidence::UnverifiedStage,
+                Evidence::NeedsReview {
+                    reason: "changed retained bytes".into(),
+                },
+            ] {
+                let undone = phase == Phase::Undone && evidence == Evidence::VerifiedTree;
+                let review = matches!(evidence, Evidence::NeedsReview { .. });
+                let activity =
+                    windows_retained_copy_activity(ottrin_platform::WindowsRetainedCopyStatus {
+                        transaction_id: "a".repeat(32),
+                        phase: Some(phase),
+                        publication: Some(PathBuf::from(r"C:\old\copy")),
+                        retained: Some(PathBuf::from(r"C:\old\candidate")),
+                        owned_location: Some(PathBuf::from(r"C:\moved\actual")),
+                        transaction: Some(PathBuf::from(r"C:\moved\journal")),
+                        source_label: None,
+                        evidence,
+                    });
+                assert!(activity.receipt.is_none());
+                assert!(restored_copy_token(activity.receipt.clone()).is_none());
+                assert!(!path_move_undo_action_is_available(
+                    restored_copy_status(&activity.undo),
+                    Some(&activity.undo)
+                ));
+                assert!(activity.detail.contains(r"C:\moved\actual"));
+                assert!(!activity.detail.contains(r"C:\old"));
+                assert!(activity.detail.contains(&"a".repeat(32)));
+                assert_eq!(activity.ownership.transactions, vec!["a".repeat(32)]);
+                assert!(activity.ownership.restored);
+                assert!(activity.ownership.finalization.is_none());
+                assert_eq!(matches!(activity.undo, PathMoveUndoState::Undone), undone);
+                if review {
+                    assert!(
+                        matches!(activity.undo, PathMoveUndoState::Unavailable { ref reason } if reason == "changed retained bytes")
+                    );
+                }
+            }
+        }
+        let unknown = windows_retained_copy_activity(ottrin_platform::WindowsRetainedCopyStatus {
+            transaction_id: "b".repeat(32),
+            phase: None,
+            publication: None,
+            retained: None,
+            owned_location: None,
+            transaction: None,
+            source_label: None,
+            evidence: Evidence::NeedsReview {
+                reason: "invalid journal".into(),
+            },
+        });
+        assert!(unknown.detail.contains("Copy journal needs review"));
+        assert!(unknown.detail.contains(&"b".repeat(32)));
+        assert!(!unknown.detail.contains("Data:"));
+    }
 
     #[test]
     fn image_rotation_reports_that_undo_is_unavailable() {

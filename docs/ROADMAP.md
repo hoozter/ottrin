@@ -188,6 +188,18 @@ UI worker/Activity integration, action admission, native package acceptance and
 the remaining public Copy gates are still required; the mutating Windows Copy/Undo
 facade stays disabled and packages are unchanged.
 
+Windows Activity now consumes central Copy discovery through its existing
+background loader at startup and refresh. Rows keep the authenticated phase,
+current evidence and identity-bound data location distinct. A verified tree does
+not produce an Undo receipt or enable cleanup; interrupted/unverified and changed
+records remain review items, and verified completed inverses show as undone.
+Transaction IDs stay visible even when a journal cannot be authenticated. The
+platform mutation gate remains closed. Two ordinary-user native Windows adapter/worker
+tests and 379 Linux UI tests pass (one Linux exclusion); strict all-target UI
+Clippy passes on both targets. This is a source/UI-adapter checkpoint;
+installed GUI/package acceptance and recovery actions remain required. Evidence:
+`.hermes/evidence/windows-copy-activity-current/ACCEPTANCE.json`.
+
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
 recovery permits read-owned access-time updates while verifying persistent

@@ -837,6 +837,15 @@ review rows instead of hiding other records. Incomplete payload staging is shown
 as unverified, with no claim that it can be resumed. UI worker integration, action
 admission and native package acceptance remain separate required work.
 
+Windows Activity uses this discovery through the existing asynchronous retained
+history loader. The adapter deliberately creates no receipt from presentation
+fields: even `VerifiedTree` cannot admit Undo/cleanup. Only a verified `Undone`
+phase is shown as an already completed inverse. Other rows remain owned review
+items and survive Clear finished. The detail uses the actual observed root
+location, never the cached publication/retention hint; unknown records retain
+their transaction ID and original inspection failure. A fresh discovery replaces
+the observation on refresh, without granting any action capability.
+
 Native ID API contract:
 https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-openfilebyid
 
