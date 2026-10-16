@@ -1,0 +1,80 @@
+
+thread 'pdf_visual::tests::oversized_pdf_is_rejected_before_pdfium_load' (1324) panicked at crates/ottrin-preview/src/pdf_visual.rs:351:49:
+create oversized fixture: Os { code: 123, kind: InvalidFilename, message: "The filename, directory name, or volume label syntax is incorrect." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'pdf_visual::tests::runtime_availability_rejects_an_unloadable_first_discovered_library' (1112) panicked at crates/ottrin-preview/src/pdf_visual.rs:323:40:
+create runtime fixture: Os { code: 123, kind: InvalidFilename, message: "The filename, directory name, or volume label syntax is incorrect." }
+
+thread 'pdf_visual::tests::runtime_selection_uses_first_existing_platform_library' (1864) panicked at crates/ottrin-preview/src/pdf_visual.rs:306:47:
+create runtime fixture: Os { code: 123, kind: InvalidFilename, message: "The filename, directory name, or volume label syntax is incorrect." }
+
+thread 'preview_source::tests::native_windows_ply_admission_retains_size_and_parser_limits' (6988) panicked at crates/ottrin-preview/src/preview_source.rs:324:18:
+called `Result::unwrap()` on an `Err` value: UnusableBounds
+
+thread 'tests::docx_baseline_exposes_bounded_structured_preview' (4860) panicked at crates/ottrin-preview/src/lib.rs:13409:41:
+typed DOCX structure
+
+thread 'tests::docx_inline_images_preserve_order_and_fail_closed_relationships' (2792) panicked at crates/ottrin-preview/src/lib.rs:13658:41:
+typed DOCX structure
+
+thread 'tests::docx_lists_preserve_markers_levels_and_ordered_counters' (1524) panicked at crates/ottrin-preview/src/lib.rs:13516:41:
+typed DOCX list structure
+
+thread 'tests::eps_routes_to_the_isolated_optional_system_renderer' (3732) panicked at crates/ottrin-preview/src/lib.rs:10888:9:
+assertion `left == right` failed
+  left: None
+ right: Eps
+
+thread 'tests::folder_preview_reports_nested_file_sizes_without_following_symlinks' (1592) panicked at crates/ottrin-preview/src/lib.rs:14505:9:
+nested regular files must contribute while a directory symlink stays untraversed: Filetype: Folder
+Items: 2
+Folders: 1
+Files: 1
+Known direct file size: 3 B
+Known recursive file size: At least 0 B (scan bounded)
+Modified: just now
+
+Sample:
+  direct.txt
+  nested
+
+thread 'tests::font_identity_safely_falls_back_when_name_encoding_is_unsupported' (4576) panicked at crates/ottrin-preview/src/lib.rs:10610:62:
+read material font: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." }
+
+thread 'tests::font_preview_is_bound_to_metadata_and_profile_for_load_preview' (4504) panicked at crates/ottrin-preview/src/lib.rs:10702:9:
+assertion failed: preview.body.contains("Family: Material Symbols")
+
+thread 'tests::font_preview_renderer_produces_deterministic_bounded_png_preview' (2108) panicked at crates/ottrin-preview/src/lib.rs:10468:57:
+font visual render: Read("The system cannot find the path specified. (os error 3)")
+
+thread 'tests::font_rasterizer_refuses_outline_work_outside_its_surface_before_drawing' (3880) panicked at crates/ottrin-preview/src/lib.rs:10672:58:
+read material font: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." }
+
+thread 'tests::font_renderer_accepts_true_type_sfnt_true_magic' (6364) panicked at crates/ottrin-preview/src/lib.rs:10580:62:
+read material font: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." }
+
+thread 'tests::font_renderer_rejects_color_bitmap_and_svg_font_surfaces' (6412) panicked at crates/ottrin-preview/src/lib.rs:10595:66:
+read material font: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." }
+
+thread 'tests::font_renderer_rejects_container_mismatches_and_unsafe_table_directories' (6248) panicked at crates/ottrin-preview/src/lib.rs:10527:58:
+read material font: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." }
+
+thread 'tests::font_renderer_rejects_extension_mismatch_and_unsupported_collections' (6388) panicked at crates/ottrin-preview/src/lib.rs:10483:58:
+read material font: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." }
+
+thread 'tests::font_renderer_rejects_unbounded_name_records_before_parsing' (4856) panicked at crates/ottrin-preview/src/lib.rs:10651:62:
+read material font: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." }
+
+thread 'tests::legacy_doc_native_renderer_preserves_page_and_table_structure' (1680) panicked at crates/ottrin-preview/src/lib.rs:13559:14:
+rights-cleared legacy DOC fixture should render natively: InputMetadata("The system cannot find the path specified. (os error 3)")
+
+thread 'tests::ply_preview_rejects_oversized_input_before_parser_allocation' (2060) panicked at crates/ottrin-preview/src/lib.rs:14477:9:
+assertion failed: matches!(inspect_ply_metadata(&path),
+    Err(PlyVisualError::InputTooLarge { .. }))
+
+thread 'tests::sqlite_source_generation_changes_after_equal_size_hard_link_write_with_restored_mtime' (2332) panicked at crates/ottrin-preview/src/lib.rs:9786:14:
+restore source mtime: Os { code: 5, kind: PermissionDenied, message: "Access is denied." }
+
+thread 'tests::video_format_is_metadata_only_without_a_raw_fallback' (3260) panicked at crates/ottrin-preview/src/lib.rs:10405:9:
+assertion failed: !profile.supports_view(PreviewView::Visual)

@@ -1,0 +1,5 @@
+{
+  "path": ".hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64/bin/rg.exe",
+  "sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680",
+  "scope": "Bundled content provider required by the existing UI paging fixture"
+}

@@ -2540,8 +2540,10 @@ mod tests {
         let alias = path.with_extension("alias.ply");
         std::fs::hard_link(&path, &alias).expect("create PLY hard-link alias");
         std::fs::write(&alias, replacement).expect("replace PLY source through hard-link alias");
-        std::fs::File::open(&path)
-            .expect("open PLY source")
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&path)
+            .expect("open PLY source with attribute-write access")
             .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
             .expect("restore PLY mtime");
         assert_ne!(first_key, preview_cache_key_for_page(&path, 128, 0));

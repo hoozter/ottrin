@@ -1,0 +1,26 @@
+
+thread 'tests::clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict' (7164) panicked at crates/ottrin-ui/src/lib.rs:26225:9:
+assertion `left == right` failed: Copy/Rename conflict must create a second file: [OperationRecord { id: 3, title: "Copy", detail: "source.txt to C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-WEK4H8\\destination", status: Failed, recoverability: SessionTracked, queued_at: Instant { t: 214.7166469s }, finished_at: Some(Instant { t: 214.7270199s }), message: Some("safe copy is unsupported on this platform: C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-WEK4H8\\source.txt"), path_move_paths: Some(("C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-WEK4H8\\destination", "C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-WEK4H8\\destination")), path_move_undo: None, undo_kind: None, path_move_undo_token: None, retained_copy: None }]
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::clipboard_native_paste_event_starts_owned_file_operation' (5420) panicked at crates/ottrin-ui/src/lib.rs:26127:9:
+Copy failed: [OperationRecord { id: 3, title: "Copy", detail: "source.txt to C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-fK0bq6\\destination", status: Failed, recoverability: SessionTracked, queued_at: Instant { t: 214.7721485s }, finished_at: Some(Instant { t: 214.7827429s }), message: Some("safe copy is unsupported on this platform: C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-fK0bq6\\source.txt"), path_move_paths: Some(("C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-fK0bq6\\destination", "C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-fK0bq6\\destination")), path_move_undo: None, undo_kind: None, path_move_undo_token: None, retained_copy: None }]
+PDF preview render failed for /not-loaded-yet.pdf: PDFium runtime is unavailable; set OTTRIN_PDFIUM_DIR or package pdfium/lib beside Ottrin
+
+thread 'tests::ui_content_pages_navigate_refresh_and_reset_with_the_query' (6504) panicked at crates/ottrin-ui/src/lib.rs:34835:13:
+Some("Live content search could not start: program not found. Check access to the selected folders or repair Ottrin.")
+Affinity preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-affinity-5008-1792121416581291000.AfDeSiGn: Affinity input contains no qualifying complete embedded PNG
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-blocked-svg-raster-cache-5008.svg: SVG contains blocked references (file/http/https image references are not permitted)
+
+thread 'thumbnail_cache::tests::ply_thumbnail_compact_and_full_routes_use_only_content_keyed_pngs' (588) panicked at crates/ottrin-ui/src/thumbnail_cache.rs:2546:14:
+restore PLY mtime: Os { code: 5, kind: PermissionDenied, message: "Access is denied." }
+SQLite thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5008-1792121417093451200.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5008-1792121417093451200.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5008-1792121417093451200.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5008-1792121417093451200.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+STL thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-stl-preview-5008.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+STL preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-stl-preview-5008.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-blocked-svg-thumbnail-5008.svg: SVG contains blocked references (file/http/https image references are not permitted)
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-oversized-svg-thumbnail-5008.svg: SVG could not be parsed for visual preview: SVG data parsing failed cause the document does not have a root node

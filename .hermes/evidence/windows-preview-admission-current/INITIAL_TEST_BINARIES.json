@@ -1,0 +1,136 @@
+{
+  "preview": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_preview-2a70681553513214.exe",
+    "compiler_sha256": "5f69ab60a936310469e81df11e25e9d2b8df5dc3f32fdf3f6a1e7779920a76a4",
+    "transferred_sha256": "4c1d0f1d7eefef0dc48679ce75bb329279a1b3f4baf7fb336c084222cd69e08a",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 28068136,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "417a1fadfd90e9e2c898992aa4ff47e77a918fb8b414f669ca3394696a9b6e7e"
+      },
+      ".data": {
+        "virtual_size": 28416,
+        "virtual_address": 28073984,
+        "flags": 3221225536,
+        "raw_sha256": "6ce325b9e550c39b0cfcf393c060cc00787520ac89d54600e9dd5611468219a4"
+      },
+      ".rdata": {
+        "virtual_size": 10133696,
+        "virtual_address": 28102656,
+        "flags": 1073741888,
+        "raw_sha256": "a7056b1ad3b4a78b0ed368ec93ea9c283106f21304976f8d6c4427015b0630fe"
+      },
+      ".pdata": {
+        "virtual_size": 853284,
+        "virtual_address": 38240256,
+        "flags": 1073741888,
+        "raw_sha256": "6d4b6d1c335c54a30ac1e54160a67a10dfdff66da1940d2a7253d91bbafaac18"
+      },
+      ".xdata": {
+        "virtual_size": 2092276,
+        "virtual_address": 39096320,
+        "flags": 1073741888,
+        "raw_sha256": "bd54b6311022551dd3a658b8d4d246a9df3bc482ecf4db224b365696b55af608"
+      },
+      ".bss": {
+        "virtual_size": 800,
+        "virtual_address": 41189376,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11148,
+        "virtual_address": 41193472,
+        "flags": 3221225536,
+        "raw_sha256": "836f4e809aaf7ff043527bfc9c259490ecb43ed810e18b4b38426c821179ed66"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 41205760,
+        "flags": 3221225536,
+        "raw_sha256": "4096e7c596f282c306695c61b791002e734c72f8f39717d822eb2f2421cbf935"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 41209856,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 158784,
+        "virtual_address": 41213952,
+        "flags": 1107296320,
+        "raw_sha256": "40500a9530bdecab79f227d53d825ba92973c0d283a8255d0f66ed511db14dd5"
+      }
+    }
+  },
+  "ui": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-9cae9ea4a8b91d65.exe",
+    "compiler_sha256": "b2f1baabcf2a35a41d2071bd2740136045b4c97dd12495f9eba03069a0b59a01",
+    "transferred_sha256": "cca9ae9cfafc262d87050e49ef5c0eeeea4cea970c6c305980be14f045db62f9",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 45244136,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "f62be69e7032a22f92aa83206f3a2e60dc344b191d454339f2165d46894ff0a5"
+      },
+      ".data": {
+        "virtual_size": 40064,
+        "virtual_address": 45248512,
+        "flags": 3221225536,
+        "raw_sha256": "bc2901936dd37eef7e4f437b17ddc00bafebc81b9afac3d1b4bfa23066e3ef78"
+      },
+      ".rdata": {
+        "virtual_size": 20336800,
+        "virtual_address": 45289472,
+        "flags": 1073741888,
+        "raw_sha256": "afb6df585f5f03a33ed1f24f588356194d12b9ca1d62e352e2b3c3d493c8f19a"
+      },
+      ".pdata": {
+        "virtual_size": 1430568,
+        "virtual_address": 65630208,
+        "flags": 1073741888,
+        "raw_sha256": "94d54c564d6fc1951b41b11e809315de1718b1245134961a9cd22dbc81f3a560"
+      },
+      ".xdata": {
+        "virtual_size": 3726800,
+        "virtual_address": 67063808,
+        "flags": 1073741888,
+        "raw_sha256": "d660c4f56df7051416c3b2726ec301fba8cd3fbee6a1ccd610d823fb1dbeffe0"
+      },
+      ".bss": {
+        "virtual_size": 960,
+        "virtual_address": 70791168,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 21896,
+        "virtual_address": 70795264,
+        "flags": 3221225536,
+        "raw_sha256": "7033b20a6c97fcb01db97ade3aeca5e5cb1674d77d0c765426206512edd29edf"
+      },
+      ".CRT": {
+        "virtual_size": 112,
+        "virtual_address": 70819840,
+        "flags": 3221225536,
+        "raw_sha256": "23bdfafa82132fde1c3a53d7c7b499f48593193dcf1c4003f21a55fe905372a1"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 70823936,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 242572,
+        "virtual_address": 70828032,
+        "flags": 1107296320,
+        "raw_sha256": "6d9639f991720edf66ecdc246c72261357b9d1cba76824cc0b13c4546ddc1ccf"
+      }
+    }
+  }
+}

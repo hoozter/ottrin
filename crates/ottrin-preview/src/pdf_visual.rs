@@ -297,11 +297,8 @@ mod tests {
 
     #[test]
     fn runtime_selection_uses_first_existing_platform_library() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-pdfium-candidate-{}-{}",
-            std::process::id(),
-            std::thread::current().name().unwrap_or("test")
-        ));
+        let fixture = tempfile::tempdir().expect("owned runtime fixture");
+        let root = fixture.path().to_path_buf();
         let runtime_dir = root.join("runtime");
         std::fs::create_dir_all(&runtime_dir).expect("create runtime fixture");
         let runtime = Pdfium::pdfium_platform_library_name_at_path(&runtime_dir);
@@ -315,11 +312,8 @@ mod tests {
 
     #[test]
     fn runtime_availability_rejects_an_unloadable_first_discovered_library() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-pdfium-unloadable-runtime-{}-{}",
-            std::process::id(),
-            std::thread::current().name().unwrap_or("test")
-        ));
+        let fixture = tempfile::tempdir().expect("owned runtime fixture");
+        let root = fixture.path().to_path_buf();
         std::fs::create_dir_all(&root).expect("create runtime fixture");
         let library = Pdfium::pdfium_platform_library_name_at_path(&root);
         std::fs::write(&library, b"not a loadable PDFium library")
@@ -343,11 +337,8 @@ mod tests {
 
     #[test]
     fn oversized_pdf_is_rejected_before_pdfium_load() {
-        let path = std::env::temp_dir().join(format!(
-            "ottrin-oversized-pdf-{}-{}.pdf",
-            std::process::id(),
-            std::thread::current().name().unwrap_or("test")
-        ));
+        let fixture = tempfile::tempdir().expect("owned oversized fixture");
+        let path = fixture.path().join("oversized.pdf");
         let file = std::fs::File::create(&path).expect("create oversized fixture");
         file.set_len(MAX_PDF_VISUAL_BYTES + 1)
             .expect("size oversized fixture");

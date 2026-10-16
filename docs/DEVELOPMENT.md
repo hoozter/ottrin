@@ -905,3 +905,36 @@ roots and empty group selections create no content-only watch. Content policy
 version 3 and cache schema 10 rebuild prior derived data rather than preserve
 older cache layouts. Filename postings bind canonical rowids, so stale postings
 cannot rejoin a later entry that reuses a pathname.
+
+
+## Bounded PLY and Affinity source admission
+
+`ottrin-preview/src/preview_source.rs` owns regular-file admission for both
+renderers. Unix uses no-follow, nonblocking opens and inode/device/state checks.
+Windows rejects device/named-stream syntax, verifies disk file type, final
+reparse/directory/delete-pending state, and captures native volume/128-bit file
+identity plus length and creation/modification/change metadata. Reopened path
+bindings and the held handle must still match after reads. A read-sharing handle
+excludes ordinary competing write/delete opens for the snapshot's lifetime.
+This is not a claim of universal writer exclusion or bounded blocking I/O on
+network/device failures; broader filesystem and junction-isolation acceptance
+remains required. Ancestor directory aliases are permitted and their changed
+bindings are rejected, rather than treating an old open handle as current path
+identity.
+
+PLY retains its bounded in-memory parse and content-hash generation. Affinity
+retains two complete streaming hashes and only a bounded preview suffix; its
+second pass now rejects growth beyond the captured size. Neither renderer
+returns container bytes as an image or accepts a stale raster after source
+replacement. Native admission tests cover ordinary/raw Unicode paths, device
+and stream rejection, reparse/directory refusal, sharing, ancestor alias
+retargeting and PLY size/parser limits. Unit fixtures embed rights-cleared source
+assets into owned temporary files, making Linux-cross-compiled Windows tests
+independent of build-machine paths. Full suite results and remaining positive
+failures are in `.hermes/evidence/windows-preview-admission-current/`.
+
+Microsoft's [FILE_ID_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_id_info)
+defines the identity pair, and [CreateFileW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew)
+defines handle sharing and final reparse behavior. Native tests establish the
+verified scope; source/unit acceptance does not substitute for exact-package GUI
+and graphics acceptance.

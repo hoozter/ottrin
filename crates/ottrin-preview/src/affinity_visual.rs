@@ -1,15 +1,15 @@
 use crc32fast::Hasher;
 use flate2::{Decompress, FlushDecompress, Status};
 use image::GenericImageView;
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 use sha2::{Digest, Sha256};
 use std::ops::Range;
 use std::path::Path;
 
 const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 pub const MAX_AFFINITY_PREVIEW_BYTES: u64 = 512 * 1024 * 1024;
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 const MAX_AFFINITY_SCAN_WINDOW_BYTES: u64 = 64 * 1024 * 1024;
 const MAX_CANDIDATES: usize = 128;
 const MAX_CANDIDATE_PNG_BYTES: usize = 8 * 1024 * 1024;
@@ -163,21 +163,10 @@ fn parse_affinity_snapshot(path: &Path) -> Result<(Snapshot, Candidate), Affinit
     Ok((snapshot, candidate))
 }
 
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
-    let path_metadata = std::fs::symlink_metadata(path)
-        .map_err(|error| AffinityVisualError::InputMetadata(error.to_string()))?;
-    if !path_metadata.is_file() {
-        return Err(AffinityVisualError::InputNotRegular);
-    }
-    let mut file = open_affinity_source(path)?;
-    let opened_metadata = file
-        .metadata()
-        .map_err(|error| AffinityVisualError::InputMetadata(error.to_string()))?;
-    if !opened_metadata.is_file() || !same_source_identity(&path_metadata, &opened_metadata) {
-        return Err(AffinityVisualError::InputNotRegular);
-    }
-    let input_size = opened_metadata.len();
+    let mut source = crate::preview_source::Source::open(path).map_err(admission_error)?;
+    let input_size = source.len();
     if input_size > MAX_AFFINITY_PREVIEW_BYTES {
         return Err(AffinityVisualError::InputTooLarge {
             actual: input_size,
@@ -189,7 +178,8 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
     let mut total_read = 0u64;
     let mut chunk = [0u8; 64 * 1024];
     loop {
-        let read = file
+        let read = source
+            .file
             .read(&mut chunk)
             .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
         if read == 0 {
@@ -208,17 +198,17 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
     }
     #[cfg(all(test, unix))]
     run_after_first_read_hook();
-    let first_pass_metadata = file
-        .metadata()
-        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
-    if total_read != input_size || !same_source_state(&opened_metadata, &first_pass_metadata) {
+    if total_read != input_size {
         return Err(AffinityVisualError::InputChanged);
     }
+    source.validate(path).map_err(admission_error)?;
 
     // Affinity stores its flattened preview near the package tail. Keep only a
     // bounded suffix in memory even when the source package is much larger.
     let scan_len = input_size.min(MAX_AFFINITY_SCAN_WINDOW_BYTES);
-    file.seek(SeekFrom::Start(input_size - scan_len))
+    source
+        .file
+        .seek(SeekFrom::Start(input_size - scan_len))
         .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
     let scan_capacity =
         usize::try_from(scan_len).map_err(|_| AffinityVisualError::InputTooLarge {
@@ -226,7 +216,9 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
             limit: MAX_AFFINITY_PREVIEW_BYTES,
         })?;
     let mut bytes = Vec::with_capacity(scan_capacity);
-    file.by_ref()
+    source
+        .file
+        .by_ref()
         .take(scan_len)
         .read_to_end(&mut bytes)
         .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
@@ -237,12 +229,15 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
     // This is a fail-closed stable-read protocol, not an OS file lock. A
     // second complete streaming hash proves the package did not change while
     // its bounded preview suffix was captured.
-    file.seek(SeekFrom::Start(0))
+    source
+        .file
+        .seek(SeekFrom::Start(0))
         .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
     let mut second_hasher = Sha256::new();
     let mut second_total = 0u64;
     loop {
-        let read = file
+        let read = source
+            .file
             .read(&mut chunk)
             .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
         if read == 0 {
@@ -251,6 +246,9 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
         second_total = second_total
             .checked_add(read as u64)
             .ok_or(AffinityVisualError::InputChanged)?;
+        if second_total > input_size {
+            return Err(AffinityVisualError::InputChanged);
+        }
         second_hasher.update(&chunk[..read]);
     }
     let first_generation: [u8; 32] = first_hasher.finalize().into();
@@ -258,55 +256,27 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
     if second_total != input_size || first_generation != second_generation {
         return Err(AffinityVisualError::InputChanged);
     }
-    let second_pass_metadata = file
-        .metadata()
-        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
-    let current_metadata =
-        std::fs::symlink_metadata(path).map_err(|_| AffinityVisualError::InputChanged)?;
-    if !same_source_state(&opened_metadata, &second_pass_metadata)
-        || !current_metadata.is_file()
-        || !same_source_state(&opened_metadata, &current_metadata)
-    {
-        return Err(AffinityVisualError::InputChanged);
-    }
+    source.validate(path).map_err(admission_error)?;
     Ok(Snapshot {
         generation: AffinityPreviewSourceGeneration(first_generation),
         bytes,
     })
 }
 
-#[cfg(unix)]
-fn open_affinity_source(path: &Path) -> Result<std::fs::File, AffinityVisualError> {
-    use std::os::unix::fs::OpenOptionsExt;
-
-    std::fs::OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
-        .open(path)
-        .map_err(|error| AffinityVisualError::InputMetadata(error.to_string()))
-}
-
-#[cfg(unix)]
-fn same_source_identity(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
-    use std::os::unix::fs::MetadataExt;
-    left.dev() == right.dev() && left.ino() == right.ino()
-}
-
-#[cfg(unix)]
-fn same_source_state(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
-    use std::os::unix::fs::MetadataExt;
-
-    same_source_identity(left, right)
-        && left.len() == right.len()
-        && left.mtime() == right.mtime()
-        && left.mtime_nsec() == right.mtime_nsec()
-        && left.ctime() == right.ctime()
-        && left.ctime_nsec() == right.ctime_nsec()
-}
-
-#[cfg(not(unix))]
+#[cfg(not(any(unix, windows)))]
 fn read_snapshot(_path: &Path) -> Result<Snapshot, AffinityVisualError> {
     Err(AffinityVisualError::PreviewDisabledOnPlatform)
+}
+
+#[cfg(any(unix, windows))]
+fn admission_error(error: crate::preview_source::AdmissionError) -> AffinityVisualError {
+    match error {
+        crate::preview_source::AdmissionError::Metadata(error) => {
+            AffinityVisualError::InputMetadata(error.to_string())
+        }
+        crate::preview_source::AdmissionError::NotRegular => AffinityVisualError::InputNotRegular,
+        crate::preview_source::AdmissionError::Changed => AffinityVisualError::InputChanged,
+    }
 }
 
 fn select_candidate(bytes: &[u8]) -> Result<Candidate, AffinityVisualError> {
@@ -710,7 +680,7 @@ mod tests {
         let _ = std::fs::remove_file(path);
     }
 
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     #[test]
     fn large_affinity_source_uses_a_bounded_tail_window_for_its_composite() {
         use std::io::{Seek, SeekFrom};

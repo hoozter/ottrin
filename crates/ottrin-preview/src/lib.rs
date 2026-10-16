@@ -43,6 +43,8 @@ mod obj_visual;
 mod office_provider;
 mod pdf_visual;
 mod ply_visual;
+#[cfg(any(unix, windows))]
+mod preview_source;
 mod stl_visual;
 mod threemf_visual;
 mod video_thumbnail;
@@ -9715,8 +9717,20 @@ mod tests {
         std::env::temp_dir().join(format!("ottrin-preview-{unique}-{name}"))
     }
 
-    fn material_font_path() -> PathBuf {
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../ottrin-ui/assets/MaterialSymbolsFilled.ttf")
+    fn embedded_fixture(name: &str, bytes: &[u8]) -> tempfile::TempPath {
+        let mut file = tempfile::Builder::new()
+            .suffix(name)
+            .tempfile()
+            .expect("create owned fixture");
+        file.write_all(bytes).expect("write embedded fixture");
+        file.into_temp_path()
+    }
+
+    fn material_font_path() -> tempfile::TempPath {
+        embedded_fixture(
+            ".ttf",
+            include_bytes!("../../ottrin-ui/assets/MaterialSymbolsFilled.ttf"),
+        )
     }
 
     fn write_font_fixture(name: &str, bytes: &[u8]) -> PathBuf {
@@ -9778,8 +9792,10 @@ mod tests {
         std::fs::hard_link(&source, &alias).expect("create hard-link alias");
         std::fs::write(&alias, b"SQLite format 3\0next--generation")
             .expect("replace bytes through hard-link alias");
-        std::fs::File::open(&source)
-            .expect("open source to restore mtime")
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&source)
+            .expect("open source with attribute-write access to restore mtime")
             .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
             .expect("restore source mtime");
         let second =
@@ -10393,14 +10409,25 @@ mod tests {
     }
 
     #[test]
-    fn video_format_is_metadata_only_without_a_raw_fallback() {
+    fn video_format_admits_only_its_platform_renderer_without_a_raw_fallback() {
         let path = Path::new("sample.MP4");
         let profile = preview_profile(path);
 
         assert_eq!(classify_path(path), PreviewKind::VideoMetadata);
         assert!(profile.supports_view(PreviewView::Metadata));
         assert!(!profile.supports_view(PreviewView::TextCard));
-        assert!(!profile.supports_view(PreviewView::Visual));
+        assert_eq!(
+            profile.supports_view(PreviewView::Visual),
+            cfg!(target_os = "windows")
+        );
+        assert_eq!(
+            profile.visual_renderer(),
+            if cfg!(target_os = "windows") {
+                PreviewVisualRenderer::Video
+            } else {
+                PreviewVisualRenderer::None
+            }
+        );
         assert!(!profile.raw_fallback_allowed());
     }
 
@@ -10690,7 +10717,7 @@ mod tests {
         let path = material_font_path();
 
         let preview = load_preview(&PreviewRequest {
-            path: path.clone(),
+            path: path.to_path_buf(),
             kind_hint: EntryKind::File,
         });
 
@@ -13398,10 +13425,13 @@ mod tests {
 
     #[test]
     fn docx_baseline_exposes_bounded_structured_preview() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docx-baseline.docx");
+        let path = embedded_fixture(
+            "docx-baseline.docx",
+            include_bytes!("../tests/fixtures/docx-baseline.docx"),
+        );
 
         let preview = load_preview(&PreviewRequest {
-            path,
+            path: path.to_path_buf(),
             kind_hint: EntryKind::File,
         });
         let document = preview.document.expect("typed DOCX structure");
@@ -13505,10 +13535,13 @@ mod tests {
 
     #[test]
     fn docx_lists_preserve_markers_levels_and_ordered_counters() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docx-lists.docx");
+        let path = embedded_fixture(
+            "docx-lists.docx",
+            include_bytes!("../tests/fixtures/docx-lists.docx"),
+        );
 
         let preview = load_preview(&PreviewRequest {
-            path,
+            path: path.to_path_buf(),
             kind_hint: EntryKind::File,
         });
         let document = preview.document.expect("typed DOCX list structure");
@@ -13549,8 +13582,10 @@ mod tests {
 
     #[test]
     fn legacy_doc_native_renderer_preserves_page_and_table_structure() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/legacy-doc-nested-tables.doc");
+        let path = embedded_fixture(
+            "legacy-doc-nested-tables.doc",
+            include_bytes!("../tests/fixtures/legacy-doc-nested-tables.doc"),
+        );
         let output = temp_path("legacy-doc-native-render.pdf");
 
         let page_count = run_legacy_doc_render_helper(&path, &output)
@@ -13646,11 +13681,13 @@ mod tests {
 
     #[test]
     fn docx_inline_images_preserve_order_and_fail_closed_relationships() {
-        let path =
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docx-inline-images.docx");
+        let path = embedded_fixture(
+            "docx-inline-images.docx",
+            include_bytes!("../tests/fixtures/docx-inline-images.docx"),
+        );
 
         let preview = load_preview(&PreviewRequest {
-            path,
+            path: path.to_path_buf(),
             kind_hint: EntryKind::File,
         });
         let document = preview.document.expect("typed DOCX structure");
@@ -14472,6 +14509,7 @@ mod tests {
         let file = std::fs::File::create(&path).expect("create oversized PLY fixture");
         file.set_len(crate::ply_visual::MAX_PLY_PREVIEW_BYTES + 1)
             .expect("extend oversized PLY fixture");
+        drop(file);
         assert!(matches!(
             inspect_ply_metadata(&path),
             Err(PlyVisualError::InputTooLarge { .. })

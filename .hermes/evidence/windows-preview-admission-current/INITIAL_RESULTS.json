@@ -1,0 +1,14 @@
+{
+  "status": "collected",
+  "ordinary_user": true,
+  "suites": {
+    "ui": {
+      "exit": 101,
+      "temporary_entries": 3
+    },
+    "preview": {
+      "exit": 101,
+      "temporary_entries": 6
+    }
+  }
+}

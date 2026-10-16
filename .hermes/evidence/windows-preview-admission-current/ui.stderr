@@ -1,0 +1,21 @@
+
+thread 'tests::clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict' (7540) panicked at crates/ottrin-ui/src/lib.rs:26225:9:
+assertion `left == right` failed: Copy/Rename conflict must create a second file: [OperationRecord { id: 3, title: "Copy", detail: "source.txt to C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-BlF1et\\destination", status: Failed, recoverability: SessionTracked, queued_at: Instant { t: 694.2066421s }, finished_at: Some(Instant { t: 694.2170783s }), message: Some("safe copy is unsupported on this platform: C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-BlF1et\\source.txt"), path_move_paths: Some(("C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-BlF1et\\destination", "C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-BlF1et\\destination")), path_move_undo: None, undo_kind: None, path_move_undo_token: None, retained_copy: None }]
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::clipboard_native_paste_event_starts_owned_file_operation' (7128) panicked at crates/ottrin-ui/src/lib.rs:26127:9:
+Copy failed: [OperationRecord { id: 3, title: "Copy", detail: "source.txt to C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-HmzvXd\\destination", status: Failed, recoverability: SessionTracked, queued_at: Instant { t: 694.233036s }, finished_at: Some(Instant { t: 694.24367s }), message: Some("safe copy is unsupported on this platform: C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-HmzvXd\\source.txt"), path_move_paths: Some(("C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-HmzvXd\\destination", "C:\\Users\\OttrinContentQA\\.ottrin-clipboard-test-HmzvXd\\destination")), path_move_undo: None, undo_kind: None, path_move_undo_token: None, retained_copy: None }]
+PDF preview render failed for /not-loaded-yet.pdf: PDFium runtime is unavailable; set OTTRIN_PDFIUM_DIR or package pdfium/lib beside Ottrin
+Affinity preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-affinity-5796-1792121896150760200.AfDeSiGn: Affinity input contains no qualifying complete embedded PNG
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-blocked-svg-raster-cache-5796.svg: SVG contains blocked references (file/http/https image references are not permitted)
+PLY preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-ply-preview-5796.ply: PLY header is invalid or outside bounded preview limits: header line is unterminated or too long
+SQLite thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5796-1792121896449156000.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5796-1792121896449156000.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5796-1792121896449156000.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-replaced-5796-1792121896449156000.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+STL thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-stl-preview-5796.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+STL preview render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-stl-preview-5796.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-blocked-svg-thumbnail-5796.svg: SVG contains blocked references (file/http/https image references are not permitted)
+SVG thumbnail render failed for C:\Users\OTTRIN~1\AppData\Local\Temp\op-PreviewAdmission\ui\ottrin-oversized-svg-thumbnail-5796.svg: SVG could not be parsed for visual preview: SVG data parsing failed cause the document does not have a root node

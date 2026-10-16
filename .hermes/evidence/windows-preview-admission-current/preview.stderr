@@ -1,0 +1,19 @@
+
+thread 'tests::eps_routes_to_the_isolated_optional_system_renderer' (7684) panicked at crates/ottrin-preview/src/lib.rs:10913:9:
+assertion `left == right` failed
+  left: None
+ right: Eps
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::folder_preview_reports_nested_file_sizes_without_following_symlinks' (5900) panicked at crates/ottrin-preview/src/lib.rs:14541:9:
+nested regular files must contribute while a directory symlink stays untraversed: Filetype: Folder
+Items: 2
+Folders: 1
+Files: 1
+Known direct file size: 3 B
+Known recursive file size: At least 0 B (scan bounded)
+Modified: just now
+
+Sample:
+  direct.txt
+  nested

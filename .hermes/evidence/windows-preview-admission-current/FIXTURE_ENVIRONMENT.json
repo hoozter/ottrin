@@ -1,0 +1,5 @@
+{
+  "scope": "Owned COW guest only; symlink admission fixtures",
+  "cleanup": "Whole overlay disposal",
+  "previous": null
+}

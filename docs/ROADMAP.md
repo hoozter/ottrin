@@ -8,6 +8,36 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Windows PLY/Affinity source admission — verified; package refresh next
+
+The shared bounded-preview source admission now supports Windows ordinary disk
+files using no-follow opened handles, 128-bit file/volume identity, file-state
+checks and read sharing that excludes ordinary writers/deleters. Device and
+named-stream syntax, directories and final reparse entries are refused. Path
+binding is rechecked around reads. Unix retains no-follow/nonblocking admission
+and now shares the state checks. PLY's 64 MiB input cap and Affinity's 512 MiB
+source/64 MiB retained-tail limits remain enforced; Affinity's second hash pass
+also stops if the file grows beyond its captured length.
+
+All three previously required Windows PLY/Affinity UI failures now pass, along
+with six new native admission cases. Full native UI has 339 passes and two
+required Copy failures. Full native preview has 182 passes and two required
+failures: Windows EPS routing and safe recursive folder-size scanning. These
+remain agent-executable implementation work, not exclusions or user-test gates.
+Portable owned fixtures removed Linux build-path assumptions and invalid Windows
+temporary names; mtime fixtures now request the necessary Windows write access.
+The video profile test asserts the existing platform renderer rather than an
+outdated universal metadata-only assumption. Linux passes all 197 preview and
+378 UI tests, with one existing UI exclusion. Strict preview/UI all-target
+Clippy passes for both targets.
+
+Evidence: `.hermes/evidence/windows-preview-admission-current/ACCEPTANCE.json`.
+This is native source/unit evidence, not packaged GUI, GPU or general network/
+physical-filesystem acceptance. Next: rebuild the stable Linux packages and
+internal Windows cohort from the clean source and verify their preview payloads
+and actual preview behavior. The currently usable packages below remain
+`42a1beb` until that refresh is accepted.
+
 ## Windows Copy — native staging in progress
 
 The native stream component and private namespace staging now pass 33
@@ -52,17 +82,17 @@ publication safety check to refuse the save. Exact descriptors are now retained;
 metadata equality and unsafe-source refusals remain enforced. The new private
 folder regression and 19 native text-edit tests pass; one privileged audit fixture
 remains excluded. Linux source suites pass 238 search, 378 UI and 23 app tests;
-strict platform/search/UI/app Clippy passes for both targets. Native Windows source verification passes 222 search and 20 app tests. Its UI
-suite passes 336 and retains five required failures (two Copy, two PLY, one
+strict platform/search/UI/app Clippy passes for both targets. Native Windows verification at `42a1beb` passed 222 search and 20 app tests. Its UI
+suite had 336 passes and five required failures (two Copy, two PLY, one
 Affinity); the Inspector text-save/Undo regression now passes. Six specialized
 search tests remain excluded. All four Linux formats and all three internal
 Windows formats now use `42a1beb` and pass the targeted exact-package checks below.
 The source/UI failures and wider release gates remain open.
 
 The broader native Windows UI audit also confirmed required unfinished work:
-Copy is rejected by the portable safe-copy backend in all conflict modes, and
-PLY/Affinity previews await native file admission. These positive tests remain
-active and failing; they must be implemented, not excluded to obtain a green
+Copy is rejected by the portable safe-copy backend in all conflict modes.
+The PLY/Affinity admission failures from that audit are resolved in the source
+checkpoint above. Required Copy tests remain active and failing; they must be implemented, not excluded to obtain a green
 suite. Complete/lower-bound reporting for bounded system filename discovery and
 pre-index fallback also remains required. User testing stays deferred; these
 agent-executable requirements are not waiting on it.
@@ -101,8 +131,9 @@ payload identity and content queries through their scheduled daemon. These are
 positive lifecycle checks, not failed-registration rollback acceptance.
 
 The native source suites pass 222 search tests with six specialized exclusions
-and 20 app tests. Native UI has 336 passes and five required failures: Copy
-(two tests), PLY (two) and Affinity (one). These implementations remain required;
+and 20 app tests. That source had 336 UI passes and five required failures: Copy
+(two tests), PLY (two) and Affinity (one). The newer source checkpoint above
+resolves the three preview failures; Copy remains required.
 UI failures were not excluded. Linux passes 238 search, 378 UI and 23 app tests,
 with two search and one UI exclusion. Strict platform/search/UI/app all-target
 Clippy passes for both targets. Source, exact packages, native lifecycle, payload
@@ -133,7 +164,7 @@ Independent saved-content roots and watcher coverage pass the current Linux and
 internal Windows package checks. Complete positive-literal saved/live content
 pages now pass the targeted checks above; bounded system filename discovery and
 pre-index fallback still require honest complete/lower-bound reporting. Windows
-Copy and PLY/Affinity admission also remain required. Configured-root ancestors,
+Copy and packaged PLY/Affinity acceptance remain required. Configured-root ancestors,
 junction isolation, physical storage, Undo/interruption, current exact upgrade/
 repair and reboot/login, broader GUI/DPI, Office, graphics/media and signing gates
 remain open. Internal candidates stay unpublished; user testing is deferred.
