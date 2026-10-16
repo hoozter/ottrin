@@ -1,0 +1,5 @@
+
+thread 'tests::windows_same_volume_move_preserves_a_dangling_symlink' (8912) panicked at crates/ottrin-platform/src/lib.rs:7610:44:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+native ancestor rename refused: Access is denied. (os error 5)

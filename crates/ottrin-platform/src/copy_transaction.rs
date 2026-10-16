@@ -7,6 +7,11 @@ use std::ffi::OsStr;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
+// The native stream engine is being verified before publication/recovery is
+// enabled. The public Windows Copy gate below remains closed until that work lands.
+#[cfg(target_os = "windows")]
+mod windows;
+
 /// Session identity guards for a published Copy/create transaction's directories.
 #[cfg(target_os = "linux")]
 #[derive(Debug, Clone)]

@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-16",
+  "status": "partial",
+  "source_check_status": "pass",
+  "scope": "Native source stream-staging component; public Windows Copy remains rejected and no new package is claimed",
+  "base_revision": "9c50ba6f2d4f87758e32bb8c1a64e1fd2bf66664",
+  "source_files_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "4487ec536ef40b83ffb3cb4e14fb1f0a9b56081706cbba5530933012467085c9",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "34a4db89e87089b63cf2edb253f523a95bd2c62cac048b9e3ccc41db542edb5b"
+  },
+  "native_streams": {
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0
+  },
+  "native_platform": {
+    "passed": 113,
+    "failed": 0,
+    "ignored": 26
+  },
+  "test_identity": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-0e4974dab9b54f57.exe",
+    "compiler_sha256": "2d7466bd614c2791e167350dc21f5c51579c707f0dedee53183ca1e0846a5894",
+    "transferred_sha256": "5b9520ba071fbf2fbf26bb93a3aa357cba36e787d912fd8463e68b6787f046d7",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 3911448,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "1f415144cbfd35b5a4d4566b339b176fd659114ed0262fc0022a6cc5eb8baacf"
+      },
+      ".data": {
+        "virtual_size": 3792,
+        "virtual_address": 3915776,
+        "flags": 3221225536,
+        "raw_sha256": "7a7e1f3e43c9cd07d85944dc340f0125db4d2d2669b0fd83a7f4780eb874659d"
+      },
+      ".rdata": {
+        "virtual_size": 600056,
+        "virtual_address": 3919872,
+        "flags": 1073741888,
+        "raw_sha256": "a6a790e3ba31ac0f43fbd90fcc1303148bdc8e7d1b19557ddbc7cc58a3ccb3e9"
+      },
+      ".pdata": {
+        "virtual_size": 108780,
+        "virtual_address": 4521984,
+        "flags": 1073741888,
+        "raw_sha256": "f63b2ab63396149a75a2e1b7f362f032d552f65642312ef584d4b85b5c630b3e"
+      },
+      ".xdata": {
+        "virtual_size": 281732,
+        "virtual_address": 4632576,
+        "flags": 1073741888,
+        "raw_sha256": "42ff5fa853f07649ff98730116a6d45b295af678a5c31bd101eef575cc5426ca"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 4915200,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11432,
+        "virtual_address": 4919296,
+        "flags": 3221225536,
+        "raw_sha256": "8f84a4c8fdc7d0b889e241ee37e9efeddf5cb9f2b962d49418df4896dc95097f"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 4931584,
+        "flags": 3221225536,
+        "raw_sha256": "58bf0cd2c8ea76c13c9a0d1f9dae491706417df879597bf8f4c41171ab5825e2"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 4935680,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 15736,
+        "virtual_address": 4939776,
+        "flags": 1107296320,
+        "raw_sha256": "ecc110760f62a5005175ca0bb4db9801fc552f786828b77cd92f2c5717c33741"
+      }
+    }
+  },
+  "environment": {
+    "ordinary_user": true,
+    "streams_developer_mode": "Not enabled; ordinary source ACL cases passed without source data-write/delete permission",
+    "full_suite_fixture": {
+      "cleanup": "Whole task-owned COW disk is disposed; original Windows configuration untouched",
+      "purpose": "Allow unprivileged symlink creation in owned native test fixtures only",
+      "previous": null
+    },
+    "ignored_tests": "IGNORED_TESTS.txt; specialized/manual fixtures remain unaccepted"
+  },
+  "controls": {
+    "empty_primary": "First native run 8 passed / 1 failed; assertion retained; stream evidence now includes logical empty primary even when native enumeration omits it",
+    "full_suite_fixture": "First run 112 passed / 1 fixture failed / 26 ignored because symlink creation lacked privilege; rerun exact same binary with Developer Mode only in disposable COW guest"
+  },
+  "strict_checks": {
+    "linux_platform_all_targets_clippy": "pass",
+    "windows_platform_all_targets_clippy": "pass",
+    "format_and_whitespace": "pass"
+  },
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "limits": [
+    "Private stage creation and parent/name authority are not implemented in this component",
+    "Final attributes/security, directories/links, sparse and EFS support require further work",
+    "Durable publication, overwrite retention, Undo/recovery and cleanup authority remain required",
+    "Public clipboard/Tandem/platform integration is not enabled; the known Windows UI failures remain open",
+    "No installed application, package, hardware, network I/O cancellation or full release acceptance from these tests"
+  ]
+}

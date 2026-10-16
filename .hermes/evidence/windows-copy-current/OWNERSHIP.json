@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-windows-copy-qa",
+  "guest_root": "C:\\OttrinContentQA",
+  "account": "OttrinContentQA",
+  "purpose": "Native Windows Copy stream staging and full platform source regression as an ordinary user",
+  "restore": "Normal shutdown, exact owned COW domain/volume/NVRAM/TPM disposal; preserve original backing and original stopped domains"
+}

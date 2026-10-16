@@ -1,0 +1,5 @@
+{
+    "cleanup":  "Whole task-owned COW disk is disposed; original Windows configuration untouched",
+    "purpose":  "Allow unprivileged symlink creation in owned native test fixtures only",
+    "previous":  null
+}

@@ -1,0 +1,6 @@
+{
+    "status":  "fail",
+    "error":  "Native stream tests failed",
+    "ordinary_user":  true,
+    "exit":  101
+}
