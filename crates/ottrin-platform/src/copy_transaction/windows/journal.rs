@@ -10,6 +10,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
+    collections::BTreeSet,
     ffi::{OsStr, OsString},
     fs::File,
     io::{Read, Seek, SeekFrom, Write},
@@ -117,8 +118,16 @@ enum Record {
     TreeVerified {
         count: usize,
     },
-    SecurityPlanned {
-        plan: Box<security::TreeSecurityEvidence>,
+    SecurityPlanBegin {
+        header: Box<security::SecurityPlanHeader>,
+    },
+    SecurityPlanEntry {
+        index: usize,
+        entry: Box<security::PlannedEntry>,
+    },
+    SecurityPlanComplete {
+        count: usize,
+        digest: [u8; 32],
     },
 }
 #[derive(Debug)]
@@ -136,7 +145,17 @@ struct State {
     nodes: Vec<Node>,
     verified: bool,
     planned: Option<security::TreeSecurityEvidence>,
+    planning: Option<Planning>,
+    source_ids: BTreeSet<(u64, [u8; 16])>,
+    candidate_ids: BTreeSet<(u64, [u8; 16])>,
+    names: BTreeSet<(Option<usize>, Vec<u16>)>,
 }
+#[derive(Debug)]
+struct Planning {
+    expected: usize,
+    evidence: security::TreeSecurityEvidence,
+}
+
 fn valid_source(source: &EntryVersion) -> bool {
     if source.attributes & !metadata::ADMITTED_ATTRIBUTES != 0
         || source.length > i64::MAX as u64
@@ -228,27 +247,50 @@ fn valid_payload(evidence: &metadata::StagedEntry) -> bool {
 impl State {
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
-        if let Record::SecurityPlanned { plan } = record {
-            let header = self.header.as_ref().ok_or_else(invalid)?;
-            if !self.verified
-                || self.planned.is_some()
-                || !plan.binds_staged(
-                    &header.creator,
-                    header.parent,
-                    self.nodes.iter().map(|node| {
-                        (
-                            node.parent,
-                            node.name.as_slice(),
-                            node.staged.as_ref().unwrap().candidate_identity,
-                            node.source.directory,
-                            node.security.as_ref().unwrap(),
-                        )
-                    }),
-                )
-            {
-                return Err(invalid());
+        match record {
+            Record::SecurityPlanBegin { header } => {
+                let owner = self.header.as_ref().ok_or_else(invalid)?;
+                if !self.verified
+                    || self.planned.is_some()
+                    || self.planning.is_some()
+                    || !header.valid_for(&owner.creator, owner.parent, self.nodes.len())
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
             }
-            return Ok(());
+            Record::SecurityPlanEntry { index, entry } => {
+                let plan = self.planning.as_ref().ok_or_else(invalid)?;
+                let node = self.nodes.get(*index).ok_or_else(invalid)?;
+                if !self.verified
+                    || self.planned.is_some()
+                    || *index != plan.evidence.len()
+                    || *index >= plan.expected
+                    || !entry.binds_staged(
+                        node.parent,
+                        &node.name,
+                        node.staged.as_ref().ok_or_else(invalid)?.candidate_identity,
+                        node.source.directory,
+                        node.security.as_ref().ok_or_else(invalid)?,
+                    )
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::SecurityPlanComplete { count, digest } => {
+                let plan = self.planning.as_ref().ok_or_else(invalid)?;
+                if !self.verified
+                    || self.planned.is_some()
+                    || *count != plan.expected
+                    || *count != plan.evidence.len()
+                    || *digest != plan.evidence.digest()?
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            _ => {}
         }
         if self.verified {
             return Err(invalid());
@@ -270,10 +312,7 @@ impl State {
                     || !valid_source(source)
                     || !valid_leaf(name)
                     || self.nodes.last().is_some_and(|node| node.staged.is_none())
-                    || self.nodes.iter().any(|node| {
-                        node.created
-                            .is_some_and(|id| id.same_object(source.identity))
-                    })
+                    || self.candidate_ids.contains(&source.identity.object_key())
                 {
                     return Err(invalid());
                 }
@@ -285,10 +324,7 @@ impl State {
                     let p = parent.and_then(|p| self.nodes.get(p)).ok_or_else(invalid)?;
                     if !p.source.directory
                         || p.source.link.is_some()
-                        || self
-                            .nodes
-                            .iter()
-                            .any(|node| node.parent == *parent && node.name == *name)
+                        || self.names.contains(&(*parent, name.clone()))
                     {
                         return Err(invalid());
                     }
@@ -304,10 +340,8 @@ impl State {
                 if !security.valid_for(&header.creator)
                     || node.created.is_some()
                     || identity.volume_serial_number() != header.parent.volume_serial_number()
-                    || self.nodes.iter().any(|n| {
-                        n.created.is_some_and(|id| id.same_object(*identity))
-                            || n.source.identity.same_object(*identity)
-                    })
+                    || self.candidate_ids.contains(&identity.object_key())
+                    || self.source_ids.contains(&identity.object_key())
                     || if node.source.directory {
                         !identity.is_directory_without_reparse()
                     } else {
@@ -329,7 +363,9 @@ impl State {
                     return Err(invalid());
                 }
             }
-            Record::SecurityPlanned { .. } => return Err(invalid()),
+            Record::SecurityPlanBegin { .. }
+            | Record::SecurityPlanEntry { .. }
+            | Record::SecurityPlanComplete { .. } => return Err(invalid()),
             Record::TreeVerified { count } => {
                 if self.header.is_none()
                     || *count == 0
@@ -351,25 +387,41 @@ impl State {
                 name,
                 source,
                 ..
-            } => self.nodes.push(Node {
-                parent,
-                name,
-                source,
-                created: None,
-                security: None,
-                staged: None,
-            }),
+            } => {
+                self.source_ids.insert(source.identity.object_key());
+                self.names.insert((parent, name.clone()));
+                self.nodes.push(Node {
+                    parent,
+                    name,
+                    source,
+                    created: None,
+                    security: None,
+                    staged: None,
+                });
+            }
             Record::Created {
                 index,
                 identity,
                 security,
             } => {
+                self.candidate_ids.insert(identity.object_key());
                 self.nodes[index].created = Some(identity);
                 self.nodes[index].security = Some(security);
             }
             Record::EntryStaged { index, evidence } => self.nodes[index].staged = Some(evidence),
             Record::TreeVerified { .. } => self.verified = true,
-            Record::SecurityPlanned { plan } => self.planned = Some(*plan),
+            Record::SecurityPlanBegin { header } => {
+                self.planning = Some(Planning {
+                    expected: header.count(),
+                    evidence: security::TreeSecurityEvidence::from_header(*header),
+                });
+            }
+            Record::SecurityPlanEntry { entry, .. } => {
+                self.planning.as_mut().unwrap().evidence.push(*entry)
+            }
+            Record::SecurityPlanComplete { .. } => {
+                self.planned = Some(self.planning.take().unwrap().evidence)
+            }
         }
         Ok(())
     }
@@ -756,7 +808,7 @@ impl<'a> DurableStage<'a> {
     }
     pub(super) fn prepare_destination_security(
         &mut self,
-        progress: impl FnMut() -> Result<(), PlatformError>,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
     ) -> Result<security::TreeSecurityPlan, PlatformError> {
         if !self.journal.state.verified {
             return Err(io("Copy staging must be verified before security planning"));
@@ -769,21 +821,52 @@ impl<'a> DurableStage<'a> {
         let plan = self.tree.destination_security_plan(
             self.stage.parent(),
             &self.stage.candidate_name,
-            progress,
+            &mut progress,
         )?;
         self.journal.bindings()?;
         let evidence = plan.evidence();
-        if let Some(recorded) = &self.journal.state.planned {
-            if recorded != &evidence {
-                return Err(stage_error(
-                    &self.stage,
-                    io("recorded Copy destination security plan changed; data retained"),
-                ));
+        if self
+            .journal
+            .state
+            .planned
+            .as_ref()
+            .is_some_and(|recorded| recorded != &evidence)
+            || self
+                .journal
+                .state
+                .planning
+                .as_ref()
+                .is_some_and(|partial| !partial.evidence.is_prefix_of(&evidence, partial.expected))
+        {
+            return Err(stage_error(
+                &self.stage,
+                io("recorded Copy destination security plan changed; data retained"),
+            ));
+        }
+        if self.journal.state.planned.is_none() {
+            if self.journal.state.planning.is_none() {
+                progress().map_err(|e| stage_error(&self.stage, e))?;
+                self.journal
+                    .persist(Record::SecurityPlanBegin {
+                        header: Box::new(evidence.header()),
+                    })
+                    .map_err(|e| stage_error(&self.stage, e))?;
             }
-        } else {
+            let written = self.journal.state.planning.as_ref().unwrap().evidence.len();
+            for (index, entry) in evidence.entries().enumerate().skip(written) {
+                progress().map_err(|e| stage_error(&self.stage, e))?;
+                self.journal
+                    .persist(Record::SecurityPlanEntry {
+                        index,
+                        entry: Box::new(entry.clone()),
+                    })
+                    .map_err(|e| stage_error(&self.stage, e))?;
+            }
+            progress().map_err(|e| stage_error(&self.stage, e))?;
             self.journal
-                .persist(Record::SecurityPlanned {
-                    plan: Box::new(evidence),
+                .persist(Record::SecurityPlanComplete {
+                    count: evidence.len(),
+                    digest: evidence.digest()?,
                 })
                 .map_err(|e| stage_error(&self.stage, e))?;
         }
@@ -1020,12 +1103,19 @@ impl<'a> RetainedStage<'a> {
         )?;
         self.namespace()?;
         plan.validate()?;
+        let evidence = plan.evidence();
         if self
             .snapshot
             .state
             .planned
             .as_ref()
-            .is_some_and(|recorded| *recorded != plan.evidence())
+            .is_some_and(|recorded| *recorded != evidence)
+            || self
+                .snapshot
+                .state
+                .planning
+                .as_ref()
+                .is_some_and(|partial| !partial.evidence.is_prefix_of(&evidence, partial.expected))
         {
             return Err(io(
                 "recorded Copy destination security plan no longer matches native inheritance; data retained",
@@ -1366,7 +1456,7 @@ mod tests {
     }
     #[test]
     fn windows_native_copy_journal_process_exit_retains_unpublished_staging() {
-        for sequence in [1, 2, 6, 10, 11] {
+        for sequence in [1, 2, 6, 10, 11, 12, 13, 14, 15] {
             for step in ["local", "central"] {
                 let root = tempfile::tempdir().unwrap();
                 fixture(root.path());
@@ -1391,7 +1481,7 @@ mod tests {
                 let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
                 assert_eq!(retained.is_ok(), step == "central" && sequence >= 10);
                 if let Ok(retained) = retained {
-                    if sequence == 11 {
+                    if sequence >= 11 {
                         std::fs::remove_dir_all(root.path().join("source")).unwrap();
                     }
                     let plan = retained.plan_destination_security(|| Ok(())).unwrap();
@@ -2074,55 +2164,60 @@ mod tests {
     }
     #[test]
     fn windows_native_copy_tree_security_plan_flush_faults_keep_private_data_and_both_versions() {
-        for step in [Step::LocalFlushed, Step::CentralFlushed] {
-            let root = tempfile::tempdir().unwrap();
-            fixture(root.path());
-            let src = source(&root.path().join("source"));
-            let parent = owner(&root.path().join("destination"));
-            let central = owner(&root.path().join("central"));
-            let mut staged = stage(&src, &parent, &central).unwrap();
-            FAULT.with(|f| f.set(Some((11, step, false))));
-            let result = staged.prepare_destination_security(|| Ok(()));
-            FAULT.with(|f| f.set(None));
-            assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
-            let lengths = (
-                staged.journal.local.metadata().unwrap().len(),
-                staged.journal.central.metadata().unwrap().len(),
-            );
-            assert!(staged.prepare_destination_security(|| Ok(())).is_err());
-            assert_eq!(
-                lengths,
-                (
+        for sequence in 11..=15 {
+            for step in [Step::LocalFlushed, Step::CentralFlushed] {
+                let root = tempfile::tempdir().unwrap();
+                fixture(root.path());
+                let src = source(&root.path().join("source"));
+                let parent = owner(&root.path().join("destination"));
+                let central = owner(&root.path().join("central"));
+                let mut staged = stage(&src, &parent, &central).unwrap();
+                FAULT.with(|f| f.set(Some((sequence, step, false))));
+                let result = staged.prepare_destination_security(|| Ok(()));
+                FAULT.with(|f| f.set(None));
+                assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+                let lengths = (
                     staged.journal.local.metadata().unwrap().len(),
-                    staged.journal.central.metadata().unwrap().len()
-                )
-            );
-            let name = staged.stage.name.clone();
-            let candidate = root
-                .path()
-                .join("destination")
-                .join(&staged.stage.candidate_name);
-            drop((staged, src));
-            std::fs::remove_dir_all(root.path().join("source")).unwrap();
-            let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
-            if step == Step::LocalFlushed {
-                assert!(retained.is_err());
-            } else {
-                let retained = retained.unwrap();
-                assert!(inspect(&parent, &central, &name).unwrap().security_planned);
-                assert_eq!(
-                    retained
-                        .plan_destination_security(|| Ok(()))
-                        .unwrap()
-                        .entry_count(),
-                    3
+                    staged.journal.central.metadata().unwrap().len(),
                 );
+                assert!(staged.prepare_destination_security(|| Ok(())).is_err());
+                assert_eq!(
+                    lengths,
+                    (
+                        staged.journal.local.metadata().unwrap().len(),
+                        staged.journal.central.metadata().unwrap().len()
+                    )
+                );
+                let name = staged.stage.name.clone();
+                let candidate = root
+                    .path()
+                    .join("destination")
+                    .join(&staged.stage.candidate_name);
+                drop((staged, src));
+                std::fs::remove_dir_all(root.path().join("source")).unwrap();
+                let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
+                if step == Step::LocalFlushed {
+                    assert!(retained.is_err());
+                } else {
+                    let retained = retained.unwrap();
+                    assert_eq!(
+                        inspect(&parent, &central, &name).unwrap().security_planned,
+                        sequence == 15
+                    );
+                    assert_eq!(
+                        retained
+                            .plan_destination_security(|| Ok(()))
+                            .unwrap()
+                            .entry_count(),
+                        3
+                    );
+                }
+                assert_eq!(
+                    std::fs::read(candidate.join("nested/file")).unwrap(),
+                    b"original data"
+                );
+                assert!(!root.path().join("destination/copy").exists());
             }
-            assert_eq!(
-                std::fs::read(candidate.join("nested/file")).unwrap(),
-                b"original data"
-            );
-            assert!(!root.path().join("destination/copy").exists());
         }
     }
     #[test]
@@ -2144,29 +2239,41 @@ mod tests {
         drop((staged, src));
         let bytes = std::fs::read(&local).unwrap();
         let mut at = 0;
-        loop {
+        let mut sequence = 0;
+        let mut previous = [0u8; 32];
+        let mut patched = Vec::new();
+        let mut state = State::default();
+        let mut changed = false;
+        while at < bytes.len() {
             let size = u32::from_le_bytes(bytes[at + 8..at + 12].try_into().unwrap()) as usize;
-            if at + FRAME_HEADER + size == bytes.len() {
-                break;
+            let mut value: serde_json::Value =
+                serde_json::from_slice(&bytes[at + FRAME_HEADER..at + FRAME_HEADER + size])
+                    .unwrap();
+            if value["event"] == "security-plan-entry" && value["index"] == 0 {
+                let old = value["entry"]["final_security"]["dacl"][12]
+                    .as_u64()
+                    .unwrap();
+                value["entry"]["final_security"]["dacl"][12] = serde_json::json!(old ^ 1);
+                changed = true;
             }
+            let mut record: Record = serde_json::from_value(value).unwrap();
+            if let Record::SecurityPlanComplete { digest, .. } = &mut record {
+                *digest = state.planning.as_ref().unwrap().evidence.digest().unwrap();
+            }
+            let payload = serde_json::to_vec(&record).unwrap();
+            let hash = frame_hash(sequence, &previous, &payload);
+            patched.extend_from_slice(MAGIC);
+            patched.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+            patched.extend_from_slice(&sequence.to_le_bytes());
+            patched.extend_from_slice(&previous);
+            patched.extend_from_slice(&hash);
+            patched.extend_from_slice(&payload);
+            state.apply(record).unwrap();
+            sequence += 1;
+            previous = hash;
             at += FRAME_HEADER + size;
         }
-        let sequence = u64::from_le_bytes(bytes[at + 12..at + 20].try_into().unwrap());
-        let previous: [u8; 32] = bytes[at + 20..at + 52].try_into().unwrap();
-        let mut record: serde_json::Value =
-            serde_json::from_slice(&bytes[at + FRAME_HEADER..]).unwrap();
-        let old = record["plan"]["entries"][0]["final_security"]["dacl"][12]
-            .as_u64()
-            .unwrap();
-        record["plan"]["entries"][0]["final_security"]["dacl"][12] = serde_json::json!(old ^ 1);
-        let payload = serde_json::to_vec(&record).unwrap();
-        let mut patched = bytes[..at].to_vec();
-        patched.extend_from_slice(MAGIC);
-        patched.extend_from_slice(&(payload.len() as u32).to_le_bytes());
-        patched.extend_from_slice(&sequence.to_le_bytes());
-        patched.extend_from_slice(&previous);
-        patched.extend_from_slice(&frame_hash(sequence, &previous, &payload));
-        patched.extend_from_slice(&payload);
+        assert!(changed);
         assert!(
             decode(&patched).unwrap().planned.is_some(),
             "structurally valid cached evidence must still require native rederivation"
@@ -2188,5 +2295,246 @@ mod tests {
         );
         assert!(!root.path().join("destination/copy").exists());
         assert_eq!(std::fs::read(&local).unwrap(), patched);
+    }
+    fn journal_records(bytes: &[u8]) -> Vec<Record> {
+        let mut at = 0;
+        let mut records = Vec::new();
+        while at < bytes.len() {
+            let size = u32::from_le_bytes(bytes[at + 8..at + 12].try_into().unwrap()) as usize;
+            records.push(
+                serde_json::from_slice(&bytes[at + FRAME_HEADER..at + FRAME_HEADER + size])
+                    .unwrap(),
+            );
+            at += FRAME_HEADER + size;
+        }
+        records
+    }
+    fn encode_records(records: &[Record]) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let mut previous = [0; 32];
+        for (sequence, record) in records.iter().enumerate() {
+            let payload = serde_json::to_vec(record).unwrap();
+            assert!(payload.len() <= MAX_FRAME);
+            let hash = frame_hash(sequence as u64, &previous, &payload);
+            bytes.extend_from_slice(MAGIC);
+            bytes.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+            bytes.extend_from_slice(&(sequence as u64).to_le_bytes());
+            bytes.extend_from_slice(&previous);
+            bytes.extend_from_slice(&hash);
+            bytes.extend_from_slice(&payload);
+            previous = hash;
+        }
+        bytes
+    }
+    #[test]
+    fn windows_native_copy_streamed_plan_requires_ordered_complete_seal() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let bytes = std::fs::read(
+            root.path()
+                .join("destination")
+                .join(&staged.stage.name)
+                .join(LOCAL),
+        )
+        .unwrap();
+        let records = journal_records(&bytes);
+        assert_eq!(records.len(), 16);
+        for end in 11..16 {
+            let state = decode(&encode_records(&records[..end])).unwrap();
+            assert!(state.verified);
+            assert!(state.planned.is_none());
+            if end > 11 {
+                assert_eq!(state.planning.as_ref().unwrap().evidence.len(), end - 12);
+            }
+        }
+        for mode in 0..5 {
+            let mut bad = records.clone();
+            match mode {
+                0 => {
+                    bad.swap(12, 13);
+                }
+                1 => {
+                    bad.remove(13);
+                }
+                2 => {
+                    bad.insert(13, bad[12].clone());
+                }
+                3 => {
+                    if let Record::SecurityPlanComplete { digest, .. } = &mut bad[15] {
+                        digest[0] ^= 1;
+                    }
+                }
+                _ => {
+                    bad.push(bad[15].clone());
+                }
+            }
+            assert!(decode(&encode_records(&bad)).is_err(), "mode {mode}");
+        }
+        assert!(decode(&bytes).unwrap().planned.is_some());
+    }
+    #[test]
+    fn windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority() {
+        // Synthetic recorded graph: exercises framing/state/resource limits,
+        // not real large-tree file copying or permission application.
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        let native = staged
+            .prepare_destination_security(|| Ok(()))
+            .unwrap()
+            .evidence();
+        let actual_root = &staged.journal.state.nodes[0];
+        let actual_file = &staged.journal.state.nodes[2];
+        let count = 2001usize;
+        let mut records = vec![Record::Begin {
+            header: Box::new(staged.journal.header.clone()),
+        }];
+        let mut planned = Vec::new();
+        for index in 0..count {
+            let template = if index == 0 { actual_root } else { actual_file };
+            let mut source = template.source.clone();
+            let mut created = template.created.unwrap();
+            let mut payload = template.staged.clone().unwrap();
+            let parent = if index == 0 { None } else { Some(0) };
+            let name = if index == 0 {
+                template.name.clone()
+            } else {
+                format!("file-{index:05}").encode_utf16().collect()
+            };
+            if index != 0 {
+                let fake = |id: WindowsStableIdentity, marker: u8| {
+                    let mut value = serde_json::to_value(id).unwrap();
+                    let mut bytes = [marker; 16];
+                    bytes[..8].copy_from_slice(&(index as u64).to_le_bytes());
+                    value["file_id"] = serde_json::json!(bytes);
+                    serde_json::from_value(value).unwrap()
+                };
+                source.identity = fake(source.identity, 0xab);
+                created = fake(created, 0xcd);
+                payload.source = source.clone();
+                payload.candidate_identity = created;
+            }
+            records.push(Record::CreateIntent {
+                index,
+                parent,
+                name: name.clone(),
+                source,
+            });
+            records.push(Record::Created {
+                index,
+                identity: created,
+                security: template.security.clone().unwrap(),
+            });
+            records.push(Record::EntryStaged {
+                index,
+                evidence: payload.clone(),
+            });
+            let mut entry = serde_json::to_value(
+                native
+                    .entries()
+                    .nth(if index == 0 { 0 } else { 2 })
+                    .unwrap(),
+            )
+            .unwrap();
+            entry["parent"] = serde_json::json!(parent);
+            entry["name"] = serde_json::json!(name);
+            entry["identity"] = serde_json::to_value(payload.candidate_identity).unwrap();
+            if index != 0 {
+                let mut acl: Vec<u8> =
+                    serde_json::from_value(entry["final_security"]["dacl"].clone()).unwrap();
+                acl.resize(6000, 0);
+                acl[2..4].copy_from_slice(&6000u16.to_le_bytes());
+                entry["final_security"]["dacl"] = serde_json::json!(acl);
+            }
+            planned.push(serde_json::from_value::<security::PlannedEntry>(entry).unwrap());
+        }
+        records.push(Record::TreeVerified { count });
+        let mut header = serde_json::to_value(native.header()).unwrap();
+        header["count"] = serde_json::json!(count);
+        let header: security::SecurityPlanHeader = serde_json::from_value(header).unwrap();
+        let mut complete = security::TreeSecurityEvidence::from_header(header.clone());
+        records.push(Record::SecurityPlanBegin {
+            header: Box::new(header),
+        });
+        for (index, entry) in planned.into_iter().enumerate() {
+            complete.push(entry.clone());
+            records.push(Record::SecurityPlanEntry {
+                index,
+                entry: Box::new(entry),
+            });
+        }
+        assert!(serde_json::to_vec(&complete).unwrap().len() > MAX_FRAME);
+        records.push(Record::SecurityPlanComplete {
+            count,
+            digest: complete.digest().unwrap(),
+        });
+        let bytes = encode_records(&records);
+        assert!(bytes.len() as u64 <= MAX_LOG);
+        let state = decode(&bytes).unwrap();
+        assert_eq!(state.nodes.len(), count);
+        assert_eq!(state.planned.unwrap(), complete);
+    }
+    #[test]
+    fn windows_native_copy_streamed_plan_cancelled_prefix_resumes_without_duplicate_records() {
+        for stop in 4..=8 {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let mut staged = stage(&src, &parent, &central).unwrap();
+            let mut calls = 0;
+            assert!(
+                staged
+                    .prepare_destination_security(|| {
+                        calls += 1;
+                        if calls == stop {
+                            Err(io("cancelled streamed intent"))
+                        } else {
+                            Ok(())
+                        }
+                    })
+                    .is_err()
+            );
+            assert_eq!(calls, stop);
+            assert!(!staged.journal.failed);
+            assert!(!staged.inspect(&central).unwrap().security_planned);
+            let before = std::fs::read(
+                root.path()
+                    .join("destination")
+                    .join(&staged.stage.name)
+                    .join(LOCAL),
+            )
+            .unwrap();
+            let prefix = decode(&before).unwrap();
+            if stop > 4 {
+                assert_eq!(prefix.planning.unwrap().evidence.len(), stop - 5);
+            }
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            assert!(staged.inspect(&central).unwrap().security_planned);
+            let after = std::fs::read(
+                root.path()
+                    .join("destination")
+                    .join(&staged.stage.name)
+                    .join(LOCAL),
+            )
+            .unwrap();
+            assert!(after.starts_with(&before));
+            assert_eq!(journal_records(&after).len(), 16);
+            assert!(decode(&after).unwrap().planned.is_some());
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            assert!(!root.path().join("destination/copy").exists());
+        }
     }
 }

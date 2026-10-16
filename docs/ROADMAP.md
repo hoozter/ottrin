@@ -10,53 +10,50 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
-Windows Copy now derives and durably records the complete destination permission
-plan while candidates stay private. The root derives from the real destination
-parent; descendants derive from projected final parent descriptors, not private
-OWNER RIGHTS staging DACLs. Capture and validation share the native derivation and
-binding implementations. No permission application or publication is introduced.
+Windows Copy permission intent now streams as a header, ordered per-entry records
+and a final count/digest seal. The existing 16 MiB frame and 64 MiB total-log
+budgets remain. No whole-plan frame is materialized for appending or hashing.
+Partial prefixes cannot report prepared permissions; readonly recovery rederives
+native inheritance and compares the prefix or sealed plan before accepting it.
+Coherent cancellation can resume without duplicate records. Uncertain writes
+still poison their owner and retain data rather than repairing either mirror.
 
-The live owner appends the plan to both journals after payload verification and
-flushes both before returning. Repeated preparation is idempotent; parent-permission
-drift cannot silently replace a recorded plan. Retained recovery works without
-sources, rederives native inheritance and compares it with the recorded graph.
-Cached ACLs remain untrusted evidence even if both mirrors and hashes agree.
-Journal status distinguishes payload verification from recorded permission intent;
-neither indicates that final permissions have been applied or a copy published.
+Staging journal checks use replay-built object/name indexes instead of repeated
+full-tree alias searches. Source hard links remain admitted; candidate aliases,
+duplicate names, wrong ordering and incomplete/invalid seals remain refused.
+Native whole-tree permission projection still derives children from planned final
+parents, never from private staging DACLs. Permission application remains separate.
 
-Native ordinary-user Copy tests pass 88 with 3 specialized/child exclusions;
-the full Windows platform suite passes 188 with 29 exclusions. SYSTEM audit passes
-separately. Nine new cases compare complete kernel-created reference trees under
-six ACL configurations, actual file/directory link inheritance, graph/cancellation/
-drift refusals, live/retained source-free plans, durable idempotence, interrupted
-plan flushes and cached-ACL tampering with valid hashes. Existing crash parents now
-exercise ten real process exits, including plan-flush boundaries. Twenty-four
-flush-failure cases retain data. The full actor's runtime test-binary hash matches
-the transferred compiler artifact. Linux platform tests pass 411 with 3 exclusions;
-strict platform all-target Clippy passes for both targets. Evidence:
-`.hermes/evidence/windows-copy-tree-security-current/ACCEPTANCE.json`.
+Native ordinary-user Copy tests pass 91 with 3 specialized/child exclusions;
+the full Windows platform suite passes 191 with 29 exclusions. SYSTEM audit passes
+separately. Thirty-two injected flush failures and eighteen real process exits now
+span every plan-append boundary. New cases cover ordered/sealed records,
+cancellation/resume and a synthetic 2,001-node recorded graph whose aggregate plan
+exceeds one frame while all records and total log stay within current budgets.
+This is codec acceptance, not real 2,001-file copying or broad large-tree resource
+acceptance. Existing native kernel-created tree/link references, source-free
+rederivation, ownership/content checks and forged cached-ACL refusal still pass.
+The full actor pins its runtime test binary. Linux platform tests pass 411 with
+3 exclusions; strict platform all-target Clippy passes for both targets. Evidence:
+`.hermes/evidence/windows-copy-streamed-plan-current/ACCEPTANCE.json`.
 
-The earlier private owner/group/DACL guards remain enforced around staging and
-recovery. Retained data validation checks identities, exact raw-UTF-16 membership,
-persistent metadata, stream hashes and link records without source handles.
-Read-owned access-time updates are permitted during recovery; strict staging
-checks the final timestamp. Source discovery remains read-only and precedes
-destination mutation. Source-contained candidate/central stores are refused before
-creation. Known links remain leaves and their targets are never traversed.
-Developer Mode-off denial/junction evidence remains distinct in
-`windows-copy-links-current/ACCEPTANCE.json`; that boot policy was not repeated.
-Production never enables Developer Mode or token privileges.
+Private ownership guards remain enforced around staging/recovery, including
+identities, exact raw-UTF-16 membership, persistent metadata, streams and link
+records. Read-owned access-time updates are allowed during recovery; strict
+staging checks final timestamps. Source discovery is read-only and precedes
+destination mutation. Source-contained stores are refused before creation. Known
+links remain leaves. Developer Mode-off policy evidence remains separate in
+`windows-copy-links-current/ACCEPTANCE.json`; production never enables Developer
+Mode or token privileges.
 
-Public Windows Copy remains disabled. Durable per-entry permission application and
-recovery, complete SACL/audit/label drift, existing-token privilege/elevation,
-sparse/EFS, case-sensitive directories, specialized storage/property semantics,
-broader central-store placement, large-tree journal/resource acceptance (the plan
-currently occupies one bounded frame), Overwrite/publication transitions, central and
-interrupted-entry recovery, guarded mutation/cleanup/Undo, clipboard/Tandem and
+Public Windows Copy remains disabled. Durable permission application/recovery,
+complete SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive
+directories, specialized storage/properties, broader central-store placement,
+real large-tree journal/handle/resource acceptance, Overwrite/publication,
+central/interrupted-entry recovery, guarded cleanup/Undo, clipboard/Tandem and
 rebuilt-package acceptance remain required. Positive Windows Copy UI tests remain
-required; these source-only checks do not replace them. Current packages stay at
-the delivery checkpoint below. User testing is deferred; the full roadmap goal
-remains active.
+required; source checks do not replace them. Current deliverables stay at the
+checkpoint below. User testing is deferred and the full roadmap goal stays active.
 
 ## Current delivered preview checkpoint
 

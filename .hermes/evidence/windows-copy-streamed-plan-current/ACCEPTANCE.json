@@ -1,0 +1,173 @@
+{
+  "status": "pass",
+  "scope": "Streamed/sealed permission intent, prefix validation/resume and indexed staging journal checks; public Windows Copy disabled",
+  "base_revision": "abb9ffed89278f94efa53d580951c2a829cd098f",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "78eeaad9c28af98069d74bef9607e91bb6c5ca440ff2309e97fef08293f3bfc9",
+    "crates/ottrin-platform/src/move_recovery.rs": "7cf3a0d87b1965f6d0a8282a89c9953ddd89559c0a84b17a88c59502453d0518",
+    "crates/ottrin-platform/src/windows_fs.rs": "6b519d86ad58ef2ad61c9a5757882f83d2548974160735e3ee7741b984b2f538",
+    "crates/ottrin-platform/src/copy_transaction/windows/links.rs": "79d53671363e20857d56cb71522f321a0007e04da1e6e3a473793edf184a16e3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "2d2ab20f13eacbe11f58dcbc218105fa8641651ce7c2d425c6333721ec9f0dd1",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "958243209837563a476b1b3d2017b2633cdf200273fcc8a688eec248ac72c93d",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "628c6e0ec2c11bce8f166205553bb76d9eb5eaf095521b3e4dad32b2f3d4122e",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "9692ce696bbc1a5dace867fdee106a7dd141ccd5e555eaf361fab1af04a499e9",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "df47d48127788f097feca48771e978ab68d3b7ae875fe9f4f33b359c41a2727e",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "93dbf28476799ad65d7d42bd86fead32f305eeb6dd2d96adb3aaf7a468141376"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "73ddb16595d64ba20d3576cdf356a740b2bb0241ae9a0eb69b3c521aff1e9e04",
+    "transferred_sha256": "487dcd40f3b34e741b672cdb249133df60799de1d105f9e8d53ff85e6c059f0e",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 9688088,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "1aa4f3b5455dff9921c85f0c6471ae63a80d1e9b129775e9ce7289c01d183ac0"
+      },
+      ".data": {
+        "virtual_size": 3888,
+        "virtual_address": 9695232,
+        "flags": 3221225536,
+        "raw_sha256": "61b76254988103e3c28ba62bfda82868ae210549dfcf61cf87fe1bddff84d9e8"
+      },
+      ".rdata": {
+        "virtual_size": 749752,
+        "virtual_address": 9699328,
+        "flags": 1073741888,
+        "raw_sha256": "689887118664622a21fea47db026763f7bd051aa99f43009ddcd56edbb903358"
+      },
+      ".pdata": {
+        "virtual_size": 160680,
+        "virtual_address": 10452992,
+        "flags": 1073741888,
+        "raw_sha256": "50f7b9a414326b58bd2d721e19ee0ecc6c34b84ecce67b73c6ae4dced6d144d4"
+      },
+      ".xdata": {
+        "virtual_size": 569316,
+        "virtual_address": 10616832,
+        "flags": 1073741888,
+        "raw_sha256": "34f8571d7eae09f2212d9c9d90029691186e84c1eaf58174e5b2e6c57e9bbf52"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 11186176,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 11190272,
+        "flags": 3221225536,
+        "raw_sha256": "3f070107e2240aaeb2b0022d940ef1ca706b3fcbd2d53c36bc07e99a052c8835"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 11202560,
+        "flags": 3221225536,
+        "raw_sha256": "6d08b0afd60c5c536bb2f93f36ef8bf44794a501582e2fc16f60cb9f57fdd816"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 11206656,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 20796,
+        "virtual_address": 11210752,
+        "flags": 1107296320,
+        "raw_sha256": "8695428bafb43f5b4e36d26bfb9685df68220c3b3ebed4f1abb5fb4b7e45e69c"
+      }
+    }
+  },
+  "native_copy": {
+    "passed": 91,
+    "failed": 0,
+    "ignored": 3,
+    "ordinary_user": true,
+    "new_cases": 3,
+    "flush_failures": 32,
+    "actual_process_exits": 18,
+    "expected_child_exit": 86,
+    "temporary_entries": 0
+  },
+  "native_full_platform": {
+    "passed": 191,
+    "failed": 0,
+    "ignored": 29,
+    "ordinary_user": true,
+    "runtime_test_binary_hash": "487dcd40f3b34e741b672cdb249133df60799de1d105f9e8d53ff85e6c059f0e",
+    "temporary_entries": 0,
+    "actor_watchdog_seconds": 120
+  },
+  "native_system_audit": {
+    "passed": 1,
+    "failed": 0,
+    "temporary_entries": 0
+  },
+  "linux_platform": {
+    "passed": 411,
+    "failed": 0,
+    "ignored": 3
+  },
+  "strict_clippy": {
+    "linux_all_targets": "pass",
+    "windows_all_targets": "pass"
+  },
+  "record_format": {
+    "plan": "Header, indexed entry records, terminal count/digest seal",
+    "frame_budget_bytes": 16777216,
+    "log_budget_bytes": 67108864,
+    "budgets_increased": false,
+    "monolithic_compatibility_reader": false
+  },
+  "aggregate_codec_case": {
+    "nodes": 2001,
+    "aggregate_plan_exceeds_frame_budget": true,
+    "individual_frames_within_budget": true,
+    "total_log_within_budget": true,
+    "graph": "Synthetic recorded identities and padded structural ACL evidence; no corresponding large filesystem tree",
+    "native_permissions_applied": false,
+    "real_large_tree_acceptance": false
+  },
+  "validated_behaviors": [
+    "Ordered staged-entry bindings and terminal digest required before security_planned",
+    "Partial coherent prefixes rederive without sources; no permissions applied",
+    "Cancelled prefix resumes append without duplicate header/entries or replacing committed bytes",
+    "Uncertain local/central appends poison owner and retain data",
+    "Missing, duplicate, reordered or invalidly sealed plans rejected",
+    "Forged cached ACLs with coherent digests still rejected by fresh native derivation",
+    "Source hard links remain allowed; candidate aliases and sibling duplicates refused with replay-built indexes",
+    "Existing native reference-tree/link, payload and private-security cases pass"
+  ],
+  "fixture_environment": {
+    "owned_no_network_windows_overlay": true,
+    "ordinary_user": "OttrinContentQA",
+    "developer_mode": "Owned COW only, existing link fixtures",
+    "developer_mode_off_policy": "Not repeated; earlier links checkpoint retains distinct evidence"
+  },
+  "limits": [
+    "Codec aggregate case is not real large-directory copy, memory/handle performance or filesystem acceptance",
+    "Total log/handle budgets, blocked I/O and broader storage/resource gates remain required",
+    "No final permission application/recovery, publication, Overwrite, deletion or Undo authority",
+    "Complete SACL/audit/label drift, privilege/elevation, sparse/EFS, directory case sensitivity and central recovery remain open",
+    "No current package replaced; no user or physical-platform acceptance claimed"
+  ],
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "preservation": {
+    "actor_state": "Ready",
+    "actor_result": 0,
+    "owned_product_processes": 0,
+    "original_profile_and_installation": "unchanged"
+  }
+}

@@ -242,22 +242,30 @@ context and parent security around capture. Known links remain leaves without
 following targets. Cancellation and failure change no permissions and remove no
 data. Native references cover all graph levels, not just the root.
 
-`DurableStage::prepare_destination_security` appends the complete intent to both
-journals only after verified staging. Both flush before success; repeated identical
-preparation adds no record, while changed plans are retained as conflicts. A torn
-or unmatched mirror remains uncertain and is never repaired automatically. The
-journal distinguishes verified payload from recorded permission intent; neither
-means permissions have been applied or the copy published.
+`DurableStage::prepare_destination_security` streams this intent to both journals
+only after verified staging: one header, an ordered record per entry, then a
+count/digest seal. The digest serializer writes to a SHA-256 sink rather than
+materializing the full plan. Existing 16 MiB frame and 64 MiB total-log budgets
+remain. Each entry binds to the staged name/identity/kind/private-security graph.
+Partial prefixes are valid retained data but cannot report prepared permissions.
+Missing, duplicate, reordered or incorrectly sealed entries are refused.
 
-`RetainedStage::plan_destination_security` works without sources, freshly derives
-the native plan and compares all evidence with a recorded intent when present.
-Cached ACLs are structurally validated bytes, never passed to a Windows descriptor
-setter. Even coherent, checksummed altered ACLs cannot authorize native permissions.
-Root-parent permission drift cannot silently reinterpret an already recorded plan.
+Both mirrors flush each record before acknowledgement. Identical completed
+preparation adds no record. Cancellation is checked between records; a coherent
+cancelled prefix can resume without duplicates. An uncertain append still poisons
+its owner and never repairs a divergent mirror. Source/candidate object IDs and
+sibling names use replay-built indexes to avoid repeated full-tree searches.
 
-The complete plan currently occupies one bounded journal frame. Very large plans
-can exceed that budget; streamed intent and large-tree resource/performance
-acceptance remain required before claiming broad large-directory readiness.
+Readonly retained planning works without sources, rederives native inheritance
+and compares it with the recorded full plan or prefix. Cached ACLs remain untrusted
+bytes, never Windows descriptor input. Even coherently altered records with valid
+frame/plan digests cannot authorize native permissions. Root-parent permission
+drift cannot silently reinterpret recorded intent. Payload verification, partial
+planning, sealed intent, applied permissions and publication are distinct states.
+
+The aggregate-size codec case exceeds one frame using synthetic recorded entries;
+it does not establish real large-tree copying or resource/storage acceptance.
+Those gates and the total journal/handle budgets remain explicit requirements.
 
 The plan has no apply/publish/delete API. Per-entry permission-transition intent
 and recovery, final timestamp/durability ordering, SACL/audit/label checks, rights
@@ -265,9 +273,9 @@ acquisition, Overwrite/publication/Undo and public workflows remain required.
 
 ## Acceptance and limits
 
-Current source receipt: `.hermes/evidence/windows-copy-tree-security-current/ACCEPTANCE.json`.
-The ordinary-user Copy suite passes 88 with 3 specialized/child exclusions; the
-full native Windows platform suite passes 188 with 29 exclusions. SYSTEM audit
+Current source receipt: `.hermes/evidence/windows-copy-streamed-plan-current/ACCEPTANCE.json`.
+The ordinary-user Copy suite passes 91 with 3 specialized/child exclusions; the
+full native Windows platform suite passes 191 with 29 exclusions. SYSTEM audit
 passes separately. Linux platform tests pass 411 with 3 exclusions, and strict
 all-target platform Clippy passes for both targets. These are component/native
 results, not public Copy, refreshed package, user or physical-platform acceptance.
@@ -275,7 +283,7 @@ results, not public Copy, refreshed package, user or physical-platform acceptanc
 Coverage includes stream/EA/compression/metadata preservation; read-only source
 ACLs and hard-link independence; private creation/sharing/binding and destination
 inheritance; populated/raw-name trees; link non-traversal/retargeting; paired
-journal corruption/replacement; 24 injected flush failures and ten real process
+journal corruption/replacement; 32 injected flush failures and eighteen real process
 exits. Retained validation additionally covers source disappearance, restored-time
 content edits, ADS/membership/rebinding/extra records, dangling file/directory
 links and cancellation/retry. Only a fully recorded completed stage validates
@@ -286,6 +294,9 @@ primary-group change. Whole-tree planning adds native reference-tree comparisons
 configurations, actual link-policy comparisons, graph/cancellation/drift refusals,
 source-free rederivation, durable idempotence, plan-write failure/exit and forged
 cached-ACL rejection. Permission application/publication is not introduced.
+Streamed intent adds aggregate-over-frame codec, ordered/sealed-record validation
+and coherent cancellation/resume cases; real exits now span every plan-append
+boundary. These remain source/native components, not public Copy acceptance.
 Earlier private-group fixture evidence and its test-only WRITE_OWNER setter are
 recorded in `.hermes/evidence/windows-copy-private-security-current/ACCEPTANCE.json`.
 Production creation/recovery rights and validation assertions remain intact.

@@ -29,39 +29,99 @@ pub(in super::super) struct TreeSecurityEvidence {
     parent_security: Parts,
     entries: Vec<PlannedEntry>,
 }
-impl TreeSecurityEvidence {
-    pub(in super::super) fn binds_staged<'a>(
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(in super::super) struct SecurityPlanHeader {
+    creator: Vec<u8>,
+    parent: WindowsStableIdentity,
+    parent_security: Parts,
+    count: usize,
+}
+impl SecurityPlanHeader {
+    pub(in super::super) fn valid_for(
         &self,
         creator: &[u8],
         parent: WindowsStableIdentity,
-        rows: impl ExactSizeIterator<
-            Item = (
-                Option<usize>,
-                &'a [u16],
-                WindowsStableIdentity,
-                bool,
-                &'a PrivateSecurity,
-            ),
-        >,
+        count: usize,
     ) -> bool {
         self.creator == creator
             && self.parent == parent
             && self.parent_security.valid_record()
-            && self.entries.len() == rows.len()
-            && self.entries.iter().zip(rows).all(
-                |(entry, (parent, name, identity, directory, private))| {
-                    entry.parent == parent
-                        && entry.name == name
-                        && entry.identity == identity
-                        && entry.directory == directory
-                        && entry.private == *private
-                        && entry.final_security.valid_record()
-                        && entry.final_security.present
-                        && entry.final_security.dacl.is_some()
-                        && entry.final_security.owner == private.0.owner
-                        && entry.final_security.group == private.0.group
-                },
-            )
+            && self.count == count
+            && count > 0
+    }
+    pub(in super::super) fn count(&self) -> usize {
+        self.count
+    }
+}
+impl PlannedEntry {
+    pub(in super::super) fn binds_staged(
+        &self,
+        parent: Option<usize>,
+        name: &[u16],
+        identity: WindowsStableIdentity,
+        directory: bool,
+        private: &PrivateSecurity,
+    ) -> bool {
+        self.parent == parent
+            && self.name == name
+            && self.identity == identity
+            && self.directory == directory
+            && self.private == *private
+            && self.final_security.valid_record()
+            && self.final_security.present
+            && self.final_security.dacl.is_some()
+            && self.final_security.owner == private.0.owner
+            && self.final_security.group == private.0.group
+    }
+}
+impl TreeSecurityEvidence {
+    pub(in super::super) fn header(&self) -> SecurityPlanHeader {
+        SecurityPlanHeader {
+            creator: self.creator.clone(),
+            parent: self.parent,
+            parent_security: self.parent_security.clone(),
+            count: self.entries.len(),
+        }
+    }
+    pub(in super::super) fn from_header(header: SecurityPlanHeader) -> Self {
+        Self {
+            creator: header.creator,
+            parent: header.parent,
+            parent_security: header.parent_security,
+            entries: Vec::new(),
+        }
+    }
+    pub(in super::super) fn len(&self) -> usize {
+        self.entries.len()
+    }
+    pub(in super::super) fn entries(&self) -> impl ExactSizeIterator<Item = &PlannedEntry> {
+        self.entries.iter()
+    }
+    pub(in super::super) fn push(&mut self, entry: PlannedEntry) {
+        self.entries.push(entry);
+    }
+    pub(in super::super) fn is_prefix_of(&self, complete: &Self, expected: usize) -> bool {
+        self.creator == complete.creator
+            && self.parent == complete.parent
+            && self.parent_security == complete.parent_security
+            && expected == complete.entries.len()
+            && complete.entries.starts_with(&self.entries)
+    }
+    pub(in super::super) fn digest(&self) -> Result<[u8; 32], PlatformError> {
+        struct Writer(sha2::Sha256);
+        impl std::io::Write for Writer {
+            fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+                sha2::Digest::update(&mut self.0, bytes);
+                Ok(bytes.len())
+            }
+            fn flush(&mut self) -> std::io::Result<()> {
+                Ok(())
+            }
+        }
+        let mut writer = Writer(<sha2::Sha256 as sha2::Digest>::new());
+        serde_json::to_writer(&mut writer, self).map_err(io)?;
+        Ok(sha2::Digest::finalize(writer.0).into())
     }
 }
 

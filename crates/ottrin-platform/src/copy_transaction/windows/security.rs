@@ -19,7 +19,9 @@ use windows_sys::Win32::System::Threading::{
 };
 
 mod tree;
-pub(super) use tree::{SecurityEntry, TreeSecurityEvidence, TreeSecurityPlan};
+pub(super) use tree::{
+    PlannedEntry, SecurityEntry, SecurityPlanHeader, TreeSecurityEvidence, TreeSecurityPlan,
+};
 
 const INFORMATION: u32 =
     OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
