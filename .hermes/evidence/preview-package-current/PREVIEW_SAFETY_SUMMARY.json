@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "artifact": "preview-refresh/Ottrin-0.1.0-x86_64.AppImage",
+  "sha256": "23236247aedbf44fd9740fdf35b4c6af22fcdfffd9e0982c603827c4b897562a",
+  "shared_titlebar": true,
+  "vcf_navigation": [
+    "Ottrin Quick Inspector \u2014 b.pdf",
+    "Ottrin Quick Inspector \u2014 a.vcf"
+  ],
+  "space_closed": true,
+  "vcf_source_unchanged": true,
+  "settled_pdf_captures": 70,
+  "distinct_pdf_bounds": 1,
+  "gui_exit": 0,
+  "scope": "Dark 100%, private Xvfb/software OpenGL"
+}

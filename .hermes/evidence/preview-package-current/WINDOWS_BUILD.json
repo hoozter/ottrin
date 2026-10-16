@@ -1,0 +1,9 @@
+{
+  "source_revision": "9df02240702a107b695619366d6bb2b7e65a5324",
+  "status": "pass",
+  "steps": {
+    "portable": 0,
+    "nsis": 0,
+    "msi": 0
+  }
+}

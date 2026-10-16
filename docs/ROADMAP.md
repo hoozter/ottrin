@@ -8,7 +8,7 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
-## Windows PLY/Affinity source admission — verified; package refresh next
+## PLY/Affinity preview package checkpoint
 
 The shared bounded-preview source admission now supports Windows ordinary disk
 files using no-follow opened handles, 128-bit file/volume identity, file-state
@@ -32,11 +32,24 @@ outdated universal metadata-only assumption. Linux passes all 197 preview and
 Clippy passes for both targets.
 
 Evidence: `.hermes/evidence/windows-preview-admission-current/ACCEPTANCE.json`.
-This is native source/unit evidence, not packaged GUI, GPU or general network/
-physical-filesystem acceptance. Next: rebuild the stable Linux packages and
-internal Windows cohort from the clean source and verify their preview payloads
-and actual preview behavior. The currently usable packages below remain
-`42a1beb` until that refresh is accepted.
+Clean runtime source `9df0224` is now the current four-format Linux cohort at
+`dist/packages/` and the three-format internal Windows cohort at
+`.hermes/packaging-tmp/windows-current/`. All four Linux artifacts pass exact
+content/watcher/paging checks and release payload identity. Exact AppImage GUI
+checks pass PLY wireframe and Affinity embedded-composite rendering, unchanged
+sources and clean close. VCF arrows/Space, shared Inspector title bar and 70
+settled PDF captures with one stable size also pass in private Dark 100% X11.
+
+Windows portable, NSIS and MSI pass ordinary-user content/watch/paging and
+positive install/uninstall checks. All 57 payload files agree across portable,
+NSIS and native MSI extraction. The exact portable GUI passes PLY/Affinity
+rendering with unchanged source bytes and clean close in the disposable guest.
+These are targeted checks: physical GPU/Wayland, broader theme/DPI, installed
+Windows GUI, upgrade/repair/reboot/login and MSI failed-registration rollback
+remain open. Earlier receipts retain their exact artifact scopes. The original
+profiles/installations and three stopped VMs are preserved; the owned guest and
+superseded staging are removed. Evidence and current artifact hashes:
+`.hermes/evidence/preview-package-current/ACCEPTANCE.json`.
 
 ## Windows Copy — native staging in progress
 
@@ -61,8 +74,8 @@ The public backend still rejects every Copy mode. SACL/audit/label and Overwrite
 security policy, specialized metadata/tree/link staging, non-ACL filesystem strategy, durable publication,
 Undo/recovery and UI/package integration remain required. The existing positive clipboard failures
 remain active. Full scope and source boundaries: [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md).
-Current usable Linux packages and internal Windows candidates below remain
-`42a1beb`; this unfinished source component has not been packaged as a Copy fix.
+Current Linux packages and internal Windows candidates use `9df0224`;
+this unfinished Copy component remains gated and is not a packaged Copy fix.
 
 ## Content paging, cancellation and Windows text-save checkpoint
 
@@ -99,7 +112,18 @@ agent-executable requirements are not waiting on it.
 
 ## Current Linux delivery status
 
-The current local Linux artifacts, exact revisions, checksums and scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. AppImage, portable, DEB and RPM use clean source `42a1beb` at stable paths under `dist/packages/`. All four exact extracted packages pass independent saved-content extraction/watch checks, edits, subtree moves/deletion, disabled-watch removal and content-only operation with zero metadata roots. Clean-PATH provider, scope/privacy and damaged-provider checks also pass. Every package passes ordered Name/path pages for 137 saved/live matches and 160 after adding live-only matches, including beyond-end and invalid-limit checks. The exact AppImage passes Dark 200% GUI Previous/Next boundaries and provider reaping on query replacement, clearing and clean window close; the cancellation fixture replaces only the owned extraction’s provider. Executable payload identity is verified across all four formats. All four five-second settled tiny-fixture CPU samples measured 0% of one core; this is not acceptance for the operator's full workload. The exact AppImage also passes isolated Dark 100% PDF stability, shared Inspector title bar, read-only VCF navigation/Space and explicit Edit/Save checks. Earlier theme/DPI, distro lifecycle and broader GUI receipts retain their original exact artifact scopes. These focused checks do not close the broader release gates below.
+The current four-format Linux cohort uses clean runtime source `9df0224` at
+stable paths under `dist/packages/`. Exact checksums and scope are in
+`LINUX_PACKAGES_ACCEPTANCE.json`. All four artifacts pass private-provider and
+release-payload identity, independent saved/live content roots, watcher changes,
+policy/Unicode/error handling and complete ordered Name/path pages for 137 and
+160 matches. The exact AppImage passes PLY/Affinity preview GUI checks, read-only
+VCF navigation/Space, shared Inspector chrome and 70 stable PDF captures, with
+clean exits. All four settled five-second tiny-fixture CPU samples measured 0%
+of one core; this is not full-workload acceptance. Current detailed evidence is
+`.hermes/evidence/preview-package-current/ACCEPTANCE.json`. Older theme/DPI,
+distribution lifecycle, editing and broader GUI receipts retain their own
+artifact hashes and scopes. Broader release gates remain open.
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 

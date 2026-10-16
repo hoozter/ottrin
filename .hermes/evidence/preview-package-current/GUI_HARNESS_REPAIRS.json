@@ -1,0 +1,15 @@
+{
+  "application_changed_for_harness_repairs": false,
+  "linux_appimage_sha256": "23236247aedbf44fd9740fdf35b4c6af22fcdfffd9e0982c603827c4b897562a",
+  "rejected_harness_observations": [
+    "Initial color test incorrectly expected a filled/vertex-colored mesh; the supported renderer is a blue wireframe",
+    "A global blue-pixel test admitted UI text antialiasing before rendering; visual review rejected its pass. Final test requires a light image canvas and projected edge spans",
+    "The first-login Windows Start menu obscured the app. A guarded loopback VNC click targeted only the owned no-NIC COW guest; final images are unobscured"
+  ],
+  "final_oracles": [
+    "Wireframe edge pixels inside rendered light canvas, spanning both projected axes",
+    "Large green embedded-PNG fixture surface",
+    "Exact title/source bytes and normal close for each case"
+  ],
+  "guest_json_encoding": "PowerShell GUI report cp1252 normalized to UTF-8 on host without replacement characters"
+}

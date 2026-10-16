@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-16",
+  "status": "pass",
+  "source_revision": "9df02240702a107b695619366d6bb2b7e65a5324",
+  "binary_build_revision": "9df02240702a107b695619366d6bb2b7e65a5324",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d06b076e5641cf2607a6c09d9130b284239d8d8d92fa9e3347a36ec776d0a4c0",
+    "Ottrin-0.1.0-x86_64.AppImage": "23236247aedbf44fd9740fdf35b4c6af22fcdfffd9e0982c603827c4b897562a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "58b82490f4de2e2f66d58a2d33d54e4660cd98e6444c1926e59f5e2df40cb3c8",
+    "ottrin_0.1.0_amd64.deb": "b950380912c8647400b4427a61b57dc80b0b7a372a7b871e1cb06d56c655c977"
+  },
+  "checks": [
+    "All four exact-package CLI: content provider, independent roots, Unicode/policy, watcher edits/move/delete/detach and 137/160-match paging",
+    "All executable payload identities match source release binaries; RPM code/read-only-data sections match after standard stripping",
+    "Exact AppImage PLY wireframe and Affinity embedded-composite GUI; source unchanged and clean close",
+    "Exact AppImage shared Inspector title bar, read-only VCF arrows/Space, 70 stable settled PDF captures and normal GUI exit"
+  ],
+  "scope": "Targeted current-artifact acceptance; broader distro, GPU, GUI/DPI and release gates remain open",
+  "evidence": ".hermes/evidence/preview-package-current/ACCEPTANCE.json",
+  "idle_cpu": {
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    },
+    "Ottrin-0.1.0-x86_64.AppImage": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    },
+    "ottrin_0.1.0_amd64.deb": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    },
+    "ottrin-0.1.0-1.x86_64.rpm": {
+      "percent_single_core": 0.0,
+      "scope": "Five seconds after settling; tiny private two-root fixture only"
+    }
+  },
+  "source_evidence": ".hermes/evidence/windows-preview-admission-current/ACCEPTANCE.json",
+  "historical_acceptance": "Older receipts retain their original artifact hashes and scopes"
+}

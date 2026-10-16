@@ -1,0 +1,128 @@
+
+==> Building Linux portable tarball
+    Blocking waiting for file lock on artifact directory
+   Compiling x11-dl v2.21.0
+   Compiling glib-sys v0.20.10
+   Compiling gobject-sys v0.20.10
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling gio-sys v0.20.10
+   Compiling fontique v0.11.1
+   Compiling parley v0.11.1
+   Compiling glib v0.20.12
+   Compiling winit v0.30.12
+   Compiling glutin_glx_sys v0.6.1
+   Compiling glutin v0.32.3
+   Compiling rwml v0.1.4
+   Compiling egui-wgpu v0.33.3
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling glutin-winit v0.5.0
+   Compiling eframe v0.33.3
+   Compiling gio v0.20.12
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 4m 34s
+    Blocking waiting for file lock on artifact directory
+   Compiling glib-sys v0.21.5
+   Compiling gobject-sys v0.21.5
+   Compiling gstreamer-sys v0.24.5
+   Compiling gio-sys v0.21.5
+   Compiling gstreamer-base-sys v0.24.5
+   Compiling gstreamer-app-sys v0.24.5
+   Compiling fontique v0.11.1
+   Compiling parley v0.11.1
+   Compiling glib v0.21.5
+   Compiling rwml v0.1.4
+   Compiling gstreamer v0.24.4
+   Compiling gstreamer-base v0.24.5
+   Compiling gstreamer-app v0.24.4
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 1m 34s
+   Compiling rwml v0.1.4
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 1m 01s
+/tmp/tmp.mDUL8cjPrm/pdfium.tgz: OK
+/tmp/tmp.Yd47SpYMbM/archive: OK
+/tmp/tmp.Yd47SpYMbM/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+
+==> Building Linux AppImage
+    Finished `release` profile [optimized] target(s) in 0.52s
+    Finished `release` profile [optimized] target(s) in 0.23s
+    Finished `release` profile [optimized] target(s) in 0.22s
+/tmp/tmp.j01KDJF1RH/pdfium.tgz: OK
+/tmp/tmp.th6Ue2Pg86/archive: OK
+/tmp/tmp.th6Ue2Pg86/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/dist/appimagetool-x86_64.AppImage: OK
+appimagetool, continuous build (commit 5735cc5), build <local dev build> built on 2023-03-08 22:52:04 UTC
+Using architecture x86_64
+Deleting pre-existing .DirIcon
+Creating .DirIcon symlink based on information from desktop file
+AppStream upstream metadata found in usr/share/metainfo/org.ottrin.Ottrin.appdata.xml
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/.appimage.VNr1zZ/AppDir should be packaged as /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/.appimage.VNr1zZ/Ottrin-0.1.0-x86_64.AppImage
+Trying to validate AppStream information with the appstreamcli tool
+In case of issues, please refer to https://github.com/ximion/appstream
+org.ottrin.Ottrin.appdata.xml
+
+✔ Validation was successful: pedantic: 1
+Generating squashfs...
+Parallel mksquashfs: Using 16 processors
+Creating 4.0 filesystem on /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/.appimage.VNr1zZ/Ottrin-0.1.0-x86_64.AppImage, block size 131072.
+
+[===============================================================/] 642/642 100%
+
+Exportable Squashfs 4.0 filesystem, gzip compressed, data block size 131072
+	compressed data, compressed metadata, compressed fragments,
+	compressed xattrs, compressed ids
+	duplicates are removed
+Filesystem size 30343.06 Kbytes (29.63 Mbytes)
+	42.74% of uncompressed filesystem size (70996.93 Kbytes)
+Inode table size 3094 bytes (3.02 Kbytes)
+	47.22% of uncompressed inode table size (6552 bytes)
+Directory table size 1634 bytes (1.60 Kbytes)
+	50.31% of uncompressed directory table size (3248 bytes)
+Number of duplicate files found 7
+Number of inodes 135
+Number of files 108
+Number of fragments 15
+Number of symbolic links  1
+Number of device nodes 0
+Number of fifo nodes 0
+Number of socket nodes 0
+Number of directories 26
+Number of ids (unique uids + gids) 1
+Number of uids 1
+	root (0)
+Number of gids 1
+	root (0)
+Embedding ELF...
+Marking the AppImage as executable...
+Embedding MD5 digest
+Success
+
+Please consider submitting your AppImage to AppImageHub, the crowd-sourced
+central directory of available AppImages, by opening a pull request
+at https://github.com/AppImage/appimage.github.io
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/Ottrin-0.1.0-x86_64.AppImage
+
+==> Building native Debian package
+/tmp/tmp.qKyKjucRZ5/pdfium.tgz: OK
+/tmp/tmp.z9uG3Eh0Kw/archive: OK
+/tmp/tmp.z9uG3Eh0Kw/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/.deb.DdqVrt/package
+dpkg-deb: building package 'ottrin' in '/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/.deb.DdqVrt/ottrin_0.1.0_amd64.deb'.
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/ottrin_0.1.0_amd64.deb
+
+==> Skipping native RPM package; rpmbuild is unavailable
+portable: packaged helper and policy path PASS
+appimage: packaged helper and policy path PASS
+deb: packaged helper and policy path PASS
+
+Built artifacts:
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/Ottrin-0.1.0-x86_64.AppImage
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/Ottrin-0.1.0-x86_64.AppImage.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/ottrin_0.1.0_amd64.deb
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/preview-refresh/ottrin_0.1.0_amd64.deb.sha256

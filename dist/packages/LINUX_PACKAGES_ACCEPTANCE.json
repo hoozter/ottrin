@@ -1,26 +1,22 @@
 {
   "date": "2026-10-16",
   "status": "pass",
-  "source_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
-  "binary_build_revision": "42a1bebbd8829de2e324657b94531c670c65496d",
+  "source_revision": "9df02240702a107b695619366d6bb2b7e65a5324",
+  "binary_build_revision": "9df02240702a107b695619366d6bb2b7e65a5324",
   "artifacts": {
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "0f8c729006d62f30f89ae04c739b8437bf2b1750b9486bbe80b8dcc8e8c98394",
-    "Ottrin-0.1.0-x86_64.AppImage": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
-    "ottrin_0.1.0_amd64.deb": "b268b1b012b38b06f206cd22f3d14f37d924ab58ba7a9354194a0d84ebed70f3",
-    "ottrin-0.1.0-1.x86_64.rpm": "85fc10ef2066018eb8c0369abb0fe2d1246d7e95f9cfd2085541ce76c9485bf6"
+    "ottrin-0.1.0-1.x86_64.rpm": "d06b076e5641cf2607a6c09d9130b284239d8d8d92fa9e3347a36ec776d0a4c0",
+    "Ottrin-0.1.0-x86_64.AppImage": "23236247aedbf44fd9740fdf35b4c6af22fcdfffd9e0982c603827c4b897562a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "58b82490f4de2e2f66d58a2d33d54e4660cd98e6444c1926e59f5e2df40cb3c8",
+    "ottrin_0.1.0_amd64.deb": "b950380912c8647400b4427a61b57dc80b0b7a372a7b871e1cb06d56c655c977"
   },
   "checks": [
-    "Linux source suites: 238 search passed / 2 ignored; 378 UI passed / 1 ignored; 23 app passed",
-    "Strict Linux and Windows platform/search/UI/app all-target Clippy; formatting and diff checks",
-    "All four exact packages: ordered Name/path paging of 137 saved/live matches and 160 after new live-only matches, 17 per page, beyond-end and invalid-limit checks",
-    "All four exact packages: independent content roots, zero metadata roots, watch edit/move/delete/detach, policy, Unicode and explicit missing-provider errors",
-    "All executable payload identities match release binaries; RPM .text/.rodata match after stripping",
-    "Exact AppImage GUI Dark 200%: all pages, Previous/Next boundaries and superseded/clear/clean-window-close provider reaping",
-    "Exact AppImage GUI Dark 100%: stable PDF fit, shared Inspector title bar, read-only VCF arrows/Space and explicit Edit/Save"
+    "All four exact-package CLI: content provider, independent roots, Unicode/policy, watcher edits/move/delete/detach and 137/160-match paging",
+    "All executable payload identities match source release binaries; RPM code/read-only-data sections match after standard stripping",
+    "Exact AppImage PLY wireframe and Affinity embedded-composite GUI; source unchanged and clean close",
+    "Exact AppImage shared Inspector title bar, read-only VCF arrows/Space, 70 stable settled PDF captures and normal GUI exit"
   ],
-  "source_evidence": ".hermes/evidence/content-pagination-current/SOURCE_ACCEPTANCE.json",
-  "package_content_evidence": ".hermes/evidence/content-pagination-current/PAYLOAD_VERIFICATION.json",
-  "content_evidence": ".hermes/evidence/content-pagination-current",
+  "scope": "Targeted current-artifact acceptance; broader distro, GPU, GUI/DPI and release gates remain open",
+  "evidence": ".hermes/evidence/preview-package-current/ACCEPTANCE.json",
   "idle_cpu": {
     "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
       "percent_single_core": 0.0,
@@ -39,80 +35,6 @@
       "scope": "Five seconds after settling; tiny private two-root fixture only"
     }
   },
-  "search_gui": {
-    "status": "pass",
-    "desktop_scale": 2.0,
-    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "sha256": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
-    "paging": {
-      "total": 23,
-      "page_size": 3,
-      "visited_offsets": [
-        0,
-        3,
-        6,
-        9,
-        12,
-        15,
-        18,
-        21,
-        18
-      ],
-      "visible_names_and_previous_next": "pass",
-      "provider": "Pinned unmodified private provider"
-    },
-    "cancellation": {
-      "superseded_provider_reaped_seconds": 0.6038670839916449,
-      "cleared_provider_reaped_seconds": 0.5193922009784728,
-      "closed_window_provider_reaped_seconds": 0.11646196700166911,
-      "controlled_provider": "Owned Python process writes 1 MiB to each pipe then sleeps; only the extracted provider was replaced",
-      "gui_exit": 0
-    },
-    "cleanup": {
-      "profile_extraction_removed": true,
-      "private_processes": []
-    }
-  },
-  "preview_recheck": {
-    "status": "pass",
-    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "sha256": "fb3aac9ad94e00af1a4a7944dcb2bba9234575632d4dc11b2455297477540c1c",
-    "case": {
-      "theme": "Dark",
-      "desktop_scale": 1.0,
-      "font_scale": 1.0,
-      "opened": "Ottrin Quick Inspector \u2014 a.vcf",
-      "header_edge_color": [
-        30,
-        34,
-        39
-      ],
-      "header_center_color": [
-        30,
-        34,
-        39
-      ],
-      "after_down": "Ottrin Quick Inspector \u2014 b.pdf",
-      "after_up": "Ottrin Quick Inspector \u2014 a.vcf",
-      "space_closed": true,
-      "vcf_bytes_unchanged": true,
-      "explicit_edit": {
-        "draft_kept_file_unchanged": true,
-        "explicit_save_published_marker": true
-      },
-      "settled_capture_count": 70,
-      "distinct_settled_boxes": 1,
-      "cleanup": {
-        "profile_removed": true,
-        "private_processes": []
-      }
-    },
-    "scope": "Private Xvfb/X11, software OpenGL, Dark 100%; no physical Wayland/GPU claim"
-  },
-  "limits": [
-    "Tiny five-second fixture CPU is not live-home/content-enabled workload acceptance",
-    "No fresh distro install/upgrade, physical storage, login/reboot, broader themes/DPI or blocked-network-IO claim",
-    "System filename and pre-index fallback completeness, configured-root ancestor/junction and other roadmap gates remain open",
-    "Native Windows UI retains five required Copy/PLY/Affinity failures; native Windows source/package acceptance is separate"
-  ]
+  "source_evidence": ".hermes/evidence/windows-preview-admission-current/ACCEPTANCE.json",
+  "historical_acceptance": "Older receipts retain their original artifact hashes and scopes"
 }

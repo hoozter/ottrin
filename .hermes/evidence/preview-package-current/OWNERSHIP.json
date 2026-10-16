@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-preview-package-qa",
+  "guest_root": "C:\\OttrinContentQA",
+  "account": "OttrinContentQA",
+  "purpose": "Exact rebuilt Linux/Windows preview package acceptance; ordinary-user Windows GUI, content and positive installer lifecycle",
+  "restore": "Dispose entire owned COW guest, volume, NVRAM and TPM after terminal tasks, no owned app processes and unchanged original profile/installation checks"
+}

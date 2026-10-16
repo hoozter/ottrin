@@ -1,0 +1,15 @@
+{
+  "source_revision": "9df02240702a107b695619366d6bb2b7e65a5324",
+  "status": "pass",
+  "steps": {
+    "portable": 0,
+    "appimage": 0,
+    "deb": 0,
+    "rpm": 0
+  },
+  "build_environment": {
+    "PKG_CONFIG_PATH": "/home/campbell/Projects/Ottrin/.hermes/tools/gstreamer-dev/usr/lib/x86_64-linux-gnu/pkgconfig",
+    "rpm": "Existing cached RPM tools; scoped wrapper, no system-wide install"
+  },
+  "initial_failure": "Missing GStreamer pkg-config path; retained first failure log; no source change required"
+}

@@ -1,0 +1,10 @@
+{
+  "domain": "ottrin-init-preview-package-qa",
+  "loopback_vnc": 5900,
+  "framebuffer": [
+    1280,
+    800
+  ],
+  "input": "Title-bar click outside menu during owned app run",
+  "scope": "Owned no-NIC COW guest only; original three domains remain off"
+}

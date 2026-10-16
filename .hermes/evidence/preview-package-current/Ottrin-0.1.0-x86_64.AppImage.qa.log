@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "sha256": "23236247aedbf44fd9740fdf35b4c6af22fcdfffd9e0982c603827c4b897562a",
+  "provider_identity": "whole-file pinned hash",
+  "provider_sha256": "e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849",
+  "idle_cpu_percent_single_core": 0.0,
+  "idle_cpu_scope": "Five seconds after settling; tiny private two-root fixture only",
+  "checks": [
+    "Pinned private provider and all notices",
+    "PATH contains only wrapper tools; external RG config ignored",
+    "Metadata-only and live content-only roots remain distinct",
+    "Size/type/exclusion policy and Unicode paths",
+    "Current-folder traversal restriction",
+    "Missing provider is a nonzero explicit error preserving indexed filename/content hits",
+    "Disabled content policy is actionable",
+    "Saved-only negated queries verify content-root extraction and real watcher edits/moves/deletion",
+    "Disabling content detaches its watch; zero metadata roots retain content without filename membership"
+  ],
+  "cleanup": "Disposable extraction and XDG profile removed; headless commands all terminal",
+  "pagination": {
+    "saved_live_matches": 137,
+    "saved_plus_new_live_matches": 160,
+    "page_size": 17,
+    "order": "Name then path",
+    "all_pages_and_beyond_end": "pass",
+    "invalid_limit": "rejected"
+  },
+  "scope": "Exact extracted-package CLI on host Linux; no distro lifecycle or GUI claim"
+}

@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "sha256": "23236247aedbf44fd9740fdf35b4c6af22fcdfffd9e0982c603827c4b897562a",
+  "scope": "Private Xvfb/X11, software OpenGL, Dark 100%; no physical GPU claim",
+  "cases": {
+    "ply": {
+      "title": "Ottrin Quick Inspector \u2014 model.ply",
+      "rendered_fixture_pixels": 728,
+      "colored_pixel_span": [
+        283,
+        245
+      ],
+      "oracle": "Blue wireframe edges spanning both projected axes",
+      "source_unchanged": true,
+      "clean_exit": 0
+    },
+    "affinity": {
+      "title": "Ottrin Quick Inspector \u2014 composite.afphoto",
+      "rendered_fixture_pixels": 184892,
+      "colored_pixel_span": [
+        543,
+        339
+      ],
+      "oracle": "Green embedded composite",
+      "source_unchanged": true,
+      "clean_exit": 0
+    }
+  },
+  "cleanup": {
+    "profile_extraction_removed": true,
+    "private_processes": []
+  }
+}
