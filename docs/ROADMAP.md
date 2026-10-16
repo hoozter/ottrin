@@ -232,6 +232,25 @@ and the explicit integration consumer passes four rendered-button scenarios.
 Linux passes 411 platform and 379 UI tests (3 and 1 exclusions); strict all-target
 platform/UI Clippy passes on both targets. Packages are unchanged.
 
+The native Activity recovery consumer now also runs with its registry/profile on
+C: and retained data on a separately owned NTFS volume. The fixture requires
+distinct native volume identities rather than relying on drive letters. It reuses
+the same success, changed-data, moved-parent and interrupted-inverse scenarios,
+including actual rendered-button clicks and exact data/journal checks. Source
+files are gone before recovery. Temporary destination folders are consumer-owned;
+the controller verifies the disk-image association and removes the owned storage
+after terminal checks. This closes the two-volume native creation-Undo/Activity
+fixture gate; physical/removable devices, ReFS, resource and power-cut matrices
+remain required. Current receipt:
+`.hermes/evidence/windows-copy-cross-volume-action-current/ACCEPTANCE.json`.
+The exact native suite passes 230 with 31 exclusions, the separate SYSTEM audit
+case passes, and the two existing UI checks pass. The same-volume and two-volume
+integration consumers each pass all four scenarios on the same pinned binaries.
+Initial VHD staging failed because the test backing file had Modify-only access;
+Full Control on that owned VHDX plus reattachment resolves it without a production
+ACL change. Strict all-target Windows platform/UI Clippy passes. These are
+Windows-only fixture changes; packages and production behavior are unchanged.
+
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
 recovery permits read-owned access-time updates while verifying persistent

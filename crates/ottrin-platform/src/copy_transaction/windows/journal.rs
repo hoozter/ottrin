@@ -2581,6 +2581,14 @@ mod tests {
         nested: bool,
         readonly: bool,
     ) -> (OsString, OsString, ReadonlyCleanup) {
+        completed_undo_fixture_at(path, &path.join("destination"), nested, readonly)
+    }
+    fn completed_undo_fixture_at(
+        path: &Path,
+        destination: &Path,
+        nested: bool,
+        readonly: bool,
+    ) -> (OsString, OsString, ReadonlyCleanup) {
         let mut cleanup = if readonly {
             readonly_fixture(path, nested)
         } else {
@@ -2592,15 +2600,15 @@ mod tests {
         } else {
             "source/nested/file"
         }));
-        let parent = owner(&path.join("destination"));
+        std::fs::create_dir_all(destination).unwrap();
+        let parent = owner(destination);
         let central = owner(&path.join("central"));
         let staged = stage(&src, &parent, &central).unwrap();
         let name = staged.stage.name.clone();
         let candidate = staged.stage.candidate_name.clone();
-        cleanup.0.push(fixture_data_path(
-            path.join("destination").join(&candidate),
-            nested,
-        ));
+        cleanup
+            .0
+            .push(fixture_data_path(destination.join(&candidate), nested));
         drop((staged, src));
         let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
         app.apply(|_| Ok(())).unwrap();
@@ -2626,16 +2634,38 @@ mod tests {
         assert_eq!(local, root.join("profile"), "Refuse a real user profile");
         let fixture_root = root.join("fixture");
         std::fs::create_dir(&fixture_root).unwrap();
-        let (name, candidate, _cleanup) = completed_undo_fixture(&fixture_root, true, false);
+        let destination = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_DESTINATION")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|| fixture_root.join("destination"));
+        if destination != fixture_root.join("destination") {
+            let volume = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_VOLUME")
+                    .expect("owned secondary volume missing"),
+            );
+            assert!(destination.starts_with(volume));
+        }
+        let (name, candidate, _cleanup) =
+            completed_undo_fixture_at(&fixture_root, &destination, true, false);
+        if destination != fixture_root.join("destination") {
+            assert_ne!(
+                stable_identity_from_handle(&owner(&destination))
+                    .unwrap()
+                    .volume_serial_number(),
+                stable_identity_from_handle(&owner(&fixture_root.join("central")))
+                    .unwrap()
+                    .volume_serial_number(),
+                "Cross-volume fixture must use distinct native volumes"
+            );
+        }
         remove_undo_fixture_source(&fixture_root);
         if std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").as_deref() == Ok("pending") {
-            let parent = owner(&fixture_root.join("destination"));
+            let parent = owner(&destination);
             let central = owner(&fixture_root.join("central"));
             FAULT.with(|f| f.set(Some((29, Step::UndoRenamed, false))));
             let result = undo_completed_copy(&parent, &central, &name, |_| Ok(()));
             FAULT.with(|f| f.set(None));
             assert!(result.is_err());
-            assert!(fixture_root.join("destination").join(candidate).exists());
+            assert!(destination.join(candidate).exists());
         }
         let registry = local.join("Ottrin/State/copies");
         std::fs::create_dir_all(registry.parent().unwrap()).unwrap();

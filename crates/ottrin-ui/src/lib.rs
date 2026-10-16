@@ -25392,7 +25392,9 @@ mod tests {
                 "Owned recovery must survive Clear finished"
             );
             let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
-            let destination = root.join("fixture/destination");
+            let destination = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_DESTINATION")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| root.join("fixture/destination"));
             let journal = std::fs::read_dir(&destination)
                 .unwrap()
                 .map(|e| e.unwrap().path())
@@ -25407,7 +25409,7 @@ mod tests {
                 .join("journal");
             let before = std::fs::read(&journal).unwrap();
             let actual = if case == "moved" {
-                let moved = root.join("moved");
+                let moved = destination.with_file_name("moved");
                 std::fs::rename(&destination, &moved).unwrap();
                 std::fs::create_dir(&destination).unwrap();
                 std::fs::write(destination.join("copy"), b"unrelated new occupant").unwrap();
@@ -25486,8 +25488,11 @@ mod tests {
         }
         for case in ["success", "changed", "moved", "pending"] {
             let root = tempfile::tempdir().unwrap();
+            let destination_root = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_VOLUME")
+                .map(|volume| tempfile::tempdir_in(PathBuf::from(volume)).unwrap());
             std::fs::create_dir(root.path().join("userprofile")).unwrap();
-            let output = std::process::Command::new(std::env::current_exe().unwrap())
+            let mut command = std::process::Command::new(std::env::current_exe().unwrap());
+            command
                 .args([
                     "--exact",
                     "tests::windows_copy_recovery_activity_integration",
@@ -25499,9 +25504,16 @@ mod tests {
                 .env("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE", case)
                 .env("LOCALAPPDATA", root.path().join("profile"))
                 .env("APPDATA", root.path().join("roaming"))
-                .env("USERPROFILE", root.path().join("userprofile"))
-                .output()
-                .unwrap();
+                .env("USERPROFILE", root.path().join("userprofile"));
+            if let Some(destination_root) = &destination_root {
+                command.env(
+                    "OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_DESTINATION",
+                    destination_root.path().join("destination"),
+                );
+            } else {
+                command.env_remove("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_DESTINATION");
+            }
+            let output = command.output().unwrap();
             assert!(
                 output.status.success(),
                 "{case}: {}\n{}",

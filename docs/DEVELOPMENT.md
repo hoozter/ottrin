@@ -874,8 +874,19 @@ row cannot adopt another transaction's valid receipt. Run in an owned guest with
 binary, selecting `tests::windows_copy_recovery_activity_integration --ignored`
 in the UI test binary. The consumer owns fixture teardown; the native controller
 also watches and terminates its owned process tree on timeout before removing its
-private temp namespace. This accepts the source UI/worker path, not a packaged
-native window or physical desktop interaction.
+private temp namespace. Set `OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_VOLUME` only to an
+owned secondary NTFS fixture directory to run the same consumer across volumes.
+The consumer creates and owns a temporary destination there for each scenario;
+the producer requires different native volume serials for registry and data.
+Destination moves stay on that destination volume. The controller verifies the
+owned disk-image/drive association, scopes user write access to its fixture
+folder, checks that folder is empty after the consumer, then detaches and removes
+the owned image. For a VHDX, grant the test user Full Control on that owned backing
+file before attachment too. Modify-only backing access can deny WRITE_DAC and
+WRITE_OWNER operations on otherwise Full-Control inner files. The native
+cross-volume run reproduced that denial and passed with unchanged binaries after
+the owned backing-file grant and detach/reattach; production ACL code was unchanged. This accepts the source UI/worker path on owned NTFS volumes,
+not a packaged native window or physical/removable-device interaction.
 
 Native ID API contract:
 https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-openfilebyid
