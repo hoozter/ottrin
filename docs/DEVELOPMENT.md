@@ -717,6 +717,18 @@ Known links remain no-follow leaves. Single-link guards apply to candidates,
 not sources. This contract does not grant Overwrite, Undo or cleanup authority;
 those phases and full public Windows Copy acceptance remain required.
 
+Source-free permission recovery also accepts a coherent unfinished permission-plan
+prefix after full payload verification. A single streaming appender serves both
+live preparation and recovery: freshly rederive native inheritance, compare the
+recorded prefix, reserve the remaining plan plus publication/application tail,
+then append only missing records. Do not repair mismatched mirrors or treat an
+unverified payload stage as resumable. Read-only files are currently refused
+before publication or further journal writes: a reopened readonly handle lacks
+the write-data access needed to flush the published file. Their source bytes,
+attributes and private candidate are retained. Supporting them requires durable
+attribute-transition recovery, including interruption after publication; do not
+clear attributes on a published file as an unjournaled workaround.
+
 Copy and created-entry receipts guard the original parent and transaction
 identities with one shared, nonblocking Linux inotify instance. Watches are
 registered through the already-open publication directories, before those
