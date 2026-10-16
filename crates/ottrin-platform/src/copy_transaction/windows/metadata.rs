@@ -95,6 +95,59 @@ pub(super) struct StagedEntry {
 }
 
 impl StagedEntry {
+    /// Caller must verify the owned candidate's streams before this last write:
+    /// native backup rereads may update access times. No namespace mutation.
+    pub(super) fn apply_final_metadata(&self, candidate: &File) -> Result<(), PlatformError> {
+        if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity
+            || compression(candidate)? != self.compression
+        {
+            return Err(io(
+                "candidate identity/compression changed before final metadata",
+            ));
+        }
+        let attributes = self.source.attributes & ORDINARY_ATTRIBUTES;
+        let info = FILE_BASIC_INFO {
+            CreationTime: self.source.created,
+            LastAccessTime: self.accessed,
+            LastWriteTime: self.source.modified,
+            ChangeTime: 0, // A copy is a new object; do not forge its change history.
+            FileAttributes: if attributes == 0 {
+                FILE_ATTRIBUTE_NORMAL
+            } else {
+                attributes
+            },
+        };
+        if unsafe {
+            SetFileInformationByHandle(
+                candidate.as_raw_handle().cast(),
+                FileBasicInfo,
+                ptr::from_ref(&info).cast(),
+                size_of::<FILE_BASIC_INFO>() as u32,
+            )
+        } == 0
+        {
+            return Err(io(std::io::Error::last_os_error()));
+        }
+        candidate.sync_all().map_err(io)?;
+        self.validate_candidate_metadata(candidate)?;
+        Ok(())
+    }
+
+    /// Child creation may change a directory's write/access times, but not its
+    /// identity, creation time, attributes or compression policy.
+    pub(super) fn validate_after_children(&self, candidate: &File) -> Result<(), PlatformError> {
+        let actual = basic(candidate)?;
+        if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity
+            || actual.CreationTime != self.source.created
+            || actual.FileAttributes != self.source.attributes
+            || (!self.source.directory && actual.LastWriteTime != self.source.modified)
+            || compression(candidate)? != self.compression
+        {
+            return Err(io("candidate metadata changed during child staging"));
+        }
+        Ok(())
+    }
+
     pub(super) fn validate_source(&self, source: &File) -> Result<(), PlatformError> {
         if version(source)? != self.source
             || compression(source)? != self.compression
@@ -193,31 +246,7 @@ pub(super) fn stage_entry_payload(
     };
     result.validate_source(source)?;
     result.validate_candidate_streams(candidate)?;
-    let attributes = result.source.attributes & ORDINARY_ATTRIBUTES;
-    let info = FILE_BASIC_INFO {
-        CreationTime: result.source.created,
-        LastAccessTime: accessed,
-        LastWriteTime: result.source.modified,
-        ChangeTime: 0, // A copy is a new object; do not forge its change history.
-        FileAttributes: if attributes == 0 {
-            FILE_ATTRIBUTE_NORMAL
-        } else {
-            attributes
-        },
-    };
-    if unsafe {
-        SetFileInformationByHandle(
-            candidate.as_raw_handle().cast(),
-            FileBasicInfo,
-            ptr::from_ref(&info).cast(),
-            size_of::<FILE_BASIC_INFO>() as u32,
-        )
-    } == 0
-    {
-        return Err(io(std::io::Error::last_os_error()));
-    }
-    candidate.sync_all().map_err(io)?;
-    result.validate_candidate_metadata(candidate)?;
+    result.apply_final_metadata(candidate)?;
     result.validate_source(source)?;
     Ok(result)
 }

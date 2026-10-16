@@ -36,7 +36,7 @@ pub(crate) fn valid_component(name: &OsStr) -> io::Result<Vec<u16>> {
 }
 
 pub(crate) struct RelativeOptions {
-    pub directory: bool,
+    pub directory: Option<bool>,
     pub create_new: bool,
     pub access: u32,
     pub sharing: u32,
@@ -85,10 +85,10 @@ pub(crate) unsafe fn open_relative(
             },
             FILE_OPEN_REPARSE_POINT
                 | FILE_SYNCHRONOUS_IO_NONALERT
-                | if options.directory {
-                    FILE_DIRECTORY_FILE
-                } else {
-                    FILE_NON_DIRECTORY_FILE
+                | match options.directory {
+                    Some(true) => FILE_DIRECTORY_FILE,
+                    Some(false) => FILE_NON_DIRECTORY_FILE,
+                    None => 0,
                 },
             ptr::null(),
             0,
@@ -187,7 +187,7 @@ pub(crate) fn create_private(
             parent,
             name,
             RelativeOptions {
-                directory,
+                directory: Some(directory),
                 create_new: true,
                 access: FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
                 // Sharing is part of the caller's operation contract. In
@@ -219,4 +219,101 @@ pub(crate) fn location(file: &File) -> io::Result<std::path::PathBuf> {
         ));
     }
     Ok(OsString::from_wide(&buffer[..length as usize]).into())
+}
+
+// Validate every offset before reading the variable-length part of a record.
+pub(crate) fn record_names(
+    buffer: &[u64],
+    name_offset: usize,
+    length_offset: usize,
+) -> io::Result<Vec<std::ffi::OsString>> {
+    let bytes = unsafe {
+        std::slice::from_raw_parts(buffer.as_ptr().cast::<u8>(), std::mem::size_of_val(buffer))
+    };
+    let invalid = || {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "invalid native enumeration records",
+        )
+    };
+    let mut names = Vec::new();
+    let mut offset = 0;
+    loop {
+        let record = bytes.get(offset..).ok_or_else(invalid)?;
+        let read_u32 = |at: usize| -> io::Result<usize> {
+            let value = record.get(at..at + 4).ok_or_else(invalid)?;
+            Ok(u32::from_le_bytes(value.try_into().map_err(|_| invalid())?) as usize)
+        };
+        let next = read_u32(0)?;
+        let length = read_u32(length_offset)?;
+        let end = name_offset.checked_add(length).ok_or_else(invalid)?;
+        if length == 0 || length % 2 != 0 || (next != 0 && (next < end || next % 8 != 0)) {
+            return Err(invalid());
+        }
+        let name = record.get(name_offset..end).ok_or_else(invalid)?;
+        let units = name
+            .chunks_exact(2)
+            .map(|unit| u16::from_le_bytes([unit[0], unit[1]]))
+            .collect::<Vec<_>>();
+        names.push(std::ffi::OsString::from_wide(&units));
+        if next == 0 {
+            return Ok(names);
+        }
+        offset = offset.checked_add(next).ok_or_else(invalid)?;
+    }
+}
+
+pub(crate) fn directory_children(handle: &std::fs::File) -> io::Result<Vec<std::ffi::OsString>> {
+    directory_children_limited(handle, usize::MAX)
+}
+
+pub(crate) fn directory_children_limited(handle: &File, limit: usize) -> io::Result<Vec<OsString>> {
+    let mut buffer = vec![0_u64; 8192];
+    let mut names = Vec::new();
+    let mut class = FileIdBothDirectoryRestartInfo;
+    loop {
+        let succeeded = unsafe {
+            GetFileInformationByHandleEx(
+                handle.as_raw_handle().cast(),
+                class,
+                buffer.as_mut_ptr().cast(),
+                std::mem::size_of_val(buffer.as_slice()) as u32,
+            )
+        };
+        if succeeded == 0 {
+            let error = std::io::Error::last_os_error();
+            if error.raw_os_error()
+                == Some(windows_sys::Win32::Foundation::ERROR_NO_MORE_FILES as i32)
+            {
+                names.sort_unstable_by(|left: &std::ffi::OsString, right| {
+                    left.encode_wide().cmp(right.encode_wide())
+                });
+                if names.windows(2).any(|pair| pair[0] == pair[1]) {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "duplicate native child name",
+                    ));
+                }
+                return Ok(names);
+            }
+            return Err(error);
+        }
+        for name in record_names(
+            &buffer,
+            std::mem::offset_of!(FILE_ID_BOTH_DIR_INFO, FileName),
+            std::mem::offset_of!(FILE_ID_BOTH_DIR_INFO, FileNameLength),
+        )? {
+            if name != "." && name != ".." {
+                valid_component(&name)?;
+                if names.len() >= limit {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "native directory exceeds entry budget",
+                    ));
+                }
+                names.push(name);
+            }
+        }
+        class = FileIdBothDirectoryInfo;
+    }
 }

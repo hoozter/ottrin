@@ -68,7 +68,7 @@ impl<'a> PrivateStage<'a> {
                 self.parent,
                 &self.name,
                 RelativeOptions {
-                    directory: true,
+                    directory: Some(true),
                     create_new: false,
                     access: FILE_GENERIC_READ,
                     sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -134,7 +134,7 @@ impl<'a> PrivateStage<'a> {
                 self.parent,
                 &self.candidate_name,
                 RelativeOptions {
-                    directory,
+                    directory: Some(directory),
                     create_new: false,
                     access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
                     sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -163,7 +163,7 @@ fn retained(directory: &File, name: &OsStr, error: impl std::fmt::Display) -> Pl
 pub(super) fn open_source(
     parent: &File,
     name: &OsStr,
-    directory: bool,
+    directory: Option<bool>,
 ) -> Result<File, PlatformError> {
     let expected = directory_identity(parent)?;
     let file = unsafe {
@@ -181,10 +181,12 @@ pub(super) fn open_source(
     }
     .map_err(io)?;
     let identity = stable_identity_from_handle(&file).map_err(io)?;
-    let correct_type = if directory {
-        identity.is_directory_without_reparse()
-    } else {
-        identity.is_regular_file_without_reparse()
+    let correct_type = match directory {
+        Some(true) => identity.is_directory_without_reparse(),
+        Some(false) => identity.is_regular_file_without_reparse(),
+        None => {
+            identity.is_directory_without_reparse() || identity.is_regular_file_without_reparse()
+        }
     };
     if !correct_type || directory_identity(parent)? != expected {
         return Err(io("Copy source is a reparse entry or its parent changed"));

@@ -9,6 +9,7 @@
 mod metadata;
 mod namespace;
 mod security;
+mod tree;
 
 use super::PlatformError;
 use crate::move_recovery::{WindowsStableIdentity, stable_identity_from_handle};
@@ -605,8 +606,8 @@ mod tests {
 
     // These permissions apply only to owned fixtures. Restore even on panic so
     // failed native tests do not leave an undeletable temporary directory.
-    struct ReadOnlyAcl(Vec<PathBuf>);
-    fn set_dacl(path: &Path, text: &str) {
+    pub(super) struct ReadOnlyAcl(pub(super) Vec<PathBuf>);
+    pub(super) fn set_dacl(path: &Path, text: &str) {
         use windows_sys::Win32::Foundation::LocalFree;
         use windows_sys::Win32::Security::Authorization::{
             ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1, SE_FILE_OBJECT,
@@ -696,7 +697,8 @@ mod tests {
             .open(&parent)
             .unwrap();
         let read =
-            namespace::open_source(&parent_handle, std::ffi::OsStr::new("source"), false).unwrap();
+            namespace::open_source(&parent_handle, std::ffi::OsStr::new("source"), Some(false))
+                .unwrap();
         metadata::stage_entry_payload(&read, &candidate(&dst), |_| Ok(())).unwrap();
         assert_eq!(std::fs::read(&src).unwrap(), b"readable source");
         assert_eq!(std::fs::read(&dst).unwrap(), b"readable source");
@@ -732,10 +734,11 @@ mod tests {
             );
         }
         let parent_read = source(&source_parent);
-        let read =
-            namespace::open_source(&parent_read, std::ffi::OsStr::new("source"), true).unwrap();
+        let read = namespace::open_source(&parent_read, std::ffi::OsStr::new("source"), Some(true))
+            .unwrap();
         assert!(
-            namespace::open_source(&parent_read, std::ffi::OsStr::new("source"), false).is_err()
+            namespace::open_source(&parent_read, std::ffi::OsStr::new("source"), Some(false))
+                .is_err()
         );
         let parent = parent(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
@@ -862,7 +865,7 @@ mod tests {
         assert_eq!(std::fs::read(&location).unwrap(), b"private candidate data");
         assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 2);
         assert!(stage.name.to_string_lossy().starts_with(".ottrin-copy-"));
-        assert!(namespace::open_source(&parent, OsStr::new("missing"), false).is_err());
+        assert!(namespace::open_source(&parent, OsStr::new("missing"), Some(false)).is_err());
     }
 
     #[test]
@@ -890,7 +893,7 @@ mod tests {
             )
             .unwrap_err();
             assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput);
-            assert!(namespace::open_source(&parent, OsStr::new(name), false).is_err());
+            assert!(namespace::open_source(&parent, OsStr::new(name), Some(false)).is_err());
         }
         assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 0);
         assert!(!root.path().join("escape").exists());
@@ -1027,7 +1030,7 @@ mod tests {
             crate::windows_fs::create_private(&parent, &name, false, FILE_SHARE_READ).unwrap();
         (&created).write_all(b"native name").unwrap();
         drop(created);
-        let opened = namespace::open_source(&parent, &name, false).unwrap();
+        let opened = namespace::open_source(&parent, &name, Some(false)).unwrap();
         let candidate = candidate(&root.path().join("candidate"));
         stage_entry_streams(&opened, &candidate, |_| Ok(())).unwrap();
         assert_eq!(
@@ -1046,9 +1049,10 @@ mod tests {
         std::os::windows::fs::symlink_file(outside.join("keep"), root.path().join("link")).unwrap();
         std::os::windows::fs::symlink_dir(&outside, root.path().join("directory-link")).unwrap();
         let parent_handle = parent(root.path());
-        assert!(namespace::open_source(&parent_handle, OsStr::new("link"), false).is_err());
+        assert!(namespace::open_source(&parent_handle, OsStr::new("link"), Some(false)).is_err());
         assert!(
-            namespace::open_source(&parent_handle, OsStr::new("directory-link"), true).is_err()
+            namespace::open_source(&parent_handle, OsStr::new("directory-link"), Some(true))
+                .is_err()
         );
         let linked_parent = parent(&root.path().join("directory-link"));
         assert!(namespace::PrivateStage::create(&linked_parent).is_err());

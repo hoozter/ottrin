@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::tree::tests::windows_native_copy_tree_pinned_roots_survive_ancestor_alias_retarget' (5240) panicked at crates/ottrin-platform/src/copy_transaction/windows/tree.rs:552:62:
+called `Result::unwrap()` on an `Err` value: Io("Windows Copy stream staging: Copy parent/stage is not a non-reparse directory")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

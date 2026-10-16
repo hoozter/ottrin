@@ -195,7 +195,7 @@ impl DestinationSecurity {
                 parent,
                 name,
                 RelativeOptions {
-                    directory: self.directory,
+                    directory: Some(self.directory),
                     create_new: false,
                     access: FILE_READ_ATTRIBUTES | READ_CONTROL | SYNCHRONIZE,
                     sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -313,7 +313,7 @@ mod tests {
                 parent,
                 OsStr::new(name),
                 RelativeOptions {
-                    directory,
+                    directory: Some(directory),
                     create_new: true,
                     access: FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
                     sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,

@@ -1,0 +1,10 @@
+{
+    "os":  {
+               "Caption":  "Microsoft Windows 11 IoT Enterprise LTSC",
+               "Version":  "10.0.26100",
+               "BuildNumber":  "26100"
+           },
+    "volume":  {
+                   "FileSystemType":  "NTFS"
+               }
+}

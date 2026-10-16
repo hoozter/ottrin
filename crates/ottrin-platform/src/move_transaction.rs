@@ -15,11 +15,7 @@ use super::{copy_entry, rename_without_replacement};
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
 #[cfg(target_os = "windows")]
-use std::os::windows::{
-    ffi::{OsStrExt, OsStringExt},
-    fs::OpenOptionsExt,
-    io::AsRawHandle,
-};
+use std::os::windows::{ffi::OsStrExt, fs::OpenOptionsExt, io::AsRawHandle};
 use std::path::{Path, PathBuf};
 #[cfg(target_os = "windows")]
 use std::{
@@ -33,8 +29,8 @@ use windows_sys::Wdk::Storage::FileSystem::{
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Foundation::{
-    CloseHandle, ERROR_HANDLE_EOF, ERROR_INSUFFICIENT_BUFFER, ERROR_MORE_DATA, ERROR_NO_MORE_FILES,
-    HANDLE, LocalFree, RtlNtStatusToDosError, STATUS_OBJECT_NAME_COLLISION,
+    CloseHandle, ERROR_HANDLE_EOF, ERROR_INSUFFICIENT_BUFFER, ERROR_MORE_DATA, HANDLE, LocalFree,
+    RtlNtStatusToDosError, STATUS_OBJECT_NAME_COLLISION,
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Security::Authorization::{
@@ -50,9 +46,8 @@ use windows_sys::Win32::Security::{
 use windows_sys::Win32::Storage::FileSystem::{
     FILE_ALL_ACCESS, FILE_BASIC_INFO, FILE_DISPOSITION_FLAG_DELETE,
     FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
-    FILE_DISPOSITION_INFO_EX, FILE_ID_BOTH_DIR_INFO, FILE_STREAM_INFO, FileBasicInfo,
-    FileDispositionInfoEx, FileIdBothDirectoryInfo, FileIdBothDirectoryRestartInfo, FileStreamInfo,
-    GetFileInformationByHandleEx, ReplaceFileW, SetFileInformationByHandle,
+    FILE_DISPOSITION_INFO_EX, FILE_STREAM_INFO, FileBasicInfo, FileDispositionInfoEx,
+    FileStreamInfo, GetFileInformationByHandleEx, ReplaceFileW, SetFileInformationByHandle,
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
@@ -532,44 +527,6 @@ fn copy_windows_basic_metadata(
 }
 
 // Both Win32 queries below return linked records with counted UTF-16 names.
-// Validate every offset before reading the variable-length part of a record.
-#[cfg(target_os = "windows")]
-fn windows_record_names(
-    buffer: &[u64],
-    name_offset: usize,
-    length_offset: usize,
-) -> Result<Vec<std::ffi::OsString>, PlatformError> {
-    let bytes = unsafe {
-        std::slice::from_raw_parts(buffer.as_ptr().cast::<u8>(), std::mem::size_of_val(buffer))
-    };
-    let invalid = || PlatformError::Io("Windows Move received invalid enumeration records".into());
-    let mut names = Vec::new();
-    let mut offset = 0;
-    loop {
-        let record = bytes.get(offset..).ok_or_else(invalid)?;
-        let read_u32 = |at: usize| -> Result<usize, PlatformError> {
-            let value = record.get(at..at + 4).ok_or_else(invalid)?;
-            Ok(u32::from_le_bytes(value.try_into().map_err(|_| invalid())?) as usize)
-        };
-        let next = read_u32(0)?;
-        let length = read_u32(length_offset)?;
-        let end = name_offset.checked_add(length).ok_or_else(invalid)?;
-        if length == 0 || length % 2 != 0 || (next != 0 && (next < end || next % 8 != 0)) {
-            return Err(invalid());
-        }
-        let name = record.get(name_offset..end).ok_or_else(invalid)?;
-        let units = name
-            .chunks_exact(2)
-            .map(|unit| u16::from_le_bytes([unit[0], unit[1]]))
-            .collect::<Vec<_>>();
-        names.push(std::ffi::OsString::from_wide(&units));
-        if next == 0 {
-            return Ok(names);
-        }
-        offset = offset.checked_add(next).ok_or_else(invalid)?;
-    }
-}
-
 #[cfg(target_os = "windows")]
 fn windows_file_streams(handle: &std::fs::File) -> Result<Vec<std::ffi::OsString>, PlatformError> {
     // u64 storage provides the required eight-byte record alignment. A full
@@ -586,11 +543,12 @@ fn windows_file_streams(handle: &std::fs::File) -> Result<Vec<std::ffi::OsString
             )
         };
         if succeeded != 0 {
-            return windows_record_names(
+            return crate::windows_fs::record_names(
                 &buffer,
                 mem::offset_of!(FILE_STREAM_INFO, StreamName),
                 mem::offset_of!(FILE_STREAM_INFO, StreamNameLength),
-            );
+            )
+            .map_err(|error| PlatformError::Io(error.to_string()));
         }
         let error = std::io::Error::last_os_error();
         if error.raw_os_error() == Some(ERROR_HANDLE_EOF as i32) {
@@ -605,57 +563,6 @@ fn windows_file_streams(handle: &std::fs::File) -> Result<Vec<std::ffi::OsString
         return Err(PlatformError::Io(format!(
             "Windows Move could not enumerate owned entry streams: {error}"
         )));
-    }
-}
-
-#[cfg(target_os = "windows")]
-fn windows_directory_children(
-    handle: &std::fs::File,
-) -> Result<Vec<std::ffi::OsString>, PlatformError> {
-    let mut buffer = vec![0_u64; 8192];
-    let mut names = Vec::new();
-    let mut class = FileIdBothDirectoryRestartInfo;
-    loop {
-        let succeeded = unsafe {
-            GetFileInformationByHandleEx(
-                handle.as_raw_handle() as HANDLE,
-                class,
-                buffer.as_mut_ptr().cast(),
-                std::mem::size_of_val(buffer.as_slice()) as u32,
-            )
-        };
-        if succeeded == 0 {
-            let error = std::io::Error::last_os_error();
-            if error.raw_os_error() == Some(ERROR_NO_MORE_FILES as i32) {
-                names.sort_unstable_by(|left: &std::ffi::OsString, right| {
-                    left.encode_wide().cmp(right.encode_wide())
-                });
-                return Ok(names);
-            }
-            return Err(PlatformError::Io(format!(
-                "Windows Move could not enumerate owned directory entries: {error}"
-            )));
-        }
-        for name in windows_record_names(
-            &buffer,
-            mem::offset_of!(FILE_ID_BOTH_DIR_INFO, FileName),
-            mem::offset_of!(FILE_ID_BOTH_DIR_INFO, FileNameLength),
-        )? {
-            if name != "." && name != ".." {
-                let path = Path::new(&name);
-                if !matches!(
-                    path.components().next(),
-                    Some(std::path::Component::Normal(_))
-                ) || path.components().count() != 1
-                {
-                    return Err(PlatformError::Io(
-                        "Windows directory enumeration returned a non-child name".into(),
-                    ));
-                }
-                names.push(name);
-            }
-        }
-        class = FileIdBothDirectoryInfo;
     }
 }
 
@@ -2076,7 +1983,9 @@ fn discard_incomplete_windows_directory_candidate(
         )));
     }
     if entry_kind == WindowsIncompleteStagingEntryKind::Directory {
-        for name in windows_directory_children(&handle)? {
+        for name in crate::windows_fs::directory_children(&handle)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+        {
             let child = path.join(name);
             let child_identity = move_recovery::stable_identity_of_entry(&child)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -2889,7 +2798,9 @@ fn capture_windows_directory_snapshot(
         directory_handle: &std::fs::File,
         entries: &mut Vec<WindowsDirectorySnapshotEntry>,
     ) -> Result<(), PlatformError> {
-        for child in windows_directory_children(directory_handle)? {
+        for child in crate::windows_fs::directory_children(directory_handle)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+        {
             let relative_path = relative_directory.join(child);
             let path = root.join(&relative_path);
             let mut handle = move_recovery::open_reparse_safe_cross_volume_source(&path)
@@ -3640,7 +3551,9 @@ fn resume_windows_cross_volume(
         if move_recovery::stable_identity_from_handle(&directory)
             .map_err(|error| PlatformError::Io(error.to_string()))?
             != record.transaction_directory_identity
-            || !windows_directory_children(&directory)?.is_empty()
+            || !crate::windows_fs::directory_children(&directory)
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+                .is_empty()
             || observe_windows_identity(&source)? != Some(record.source_identity)
             || observe_windows_identity(&target)? != record.destination_identity
             || (record.source_kind == WindowsCrossVolumeSourceKind::Directory

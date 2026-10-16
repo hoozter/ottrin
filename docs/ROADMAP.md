@@ -8,6 +8,35 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Current Windows Copy implementation checkpoint
+
+Ordinary recursive tree staging is implemented through pinned native handles.
+Source discovery completes before creating candidate children, with an explicit
+entry/handle budget and identity-based rejection of a destination inside its
+source. Private candidates preserve file/folder streams and ordinary metadata;
+final timestamps are applied bottom-up after verification. Source/candidate child
+membership, held identities and name bindings are checked. Read-only source ACLs,
+raw UTF-16 names, multi-buffer enumeration, independent hard-link copies,
+cancellation, changes/rebinding and ancestor alias retargeting have native tests.
+Move and Copy now use one shared native directory enumeration/parser.
+
+The complete Copy component suite passes 53 ordinary-user tests with the audit
+case excluded. The full Windows platform suite passes 153 with 27 specialized
+exclusions; the explicitly selected audit case passes separately. Linux platform
+tests pass 411 with 3 exclusions; strict platform all-target Clippy passes on both
+targets. Evidence: `.hermes/evidence/windows-copy-tree-current/ACCEPTANCE.json`.
+The alias/ACL fixtures needed setup corrections; no production guard or assertion
+was weakened. The owned no-NIC COW guest is removed after the completed run.
+
+Public Windows Copy remains disabled. Link/reparse preservation, sparse/EFS and
+specialized properties (including directory case-sensitivity policy), tree-wide
+final security, complete Overwrite retention, journals/publication/recovery/Undo,
+clipboard/Tandem and rebuilt-package acceptance remain required. Existing positive
+Windows Copy UI tests remain required and failing. Shared Move/text-save native
+regressions pass; their refactored source has no new exact-package acceptance.
+Current delivered packages remain at the separate checkpoint below. User testing
+is deferred and the full roadmap goal remains active.
+
 ## Current delivered preview checkpoint
 
 Clean runtime source `e9e6783` is now the stable four-format Linux cohort at

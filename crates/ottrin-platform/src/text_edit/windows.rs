@@ -244,7 +244,7 @@ fn relative(
             parent,
             name,
             RelativeOptions {
-                directory,
+                directory: Some(directory),
                 create_new: create,
                 access: if directory {
                     FILE_GENERIC_READ | FILE_GENERIC_WRITE

@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::tree::tests::windows_native_copy_tree_read_only_source_acl_needs_no_delete_or_write_access' (7580) panicked at crates/ottrin-platform/src/copy_transaction/windows/tree.rs:617:17:
+assertion failed: OpenOptions::new().access_mode(access).custom_flags(FILE_FLAG_BACKUP_SEMANTICS).open(path).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

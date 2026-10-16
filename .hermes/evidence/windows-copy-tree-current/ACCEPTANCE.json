@@ -1,0 +1,164 @@
+{
+  "status": "pass",
+  "scope": "Native private ordinary tree staging; public Windows Copy disabled",
+  "base_revision": "247415bbcb3e53acbb4fee0328a60b8cc295a559",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "1d8c0fd255f3419b940e84af2efa06f3c30f8e7e6c2f40bdd53a910ffd6aa874",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "32ca56918ef1664382fbef4f447f7084ecca51bff52764db19e7efcfa65b68f0",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "db7e40919e2124dbe2400fea627a34c44f8e061c8ef7494e18e3f1228eba825e",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "937ae848c5d6828e45a4bba47d946b551f7a0c2343ac27cd0c2c24c7d3b8af6d",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "4529fe586599ef2685592c425ddb15f8958b1b2121f1fad71dce5395b4346582",
+    "crates/ottrin-platform/src/move_transaction.rs": "4f72d9a6d4968d75ca48a0c24249b87566ceb64aa529aa72c2e9f58f17e9bce1",
+    "crates/ottrin-platform/src/text_edit/windows.rs": "3256fb4ca0a93dbb4dd055a3ed763cb4ae8606f73de755fb6958ae9d7f348dfc",
+    "crates/ottrin-platform/src/windows_fs.rs": "6b519d86ad58ef2ad61c9a5757882f83d2548974160735e3ee7741b984b2f538"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "ad4812a4ff189cac8638576429ee7a4c25611877f51e2ebbdd6d1adf4e4f3cab",
+    "transferred_sha256": "f7a7e3ffa18b2f6b1ffe60fdf2e8cbf8b68d4591c4726101f56776ee12edce96",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 6536888,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "4e9c48b3919b9ebe52ae3548d06e0dc756c309cd5e434daa45335fcddca42589"
+      },
+      ".data": {
+        "virtual_size": 3792,
+        "virtual_address": 6541312,
+        "flags": 3221225536,
+        "raw_sha256": "6ebd5b8d17fe469a5e2d0dfc257dfba7e538baa878731c3a525a1293770fafb6"
+      },
+      ".rdata": {
+        "virtual_size": 662360,
+        "virtual_address": 6545408,
+        "flags": 1073741888,
+        "raw_sha256": "4b6f01ee2e01e2c5fb60cc905d4b5a0bc230ddaf515d785817bdd682ee4bf1b6"
+      },
+      ".pdata": {
+        "virtual_size": 131952,
+        "virtual_address": 7208960,
+        "flags": 1073741888,
+        "raw_sha256": "0fe1fb8b4518f78be3982ccc1898b67882d5fbfc32b9e444865ad68eef7d7b69"
+      },
+      ".xdata": {
+        "virtual_size": 405020,
+        "virtual_address": 7344128,
+        "flags": 1073741888,
+        "raw_sha256": "c5e72211eb5c6551456d899c3f869ef621abc3113ff9e23abffcd68011339b17"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 7749632,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 7753728,
+        "flags": 3221225536,
+        "raw_sha256": "84fe313bfeb511f4022ea1b9998423472c4c38ecf6495d0b750fc9a8bec23f94"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 7766016,
+        "flags": 3221225536,
+        "raw_sha256": "9b21728f428608256d05d663ef7a6979585944369ff970982d5b65cf1757e223"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 7770112,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 17808,
+        "virtual_address": 7774208,
+        "flags": 1107296320,
+        "raw_sha256": "9745f9837aa450e5dc5e427285067e13cc96c442cee27a601eeed6f8c2dd7d7f"
+      }
+    }
+  },
+  "environment": {
+    "os": {
+      "Caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+      "Version": "10.0.26100",
+      "BuildNumber": "26100"
+    },
+    "volume": {
+      "FileSystemType": "NTFS"
+    }
+  },
+  "results": {
+    "ordinary_user_copy": {
+      "passed": 53,
+      "failed": 0,
+      "ignored": 1
+    },
+    "ordinary_user_full_windows_platform": {
+      "passed": 153,
+      "failed": 0,
+      "ignored": 27
+    },
+    "explicit_system_audit": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "linux_platform": {
+      "passed": 411,
+      "failed": 0,
+      "ignored": 3
+    },
+    "strict_all_targets_platform_clippy": "pass, Linux and Windows",
+    "formatting": "pass",
+    "diff_check": "pass"
+  },
+  "tree_cases": 10,
+  "coverage": [
+    "166-entry multi-buffer native enumeration, Unicode and raw UTF-16 names",
+    "Empty/populated folders, root EA/ADS, empty file ADS and ordinary metadata",
+    "Independent hard-link copies and bottom-up final directory timestamps",
+    "Identity-based destination-inside-source refusal before child creation",
+    "Bounded source preflight, occupied candidate refusal and explicit reparse refusal",
+    "Chunk cancellation retains partial candidate and unchanged source bytes",
+    "Candidate same-size content changes and source/candidate membership changes rejected",
+    "Held child rebinding retains staged and unrelated replacement bytes",
+    "Ancestor alias retarget cannot redirect reads/creation",
+    "Source tree ACL denies generic write and DELETE, including parent delete-child"
+  ],
+  "resource_model": "Caller entry cap bounds source discovery and native names. Completed stage holds two handles per entry plus caller/root and transient observation handles; iterative traversal.",
+  "fixture_corrections": [
+    {
+      "run": "INITIAL",
+      "results": "50 passed, 1 failed, 1 ignored",
+      "cause": "Alias fixture passed a reparse leaf as destination parent; guard correctly refused it",
+      "correction": "Use a real destination directory under an ancestor alias; preserve refusal of a reparse parent"
+    },
+    {
+      "run": "SECOND",
+      "results": "52 passed, 1 failed, 1 ignored",
+      "cause": "Source parent still granted delete-child, so the ACL fixture did not actually deny DELETE",
+      "correction": "Deny delete-child on a separate source parent; retain all assertions on actual source tree entries"
+    }
+  ],
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "delivery": "Current e9e6783 Linux/internal Windows packages unchanged. Shared Move/text-save refactor has source/native evidence only, not fresh exact-package acceptance.",
+  "remaining": [
+    "Link/reparse preservation; sparse/EFS and specialized property/storage cases",
+    "Directory case-sensitivity policy and complete supported metadata semantics",
+    "Tree-wide final destination security independent of private DACLs",
+    "Durable ownership/journals, Overwrite retention, publication/recovery/Undo",
+    "Public clipboard/Tandem and exact rebuilt-package workflows; two required Copy UI failures remain",
+    "Blocked device/network I/O isolation and pre-existing writable mapping scope are separate requirements"
+  ]
+}

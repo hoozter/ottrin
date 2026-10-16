@@ -1,6 +1,6 @@
 # Native Windows Copy
 
-Status: native file/directory payloads, private namespace and new-copy destination security inheritance verified; public Copy remains disabled until the complete transaction is accepted.
+Status: native file/directory payloads, private namespace, ordinary tree staging and new-copy destination security inheritance verified; public Copy remains disabled until the complete transaction is accepted.
 
 Copy must leave the original namespace and bytes untouched. It must not simulate a Move followed by restoration, or require source delete/data-write access merely because Move uses those rights. The existing Windows Move identity and handle-relative rename primitives can be reused where their contracts apply.
 
@@ -11,7 +11,7 @@ The implementation must support files, populated directories and supported link 
 Before enabling the public path, implement and accept:
 
 1. **Native namespace authority.** Pin the requested destination parent and each source entry. Open source data for reading, without deletion rights. Refuse alternate-stream syntax at the source-entry boundary and handle reparse entries explicitly. Create the private transaction with its restrictive security descriptor at creation, relative to the pinned parent. Revalidate bindings rather than reopening an alias to authorize mutations.
-2. **Complete staging.** Copy named streams and extended attributes as well as primary data. Extend this to directory trees and their metadata. Validate the supported file-attribute, compression, sparse, EFS, reparse and property cases; unresolved cases stay explicit requirements. Final destination permissions must follow the accepted Windows Copy policy, independently of the private staging permissions.
+2. **Complete staging.** Copy named streams and extended attributes as well as primary data. Extend this to directory trees and their metadata. Validate the supported file-attribute, compression, sparse, EFS, reparse, case-sensitive directory and property cases; unresolved cases stay explicit requirements. Final destination permissions must follow the accepted Windows Copy policy, independently of the private staging permissions.
 3. **Durable publication and recovery.** Persist the intended destination and staged evidence before mutation, retain the exact displaced target for Overwrite, publish only verified data with the recorded parent/entry authority, and preserve both versions at every interruption boundary. Copy recovery must never acquire source-removal authority. Keep Copy records distinct from Move records.
 4. **Undo and cleanup.** Validate current identities, contents, streams and metadata before an inverse. Refuse stale/reused entries and occupied restoration names. Delete only data proven to belong to the transaction; unexpected files or edits must remain with actionable recovery status. Recovery discovery and UI must work on Windows too.
 5. **Actual workflows.** Connect the platform, batch, clipboard and Tandem callers. Retain and pass the existing positive Windows clipboard tests rather than excluding them. Accept native fault/exit, ACL/sharing, path-rebinding, conflict, Undo and cleanup cases, then the rebuilt portable/NSIS/MSI public workflows. Broader storage, network I/O cancellation and release gates remain required.
@@ -181,9 +181,9 @@ attributes, populated source folders, empty directories, compressed/uncompressed
 source and candidate combinations, timestamps/ordinary attributes, same-size
 stream tampering, source/candidate alias or type mismatch, occupied payloads and
 cancellation with exclusive reopening afterward. Public Copy is still disabled.
-Recursive child staging, bottom-up final metadata after child mutations, link
-preservation, durable tree evidence and all publication/recovery requirements
-remain open. Evidence is `.hermes/evidence/windows-copy-directory-current/`.
+Ordinary recursive child staging and bottom-up metadata now have the component
+implementation below. Link preservation, durable tree evidence and all
+publication/recovery requirements remain open. Evidence is `.hermes/evidence/windows-copy-directory-current/`.
 
 The final ordinary-user Copy suite passes 43 with the explicit audit case
 excluded. The full ordinary-user Windows platform suite passes 143 with 27
@@ -195,3 +195,65 @@ cases passed while two existing symlink fixture setups failed with error 1314.
 Enabling that fixture prerequisite in the COW made the complete suite pass;
 production behavior and test assertions were not weakened. These component
 results introduce no public Copy or package completion claim.
+
+
+## Ordinary tree staging
+
+`copy_transaction/windows/tree.rs` stages regular roots or populated ordinary
+folder trees into an independently owned private candidate. It first enumerates
+and opens the entire source tree through pinned parent handles, retains source
+identities/versions and exact UTF-16 child names, and enforces the caller's explicit
+entry/handle budget. Native enumeration itself enforces the remaining name budget.
+A candidate found anywhere in the source tree is rejected by held identity before
+any candidate children are created. Occupied candidate directories are refused.
+Links/reparse entries are not followed. Traversal is iterative rather than recursive.
+
+Child source opens request generic read, without data-write or DELETE. Each child
+candidate is created new with its owner-only DACL, relative to its held candidate
+parent. The shared payload engine preserves file/directory streams and ordinary
+metadata. Hard-linked source names become independent candidate data. No entry
+is adopted, published, renamed or removed by this component.
+
+Before success, the component checks source versions, exact source/candidate child
+membership and the native name bindings of all held children. It verifies source
+and candidate payload evidence, then applies final metadata bottom-up after all
+content/enumeration reads. It rechecks identities/bindings and final metadata.
+`verify_and_finalize` repeats the checks for a previously completed stage and
+refuses changed candidate metadata before normalization. Root name bindings and
+root transaction ownership remain the enclosing journal owner's responsibility.
+Nothing here establishes durable ownership, authorizes cleanup or supplies an
+atomic filesystem snapshot. Existing writable-mapping and blocked-I/O limitations
+remain separate requirements.
+
+Move and Copy now share native record parsing and directory enumeration in
+`windows_fs.rs`; the superseded Move-local implementation is removed. The native
+relative opener can explicitly require a file/directory or admit either type
+for source discovery. Reparse refusal remains at the source identity boundary.
+Text saving and DACL callers retain their explicit required-type opens.
+
+The new native tree fixtures cover a 166-entry multi-buffer directory with raw
+UTF-16 and Unicode names, empty/populated folders, root extended attributes and
+named streams, empty file ADS, independent hard-link copies, bottom-up timestamps,
+self-descendant refusal, bounded preflight, cancellation, same-size data changes,
+source/candidate child changes, child rebinding with both versions retained,
+ancestor alias retargeting and read-only source ACLs including parent delete-child
+permissions. These are private-component checks; they do not enable public Copy.
+
+Remaining staging work includes link preservation, sparse/EFS and other specialized
+storage, case-sensitive directory policy and complete supported property semantics.
+Tree-wide final security must derive child permissions from final destination
+inheritance rather than private candidate DACLs. Journals, Overwrite retention,
+publication/recovery/Undo, clipboard/Tandem and exact rebuilt-package acceptance
+remain required. Evidence: `.hermes/evidence/windows-copy-tree-current/`.
+
+
+Ten new native tree cases pass. The complete ordinary-user Copy component suite
+passes 53 with the explicit audit case excluded; the full Windows platform suite
+passes 153 with 27 specialized exclusions. The SYSTEM audit case passes separately.
+Linux platform tests pass 411 with 3 exclusions, and strict platform all-target
+Clippy passes for both targets. Initial failures were in new fixture setup:
+the alias fixture first supplied a reparse leaf instead of a real directory under
+an ancestor alias; the ACL fixture first left delete-child authority on the source
+parent. The corrected fixtures exercise the intended contracts without relaxing
+production checks or removing assertions. Formatting and diff checks pass.
+These source/native results are not rebuilt-package or full Windows acceptance.
