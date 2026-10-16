@@ -693,9 +693,9 @@ Activity reports progress and retains the remaining action for retry.
 
 Safe expiry/reclamation of Copy transaction stages is still open. Receipt
 ownership and successful Undo do not establish that transaction storage has
-been reclaimed. Native Windows now has journaled completion evidence, but no guarded Copy Undo
-implementation or public Copy receipts yet; cross-compilation does not establish
-Windows Copy acceptance.
+been reclaimed. Native Windows has journaled completion evidence and a private creation-Undo
+implementation. Public Copy receipts and UI integration remain gated;
+cross-compilation does not establish Windows Copy acceptance.
 
 Windows Copy candidates use `windows_fs::PerObjectFile` for the documented
 `MAXIMUM_ALLOWED` per-object permission-update contract. Keep its constructor
@@ -713,7 +713,7 @@ derives native policy and accepts private/final security only as its recorded
 phase permits. Never reapply an already exact final DACL. A final verification
 record follows the full payload/security scan, and the writer reserves the remaining
 journal tail before publication, including a conservative readonly-reopen allowance.
-The schema-5 codec returns the append
+The schema-6 codec returns the append
 sequence/hash; do not reconstruct a second interpretation of the frame chain.
 Known links remain no-follow leaves. Single-link guards apply to candidates,
 not sources. This contract does not grant Overwrite, Undo or cleanup authority;
@@ -740,7 +740,7 @@ capabilities. Stream revalidation uses the caller's cancellable progress path;
 cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
 changes are retained/refused; do not normalize their metadata to resume.
 
-The format is `OTCPWJ05` / schema 5; superseded schemas are refused, without a
+The format is `OTCPWJ06` / schema 6; superseded schemas are refused, without a
 compatibility reader. Log reservation includes prospective readonly reopen
 records and a pending acknowledgement; repeated interruption remains bounded by
 the total log budget and must fail before an unreserved mutation. These native
@@ -773,6 +773,40 @@ Unknown future native change times and digest decimal widths use bounded maximum
 JSON encodings, rather than assuming an exact future length. Evidence digests
 share one streaming serializer/hash implementation with the permission plan;
 no whole serialized evidence buffer is required.
+
+Private Windows creation Undo appends paired `UndoIntent` records before a
+no-replace retraction to the original destination-local candidate name, then
+flushes the root and parent and verifies the full retained tree before appending
+`Undone` with the root's post-retraction native version. It never reads or mutates
+the original source, deletes data, overwrites an occupied name or changes final
+permissions. Retained data keeps its verified final permissions; it is not a
+secure erase or automatic storage reclamation. The original completion versions
+remain immutable; only the identity-resolved retained root may have the inverse
+rename's change time, and a paired root readonly intent may authorize its temporary
+bit difference. The `Undone` acknowledgement freezes the new root version.
+
+The same held-tree verifier serves inspection and the explicit writer epoch.
+Read-only inspection releases its locks before writer acquisition; paired bytes
+are compared again, the typed root capability is acquired, and the whole tree is
+revalidated. Native Windows refuses directory rename with open descendant files,
+so readers close for the narrow rename handoff. Reopen and verify every frozen
+child version, bytes, membership and freshly derived permissions afterward.
+Unexpected changes refuse completion and retain all data; this is a retention
+contract, not atomic exclusion of every descendant writer. The error includes the
+retained candidate path. Never mark such a transaction complete or reclaim its
+retained data merely because the published name is absent.
+
+Recovery resolves target/candidate ownership by full native identity. An occupied
+candidate is preserved, and an unrelated new publication after retraction is left
+untouched. Mismatched journal mirrors remain unchanged/refused. Completed Undo
+reopens read-only and adds no records; forward publication and completed-copy
+receipt APIs refuse transactions that have entered Undo. Cancellation after the
+handoff leaves explicit recovery work. Overwrite restoration, automatic cleanup,
+public receipts, Activity/clipboard/Tandem integration and full platform acceptance
+remain required.
+
+Native rename constraints:
+https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
 
 Copy and created-entry receipts guard the original parent and transaction
 identities with one shared, nonblocking Linux inotify instance. Watches are

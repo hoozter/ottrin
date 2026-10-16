@@ -36,7 +36,7 @@ epoch's locks, compares the fresh paired journal bytes, then opens new typed
 The writer rechecks its creator context on every append and reserves the
 remaining publication/application tail before publication, including readonly
 reopen records. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ05` / schema 5;
+append sequence/hash state on reopen. The format is now `OTCPWJ06` / schema 6;
 superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with ordered immutable final-version records and a digest seal after a full
 content/metadata/security scan. Entry acknowledgements alone
@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 212 with 29 specialized
+The final ordinary-user Windows platform suite passes 219 with 29 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -111,7 +111,7 @@ fixture; both partial and sealed receipts are refused without journal edits or
 new publication. The expanded publication/finalization and readonly fault
 matrices now cover 120 injected failures and 106 real process exits. Extra
 adversarial setup failures and cancellation fixtures are separately scoped.
-The final source passes 212 Windows platform tests with 29 specialized exclusions,
+That completion checkpoint passed 212 Windows platform tests with 29 specialized exclusions,
 411 Linux platform tests with 3 exclusions and strict all-target Clippy on both
 targets. Current receipt:
 `.hermes/evidence/windows-copy-completion-current/ACCEPTANCE.json`.
@@ -120,7 +120,45 @@ Final-entry frame reservation uses bounded maximum JSON widths for future native
 change times and the digest. All final evidence hashing streams through one
 shared serializer/hash implementation; it does not allocate a complete JSON
 representation. Source/format gates remain private; public receipt integration,
-guarded Undo, Overwrite and the remaining platform matrices are still required.
+Overwrite/Undo integration and the remaining platform matrices are still required.
+
+Private Windows creation Undo now has paired intent and completion records.
+It verifies the sealed copy, compares journals again when acquiring the writer,
+retracts without replacement to the original candidate slot, flushes root/parent,
+and revalidates the complete retained tree before acknowledging the inverse with
+its new root version. It never reads or mutates the original source, deletes data,
+overwrites a retention occupant or normalizes final permissions. A new unrelated
+publication after retraction stays untouched. Retained data keeps its final ACLs;
+this does not claim secure erasure or reclaimed storage.
+
+The first native run rejected an incorrect assumption about descendant handles:
+Windows refuses directory rename while descendant files remain open. That sharing
+experiment was removed. One held-tree verifier now serves read-only inspection
+and the explicit writer epoch. Readers close only for the native handoff, then
+all immutable evidence is checked again. A real handoff mutation test changes a
+child in that gap: completion is refused, the changed data is retained, and the
+error names the retained location. This is retention plus explicit recovery, not
+atomic exclusion of every descendant writer. Unknown changed retained data must
+not be silently accepted, rebased or reclaimed.
+
+The final native suite passes 219 Windows platform tests with 29 specialized
+exclusions; Linux passes 411 with 3 exclusions, and strict all-target Clippy passes
+on both targets. Native checks cover files, folders, readonly roots/children,
+file symlinks, directory symlinks and junctions, preserved target bytes/permissions,
+changed-output and alias refusal before intent, active-writer refusal/retry,
+occupied retention, unrelated replacement names, cancellation, and idempotent
+source-free recovery. The new inverse matrix adds 28 injected failures and 28 real
+process exits, bringing the combined explicit matrices to 148 failures and 134
+exits. Separate adversarial setup/cancellation/handoff cases retain their own
+scope. Current receipt:
+`.hermes/evidence/windows-copy-undo-current/ACCEPTANCE.json`.
+
+Public Copy/Undo remains disabled. Overwrite restoration, public receipt and
+Activity/clipboard/Tandem integration, cleanup, central discovery, broader
+permissions/storage matrices and guest power-cut acceptance remain required.
+Packages are unchanged. The owned VM and disposable fixtures are removed after
+terminal verification; original profiles, installations and guest images stay
+preserved.
 
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
@@ -129,8 +167,8 @@ metadata and stream hashes. Production never enables Developer Mode or token
 privileges. Developer Mode-off link evidence remains separately scoped to
 `windows-copy-links-current/ACCEPTANCE.json`.
 
-Public Windows Copy stays disabled. Overwrite, public receipt integration,
-guarded Undo/cleanup, central discovery and interrupted-staging policy, complete
+Public Windows Copy stays disabled. Overwrite restoration, public receipt/Undo
+integration, guarded cleanup, central discovery and interrupted-staging policy, complete
 SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive directories,
 specialized storage/properties, real large-tree budgets, guest power-cut acceptance,
 clipboard/Tandem, positive native Copy UI and rebuilt-package acceptance remain

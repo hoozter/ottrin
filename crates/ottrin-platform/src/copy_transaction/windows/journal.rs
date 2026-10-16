@@ -22,7 +22,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ05";
+const MAGIC: &[u8; 8] = b"OTCPWJ06";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -59,7 +59,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 5
+            && self.schema == 6
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -151,6 +151,10 @@ enum Record {
         count: usize,
         digest: [u8; 32],
     },
+    UndoIntent,
+    Undone {
+        root_version: Box<EntryVersion>,
+    },
 }
 #[derive(Debug)]
 struct Node {
@@ -173,6 +177,8 @@ struct State {
     published: bool,
     completion_verified: bool,
     final_versions: Vec<EntryVersion>,
+    undo_intent: bool,
+    undone: Option<EntryVersion>,
     readonly_pending: Option<usize>,
     source_ids: BTreeSet<(u64, [u8; 16])>,
     candidate_ids: BTreeSet<(u64, [u8; 16])>,
@@ -280,17 +286,71 @@ impl State {
             && !self.permissions.pending
             && self.permissions.completed == self.nodes.len()
     }
+    fn readonly_reopen_allowed(&self, index: usize) -> bool {
+        if self.undo_intent {
+            index == 0 && self.undone.is_none()
+        } else {
+            !self.native_complete()
+        }
+    }
+    fn validate_final_version(
+        &self,
+        index: usize,
+        observed: &EntryVersion,
+        root_name: &OsStr,
+    ) -> Result<(), PlatformError> {
+        let Some(original) = self.final_versions.get(index) else {
+            return Ok(());
+        };
+        let mut expected = if index == 0 {
+            self.undone.as_ref().unwrap_or(original).clone()
+        } else {
+            original.clone()
+        };
+        if index == 0
+            && self.undo_intent
+            && self.undone.is_none()
+            && root_name == self.header.as_ref().unwrap().candidate_name()
+        {
+            // Only the identity-resolved retained root may have the rename's
+            // native change time. Persistent metadata remains checked separately.
+            expected.changed = observed.changed;
+            if self.readonly_pending == Some(0) {
+                expected.attributes = observed.attributes;
+            }
+        }
+        if expected != *observed {
+            return Err(io("Copy final receipt version changed; all data retained"));
+        }
+        Ok(())
+    }
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
+        if self.undone.is_some() {
+            return Err(invalid());
+        }
         if self.readonly_pending.is_some() && !matches!(record, Record::ReadonlyReopened { .. }) {
             return Err(invalid());
         }
         match record {
+            Record::UndoIntent => {
+                if !self.completion_verified || self.undo_intent {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::Undone { root_version } => {
+                let mut expected = self.final_versions.first().ok_or_else(invalid)?.clone();
+                expected.changed = root_version.changed;
+                if !self.undo_intent || **root_version != expected {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
             Record::ReadonlyReopenIntent { index } => {
                 let node = self.nodes.get(*index).ok_or_else(invalid)?;
                 if self.planned.is_none()
-                    || self.native_complete()
-                    || self.completion_verified
+                    || !self.readonly_reopen_allowed(*index)
                     || self.readonly_pending.is_some()
                     || node.source.directory
                     || node.source.attributes
@@ -480,7 +540,9 @@ impl State {
                     return Err(invalid());
                 }
             }
-            Record::ReadonlyReopenIntent { .. }
+            Record::UndoIntent
+            | Record::Undone { .. }
+            | Record::ReadonlyReopenIntent { .. }
             | Record::ReadonlyReopened { .. }
             | Record::FinalEntry { .. }
             | Record::Finalized { .. }
@@ -506,6 +568,8 @@ impl State {
     fn apply(&mut self, record: Record) -> Result<(), PlatformError> {
         self.check(&record)?;
         match record {
+            Record::UndoIntent => self.undo_intent = true,
+            Record::Undone { root_version } => self.undone = Some(*root_version),
             Record::ReadonlyReopenIntent { index } => self.readonly_pending = Some(index),
             Record::ReadonlyReopened { .. } => self.readonly_pending = None,
             Record::FinalEntry { version, .. } => self.final_versions.push(*version),
@@ -705,7 +769,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 5,
+            schema: 6,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -740,6 +804,69 @@ impl Journal {
             header: Box::new(header),
         })?;
         Ok(result)
+    }
+    fn from_snapshot(
+        parent: &File,
+        central: &File,
+        snapshot: Snapshot,
+    ) -> Result<Self, PlatformError> {
+        snapshot.revalidate(parent, central)?;
+        let length = snapshot.bytes.len() as u64;
+        let header = snapshot.state.header.as_ref().unwrap().clone();
+        Ok(Self {
+            local: snapshot.local,
+            central: snapshot.mirror,
+            stage_dir: snapshot.stage,
+            parent_dir: parent.try_clone().map_err(io)?,
+            central_dir: central.try_clone().map_err(io)?,
+            header,
+            state: snapshot.state,
+            sequence: snapshot.sequence,
+            previous: snapshot.previous,
+            length,
+            failed: false,
+            candidates: Vec::new(),
+        })
+    }
+    fn reserve_undo_tail(&self) -> Result<(), PlatformError> {
+        if self.state.undone.is_some() {
+            return Ok(());
+        }
+        let mut records = Vec::new();
+        if !self.state.undo_intent {
+            records.push(Record::UndoIntent);
+        }
+        let root = &self.state.nodes[0];
+        if !root.source.directory
+            && root.source.attributes
+                & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
+                != 0
+        {
+            if self.state.readonly_pending.is_none() {
+                records.push(Record::ReadonlyReopenIntent { index: 0 });
+            }
+            records.push(Record::ReadonlyReopened { index: 0 });
+        }
+        let mut version = self.state.final_versions[0].clone();
+        version.changed = i64::MIN;
+        records.push(Record::Undone {
+            root_version: Box::new(version),
+        });
+        let required = records.iter().try_fold(0u64, |total, record| {
+            total
+                .checked_add(FRAME_HEADER as u64 + record_payload(record)?.len() as u64)
+                .ok_or_else(|| io("Copy Undo reservation overflow"))
+        })?;
+        if self
+            .length
+            .checked_add(required)
+            .is_none_or(|length| length > MAX_LOG)
+        {
+            return Err(io(
+                "Copy journal has insufficient Undo space; data retained",
+            ));
+        }
+        Ok(())
     }
     fn permission_tail_size(&self) -> Result<u64, PlatformError> {
         let mut total = 0u64;
@@ -904,7 +1031,7 @@ impl Journal {
             || node.source.attributes
                 & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
                 == 0
-            || self.state.native_complete()
+            || !self.state.readonly_reopen_allowed(index)
         {
             return Ok(file);
         }
@@ -917,7 +1044,11 @@ impl Journal {
             .validate_entry_security(index, &file, self.state.permissions)?;
         namespace::validate_single_link(&file)?;
         bound(owner, name, evidence.candidate_identity)?;
-        self.reserve_permission_tail()?;
+        if self.state.undo_intent {
+            self.reserve_undo_tail()?;
+        } else {
+            self.reserve_permission_tail()?;
+        }
         if self.state.readonly_pending.is_none() {
             self.persist(Record::ReadonlyReopenIntent { index })?;
         } else if self.state.readonly_pending != Some(index) {
@@ -1255,6 +1386,9 @@ impl PermissionStage {
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let retained = RetainedStage::open(parent, central, name, &mut progress)?;
+        if retained.snapshot.state.undo_intent {
+            return Err(io("Copy is retracting or undone; use Undo recovery"));
+        }
         let prepared = retained.derive_destination_security(|| progress(0))?;
         let evidence = prepared.evidence().at_root(
             &retained
@@ -1267,7 +1401,7 @@ impl PermissionStage {
         );
         let parent_policy = prepared.into_root_policy();
         let expected = retained.snapshot.bytes.clone();
-        let root_name = retained.root_name.clone();
+        let root_name = retained.tree.root_name.clone();
         drop(retained);
         let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Write)?;
         if snapshot.bytes != expected {
@@ -1296,22 +1430,7 @@ impl PermissionStage {
                 .validate(&root, &snapshot.state.header.as_ref().unwrap().creator)?;
         }
 
-        snapshot.revalidate(parent, central)?;
-        let header = snapshot.state.header.as_ref().unwrap().clone();
-        let mut journal = Journal {
-            local: snapshot.local,
-            central: snapshot.mirror,
-            stage_dir: snapshot.stage,
-            parent_dir: parent.try_clone().map_err(io)?,
-            central_dir: central.try_clone().map_err(io)?,
-            header,
-            state: snapshot.state,
-            sequence: snapshot.sequence,
-            previous: snapshot.previous,
-            length: expected.len() as u64,
-            failed: false,
-            candidates: Vec::new(),
-        };
+        let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
         journal.prepare_plan(&evidence, || progress(0))?;
         journal.finish_pending_readonly(&root, &mut progress)?;
         let root = journal.reopen_readonly(0, parent, &root_name, root, &mut progress)?;
@@ -1524,6 +1643,8 @@ pub(super) struct Inspection {
     pub(super) completion_verified: bool,
     pub(super) completion_entries: usize,
     pub(super) readonly_reopening: Option<usize>,
+    pub(super) undo_pending: bool,
+    pub(super) undone: bool,
     pub(super) permissions_completed: usize,
     pub(super) permission_pending: bool,
 }
@@ -1564,10 +1685,10 @@ impl Snapshot {
         let header = self.state.header.as_ref().unwrap();
         let candidate = header.candidate_name();
         let target = OsString::from_wide(&header.target);
-        if self.state.published {
+        if self.state.published && !self.state.undo_intent {
             return Ok(target);
         }
-        if !self.state.publication_intent {
+        if !self.state.publication_intent && !self.state.undo_intent {
             return Ok(candidate);
         }
         let expected = self.state.nodes[0]
@@ -1597,9 +1718,14 @@ impl Snapshot {
         };
         match (probe(&candidate)?, probe(&target)?) {
             (true, false) => Ok(candidate),
-            (false, true) => Ok(target),
+            (false, true)
+                if self.state.undone.is_none()
+                    && !(self.state.undo_intent && self.state.readonly_pending.is_some()) =>
+            {
+                Ok(target)
+            }
             _ => Err(io(
-                "Pending Copy publication has missing or aliased root bindings; data retained",
+                "Pending Copy publication/Undo has missing or aliased root bindings; data retained",
             )),
         }
     }
@@ -1735,6 +1861,8 @@ pub(super) fn inspect(
         completion_verified: snapshot.state.completion_verified,
         completion_entries: snapshot.state.final_versions.len(),
         readonly_reopening: snapshot.state.readonly_pending,
+        undo_pending: snapshot.state.undo_intent && snapshot.state.undone.is_none(),
+        undone: snapshot.state.undone.is_some(),
         permissions_completed: snapshot.state.permissions.completed,
         permission_pending: snapshot.state.permissions.pending,
     })
@@ -1753,8 +1881,7 @@ pub(super) struct RetainedStage<'a> {
     parent: &'a File,
     central: &'a File,
     snapshot: Snapshot,
-    entries: Vec<RetainedEntry>,
-    root_name: OsString,
+    tree: HeldTree,
 }
 impl<'a> RetainedStage<'a> {
     pub(super) fn open(
@@ -1764,23 +1891,86 @@ impl<'a> RetainedStage<'a> {
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
-        if !snapshot.state.verified {
+        let root_name = snapshot.root_name(parent)?;
+        let tree = HeldTree::open(parent, &snapshot.state, root_name, None, &mut progress)?;
+        let result = Self {
+            parent,
+            central,
+            snapshot,
+            tree,
+        };
+        result.revalidate(progress)?;
+        Ok(result)
+    }
+    pub(super) fn plan_destination_security(
+        &self,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<security::TreeSecurityPlan, PlatformError> {
+        self.snapshot.revalidate(self.parent, self.central)?;
+        self.tree
+            .validate_contents(self.parent, &self.snapshot.state, &mut |_| progress())?;
+        let plan = self.derive_destination_security(progress)?;
+        self.snapshot.revalidate(self.parent, self.central)?;
+        Ok(plan)
+    }
+    fn derive_destination_security(
+        &self,
+        progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<security::TreeSecurityPlan, PlatformError> {
+        self.tree
+            .derive_destination_security(self.parent, &self.snapshot.state, progress)
+    }
+    pub(super) fn entry_count(&self) -> usize {
+        self.tree.entries.len()
+    }
+    pub(super) fn revalidate(
+        &self,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.snapshot.revalidate(self.parent, self.central)?;
+        validate_stage_entries(&self.snapshot.stage)?;
+        self.tree
+            .revalidate(self.parent, &self.snapshot.state, &mut progress)?;
+        self.snapshot.revalidate(self.parent, self.central)
+    }
+}
+fn validate_stage_entries(stage: &File) -> Result<(), PlatformError> {
+    if windows_fs::directory_children_limited(stage, 1).map_err(io)? != [OsString::from(LOCAL)] {
+        return Err(io("unexpected Copy transaction entries; all data retained"));
+    }
+    Ok(())
+}
+/// One payload/namespace/security verifier for read-only inspection and the
+/// explicitly owned Undo epoch. Windows requires descendant readers to close
+/// for a directory rename; all frozen versions are revalidated after that handoff.
+struct HeldTree {
+    entries: Vec<RetainedEntry>,
+    root_name: OsString,
+}
+impl HeldTree {
+    fn open(
+        parent: &File,
+        state: &State,
+        root_name: OsString,
+        root_capability: Option<&windows_fs::PerObjectFile>,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        if !state.verified {
             return Err(io(
                 "Copy staging was interrupted before full verification; retain for recovery",
             ));
         }
-        let root_name = snapshot.root_name(parent)?;
-        let mut children = vec![Vec::new(); snapshot.state.nodes.len()];
-        for node in &snapshot.state.nodes {
+        let mut children = vec![Vec::new(); state.nodes.len()];
+        for node in &state.nodes {
             if let Some(parent) = node.parent {
                 children[parent].push(OsString::from_wide(&node.name));
             }
         }
         for names in &mut children {
-            names.sort_unstable_by(|left, right| left.encode_wide().cmp(right.encode_wide()));
+            names.sort_unstable_by(|a, b| a.encode_wide().cmp(b.encode_wide()));
         }
         let mut entries: Vec<RetainedEntry> = Vec::with_capacity(children.len());
-        for (index, node) in snapshot.state.nodes.iter().enumerate() {
+        for (index, node) in state.nodes.iter().enumerate() {
             progress(0)?;
             let owner = node.parent.map(|p| &entries[p].handle).unwrap_or(parent);
             let name = if index == 0 {
@@ -1788,18 +1978,18 @@ impl<'a> RetainedStage<'a> {
             } else {
                 OsString::from_wide(&node.name)
             };
-            let handle = namespace::open_source(owner, &name, None)?;
+            let handle = match (index, root_capability) {
+                (0, Some(capability)) => std::fs::File::try_clone(capability).map_err(io)?,
+                _ => namespace::open_source(owner, &name, None)?,
+            };
             let evidence = node.staged.as_ref().unwrap();
-            if snapshot.state.permissions == security::PermissionProgress::default() {
+            if state.permissions == security::PermissionProgress::default() {
                 node.security
                     .as_ref()
                     .unwrap()
-                    .validate(&handle, &snapshot.state.header.as_ref().unwrap().creator)?;
+                    .validate(&handle, &state.header.as_ref().unwrap().creator)?;
             }
-            evidence.validate_reopening_metadata(
-                &handle,
-                snapshot.state.readonly_pending == Some(index),
-            )?;
+            evidence.validate_reopening_metadata(&handle, state.readonly_pending == Some(index))?;
             let observed = super::version(&handle)?;
             if observed.link != evidence.source.link {
                 return Err(io("retained Copy link data changed; no target followed"));
@@ -1810,37 +2000,21 @@ impl<'a> RetainedStage<'a> {
                 children: std::mem::take(&mut children[index]),
             });
         }
-        let result = Self {
-            parent,
-            central,
-            snapshot,
-            entries,
-            root_name,
-        };
-        result.revalidate(progress)?;
-        Ok(result)
-    }
-    pub(super) fn plan_destination_security(
-        &self,
-        mut progress: impl FnMut() -> Result<(), PlatformError>,
-    ) -> Result<security::TreeSecurityPlan, PlatformError> {
-        self.validate_contents(|_| progress())?;
-        self.derive_destination_security(progress)
+        Ok(Self { entries, root_name })
     }
     fn derive_destination_security(
         &self,
+        parent: &File,
+        state: &State,
         mut progress: impl FnMut() -> Result<(), PlatformError>,
     ) -> Result<security::TreeSecurityPlan, PlatformError> {
-        let recorded = self
-            .snapshot
-            .state
+        let recorded = state
             .planned
             .as_ref()
             .map(|plan| plan.at_root(&self.root_name));
         let plan = security::TreeSecurityPlan::capture_at(
-            self.parent,
-            self.snapshot
-                .state
+            parent,
+            state
                 .nodes
                 .iter()
                 .zip(&self.entries)
@@ -1856,21 +2030,17 @@ impl<'a> RetainedStage<'a> {
                     directory: node.source.directory,
                 }),
             recorded.as_ref(),
-            self.snapshot.state.permissions,
+            state.permissions,
             &mut progress,
         )?;
-        self.namespace()?;
-        plan.validate_at(self.snapshot.state.permissions)?;
+        self.namespace(parent, state)?;
+        plan.validate_at(state.permissions)?;
         let evidence = plan.evidence();
-        if self
-            .snapshot
-            .state
+        if state
             .planned
             .as_ref()
             .is_some_and(|recorded| recorded.at_root(&self.root_name) != evidence)
-            || self
-                .snapshot
-                .state
+            || state
                 .planning
                 .as_ref()
                 .is_some_and(|partial| !partial.evidence.is_prefix_of(&evidence, partial.expected))
@@ -1881,52 +2051,26 @@ impl<'a> RetainedStage<'a> {
         }
         Ok(plan)
     }
-    pub(super) fn entry_count(&self) -> usize {
-        self.entries.len()
-    }
-    fn namespace(&self) -> Result<(), PlatformError> {
-        self.snapshot.revalidate(self.parent, self.central)?;
-        if windows_fs::directory_children_limited(&self.snapshot.stage, 1).map_err(io)?
-            != [OsString::from(LOCAL)]
-        {
-            return Err(io("unexpected Copy transaction entries; all data retained"));
-        }
-        for (index, (node, entry)) in self
-            .snapshot
-            .state
-            .nodes
-            .iter()
-            .zip(&self.entries)
-            .enumerate()
-        {
-            if self.snapshot.state.permissions == security::PermissionProgress::default() {
-                node.security.as_ref().unwrap().validate(
-                    &entry.handle,
-                    &self.snapshot.state.header.as_ref().unwrap().creator,
-                )?;
+    fn namespace(&self, parent: &File, state: &State) -> Result<(), PlatformError> {
+        for (index, (node, entry)) in state.nodes.iter().zip(&self.entries).enumerate() {
+            if state.permissions == security::PermissionProgress::default() {
+                node.security
+                    .as_ref()
+                    .unwrap()
+                    .validate(&entry.handle, &state.header.as_ref().unwrap().creator)?;
             }
             let owner = node
                 .parent
                 .map(|p| &self.entries[p].handle)
-                .unwrap_or(self.parent);
-            bound(
-                owner,
-                &if index == 0 {
-                    self.root_name.clone()
-                } else {
-                    OsString::from_wide(&node.name)
-                },
-                entry.observed.identity,
-            )?;
-            if self
-                .snapshot
-                .state
-                .final_versions
-                .get(index)
-                .is_some_and(|version| version != &entry.observed)
-            {
-                return Err(io("Copy final receipt version changed; all data retained"));
-            }
+                .unwrap_or(parent);
+            let name = if index == 0 {
+                self.root_name.clone()
+            } else {
+                OsString::from_wide(&node.name)
+            };
+            bound(owner, &name, entry.observed.identity)?;
+            namespace::validate_single_link(&entry.handle)?;
+            state.validate_final_version(index, &entry.observed, &self.root_name)?;
             if super::version(&entry.handle)? != entry.observed {
                 return Err(io("retained Copy entry changed during validation"));
             }
@@ -1944,23 +2088,27 @@ impl<'a> RetainedStage<'a> {
         }
         Ok(())
     }
-    pub(super) fn revalidate(
+    fn revalidate(
         &self,
-        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+        parent: &File,
+        state: &State,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        self.validate_contents(&mut progress)?;
-        if self.snapshot.state.permissions != security::PermissionProgress::default() {
-            self.derive_destination_security(|| Ok(()))?;
+        self.validate_contents(parent, state, progress)?;
+        if state.permissions != security::PermissionProgress::default() {
+            self.derive_destination_security(parent, state, || Ok(()))?;
         }
         Ok(())
     }
     fn validate_contents(
         &self,
-        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+        parent: &File,
+        state: &State,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        self.namespace()?;
+        self.namespace(parent, state)?;
         let mut total = 0u64;
-        for (node, entry) in self.snapshot.state.nodes.iter().zip(&self.entries) {
+        for (node, entry) in state.nodes.iter().zip(&self.entries) {
             let evidence = node.staged.as_ref().unwrap();
             let actual = super::transfer(&entry.handle, None, &mut |count| {
                 progress(
@@ -1979,9 +2127,94 @@ impl<'a> RetainedStage<'a> {
                     .ok_or_else(|| io("Copy recovery stream length overflow"))
             })?;
         }
-        self.namespace()?;
-        Ok(())
+        self.namespace(parent, state)
     }
+}
+
+/// Undo a completed creation by retaining its exact copied tree at the original
+/// candidate slot. Never delete data, overwrite a name, or read/mutate the source.
+/// A fresh call also resolves and finishes an interrupted inverse by identity.
+pub(super) fn undo_completed_copy(
+    parent: &File,
+    central: &File,
+    name: &OsStr,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<(), PlatformError> {
+    let retained = RetainedStage::open(parent, central, name, &mut progress)?;
+    if !retained.snapshot.state.completion_verified {
+        return Err(io("Copy has no completed receipt; Undo refused"));
+    }
+    if retained.snapshot.state.undone.is_some() {
+        return Ok(());
+    }
+    let expected = retained.snapshot.bytes.clone();
+    drop(retained);
+    let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Write)?;
+    if snapshot.bytes != expected {
+        return Err(io("Copy journal changed before Undo writer acquisition"));
+    }
+    let root_name = snapshot.root_name(parent)?;
+    let mut root = windows_fs::PerObjectFile::open(parent, &root_name).map_err(io)?;
+    let mut tree = HeldTree::open(
+        parent,
+        &snapshot.state,
+        root_name,
+        Some(&root),
+        &mut progress,
+    )?;
+    validate_stage_entries(&snapshot.stage)?;
+    tree.revalidate(parent, &snapshot.state, &mut progress)?;
+    let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+    journal.reserve_undo_tail()?;
+    let result = (|| {
+        if !journal.state.undo_intent {
+            journal.persist(Record::UndoIntent)?;
+        }
+        progress(0)?;
+        tree.revalidate(parent, &journal.state, &mut progress)?;
+        journal.bindings()?;
+        let candidate = journal.header.candidate_name();
+        let needs_rename = tree.root_name != candidate;
+        // NTFS refuses a directory rename while descendant handles remain
+        // open, regardless of their delete-sharing flags. Keep the root bound,
+        // release readers only for this handoff, then reacquire and verify all
+        // immutable evidence before acknowledging Undo. No data is deleted.
+        drop(tree);
+        if needs_rename {
+            undo_handoff(journal.sequence)?;
+            crate::move_transaction::rename_windows_handle_no_replace(&root, parent, &candidate)?;
+            boundary(journal.sequence, Step::UndoRenamed)?;
+        }
+        root = journal.reopen_readonly(0, parent, &candidate, root, &mut progress)?;
+        tree = HeldTree::open(
+            parent,
+            &journal.state,
+            candidate,
+            Some(&root),
+            &mut progress,
+        )?;
+        root.sync_all().map_err(io)?;
+        parent.sync_all().map_err(io)?;
+        boundary(journal.sequence, Step::UndoFlushed)?;
+        journal.bindings()?;
+        validate_stage_entries(&journal.stage_dir)?;
+        tree.revalidate(parent, &journal.state, &mut progress)?;
+        journal.persist(Record::Undone {
+            root_version: Box::new(tree.entries[0].observed.clone()),
+        })?;
+        Ok(())
+    })();
+    result.map_err(|error: PlatformError| PlatformError::CleanupPending {
+        transaction: windows_fs::location(&journal.stage_dir)
+            .map(|path| path.display().to_string())
+            .unwrap_or_else(|_| format!("{:?}", journal.header.stage_name())),
+        message: format!(
+            "{error}; Copy Undo retains all data at its published name or at {}; reopen the transaction for recovery",
+            windows_fs::location(&journal.parent_dir)
+                .map(|path| path.join(journal.header.candidate_name()).display().to_string())
+                .unwrap_or_else(|_| format!("{:?}", journal.header.candidate_name())),
+        ),
+    })
 }
 
 /// An opened, source-free, native-validated durable completion receipt.
@@ -1998,6 +2231,11 @@ impl<'a> CompletedCopy<'a> {
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let retained = RetainedStage::open(parent, central, name, progress)?;
+        if retained.snapshot.state.undo_intent {
+            return Err(io(
+                "Copy is retracting or undone; completed-copy receipt unavailable",
+            ));
+        }
         if !retained.snapshot.state.completion_verified {
             return Err(io("Copy has no sealed completion receipt; data retained"));
         }
@@ -2019,6 +2257,9 @@ impl<'a> CompletedCopy<'a> {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Step {
+    UndoReadersReleased,
+    UndoRenamed,
+    UndoFlushed,
     ReadonlyWritable,
     ReadonlyRestored,
     ReadonlyFlushed,
@@ -2029,6 +2270,17 @@ enum Step {
     PermissionsChanged,
     PermissionsFlushed,
 }
+#[cfg(test)]
+thread_local! {static UNDO_HANDOFF:std::cell::RefCell<Option<Box<dyn FnOnce()>>>=const {std::cell::RefCell::new(None)};}
+fn undo_handoff(sequence: u64) -> Result<(), PlatformError> {
+    boundary(sequence, Step::UndoReadersReleased)?;
+    #[cfg(test)]
+    if let Some(hook) = UNDO_HANDOFF.with(|slot| slot.borrow_mut().take()) {
+        hook();
+    }
+    Ok(())
+}
+
 #[cfg(not(test))]
 fn boundary(_: u64, _: Step) -> Result<(), PlatformError> {
     Ok(())
@@ -2284,6 +2536,377 @@ mod tests {
         }
     }
 
+    fn fixture_data_path(base: std::path::PathBuf, nested: bool) -> std::path::PathBuf {
+        if nested {
+            base.join("nested/file")
+        } else {
+            base
+        }
+    }
+    fn completed_undo_fixture(
+        path: &Path,
+        nested: bool,
+        readonly: bool,
+    ) -> (OsString, OsString, ReadonlyCleanup) {
+        let mut cleanup = if readonly {
+            readonly_fixture(path, nested)
+        } else {
+            fixture(path);
+            ReadonlyCleanup(Vec::new())
+        };
+        let src = source(&path.join(if nested {
+            "source"
+        } else {
+            "source/nested/file"
+        }));
+        let parent = owner(&path.join("destination"));
+        let central = owner(&path.join("central"));
+        let staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let candidate = staged.stage.candidate_name.clone();
+        cleanup.0.push(fixture_data_path(
+            path.join("destination").join(&candidate),
+            nested,
+        ));
+        drop((staged, src));
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        app.apply(|_| Ok(())).unwrap();
+        drop(app);
+        (name, candidate, cleanup)
+    }
+    fn remove_undo_fixture_source(path: &Path) {
+        let file = path.join("source/nested/file");
+        let mut permissions = std::fs::metadata(&file).unwrap().permissions();
+        #[allow(clippy::permissions_set_readonly_false)]
+        permissions.set_readonly(false);
+        std::fs::set_permissions(file, permissions).unwrap();
+        std::fs::remove_dir_all(path.join("source")).unwrap();
+    }
+    #[test]
+    fn windows_native_copy_undo_retains_files_trees_and_readonly_data_without_source() {
+        for (nested, readonly) in [(false, false), (true, false), (false, true), (true, true)] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), nested, readonly);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            remove_undo_fixture_source(root.path());
+            undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+            assert!(!root.path().join("destination/copy").exists());
+            let retained =
+                fixture_data_path(root.path().join("destination").join(candidate), nested);
+            assert_eq!(std::fs::read(&retained).unwrap(), b"original data");
+            assert_eq!(
+                std::fs::metadata(&retained)
+                    .unwrap()
+                    .permissions()
+                    .readonly(),
+                readonly
+            );
+            let report = inspect(&parent, &central, &name).unwrap();
+            assert!(report.undone);
+            assert!(!report.undo_pending);
+            assert!(CompletedCopy::open(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+            let journal = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+            assert_eq!(std::fs::read(journal).unwrap(), before);
+        }
+    }
+    #[test]
+    fn windows_native_copy_undo_refuses_changed_data_and_unrecorded_aliases_before_intent() {
+        for alias in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, _candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let target = root.path().join("destination/copy/nested/file");
+            let journal = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            if alias {
+                std::fs::hard_link(&target, root.path().join("external-alias")).unwrap();
+            } else {
+                std::fs::write(&target, b"external data").unwrap();
+            }
+            assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
+            assert_eq!(std::fs::read(journal).unwrap(), before);
+            assert_eq!(
+                std::fs::read(&target).unwrap(),
+                if alias {
+                    b"original data"
+                } else {
+                    b"external data"
+                }
+            );
+            if alias {
+                assert_eq!(
+                    std::fs::read(root.path().join("external-alias")).unwrap(),
+                    b"original data"
+                );
+            }
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+        }
+    }
+    #[test]
+    fn windows_native_copy_undo_preserves_occupied_retention_and_new_publication_names() {
+        for occupied_retention in [true, false] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let slot = root.path().join("destination").join(&candidate);
+            if occupied_retention {
+                std::fs::write(&slot, b"foreign retention occupant").unwrap();
+            } else {
+                let sequence = journal_records(
+                    &std::fs::read(root.path().join("destination").join(&name).join(LOCAL))
+                        .unwrap(),
+                )
+                .len() as u64
+                    + 1;
+                FAULT.with(|f| f.set(Some((sequence, Step::UndoRenamed, false))));
+            }
+            let result = undo_completed_copy(&parent, &central, &name, |_| Ok(()));
+            FAULT.with(|f| f.set(None));
+            assert!(result.is_err());
+            let report = inspect(&parent, &central, &name).unwrap();
+            assert!(report.undo_pending);
+            assert!(!report.undone);
+            if occupied_retention {
+                assert_eq!(std::fs::read(&slot).unwrap(), b"foreign retention occupant");
+                assert_eq!(
+                    std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+                    b"original data"
+                );
+                std::fs::remove_file(&slot).unwrap();
+            } else {
+                std::fs::write(
+                    root.path().join("destination/copy"),
+                    b"new unrelated publication",
+                )
+                .unwrap();
+            }
+            undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+            assert_eq!(
+                std::fs::read(slot.join("nested/file")).unwrap(),
+                b"original data"
+            );
+            if !occupied_retention {
+                assert_eq!(
+                    std::fs::read(root.path().join("destination/copy")).unwrap(),
+                    b"new unrelated publication"
+                );
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_undo_cancellation_after_retraction_keeps_a_resumable_intent() {
+        for readonly in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), false, readonly);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let slot = root.path().join("destination").join(&candidate);
+            let mut cancelled = false;
+            let result = undo_completed_copy(&parent, &central, &name, |_| {
+                if slot.exists() {
+                    cancelled = true;
+                    Err(io("cancelled Undo verification"))
+                } else {
+                    Ok(())
+                }
+            });
+            assert!(cancelled);
+            assert!(result.is_err());
+            assert_eq!(std::fs::read(&slot).unwrap(), b"original data");
+            assert!(!root.path().join("destination/copy").exists());
+            let report = inspect(&parent, &central, &name).unwrap();
+            assert!(report.undo_pending);
+            assert!(!report.undone);
+            remove_undo_fixture_source(root.path());
+            undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+            assert!(inspect(&parent, &central, &name).unwrap().undone);
+            assert_eq!(std::fs::read(&slot).unwrap(), b"original data");
+            assert_eq!(
+                std::fs::metadata(slot).unwrap().permissions().readonly(),
+                readonly
+            );
+        }
+    }
+
+    #[test]
+    fn windows_native_copy_undo_refuses_an_active_writer_without_journal_mutation_then_retries() {
+        let root = tempfile::tempdir().unwrap();
+        let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), false, false);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let target = root.path().join("destination/copy");
+        let writer = OpenOptions::new()
+            .write(true)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+            .open(&target)
+            .unwrap();
+        let journal = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&journal).unwrap();
+        assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
+        assert_eq!(std::fs::read(&journal).unwrap(), before);
+        assert!(target.exists());
+        drop(writer);
+        undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+        assert!(!target.exists());
+        assert_eq!(
+            std::fs::read(root.path().join("destination").join(candidate)).unwrap(),
+            b"original data"
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_undo_directory_handoff_drift_retains_changed_data_without_completion() {
+        struct ClearHook;
+        impl Drop for ClearHook {
+            fn drop(&mut self) {
+                UNDO_HANDOFF.with(|slot| slot.borrow_mut().take());
+            }
+        }
+        let root = tempfile::tempdir().unwrap();
+        let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let changed = root.path().join("destination/copy/nested/file");
+        let _clear = ClearHook;
+        UNDO_HANDOFF.with(|slot| {
+            *slot.borrow_mut() = Some(Box::new(move || {
+                std::fs::write(changed, b"external data").unwrap()
+            }))
+        });
+        let error = undo_completed_copy(&parent, &central, &name, |_| Ok(()))
+            .err()
+            .unwrap();
+        assert!(
+            error
+                .to_string()
+                .contains(candidate.to_string_lossy().as_ref())
+        );
+        let report = inspect(&parent, &central, &name).unwrap();
+        assert!(report.undo_pending);
+        assert!(!report.undone);
+        assert_eq!(
+            std::fs::read(
+                root.path()
+                    .join("destination")
+                    .join(&candidate)
+                    .join("nested/file")
+            )
+            .unwrap(),
+            b"external data"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
+        let journal = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&journal).unwrap();
+        assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
+        assert_eq!(std::fs::read(journal).unwrap(), before);
+    }
+
+    #[test]
+    fn windows_native_copy_undo_flush_failures_and_process_exits_recover_or_retain() {
+        for (nested, readonly) in [(true, false), (false, false), (false, true)] {
+            for process_exit in [false, true] {
+                // Frame indices follow each fixture's actual sealed completion.
+                let first = if nested {
+                    28
+                } else if readonly {
+                    16
+                } else {
+                    14
+                };
+                let last = first + if readonly { 3 } else { 1 };
+                let mut faults = (first..=last)
+                    .flat_map(|sequence| {
+                        [Step::LocalFlushed, Step::CentralFlushed].map(|step| (sequence, step))
+                    })
+                    .collect::<Vec<_>>();
+                faults.push((first + 1, Step::UndoReadersReleased));
+                faults.push((first + 1, Step::UndoRenamed));
+                faults.push((last, Step::UndoFlushed));
+                if readonly {
+                    faults.extend(
+                        [
+                            Step::ReadonlyWritable,
+                            Step::ReadonlyRestored,
+                            Step::ReadonlyFlushed,
+                        ]
+                        .map(|step| (first + 2, step)),
+                    );
+                }
+                for (sequence, step) in faults {
+                    let root = tempfile::tempdir().unwrap();
+                    let (name, candidate, _cleanup) =
+                        completed_undo_fixture(root.path(), nested, readonly);
+                    let parent = owner(&root.path().join("destination"));
+                    let central = owner(&root.path().join("central"));
+                    remove_undo_fixture_source(root.path());
+                    if process_exit {
+                        let label = match step {
+                            Step::LocalFlushed => "local",
+                            Step::CentralFlushed => "central",
+                            Step::UndoReadersReleased => "undo-readers-released",
+                            Step::UndoRenamed => "undo-renamed",
+                            Step::UndoFlushed => "undo-flushed",
+                            Step::ReadonlyWritable => "readonly-writable",
+                            Step::ReadonlyRestored => "readonly-restored",
+                            Step::ReadonlyFlushed => "readonly-flushed",
+                            _ => unreachable!(),
+                        };
+                        let status = std::process::Command::new(std::env::current_exe().unwrap())
+                            .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])
+                            .env("OTTRIN_COPY_JOURNAL_CHILD",root.path()).env("OTTRIN_COPY_JOURNAL_SEQUENCE",sequence.to_string())
+                            .env("OTTRIN_COPY_JOURNAL_STEP",label).env("OTTRIN_COPY_UNDO_CHILD","1").status().unwrap();
+                        assert_eq!(
+                            status.code(),
+                            Some(86),
+                            "{nested} {readonly} {sequence} {step:?}"
+                        );
+                    } else {
+                        FAULT.with(|f| f.set(Some((sequence, step, false))));
+                        let result = undo_completed_copy(&parent, &central, &name, |_| Ok(()));
+                        FAULT.with(|f| f.set(None));
+                        assert!(result.is_err(), "{nested} {readonly} {sequence} {step:?}");
+                    }
+                    let journal = root.path().join("destination").join(&name).join(LOCAL);
+                    let before = std::fs::read(&journal).unwrap();
+                    if step == Step::LocalFlushed {
+                        assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
+                        assert_eq!(std::fs::read(journal).unwrap(), before);
+                    } else {
+                        undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap_or_else(
+                            |error| {
+                                panic!("resume {nested} {readonly} {sequence} {step:?}: {error}")
+                            },
+                        );
+                        assert!(std::fs::read(journal).unwrap().starts_with(&before));
+                        assert!(!root.path().join("destination/copy").exists());
+                    }
+                    let slot = root.path().join("destination").join(&candidate);
+                    let base = if slot.exists() {
+                        slot
+                    } else {
+                        root.path().join("destination/copy")
+                    };
+                    assert_eq!(
+                        std::fs::read(fixture_data_path(base, nested)).unwrap(),
+                        b"original data"
+                    );
+                }
+            }
+        }
+    }
+
     fn application_faults() -> Vec<(u64, Step)> {
         let mut result = Vec::new();
         for sequence in 16..28 {
@@ -2362,6 +2985,9 @@ mod tests {
                 Step::ReadonlyWritable => "readonly-writable",
                 Step::ReadonlyRestored => "readonly-restored",
                 Step::ReadonlyFlushed => "readonly-flushed",
+                Step::UndoReadersReleased => "undo-readers-released",
+                Step::UndoRenamed => "undo-renamed",
+                Step::UndoFlushed => "undo-flushed",
             };
             let status=std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])
@@ -2464,11 +3090,18 @@ mod tests {
             let mut staged = stage(&src, &parent, &central).unwrap();
             drop(staged.prepare_destination_security(|| Ok(())).unwrap());
             let name = staged.stage.name.clone();
+            let candidate = staged.stage.candidate_name.clone();
             drop((staged, src));
             let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
             app.apply(|_| Ok(())).unwrap();
             assert_eq!(app.completed(), 1);
             assert_eq!(links::capture(&app.candidates[0]).unwrap(), raw);
+            drop(app);
+            undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+            let retained = source(&root.path().join("destination").join(candidate));
+            assert_eq!(links::capture(&retained).unwrap(), raw);
+            drop(retained);
+            assert!(!root.path().join("destination/copy").exists());
             assert_eq!(
                 security::PrivateSecurity::capture(&target, &creator).unwrap(),
                 target_security
@@ -2923,8 +3556,19 @@ mod tests {
             "readonly-writable" => Step::ReadonlyWritable,
             "readonly-restored" => Step::ReadonlyRestored,
             "readonly-flushed" => Step::ReadonlyFlushed,
+            "undo-readers-released" => Step::UndoReadersReleased,
+            "undo-renamed" => Step::UndoRenamed,
+            "undo-flushed" => Step::UndoFlushed,
             other => panic!("Unknown owned exit boundary: {other}"),
         };
+        if std::env::var_os("OTTRIN_COPY_UNDO_CHILD").is_some() {
+            let parent = owner(&root.join("destination"));
+            let central = owner(&root.join("central"));
+            let name = stage_name(&root.join("destination"));
+            FAULT.with(|f| f.set(Some((sequence, step, true))));
+            let _ = undo_completed_copy(&parent, &central, &name, |_| Ok(()));
+            panic!("Undo child did not reach exit boundary");
+        }
         if std::env::var_os("OTTRIN_COPY_PLAN_RECOVERY_CHILD").is_some() {
             let parent = owner(&root.join("destination"));
             let central = owner(&root.join("central"));
@@ -3778,7 +4422,7 @@ mod tests {
             .err()
             .expect("forged cached ACL must not authorize native permissions");
         assert!(error.to_string().contains("native inheritance"), "{error}");
-        for entry in &retained.entries {
+        for entry in &retained.tree.entries {
             super::super::tests::assert_owner_only(&entry.handle);
         }
         assert_eq!(
@@ -4020,12 +4664,12 @@ mod tests {
             let central = owner(&root.path().join("central"));
             let staged = stage(&src, &parent, &central).unwrap();
             let name = staged.stage.name.clone();
-            cleanup.0.push(
+            cleanup.0.push(fixture_data_path(
                 root.path()
                     .join("destination")
-                    .join(&staged.stage.candidate_name)
-                    .join(if nested { "nested/file" } else { "" }),
-            );
+                    .join(&staged.stage.candidate_name),
+                nested,
+            ));
             drop((staged, src));
             let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
             app.apply(|_| Ok(())).unwrap();
@@ -4080,12 +4724,12 @@ mod tests {
                     let central = owner(&root.path().join("central"));
                     let staged = stage(&src, &parent, &central).unwrap();
                     let name = staged.stage.name.clone();
-                    cleanup.0.push(
+                    cleanup.0.push(fixture_data_path(
                         root.path()
                             .join("destination")
-                            .join(&staged.stage.candidate_name)
-                            .join(if nested { "nested/file" } else { "" }),
-                    );
+                            .join(&staged.stage.candidate_name),
+                        nested,
+                    ));
                     drop((staged, src));
                     let mut permissions = std::fs::metadata(&cleanup.0[0]).unwrap().permissions();
                     #[allow(clippy::permissions_set_readonly_false)]
