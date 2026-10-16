@@ -808,6 +808,19 @@ remain required.
 Native rename constraints:
 https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
 
+Overwrite's existing-destination evidence now uses `PinnedTree::freeze_existing`
+and `validate_existing`. This shares source discovery, no-follow binding checks,
+backup-stream reading and native security capture with staging. It records raw
+names, versions, stream hashes, compression, original link counts and an
+owner/group/DACL digest; original hard links are observed without the new-copy
+single-link restriction. Revalidation performs no writes or normalization.
+Six drift cases remain refused after cached nonidentity metadata is refreshed;
+cancellation and entry-budget failures preserve the original graph. Native
+receipt: `.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
+The observations alone grant no mutation authority. Paired original-retention
+records, handoff/root binding, overwrite publication/restoration and complete
+audit-SACL/label handling are still required; the journal remains schema 6.
+
 Forward recovery admission now handles a verified unfinished Windows
 Copy without reopening its source. It captures the native header/registry IDs,
 actual parent location, a digest of the frozen node/source/candidate evidence

@@ -59,6 +59,13 @@ pub(super) fn validate_binding(
 /// New Copy entries must not share their permissions with another hard-link name.
 /// Source hard links are valid and are never passed to this ownership guard.
 pub(super) fn validate_single_link(file: &File) -> Result<(), PlatformError> {
+    if link_count(file)? != 1 {
+        return Err(io("Copy candidate is aliased by another hard-link name"));
+    }
+    Ok(())
+}
+
+pub(super) fn link_count(file: &File) -> Result<u32, PlatformError> {
     use std::os::windows::io::AsRawHandle;
     use windows_sys::Win32::Storage::FileSystem::{
         BY_HANDLE_FILE_INFORMATION, GetFileInformationByHandle,
@@ -67,10 +74,7 @@ pub(super) fn validate_single_link(file: &File) -> Result<(), PlatformError> {
     if unsafe { GetFileInformationByHandle(file.as_raw_handle().cast(), &mut info) } == 0 {
         return Err(io(std::io::Error::last_os_error()));
     }
-    if info.nNumberOfLinks != 1 {
-        return Err(io("Copy candidate is aliased by another hard-link name"));
-    }
-    Ok(())
+    Ok(info.nNumberOfLinks)
 }
 
 impl<'a> PrivateStage<'a> {

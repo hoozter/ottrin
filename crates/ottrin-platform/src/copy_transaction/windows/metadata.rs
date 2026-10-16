@@ -35,7 +35,7 @@ pub(super) fn basic(file: &File) -> Result<FILE_BASIC_INFO, PlatformError> {
     Ok(info)
 }
 
-fn compression(file: &File) -> Result<u16, PlatformError> {
+pub(super) fn compression(file: &File) -> Result<u16, PlatformError> {
     let mut format = 0u16;
     let mut returned = 0;
     if unsafe {

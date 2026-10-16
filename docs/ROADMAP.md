@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 235 with 31 specialized
+The final ordinary-user Windows platform suite passes 239 with 31 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -318,6 +318,18 @@ recovery permits read-owned access-time updates while verifying persistent
 metadata and stream hashes. Production never enables Developer Mode or token
 privileges. Developer Mode-off link evidence remains separately scoped to
 `windows-copy-links-current/ACCEPTANCE.json`.
+
+Overwrite now has a read-only existing-destination observation component in the
+shared pinned-tree implementation. It freezes native versions, raw names, streams,
+compression, original hard-link counts and owner/group/DACL evidence. Three native
+fixtures cover unchanged populated trees, six drift modes independent of cached
+timestamps, and cancellation/entry-budget refusal. The full ordinary-user platform
+suite passes 239 with 31 specialized exclusions; the separate SYSTEM audit case
+and strict platform Clippy on both targets pass. Receipt:
+`.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
+This is an Overwrite prerequisite, not retention or publication authority. Paired
+retention records, root/writer handoff, restoration and full SACL/label protection
+remain unimplemented; the journal/schema and packages are unchanged.
 
 Public Windows Copy stays disabled. Overwrite restoration, session receipt/batch
 integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete

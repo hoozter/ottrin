@@ -137,6 +137,17 @@ fn capture(file: &File) -> Result<Vec<u64>, PlatformError> {
     Ok(storage)
 }
 
+/// Observation only: never replay cached ACLs. This deliberately describes
+/// owner/group/DACL evidence, not a complete audit-SACL or mandatory-label proof.
+pub(super) fn owner_group_dacl_digest(file: &File) -> Result<[u8; 32], PlatformError> {
+    let mut raw = capture(file)?;
+    let observed = parts(raw.as_mut_ptr().cast())?;
+    if !observed.valid_record() {
+        return Err(io("unsupported existing-tree owner/group/DACL evidence"));
+    }
+    super::evidence_digest(&observed)
+}
+
 fn current_token() -> Result<OwnedHandle, PlatformError> {
     let mut token: HANDLE = ptr::null_mut();
     if unsafe { OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, 1, &mut token) } == 0 {

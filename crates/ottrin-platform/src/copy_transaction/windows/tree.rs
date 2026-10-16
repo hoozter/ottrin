@@ -7,7 +7,7 @@ use crate::windows_fs;
 #[cfg(test)]
 use std::ptr;
 use std::{ffi::OsString, fs::File};
-use windows_sys::Win32::Storage::FileSystem::FILE_SHARE_READ;
+use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_COMPRESSED, FILE_SHARE_READ};
 
 struct SourceEntry {
     handle: File,
@@ -185,7 +185,129 @@ pub(super) trait StagingJournal {
 pub(super) struct PinnedTree {
     sources: Vec<SourceEntry>,
 }
+
+/// Frozen observations of an existing destination, separate from newly staged
+/// Copy data. They grant no rename, permission-write, Undo or cleanup authority.
+/// Root-name binding belongs to the enclosing held-parent transaction.
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+pub(super) struct ExistingTreeEvidence {
+    entries: Vec<ExistingEntry>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+struct ExistingEntry {
+    parent: Option<usize>,
+    name: Vec<u16>,
+    version: EntryVersion,
+    streams: Vec<super::StreamEvidence>,
+    compression: u16,
+    links: u32,
+    owner_group_dacl: [u8; 32],
+}
+
 impl PinnedTree {
+    fn validate_sources(
+        &self,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        for source in &self.sources {
+            progress()?;
+            if version(&source.handle)? != source.before {
+                return Err(io("existing tree version changed during observation"));
+            }
+            if let Some(parent) = source.parent {
+                namespace::validate_binding(
+                    &self.sources[parent].handle,
+                    &source.name,
+                    source.before.identity,
+                )?;
+            }
+            if source.before.directory
+                && source.before.link.is_none()
+                && children(&source.handle, source.children.len().saturating_add(1))?
+                    != source.children
+            {
+                return Err(io("existing tree membership changed during observation"));
+            }
+        }
+        Ok(())
+    }
+
+    /// Read through the existing no-follow source traversal and backup codec.
+    /// Original hard links are observed, not broken or rejected like candidates.
+    /// Normal read-induced access-time changes are allowed; persistent metadata,
+    /// namespace, stream contents and the observed security scope must stay exact.
+    pub(super) fn freeze_existing(
+        &self,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<ExistingTreeEvidence, PlatformError> {
+        use std::os::windows::ffi::OsStrExt;
+        self.validate_sources(|| progress(0))?;
+        let mut entries = Vec::with_capacity(self.sources.len());
+        let mut total = 0u64;
+        for source in &self.sources {
+            progress(total)?;
+            if source.before.attributes & !metadata::ADMITTED_ATTRIBUTES != 0 {
+                return Err(io("unsupported existing-tree file attributes"));
+            }
+            let compression = metadata::compression(&source.handle)?;
+            let links = namespace::link_count(&source.handle)?;
+            if links == 0
+                || (source.before.attributes & FILE_ATTRIBUTE_COMPRESSED != 0) != (compression != 0)
+            {
+                return Err(io(
+                    "existing-tree compression or link count is inconsistent",
+                ));
+            }
+            let owner_group_dacl = security::owner_group_dacl_digest(&source.handle)?;
+            let streams = super::transfer(&source.handle, None, &mut |bytes| {
+                progress(
+                    total
+                        .checked_add(bytes)
+                        .ok_or_else(|| io("existing-tree progress overflow"))?,
+                )
+            })?;
+            total = streams.iter().try_fold(total, |sum, stream| {
+                sum.checked_add(stream.bytes)
+                    .ok_or_else(|| io("existing-tree stream length overflow"))
+            })?;
+            entries.push(ExistingEntry {
+                parent: source.parent,
+                name: source.name.encode_wide().collect(),
+                version: source.before.clone(),
+                streams,
+                compression,
+                links,
+                owner_group_dacl,
+            });
+        }
+        self.validate_sources(|| progress(total))?;
+        for (source, evidence) in self.sources.iter().zip(&entries) {
+            progress(total)?;
+            if namespace::link_count(&source.handle)? != evidence.links
+                || metadata::compression(&source.handle)? != evidence.compression
+                || security::owner_group_dacl_digest(&source.handle)? != evidence.owner_group_dacl
+            {
+                return Err(io("existing tree security, compression or aliases changed"));
+            }
+        }
+        self.validate_sources(|| progress(total))?;
+        Ok(ExistingTreeEvidence { entries })
+    }
+
+    pub(super) fn validate_existing(
+        &self,
+        expected: &ExistingTreeEvidence,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if self.freeze_existing(progress)? != *expected {
+            return Err(io(
+                "existing tree differs from frozen evidence; no mutation authorized",
+            ));
+        }
+        Ok(())
+    }
+
     /// Complete source discovery before creating destination entries. No links
     /// are traversed and no source DELETE/data-write access is requested.
     pub(super) fn open(
@@ -385,6 +507,129 @@ mod tests {
     }
     fn owner(path: &Path) -> File {
         super::super::tests::parent(path)
+    }
+
+    fn freeze(path: &Path) -> ExistingTreeEvidence {
+        PinnedTree::open(&read(path), 64, |_| Ok(()))
+            .unwrap()
+            .freeze_existing(|_| Ok(()))
+            .unwrap()
+    }
+
+    #[test]
+    fn windows_native_existing_tree_freezes_streams_security_and_original_aliases_readonly() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("original");
+        populate(&path);
+        std::fs::hard_link(path.join("nested/file"), path.join("alias")).unwrap();
+        std::fs::hard_link(path.join("alias"), root.path().join("outside-alias")).unwrap();
+        super::super::tests::set_fixture_ea(&owner(&path));
+        let raw = OsString::from_wide(&[b'u' as u16, 0xd800]);
+        std::fs::write(path.join(&raw), b"raw name").unwrap();
+        let before = freeze(&path);
+        assert_eq!(before.entries.len(), 6);
+        assert!(before.entries.iter().any(|entry| entry.links == 3));
+        assert!(
+            before.entries[0].streams.len() >= 2,
+            "Directory named data and EA must be observed"
+        );
+        let bytes = super::super::evidence_digest(&before).unwrap();
+        let tree = PinnedTree::open(&read(&path), 64, |_| Ok(())).unwrap();
+        tree.validate_existing(&before, |_| Ok(())).unwrap();
+        assert_eq!(
+            super::super::evidence_digest(&tree.freeze_existing(|_| Ok(())).unwrap()).unwrap(),
+            bytes
+        );
+        assert_eq!(
+            std::fs::read(path.join("nested/file")).unwrap(),
+            b"original tree data"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("outside-alias")).unwrap(),
+            b"original tree data"
+        );
+    }
+
+    #[test]
+    fn windows_native_existing_tree_refuses_changed_original_evidence_without_normalizing() {
+        for case in [
+            "payload",
+            "named",
+            "security",
+            "alias",
+            "replacement",
+            "membership",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let path = root.path().join("original");
+            populate(&path);
+            let mut before = freeze(&path);
+            match case {
+                "payload" => {
+                    std::fs::write(path.join("nested/file"), b"Original tree data").unwrap()
+                }
+                "named" => std::fs::write(
+                    format!("{}:note:$DATA", path.display()),
+                    b"Directory stream",
+                )
+                .unwrap(),
+                "security" => super::super::tests::set_dacl(&path, "D:P(A;OICI;FA;;;OW)"),
+                "alias" => {
+                    std::fs::hard_link(path.join("nested/file"), root.path().join("outside-alias"))
+                        .unwrap()
+                }
+                "replacement" => {
+                    std::fs::rename(path.join("nested/file"), root.path().join("displaced"))
+                        .unwrap();
+                    std::fs::write(path.join("nested/file"), b"original tree data").unwrap();
+                }
+                "membership" => std::fs::write(path.join("added"), b"external addition").unwrap(),
+                _ => unreachable!(),
+            }
+            let tree = PinnedTree::open(&read(&path), 64, |_| Ok(())).unwrap();
+            if before.entries.len() == tree.sources.len() {
+                // Prove the streams, security, alias and identity evidence is
+                // checked even when cached timestamps match the new metadata.
+                for (entry, source) in before.entries.iter_mut().zip(&tree.sources) {
+                    let original_id = entry.version.identity;
+                    entry.version = source.before.clone();
+                    entry.version.identity = original_id;
+                }
+            }
+            let changed = tree.freeze_existing(|_| Ok(())).unwrap();
+            assert!(
+                tree.validate_existing(&before, |_| Ok(())).is_err(),
+                "{case}"
+            );
+            assert_eq!(
+                tree.freeze_existing(|_| Ok(())).unwrap(),
+                changed,
+                "Refusal must not normalize {case}"
+            );
+        }
+    }
+
+    #[test]
+    fn windows_native_existing_tree_cancellation_and_budget_leave_original_intact() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("original");
+        populate(&path);
+        let before = freeze(&path);
+        assert!(PinnedTree::open(&read(&path), 2, |_| Ok(())).is_err());
+        let tree = PinnedTree::open(&read(&path), 64, |_| Ok(())).unwrap();
+        for stop in [0, 7, 16] {
+            let mut calls = 0;
+            let result = tree.freeze_existing(|_| {
+                calls += 1;
+                if calls > stop {
+                    Err(io("injected existing-tree cancellation"))
+                } else {
+                    Ok(())
+                }
+            });
+            assert!(result.is_err(), "{stop}");
+            tree.validate_existing(&before, |_| Ok(())).unwrap();
+        }
     }
 
     #[test]

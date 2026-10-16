@@ -46,6 +46,32 @@ Before enabling the public path, implement and accept:
    cases, then rebuilt portable/NSIS/MSI workflows. Broader storage, blocked/network
    I/O cancellation and release gates remain required.
 
+## Existing destination observations for Overwrite
+
+`PinnedTree::freeze_existing` uses the same no-follow traversal and backup-stream
+reader as staging to record an existing destination's tree structure, raw names,
+native versions, streams, compression, link counts and owner/group/DACL digest.
+Original hard links are retained as observations, including aliases outside the
+tree; the new-candidate single-link restriction does not apply to originals.
+Namespace/version checks bracket the scan, followed by security/compression/alias
+rechecks. Cancellation is checked through these phases. Reads may update access
+times; the observer never writes metadata, permissions or payloads.
+
+`validate_existing` rereads the held tree and requires exact frozen evidence. The
+evidence is serializable for the forthcoming retention journal, but grants no
+rename, Undo or deletion authority. The enclosing transaction must still bind the
+root through its held destination parent, persist paired retention intent and
+revalidate across the reader-to-writer handoff. No journal/schema change or
+Overwrite mutation has been introduced by this component.
+
+Native component checks cover populated folders, raw UTF-16 names, named data,
+extended attributes and original hard links; changed data, permissions, aliases,
+membership and same-byte replacement are refused even after cached nonidentity
+metadata is refreshed. Entry-budget and cancellation refusals preserve the
+observed graph. Audit-SACL/mandatory-label completeness, broader original-object
+matrices and the durable retention/publication/Undo protocol remain required.
+Receipt: `.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
+
 ## Native namespace and sharing
 
 `copy_transaction/windows/namespace.rs` pins the real destination parent. It
