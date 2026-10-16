@@ -272,6 +272,17 @@ The forward capability remains private pending platform/Activity integration and
 remaining link, storage, interruption and package acceptance. Public Copy,
 Overwrite and cleanup gates remain closed; packages are unchanged.
 
+The finalization restart gate now passes eight native combinations: after the
+last permission acknowledgement and after the first final-version record, for
+files, populated folders, readonly file roots and readonly children. Recovery
+uses the original admitted plan without sources and preserves exact payload
+bytes and persistent metadata while completing the journal seal. The full native
+Windows platform suite passes 236 with 31 specialized exclusions, and the
+separate SYSTEM audit fixture passes. Strict Windows platform Clippy and format
+checks pass. Only regression coverage and documentation change here; Activity
+forward actions and packages remain unchanged. Receipt:
+`.hermes/evidence/windows-copy-readonly-finalization-current/ACCEPTANCE.json`.
+
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
 recovery permits read-owned access-time updates while verifying persistent

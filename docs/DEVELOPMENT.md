@@ -827,6 +827,14 @@ Unverified staging is not admitted. This capability remains private: platform/UI
 forward-action integration, link/specialized-storage and interruption matrices
 remain required. Copy, Overwrite and cleanup are still gated.
 
+Native finalization recovery is also covered after the last permission
+acknowledgement and after the first final-version record, for plain files,
+populated folders, readonly file roots and readonly children. The source is
+removed before recovery. Each case resumes the originally admitted plan after
+an injected central-journal flush failure, verifies the completion seal and
+checks exact payload bytes and persistent metadata against the interrupted
+state. Finalization needs journal writes but must not mutate the payload.
+
 Windows recovery admission now binds the authenticated registry/header,
 sealed immutable completion digest and actual parent location before creation
 Undo. It retains no file handles, does not read the source and does not modify

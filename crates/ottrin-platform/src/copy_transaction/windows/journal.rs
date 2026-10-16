@@ -2778,6 +2778,78 @@ mod tests {
         }
     }
     #[test]
+    fn windows_native_registered_copy_resume_finishes_partial_finalization_without_payload_writers()
+    {
+        for (nested, readonly) in [(false, false), (true, false), (false, true), (true, true)] {
+            let reference = tempfile::tempdir().unwrap();
+            let (name, _, _reference_cleanup) =
+                completed_undo_fixture(reference.path(), nested, readonly);
+            let records = journal_records(
+                &std::fs::read(reference.path().join("destination").join(name).join(LOCAL))
+                    .unwrap(),
+            );
+            let last = if nested { 2 } else { 0 };
+            let boundaries = records
+                .iter()
+                .enumerate()
+                .filter_map(|(index, record)| match record {
+                    Record::SecurityApplied { index: entry } if *entry == last => {
+                        Some(index as u64)
+                    }
+                    Record::FinalEntry { index: 0, .. } => Some(index as u64),
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(boundaries.len(), 2);
+            for sequence in boundaries {
+                let root = tempfile::tempdir().unwrap();
+                let (name, _, _cleanup) = staged_resume_fixture_at(
+                    root.path(),
+                    &root.path().join("destination"),
+                    nested,
+                    readonly,
+                );
+                remove_undo_fixture_source(root.path());
+                let path = root.path().join("destination").join(&name).join(LOCAL);
+                let id = decode(&std::fs::read(&path).unwrap())
+                    .unwrap()
+                    .state
+                    .header
+                    .unwrap()
+                    .transaction;
+                let mut plan = discovery::RegisteredCopyResume::admit(
+                    &root.path().join("central"),
+                    &id,
+                    |_| Ok(()),
+                )
+                .unwrap();
+                FAULT.with(|f| f.set(Some((sequence, Step::CentralFlushed, false))));
+                let result = plan.resume(|_| Ok(()));
+                FAULT.with(|f| f.set(None));
+                assert!(result.is_err(), "{nested} {readonly} {sequence}");
+                let before = decode(&std::fs::read(&path).unwrap()).unwrap().state;
+                assert!(before.native_complete() && !before.completion_verified);
+                let published = root.path().join("destination/copy");
+                let data = fixture_data_path(published.clone(), nested);
+                let version_before = super::super::version(&source(&data)).unwrap();
+                plan.resume(|_| Ok(())).unwrap_or_else(|error| panic!("Finalization recovery nested={nested} readonly={readonly} sequence={sequence}: {error}"));
+                assert!(plan.complete());
+                assert_eq!(
+                    super::super::version(&source(&data)).unwrap(),
+                    version_before,
+                    "Finalization must not change payload metadata"
+                );
+                assert_eq!(std::fs::read(data).unwrap(), b"original data");
+                assert!(
+                    decode(&std::fs::read(path).unwrap())
+                        .unwrap()
+                        .state
+                        .completion_verified
+                );
+            }
+        }
+    }
+    #[test]
     fn windows_native_registered_copy_resume_refuses_coherent_rewritten_frozen_evidence() {
         let root = tempfile::tempdir().unwrap();
         let (name, _, _cleanup) =
