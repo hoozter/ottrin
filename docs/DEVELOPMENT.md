@@ -808,6 +808,38 @@ remain required.
 Native rename constraints:
 https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
 
+Windows central Copy discovery is exposed through the platform's read-only
+`discover_retained_copy_transactions[_at]` facade, with a cancellable explicit-root
+variant for background workers. It never creates a missing registry, repairs a
+journal, grants an Undo token or keeps file handles after returning. Public status
+fields are presentation only. Phase describes the authenticated central journal;
+`VerifiedTree`, `UnverifiedStage` or `NeedsReview` separately describes current
+evidence. The identity-bound root location is distinct from the possible
+publication and retention paths, and remains an observation rather than action
+authority. Callback byte counts describe the currently inspected tree and can
+reset; callback errors cancel the entire discovery rather than becoming row errors.
+
+Only canonical transaction filenames are inspected. Each ordinary non-reparse,
+single-link central file must match its recorded native ID, registry ID, current
+creator and private descriptor. Parent resolution uses native volume/file IDs,
+not the cached parent path: open by ID from the registry volume or from a bounded
+local-volume-manager enumeration, using ordinary access checks without enabling
+privileges. NTFS IDs use the full admitted 64-bit value without truncating nonzero
+upper bytes; ReFS uses its 128-bit descriptor. The opened directory must match the
+complete recorded native identity. Missing/offline/unreadable parents stay review
+rows; no cached-path or network-hint fallback is attempted.
+
+Fresh paired journal locks, bytes, namespace, payload, final versions and native
+security are then checked through the existing retained-tree verifier. A staged
+permission-plan prefix/seal is freshly projected even before DACL application.
+Corrupt, linked, busy, mismatched or changed entries remain visible as individual
+review rows instead of hiding other records. Incomplete payload staging is shown
+as unverified, with no claim that it can be resumed. UI worker integration, action
+admission and native package acceptance remain separate required work.
+
+Native ID API contract:
+https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-openfilebyid
+
 Copy and created-entry receipts guard the original parent and transaction
 identities with one shared, nonblocking Linux inotify instance. Watches are
 registered through the already-open publication directories, before those

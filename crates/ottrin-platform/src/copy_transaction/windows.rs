@@ -9,6 +9,12 @@
 #![cfg_attr(not(test), allow(dead_code))]
 
 mod journal;
+pub use journal::{WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus};
+pub(crate) use journal::{
+    discover as discover_windows_copy_transactions,
+    discover_at as discover_windows_copy_transactions_at,
+    discover_at_with_progress as discover_windows_copy_transactions_at_with_progress,
+};
 mod links;
 mod metadata;
 mod namespace;

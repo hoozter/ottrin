@@ -102,6 +102,80 @@ pub(crate) unsafe fn open_relative(
     Ok(unsafe { File::from_raw_handle(raw.cast()) })
 }
 
+/// Reopen an ordinary directory by native ID, with normal access checks and no
+/// path-hint traversal or privilege enablement. NTFS IDs must fit without truncation.
+pub(crate) fn open_directory_by_identity(
+    volume_hint: &File,
+    expected: crate::move_recovery::WindowsStableIdentity,
+) -> io::Result<File> {
+    use crate::move_recovery::stable_identity_from_handle;
+    if !expected.is_directory_without_reparse()
+        || stable_identity_from_handle(volume_hint)
+            .map_err(io::Error::other)?
+            .volume_serial_number()
+            != expected.volume_serial_number()
+    {
+        return Err(io::Error::other("recovery directory volume/type mismatch"));
+    }
+    let mut filesystem = [0u16; 64];
+    if unsafe {
+        GetVolumeInformationByHandleW(
+            volume_hint.as_raw_handle().cast(),
+            ptr::null_mut(),
+            0,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            filesystem.as_mut_ptr(),
+            filesystem.len() as u32,
+        )
+    } == 0
+    {
+        return Err(io::Error::last_os_error());
+    }
+    let end = filesystem
+        .iter()
+        .position(|ch| *ch == 0)
+        .unwrap_or(filesystem.len());
+    let filesystem = String::from_utf16_lossy(&filesystem[..end]);
+    let id = expected.object_key().1;
+    let mut descriptor = FILE_ID_DESCRIPTOR {
+        dwSize: size_of::<FILE_ID_DESCRIPTOR>() as u32,
+        ..Default::default()
+    };
+    if filesystem.eq_ignore_ascii_case("NTFS") && id[8..].iter().all(|byte| *byte == 0) {
+        descriptor.Type = FileIdType;
+        descriptor.Anonymous.FileId = i64::from_le_bytes(id[..8].try_into().unwrap());
+    } else if filesystem.eq_ignore_ascii_case("ReFS") {
+        descriptor.Type = ExtendedFileIdType;
+        descriptor.Anonymous.ExtendedFileId = FILE_ID_128 { Identifier: id };
+    } else {
+        return Err(io::Error::other(
+            "filesystem does not admit native recovery directory IDs",
+        ));
+    }
+    let raw = unsafe {
+        OpenFileById(
+            volume_hint.as_raw_handle().cast(),
+            &descriptor,
+            FILE_GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            ptr::null(),
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+        )
+    };
+    if raw == windows_sys::Win32::Foundation::INVALID_HANDLE_VALUE {
+        return Err(io::Error::last_os_error());
+    }
+    let file = unsafe { File::from_raw_handle(raw.cast()) };
+    if stable_identity_from_handle(&file).map_err(io::Error::other)? != expected {
+        return Err(io::Error::other(
+            "native recovery directory identity changed",
+        ));
+    }
+    Ok(file)
+}
+
 /// An owned descriptor allocated by Windows, including test-created descriptors.
 pub(crate) struct LocalSecurity(*mut c_void);
 impl LocalSecurity {

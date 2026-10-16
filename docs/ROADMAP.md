@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 219 with 29 specialized
+The final ordinary-user Windows platform suite passes 226 with 30 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -160,6 +160,34 @@ Packages are unchanged. The owned VM and disposable fixtures are removed after
 terminal verification; original profiles, installations and guest images stay
 preserved.
 
+Windows central Copy recovery now has a public read-only platform facade, with
+an explicit-root cancellable variant for worker use. It lists authenticated
+transaction phases separately from current tree evidence and reports the
+identity-bound root location separately from possible publication/retention
+paths. Presentation fields grant no Undo, cleanup or restoration authority.
+Missing registries stay absent; individual corrupt, reparse, busy, mismatched or
+changed records become review rows without hiding valid transactions.
+
+Destination parents reopen by native file ID on the matching volume, with normal
+access checks and no privilege enablement. Cached path text is not a lookup
+fallback. The native fixture moves the entire destination parent and replaces its
+cached path with a network hint; discovery still verifies the actual renamed
+parent without using that hint. A separate ordinary-user fixture verifies the
+local-volume-manager route when journal and data are on two different owned NTFS
+volumes. Whole-tree bytes, namespace, immutable versions and fresh permissions
+use the existing verifier; staged plan drift is checked before permission
+application too. Cancellation stops the entire scan without journal mutation.
+
+The final cohort passes 226 Windows platform tests with 30 specialized exclusions,
+411 Linux platform tests with 3 exclusions and strict all-target Clippy on both
+targets. The second-volume fixture is selected separately as an ordinary user;
+SYSTEM audit remains a distinct lane. Owned virtual storage, the guest and test
+profiles are removed after terminal verification. Current receipt:
+`.hermes/evidence/windows-copy-discovery-current/ACCEPTANCE.json`.
+UI worker/Activity integration, action admission, native package acceptance and
+the remaining public Copy gates are still required; the mutating Windows Copy/Undo
+facade stays disabled and packages are unchanged.
+
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only
 recovery permits read-owned access-time updates while verifying persistent
@@ -168,7 +196,7 @@ privileges. Developer Mode-off link evidence remains separately scoped to
 `windows-copy-links-current/ACCEPTANCE.json`.
 
 Public Windows Copy stays disabled. Overwrite restoration, public receipt/Undo
-integration, guarded cleanup, central discovery and interrupted-staging policy, complete
+integration, guarded cleanup, recovery UI/action integration and interrupted-staging policy, complete
 SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive directories,
 specialized storage/properties, real large-tree budgets, guest power-cut acceptance,
 clipboard/Tandem, positive native Copy UI and rebuilt-package acceptance remain

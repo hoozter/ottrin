@@ -22,6 +22,10 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
+mod discovery;
+pub use discovery::{WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus};
+pub(crate) use discovery::{discover, discover_at, discover_at_with_progress};
+
 const MAGIC: &[u8; 8] = b"OTCPWJ06";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
@@ -2905,6 +2909,321 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn windows_native_copy_discovery_distinguishes_staged_completed_pending_and_undone() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let candidate = staged.stage.candidate_name.clone();
+        let busy =
+            crate::discover_retained_copy_transactions_at(&root.path().join("central")).unwrap();
+        assert!(matches!(
+            &busy[0].evidence,
+            WindowsCopyRecoveryEvidence::NeedsReview { .. }
+        ));
+        drop((staged, src));
+        let observe =
+            || crate::discover_retained_copy_transactions_at(&root.path().join("central")).unwrap();
+        let statuses = observe();
+        assert_eq!(statuses.len(), 1);
+        assert_eq!(statuses[0].phase, Some(WindowsCopyPhase::Staged));
+        assert_eq!(
+            statuses[0].evidence,
+            WindowsCopyRecoveryEvidence::VerifiedTree
+        );
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        app.apply(|_| Ok(())).unwrap();
+        drop(app);
+        assert_eq!(observe()[0].phase, Some(WindowsCopyPhase::Completed));
+        FAULT.with(|f| f.set(Some((29, Step::UndoRenamed, false))));
+        assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
+        FAULT.with(|f| f.set(None));
+        let pending = observe();
+        assert_eq!(pending[0].owned_location, pending[0].retained);
+        assert_eq!(pending[0].phase, Some(WindowsCopyPhase::UndoPending));
+        assert_eq!(
+            pending[0].evidence,
+            WindowsCopyRecoveryEvidence::VerifiedTree
+        );
+        undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+        let undone = observe();
+        assert_eq!(undone[0].owned_location, undone[0].retained);
+        assert_eq!(undone[0].phase, Some(WindowsCopyPhase::Undone));
+        assert_eq!(
+            undone[0].evidence,
+            WindowsCopyRecoveryEvidence::VerifiedTree
+        );
+        let journal = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&journal).unwrap();
+        let retained = root
+            .path()
+            .join("destination")
+            .join(&candidate)
+            .join("nested/file");
+        std::fs::write(&retained, b"external data").unwrap();
+        assert!(matches!(
+            &observe()[0].evidence,
+            WindowsCopyRecoveryEvidence::NeedsReview { .. }
+        ));
+        assert_eq!(std::fs::read(journal).unwrap(), before);
+        assert_eq!(std::fs::read(retained).unwrap(), b"external data");
+    }
+    #[test]
+    fn windows_native_copy_discovery_uses_native_parent_identity_after_rename_and_ignores_path_hints()
+     {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+        let central_root = root.path().join("central");
+        let original = root.path().join("destination");
+        let journal = original.join(&name).join(LOCAL);
+        let bytes = std::fs::read(&journal).unwrap();
+        let mut records = journal_records(&bytes);
+        let central_name = if let Record::Begin { header } = &mut records[0] {
+            header.parent_location =
+                NativePath::encode(Path::new(r"\\untrusted.invalid\share\must-not-open"));
+            header.central_name()
+        } else {
+            unreachable!()
+        };
+        let patched = encode_records(&records);
+        std::fs::write(&journal, &patched).unwrap();
+        std::fs::write(central_root.join(central_name), &patched).unwrap();
+        let moved = root.path().join("renamed-destination");
+        std::fs::rename(&original, &moved).unwrap();
+        let statuses = crate::discover_retained_copy_transactions_at(&central_root).unwrap();
+        assert_eq!(statuses.len(), 1);
+        assert_eq!(statuses[0].owned_location, statuses[0].publication);
+        assert_eq!(
+            statuses[0].evidence,
+            WindowsCopyRecoveryEvidence::VerifiedTree
+        );
+        assert!(
+            statuses[0]
+                .publication
+                .as_ref()
+                .unwrap()
+                .ends_with(Path::new("renamed-destination").join("copy"))
+        );
+        assert_eq!(
+            std::fs::read(moved.join(&name).join(LOCAL)).unwrap(),
+            patched
+        );
+    }
+    #[test]
+    fn windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links()
+     {
+        let root = tempfile::tempdir().unwrap();
+        let (_name, _candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+        let central_root = root.path().join("central");
+        std::fs::write(
+            central_root.join(format!("{}.copy-journal", "0".repeat(32))),
+            b"corrupt central data",
+        )
+        .unwrap();
+        let outside = root.path().join("outside");
+        std::fs::write(&outside, b"outside bytes remain untouched").unwrap();
+        std::os::windows::fs::symlink_file(
+            &outside,
+            central_root.join(format!("{}.copy-journal", "1".repeat(32))),
+        )
+        .unwrap();
+        std::fs::write(central_root.join("unrelated.txt"), b"not a registry entry").unwrap();
+        let statuses = crate::discover_retained_copy_transactions_at(&central_root).unwrap();
+        assert_eq!(statuses.len(), 3);
+        assert_eq!(
+            statuses
+                .iter()
+                .filter(|status| status.evidence == WindowsCopyRecoveryEvidence::VerifiedTree)
+                .count(),
+            1
+        );
+        assert!(
+            statuses
+                .iter()
+                .filter(|status| status.phase.is_none())
+                .all(|status| matches!(
+                    &status.evidence,
+                    WindowsCopyRecoveryEvidence::NeedsReview { .. }
+                ) && status.publication.is_none())
+        );
+        let linked = statuses
+            .iter()
+            .find(|status| status.transaction_id == "1".repeat(32))
+            .unwrap();
+        assert!(
+            matches!(&linked.evidence, WindowsCopyRecoveryEvidence::NeedsReview { reason } if reason.contains("ordinary journal"))
+        );
+        assert_eq!(
+            std::fs::read(outside).unwrap(),
+            b"outside bytes remain untouched"
+        );
+    }
+    #[test]
+    fn windows_native_copy_discovery_preserves_mismatched_mirrors_and_unverified_staging() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        FAULT.with(|f| f.set(Some((0, Step::CentralFlushed, false))));
+        assert!(stage(&src, &parent, &central).is_err());
+        FAULT.with(|f| f.set(None));
+        drop(src);
+        let name = stage_name(&root.path().join("destination"));
+        let statuses =
+            crate::discover_retained_copy_transactions_at(&root.path().join("central")).unwrap();
+        assert_eq!(statuses[0].phase, Some(WindowsCopyPhase::Staging));
+        assert_eq!(
+            statuses[0].evidence,
+            WindowsCopyRecoveryEvidence::UnverifiedStage
+        );
+        let path = root.path().join("destination").join(&name).join(LOCAL);
+        let mut file = OpenOptions::new().append(true).open(&path).unwrap();
+        file.write_all(b"incoherent local tail").unwrap();
+        file.sync_all().unwrap();
+        drop(file);
+        let before = std::fs::read(&path).unwrap();
+        let statuses =
+            crate::discover_retained_copy_transactions_at(&root.path().join("central")).unwrap();
+        assert!(matches!(
+            &statuses[0].evidence,
+            WindowsCopyRecoveryEvidence::NeedsReview { .. }
+        ));
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+    #[test]
+    fn windows_native_copy_discovery_missing_registry_is_readonly_and_root_junction_is_refused() {
+        let root = tempfile::tempdir().unwrap();
+        let missing = root.path().join("missing-registry");
+        assert!(
+            crate::discover_retained_copy_transactions_at(&missing)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!missing.exists());
+        let central = root.path().join("central");
+        std::fs::create_dir(&central).unwrap();
+        let base = owner(root.path());
+        let link = windows_fs::create_private(
+            &base,
+            OsStr::new("registry-link"),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+        links::junction_fixture(&central).install(&link).unwrap();
+        drop(link);
+        assert!(
+            crate::discover_retained_copy_transactions_at(&root.path().join("registry-link"))
+                .is_err()
+        );
+        assert_eq!(std::fs::read_dir(central).unwrap().count(), 0);
+    }
+    #[test]
+    fn windows_native_copy_discovery_cancels_payload_read_without_any_journal_mutation() {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+        let journal = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&journal).unwrap();
+        let mut cancelled = false;
+        let result = crate::discover_retained_copy_transactions_at_with_progress(
+            &root.path().join("central"),
+            |bytes| {
+                if bytes > 0 {
+                    cancelled = true;
+                    Err(io("cancelled discovery"))
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(cancelled);
+        assert!(result.is_err());
+        assert_eq!(std::fs::read(journal).unwrap(), before);
+        assert_eq!(
+            std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+            b"original data"
+        );
+        assert_eq!(
+            crate::discover_retained_copy_transactions_at(&root.path().join("central")).unwrap()[0]
+                .evidence,
+            WindowsCopyRecoveryEvidence::VerifiedTree
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_discovery_refuses_drifted_staged_permission_plan_without_repair() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        drop((staged, src));
+        let registry = root.path().join("central");
+        let ready = crate::discover_retained_copy_transactions_at(&registry).unwrap();
+        assert_eq!(ready[0].phase, Some(WindowsCopyPhase::ReadyToPublish));
+        assert_eq!(ready[0].evidence, WindowsCopyRecoveryEvidence::VerifiedTree);
+        let journal = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&journal).unwrap();
+        super::super::tests::set_dacl(
+            &root.path().join("destination"),
+            "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)",
+        );
+        let policy = security::DestinationSecurity::capture(&parent, false).unwrap();
+        let changed = crate::discover_retained_copy_transactions_at(&registry).unwrap();
+        assert!(matches!(
+            &changed[0].evidence,
+            WindowsCopyRecoveryEvidence::NeedsReview { .. }
+        ));
+        assert_eq!(std::fs::read(journal).unwrap(), before);
+        policy.validate_parent(&parent).unwrap();
+    }
+    #[test]
+    #[ignore = "requires an owned secondary NTFS volume provisioned by the native QA controller"]
+    fn windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume() {
+        let volume = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_DISCOVERY_VOLUME")
+            .expect("owned volume missing");
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let destination = tempfile::tempdir_in(std::path::PathBuf::from(volume)).unwrap();
+        let src = source(&root.path().join("source"));
+        let parent = owner(destination.path());
+        let central = owner(&root.path().join("central"));
+        assert_ne!(
+            stable_identity_from_handle(&parent)
+                .unwrap()
+                .volume_serial_number(),
+            stable_identity_from_handle(&central)
+                .unwrap()
+                .volume_serial_number()
+        );
+        let staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        drop((staged, src));
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        app.apply(|_| Ok(())).unwrap();
+        drop(app);
+        let statuses =
+            crate::discover_retained_copy_transactions_at(&root.path().join("central")).unwrap();
+        assert_eq!(statuses.len(), 1);
+        assert_eq!(
+            statuses[0].evidence,
+            WindowsCopyRecoveryEvidence::VerifiedTree
+        );
+        assert_eq!(statuses[0].phase, Some(WindowsCopyPhase::Completed));
+        assert_eq!(
+            std::fs::read(destination.path().join("copy/nested/file")).unwrap(),
+            b"original data"
+        );
     }
 
     fn application_faults() -> Vec<(u64, Step)> {

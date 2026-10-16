@@ -11,6 +11,13 @@ use std::path::{Path, PathBuf};
 // enabled. The public Windows Copy gate below remains closed until that work lands.
 #[cfg(target_os = "windows")]
 mod windows;
+#[cfg(target_os = "windows")]
+pub use windows::{WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus};
+#[cfg(target_os = "windows")]
+pub(super) use windows::{
+    discover_windows_copy_transactions, discover_windows_copy_transactions_at,
+    discover_windows_copy_transactions_at_with_progress,
+};
 
 /// Session identity guards for a published Copy/create transaction's directories.
 #[cfg(target_os = "linux")]

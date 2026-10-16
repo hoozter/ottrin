@@ -25,6 +25,30 @@ pub use copy_recovery::{
     RetainedCopyFinalization, RetainedCopyStatus, RetainedCopyUndoPlan,
 };
 
+#[cfg(target_os = "windows")]
+pub use copy_transaction::{
+    WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+};
+#[cfg(target_os = "windows")]
+pub fn discover_retained_copy_transactions_at(
+    root: &Path,
+) -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
+    copy_transaction::discover_windows_copy_transactions_at(root)
+}
+/// Cancellable read-only Windows recovery inspection for a background worker.
+#[cfg(target_os = "windows")]
+pub fn discover_retained_copy_transactions_at_with_progress(
+    root: &Path,
+    progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
+    copy_transaction::discover_windows_copy_transactions_at_with_progress(root, progress)
+}
+#[cfg(target_os = "windows")]
+pub fn discover_retained_copy_transactions() -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError>
+{
+    copy_transaction::discover_windows_copy_transactions()
+}
+
 /// Reads retained Copy status without creating recovery data or granting Undo authority.
 #[cfg(target_os = "linux")]
 pub fn discover_retained_copy_transactions_at(
