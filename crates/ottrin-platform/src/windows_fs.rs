@@ -172,9 +172,8 @@ impl PerObjectFile {
         // Deliberately violate the access contract only in kernel-denial tests.
         Self(file)
     }
-    #[cfg(test)]
     pub(crate) fn open(parent: &File, name: &OsStr) -> io::Result<Self> {
-        // Fixture/recovery-mode experiment only; production recovery is readonly.
+        // Caller must establish journal/phase ownership before acquiring this capability.
         unsafe {
             open_relative(
                 parent,

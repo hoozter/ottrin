@@ -143,6 +143,31 @@ pub(super) fn capture(file: &File) -> Result<Option<Link>, PlatformError> {
 }
 
 #[cfg(test)]
+pub(super) fn junction_fixture(target: &std::path::Path) -> Link {
+    use std::os::windows::ffi::OsStrExt;
+    let mut nt = std::ffi::OsString::from(r"\??\");
+    nt.push(target.as_os_str());
+    let substitute = nt.encode_wide().collect::<Vec<_>>();
+    let print = target.as_os_str().encode_wide().collect::<Vec<_>>();
+    let mut bytes = vec![0u8; 16];
+    bytes[..4].copy_from_slice(&IO_REPARSE_TAG_MOUNT_POINT.to_le_bytes());
+    bytes[10..12].copy_from_slice(&((substitute.len() * 2) as u16).to_le_bytes());
+    bytes[12..14].copy_from_slice(&(((substitute.len() + 1) * 2) as u16).to_le_bytes());
+    bytes[14..16].copy_from_slice(&((print.len() * 2) as u16).to_le_bytes());
+    for unit in substitute
+        .into_iter()
+        .chain(Some(0))
+        .chain(print)
+        .chain(Some(0))
+    {
+        bytes.extend_from_slice(&unit.to_le_bytes());
+    }
+    let size = (bytes.len() - 8) as u16;
+    bytes[4..6].copy_from_slice(&size.to_le_bytes());
+    Link::parse(bytes, true).unwrap()
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt, path::Path};
@@ -350,30 +375,11 @@ mod tests {
 
     #[test]
     fn windows_native_copy_junction_record_preserves_target_and_private_security() {
-        use std::os::windows::ffi::OsStrExt;
         let root = tempfile::tempdir().unwrap();
         let target = root.path().join("target");
         std::fs::create_dir(&target).unwrap();
         std::fs::write(target.join("keep"), b"junction target unchanged").unwrap();
-        let mut nt = std::ffi::OsString::from(r"\??\");
-        nt.push(target.as_os_str());
-        let substitute = nt.encode_wide().collect::<Vec<_>>();
-        let print = target.as_os_str().encode_wide().collect::<Vec<_>>();
-        let mut bytes = vec![0u8; 16];
-        bytes[..4].copy_from_slice(&IO_REPARSE_TAG_MOUNT_POINT.to_le_bytes());
-        bytes[10..12].copy_from_slice(&((substitute.len() * 2) as u16).to_le_bytes());
-        bytes[12..14].copy_from_slice(&(((substitute.len() + 1) * 2) as u16).to_le_bytes());
-        bytes[14..16].copy_from_slice(&((print.len() * 2) as u16).to_le_bytes());
-        for unit in substitute
-            .into_iter()
-            .chain(Some(0))
-            .chain(print)
-            .chain(Some(0))
-        {
-            bytes.extend_from_slice(&unit.to_le_bytes());
-        }
-        let size = (bytes.len() - 8) as u16;
-        bytes[4..6].copy_from_slice(&size.to_le_bytes());
+        let bytes = junction_fixture(&target).bytes;
         let parent = super::super::tests::parent(root.path());
         let source_stage = super::super::namespace::PrivateStage::create(&parent).unwrap();
         let source = source_stage.create_candidate(true).unwrap();

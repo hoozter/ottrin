@@ -1,4 +1,4 @@
-//! Paired, append-only Copy staging records. Inspection never grants deletion.
+//! Paired Copy staging/publication/permission records. Inspection never grants mutation.
 use super::{
     EntryVersion, PlatformError, WindowsStableIdentity, io, links, metadata, namespace, security,
     stable_identity_from_handle, tree,
@@ -22,7 +22,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ02";
+const MAGIC: &[u8; 8] = b"OTCPWJ03";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -59,7 +59,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 2
+            && self.schema == 3
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -129,6 +129,17 @@ enum Record {
         count: usize,
         digest: [u8; 32],
     },
+    PublicationIntent,
+    Published,
+    SecurityApplyIntent {
+        index: usize,
+    },
+    SecurityApplied {
+        index: usize,
+    },
+    PermissionsComplete {
+        count: usize,
+    },
 }
 #[derive(Debug)]
 struct Node {
@@ -146,6 +157,10 @@ struct State {
     verified: bool,
     planned: Option<security::TreeSecurityEvidence>,
     planning: Option<Planning>,
+    permissions: security::PermissionProgress,
+    publication_intent: bool,
+    published: bool,
+    permissions_verified: bool,
     source_ids: BTreeSet<(u64, [u8; 16])>,
     candidate_ids: BTreeSet<(u64, [u8; 16])>,
     names: BTreeSet<(Option<usize>, Vec<u16>)>,
@@ -248,6 +263,51 @@ impl State {
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
         match record {
+            Record::PermissionsComplete { count } => {
+                if self.planned.is_none()
+                    || !self.published
+                    || self.permissions.pending
+                    || self.permissions_verified
+                    || *count != self.nodes.len()
+                    || self.permissions.completed != *count
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::PublicationIntent => {
+                if self.planned.is_none() || self.publication_intent || self.published {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::Published => {
+                if self.planned.is_none() || !self.publication_intent || self.published {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::SecurityApplyIntent { index } => {
+                let plan = self.planned.as_ref().ok_or_else(invalid)?;
+                if !self.published
+                    || !self.verified
+                    || self.permissions.pending
+                    || *index != self.permissions.completed
+                    || *index >= plan.len()
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::SecurityApplied { index } => {
+                if self.planned.is_none()
+                    || !self.permissions.pending
+                    || *index != self.permissions.completed
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
             Record::SecurityPlanBegin { header } => {
                 let owner = self.header.as_ref().ok_or_else(invalid)?;
                 if !self.verified
@@ -363,7 +423,12 @@ impl State {
                     return Err(invalid());
                 }
             }
-            Record::SecurityPlanBegin { .. }
+            Record::PermissionsComplete { .. }
+            | Record::PublicationIntent
+            | Record::Published
+            | Record::SecurityApplyIntent { .. }
+            | Record::SecurityApplied { .. }
+            | Record::SecurityPlanBegin { .. }
             | Record::SecurityPlanEntry { .. }
             | Record::SecurityPlanComplete { .. } => return Err(invalid()),
             Record::TreeVerified { count } => {
@@ -381,6 +446,14 @@ impl State {
     fn apply(&mut self, record: Record) -> Result<(), PlatformError> {
         self.check(&record)?;
         match record {
+            Record::PermissionsComplete { .. } => self.permissions_verified = true,
+            Record::PublicationIntent => self.publication_intent = true,
+            Record::Published => self.published = true,
+            Record::SecurityApplyIntent { .. } => self.permissions.pending = true,
+            Record::SecurityApplied { .. } => {
+                self.permissions.completed += 1;
+                self.permissions.pending = false;
+            }
             Record::Begin { header } => self.header = Some(*header),
             Record::CreateIntent {
                 parent,
@@ -426,6 +499,13 @@ impl State {
         Ok(())
     }
 }
+fn record_payload(record: &Record) -> Result<Vec<u8>, PlatformError> {
+    let payload = serde_json::to_vec(record).map_err(io)?;
+    if payload.is_empty() || payload.len() > MAX_FRAME {
+        return Err(io("Copy journal record exceeds frame budget"));
+    }
+    Ok(payload)
+}
 fn frame_hash(sequence: u64, previous: &[u8; 32], payload: &[u8]) -> [u8; 32] {
     let mut hash = Sha256::new();
     hash.update(sequence.to_le_bytes());
@@ -434,7 +514,12 @@ fn frame_hash(sequence: u64, previous: &[u8; 32], payload: &[u8]) -> [u8; 32] {
     hash.update(payload);
     hash.finalize().into()
 }
-fn decode(bytes: &[u8]) -> Result<State, PlatformError> {
+struct Decoded {
+    state: State,
+    sequence: u64,
+    previous: [u8; 32],
+}
+fn decode(bytes: &[u8]) -> Result<Decoded, PlatformError> {
     if bytes.len() as u64 > MAX_LOG {
         return Err(io("Copy journal exceeds inspection budget"));
     }
@@ -475,7 +560,11 @@ fn decode(bytes: &[u8]) -> Result<State, PlatformError> {
     if state.header.is_none() {
         return Err(io("empty Copy journal; data retained"));
     }
-    Ok(state)
+    Ok(Decoded {
+        state,
+        sequence,
+        previous,
+    })
 }
 fn open(
     parent: &File,
@@ -553,7 +642,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 2,
+            schema: 3,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -589,6 +678,45 @@ impl Journal {
         })?;
         Ok(result)
     }
+    fn permission_tail_size(&self) -> Result<u64, PlatformError> {
+        let mut total = 0u64;
+        let mut reserve = |record: Record| -> Result<(), PlatformError> {
+            total = total
+                .checked_add(FRAME_HEADER as u64 + record_payload(&record)?.len() as u64)
+                .ok_or_else(|| io("Copy permission journal reservation overflow"))?;
+            Ok(())
+        };
+        if !self.state.published {
+            if !self.state.publication_intent {
+                reserve(Record::PublicationIntent)?;
+            }
+            reserve(Record::Published)?;
+        }
+        for index in self.state.permissions.completed..self.state.nodes.len() {
+            if !(index == self.state.permissions.completed && self.state.permissions.pending) {
+                reserve(Record::SecurityApplyIntent { index })?;
+            }
+            reserve(Record::SecurityApplied { index })?;
+        }
+        if !self.state.permissions_verified {
+            reserve(Record::PermissionsComplete {
+                count: self.state.nodes.len(),
+            })?;
+        }
+        Ok(total)
+    }
+    fn reserve_permission_tail(&self) -> Result<(), PlatformError> {
+        if self
+            .length
+            .checked_add(self.permission_tail_size()?)
+            .is_none_or(|length| length > MAX_LOG)
+        {
+            return Err(io(
+                "Copy journal has insufficient space for publication and permission acknowledgements; data retained",
+            ));
+        }
+        Ok(())
+    }
     fn candidate_security(&self, index: usize) -> Result<(), PlatformError> {
         let node = self
             .state
@@ -606,6 +734,9 @@ impl Journal {
         security.validate(candidate, &self.header.creator)
     }
     fn bindings(&self) -> Result<(), PlatformError> {
+        if security::current_owner()? != self.header.creator {
+            return Err(io("Copy journal writer creator context changed"));
+        }
         self.header
             .stage_security
             .validate(&self.stage_dir, &self.header.creator)?;
@@ -646,11 +777,8 @@ impl Journal {
         }
         self.state.check(&record)?;
         self.bindings()?;
-        let payload = serde_json::to_vec(&record).map_err(io)?;
-        if payload.is_empty()
-            || payload.len() > MAX_FRAME
-            || self.length + FRAME_HEADER as u64 + payload.len() as u64 > MAX_LOG
-        {
+        let payload = record_payload(&record)?;
+        if self.length + FRAME_HEADER as u64 + payload.len() as u64 > MAX_LOG {
             return Err(io("Copy journal exceeds its staging record budget"));
         }
         let hash = frame_hash(self.sequence, &self.previous, &payload);
@@ -877,6 +1005,225 @@ impl<'a> DurableStage<'a> {
         inspect(self.stage.parent(), central, &self.stage.name)
     }
 }
+/// Explicit no-replace publication followed by journaled permission application.
+/// Source-free recovery retains every entry and stops on any uncertain outcome.
+pub(super) struct PermissionStage {
+    journal: Journal,
+    candidates: Vec<windows_fs::PerObjectFile>,
+    plan: security::TreeSecurityPlan,
+}
+impl PermissionStage {
+    pub(super) fn publish(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let retained = RetainedStage::open(parent, central, name, &mut progress)?;
+        let parent_policy = retained
+            .derive_destination_security(|| progress(0))?
+            .into_root_policy();
+        let expected = retained.snapshot.bytes.clone();
+        let root_name = retained.root_name.clone();
+        drop(retained);
+        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Write)?;
+        if snapshot.bytes != expected || snapshot.state.planned.is_none() {
+            return Err(io("Copy journal changed or lacks a sealed permission plan"));
+        }
+        let root = windows_fs::PerObjectFile::open(parent, &root_name).map_err(io)?;
+        let evidence = snapshot.state.nodes[0].staged.as_ref().unwrap();
+        if stable_identity_from_handle(&root).map_err(io)? != evidence.candidate_identity {
+            return Err(io("Copy publication root identity changed"));
+        }
+        evidence.validate_retained_metadata(&root)?;
+        namespace::validate_single_link(&root)?;
+        parent_policy.validate_parent(parent)?;
+        let phase = snapshot.state.permissions;
+        if phase.completed > 0 {
+            parent_policy.validate_candidate(&root)?;
+        } else if !(phase.pending && parent_policy.matches_candidate(&root)?) {
+            snapshot.state.nodes[0]
+                .security
+                .as_ref()
+                .unwrap()
+                .validate(&root, &snapshot.state.header.as_ref().unwrap().creator)?;
+        }
+
+        snapshot.revalidate(parent, central)?;
+        let header = snapshot.state.header.as_ref().unwrap().clone();
+        let mut journal = Journal {
+            local: snapshot.local,
+            central: snapshot.mirror,
+            stage_dir: snapshot.stage,
+            parent_dir: parent.try_clone().map_err(io)?,
+            central_dir: central.try_clone().map_err(io)?,
+            header,
+            state: snapshot.state,
+            sequence: snapshot.sequence,
+            previous: snapshot.previous,
+            length: expected.len() as u64,
+            failed: false,
+            candidates: Vec::new(),
+        };
+        journal.reserve_permission_tail()?;
+        if !journal.state.published {
+            if !journal.state.publication_intent {
+                journal.persist(Record::PublicationIntent)?;
+            }
+            let target = OsString::from_wide(&journal.header.target);
+            parent_policy.validate_parent(parent)?;
+            namespace::validate_single_link(&root)?;
+            if root_name != target {
+                crate::move_transaction::rename_windows_handle_no_replace(&root, parent, &target)?;
+            }
+            boundary(journal.sequence, Step::PublicationRenamed)?;
+            root.sync_all().map_err(io)?;
+            parent.sync_all().map_err(io)?;
+            boundary(journal.sequence, Step::PublicationFlushed)?;
+            namespace::validate_single_link(&root)?;
+            bound(
+                parent,
+                &target,
+                journal.state.nodes[0]
+                    .staged
+                    .as_ref()
+                    .unwrap()
+                    .candidate_identity,
+            )?;
+            parent_policy.validate_parent(parent)?;
+            journal.persist(Record::Published)?;
+        }
+        let root_name = OsString::from_wide(&journal.header.target);
+        let mut candidates = vec![root];
+        for node in journal.state.nodes.iter().skip(1) {
+            progress(0)?;
+            let owner = &*candidates[node.parent.unwrap()];
+            let file = windows_fs::PerObjectFile::open(owner, &OsString::from_wide(&node.name))
+                .map_err(io)?;
+            if stable_identity_from_handle(&file).map_err(io)?
+                != node.staged.as_ref().unwrap().candidate_identity
+            {
+                return Err(io("Copy permission capability binding changed"));
+            }
+            candidates.push(file);
+        }
+        let recorded = journal.state.planned.as_ref().unwrap().at_root(&root_name);
+        let plan =
+            security::TreeSecurityPlan::capture_at(
+                parent,
+                journal.state.nodes.iter().zip(&candidates).enumerate().map(
+                    |(index, (node, file))| security::SecurityEntry {
+                        parent: node.parent,
+                        name: if index == 0 {
+                            root_name.clone()
+                        } else {
+                            OsString::from_wide(&node.name)
+                        },
+                        candidate: file,
+                        directory: node.source.directory,
+                    },
+                ),
+                Some(&recorded),
+                journal.state.permissions,
+                || progress(0),
+            )?;
+        let result = Self {
+            journal,
+            candidates,
+            plan,
+        };
+        result.validate(&mut progress)?;
+        Ok(result)
+    }
+    fn validate(
+        &self,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if self.journal.failed {
+            return Err(io(
+                "Copy permission owner is uncertain; reopen for validated recovery",
+            ));
+        }
+        self.journal.bindings()?;
+        self.plan.validate_at(self.journal.state.permissions)?;
+        for index in 0..self.candidates.len() {
+            self.validate_payload(index, progress)?;
+        }
+        if windows_fs::directory_children_limited(&self.journal.stage_dir, 1).map_err(io)?
+            != [OsString::from(LOCAL)]
+        {
+            return Err(io(
+                "Unexpected Copy transaction entry; no permission change allowed",
+            ));
+        }
+        self.plan.validate_at(self.journal.state.permissions)?;
+        self.journal.bindings()
+    }
+    fn validate_payload(
+        &self,
+        index: usize,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress(0)?;
+        let evidence = self.journal.state.nodes[index].staged.as_ref().unwrap();
+        let file = &self.candidates[index];
+        evidence.validate_retained_metadata(file)?;
+        if super::transfer(file, None, progress)? != evidence.streams
+            || links::capture(file)? != evidence.source.link
+        {
+            return Err(io(
+                "Copy permission candidate contents changed; all data retained",
+            ));
+        }
+        evidence.validate_retained_metadata(file)
+    }
+    pub(super) fn apply(
+        &mut self,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.validate(&mut progress)?;
+        while self.journal.state.permissions.completed < self.candidates.len() {
+            progress(0)?;
+            self.journal.bindings()?;
+            let index = self.journal.state.permissions.completed;
+            self.validate_payload(index, &mut progress)?;
+            if !self.journal.state.permissions.pending {
+                self.journal
+                    .persist(Record::SecurityApplyIntent { index })?;
+            }
+            // Native outcome can be uncertain even if the API returns failure.
+            // No in-process retry from stale observations: fresh recovery only.
+            self.journal.failed = true;
+            self.plan.apply_pending(
+                self.journal.state.permissions,
+                &self.candidates[index],
+                |flushed| {
+                    boundary(
+                        self.journal.sequence,
+                        if flushed {
+                            Step::PermissionsFlushed
+                        } else {
+                            Step::PermissionsChanged
+                        },
+                    )
+                },
+            )?;
+            self.journal.failed = false;
+            self.journal.persist(Record::SecurityApplied { index })?;
+        }
+        self.validate(&mut progress)?;
+        if !self.journal.state.permissions_verified {
+            self.journal.persist(Record::PermissionsComplete {
+                count: self.candidates.len(),
+            })?;
+        }
+        Ok(())
+    }
+    pub(super) fn completed(&self) -> usize {
+        self.journal.state.permissions.completed
+    }
+}
+
 fn stage_error(stage: &namespace::PrivateStage<'_>, error: PlatformError) -> PlatformError {
     PlatformError::CleanupPending {
         transaction: windows_fs::location(&stage.directory)
@@ -893,6 +1240,11 @@ pub(super) struct Inspection {
     pub(super) staged: usize,
     pub(super) verified: bool,
     pub(super) security_planned: bool,
+    pub(super) published: bool,
+    pub(super) publication_pending: bool,
+    pub(super) permissions_verified: bool,
+    pub(super) permissions_completed: usize,
+    pub(super) permission_pending: bool,
 }
 fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
     let size = file.metadata().map_err(io)?.len();
@@ -908,8 +1260,8 @@ fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
     }
     Ok(bytes)
 }
-/// Held journal evidence. A recovery validator uses read-sharing only, refusing
-/// an active writer rather than racing its in-progress append or payload writes.
+/// Held journal evidence. Read-only recovery refuses an active writer; explicit
+/// application opens fresh exclusive write handles after read-only validation.
 struct Snapshot {
     stage: File,
     local: File,
@@ -917,25 +1269,109 @@ struct Snapshot {
     bytes: Vec<u8>,
     state: State,
     requires_creator: bool,
+    sequence: u64,
+    previous: [u8; 32],
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SnapshotAccess {
+    Inspect,
+    Read,
+    Write,
 }
 impl Snapshot {
+    fn root_name(&self, parent: &File) -> Result<OsString, PlatformError> {
+        let header = self.state.header.as_ref().unwrap();
+        let candidate = header.candidate_name();
+        let target = OsString::from_wide(&header.target);
+        if self.state.published {
+            return Ok(target);
+        }
+        if !self.state.publication_intent {
+            return Ok(candidate);
+        }
+        let expected = self.state.nodes[0]
+            .staged
+            .as_ref()
+            .unwrap()
+            .candidate_identity;
+        let probe = |name: &OsStr| -> Result<bool, PlatformError> {
+            match unsafe {
+                windows_fs::open_relative(
+                    parent,
+                    name,
+                    RelativeOptions {
+                        directory: None,
+                        create_new: false,
+                        access: windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES
+                            | windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE,
+                        sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        security: ptr::null(),
+                    },
+                )
+            } {
+                Ok(file) => Ok(stable_identity_from_handle(&file).map_err(io)? == expected),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+                Err(error) => Err(io(error)),
+            }
+        };
+        match (probe(&candidate)?, probe(&target)?) {
+            (true, false) => Ok(candidate),
+            (false, true) => Ok(target),
+            _ => Err(io(
+                "Pending Copy publication has missing or aliased root bindings; data retained",
+            )),
+        }
+    }
     fn load(
         parent: &File,
         central: &File,
         name: &OsStr,
-        lock: bool,
+        access: SnapshotAccess,
     ) -> Result<Self, PlatformError> {
         let entry = |parent: &File, name: &OsStr, directory| {
-            if lock {
+            if access == SnapshotAccess::Inspect {
+                open(parent, name, Some(directory), FILE_GENERIC_READ)
+            } else if access == SnapshotAccess::Read || directory {
                 namespace::open_source(parent, name, Some(directory))
             } else {
-                open(parent, name, Some(directory), FILE_GENERIC_READ)
+                if !stable_identity_from_handle(parent)
+                    .map_err(io)?
+                    .is_directory_without_reparse()
+                {
+                    return Err(io("Copy journal parent is not an ordinary directory"));
+                }
+                let file = unsafe {
+                    windows_fs::open_relative(
+                        parent,
+                        name,
+                        RelativeOptions {
+                            directory: Some(false),
+                            create_new: false,
+                            access: FILE_GENERIC_READ
+                                | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+                            sharing: FILE_SHARE_READ,
+                            security: ptr::null(),
+                        },
+                    )
+                }
+                .map_err(io)?;
+                if !stable_identity_from_handle(&file)
+                    .map_err(io)?
+                    .is_regular_file_without_reparse()
+                {
+                    return Err(io("Copy journal is not an ordinary file"));
+                }
+                Ok(file)
             }
         };
         let stage = entry(parent, name, true)?;
         let local = entry(&stage, OsStr::new(LOCAL), false)?;
         let bytes = read(&local)?;
-        let state = decode(&bytes)?;
+        let Decoded {
+            state,
+            sequence,
+            previous,
+        } = decode(&bytes)?;
         let header = state.header.as_ref().unwrap();
         if name != header.stage_name() {
             return Err(io("Copy journal name does not match its transaction"));
@@ -947,7 +1383,9 @@ impl Snapshot {
             mirror,
             bytes,
             state,
-            requires_creator: lock,
+            requires_creator: access != SnapshotAccess::Inspect,
+            sequence,
+            previous,
         };
         result.revalidate(parent, central)?;
         Ok(result)
@@ -994,7 +1432,7 @@ pub(super) fn inspect(
     central: &File,
     name: &OsStr,
 ) -> Result<Inspection, PlatformError> {
-    let snapshot = Snapshot::load(parent, central, name, false)?;
+    let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Inspect)?;
     Ok(Inspection {
         entries: snapshot.state.nodes.len(),
         created: snapshot
@@ -1011,6 +1449,11 @@ pub(super) fn inspect(
             .count(),
         verified: snapshot.state.verified,
         security_planned: snapshot.state.planned.is_some(),
+        published: snapshot.state.published,
+        publication_pending: snapshot.state.publication_intent && !snapshot.state.published,
+        permissions_verified: snapshot.state.permissions_verified,
+        permissions_completed: snapshot.state.permissions.completed,
+        permission_pending: snapshot.state.permissions.pending,
     })
 }
 
@@ -1028,6 +1471,7 @@ pub(super) struct RetainedStage<'a> {
     central: &'a File,
     snapshot: Snapshot,
     entries: Vec<RetainedEntry>,
+    root_name: OsString,
 }
 impl<'a> RetainedStage<'a> {
     pub(super) fn open(
@@ -1036,12 +1480,13 @@ impl<'a> RetainedStage<'a> {
         name: &OsStr,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        let snapshot = Snapshot::load(parent, central, name, true)?;
+        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
         if !snapshot.state.verified {
             return Err(io(
                 "Copy staging was interrupted before full verification; retain for recovery",
             ));
         }
+        let root_name = snapshot.root_name(parent)?;
         let mut children = vec![Vec::new(); snapshot.state.nodes.len()];
         for node in &snapshot.state.nodes {
             if let Some(parent) = node.parent {
@@ -1055,12 +1500,19 @@ impl<'a> RetainedStage<'a> {
         for (index, node) in snapshot.state.nodes.iter().enumerate() {
             progress(0)?;
             let owner = node.parent.map(|p| &entries[p].handle).unwrap_or(parent);
-            let handle = namespace::open_source(owner, &OsString::from_wide(&node.name), None)?;
+            let name = if index == 0 {
+                root_name.clone()
+            } else {
+                OsString::from_wide(&node.name)
+            };
+            let handle = namespace::open_source(owner, &name, None)?;
             let evidence = node.staged.as_ref().unwrap();
-            node.security
-                .as_ref()
-                .unwrap()
-                .validate(&handle, &snapshot.state.header.as_ref().unwrap().creator)?;
+            if snapshot.state.permissions == security::PermissionProgress::default() {
+                node.security
+                    .as_ref()
+                    .unwrap()
+                    .validate(&handle, &snapshot.state.header.as_ref().unwrap().creator)?;
+            }
             evidence.validate_retained_metadata(&handle)?;
             let observed = super::version(&handle)?;
             if observed.link != evidence.source.link {
@@ -1077,6 +1529,7 @@ impl<'a> RetainedStage<'a> {
             central,
             snapshot,
             entries,
+            root_name,
         };
         result.revalidate(progress)?;
         Ok(result)
@@ -1085,31 +1538,50 @@ impl<'a> RetainedStage<'a> {
         &self,
         mut progress: impl FnMut() -> Result<(), PlatformError>,
     ) -> Result<security::TreeSecurityPlan, PlatformError> {
-        self.revalidate(|_| progress())?;
-        let plan = security::TreeSecurityPlan::capture(
+        self.validate_contents(|_| progress())?;
+        self.derive_destination_security(progress)
+    }
+    fn derive_destination_security(
+        &self,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<security::TreeSecurityPlan, PlatformError> {
+        let recorded = self
+            .snapshot
+            .state
+            .planned
+            .as_ref()
+            .map(|plan| plan.at_root(&self.root_name));
+        let plan = security::TreeSecurityPlan::capture_at(
             self.parent,
             self.snapshot
                 .state
                 .nodes
                 .iter()
                 .zip(&self.entries)
-                .map(|(node, entry)| security::SecurityEntry {
+                .enumerate()
+                .map(|(index, (node, entry))| security::SecurityEntry {
                     parent: node.parent,
-                    name: OsString::from_wide(&node.name),
+                    name: if index == 0 {
+                        self.root_name.clone()
+                    } else {
+                        OsString::from_wide(&node.name)
+                    },
                     candidate: &entry.handle,
                     directory: node.source.directory,
                 }),
+            recorded.as_ref(),
+            self.snapshot.state.permissions,
             &mut progress,
         )?;
         self.namespace()?;
-        plan.validate()?;
+        plan.validate_at(self.snapshot.state.permissions)?;
         let evidence = plan.evidence();
         if self
             .snapshot
             .state
             .planned
             .as_ref()
-            .is_some_and(|recorded| *recorded != evidence)
+            .is_some_and(|recorded| recorded.at_root(&self.root_name) != evidence)
             || self
                 .snapshot
                 .state
@@ -1133,18 +1605,31 @@ impl<'a> RetainedStage<'a> {
         {
             return Err(io("unexpected Copy transaction entries; all data retained"));
         }
-        for (node, entry) in self.snapshot.state.nodes.iter().zip(&self.entries) {
-            node.security.as_ref().unwrap().validate(
-                &entry.handle,
-                &self.snapshot.state.header.as_ref().unwrap().creator,
-            )?;
+        for (index, (node, entry)) in self
+            .snapshot
+            .state
+            .nodes
+            .iter()
+            .zip(&self.entries)
+            .enumerate()
+        {
+            if self.snapshot.state.permissions == security::PermissionProgress::default() {
+                node.security.as_ref().unwrap().validate(
+                    &entry.handle,
+                    &self.snapshot.state.header.as_ref().unwrap().creator,
+                )?;
+            }
             let owner = node
                 .parent
                 .map(|p| &self.entries[p].handle)
                 .unwrap_or(self.parent);
             bound(
                 owner,
-                &OsString::from_wide(&node.name),
+                &if index == 0 {
+                    self.root_name.clone()
+                } else {
+                    OsString::from_wide(&node.name)
+                },
                 entry.observed.identity,
             )?;
             if super::version(&entry.handle)? != entry.observed {
@@ -1165,6 +1650,16 @@ impl<'a> RetainedStage<'a> {
         Ok(())
     }
     pub(super) fn revalidate(
+        &self,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.validate_contents(&mut progress)?;
+        if self.snapshot.state.permissions != security::PermissionProgress::default() {
+            self.derive_destination_security(|| Ok(()))?;
+        }
+        Ok(())
+    }
+    fn validate_contents(
         &self,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
@@ -1198,6 +1693,10 @@ impl<'a> RetainedStage<'a> {
 enum Step {
     LocalFlushed,
     CentralFlushed,
+    PublicationRenamed,
+    PublicationFlushed,
+    PermissionsChanged,
+    PermissionsFlushed,
 }
 #[cfg(not(test))]
 fn boundary(_: u64, _: Step) -> Result<(), PlatformError> {
@@ -1261,10 +1760,481 @@ mod tests {
         let names: Vec<_> = std::fs::read_dir(parent)
             .unwrap()
             .map(|e| e.unwrap().file_name())
-            .filter(|n| !n.to_string_lossy().ends_with(".candidate"))
+            .filter(|n| {
+                n.to_string_lossy().starts_with(".ottrin-copy-")
+                    && !n.to_string_lossy().ends_with(".candidate")
+            })
             .collect();
         assert_eq!(names.len(), 1);
         names[0].clone()
+    }
+    #[test]
+    fn windows_native_copy_publication_and_permissions_are_source_free_and_idempotent() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let reserved = staged.journal.permission_tail_size().unwrap();
+        let initial_length = staged.journal.length;
+        let name = staged.stage.name.clone();
+        let candidate = staged.stage.candidate_name.clone();
+        drop((staged, src));
+        let mut application =
+            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        assert!(!root.path().join("destination").join(candidate).exists());
+        assert!(application.journal.state.published);
+        assert_eq!(application.completed(), 0);
+        application.apply(|_| Ok(())).unwrap();
+        assert_eq!(application.completed(), 3);
+        let length = application.journal.length;
+        assert_eq!(
+            length - initial_length,
+            reserved,
+            "reservation must cover exactly the native publication/application records"
+        );
+        assert_eq!(application.journal.permission_tail_size().unwrap(), 0);
+        drop(application);
+        let report = inspect(&parent, &central, &name).unwrap();
+        assert!(report.permissions_verified);
+        assert_eq!(
+            (
+                report.published,
+                report.publication_pending,
+                report.permissions_completed,
+                report.permission_pending
+            ),
+            (true, false, 3, false)
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+            b"original data"
+        );
+        // Recovery requires no source path or handles and never reapplies exact ACLs.
+        std::fs::remove_dir_all(root.path().join("source")).unwrap();
+        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        assert_eq!(retained.entry_count(), 3);
+        drop(retained);
+        let mut again = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        again.apply(|_| Ok(())).unwrap();
+        assert_eq!(again.journal.length, length);
+    }
+    fn application_faults() -> Vec<(u64, Step)> {
+        let mut result = Vec::new();
+        for sequence in 16..25 {
+            for step in [Step::LocalFlushed, Step::CentralFlushed] {
+                result.push((sequence, step));
+            }
+        }
+        result.extend([
+            (17, Step::PublicationRenamed),
+            (17, Step::PublicationFlushed),
+        ]);
+        for sequence in [19, 21, 23] {
+            result.extend([
+                (sequence, Step::PermissionsChanged),
+                (sequence, Step::PermissionsFlushed),
+            ]);
+        }
+        result
+    }
+    #[test]
+    fn windows_native_copy_application_flush_and_native_failures_recover_or_retain() {
+        for (sequence, step) in application_faults() {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let mut staged = stage(&src, &parent, &central).unwrap();
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            let name = staged.stage.name.clone();
+            drop((staged, src));
+            FAULT.with(|f| f.set(Some((sequence, step, false))));
+            let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                .and_then(|mut app| app.apply(|_| Ok(())));
+            FAULT.with(|f| f.set(None));
+            assert!(result.is_err(), "did not reach {sequence} {step:?}");
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            if step == Step::LocalFlushed {
+                let path = root.path().join("destination").join(&name).join(LOCAL);
+                let bytes = std::fs::read(&path).unwrap();
+                assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+                assert_eq!(
+                    std::fs::read(path).unwrap(),
+                    bytes,
+                    "mismatched mirrors must not be repaired"
+                );
+            } else {
+                std::fs::remove_dir_all(root.path().join("source")).unwrap();
+                let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                    .unwrap_or_else(|error| panic!("reopen {sequence} {step:?}: {error}"));
+                app.apply(|_| Ok(()))
+                    .unwrap_or_else(|error| panic!("apply {sequence} {step:?}: {error}"));
+                assert_eq!(app.completed(), 3);
+                assert_eq!(
+                    std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+                    b"original data"
+                );
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_application_process_exits_recover_without_sources() {
+        for (sequence, step) in application_faults() {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let label = match step {
+                Step::LocalFlushed => "local",
+                Step::CentralFlushed => "central",
+                Step::PublicationRenamed => "renamed",
+                Step::PublicationFlushed => "published-flushed",
+                Step::PermissionsChanged => "changed",
+                Step::PermissionsFlushed => "permissions-flushed",
+            };
+            let status=std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])
+                .env("OTTRIN_COPY_JOURNAL_CHILD",root.path()).env("OTTRIN_COPY_JOURNAL_SEQUENCE",sequence.to_string())
+                .env("OTTRIN_COPY_JOURNAL_STEP",label).status().unwrap();
+            assert_eq!(status.code(), Some(86), "{sequence} {step:?}");
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let name = stage_name(&root.path().join("destination"));
+            if step == Step::LocalFlushed {
+                assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+            } else {
+                std::fs::remove_dir_all(root.path().join("source")).unwrap();
+                let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                    .unwrap_or_else(|error| panic!("reopen exit {sequence} {step:?}: {error}"));
+                app.apply(|_| Ok(())).unwrap();
+                assert_eq!(app.completed(), 3);
+                assert_eq!(
+                    std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+                    b"original data"
+                );
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_publication_collision_keeps_both_entries_and_retries() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        let candidate = staged.stage.candidate_name.clone();
+        drop((staged, src));
+        let external = root.path().join("destination/copy");
+        std::fs::write(&external, b"external occupant").unwrap();
+        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert_eq!(std::fs::read(&external).unwrap(), b"external occupant");
+        assert_eq!(
+            std::fs::read(
+                root.path()
+                    .join("destination")
+                    .join(candidate)
+                    .join("nested/file")
+            )
+            .unwrap(),
+            b"original data"
+        );
+        std::fs::remove_file(external).unwrap();
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        app.apply(|_| Ok(())).unwrap();
+        assert_eq!(app.completed(), 3);
+    }
+    #[test]
+    fn windows_native_copy_published_link_roots_leave_populated_targets_unchanged() {
+        for kind in 0..3 {
+            let directory = kind != 0;
+            let root = tempfile::tempdir().unwrap();
+            std::fs::create_dir(root.path().join("destination")).unwrap();
+            std::fs::create_dir(root.path().join("central")).unwrap();
+            let base = owner(root.path());
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+            let target =
+                windows_fs::create_private(&base, OsStr::new("target"), directory, sharing)
+                    .unwrap();
+            let leaf = directory.then(|| {
+                windows_fs::create_private(&target, OsStr::new("keep"), false, sharing).unwrap()
+            });
+            let data = leaf.as_ref().unwrap_or(&target);
+            (&*data).write_all(b"target bytes stay intact").unwrap();
+            let creator = security::current_owner().unwrap();
+            let target_security = security::PrivateSecurity::capture(&target, &creator).unwrap();
+            let leaf_security = leaf
+                .as_ref()
+                .map(|file| security::PrivateSecurity::capture(file, &creator).unwrap());
+            let target_path = root.path().join("target");
+            let link_path = root.path().join("source-link");
+            if kind == 2 {
+                let link =
+                    windows_fs::create_private(&base, OsStr::new("source-link"), true, sharing)
+                        .unwrap();
+                links::junction_fixture(&target_path)
+                    .install(&link)
+                    .unwrap();
+            } else if directory {
+                std::os::windows::fs::symlink_dir(&target_path, &link_path).unwrap();
+            } else {
+                std::os::windows::fs::symlink_file(&target_path, &link_path).unwrap();
+            }
+            let src = source(&link_path);
+            let raw = links::capture(&src).unwrap();
+            let mut staged = stage(&src, &parent, &central).unwrap();
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            let name = staged.stage.name.clone();
+            drop((staged, src));
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            app.apply(|_| Ok(())).unwrap();
+            assert_eq!(app.completed(), 1);
+            assert_eq!(links::capture(&app.candidates[0]).unwrap(), raw);
+            assert_eq!(
+                security::PrivateSecurity::capture(&target, &creator).unwrap(),
+                target_security
+            );
+            assert_eq!(
+                leaf.as_ref()
+                    .map(|file| security::PrivateSecurity::capture(file, &creator).unwrap()),
+                leaf_security
+            );
+            assert_eq!(
+                std::fs::read(if directory {
+                    target_path.join("keep")
+                } else {
+                    target_path
+                })
+                .unwrap(),
+                b"target bytes stay intact"
+            );
+        }
+    }
+    #[test]
+    fn windows_native_copy_application_refuses_unrecorded_candidate_hard_links() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source/nested/file"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        let candidate = staged.stage.candidate_name.clone();
+        drop((staged, src));
+        let file = root.path().join("destination").join(candidate);
+        let alias = root.path().join("alias");
+        std::fs::hard_link(&file, &alias).unwrap();
+        let before =
+            std::fs::read(root.path().join("destination").join(&name).join(LOCAL)).unwrap();
+        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(!root.path().join("destination/copy").exists());
+        assert_eq!(std::fs::read(&alias).unwrap(), b"original data");
+        assert_eq!(
+            std::fs::read(root.path().join("destination").join(&name).join(LOCAL)).unwrap(),
+            before
+        );
+        std::fs::remove_file(alias).unwrap();
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        app.apply(|_| Ok(())).unwrap();
+        assert_eq!(app.completed(), 1);
+    }
+    #[test]
+    fn windows_native_copy_application_cancellation_resumes_between_entries() {
+        for completed in 0..3 {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let mut staged = stage(&src, &parent, &central).unwrap();
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            let name = staged.stage.name.clone();
+            drop((staged, src));
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let result = app.apply(|_| {
+                if inspect(&parent, &central, &name)?.permissions_completed == completed {
+                    Err(io("cancelled permission application"))
+                } else {
+                    Ok(())
+                }
+            });
+            assert!(
+                result
+                    .unwrap_err()
+                    .to_string()
+                    .contains("cancelled permission application")
+            );
+            assert_eq!(app.completed(), completed);
+            assert!(!app.journal.failed);
+            drop(app);
+            let report = inspect(&parent, &central, &name).unwrap();
+            assert!(!report.permission_pending);
+            assert!(!report.permissions_verified);
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            std::fs::remove_dir_all(root.path().join("source")).unwrap();
+            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            app.apply(|_| Ok(())).unwrap();
+            assert_eq!(app.completed(), 3);
+        }
+    }
+    #[test]
+    fn windows_native_copy_application_refuses_permission_drift_outside_pending_entry() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        drop((staged, src));
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        FAULT.with(|f| f.set(Some((19, Step::PermissionsChanged, false))));
+        let result = app.apply(|_| Ok(()));
+        FAULT.with(|f| f.set(None));
+        assert!(result.is_err());
+        drop(app);
+        let changed = root.path().join("destination/copy/nested");
+        super::super::tests::set_dacl(&changed, "D:P(A;OICI;FA;;;OW)(A;;FR;;;WD)");
+        let file = owner(&changed);
+        let unchanged = security::DestinationSecurity::capture(&file, false).unwrap();
+        drop(file);
+        let path = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&path).unwrap();
+        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert_eq!(std::fs::read(path).unwrap(), before);
+        unchanged.validate_parent(&owner(&changed)).unwrap();
+        assert_eq!(
+            std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+            b"original data"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
+    }
+    #[test]
+    fn windows_native_copy_publication_refuses_changed_parent_policy_before_rename() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        let candidate = staged.stage.candidate_name.clone();
+        drop((staged, src));
+        let path = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&path).unwrap();
+        super::super::tests::set_dacl(
+            &root.path().join("destination"),
+            "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)",
+        );
+        let unchanged = security::DestinationSecurity::capture(&parent, true).unwrap();
+        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(!root.path().join("destination/copy").exists());
+        assert_eq!(std::fs::read(path).unwrap(), before);
+        unchanged.validate_parent(&parent).unwrap();
+        assert_eq!(
+            std::fs::read(
+                root.path()
+                    .join("destination")
+                    .join(candidate)
+                    .join("nested/file")
+            )
+            .unwrap(),
+            b"original data"
+        );
+    }
+    #[test]
+    fn windows_native_copy_application_records_require_publication_and_ordered_acknowledgements() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let bytes = read(&staged.journal.local).unwrap();
+        let mut state = decode(&bytes).unwrap().state;
+        assert!(
+            state
+                .check(&Record::PermissionsComplete { count: 3 })
+                .is_err()
+        );
+        assert!(
+            state
+                .check(&Record::SecurityApplyIntent { index: 0 })
+                .is_err()
+        );
+        assert!(state.check(&Record::Published).is_err());
+        state.apply(Record::PublicationIntent).unwrap();
+        assert!(state.check(&Record::PublicationIntent).is_err());
+        state.apply(Record::Published).unwrap();
+        assert!(state.check(&Record::Published).is_err());
+        for index in 0..3 {
+            assert!(state.check(&Record::SecurityApplied { index }).is_err());
+            assert!(
+                state
+                    .check(&Record::SecurityApplyIntent { index: index + 1 })
+                    .is_err()
+            );
+            state.apply(Record::SecurityApplyIntent { index }).unwrap();
+            assert!(state.check(&Record::SecurityApplyIntent { index }).is_err());
+            assert!(
+                state
+                    .check(&Record::SecurityApplied { index: index + 1 })
+                    .is_err()
+            );
+            state.apply(Record::SecurityApplied { index }).unwrap();
+        }
+        assert!(
+            state
+                .check(&Record::SecurityApplyIntent { index: 3 })
+                .is_err()
+        );
+        assert!(state.check(&Record::SecurityApplied { index: 2 }).is_err());
+        state
+            .apply(Record::PermissionsComplete { count: 3 })
+            .unwrap();
+        assert!(state.permissions_verified);
+        assert!(
+            state
+                .check(&Record::PermissionsComplete { count: 3 })
+                .is_err()
+        );
+        let mut old = journal_records(&bytes);
+        if let Record::Begin { header } = &mut old[0] {
+            header.schema = 2;
+        } else {
+            unreachable!()
+        }
+        assert!(
+            decode(&encode_records(&old)).is_err(),
+            "superseded schema must be refused"
+        );
     }
     #[test]
     fn windows_native_copy_journal_pairs_tree_records_and_reopens_without_writer() {
@@ -1362,7 +2332,7 @@ mod tests {
                 .join(LOCAL),
         )
         .unwrap();
-        assert!(decode(&bytes).unwrap().verified);
+        assert!(decode(&bytes).unwrap().state.verified);
         for end in [0, 1, FRAME_HEADER - 1, bytes.len() - 1] {
             assert!(decode(&bytes[..end]).is_err(), "accepted truncation {end}");
         }
@@ -1441,10 +2411,14 @@ mod tests {
             .unwrap()
             .parse()
             .unwrap();
-        let step = if std::env::var("OTTRIN_COPY_JOURNAL_STEP").unwrap() == "local" {
-            Step::LocalFlushed
-        } else {
-            Step::CentralFlushed
+        let step = match std::env::var("OTTRIN_COPY_JOURNAL_STEP").unwrap().as_str() {
+            "local" => Step::LocalFlushed,
+            "central" => Step::CentralFlushed,
+            "renamed" => Step::PublicationRenamed,
+            "published-flushed" => Step::PublicationFlushed,
+            "changed" => Step::PermissionsChanged,
+            "permissions-flushed" => Step::PermissionsFlushed,
+            other => panic!("Unknown owned exit boundary: {other}"),
         };
         let src = source(&root.join("source"));
         let parent = owner(&root.join("destination"));
@@ -1452,6 +2426,10 @@ mod tests {
         FAULT.with(|f| f.set(Some((sequence, step, true))));
         let mut staged = stage(&src, &parent, &central).unwrap();
         let _ = staged.prepare_destination_security(|| Ok(()));
+        let name = staged.stage.name.clone();
+        drop((staged, src));
+        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let _ = app.apply(|_| Ok(()));
         panic!("child did not reach crash boundary");
     }
     #[test]
@@ -2275,7 +3253,7 @@ mod tests {
         }
         assert!(changed);
         assert!(
-            decode(&patched).unwrap().planned.is_some(),
+            decode(&patched).unwrap().state.planned.is_some(),
             "structurally valid cached evidence must still require native rederivation"
         );
         std::fs::write(&local, &patched).unwrap();
@@ -2345,7 +3323,7 @@ mod tests {
         let records = journal_records(&bytes);
         assert_eq!(records.len(), 16);
         for end in 11..16 {
-            let state = decode(&encode_records(&records[..end])).unwrap();
+            let state = decode(&encode_records(&records[..end])).unwrap().state;
             assert!(state.verified);
             assert!(state.planned.is_none());
             if end > 11 {
@@ -2375,7 +3353,7 @@ mod tests {
             }
             assert!(decode(&encode_records(&bad)).is_err(), "mode {mode}");
         }
-        assert!(decode(&bytes).unwrap().planned.is_some());
+        assert!(decode(&bytes).unwrap().state.planned.is_some());
     }
     #[test]
     fn windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority() {
@@ -2478,7 +3456,7 @@ mod tests {
         });
         let bytes = encode_records(&records);
         assert!(bytes.len() as u64 <= MAX_LOG);
-        let state = decode(&bytes).unwrap();
+        let state = decode(&bytes).unwrap().state;
         assert_eq!(state.nodes.len(), count);
         assert_eq!(state.planned.unwrap(), complete);
     }
@@ -2514,7 +3492,7 @@ mod tests {
                     .join(LOCAL),
             )
             .unwrap();
-            let prefix = decode(&before).unwrap();
+            let prefix = decode(&before).unwrap().state;
             if stop > 4 {
                 assert_eq!(prefix.planning.unwrap().evidence.len(), stop - 5);
             }
@@ -2529,7 +3507,7 @@ mod tests {
             .unwrap();
             assert!(after.starts_with(&before));
             assert_eq!(journal_records(&after).len(), 16);
-            assert!(decode(&after).unwrap().planned.is_some());
+            assert!(decode(&after).unwrap().state.planned.is_some());
             assert_eq!(
                 std::fs::read(root.path().join("source/nested/file")).unwrap(),
                 b"original data"

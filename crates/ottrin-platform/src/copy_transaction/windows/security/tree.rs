@@ -1,7 +1,19 @@
-//! Whole-tree final DACL projection. Capture/validation never apply permissions.
+//! Whole-tree native DACL projection and explicitly authorized per-entry application.
 use super::super::{EntryVersion, version};
 use super::*;
 use std::{collections::BTreeSet, ffi::OsString, os::windows::ffi::OsStrExt};
+
+/// Ordered top-down application state, authorized by paired journal records.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(in super::super) struct PermissionProgress {
+    pub(in super::super) completed: usize,
+    pub(in super::super) pending: bool,
+}
+impl PermissionProgress {
+    pub(in super::super) fn valid_for(self, count: usize) -> bool {
+        self.completed <= count && (!self.pending || self.completed < count)
+    }
+}
 
 pub(in super::super) struct SecurityEntry<'a> {
     pub(in super::super) parent: Option<usize>,
@@ -76,6 +88,13 @@ impl PlannedEntry {
     }
 }
 impl TreeSecurityEvidence {
+    pub(in super::super) fn at_root(&self, name: &OsStr) -> Self {
+        let mut result = self.clone();
+        if let Some(root) = result.entries.first_mut() {
+            root.name = name.encode_wide().collect();
+        }
+        result
+    }
     pub(in super::super) fn header(&self) -> SecurityPlanHeader {
         SecurityPlanHeader {
             creator: self.creator.clone(),
@@ -135,7 +154,8 @@ struct Entry {
     policy: DestinationSecurity,
 }
 /// Native descriptors and pinned objects for a complete final permission plan.
-/// Evidence can be journaled before mutation; this type has no apply/cleanup API.
+/// Evidence is journaled before mutation; applying requires a separate typed
+/// capability and a pending intent. This type never publishes or cleans up.
 pub(in super::super) struct TreeSecurityPlan {
     parent: File,
     creator: Vec<u8>,
@@ -145,8 +165,26 @@ impl TreeSecurityPlan {
     pub(in super::super) fn capture<'a>(
         parent: &File,
         inputs: impl IntoIterator<Item = SecurityEntry<'a>>,
+        progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::capture_at(
+            parent,
+            inputs,
+            None,
+            PermissionProgress::default(),
+            progress,
+        )
+    }
+    pub(in super::super) fn capture_at<'a>(
+        parent: &File,
+        inputs: impl IntoIterator<Item = SecurityEntry<'a>>,
+        recorded: Option<&TreeSecurityEvidence>,
+        phase: PermissionProgress,
         mut progress: impl FnMut() -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        if recorded.is_none() && phase != PermissionProgress::default() {
+            return Err(io("Copy permission phase has no sealed plan"));
+        }
         let token = current_token()?;
         let creator = owner_for_token(&token)?;
         let mut entries: Vec<Entry> = Vec::new();
@@ -164,7 +202,6 @@ impl TreeSecurityPlan {
                     "Copy security plan has wrong entry kinds or aliased/duplicate entries",
                 ));
             }
-            let private = PrivateSecurity::capture(input.candidate, &creator)?;
             let policy = if index == 0 {
                 if input.parent.is_some() {
                     return Err(io("Copy security plan root has a parent"));
@@ -198,6 +235,18 @@ impl TreeSecurityPlan {
                 }
                 policy
             };
+            let private = match recorded {
+                Some(recorded) => recorded
+                    .entries
+                    .get(index)
+                    .ok_or_else(|| io("Copy permission graph exceeds recorded plan"))?
+                    .private
+                    .clone(),
+                None => PrivateSecurity::capture(input.candidate, &creator)?,
+            };
+            if !private.valid_for(&creator) {
+                return Err(io("Copy private ownership record is invalid"));
+            }
             if private.0.owner != policy.expected.owner || private.0.group != policy.expected.group
             {
                 return Err(io(
@@ -233,8 +282,16 @@ impl TreeSecurityPlan {
             creator,
             entries,
         };
-        result.validate()?;
+        if recorded.is_some_and(|recorded| result.evidence() != *recorded) {
+            return Err(io(
+                "Copy permission plan differs from fresh native inheritance",
+            ));
+        }
+        result.validate_at(phase)?;
         Ok(result)
+    }
+    pub(in super::super) fn into_root_policy(self) -> DestinationSecurity {
+        self.entries.into_iter().next().unwrap().policy
     }
     pub(in super::super) fn entry_count(&self) -> usize {
         self.entries.len()
@@ -259,36 +316,127 @@ impl TreeSecurityPlan {
         }
     }
     pub(in super::super) fn validate(&self) -> Result<(), PlatformError> {
+        self.validate_at(PermissionProgress::default())
+    }
+    pub(in super::super) fn validate_at(
+        &self,
+        phase: PermissionProgress,
+    ) -> Result<(), PlatformError> {
+        self.validate_context(phase)?;
+        for index in 0..self.entries.len() {
+            self.validate_entry(index, phase, true)?;
+        }
+        self.entries[0].policy.validate_parent(&self.parent)
+    }
+    fn validate_context(&self, phase: PermissionProgress) -> Result<(), PlatformError> {
+        if !phase.valid_for(self.entries.len()) {
+            return Err(io("Copy permission progress exceeds its graph"));
+        }
         if current_owner()? != self.creator {
             return Err(io("Copy security plan creator context changed"));
         }
         self.entries[0].policy.validate_parent(&self.parent)?;
-        for entry in &self.entries {
-            let parent = entry
-                .parent
-                .map(|p| &self.entries[p].handle)
-                .unwrap_or(&self.parent);
-            namespace::validate_binding(parent, &entry.name, entry.before.identity)?;
-            entry.private.validate(&entry.handle, &self.creator)?;
-            if version(&entry.handle)? != entry.before {
-                return Err(io(
-                    "Copy candidate metadata changed after security planning",
-                ));
-            }
-            if entry.before.directory
-                && entry.before.link.is_none()
-                && windows_fs::directory_children_limited(
-                    &entry.handle,
-                    entry.children.len().saturating_add(1),
-                )
-                .map_err(io)?
-                    != entry.children
-            {
-                return Err(io("Copy security plan directory membership changed"));
-            }
-        }
-        self.entries[0].policy.validate_parent(&self.parent)?;
         Ok(())
+    }
+    fn validate_entry(
+        &self,
+        index: usize,
+        phase: PermissionProgress,
+        membership: bool,
+    ) -> Result<(), PlatformError> {
+        let entry = &self.entries[index];
+        namespace::validate_single_link(&entry.handle)?;
+        let parent = entry
+            .parent
+            .map(|p| &self.entries[p].handle)
+            .unwrap_or(&self.parent);
+        namespace::validate_binding(parent, &entry.name, entry.before.identity)?;
+        let mut actual = capture(&entry.handle)?;
+        let actual = parts(actual.as_mut_ptr().cast())?;
+        let final_allowed = index < phase.completed || (index == phase.completed && phase.pending);
+        let private_allowed = index >= phase.completed;
+        if !(final_allowed && actual == entry.policy.expected
+            || private_allowed && actual == entry.private.0)
+        {
+            return Err(io(
+                "Copy entry permissions do not match the recorded application phase",
+            ));
+        }
+        if version(&entry.handle)? != entry.before {
+            return Err(io(
+                "Copy candidate metadata changed after security planning",
+            ));
+        }
+        if membership
+            && entry.before.directory
+            && entry.before.link.is_none()
+            && windows_fs::directory_children_limited(
+                &entry.handle,
+                entry.children.len().saturating_add(1),
+            )
+            .map_err(io)?
+                != entry.children
+        {
+            return Err(io("Copy security plan directory membership changed"));
+        }
+        Ok(())
+    }
+    fn validate_path(&self, index: usize, phase: PermissionProgress) -> Result<(), PlatformError> {
+        self.validate_context(phase)?;
+        let mut current = Some(index);
+        while let Some(at) = current {
+            self.validate_entry(at, phase, at == index)?;
+            current = self.entries[at].parent;
+        }
+        self.entries[0].policy.validate_parent(&self.parent)
+    }
+    /// The caller must have paired/flushed this entry's intent first. Failure
+    /// after SetSecurityInfo is uncertain and requires fresh recovery validation.
+    pub(in super::super) fn apply_pending(
+        &mut self,
+        phase: PermissionProgress,
+        candidate: &windows_fs::PerObjectFile,
+        mut boundary: impl FnMut(bool) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if !phase.pending {
+            return Err(io("Copy permission change lacks durable intent"));
+        }
+        let index = phase.completed;
+        self.validate_path(index, phase)?;
+        let entry = &self.entries[index];
+        if stable_identity_from_handle(candidate).map_err(io)? != entry.before.identity {
+            return Err(io(
+                "Copy permission capability does not bind the recorded entry",
+            ));
+        }
+        let parent = entry
+            .parent
+            .map(|p| &self.entries[p].handle)
+            .unwrap_or(&self.parent);
+        // Never reapply an already exact descriptor: re-inheritance can add ACEs.
+        if !entry.policy.matches_candidate(candidate)? {
+            entry.policy.apply(parent, &entry.name, candidate)?;
+        }
+        boundary(false)?;
+        candidate.sync_all().map_err(io)?;
+        boundary(true)?;
+        entry.policy.validate_candidate(candidate)?;
+        let after = version(candidate)?;
+        let mut comparable = after.clone();
+        comparable.changed = entry.before.changed;
+        if comparable != entry.before {
+            return Err(io(
+                "Copy payload metadata changed during permission application",
+            ));
+        }
+        self.entries[index].before = after;
+        self.validate_path(
+            index,
+            PermissionProgress {
+                completed: index + 1,
+                pending: false,
+            },
+        )
     }
 }
 

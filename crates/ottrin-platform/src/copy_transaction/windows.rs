@@ -1,10 +1,11 @@
-//! Handle-bound Windows Copy staging. This module never publishes or mutates sources.
+//! Handle-bound Windows Copy staging, journaled no-replace publication and DACL application.
+//! Sources are never mutated; public Copy, Overwrite, cleanup and Undo remain gated.
 //!
 //! Backup streams preserve directory/file named data and extended attributes that ordinary
 //! ReadFile/WriteFile copying loses. Known link records are validated and installed
 //! through native handles; security and other unsupported
 //! backup records are refused rather than silently omitted. Final file metadata,
-//! publication journals and Undo remain separate required work.
+//! guarded cleanup, Overwrite and Undo remain separate required work.
 #![cfg_attr(not(test), allow(dead_code))]
 
 mod journal;

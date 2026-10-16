@@ -20,7 +20,8 @@ use windows_sys::Win32::System::Threading::{
 
 mod tree;
 pub(super) use tree::{
-    PlannedEntry, SecurityEntry, SecurityPlanHeader, TreeSecurityEvidence, TreeSecurityPlan,
+    PermissionProgress, PlannedEntry, SecurityEntry, SecurityPlanHeader, TreeSecurityEvidence,
+    TreeSecurityPlan,
 };
 
 const INFORMATION: u32 =
@@ -353,9 +354,12 @@ impl DestinationSecurity {
         namespace::validate_binding(parent, name, identity)?;
         Ok(())
     }
-    pub(super) fn validate_candidate(&self, candidate: &File) -> Result<(), PlatformError> {
+    pub(super) fn matches_candidate(&self, candidate: &File) -> Result<bool, PlatformError> {
         let mut security = capture(candidate)?;
-        if parts(security.as_mut_ptr().cast())? != self.expected {
+        Ok(parts(security.as_mut_ptr().cast())? == self.expected)
+    }
+    pub(super) fn validate_candidate(&self, candidate: &File) -> Result<(), PlatformError> {
+        if !self.matches_candidate(candidate)? {
             return Err(io(
                 "published owner/group/DACL does not match destination policy",
             ));
@@ -948,32 +952,8 @@ mod tests {
             let linkpath = root.path().join("source-link");
             let targetpath = root.path().join("target");
             if kind == 2 {
-                use std::os::windows::ffi::OsStrExt;
-                let mut nt = std::ffi::OsString::from(r"\??\");
-                nt.push(targetpath.as_os_str());
-                let substitute = nt.encode_wide().collect::<Vec<_>>();
-                let print = targetpath.as_os_str().encode_wide().collect::<Vec<_>>();
-                let mut bytes = vec![0u8; 16];
-                bytes[..4].copy_from_slice(
-                    &windows_sys::Win32::System::SystemServices::IO_REPARSE_TAG_MOUNT_POINT
-                        .to_le_bytes(),
-                );
-                bytes[10..12].copy_from_slice(&((substitute.len() * 2) as u16).to_le_bytes());
-                bytes[12..14].copy_from_slice(&(((substitute.len() + 1) * 2) as u16).to_le_bytes());
-                bytes[14..16].copy_from_slice(&((print.len() * 2) as u16).to_le_bytes());
-                for unit in substitute
-                    .into_iter()
-                    .chain(Some(0))
-                    .chain(print)
-                    .chain(Some(0))
-                {
-                    bytes.extend_from_slice(&unit.to_le_bytes());
-                }
-                let size = (bytes.len() - 8) as u16;
-                bytes[4..6].copy_from_slice(&size.to_le_bytes());
                 let source = private(&parent, "source-link", true);
-                super::super::links::Link::parse(bytes, true)
-                    .unwrap()
+                super::super::links::junction_fixture(&targetpath)
                     .install(&source)
                     .unwrap();
             } else if directory {

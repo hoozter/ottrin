@@ -703,11 +703,19 @@ conversions from arbitrary `File` handles or mutable access that permits handle
 replacement. `DestinationSecurity::apply` requires this type. Ordinary journals
 and text-save creation keep their explicit rights through the same authoritative
 atomic-private-creation implementation. The ordinary retained-stage inspector
-continues to hold read-only handles: any future permission-application recovery
-must explicitly acquire its own validated capability and durable phase ownership.
-Known links use no-follow handles and full native identity/tag checks; they remain
-leaves. This handle contract does not itself establish transaction ownership,
-permission-application journaling, publication or Copy Undo authority.
+continues to hold read-only handles. `PermissionStage` validates that epoch,
+releases its locks, reopens and compares the paired journals, and explicitly
+acquires new typed capabilities. Publication intent precedes a no-replace rename;
+root/parent flush and a bound target acknowledgement precede DACL application.
+Every entry has ordered paired intent/acknowledgement records; recovery freshly
+derives native policy and accepts private/final security only as its recorded
+phase permits. Never reapply an already exact final DACL. A final verification
+record follows the full payload/security scan, and the writer reserves the exact
+remaining journal tail before publication. The schema-3 codec returns the append
+sequence/hash; do not reconstruct a second interpretation of the frame chain.
+Known links remain no-follow leaves. Single-link guards apply to candidates,
+not sources. This contract does not grant Overwrite, Undo or cleanup authority;
+those phases and full public Windows Copy acceptance remain required.
 
 Copy and created-entry receipts guard the original parent and transaction
 identities with one shared, nonblocking Linux inotify instance. Watches are
