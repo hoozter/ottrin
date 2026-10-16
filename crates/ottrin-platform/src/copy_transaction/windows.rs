@@ -7,6 +7,7 @@
 //! publication journals and Undo remain separate required work.
 #![cfg_attr(not(test), allow(dead_code))]
 
+mod journal;
 mod links;
 mod metadata;
 mod namespace;
@@ -42,7 +43,8 @@ const ALTERNATE_DATA: u32 = 4;
 const PROPERTY_DATA: u32 = 6;
 const REPARSE_DATA: u32 = 8;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct StreamEvidence {
     kind: u32,
     attributes: u32,
@@ -51,7 +53,8 @@ pub(super) struct StreamEvidence {
     sha256: String,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct EntryVersion {
     identity: WindowsStableIdentity,
     directory: bool,

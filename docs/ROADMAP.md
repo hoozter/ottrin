@@ -10,41 +10,43 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
-Recursive tree staging now preserves known Windows symbolic links and junction
-records as leaves, including root links, relative/absolute and dangling links.
-It validates bounded native reparse data, copies the link's own large Unicode and
-empty named streams, installs the record on the held private candidate and checks
-its exact bytes and native object identity. It never follows a target or falls
-back to copying target contents. Native file/directory targets with denied data
-and listing access remain unchanged; retargeted source/candidate links are detected
-and retained. Unsupported/provider-managed reparse semantics stay explicit.
+Windows Copy now owns paired append-only staging journals bound to native parent,
+transaction-directory and journal-file identities. Both records are flushed before
+candidate creation is acknowledged or payload writes begin. Source discovery is
+read-only and finishes before destination mutation; destination and central-store
+locations inside the source tree are refused before creation. Per-entry planned
+link data and actual staged stream/metadata evidence lead to a terminal whole-tree
+verification record. An uncertain writer cannot retry or repair divergent mirrors.
+Read-only inspection rejects torn, modified, reordered, foreign and rebound logs.
+It does not authorize cleanup from a journal alone.
 
-Ordinary trees retain pinned read-only source handles, an explicit entry budget,
-identity-based self-descendant refusal, exact child membership/bindings and
-bottom-up final metadata. Move and Copy share one native enumeration/parser.
-Ordinary file/directory named streams, extended attributes, compression and
-metadata, plus new-copy DACL/audit/label inheritance retain their component checks.
-
-The complete ordinary-user Copy suite passes 60, excluding the separate SYSTEM
-audit and Developer Mode-off denial cases. The full native Windows platform suite
-passes 160 with 28 specialized exclusions. SYSTEM audit passes separately. With
-Developer Mode disabled and a fresh ordinary-user login after reboot, symbolic
-link creation correctly fails with error 1314 while retaining private candidate
-named data and the target; junction staging still passes. Production never changes
-Developer Mode, enables privileges or substitutes a junction for a symbolic link.
+Native ordinary-user Copy tests pass 68 with 3 specialized/child exclusions;
+the full Windows platform suite passes 168 with 29 exclusions. The separate SYSTEM
+audit test passes. Twenty-two injected flush failures and eight actual process
+exits retain unpublished staging and unchanged source bytes. Paired journals reopen
+with and without their writer; exact-byte replacement fails native identity checks.
 Linux platform tests pass 411 with 3 exclusions; strict platform all-target Clippy
-passes on both targets. The unreadable-target fixture's security-update rights
-were corrected without relaxing its data/listing-denial assertions. Evidence:
-`.hermes/evidence/windows-copy-links-current/ACCEPTANCE.json`.
+passes on both targets. Evidence:
+`.hermes/evidence/windows-copy-journal-current/ACCEPTANCE.json`.
+
+Existing recursive staging preserves known symbolic links and junctions as leaves,
+including root links, exact reparse records and their own named streams, without
+following targets. Ordinary trees retain exact child membership/bindings,
+bottom-up metadata and destination-security component checks. Earlier Developer
+Mode-off denial/junction acceptance remains recorded in
+`.hermes/evidence/windows-copy-links-current/ACCEPTANCE.json`; that separate boot
+configuration was not repeated for the journal change. Production never changes
+Developer Mode or enables privileges.
 
 Public Windows Copy remains disabled. Existing-token privilege/elevation workflow,
-sparse/EFS and specialized storage/properties (including directory case-sensitivity
-policy), tree-wide final security, complete Overwrite retention, durable ownership
-and transition journals, publication/recovery/Undo, clipboard/Tandem and rebuilt
+sparse/EFS, directory case-sensitivity and specialized storage/property semantics,
+tree-wide final security, broader central-store placement, complete Overwrite
+retention and publication transitions, live candidate recovery validation,
+central recovery discovery, guarded cleanup/Undo, clipboard/Tandem and rebuilt
 package acceptance remain required. Positive Windows Copy UI tests remain required;
-this component run does not replace them. Current packages stay at the separate
-delivery checkpoint below. The owned COW is removed after checks, user testing
-is deferred and the full roadmap goal remains active.
+this source-only component run does not replace them. Current packages stay at the
+separate delivery checkpoint below. User testing is deferred and the full roadmap
+goal remains active.
 
 ## Current delivered preview checkpoint
 

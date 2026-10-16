@@ -291,6 +291,14 @@ impl WindowsStableIdentity {
         self.volume_serial_number
     }
 
+    pub(crate) fn same_type(self, other: Self) -> bool {
+        self.file_type == other.file_type && self.reparse_tag == other.reparse_tag
+    }
+
+    pub(crate) fn reparse_tag(self) -> Option<u32> {
+        self.reparse_tag
+    }
+
     /// Native object identity survives an intentional reparse-type transition.
     pub(crate) fn same_object(self, other: Self) -> bool {
         self.volume_serial_number == other.volume_serial_number && self.file_id == other.file_id

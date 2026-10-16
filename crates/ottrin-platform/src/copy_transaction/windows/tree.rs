@@ -155,113 +155,196 @@ impl StagedTree {
     }
 }
 
-/// Stage ordinary files/directories and known links without following targets. Source handles
-/// are read-only and remain pinned until the result is dropped. `max_entries` is
-/// the transaction owner's explicit handle/memory budget (including the root).
-/// Every failure retains the independently owned candidate; no Drop cleanup.
-/// Unknown reparse tags and specialized storage are explicitly refused.
-pub(super) fn stage_tree(
+/// Mutation observer: returning an error prevents the next payload operation.
+/// The journal records intent before child creation and creation/type-transition
+/// ownership before any payload write. A verified tree is acknowledged last.
+pub(super) trait StagingJournal {
+    fn intent(
+        &mut self,
+        index: usize,
+        parent: Option<usize>,
+        name: &std::ffi::OsStr,
+        source: &EntryVersion,
+    ) -> Result<(), PlatformError>;
+    fn created(
+        &mut self,
+        index: usize,
+        parent: &File,
+        candidate: &File,
+    ) -> Result<(), PlatformError>;
+    fn staged(
+        &mut self,
+        index: usize,
+        evidence: &metadata::StagedEntry,
+    ) -> Result<(), PlatformError>;
+    fn verified(&mut self, count: usize) -> Result<(), PlatformError>;
+}
+
+pub(super) struct PinnedTree {
+    sources: Vec<SourceEntry>,
+}
+impl PinnedTree {
+    /// Complete source discovery before creating destination entries. No links
+    /// are traversed and no source DELETE/data-write access is requested.
+    pub(super) fn open(
+        source: &File,
+        max_entries: usize,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        if max_entries == 0 {
+            return Err(io("tree entry budget is zero"));
+        }
+        let mut sources = vec![SourceEntry {
+            handle: source.try_clone().map_err(io)?,
+            before: version(source)?,
+            parent: None,
+            name: OsString::new(),
+            children: Vec::new(),
+        }];
+        let mut index = 0;
+        while index < sources.len() {
+            progress(0)?;
+            if sources[index].before.directory && sources[index].before.link.is_none() {
+                let names = children(
+                    &sources[index].handle,
+                    max_entries.saturating_sub(sources.len()),
+                )?;
+                for name in &names {
+                    progress(0)?;
+                    let handle = namespace::open_source(&sources[index].handle, name, None)?;
+                    let before = version(&handle)?;
+                    sources.push(SourceEntry {
+                        handle,
+                        before,
+                        parent: Some(index),
+                        name: name.clone(),
+                        children: Vec::new(),
+                    });
+                }
+                sources[index].children = names;
+            }
+            index += 1;
+        }
+        Ok(Self { sources })
+    }
+    pub(super) fn root(&self) -> &EntryVersion {
+        &self.sources[0].before
+    }
+    pub(super) fn reject_destination_parent(&self, parent: &File) -> Result<(), PlatformError> {
+        let id = stable_identity_from_handle(parent).map_err(io)?;
+        if self
+            .sources
+            .iter()
+            .any(|source| source.before.identity.same_object(id))
+        {
+            return Err(io("Copy destination is inside the source tree"));
+        }
+        Ok(())
+    }
+    pub(super) fn stage(
+        self,
+        candidate: &File,
+        root_parent: &File,
+        journal: &mut impl StagingJournal,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<StagedTree, PlatformError> {
+        let target = version(candidate)?;
+        if self.root().directory != target.directory
+            || target.length != 0
+            || target.link.is_some()
+            || (target.directory && !children(candidate, 0)?.is_empty())
+            || self
+                .sources
+                .iter()
+                .any(|source| source.before.identity.same_object(target.identity))
+        {
+            return Err(io(
+                "tree candidate aliases the source, has a different type, is inside the source or is occupied",
+            ));
+        }
+        let mut entries: Vec<Entry> = Vec::with_capacity(self.sources.len());
+        let mut total = 0u64;
+        for (index, source) in self.sources.into_iter().enumerate() {
+            progress(total)?;
+            if version(&source.handle)? != source.before {
+                return Err(io(
+                    "source changed after tree preflight; candidate retained",
+                ));
+            }
+            let candidate = if let Some(parent) = source.parent {
+                journal.intent(index, Some(parent), &source.name, &source.before)?;
+                let candidate = windows_fs::create_private(
+                    &entries[parent].candidate,
+                    &source.name,
+                    source.before.directory,
+                    FILE_SHARE_READ,
+                )
+                .map_err(io)?;
+                journal.created(index, &entries[parent].candidate, &candidate)?;
+                candidate
+            } else {
+                let candidate = candidate.try_clone().map_err(io)?;
+                journal.created(0, root_parent, &candidate)?;
+                candidate
+            };
+            let payload = metadata::stage_entry_payload(&source.handle, &candidate, |copied| {
+                progress(
+                    total
+                        .checked_add(copied)
+                        .ok_or_else(|| io("tree progress overflow"))?,
+                )
+            })?;
+            total = payload.streams.iter().try_fold(total, |sum, stream| {
+                sum.checked_add(stream.bytes)
+                    .ok_or_else(|| io("tree stream length overflow"))
+            })?;
+            journal.staged(index, &payload)?;
+            let candidate_identity = stable_identity_from_handle(&candidate).map_err(io)?;
+            entries.push(Entry {
+                source,
+                candidate,
+                candidate_identity,
+                payload,
+            });
+        }
+        let result = StagedTree { entries };
+        result.finish(&mut |_| progress(total))?;
+        journal.verified(result.entry_count())?;
+        Ok(result)
+    }
+}
+
+#[cfg(test)]
+pub(super) fn stage_tree_unjournaled(
     source: &File,
     candidate: &File,
     max_entries: usize,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<StagedTree, PlatformError> {
-    if max_entries == 0 {
-        return Err(io("tree entry budget is zero"));
-    }
-    let source_version = version(source)?;
-    let target = version(candidate)?;
-    if source_version.directory != target.directory
-        || source_version.identity.same_object(target.identity)
-        || target.length != 0
-        || target.link.is_some()
-        || (target.directory && !children(candidate, 0)?.is_empty())
-    {
-        return Err(io(
-            "tree candidate aliases the source, has a different type or is occupied",
-        ));
-    }
-    let mut sources = vec![SourceEntry {
-        handle: source.try_clone().map_err(io)?,
-        before: source_version,
-        parent: None,
-        name: OsString::new(),
-        children: Vec::new(),
-    }];
-    // Finish source discovery before creating any child. A candidate anywhere
-    // in the source tree is rejected by held identity, not path prefix guesses.
-    let mut index = 0;
-    while index < sources.len() {
-        progress(0)?;
-        if sources[index].before.directory && sources[index].before.link.is_none() {
-            let names = children(
-                &sources[index].handle,
-                max_entries.saturating_sub(sources.len()),
-            )?;
-            for name in &names {
-                progress(0)?;
-                let handle = namespace::open_source(&sources[index].handle, name, None)?;
-                let before = version(&handle)?;
-                if before.identity.same_object(target.identity) {
-                    return Err(io(
-                        "Copy destination is inside the source tree; candidate retained",
-                    ));
-                }
-                sources.push(SourceEntry {
-                    handle,
-                    before,
-                    parent: Some(index),
-                    name: name.clone(),
-                    children: Vec::new(),
-                });
-            }
-            sources[index].children = names;
+    struct ComponentOnly;
+    impl StagingJournal for ComponentOnly {
+        fn intent(
+            &mut self,
+            _: usize,
+            _: Option<usize>,
+            _: &std::ffi::OsStr,
+            _: &EntryVersion,
+        ) -> Result<(), PlatformError> {
+            Ok(())
         }
-        index += 1;
-    }
-    // No recursion or path-based reopen: parents always precede their children.
-    let mut entries: Vec<Entry> = Vec::with_capacity(sources.len());
-    let mut total = 0u64;
-    for source in sources {
-        progress(total)?;
-        if version(&source.handle)? != source.before {
-            return Err(io(
-                "source changed after tree preflight; candidate retained",
-            ));
+        fn created(&mut self, _: usize, _: &File, _: &File) -> Result<(), PlatformError> {
+            Ok(())
         }
-        let candidate = if let Some(parent) = source.parent {
-            windows_fs::create_private(
-                &entries[parent].candidate,
-                &source.name,
-                source.before.directory,
-                FILE_SHARE_READ,
-            )
-            .map_err(io)?
-        } else {
-            candidate.try_clone().map_err(io)?
-        };
-        let payload = metadata::stage_entry_payload(&source.handle, &candidate, |copied| {
-            progress(
-                total
-                    .checked_add(copied)
-                    .ok_or_else(|| io("tree progress overflow"))?,
-            )
-        })?;
-        total = payload.streams.iter().try_fold(total, |sum, stream| {
-            sum.checked_add(stream.bytes)
-                .ok_or_else(|| io("tree stream length overflow"))
-        })?;
-        let candidate_identity = stable_identity_from_handle(&candidate).map_err(io)?;
-        entries.push(Entry {
-            source,
-            candidate,
-            candidate_identity,
-            payload,
-        });
+        fn staged(&mut self, _: usize, _: &metadata::StagedEntry) -> Result<(), PlatformError> {
+            Ok(())
+        }
+        fn verified(&mut self, _: usize) -> Result<(), PlatformError> {
+            Ok(())
+        }
     }
-    let result = StagedTree { entries };
-    result.finish(&mut |_| progress(total))?;
-    Ok(result)
+    // The no-journal adapter exists only for the earlier codec/component cases.
+    let tree = PinnedTree::open(source, max_entries, &mut progress)?;
+    tree.stage(candidate, candidate, &mut ComponentOnly, progress)
 }
 
 #[cfg(test)]
@@ -350,7 +433,7 @@ mod tests {
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
         let mut last = 0;
-        let staged = stage_tree(&source, &candidate, 1000, |bytes| {
+        let staged = stage_tree_unjournaled(&source, &candidate, 1000, |bytes| {
             assert!(bytes >= last);
             last = bytes;
             Ok(())
@@ -406,7 +489,7 @@ mod tests {
         let source = read(&src);
         let stage = namespace::PrivateStage::create(&source).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        assert!(stage_tree(&source, &candidate, 100, |_| Ok(())).is_err());
+        assert!(stage_tree_unjournaled(&source, &candidate, 100, |_| Ok(())).is_err());
         assert!(children(&candidate, 0).unwrap().is_empty());
         assert!(
             super::super::transfer(&candidate, None, &mut |_| Ok(()))
@@ -428,7 +511,7 @@ mod tests {
         for budget in [0, 1, 3] {
             let stage = namespace::PrivateStage::create(&parent).unwrap();
             let candidate = stage.create_candidate(true).unwrap();
-            assert!(stage_tree(&read(&src), &candidate, budget, |_| Ok(())).is_err());
+            assert!(stage_tree_unjournaled(&read(&src), &candidate, budget, |_| Ok(())).is_err());
             assert!(children(&candidate, 0).unwrap().is_empty());
             assert!(
                 super::super::transfer(&candidate, None, &mut |_| Ok(()))
@@ -442,7 +525,7 @@ mod tests {
         std::os::windows::fs::symlink_dir(root.path(), src.join("dir-link")).unwrap();
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        let staged = stage_tree(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
+        let staged = stage_tree_unjournaled(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
         assert_eq!(staged.entry_count(), 6);
         staged.verify_and_finalize(|_| Ok(())).unwrap();
         for entry in &staged.entries {
@@ -467,7 +550,7 @@ mod tests {
             let parent = owner(root.path());
             let stage = namespace::PrivateStage::create(&parent).unwrap();
             let candidate = stage.create_candidate(true).unwrap();
-            let staged = stage_tree(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
+            let staged = stage_tree_unjournaled(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
             let changed = if change_source {
                 src.clone()
             } else {
@@ -494,7 +577,7 @@ mod tests {
         let parent = owner(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        let staged = stage_tree(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
+        let staged = stage_tree_unjournaled(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
         let entry = staged
             .entries
             .iter()
@@ -523,7 +606,7 @@ mod tests {
         let parent = owner(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        let error = stage_tree(&read(&src), &candidate, 100, |bytes| {
+        let error = stage_tree_unjournaled(&read(&src), &candidate, 100, |bytes| {
             if bytes > 0 {
                 Err(io("injected tree cancellation"))
             } else {
@@ -570,7 +653,7 @@ mod tests {
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
         let mut changed = false;
-        let staged = stage_tree(&source, &candidate, 100, |_| {
+        let staged = stage_tree_unjournaled(&source, &candidate, 100, |_| {
             if !changed {
                 std::fs::remove_dir(&alias).unwrap();
                 std::os::windows::fs::symlink_dir(&second, &alias).unwrap();
@@ -639,7 +722,7 @@ mod tests {
         let parent = owner(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        let staged = stage_tree(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
+        let staged = stage_tree_unjournaled(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
         staged.verify_and_finalize(|_| Ok(())).unwrap();
         let target = windows_fs::location(&candidate).unwrap();
         assert_eq!(
@@ -662,7 +745,7 @@ mod tests {
         let parent = owner(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        let staged = stage_tree(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
+        let staged = stage_tree_unjournaled(&read(&src), &candidate, 100, |_| Ok(())).unwrap();
         let entry = staged
             .entries
             .iter()
@@ -699,7 +782,7 @@ mod tests {
         let parent = owner(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(false).unwrap();
-        let staged = stage_tree(&read(&src), &candidate, 1, |_| Ok(())).unwrap();
+        let staged = stage_tree_unjournaled(&read(&src), &candidate, 1, |_| Ok(())).unwrap();
         assert_eq!(staged.entry_count(), 1);
         staged.verify_and_finalize(|_| Ok(())).unwrap();
         assert_eq!(
@@ -712,7 +795,7 @@ mod tests {
         let candidate = stage.create_candidate(true).unwrap();
         let location = windows_fs::location(&candidate).unwrap();
         std::fs::write(location.join("unrelated"), b"keep").unwrap();
-        assert!(stage_tree(&read(&src), &candidate, 100, |_| Ok(())).is_err());
+        assert!(stage_tree_unjournaled(&read(&src), &candidate, 100, |_| Ok(())).is_err());
         assert_eq!(std::fs::read(location.join("unrelated")).unwrap(), b"keep");
     }
 }

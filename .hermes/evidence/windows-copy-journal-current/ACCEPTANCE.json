@@ -1,0 +1,141 @@
+{
+  "status": "pass",
+  "scope": "Source-only paired staging journals and readonly inspection; public Windows Copy remains disabled",
+  "base_revision": "1d2c001f216ab1affb19ad022af2645df7616127",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "78eeaad9c28af98069d74bef9607e91bb6c5ca440ff2309e97fef08293f3bfc9",
+    "crates/ottrin-platform/src/move_recovery.rs": "6073c39e6305868490056d350942fa2ccd999b6135a17f17c3b88734fd2a487d",
+    "crates/ottrin-platform/src/copy_transaction/windows/links.rs": "79d53671363e20857d56cb71522f321a0007e04da1e6e3a473793edf184a16e3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "9bd88f3d73bf996f65dce793ad5e607094b3a6f4631aa4362466dff512932934",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "f78b795d9354f8bf5f5134b6a1e841690e707e821b56e557ad7043f97f5d6a41",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "f7b88c375b0c61f792403fdbe8cf5651e1b08f707cdf9f995726848e48a9dd2d",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "0299f8d3bbfcf3e2925543d0eacd0d2cc9f8e6ad9c151bcccaddbc69578e5941",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "937ae848c5d6828e45a4bba47d946b551f7a0c2343ac27cd0c2c24c7d3b8af6d"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "0554690749434fa9901a2bd2a35061196e6c2a4b48fa4041a5646a9c2560e194",
+    "transferred_sha256": "1fbc652e257ec06e478cc76967d2d15cf818c3a1e3fa744bdb8da49ecc1a79e7",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 7813304,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "23a8a2c3c8b3d844a9c7fe91a4f6d9c38146f752e0175554f8c011cc97e8dd30"
+      },
+      ".data": {
+        "virtual_size": 3824,
+        "virtual_address": 7819264,
+        "flags": 3221225536,
+        "raw_sha256": "2c6b84aee551bc901ac0573322c494adeb92ec3c8cc7ac547dda93ce6b73a7ef"
+      },
+      ".rdata": {
+        "virtual_size": 704888,
+        "virtual_address": 7823360,
+        "flags": 1073741888,
+        "raw_sha256": "f617268aa6ee90fbd34a1a1ff35f531c0657b8eb740a5fd420f0ecce21c322be"
+      },
+      ".pdata": {
+        "virtual_size": 143088,
+        "virtual_address": 8531968,
+        "flags": 1073741888,
+        "raw_sha256": "ab354f1fe5275ecc0939c8b778da9f6311dd75c5507930b98b6b660f105949e0"
+      },
+      ".xdata": {
+        "virtual_size": 472916,
+        "virtual_address": 8675328,
+        "flags": 1073741888,
+        "raw_sha256": "538427ce712050303f7977d7b856d4fd94a2d8e38cdc4cfafce64e6f9739df03"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 9150464,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 9154560,
+        "flags": 3221225536,
+        "raw_sha256": "bcc2e8146fba90956413d599d956e9127c252219f1ea5359350f1178c61fa99b"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 9166848,
+        "flags": 3221225536,
+        "raw_sha256": "e05d35c3891fb653e0d92a634524444fbc35ee1764db42cfdbbce465179e6367"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 9170944,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 19244,
+        "virtual_address": 9175040,
+        "flags": 1107296320,
+        "raw_sha256": "05f08d891e929747133d3d0fb2b207a585c14843d222c3c8c1877169c508cafb"
+      }
+    }
+  },
+  "native_copy": {
+    "passed": 68,
+    "failed": 0,
+    "ignored": 3,
+    "ordinary_user": true,
+    "injected_flush_failures": 22,
+    "process_exits": 8,
+    "expected_child_exit": 86,
+    "temporary_entries": 0
+  },
+  "native_full_platform": {
+    "passed": 168,
+    "failed": 0,
+    "ignored": 29,
+    "temporary_entries": 0
+  },
+  "native_system_audit": {
+    "passed": 1,
+    "failed": 0,
+    "temporary_entries": 0
+  },
+  "linux_platform": {
+    "passed": 411,
+    "failed": 0,
+    "ignored": 3
+  },
+  "strict_clippy": {
+    "linux_all_targets": "pass",
+    "windows_all_targets": "pass"
+  },
+  "fixture_environment": {
+    "disposable_no_network_windows_overlay": true,
+    "ordinary_user": "OttrinContentQA",
+    "developer_mode": "Enabled only in owned disposable overlay for existing native symlink fixtures",
+    "mode_off_policy": "Not rerun; earlier links checkpoint retains distinct evidence"
+  },
+  "limits": [
+    "No public Copy publication, Overwrite, Undo or cleanup authority",
+    "Inspection checks paired journals and namespace identities, not every live candidate against recorded contents",
+    "Central discovery, broader source-root/journal placement and recovery remain open",
+    "Sparse/EFS, case-sensitive directories, specialized providers/storage, full final security and privilege workflow remain open",
+    "No current package replaced; no user or physical desktop acceptance claimed"
+  ],
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "preservation": {
+    "actor_state": "Ready",
+    "actor_result": 0,
+    "owned_product_processes": 0,
+    "original_profile_and_installation": "unchanged"
+  }
+}

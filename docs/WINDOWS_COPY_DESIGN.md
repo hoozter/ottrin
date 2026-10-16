@@ -1,6 +1,6 @@
 # Native Windows Copy
 
-Status: native file/directory payloads, private namespace, tree/known-link staging and new-copy destination security inheritance verified; public Copy remains disabled until the complete transaction is accepted.
+Status: native file/directory payloads, private namespace, tree/known-link staging and new-copy destination security inheritance verified; paired staging journals and interruption inspection verified; public Copy remains disabled until the complete transaction is accepted.
 
 Copy must leave the original namespace and bytes untouched. It must not simulate a Move followed by restoration, or require source delete/data-write access merely because Move uses those rights. The existing Windows Move identity and handle-relative rename primitives can be reused where their contracts apply.
 
@@ -335,3 +335,42 @@ maintenance while its actual data/listing-denial assertions remain unchanged;
 both file and directory link cases pass. No production data-access check was
 relaxed. Existing exact Linux/internal Windows packages are unchanged; these are
 source/component results and do not claim public Copy or refreshed package QA.
+
+## Paired staging journal and interruption inspection
+
+The Copy staging owner now discovers and pins the source tree before destination
+mutation. It rejects destination and central-journal directories inside that tree.
+This early refusal preserves sources; broader source-root/central-store placement
+still needs a complete policy before claiming universal directory support.
+
+The private transaction directory and central index contain separate append-only
+journals, bound to native parent, directory and file identities. Records have a
+strict Copy-specific schema, monotonically increasing sequence, SHA-256 chain,
+16 MiB frame and 64 MiB log budgets. Diagnostic parent paths and source labels
+never authorize source removal. The schema has no source-deletion event.
+
+Both journals are flushed before acknowledging creation intent or newly created
+candidate identity. Only then can payload staging begin. The expected link data
+is recorded before a new ordinary candidate changes into a known link; staged
+identity must name the same object with the planned final type. Per-entry stream
+and metadata evidence precedes a terminal whole-tree verification record.
+An uncertain append poisons its writer. Torn, foreign, reordered, rebound or
+unequal mirrors are retained rather than repaired automatically.
+
+Inspection reopens journals through held parents, checks their identities, exact
+paired bytes, bounded framing and state transitions. It does not inspect every
+live candidate against the evidence, discover all central transactions, publish,
+rename, remove, restore or authorize cleanup. A verified journal record alone is
+never authority to delete a candidate. Live recovery validation, publication,
+Overwrite retention, final security, Undo and normal clipboard/package workflows
+remain required.
+
+Native acceptance for this staging checkpoint is recorded in
+`.hermes/evidence/windows-copy-journal-current/ACCEPTANCE.json`: 68 ordinary-user
+Copy cases, 168 full native Windows platform cases, the separate SYSTEM audit
+case and 411 Linux platform cases pass, with specialized exclusions recorded.
+New journal cases include 22 flush failures and eight process exits (exit 86),
+corruption/truncation/reordering, a foreign event, exact-byte journal replacement,
+uncertain-writer refusal, planned symbolic-link type transitions and early
+source-overlap/budget refusal. Strict all-target platform Clippy passes on both
+targets. These are source/component tests, not packaged public Copy acceptance.

@@ -13,7 +13,7 @@ const ORDINARY_ATTRIBUTES: u32 = FILE_ATTRIBUTE_READONLY
     | FILE_ATTRIBUTE_TEMPORARY
     | FILE_ATTRIBUTE_OFFLINE
     | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-const ADMITTED_ATTRIBUTES: u32 = ORDINARY_ATTRIBUTES
+pub(super) const ADMITTED_ATTRIBUTES: u32 = ORDINARY_ATTRIBUTES
     | FILE_ATTRIBUTE_NORMAL
     | FILE_ATTRIBUTE_COMPRESSED
     | FILE_ATTRIBUTE_DIRECTORY
@@ -86,13 +86,14 @@ fn set_compression(file: &File, format: u16) -> Result<(), PlatformError> {
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct StagedEntry {
     pub(super) streams: Vec<StreamEvidence>,
-    source: EntryVersion,
-    candidate_identity: crate::move_recovery::WindowsStableIdentity,
-    accessed: i64,
-    compression: u16,
+    pub(super) source: EntryVersion,
+    pub(super) candidate_identity: crate::move_recovery::WindowsStableIdentity,
+    pub(super) accessed: i64,
+    pub(super) compression: u16,
 }
 
 impl StagedEntry {

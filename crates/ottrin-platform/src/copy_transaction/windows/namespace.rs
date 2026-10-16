@@ -54,6 +54,13 @@ impl<'a> PrivateStage<'a> {
         Ok(stage)
     }
 
+    pub(super) fn parent(&self) -> &File {
+        self.parent
+    }
+    pub(super) fn identities(&self) -> (WindowsStableIdentity, WindowsStableIdentity) {
+        (self.parent_identity, self.identity)
+    }
+
     pub(super) fn validate(&self) -> Result<(), PlatformError> {
         if directory_identity(self.parent).map_err(|error| self.retained(error))?
             != self.parent_identity

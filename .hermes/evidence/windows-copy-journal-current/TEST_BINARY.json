@@ -1,0 +1,67 @@
+{
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+  "compiler_sha256": "0554690749434fa9901a2bd2a35061196e6c2a4b48fa4041a5646a9c2560e194",
+  "transferred_sha256": "1fbc652e257ec06e478cc76967d2d15cf818c3a1e3fa744bdb8da49ecc1a79e7",
+  "retained_sections": {
+    ".text": {
+      "virtual_size": 7813304,
+      "virtual_address": 4096,
+      "flags": 1610612832,
+      "raw_sha256": "23a8a2c3c8b3d844a9c7fe91a4f6d9c38146f752e0175554f8c011cc97e8dd30"
+    },
+    ".data": {
+      "virtual_size": 3824,
+      "virtual_address": 7819264,
+      "flags": 3221225536,
+      "raw_sha256": "2c6b84aee551bc901ac0573322c494adeb92ec3c8cc7ac547dda93ce6b73a7ef"
+    },
+    ".rdata": {
+      "virtual_size": 704888,
+      "virtual_address": 7823360,
+      "flags": 1073741888,
+      "raw_sha256": "f617268aa6ee90fbd34a1a1ff35f531c0657b8eb740a5fd420f0ecce21c322be"
+    },
+    ".pdata": {
+      "virtual_size": 143088,
+      "virtual_address": 8531968,
+      "flags": 1073741888,
+      "raw_sha256": "ab354f1fe5275ecc0939c8b778da9f6311dd75c5507930b98b6b660f105949e0"
+    },
+    ".xdata": {
+      "virtual_size": 472916,
+      "virtual_address": 8675328,
+      "flags": 1073741888,
+      "raw_sha256": "538427ce712050303f7977d7b856d4fd94a2d8e38cdc4cfafce64e6f9739df03"
+    },
+    ".bss": {
+      "virtual_size": 608,
+      "virtual_address": 9150464,
+      "flags": 3221225600,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    ".idata": {
+      "virtual_size": 11828,
+      "virtual_address": 9154560,
+      "flags": 3221225536,
+      "raw_sha256": "bcc2e8146fba90956413d599d956e9127c252219f1ea5359350f1178c61fa99b"
+    },
+    ".CRT": {
+      "virtual_size": 104,
+      "virtual_address": 9166848,
+      "flags": 3221225536,
+      "raw_sha256": "e05d35c3891fb653e0d92a634524444fbc35ee1764db42cfdbbce465179e6367"
+    },
+    ".tls": {
+      "virtual_size": 16,
+      "virtual_address": 9170944,
+      "flags": 3221225536,
+      "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+    },
+    ".reloc": {
+      "virtual_size": 19244,
+      "virtual_address": 9175040,
+      "flags": 1107296320,
+      "raw_sha256": "05f08d891e929747133d3d0fb2b207a585c14843d222c3c8c1877169c508cafb"
+    }
+  }
+}

@@ -12,7 +12,8 @@ use windows_sys::Win32::System::SystemServices::{
 
 const MAX_BYTES: usize = 16 * 1024;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct Link {
     pub(super) bytes: Vec<u8>,
     pub(super) directory: bool,
@@ -275,7 +276,8 @@ mod tests {
         }
         let stage = super::super::namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(false).unwrap();
-        let staged = super::super::tree::stage_tree(&source, &candidate, 1, |_| Ok(())).unwrap();
+        let staged =
+            super::super::tree::stage_tree_unjournaled(&source, &candidate, 1, |_| Ok(())).unwrap();
         staged.verify_and_finalize(|_| Ok(())).unwrap();
         assert_eq!(
             super::super::transfer(&candidate, None, &mut |_| Ok(())).unwrap(),
@@ -384,7 +386,8 @@ mod tests {
         assert_eq!(captured.bytes, bytes);
         let stage = super::super::namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        let staged = super::super::tree::stage_tree(&source, &candidate, 1, |_| Ok(())).unwrap();
+        let staged =
+            super::super::tree::stage_tree_unjournaled(&source, &candidate, 1, |_| Ok(())).unwrap();
         staged.verify_and_finalize(|_| Ok(())).unwrap();
         assert_eq!(capture(&candidate).unwrap(), Some(captured));
         stage.validate_candidate(&candidate, true).unwrap();
@@ -446,7 +449,8 @@ mod tests {
             let stage = super::super::namespace::PrivateStage::create(&parent).unwrap();
             let candidate = stage.create_candidate(directory).unwrap();
             let staged =
-                super::super::tree::stage_tree(&source, &candidate, 1, |_| Ok(())).unwrap();
+                super::super::tree::stage_tree_unjournaled(&source, &candidate, 1, |_| Ok(()))
+                    .unwrap();
             assert_eq!(staged.entry_count(), 1);
             staged.verify_and_finalize(|_| Ok(())).unwrap();
             stage.validate_candidate(&candidate, directory).unwrap();
@@ -472,7 +476,8 @@ mod tests {
             let stage = super::super::namespace::PrivateStage::create(&parent).unwrap();
             let candidate = stage.create_candidate(false).unwrap();
             let staged =
-                super::super::tree::stage_tree(&source, &candidate, 1, |_| Ok(())).unwrap();
+                super::super::tree::stage_tree_unjournaled(&source, &candidate, 1, |_| Ok(()))
+                    .unwrap();
             let changed = if change_source { &source } else { &candidate };
             let retained = if change_source { &candidate } else { &source };
             let identity = stable_identity_from_handle(changed).unwrap();
