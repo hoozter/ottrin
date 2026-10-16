@@ -26,6 +26,36 @@ fn directory_identity(file: &File) -> Result<WindowsStableIdentity, PlatformErro
     Ok(identity)
 }
 
+/// Observe a leaf through its held ordinary parent without following reparse
+/// targets. This checks an existing identity; it never establishes ownership.
+pub(super) fn validate_binding(
+    parent: &File,
+    name: &OsStr,
+    expected: WindowsStableIdentity,
+) -> Result<(), PlatformError> {
+    let before = directory_identity(parent)?;
+    let observed = unsafe {
+        windows_fs::open_relative(
+            parent,
+            name,
+            RelativeOptions {
+                directory: None,
+                create_new: false,
+                access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                security: ptr::null(),
+            },
+        )
+    }
+    .map_err(io)?;
+    if stable_identity_from_handle(&observed).map_err(io)? != expected
+        || directory_identity(parent)? != before
+    {
+        return Err(io("Copy entry binding changed; all data retained"));
+    }
+    Ok(())
+}
+
 impl<'a> PrivateStage<'a> {
     pub(super) fn create(parent: &'a File) -> Result<Self, PlatformError> {
         let parent_identity = directory_identity(parent)?;
@@ -70,23 +100,7 @@ impl<'a> PrivateStage<'a> {
             return Err(self.retained("Copy directory identity changed"));
         }
         // Observe the binding through the pinned parent, not its remembered path.
-        let observed = unsafe {
-            windows_fs::open_relative(
-                self.parent,
-                &self.name,
-                RelativeOptions {
-                    directory: Some(true),
-                    create_new: false,
-                    access: FILE_GENERIC_READ,
-                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    security: ptr::null(),
-                },
-            )
-        }
-        .map_err(|error| self.retained(error))?;
-        if directory_identity(&observed).map_err(|error| self.retained(error))? != self.identity {
-            return Err(self.retained("Copy stage name no longer names its directory"));
-        }
+        validate_binding(self.parent, &self.name, self.identity).map_err(|e| self.retained(e))?;
         Ok(())
     }
 
@@ -147,23 +161,8 @@ impl<'a> PrivateStage<'a> {
         if !supported {
             return Err(self.retained("candidate type does not match creation policy"));
         }
-        let observed = unsafe {
-            windows_fs::open_relative(
-                self.parent,
-                &self.candidate_name,
-                RelativeOptions {
-                    directory: Some(directory),
-                    create_new: false,
-                    access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    security: ptr::null(),
-                },
-            )
-        }
-        .map_err(|e| self.retained(e))?;
-        if stable_identity_from_handle(&observed).map_err(|e| self.retained(e))? != identity {
-            return Err(self.retained("candidate name no longer names the held object"));
-        }
+        validate_binding(self.parent, &self.candidate_name, identity)
+            .map_err(|e| self.retained(e))?;
         self.validate()
     }
 }

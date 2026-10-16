@@ -1,0 +1,167 @@
+{
+  "status": "pass",
+  "scope": "Whole-tree native final DACL projection and durable intent; no permission application, public Copy or package completion",
+  "base_revision": "6b9184d47edb51297cae2b3b3d60ef4a27f97274",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "78eeaad9c28af98069d74bef9607e91bb6c5ca440ff2309e97fef08293f3bfc9",
+    "crates/ottrin-platform/src/move_recovery.rs": "7cf3a0d87b1965f6d0a8282a89c9953ddd89559c0a84b17a88c59502453d0518",
+    "crates/ottrin-platform/src/windows_fs.rs": "6b519d86ad58ef2ad61c9a5757882f83d2548974160735e3ee7741b984b2f538",
+    "crates/ottrin-platform/src/copy_transaction/windows/links.rs": "79d53671363e20857d56cb71522f321a0007e04da1e6e3a473793edf184a16e3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "caff0ab3f3248ec51170825a59d93f2162d020f1a40a1e6dbb2dfcbd3147a90b",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "958243209837563a476b1b3d2017b2633cdf200273fcc8a688eec248ac72c93d",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "628c6e0ec2c11bce8f166205553bb76d9eb5eaf095521b3e4dad32b2f3d4122e",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "9692ce696bbc1a5dace867fdee106a7dd141ccd5e555eaf361fab1af04a499e9",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "2eacc2fb9decf48581dce86772816875eab21b31b573e80f93bb2c7c52a920df",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "a6dcd47c119f7147967d3f36a17b57a43decef80e842e3e86e66b073df62fa51"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "581e2f3b5c5ed88a305f5082897c9df82ae33254c43b379f2f2d16d069e7b771",
+    "transferred_sha256": "a11e3ee5026d423827466efe3540fa8452e6d6a162e2683b7fdbe2db931320a7",
+    "retained_sections": {
+      ".text": {
+        "virtual_size": 9471544,
+        "virtual_address": 4096,
+        "flags": 1610612832,
+        "raw_sha256": "805921cf61a860839b9de00333cf10d55fae267a985f3b93063500a4058de5dc"
+      },
+      ".data": {
+        "virtual_size": 3888,
+        "virtual_address": 9478144,
+        "flags": 3221225536,
+        "raw_sha256": "38f99dde09ac18e1a51bae891df9cad9774390eb265e1e4c083c17f1b76eb793"
+      },
+      ".rdata": {
+        "virtual_size": 741624,
+        "virtual_address": 9482240,
+        "flags": 1073741888,
+        "raw_sha256": "803918773a5953416f27e6270b02ad41fdc6d23e8eb2e615398e14eb6d8c77bd"
+      },
+      ".pdata": {
+        "virtual_size": 158028,
+        "virtual_address": 10227712,
+        "flags": 1073741888,
+        "raw_sha256": "0302aedc839acde4553dc963cd0a84530d6aaeba9867c1c35461452309a652ca"
+      },
+      ".xdata": {
+        "virtual_size": 554948,
+        "virtual_address": 10387456,
+        "flags": 1073741888,
+        "raw_sha256": "864872f6af48519e272d8a4c3cd861705a25825291e3d805edb62f7d5f980b9f"
+      },
+      ".bss": {
+        "virtual_size": 608,
+        "virtual_address": 10944512,
+        "flags": 3221225600,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "virtual_size": 11828,
+        "virtual_address": 10948608,
+        "flags": 3221225536,
+        "raw_sha256": "b062d094a61919676a37d641d75c59879db82d1dd959bd43dd5f016103109351"
+      },
+      ".CRT": {
+        "virtual_size": 104,
+        "virtual_address": 10960896,
+        "flags": 3221225536,
+        "raw_sha256": "1627bac82b143788bea545fbfe09ccd86d0c85abcae675098a56d7741915b386"
+      },
+      ".tls": {
+        "virtual_size": 16,
+        "virtual_address": 10964992,
+        "flags": 3221225536,
+        "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".reloc": {
+        "virtual_size": 20496,
+        "virtual_address": 10969088,
+        "flags": 1107296320,
+        "raw_sha256": "8cec64b36e7749131987fae8821ad3773a8595e7631fa78dfd7a0c07a3ea5583"
+      }
+    }
+  },
+  "native_copy": {
+    "passed": 88,
+    "failed": 0,
+    "ignored": 3,
+    "ordinary_user": true,
+    "new_cases": 9,
+    "reference_parent_acl_configurations": 6,
+    "reference_tree_nodes_per_configuration": 5,
+    "link_reference_kinds": [
+      "file",
+      "directory"
+    ],
+    "flush_failures_exercised": 24,
+    "actual_process_exits": 10,
+    "expected_exit": 86,
+    "temporary_entries": 0
+  },
+  "native_full_platform": {
+    "passed": 188,
+    "failed": 0,
+    "ignored": 29,
+    "ordinary_user": true,
+    "runtime_test_binary_hash": "a11e3ee5026d423827466efe3540fa8452e6d6a162e2683b7fdbe2db931320a7",
+    "temporary_entries": 0
+  },
+  "native_system_audit": {
+    "passed": 1,
+    "failed": 0,
+    "temporary_entries": 0
+  },
+  "linux_platform": {
+    "passed": 411,
+    "failed": 0,
+    "ignored": 3
+  },
+  "strict_clippy": {
+    "linux_all_targets": "pass",
+    "windows_all_targets": "pass"
+  },
+  "validated_behaviors": [
+    "Projected descendant owner/group/DACL/control equal real Windows-created reference trees, not private staging parents",
+    "Native link-policy references match for absent file/directory targets without following targets",
+    "Bad graph/kind/alias/name/membership inputs, cancellation and permission drift refuse without normalization",
+    "Live preparation and retained source-free planning produce identical native evidence",
+    "Complete plan flushes to both journals after verified payload; repeated identical preparation adds no record",
+    "Changed parent ACLs cannot silently reinterpret a recorded plan",
+    "Local-only plan append is uncertain; paired terminal append remains reconstructible after source removal",
+    "Ten real child exits include both plan-flush boundaries; data stays private/unpublished",
+    "Structurally valid cached ACL altered with recomputed valid hashes in both mirrors is rejected by native rederivation",
+    "Namespace bindings share one metadata-only no-follow observer"
+  ],
+  "fixture_environment": {
+    "no_network_disposable_windows_overlay": true,
+    "ordinary_user": "OttrinContentQA",
+    "developer_mode": "Enabled only in owned overlay for native link fixtures",
+    "developer_mode_off_policy": "Not repeated; earlier links checkpoint remains distinct"
+  },
+  "limits": [
+    "No final DACL application, publication, Overwrite, deletion or Undo authority",
+    "Per-entry permission-transition intent and interruption recovery still required",
+    "Complete SACL/audit/label drift, privilege/elevation/impersonation workflows and guarded rights acquisition remain open",
+    "Sparse/EFS, case-sensitive directories, specialized storage/providers and broader central-store placement remain open",
+    "Prepared evidence must be revalidated; read sharing does not establish an atomic filesystem snapshot or exclude independent owner authority",
+    "No exact package replaced; no user or physical-platform acceptance claimed",
+    "Whole plan currently occupies one existing-budget frame; streamed large-tree intent/resource acceptance remains required"
+  ],
+  "api_reference": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createprivateobjectsecurityex",
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "preservation": {
+    "actor_state": "Ready",
+    "actor_result": 0,
+    "owned_product_processes": 0,
+    "original_profile_and_installation": "unchanged"
+  }
+}

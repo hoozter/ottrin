@@ -1,13 +1,13 @@
 //! Pinned native source-tree preflight and private child staging. No publication.
 use super::{
-    EntryVersion, PlatformError, WindowsStableIdentity, io, metadata, namespace,
+    EntryVersion, PlatformError, WindowsStableIdentity, io, metadata, namespace, security,
     stable_identity_from_handle, version,
 };
-use crate::windows_fs::{self, RelativeOptions};
-use std::{ffi::OsString, fs::File, ptr};
-use windows_sys::Win32::Storage::FileSystem::{
-    FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE, SYNCHRONIZE,
-};
+use crate::windows_fs;
+#[cfg(test)]
+use std::ptr;
+use std::{ffi::OsString, fs::File};
+use windows_sys::Win32::Storage::FileSystem::FILE_SHARE_READ;
 
 struct SourceEntry {
     handle: File,
@@ -32,34 +32,6 @@ fn children(handle: &File, limit: usize) -> Result<Vec<OsString>, PlatformError>
     windows_fs::directory_children_limited(handle, limit).map_err(io)
 }
 
-fn binding(
-    parent: &File,
-    name: &std::ffi::OsStr,
-    held: &File,
-    directory: bool,
-) -> Result<(), PlatformError> {
-    let observed = unsafe {
-        windows_fs::open_relative(
-            parent,
-            name,
-            RelativeOptions {
-                directory: Some(directory),
-                create_new: false,
-                access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                security: ptr::null(),
-            },
-        )
-    }
-    .map_err(io)?;
-    if stable_identity_from_handle(&observed).map_err(io)?
-        != stable_identity_from_handle(held).map_err(io)?
-    {
-        return Err(io("tree entry binding changed; all entries retained"));
-    }
-    Ok(())
-}
-
 impl StagedTree {
     fn bindings(&self) -> Result<(), PlatformError> {
         for entry in &self.entries {
@@ -71,17 +43,15 @@ impl StagedTree {
             }
             if let Some(parent) = entry.source.parent {
                 let parent = &self.entries[parent];
-                binding(
+                namespace::validate_binding(
                     &parent.source.handle,
                     &entry.source.name,
-                    &entry.source.handle,
-                    entry.source.before.directory,
+                    entry.source.before.identity,
                 )?;
-                binding(
+                namespace::validate_binding(
                     &parent.candidate,
                     &entry.source.name,
-                    &entry.candidate,
-                    entry.source.before.directory,
+                    entry.candidate_identity,
                 )?;
             }
         }
@@ -148,6 +118,38 @@ impl StagedTree {
                 .validate_candidate_metadata(&entry.candidate)?;
         }
         Ok(())
+    }
+
+    /// Derive the complete final DACL graph while every candidate is private.
+    /// This never applies permissions; the journal owner must persist the plan
+    /// before any future top-down security/publication transition.
+    pub(super) fn destination_security_plan(
+        &self,
+        parent: &File,
+        root_name: &std::ffi::OsStr,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<security::TreeSecurityPlan, PlatformError> {
+        self.namespace()?;
+        let plan = security::TreeSecurityPlan::capture(
+            parent,
+            self.entries
+                .iter()
+                .enumerate()
+                .map(|(index, entry)| security::SecurityEntry {
+                    parent: entry.source.parent,
+                    name: if index == 0 {
+                        root_name.to_owned()
+                    } else {
+                        entry.source.name.clone()
+                    },
+                    candidate: &entry.candidate,
+                    directory: entry.source.before.directory,
+                }),
+            &mut progress,
+        )?;
+        self.namespace()?;
+        plan.validate()?;
+        Ok(plan)
     }
 
     pub(super) fn entry_count(&self) -> usize {

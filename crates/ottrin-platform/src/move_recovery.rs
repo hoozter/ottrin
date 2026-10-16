@@ -291,6 +291,10 @@ impl WindowsStableIdentity {
         self.volume_serial_number
     }
 
+    pub(crate) fn object_key(self) -> (u64, [u8; 16]) {
+        (self.volume_serial_number, self.file_id)
+    }
+
     pub(crate) fn same_type(self, other: Self) -> bool {
         self.file_type == other.file_type && self.reparse_tag == other.reparse_tag
     }

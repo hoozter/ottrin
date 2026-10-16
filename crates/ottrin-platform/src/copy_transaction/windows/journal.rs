@@ -18,8 +18,7 @@ use std::{
 };
 use windows_sys::Win32::Storage::FileSystem::{
     FILE_ATTRIBUTE_COMPRESSED, FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_REPARSE_POINT,
-    FILE_GENERIC_READ, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
-    SYNCHRONIZE,
+    FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
 const MAGIC: &[u8; 8] = b"OTCPWJ02";
@@ -118,6 +117,9 @@ enum Record {
     TreeVerified {
         count: usize,
     },
+    SecurityPlanned {
+        plan: Box<security::TreeSecurityEvidence>,
+    },
 }
 #[derive(Debug)]
 struct Node {
@@ -133,6 +135,7 @@ struct State {
     header: Option<Header>,
     nodes: Vec<Node>,
     verified: bool,
+    planned: Option<security::TreeSecurityEvidence>,
 }
 fn valid_source(source: &EntryVersion) -> bool {
     if source.attributes & !metadata::ADMITTED_ATTRIBUTES != 0
@@ -225,6 +228,28 @@ fn valid_payload(evidence: &metadata::StagedEntry) -> bool {
 impl State {
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
+        if let Record::SecurityPlanned { plan } = record {
+            let header = self.header.as_ref().ok_or_else(invalid)?;
+            if !self.verified
+                || self.planned.is_some()
+                || !plan.binds_staged(
+                    &header.creator,
+                    header.parent,
+                    self.nodes.iter().map(|node| {
+                        (
+                            node.parent,
+                            node.name.as_slice(),
+                            node.staged.as_ref().unwrap().candidate_identity,
+                            node.source.directory,
+                            node.security.as_ref().unwrap(),
+                        )
+                    }),
+                )
+            {
+                return Err(invalid());
+            }
+            return Ok(());
+        }
         if self.verified {
             return Err(invalid());
         }
@@ -304,6 +329,7 @@ impl State {
                     return Err(invalid());
                 }
             }
+            Record::SecurityPlanned { .. } => return Err(invalid()),
             Record::TreeVerified { count } => {
                 if self.header.is_none()
                     || *count == 0
@@ -343,6 +369,7 @@ impl State {
             }
             Record::EntryStaged { index, evidence } => self.nodes[index].staged = Some(evidence),
             Record::TreeVerified { .. } => self.verified = true,
+            Record::SecurityPlanned { plan } => self.planned = Some(*plan),
         }
         Ok(())
     }
@@ -424,11 +451,7 @@ fn bound(
     name: &OsStr,
     identity: WindowsStableIdentity,
 ) -> Result<(), PlatformError> {
-    let actual = open(parent, name, None, FILE_READ_ATTRIBUTES | SYNCHRONIZE)?;
-    if stable_identity_from_handle(&actual).map_err(io)? != identity {
-        return Err(io("Copy journal namespace binding changed; data retained"));
-    }
-    Ok(())
+    namespace::validate_binding(parent, name, identity)
 }
 
 struct Journal {
@@ -731,6 +754,42 @@ impl<'a> DurableStage<'a> {
             tree,
         })
     }
+    pub(super) fn prepare_destination_security(
+        &mut self,
+        progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<security::TreeSecurityPlan, PlatformError> {
+        if !self.journal.state.verified {
+            return Err(io("Copy staging must be verified before security planning"));
+        }
+        self.stage.validate()?;
+        self.journal.bindings()?;
+        for index in 0..self.tree.entry_count() {
+            self.journal.candidate_security(index)?;
+        }
+        let plan = self.tree.destination_security_plan(
+            self.stage.parent(),
+            &self.stage.candidate_name,
+            progress,
+        )?;
+        self.journal.bindings()?;
+        let evidence = plan.evidence();
+        if let Some(recorded) = &self.journal.state.planned {
+            if recorded != &evidence {
+                return Err(stage_error(
+                    &self.stage,
+                    io("recorded Copy destination security plan changed; data retained"),
+                ));
+            }
+        } else {
+            self.journal
+                .persist(Record::SecurityPlanned {
+                    plan: Box::new(evidence),
+                })
+                .map_err(|e| stage_error(&self.stage, e))?;
+        }
+        plan.validate().map_err(|e| stage_error(&self.stage, e))?;
+        Ok(plan)
+    }
     pub(super) fn inspect(&self, central: &File) -> Result<Inspection, PlatformError> {
         inspect(self.stage.parent(), central, &self.stage.name)
     }
@@ -750,6 +809,7 @@ pub(super) struct Inspection {
     pub(super) created: usize,
     pub(super) staged: usize,
     pub(super) verified: bool,
+    pub(super) security_planned: bool,
 }
 fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
     let size = file.metadata().map_err(io)?.len();
@@ -867,6 +927,7 @@ pub(super) fn inspect(
             .filter(|n| n.staged.is_some())
             .count(),
         verified: snapshot.state.verified,
+        security_planned: snapshot.state.planned.is_some(),
     })
 }
 
@@ -936,6 +997,41 @@ impl<'a> RetainedStage<'a> {
         };
         result.revalidate(progress)?;
         Ok(result)
+    }
+    pub(super) fn plan_destination_security(
+        &self,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<security::TreeSecurityPlan, PlatformError> {
+        self.revalidate(|_| progress())?;
+        let plan = security::TreeSecurityPlan::capture(
+            self.parent,
+            self.snapshot
+                .state
+                .nodes
+                .iter()
+                .zip(&self.entries)
+                .map(|(node, entry)| security::SecurityEntry {
+                    parent: node.parent,
+                    name: OsString::from_wide(&node.name),
+                    candidate: &entry.handle,
+                    directory: node.source.directory,
+                }),
+            &mut progress,
+        )?;
+        self.namespace()?;
+        plan.validate()?;
+        if self
+            .snapshot
+            .state
+            .planned
+            .as_ref()
+            .is_some_and(|recorded| *recorded != plan.evidence())
+        {
+            return Err(io(
+                "recorded Copy destination security plan no longer matches native inheritance; data retained",
+            ));
+        }
+        Ok(plan)
     }
     pub(super) fn entry_count(&self) -> usize {
         self.entries.len()
@@ -1264,12 +1360,13 @@ mod tests {
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
         FAULT.with(|f| f.set(Some((sequence, step, true))));
-        let _ = stage(&src, &parent, &central);
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        let _ = staged.prepare_destination_security(|| Ok(()));
         panic!("child did not reach crash boundary");
     }
     #[test]
     fn windows_native_copy_journal_process_exit_retains_unpublished_staging() {
-        for sequence in [1, 2, 6, 10] {
+        for sequence in [1, 2, 6, 10, 11] {
             for step in ["local", "central"] {
                 let root = tempfile::tempdir().unwrap();
                 fixture(root.path());
@@ -1284,7 +1381,7 @@ mod tests {
                 if step == "local" {
                     assert!(report.is_err());
                 } else {
-                    assert_eq!(report.unwrap().verified, sequence == 10);
+                    assert_eq!(report.unwrap().verified, sequence >= 10);
                 }
                 assert_eq!(
                     std::fs::read(root.path().join("source/nested/file")).unwrap(),
@@ -1292,7 +1389,14 @@ mod tests {
                 );
                 assert!(!root.path().join("destination/copy").exists());
                 let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
-                assert_eq!(retained.is_ok(), step == "central" && sequence == 10);
+                assert_eq!(retained.is_ok(), step == "central" && sequence >= 10);
+                if let Ok(retained) = retained {
+                    if sequence == 11 {
+                        std::fs::remove_dir_all(root.path().join("source")).unwrap();
+                    }
+                    let plan = retained.plan_destination_security(|| Ok(())).unwrap();
+                    assert_eq!(plan.entry_count(), 3);
+                }
             }
         }
     }
@@ -1876,5 +1980,213 @@ mod tests {
         let mut missing = serde_json::to_value(header).unwrap();
         missing.as_object_mut().unwrap().remove("stage_security");
         assert!(serde_json::from_value::<Header>(missing).is_err());
+    }
+    #[test]
+    fn windows_native_copy_tree_security_live_and_retained_plans_agree_without_sources() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        super::super::tests::set_dacl(
+            &root.path().join("destination"),
+            "D:P(A;OICI;FA;;;CO)(A;;FA;;;OW)(A;OICI;FR;;;WD)",
+        );
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let plan = staged.prepare_destination_security(|| Ok(())).unwrap();
+        assert_eq!(plan.entry_count(), 3);
+        let expected = serde_json::to_value(plan.evidence()).unwrap();
+        assert_ne!(
+            expected["entries"][2]["private"],
+            expected["entries"][2]["final_security"]
+        );
+        drop((plan, staged, src));
+        std::fs::remove_dir_all(root.path().join("source")).unwrap();
+        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        let plan = retained.plan_destination_security(|| Ok(())).unwrap();
+        assert_eq!(serde_json::to_value(plan.evidence()).unwrap(), expected);
+        plan.validate().unwrap();
+        assert!(!root.path().join("destination/copy").exists());
+        assert!(!root.path().join("source").exists());
+    }
+    #[test]
+    fn windows_native_copy_tree_security_plans_dangling_file_and_directory_link_leaves() {
+        for directory in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let missing = root.path().join("missing");
+            let link = root.path().join("link");
+            if directory {
+                std::os::windows::fs::symlink_dir(&missing, &link).unwrap();
+            } else {
+                std::os::windows::fs::symlink_file(&missing, &link).unwrap();
+            }
+            let src = source(&link);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let mut staged = stage(&src, &parent, &central).unwrap();
+            let name = staged.stage.name.clone();
+            let plan = staged.prepare_destination_security(|| Ok(())).unwrap();
+            assert_eq!(plan.entry_count(), 1);
+            let expected = serde_json::to_value(plan.evidence()).unwrap();
+            drop((plan, staged, src));
+            let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            let plan = retained.plan_destination_security(|| Ok(())).unwrap();
+            assert_eq!(serde_json::to_value(plan.evidence()).unwrap(), expected);
+            assert!(!missing.exists());
+        }
+    }
+    #[test]
+    fn windows_native_copy_tree_security_plan_is_durable_idempotent_and_refuses_reinterpretation() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        assert!(!staged.inspect(&central).unwrap().security_planned);
+        let plan = staged.prepare_destination_security(|| Ok(())).unwrap();
+        let expected = plan.evidence();
+        drop(plan);
+        assert!(staged.inspect(&central).unwrap().security_planned);
+        let length = staged.journal.length;
+        assert_eq!(
+            staged
+                .prepare_destination_security(|| Ok(()))
+                .unwrap()
+                .evidence(),
+            expected
+        );
+        assert_eq!(staged.journal.length, length);
+        let name = staged.stage.name.clone();
+        super::super::tests::set_dacl(
+            &root.path().join("destination"),
+            "D:P(A;OICI;FA;;;OW)(A;OICI;FRFX;;;WD)",
+        );
+        assert!(staged.prepare_destination_security(|| Ok(())).is_err());
+        assert_eq!(staged.journal.length, length);
+        drop((staged, src));
+        std::fs::remove_dir_all(root.path().join("source")).unwrap();
+        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        assert!(retained.plan_destination_security(|| Ok(())).is_err());
+        assert!(!root.path().join("destination/copy").exists());
+    }
+    #[test]
+    fn windows_native_copy_tree_security_plan_flush_faults_keep_private_data_and_both_versions() {
+        for step in [Step::LocalFlushed, Step::CentralFlushed] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let src = source(&root.path().join("source"));
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let mut staged = stage(&src, &parent, &central).unwrap();
+            FAULT.with(|f| f.set(Some((11, step, false))));
+            let result = staged.prepare_destination_security(|| Ok(()));
+            FAULT.with(|f| f.set(None));
+            assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+            let lengths = (
+                staged.journal.local.metadata().unwrap().len(),
+                staged.journal.central.metadata().unwrap().len(),
+            );
+            assert!(staged.prepare_destination_security(|| Ok(())).is_err());
+            assert_eq!(
+                lengths,
+                (
+                    staged.journal.local.metadata().unwrap().len(),
+                    staged.journal.central.metadata().unwrap().len()
+                )
+            );
+            let name = staged.stage.name.clone();
+            let candidate = root
+                .path()
+                .join("destination")
+                .join(&staged.stage.candidate_name);
+            drop((staged, src));
+            std::fs::remove_dir_all(root.path().join("source")).unwrap();
+            let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
+            if step == Step::LocalFlushed {
+                assert!(retained.is_err());
+            } else {
+                let retained = retained.unwrap();
+                assert!(inspect(&parent, &central, &name).unwrap().security_planned);
+                assert_eq!(
+                    retained
+                        .plan_destination_security(|| Ok(()))
+                        .unwrap()
+                        .entry_count(),
+                    3
+                );
+            }
+            assert_eq!(
+                std::fs::read(candidate.join("nested/file")).unwrap(),
+                b"original data"
+            );
+            assert!(!root.path().join("destination/copy").exists());
+        }
+    }
+    #[test]
+    fn windows_native_copy_tree_security_cached_acl_is_not_native_authority_even_with_valid_hashes()
+    {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let src = source(&root.path().join("source"));
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let mut staged = stage(&src, &parent, &central).unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        let local = root.path().join("destination").join(&name).join(LOCAL);
+        let mirror = root
+            .path()
+            .join("central")
+            .join(staged.journal.header.central_name());
+        drop((staged, src));
+        let bytes = std::fs::read(&local).unwrap();
+        let mut at = 0;
+        loop {
+            let size = u32::from_le_bytes(bytes[at + 8..at + 12].try_into().unwrap()) as usize;
+            if at + FRAME_HEADER + size == bytes.len() {
+                break;
+            }
+            at += FRAME_HEADER + size;
+        }
+        let sequence = u64::from_le_bytes(bytes[at + 12..at + 20].try_into().unwrap());
+        let previous: [u8; 32] = bytes[at + 20..at + 52].try_into().unwrap();
+        let mut record: serde_json::Value =
+            serde_json::from_slice(&bytes[at + FRAME_HEADER..]).unwrap();
+        let old = record["plan"]["entries"][0]["final_security"]["dacl"][12]
+            .as_u64()
+            .unwrap();
+        record["plan"]["entries"][0]["final_security"]["dacl"][12] = serde_json::json!(old ^ 1);
+        let payload = serde_json::to_vec(&record).unwrap();
+        let mut patched = bytes[..at].to_vec();
+        patched.extend_from_slice(MAGIC);
+        patched.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+        patched.extend_from_slice(&sequence.to_le_bytes());
+        patched.extend_from_slice(&previous);
+        patched.extend_from_slice(&frame_hash(sequence, &previous, &payload));
+        patched.extend_from_slice(&payload);
+        assert!(
+            decode(&patched).unwrap().planned.is_some(),
+            "structurally valid cached evidence must still require native rederivation"
+        );
+        std::fs::write(&local, &patched).unwrap();
+        std::fs::write(&mirror, &patched).unwrap();
+        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        let error = retained
+            .plan_destination_security(|| Ok(()))
+            .err()
+            .expect("forged cached ACL must not authorize native permissions");
+        assert!(error.to_string().contains("native inheritance"), "{error}");
+        for entry in &retained.entries {
+            super::super::tests::assert_owner_only(&entry.handle);
+        }
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
+        assert!(!root.path().join("destination/copy").exists());
+        assert_eq!(std::fs::read(&local).unwrap(), patched);
     }
 }
