@@ -2144,9 +2144,34 @@ pub(super) fn undo_completed_copy(
     name: &OsStr,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
+    undo_bound_copy(parent, central, name, None, &mut progress)
+}
+
+#[derive(Clone, Debug)]
+struct CopyUndoBinding {
+    header: Header,
+    completion_digest: [u8; 32],
+    parent_location: std::path::PathBuf,
+}
+
+fn undo_bound_copy(
+    parent: &File,
+    central: &File,
+    name: &OsStr,
+    binding: Option<&CopyUndoBinding>,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<(), PlatformError> {
     let retained = RetainedStage::open(parent, central, name, &mut progress)?;
     if !retained.snapshot.state.completion_verified {
         return Err(io("Copy has no completed receipt; Undo refused"));
+    }
+    if let Some(binding) = binding
+        && (retained.snapshot.state.header.as_ref() != Some(&binding.header)
+            || super::evidence_digest(&retained.snapshot.state.final_versions)?
+                != binding.completion_digest
+            || windows_fs::location(parent).map_err(io)? != binding.parent_location)
+    {
+        return Err(io("Copy Undo admission changed; refresh recovery status"));
     }
     if retained.snapshot.state.undone.is_some() {
         return Ok(());
@@ -2585,6 +2610,132 @@ mod tests {
         permissions.set_readonly(false);
         std::fs::set_permissions(file, permissions).unwrap();
         std::fs::remove_dir_all(path.join("source")).unwrap();
+    }
+    #[test]
+    fn windows_native_registered_copy_undo_admission_is_readonly_and_source_free() {
+        for (nested, readonly) in [(false, false), (true, false), (false, true), (true, true)] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), nested, readonly);
+            remove_undo_fixture_source(root.path());
+            let registry = root.path().join("central");
+            let journal = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            let id = decode(&before).unwrap().state.header.unwrap().transaction;
+            let mut plan =
+                discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+            assert!(plan.remaining());
+            assert_eq!(plan.path_pair().0.file_name(), Some(candidate.as_os_str()));
+            assert_eq!(plan.path_pair().1.file_name(), Some(OsStr::new("copy")));
+            assert_eq!(std::fs::read(&journal).unwrap(), before);
+            plan.undo(|_| Ok(())).unwrap();
+            assert!(!plan.remaining());
+            assert!(plan.undo(|_| Ok(())).is_err());
+            assert!(!root.path().join("destination/copy").exists());
+            assert_eq!(
+                std::fs::read(fixture_data_path(
+                    root.path().join("destination").join(candidate),
+                    nested
+                ))
+                .unwrap(),
+                b"original data"
+            );
+            assert!(discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).is_err());
+        }
+    }
+    #[test]
+    fn windows_native_registered_copy_undo_rejects_moved_display_path_then_fresh_admission_works() {
+        let root = tempfile::tempdir().unwrap();
+        let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+        let registry = root.path().join("central");
+        let original = root.path().join("destination");
+        let before = std::fs::read(original.join(&name).join(LOCAL)).unwrap();
+        let id = decode(&before).unwrap().state.header.unwrap().transaction;
+        let mut plan = discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+        let moved = root.path().join("moved");
+        std::fs::rename(&original, &moved).unwrap();
+        std::fs::create_dir(&original).unwrap();
+        std::fs::write(original.join("copy"), b"unrelated new name").unwrap();
+        assert!(plan.undo(|_| Ok(())).is_err());
+        assert!(plan.remaining());
+        assert_eq!(
+            std::fs::read(moved.join(&name).join(LOCAL)).unwrap(),
+            before
+        );
+        assert_eq!(
+            std::fs::read(original.join("copy")).unwrap(),
+            b"unrelated new name"
+        );
+        let mut fresh = discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+        assert!(fresh.path_pair().1.ends_with(Path::new("moved/copy")));
+        fresh.undo(|_| Ok(())).unwrap();
+        assert_eq!(
+            std::fs::read(moved.join(candidate).join("nested/file")).unwrap(),
+            b"original data"
+        );
+        assert_eq!(
+            std::fs::read(original.join("copy")).unwrap(),
+            b"unrelated new name"
+        );
+    }
+    #[test]
+    fn windows_native_registered_copy_undo_refuses_replaced_registry_and_changed_payload() {
+        for replace_registry in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let (name, _, _cleanup) = completed_undo_fixture(root.path(), true, false);
+            let registry = root.path().join("central");
+            let journal = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&journal).unwrap();
+            let id = decode(&before).unwrap().state.header.unwrap().transaction;
+            let mut plan =
+                discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+            if replace_registry {
+                std::fs::rename(&registry, root.path().join("saved-central")).unwrap();
+                std::fs::create_dir(&registry).unwrap();
+            } else {
+                std::fs::write(
+                    root.path().join("destination/copy/nested/file"),
+                    b"external data",
+                )
+                .unwrap();
+            }
+            assert!(plan.undo(|_| Ok(())).is_err());
+            assert!(plan.remaining());
+            assert_eq!(std::fs::read(&journal).unwrap(), before);
+            assert!(root.path().join("destination/copy").exists());
+        }
+        let error =
+            discovery::RegisteredCopyUndo::admit(Path::new("Z:\\absent"), "../outside", |_| Ok(()))
+                .unwrap_err();
+        assert!(error.to_string().contains("invalid Copy transaction ID"));
+    }
+    #[test]
+    fn windows_native_registered_copy_undo_cancellation_and_interrupted_retry_keep_binding() {
+        let root = tempfile::tempdir().unwrap();
+        let (name, candidate, _cleanup) = completed_undo_fixture(root.path(), true, false);
+        let registry = root.path().join("central");
+        let journal = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&journal).unwrap();
+        let id = decode(&before).unwrap().state.header.unwrap().transaction;
+        let mut plan = discovery::RegisteredCopyUndo::admit(&registry, &id, |_| Ok(())).unwrap();
+        let mut cancelled = false;
+        assert!(
+            plan.undo(|bytes| if bytes > 0 {
+                cancelled = true;
+                Err(io("cancelled"))
+            } else {
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(cancelled);
+        assert_eq!(std::fs::read(&journal).unwrap(), before);
+        FAULT.with(|f| f.set(Some((29, Step::UndoRenamed, false))));
+        assert!(plan.undo(|_| Ok(())).is_err());
+        FAULT.with(|f| f.set(None));
+        assert!(plan.remaining());
+        assert!(root.path().join("destination").join(&candidate).exists());
+        plan.undo(|_| Ok(())).unwrap();
+        assert!(!plan.remaining());
     }
     #[test]
     fn windows_native_copy_undo_retains_files_trees_and_readonly_data_without_source() {

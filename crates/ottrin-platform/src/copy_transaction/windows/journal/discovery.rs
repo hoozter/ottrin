@@ -13,6 +13,92 @@ use windows_sys::Win32::{
 const MAX_REGISTRY_ENTRIES: usize = 10_000;
 const MAX_VOLUMES: usize = 512;
 
+/// Private action admission, distinct from public presentation fields. No file
+/// handles survive admission; execution reopens and checks the bound identities.
+#[derive(Clone, Debug)]
+pub(super) struct RegisteredCopyUndo {
+    registry: PathBuf,
+    binding: CopyUndoBinding,
+    publication: PathBuf,
+    retention: PathBuf,
+    remaining: bool,
+}
+impl RegisteredCopyUndo {
+    pub(super) fn admit(
+        root: &Path,
+        transaction_id: &str,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let name = OsString::from(format!("{transaction_id}.copy-journal"));
+        // Validate before any filesystem access, including relative components.
+        registry_id(&name).ok_or_else(|| io("invalid Copy transaction ID"))?;
+        progress(0)?;
+        let central = open_directory(root, FILE_GENERIC_READ).map_err(io)?;
+        let (bytes, state) = registered_journal(&central, &name)?;
+        let header = state.header.as_ref().unwrap();
+        let parent =
+            Volumes::new(&central)?.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
+        let retained = RetainedStage::open(&parent, &central, &header.stage_name(), progress)?;
+        if retained.snapshot.bytes != bytes || !retained.snapshot.state.completion_verified {
+            return Err(io(
+                "Copy has no stable completed receipt; Undo admission refused",
+            ));
+        }
+        if retained.snapshot.state.undone.is_some() {
+            return Err(io("Copy Undo is already complete"));
+        }
+        let location = windows_fs::location(&parent).map_err(io)?;
+        Ok(Self {
+            registry: windows_fs::location(&central).map_err(io)?,
+            binding: CopyUndoBinding {
+                header: header.clone(),
+                completion_digest: super::super::evidence_digest(&state.final_versions)?,
+                parent_location: location.clone(),
+            },
+            publication: location.join(OsString::from_wide(&header.target)),
+            retention: location.join(header.candidate_name()),
+            remaining: true,
+        })
+    }
+    pub(super) fn path_pair(&self) -> (&Path, &Path) {
+        (&self.retention, &self.publication)
+    }
+    pub(super) fn remaining(&self) -> bool {
+        self.remaining
+    }
+    pub(super) fn undo(
+        &mut self,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if !self.remaining {
+            return Err(io("Copy Undo is already complete"));
+        }
+        progress(0)?;
+        let central = open_directory(&self.registry, FILE_GENERIC_READ).map_err(io)?;
+        if stable_identity_from_handle(&central).map_err(io)? != self.binding.header.central {
+            return Err(io("Copy registry was replaced; Undo refused"));
+        }
+        let (_, state) = registered_journal(&central, &self.binding.header.central_name())?;
+        if state.header.as_ref() != Some(&self.binding.header) {
+            return Err(io("Copy journal was replaced; Undo refused"));
+        }
+        let parent = Volumes::new(&central)?.resolve(
+            self.binding.header.parent,
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
+            &mut progress,
+        )?;
+        undo_bound_copy(
+            &parent,
+            &central,
+            &self.binding.header.stage_name(),
+            Some(&self.binding),
+            progress,
+        )?;
+        self.remaining = false;
+        Ok(())
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum WindowsCopyPhase {
     Staging,
@@ -93,6 +179,29 @@ fn open_directory(path: &Path, access: u32) -> std::io::Result<File> {
     }
     Ok(file)
 }
+fn registered_journal(central: &File, name: &OsStr) -> Result<(Vec<u8>, State), PlatformError> {
+    let id = registry_id(name).ok_or_else(|| io("invalid Copy transaction ID"))?;
+    let file = open(central, name, Some(false), FILE_GENERIC_READ)?;
+    let actual = stable_identity_from_handle(&file).map_err(io)?;
+    if !actual.is_regular_file_without_reparse() {
+        return Err(io("Copy registry entry is not an ordinary journal"));
+    }
+    namespace::validate_single_link(&file)?;
+    let bytes = read(&file)?;
+    let decoded = decode(&bytes)?;
+    let header = decoded.state.header.as_ref().unwrap();
+    if header.transaction != id
+        || header.central != stable_identity_from_handle(central).map_err(io)?
+        || header.central_file != actual
+        || header.creator != security::current_owner()?
+    {
+        return Err(io(
+            "Copy central journal identity or creator does not match",
+        ));
+    }
+    header.central_security.validate(&file, &header.creator)?;
+    Ok((bytes, decoded.state))
+}
 struct VolumeCursor(HANDLE);
 impl Drop for VolumeCursor {
     fn drop(&mut self) {
@@ -122,6 +231,7 @@ impl Volumes {
     fn resolve(
         &mut self,
         expected: WindowsStableIdentity,
+        access: u32,
         progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<File, PlatformError> {
         let serial = expected.volume_serial_number();
@@ -163,7 +273,7 @@ impl Volumes {
             .anchors
             .get(&serial)
             .ok_or_else(|| io("Copy destination volume is unavailable"))?;
-        windows_fs::open_directory_by_identity(anchor, expected).map_err(io)
+        windows_fs::open_directory_by_identity(anchor, expected, access).map_err(io)
     }
 }
 /// Does not create directories, alter settings or consult cached destination paths.
@@ -188,7 +298,6 @@ pub fn discover_at_with_progress(
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
         Err(error) => return Err(io(error)),
     };
-    let identity = stable_identity_from_handle(&central).map_err(io)?;
     let mut volumes = Volumes::new(&central)?;
     let mut output = Vec::new();
     for name in
@@ -211,28 +320,11 @@ pub fn discover_at_with_progress(
             },
         };
         let result = (|| {
-            let file = open(&central, &name, Some(false), FILE_GENERIC_READ)?;
-            let actual = stable_identity_from_handle(&file).map_err(io)?;
-            if !actual.is_regular_file_without_reparse() {
-                return Err(io("Copy registry entry is not an ordinary journal"));
-            }
-            namespace::validate_single_link(&file)?;
-            let bytes = read(&file)?;
-            let decoded = decode(&bytes)?;
-            let header = decoded.state.header.as_ref().unwrap();
-            if header.transaction != status.transaction_id
-                || header.central != identity
-                || header.central_file != actual
-                || header.creator != security::current_owner()?
-            {
-                return Err(io(
-                    "Copy central journal identity or creator does not match",
-                ));
-            }
-            header.central_security.validate(&file, &header.creator)?;
-            status.phase = Some(phase(&decoded.state));
+            let (bytes, state) = registered_journal(&central, &name)?;
+            let header = state.header.as_ref().unwrap();
+            status.phase = Some(phase(&state));
             status.source_label = Some(OsString::from_wide(&header.source_label));
-            let parent = volumes.resolve(header.parent, &mut progress)?;
+            let parent = volumes.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
             let location = windows_fs::location(&parent).map_err(io)?;
             status.publication = Some(location.join(OsString::from_wide(&header.target)));
             status.retained = Some(location.join(header.candidate_name()));

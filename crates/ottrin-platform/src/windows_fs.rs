@@ -107,6 +107,7 @@ pub(crate) unsafe fn open_relative(
 pub(crate) fn open_directory_by_identity(
     volume_hint: &File,
     expected: crate::move_recovery::WindowsStableIdentity,
+    access: u32,
 ) -> io::Result<File> {
     use crate::move_recovery::stable_identity_from_handle;
     if !expected.is_directory_without_reparse()
@@ -158,7 +159,7 @@ pub(crate) fn open_directory_by_identity(
         OpenFileById(
             volume_hint.as_raw_handle().cast(),
             &descriptor,
-            FILE_GENERIC_READ,
+            access,
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
             ptr::null(),
             FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,

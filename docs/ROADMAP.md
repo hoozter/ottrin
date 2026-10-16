@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 226 with 30 specialized
+The final ordinary-user Windows platform suite passes 230 with 30 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -187,6 +187,28 @@ profiles are removed after terminal verification. Current receipt:
 UI worker/Activity integration, action admission, native package acceptance and
 the remaining public Copy gates are still required; the mutating Windows Copy/Undo
 facade stays disabled and packages are unchanged.
+
+Private Windows creation-Undo admission now binds the authenticated journal
+header, sealed completion digest and observed destination parent location. It
+holds no filesystem handles between admission and execution. Execution resolves
+native identities again, refuses replaced registry/journal objects and checks
+its immutable binding inside the existing retained-tree verification epoch before
+acquiring the Undo writer. Discovery and admission share one central-journal
+identity/creator/security validator. Presentation fields still grant no authority.
+A moved display path requires fresh admission; an unrelated occupant of the old
+path stays untouched. Interrupted retraction can retry with the original binding;
+changed payloads and cancellation retain the data and pending plan. The action
+capability remains private pending platform and Activity action integration.
+Native testing caught and corrected a read-only parent-handle flush refusal:
+admission stays read-only, while explicit execution reopens the same bound parent
+with its normally permitted writer access. Four native ordinary-user admission
+fixtures pass; the final Windows platform suite passes 230 with 30 specialized
+exclusions, the separate SYSTEM audit case passes, and Linux passes 411 with
+3 exclusions. Strict platform Clippy passes on both targets. Cases include
+file/folder and readonly roots, cancellation, interrupted
+retry, moved destinations, changed bytes and replaced registries. Full-suite
+and cleanup evidence is recorded in
+`.hermes/evidence/windows-copy-admission-current/ACCEPTANCE.json`.
 
 Windows Activity now consumes central Copy discovery through its existing
 background loader at startup and refresh. Rows keep the authenticated phase,

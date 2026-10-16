@@ -808,6 +808,22 @@ remain required.
 Native rename constraints:
 https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
 
+Private Windows recovery admission now binds the authenticated registry/header,
+sealed immutable completion digest and actual parent location before creation
+Undo. It retains no file handles, does not read the source and does not modify
+journals at admission. Execution reopens the registry and destination through
+native identities, acquires the parent's normal permitted writer access only at
+execution (read access cannot flush a directory), checks the captured binding
+inside the retained-tree epoch,
+then uses the same paired journal and Undo writer protocol as the backend.
+A moved display path requires fresh admission even if its original object is
+still found by ID; a new occupant at the old name is never adopted. Changed
+payloads, replaced registries and journals refuse before intent. Cancellation
+keeps the plan pending; an inverse interrupted after rename can retry against
+the original completion binding. These private capabilities are not yet exposed
+through the platform/UI action facade. No mutation authority is derived from
+public discovery fields.
+
 Windows central Copy discovery is exposed through the platform's read-only
 `discover_retained_copy_transactions[_at]` facade, with a cancellable explicit-root
 variant for background workers. It never creates a missing registry, repairs a
