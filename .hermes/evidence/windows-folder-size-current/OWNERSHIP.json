@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-init-windows-folder-size-qa",
+  "guest_root": "C:\\OttrinContentQA",
+  "account": "OttrinContentQA",
+  "purpose": "Ordinary-user native recursive folder sizing and complete preview regression suite",
+  "restore": "Dispose owned COW domain, volume, NVRAM and TPM after terminal actor and unchanged original-profile/install checks"
+}

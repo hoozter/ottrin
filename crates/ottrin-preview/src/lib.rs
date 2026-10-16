@@ -33,6 +33,8 @@ use sha2::{Digest, Sha256};
 mod affinity_visual;
 #[cfg(target_os = "linux")]
 mod eps_visual;
+#[cfg(windows)]
+mod folder_size_windows;
 #[cfg(target_os = "linux")]
 mod html_visual;
 mod isolated_process;
@@ -233,7 +235,7 @@ const MAX_TAR_LISTED_ENTRIES: usize = 200;
 const MAX_DEB_PACKAGE_BYTES: u64 = 512 * 1024 * 1024;
 const MAX_DEB_MEMBERS: usize = 64;
 const MAX_FOLDER_RECURSIVE_ENTRIES: usize = 16_384;
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 const MAX_FOLDER_RECURSIVE_DEPTH: usize = 64;
 
 /// Stops an archive stream at a fixed input budget.
@@ -4718,7 +4720,12 @@ fn summarize_folder_recursive(path: &Path, entry_limit: usize) -> FolderRecursiv
         summarize_folder_recursive_with_before_directory_open(path, entry_limit, |_| {})
     }
 
-    #[cfg(not(unix))]
+    #[cfg(windows)]
+    {
+        folder_size_windows::summarize(path, entry_limit, |_| {})
+    }
+
+    #[cfg(not(any(unix, windows)))]
     {
         let _ = (path, entry_limit);
         FolderRecursiveSize {
@@ -14523,8 +14530,9 @@ mod tests {
 
     #[test]
     fn folder_preview_reports_nested_file_sizes_without_following_symlinks() {
-        let root = temp_path("folder-recursive-size");
-        let outside = temp_path("folder-recursive-size-outside");
+        let fixture = tempfile::tempdir().expect("create folder fixture");
+        let root = fixture.path().join("root");
+        let outside = fixture.path().join("outside");
         std::fs::create_dir_all(root.join("nested")).expect("create nested fixture");
         std::fs::create_dir_all(&outside).expect("create outside fixture");
         std::fs::write(root.join("direct.txt"), b"abc").expect("write direct fixture");
@@ -14536,6 +14544,10 @@ mod tests {
         std::os::unix::fs::symlink(&outside, root.join("outside-link"))
             .expect("create directory symlink");
 
+        #[cfg(windows)]
+        std::os::windows::fs::symlink_dir(&outside, root.join("outside-link"))
+            .expect("create directory symlink");
+
         let preview = preview_folder("folder-recursive-size".to_string(), &root);
 
         assert!(
@@ -14543,9 +14555,6 @@ mod tests {
             "nested regular files must contribute while a directory symlink stays untraversed: {}",
             preview.body
         );
-
-        let _ = std::fs::remove_dir_all(root);
-        let _ = std::fs::remove_dir_all(outside);
     }
 
     #[cfg(unix)]

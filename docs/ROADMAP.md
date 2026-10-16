@@ -8,6 +8,32 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Windows recursive folder-size source checkpoint
+
+The Windows stub has been replaced with a bounded, read-only native scan. It
+counts nested file lengths through opened directories, opens each child relative
+to its parent without following reparse points, and skips links/junctions/devices.
+The existing 16,384-entry and 64-level limits remain. Read failures, replaced
+children, invalid records and exhausted limits retain an honest partial lower
+bound. This observes metadata rather than promising an atomic tree snapshot or
+bounded wall-clock time for synchronous remote-filesystem calls.
+
+All eight folder cases pass natively as an ordinary Windows user: the previous
+5-byte nested-total regression plus junction/file-link refusal, child replacement,
+parent-path redirection, multi-page/raw UTF-16 enumeration, entry/depth bounds,
+denied child listing and malformed native records. The full native preview suite
+now has 190 passes and one required failure, EPS routing. Linux retains all 197
+preview passes; strict all-target preview Clippy passes for Linux and Windows.
+The initial missing-symlink-privilege fixture failures are retained alongside the
+rerun after enabling Developer Mode only in the owned COW guest. The guest,
+volume, NVRAM and TPM were disposed after normal shutdown and unchanged original
+profile/install checks. No positive test has been excluded.
+
+This is a source/native-test checkpoint. Stable packages still carry runtime
+source `9df0224`; the Windows fix needs the next rebuilt/exactly checked internal
+cohort. Windows EPS and the two public Copy UI failures remain agent-executable
+work. Evidence: `.hermes/evidence/windows-folder-size-current/ACCEPTANCE.json`.
+
 ## PLY/Affinity preview package checkpoint
 
 The shared bounded-preview source admission now supports Windows ordinary disk

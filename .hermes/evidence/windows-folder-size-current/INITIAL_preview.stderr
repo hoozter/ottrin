@@ -1,0 +1,24 @@
+
+thread 'folder_size_windows::tests::native_folder_size_keeps_parent_handle_when_path_is_redirected' (4400) panicked at crates/ottrin-preview/src/folder_size_windows.rs:341:46:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'folder_size_windows::tests::native_folder_size_refuses_child_replaced_with_reparse_entry' (4768) panicked at crates/ottrin-preview/src/folder_size_windows.rs:316:56:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }
+
+thread 'folder_size_windows::tests::native_folder_size_skips_file_links_and_directory_junctions' (8892) panicked at crates/ottrin-preview/src/folder_size_windows.rs:279:69:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }
+
+thread 'preview_source::tests::native_windows_admission_detects_retargeted_ancestor_binding' (3744) panicked at crates/ottrin-preview/src/preview_source.rs:308:33:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }
+
+thread 'preview_source::tests::native_windows_admission_rejects_directories_and_reparse_sources' (1408) panicked at crates/ottrin-preview/src/preview_source.rs:271:36:
+called `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }
+
+thread 'tests::eps_routes_to_the_isolated_optional_system_renderer' (8876) panicked at crates/ottrin-preview/src/lib.rs:10920:9:
+assertion `left == right` failed
+  left: None
+ right: Eps
+
+thread 'tests::folder_preview_reports_nested_file_sizes_without_following_symlinks' (8844) panicked at crates/ottrin-preview/src/lib.rs:14549:14:
+create directory symlink: Os { code: 1314, kind: Uncategorized, message: "A required privilege is not held by the client." }

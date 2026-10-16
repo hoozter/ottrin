@@ -1,0 +1,55 @@
+{
+  "status": "partial",
+  "scope": "Windows recursive folder-size implementation and ordinary-user native preview suite; source checkpoint, packages unchanged",
+  "previous_runtime_source": "9df02240702a107b695619366d6bb2b7e65a5324",
+  "folder_size_checks": "all eight pass, including previously failing nested-file total",
+  "windows_preview": {
+    "passed": 190,
+    "failed": 1,
+    "ignored": 0,
+    "required_failure": "tests::eps_routes_to_the_isolated_optional_system_renderer"
+  },
+  "linux_preview": {
+    "passed": 197,
+    "failed": 0,
+    "ignored": 0
+  },
+  "strict_clippy": {
+    "linux_all_targets": "pass",
+    "windows_all_targets": "pass"
+  },
+  "format": "pass",
+  "native_environment": "Ordinary limited interactive OttrinContentQA user, Windows owned no-NIC COW VM; Developer Mode enabled only to create link fixtures",
+  "initial_run": {
+    "passed": 184,
+    "failed": 7,
+    "cause": "six fixtures could not create symbolic links (1314); separate required EPS routing failure"
+  },
+  "runtime_constraints": [
+    "16,384 entry budget",
+    "64 directory levels",
+    "64 KiB enumeration buffer per active depth",
+    "read-only directory access",
+    "relative single-leaf no-follow child opens",
+    "reparse/device entries skipped",
+    "incomplete lower bound on limits, malformed metadata and read/open failures",
+    "metadata observations, not atomic filesystem snapshot; synchronous remote storage calls have no wall-clock guarantee"
+  ],
+  "cleanup": {
+    "status": "pass",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "backing_image": "preserved",
+    "original_domains": {
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off",
+      "win11ltsc": "shut off"
+    }
+  },
+  "source_files": {
+    "crates/ottrin-preview/src/folder_size_windows.rs": "d94f2274afddf3b407a7e8e302f07498a96c4d03abbc8092b3c79a9d3eae70bf",
+    "crates/ottrin-preview/src/lib.rs": "d206b8bc2b7f565f22ef2d4ec96101d2bd27bd65e159ddb3c345b7b1766cac1f",
+    "crates/ottrin-preview/src/preview_source.rs": "3b54d33f5edaa2b231551055c5af23966e7f3c14065b6a3b52d8e77010dbf5e7",
+    "crates/ottrin-preview/Cargo.toml": "d2a9c8eb34575bdeccc559f09b123c348563082cae548009896c9eaf558f4f0e"
+  },
+  "delivery": "Stable Linux and internal Windows package cohorts remain at runtime source 9df0224; this Windows change is not packaged yet. Windows EPS and public Copy failures remain implementation work."
+}

@@ -1,0 +1,6 @@
+    Blocking waiting for file lock on build directory
+    Checking xattr v1.6.1
+    Checking ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+    Checking tar v0.4.46
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 21.27s

@@ -140,7 +140,7 @@ fn state(file: &File) -> Result<State, AdmissionError> {
     })
 }
 #[cfg(windows)]
-fn filesystem_path(path: &Path) -> Result<(), AdmissionError> {
+pub(super) fn filesystem_path(path: &Path) -> Result<(), AdmissionError> {
     use std::{
         os::windows::ffi::OsStrExt,
         path::{Component, Prefix},
