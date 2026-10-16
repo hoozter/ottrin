@@ -8,6 +8,10 @@ pub(super) struct CopyResumeUi {
     operation: Option<u64>,
     cancellation: Option<Arc<AtomicBool>>,
     errors: HashMap<u64, String>,
+    // Test builds can hold the real worker before its first platform callback,
+    // so a rendered Stop click is deterministic even for a tiny fixture.
+    #[cfg(test)]
+    start_gate: Option<Receiver<()>>,
 }
 
 impl CopyResumeUi {
@@ -21,6 +25,13 @@ impl CopyResumeUi {
         if let Some(cancellation) = &self.cancellation {
             cancellation.store(true, Ordering::Release);
         }
+    }
+    pub(super) fn stopping(&self) -> bool {
+        self.running()
+            && self
+                .cancellation
+                .as_ref()
+                .is_some_and(|flag| flag.load(Ordering::Acquire))
     }
 }
 
@@ -87,7 +98,15 @@ impl OttrinApp {
         self.copy_resume.operation = Some(id);
         self.copy_resume.cancellation = Some(cancellation);
         let repaint = self.result_repaint.clone();
+        #[cfg(test)]
+        let start_gate = self.copy_resume.start_gate.take();
         std::thread::spawn(move || {
+            #[cfg(test)]
+            if let Some(gate) = start_gate
+                && gate.recv().is_err()
+            {
+                return;
+            }
             let result = plan
                 .resume(|_| {
                     if worker_cancel.load(Ordering::Acquire) {
@@ -188,6 +207,8 @@ pub(super) fn test_case(root: &Path) {
         .join("profile/Ottrin/State/copies")
         .join(format!("{}.copy-journal", entry.transaction_id));
     let before = std::fs::read(&journal).unwrap();
+    let local_journal = entry.transaction.as_ref().unwrap().join("journal");
+    let local_before = std::fs::read(&local_journal).unwrap();
     let data = entry.owned_location.as_ref().unwrap().join("nested/file");
     let plan = ottrin_platform::restore_retained_copy_resume_plan(&entry.transaction_id).unwrap();
     entry.transaction_id = "0".repeat(32);
@@ -225,9 +246,39 @@ pub(super) fn test_case(root: &Path) {
         destination.clone()
     };
     let ctx = Context::default();
+    let start_gate = if case == "resume-stopped" {
+        let (tx, rx) = mpsc::channel();
+        app.copy_resume.start_gate = Some(rx);
+        Some(tx)
+    } else {
+        None
+    };
     crate::tests::click_activity_action(&mut app, &ctx, "Resume copy");
     assert!(app.copy_resume.running());
     assert_eq!(app.operation_history[0].status, OperationStatus::Queued);
+    if let Some(gate) = start_gate {
+        crate::tests::click_activity_action(&mut app, &ctx, "Stop recovery");
+        assert!(app.copy_resume.stopping());
+        gate.send(()).unwrap();
+        wait(&mut app);
+        assert!(can_resume(&app.operation_history[0]));
+        assert!(!app.copy_resume.stopping());
+        assert!(
+            app.operation_history[0]
+                .message
+                .as_ref()
+                .unwrap()
+                .contains("stopped")
+        );
+        assert_eq!(
+            std::fs::read(&journal).unwrap(),
+            before,
+            "Stopped worker must not append records"
+        );
+        assert_eq!(std::fs::read(&local_journal).unwrap(), local_before);
+        assert_eq!(std::fs::read(&data).unwrap(), b"original data");
+        crate::tests::click_activity_action(&mut app, &ctx, "Resume copy");
+    }
     wait(&mut app);
     assert_eq!(app.operation_history[0].id, id);
     if case == "resume-changed" {

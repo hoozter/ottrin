@@ -291,19 +291,26 @@ after every outcome. Successful completion can then offer Undo; changed payloads
 and stale parent paths refuse before journal writes. The admitted security
 projection is retained as a digest, avoiding a per-entry tree in each history row.
 
-Native source acceptance passes all eight rendered-button scenarios: the four
-existing creation-Undo cases plus staged resume, finalization resume, changed-data
-refusal and moved-parent refusal/fresh retry. Completed forward cases also Undo
-through the rendered action. Wrong-row plans are rejected, Clear finished keeps
-recovery ownership, and failures remain visible after discovery. The full native
-platform suite passes 236 with 31 specialized exclusions; two focused UI checks
-pass. Linux platform/UI suites pass 411/379 with 3/1 exclusions, and strict
-all-target platform/UI Clippy passes on both targets. Receipt:
+Native Activity acceptance passes nine rendered-button scenarios on both one
+volume and two distinct NTFS volumes, using the same pinned executables. The four
+creation-Undo cases and four forward cases now include Stop → retry → Undo.
+The real worker is held before its first platform callback in test builds only;
+the rendered Stop action preserves both journal copies and payload bytes, then
+fresh admission permits retry. Stop immediately shows a disabled **Stopping…**
+control while awaiting acknowledgement. Wrong-row plans are rejected, Clear
+finished keeps ownership, and recovery errors survive discovery. The ordinary
+user runs with Developer Mode off; the owned VHDX receives its test user's rights
+before attachment. Two focused UI checks, all 379 Linux UI tests (one exclusion),
+and strict all-target UI Clippy on both targets pass. Current receipt:
+`.hermes/evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
+The unchanged platform's preceding full native suite (236 passes, 31 exclusions)
+and Linux suite (411 passes, three exclusions) retain their scope in
 `.hermes/evidence/windows-copy-resume-action-current/ACCEPTANCE.json`.
 These are source-built native checks, not rebuilt-package or desktop visual
-acceptance. Public new Copy, Overwrite and cleanup remain gated. Bound link,
-separate-volume and specialized-storage resume, actual interruption/power-cut,
-resource and packaged acceptance remain open. Packages are unchanged.
+acceptance. Public new Copy, Overwrite and cleanup remain gated. The two-volume
+consumer covers populated folders; root-file, readonly, link and specialized
+storage matrices, actual interruption/power-cut, resource and packaged acceptance
+remain open. Packages are unchanged.
 
 Source discovery still completes before staging mutation, source-contained stores
 are refused, and staging retains its strict final metadata checks. Read-only

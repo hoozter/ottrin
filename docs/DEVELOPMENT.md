@@ -832,6 +832,15 @@ uses the shared Activity overlap check for its observed candidate/publication
 paths, supports cooperative **Stop recovery**, and requests fresh discovery
 after success, failure or cancellation. Only fresh completion admission offers
 Undo. Failures remain visible after discovery; Clear finished retains the owner.
+Stop immediately changes to a disabled **Stopping…** control until the worker
+acknowledges the request. The native integration test holds the real worker before
+its first platform callback (test builds only), clicks Stop, verifies exact
+central/local journal bytes and payload preservation, then retries and Undoes the
+copy. All nine Activity scenarios pass with both one-volume storage and a
+separate NTFS data volume, using the same pinned executables. The producer checks
+distinct native volume serial numbers in every two-volume case. Owned VHDX
+permissions are established before attachment; production ACLs are not changed.
+Receipt: `.hermes/evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
 Link/specialized-storage and interruption matrices remain required. Public new
 Copy, Overwrite and cleanup are still gated.
 

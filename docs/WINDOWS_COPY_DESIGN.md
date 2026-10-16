@@ -278,9 +278,12 @@ from the configured registry. It binds the frozen staging evidence, observed
 parent location and projected-security digest, and revalidates before entering
 the shared publication engine. Verified unfinished transactions can resume;
 unverified staging cannot. Completion enables fresh Undo admission. Current
-source-built action acceptance, including changed-data refusal and moved-parent
-retry, is recorded in
-`.hermes/evidence/windows-copy-resume-action-current/ACCEPTANCE.json`.
+source-built action acceptance, including changed-data refusal, moved-parent
+retry and pre-mutation Stop/retry, is recorded in
+`.hermes/evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
+The same nine populated-folder scenarios pass on one volume and with recovery
+records/data on distinct NTFS volumes. Root-file, readonly, link, specialized
+storage and power-cut acceptance remain separate.
 Public new Copy, Overwrite, cleanup and broader release acceptance remain gated;
 packages have not been rebuilt for this action.
 

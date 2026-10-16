@@ -14332,7 +14332,13 @@ impl OttrinApp {
                 let (status_text, status_color, status_icon) = if self.copy_cleanup.owns(record) {
                     ("Cleaning up", c.accent_dim, MI_HISTORY)
                 } else if copy_resume_available {
-                    if record.status == OperationStatus::Queued { ("Resuming", c.accent_dim, MI_HISTORY) }
+                    if record.status == OperationStatus::Queued {
+                        #[cfg(target_os = "windows")]
+                        let label = if self.copy_resume.stopping() { "Stopping" } else { "Resuming" };
+                        #[cfg(not(target_os = "windows"))]
+                        let label = "Resuming";
+                        (label, c.accent_dim, MI_HISTORY)
+                    }
                     else { ("Ready to resume", c.accent, MI_HISTORY) }
                 } else { match record.status {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
@@ -14382,7 +14388,8 @@ impl OttrinApp {
                                 ui.add_space(4.0);
                                 if self.copy_resume.owns(record.id) {
                                     ui.label(RichText::new("Verifying and resuming copy…").color(c.accent_dim));
-                                    if ui.add(egui::Button::new("Stop recovery").themed(&c))
+                                    let stopping = self.copy_resume.stopping();
+                                    if ui.add_enabled(!stopping, egui::Button::new(if stopping { "Stopping…" } else { "Stop recovery" }).themed(&c))
                                         .on_hover_text("Stop at the next recovery boundary and keep retained data for retry.").clicked() {
                                         self.copy_resume.stop();
                                     }
@@ -25603,6 +25610,7 @@ mod tests {
             "resume-finalizing",
             "resume-changed",
             "resume-moved",
+            "resume-stopped",
         ] {
             let root = tempfile::tempdir().unwrap();
             let destination_root = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_VOLUME")
