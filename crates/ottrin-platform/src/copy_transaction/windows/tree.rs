@@ -19,7 +19,7 @@ struct SourceEntry {
 
 struct Entry {
     source: SourceEntry,
-    candidate: File,
+    candidate: windows_fs::PerObjectFile,
     candidate_identity: WindowsStableIdentity,
     payload: metadata::StagedEntry,
 }
@@ -245,7 +245,7 @@ impl PinnedTree {
     }
     pub(super) fn stage(
         self,
-        candidate: &File,
+        candidate: &windows_fs::PerObjectFile,
         root_parent: &File,
         journal: &mut impl StagingJournal,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
@@ -275,7 +275,7 @@ impl PinnedTree {
             }
             let candidate = if let Some(parent) = source.parent {
                 journal.intent(index, Some(parent), &source.name, &source.before)?;
-                let candidate = windows_fs::create_private(
+                let candidate = windows_fs::PerObjectFile::create_private(
                     &entries[parent].candidate,
                     &source.name,
                     source.before.directory,
@@ -319,7 +319,7 @@ impl PinnedTree {
 #[cfg(test)]
 pub(super) fn stage_tree_unjournaled(
     source: &File,
-    candidate: &File,
+    candidate: &windows_fs::PerObjectFile,
     max_entries: usize,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<StagedTree, PlatformError> {
@@ -585,7 +585,7 @@ mod tests {
             .iter()
             .find(|entry| !entry.source.before.directory)
             .unwrap();
-        let mut changed = &entry.candidate;
+        let mut changed: &File = &entry.candidate;
         changed.seek(SeekFrom::Start(0)).unwrap();
         changed.write_all(b"modified tree data").unwrap();
         changed.sync_all().unwrap();

@@ -10,23 +10,28 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
-A native ordinary-user regression now checks `SetSecurityInfo` with a handle
-opened using the documented `MAXIMUM_ALLOWED` mode: final root permissions match
-the destination policy while unrecorded file/directory/leaf permissions and file
-bytes remain unchanged. It covers atomic native private creation, ordinary Win32
-directory creation and cloned handles retained by a tree plan. All nine focused
-security tests pass; the privileged audit test is excluded in this run. Strict
-Windows all-target platform Clippy passes. Receipt:
-`.hermes/evidence/windows-copy-permission-apply-current/ACCEPTANCE.json`.
+Copy root and child candidates now use a dedicated native handle type opened
+with `MAXIMUM_ALLOWED`, the documented per-object DACL-update mode. Duplicates
+retain that contract, and the final permission setter requires the type. One
+shared atomic-private-creation implementation serves both access contracts:
+journals, transaction directories and text-save files keep their explicit rights;
+source and retained-stage inspection remain read-only. A native access-mask test
+checks ordinary handles do not gain WRITE_OWNER and sources gain no mutation
+rights. This mode grants broader rights on owned candidates; the final setter
+still changes only the DACL, never owner/group or token privileges.
 
-This establishes bounded component evidence, not durable permission application.
-Production Copy candidate creation still requests explicit read/write/delete/DACL
-rights. It must adopt the documented handle mode with an enforceable application
-contract, then implement journaled per-entry intent/acknowledgement and recovery
-from partially applied permissions. Tests on this Windows build also showed no
-child propagation with explicit full-access handles; they do not establish a
-causal difference between those modes. Link-target, broader storage and platform
-behavior remain separate. No package changed for this test-only checkpoint.
+The setter now accepts validated symbolic links and junctions with their actual
+file/directory role and no-follow identity binding. Native populated file-link,
+directory-link and junction cases verify exact final candidate permissions,
+unchanged raw link records and unchanged target/child permissions and bytes.
+Direct/cloned handles and unrecorded descendants remain covered. Historical
+explicit-access probes on this Windows build also showed no child propagation;
+that is not evidence of a causal difference between access modes.
+
+Durable per-entry permission application and partially applied recovery remain
+required. Production recovery has no write-capability promotion path yet, and
+public Copy stays disabled. Packages are unchanged. Current native source/test
+receipt: `.hermes/evidence/windows-copy-permission-handles-current/ACCEPTANCE.json`.
 
 Windows Copy permission intent now streams as a header, ordered per-entry records
 and a final count/digest seal. The existing 16 MiB frame and 64 MiB total-log
@@ -42,8 +47,8 @@ duplicate names, wrong ordering and incomplete/invalid seals remain refused.
 Native whole-tree permission projection still derives children from planned final
 parents, never from private staging DACLs. Permission application remains separate.
 
-Native ordinary-user Copy tests pass 91 with 3 specialized/child exclusions;
-the full Windows platform suite passes 191 with 29 exclusions. SYSTEM audit passes
+Native ordinary-user Copy tests pass 94 with 3 specialized/child exclusions;
+the full Windows platform suite passes 194 with 29 exclusions. SYSTEM audit passes
 separately. Thirty-two injected flush failures and eighteen real process exits now
 span every plan-append boundary. New cases cover ordered/sealed records,
 cancellation/resume and a synthetic 2,001-node recorded graph whose aggregate plan
@@ -53,7 +58,9 @@ acceptance. Existing native kernel-created tree/link references, source-free
 rederivation, ownership/content checks and forged cached-ACL refusal still pass.
 The full actor pins its runtime test binary. Linux platform tests pass 411 with
 3 exclusions; strict platform all-target Clippy passes for both targets. Evidence:
-`.hermes/evidence/windows-copy-streamed-plan-current/ACCEPTANCE.json`.
+`.hermes/evidence/windows-copy-permission-handles-current/ACCEPTANCE.json`;
+the streamed-journal checkpoint remains recorded in
+`windows-copy-streamed-plan-current/ACCEPTANCE.json`.
 
 Private ownership guards remain enforced around staging/recovery, including
 identities, exact raw-UTF-16 membership, persistent metadata, streams and link

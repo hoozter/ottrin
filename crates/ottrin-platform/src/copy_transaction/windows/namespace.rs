@@ -120,9 +120,12 @@ impl<'a> PrivateStage<'a> {
     /// Only the DACL is supplied; Windows derives the normal new-child SACL and
     /// mandatory label without requiring the caller to read an audit SACL.
     /// No existing entry at the planned name is adopted or replaced.
-    pub(super) fn create_candidate(&self, directory: bool) -> Result<File, PlatformError> {
+    pub(super) fn create_candidate(
+        &self,
+        directory: bool,
+    ) -> Result<windows_fs::PerObjectFile, PlatformError> {
         self.validate()?;
-        let file = windows_fs::create_private(
+        let file = windows_fs::PerObjectFile::create_private(
             self.parent,
             &self.candidate_name,
             directory,

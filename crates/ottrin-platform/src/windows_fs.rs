@@ -142,6 +142,63 @@ impl Drop for LocalSecurity {
     }
 }
 
+/// A handle opened with the access mode required for per-object ACL updates.
+/// SetSecurityInfo documents MAXIMUM_ALLOWED as suppressing child propagation.
+/// Keep this contract through duplication; ordinary File handles cannot be
+/// promoted to this type. Ownership/binding checks remain the transaction's job.
+#[derive(Debug)]
+pub(crate) struct PerObjectFile(File);
+impl PerObjectFile {
+    pub(crate) fn create_private(
+        parent: &File,
+        name: &OsStr,
+        directory: bool,
+        sharing: u32,
+    ) -> io::Result<Self> {
+        create_private_with_access(
+            parent,
+            name,
+            directory,
+            sharing,
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED | SYNCHRONIZE,
+        )
+        .map(Self)
+    }
+    pub(crate) fn try_clone(&self) -> io::Result<Self> {
+        self.0.try_clone().map(Self)
+    }
+    #[cfg(test)]
+    pub(crate) fn readonly_test_handle(file: File) -> Self {
+        // Deliberately violate the access contract only in kernel-denial tests.
+        Self(file)
+    }
+    #[cfg(test)]
+    pub(crate) fn open(parent: &File, name: &OsStr) -> io::Result<Self> {
+        // Fixture/recovery-mode experiment only; production recovery is readonly.
+        unsafe {
+            open_relative(
+                parent,
+                name,
+                RelativeOptions {
+                    directory: None,
+                    create_new: false,
+                    access: windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED
+                        | SYNCHRONIZE,
+                    sharing: FILE_SHARE_READ,
+                    security: ptr::null(),
+                },
+            )
+        }
+        .map(Self)
+    }
+}
+impl std::ops::Deref for PerObjectFile {
+    type Target = File;
+    fn deref(&self) -> &File {
+        &self.0
+    }
+}
+
 /// Create with the private DACL in the same native operation that creates the
 /// entry. There is no inherited-permission interval and no path-based repair.
 pub(crate) fn create_private(
@@ -149,6 +206,22 @@ pub(crate) fn create_private(
     name: &OsStr,
     directory: bool,
     sharing: u32,
+) -> io::Result<File> {
+    create_private_with_access(
+        parent,
+        name,
+        directory,
+        sharing,
+        FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
+    )
+}
+
+fn create_private_with_access(
+    parent: &File,
+    name: &OsStr,
+    directory: bool,
+    sharing: u32,
+    access: u32,
 ) -> io::Result<File> {
     let identity =
         crate::move_recovery::stable_identity_from_handle(parent).map_err(io::Error::other)?;
@@ -189,7 +262,7 @@ pub(crate) fn create_private(
             RelativeOptions {
                 directory: Some(directory),
                 create_new: true,
-                access: FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
+                access,
                 // Sharing is part of the caller's operation contract. In
                 // particular, Windows rename into a directory needs write sharing.
                 sharing,

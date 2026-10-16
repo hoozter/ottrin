@@ -339,11 +339,15 @@ impl DestinationSecurity {
     fn binding(&self, parent: &File, name: &OsStr, candidate: &File) -> Result<(), PlatformError> {
         self.validate_parent(parent)?;
         let identity = stable_identity_from_handle(candidate).map_err(io)?;
-        if if self.directory {
-            !identity.is_directory_without_reparse()
+        let supported = if super::links::capture(candidate)?.is_some() {
+            (super::metadata::basic(candidate)?.FileAttributes & FILE_ATTRIBUTE_DIRECTORY != 0)
+                == self.directory
+        } else if self.directory {
+            identity.is_directory_without_reparse()
         } else {
-            !identity.is_regular_file_without_reparse()
-        } {
+            identity.is_regular_file_without_reparse()
+        };
+        if !supported {
             return Err(io("destination entry type does not match security policy"));
         }
         namespace::validate_binding(parent, name, identity)?;
@@ -365,7 +369,7 @@ impl DestinationSecurity {
         &self,
         parent: &File,
         name: &OsStr,
-        candidate: &File,
+        candidate: &windows_fs::PerObjectFile,
     ) -> Result<(), PlatformError> {
         self.binding(parent, name, candidate)?;
         let mut actual = capture(candidate)?;
@@ -467,8 +471,8 @@ mod tests {
         let mut value = capture(file).unwrap();
         parts(value.as_mut_ptr().cast()).unwrap()
     }
-    fn private(parent: &File, name: &str, directory: bool) -> File {
-        windows_fs::create_private(
+    fn private(parent: &File, name: &str, directory: bool) -> windows_fs::PerObjectFile {
+        windows_fs::PerObjectFile::create_private(
             parent,
             OsStr::new(name),
             directory,
@@ -865,9 +869,11 @@ mod tests {
         let policy = DestinationSecurity::capture(&parent, false).unwrap();
         let candidate = private(&parent, "candidate", false);
         let before = observed(&candidate);
-        (&candidate).write_all(b"retained candidate bytes").unwrap();
+        (&*candidate)
+            .write_all(b"retained candidate bytes")
+            .unwrap();
         drop(candidate);
-        let read = File::open(&path).unwrap();
+        let read = windows_fs::PerObjectFile::readonly_test_handle(File::open(&path).unwrap());
         assert!(
             policy
                 .apply(&parent, OsStr::new("candidate"), &read)
@@ -896,18 +902,12 @@ mod tests {
             },
             0
         );
-        // Production staging deliberately does not request WRITE_OWNER.
-        // Only this controlled group-change fixture opens that extra right.
-        let mutation = OpenOptions::new()
-            .access_mode(WRITE_OWNER | READ_CONTROL)
-            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
-            .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
-            .open(root.path().join("private"))
-            .unwrap();
+        // MAXIMUM_ALLOWED grants WRITE_OWNER on this owner-only candidate.
+        // Only this fixture changes the group; final Copy application sets DACL.
         assert_eq!(
             unsafe {
                 SetSecurityInfo(
-                    mutation.as_raw_handle().cast(),
+                    file.as_raw_handle().cast(),
                     SE_FILE_OBJECT,
                     GROUP_SECURITY_INFORMATION,
                     ptr::null_mut(),
@@ -933,6 +933,136 @@ mod tests {
         );
     }
     #[test]
+    fn windows_native_copy_final_link_dacl_does_not_change_populated_targets() {
+        for kind in 0..3 {
+            let directory = kind != 0;
+            let root = tempfile::tempdir().unwrap();
+            let parent = parent(root.path());
+            dacl(&parent, "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)");
+            let target = private(&parent, "target", directory);
+            let leaf = directory.then(|| private(&target, "keep", false));
+            let data = leaf.as_deref().unwrap_or(&target);
+            (&*data).write_all(b"target must remain intact").unwrap();
+            let before = observed(&target);
+            let child_before = leaf.as_ref().map(|file| observed(file));
+            let linkpath = root.path().join("source-link");
+            let targetpath = root.path().join("target");
+            if kind == 2 {
+                use std::os::windows::ffi::OsStrExt;
+                let mut nt = std::ffi::OsString::from(r"\??\");
+                nt.push(targetpath.as_os_str());
+                let substitute = nt.encode_wide().collect::<Vec<_>>();
+                let print = targetpath.as_os_str().encode_wide().collect::<Vec<_>>();
+                let mut bytes = vec![0u8; 16];
+                bytes[..4].copy_from_slice(
+                    &windows_sys::Win32::System::SystemServices::IO_REPARSE_TAG_MOUNT_POINT
+                        .to_le_bytes(),
+                );
+                bytes[10..12].copy_from_slice(&((substitute.len() * 2) as u16).to_le_bytes());
+                bytes[12..14].copy_from_slice(&(((substitute.len() + 1) * 2) as u16).to_le_bytes());
+                bytes[14..16].copy_from_slice(&((print.len() * 2) as u16).to_le_bytes());
+                for unit in substitute
+                    .into_iter()
+                    .chain(Some(0))
+                    .chain(print)
+                    .chain(Some(0))
+                {
+                    bytes.extend_from_slice(&unit.to_le_bytes());
+                }
+                let size = (bytes.len() - 8) as u16;
+                bytes[4..6].copy_from_slice(&size.to_le_bytes());
+                let source = private(&parent, "source-link", true);
+                super::super::links::Link::parse(bytes, true)
+                    .unwrap()
+                    .install(&source)
+                    .unwrap();
+            } else if directory {
+                std::os::windows::fs::symlink_dir(&targetpath, &linkpath).unwrap()
+            } else {
+                std::os::windows::fs::symlink_file(&targetpath, &linkpath).unwrap()
+            }
+            let source = namespace::open_source(&parent, OsStr::new("source-link"), None).unwrap();
+            let candidate = private(&parent, "candidate", directory);
+            super::super::metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+            let link = super::super::links::capture(&candidate).unwrap().unwrap();
+            let policy = DestinationSecurity::capture(&parent, directory).unwrap();
+            policy
+                .apply(&parent, OsStr::new("candidate"), &candidate)
+                .unwrap();
+            policy.validate_candidate(&candidate).unwrap();
+            assert_eq!(
+                super::super::links::capture(&candidate).unwrap(),
+                Some(link)
+            );
+            assert_eq!(observed(&target), before);
+            assert_eq!(leaf.as_ref().map(|file| observed(file)), child_before);
+            let bytes = if directory {
+                targetpath.join("keep")
+            } else {
+                targetpath
+            };
+            assert_eq!(std::fs::read(bytes).unwrap(), b"target must remain intact");
+        }
+    }
+
+    #[test]
+    fn windows_native_copy_permission_handle_rights_do_not_expand_journals_or_sources() {
+        use windows_sys::Wdk::Storage::FileSystem::{
+            FILE_ACCESS_INFORMATION, FileAccessInformation, NtQueryInformationFile,
+        };
+        use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
+        fn access(file: &File) -> u32 {
+            let mut info = FILE_ACCESS_INFORMATION::default();
+            let mut status = IO_STATUS_BLOCK::default();
+            assert_eq!(
+                unsafe {
+                    NtQueryInformationFile(
+                        file.as_raw_handle().cast(),
+                        &mut status,
+                        (&mut info as *mut FILE_ACCESS_INFORMATION).cast(),
+                        std::mem::size_of_val(&info) as u32,
+                        FileAccessInformation,
+                    )
+                },
+                0
+            );
+            info.AccessFlags
+        }
+        let root = tempfile::tempdir().unwrap();
+        let parent = parent(root.path());
+        let regular =
+            windows_fs::create_private(&parent, OsStr::new("journal"), false, FILE_SHARE_READ)
+                .unwrap();
+        let permissions = windows_fs::PerObjectFile::create_private(
+            &parent,
+            OsStr::new("candidate"),
+            false,
+            FILE_SHARE_READ,
+        )
+        .unwrap();
+        let clone = permissions.try_clone().unwrap();
+        assert_eq!(
+            access(&regular) & WRITE_OWNER,
+            0,
+            "ordinary private handles keep their explicit rights"
+        );
+        for file in [&*permissions, &*clone] {
+            assert_eq!(
+                access(file) & FILE_ALL_ACCESS,
+                FILE_ALL_ACCESS,
+                "private maximum-allowed handle must retain the granted rights through duplication"
+            );
+        }
+        drop(regular);
+        let source = namespace::open_source(&parent, OsStr::new("journal"), Some(false)).unwrap();
+        assert_eq!(
+            access(&source)
+                & (DELETE | WRITE_DAC | WRITE_OWNER | FILE_WRITE_DATA | FILE_APPEND_DATA),
+            0
+        );
+    }
+
+    #[test]
     fn windows_native_copy_maximum_allowed_dacl_is_per_object_after_handle_clone() {
         // SetSecurityInfo documents MAXIMUM_ALLOWED as suppressing descendant
         // propagation. Check the real Copy creation path as well as an ordinary
@@ -943,31 +1073,18 @@ mod tests {
                 let root = tempfile::tempdir().unwrap();
                 let parent = parent(root.path());
                 dacl(&parent, "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)");
-                let access = windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED;
                 let candidate = if native {
-                    let descriptor = LocalSecurity::private().unwrap();
-                    unsafe {
-                        windows_fs::open_relative(
-                            &parent,
-                            OsStr::new("candidate"),
-                            RelativeOptions {
-                                directory: Some(true),
-                                create_new: true,
-                                access: access | SYNCHRONIZE,
-                                sharing: FILE_SHARE_READ,
-                                security: descriptor.as_raw().cast(),
-                            },
-                        )
-                    }
+                    windows_fs::PerObjectFile::create_private(
+                        &parent,
+                        OsStr::new("candidate"),
+                        true,
+                        FILE_SHARE_READ,
+                    )
                     .unwrap()
                 } else {
                     std::fs::create_dir(root.path().join("candidate")).unwrap();
-                    let file = OpenOptions::new()
-                        .access_mode(access)
-                        .share_mode(FILE_SHARE_READ)
-                        .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
-                        .open(root.path().join("candidate"))
-                        .unwrap();
+                    let file =
+                        windows_fs::PerObjectFile::open(&parent, OsStr::new("candidate")).unwrap();
                     dacl(&file, "D:P(A;OICI;FA;;;OW)");
                     file
                 };

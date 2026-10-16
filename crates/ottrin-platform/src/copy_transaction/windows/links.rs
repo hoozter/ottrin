@@ -504,7 +504,9 @@ mod tests {
             let stage = super::super::namespace::PrivateStage::create(&parent).unwrap();
             let candidate = stage.create_candidate(directory).unwrap();
             if !directory {
-                (&candidate).write_all(b"unrelated candidate data").unwrap();
+                (&*candidate)
+                    .write_all(b"unrelated candidate data")
+                    .unwrap();
             }
             assert!(link.install(&candidate).is_err());
             assert!(capture(&candidate).unwrap().is_none());

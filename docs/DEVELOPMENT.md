@@ -696,6 +696,19 @@ ownership and successful Undo do not establish that transaction storage has
 been reclaimed. Native Windows has no Copy Undo receipts yet; cross-compilation
 does not establish Windows Copy acceptance.
 
+Windows Copy candidates use `windows_fs::PerObjectFile` for the documented
+`MAXIMUM_ALLOWED` per-object permission-update contract. Keep its constructor
+private and preserve the contract through cloning; do not add production
+conversions from arbitrary `File` handles or mutable access that permits handle
+replacement. `DestinationSecurity::apply` requires this type. Ordinary journals
+and text-save creation keep their explicit rights through the same authoritative
+atomic-private-creation implementation. The ordinary retained-stage inspector
+continues to hold read-only handles: any future permission-application recovery
+must explicitly acquire its own validated capability and durable phase ownership.
+Known links use no-follow handles and full native identity/tag checks; they remain
+leaves. This handle contract does not itself establish transaction ownership,
+permission-application journaling, publication or Copy Undo authority.
+
 Copy and created-entry receipts guard the original parent and transaction
 identities with one shared, nonblocking Linux inotify instance. Watches are
 registered through the already-open publication directories, before those

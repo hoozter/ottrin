@@ -1005,7 +1005,7 @@ mod tests {
         let parent = parent(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(false).unwrap();
-        (&candidate).write_all(b"verified staged data").unwrap();
+        (&*candidate).write_all(b"verified staged data").unwrap();
         crate::move_transaction::rename_windows_handle_no_replace(
             &candidate,
             &parent,
@@ -1134,7 +1134,7 @@ mod tests {
         std::fs::remove_dir(&alias).unwrap();
         std::os::windows::fs::symlink_dir(&second, &alias).unwrap();
         let created = stage.create_candidate(false).unwrap();
-        (&created).write_all(b"original parent").unwrap();
+        (&*created).write_all(b"original parent").unwrap();
         assert_eq!(
             std::fs::read(first.join("destination").join(&stage.candidate_name)).unwrap(),
             b"original parent"
