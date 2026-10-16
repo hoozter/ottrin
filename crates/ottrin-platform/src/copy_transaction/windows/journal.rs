@@ -32,7 +32,7 @@ pub(crate) use discovery::{
     restore_undo, restore_undo_at,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ09";
+const MAGIC: &[u8; 8] = b"OTCPWJ10";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -51,6 +51,95 @@ fn log_budget() -> u64 {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+struct OriginalAdmission {
+    count: usize,
+    digest: [u8; 32],
+}
+/// The exact destination decision made before staging. No handles survive
+/// admission; the complete original digest becomes part of both journal headers.
+pub(super) struct DestinationAdmission {
+    parent: WindowsStableIdentity,
+    location: std::path::PathBuf,
+    target: OsString,
+    original: Option<(EntryVersion, OriginalAdmission)>,
+}
+impl DestinationAdmission {
+    fn at_parent(parent: &File, target: &OsStr) -> Result<Self, PlatformError> {
+        windows_fs::valid_component(target).map_err(io)?;
+        let parent_id = stable_identity_from_handle(parent).map_err(io)?;
+        if !parent_id.is_directory_without_reparse() {
+            return Err(io("Copy destination parent is not a real directory"));
+        }
+        Ok(Self {
+            parent: parent_id,
+            location: windows_fs::location(parent).map_err(io)?,
+            target: target.to_os_string(),
+            original: None,
+        })
+    }
+    pub(super) fn creation(parent: &File, target: &OsStr) -> Result<Self, PlatformError> {
+        let result = Self::at_parent(parent, target)?;
+        result.validate(parent)?;
+        Ok(result)
+    }
+    pub(super) fn overwrite(
+        parent: &File,
+        target: &OsStr,
+        max_entries: usize,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let mut result = Self::at_parent(parent, target)?;
+        let root = namespace::open_source(parent, target, None)?;
+        let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
+        let evidence = tree.freeze_existing(&mut progress)?;
+        namespace::validate_binding(parent, target, tree.root().identity)?;
+        result.original = Some((
+            tree.root().clone(),
+            OriginalAdmission {
+                count: evidence.entries.len(),
+                digest: super::evidence_digest(&evidence)?,
+            },
+        ));
+        result.validate(parent)?;
+        Ok(result)
+    }
+    fn validate(&self, parent: &File) -> Result<(), PlatformError> {
+        if stable_identity_from_handle(parent).map_err(io)? != self.parent
+            || windows_fs::location(parent).map_err(io)? != self.location
+        {
+            return Err(io("Copy destination parent changed since admission"));
+        }
+        if let Some((expected, _)) = &self.original {
+            let root = namespace::open_source(parent, &self.target, None)?;
+            if super::version(&root)? != *expected {
+                return Err(io("Overwrite destination changed since admission"));
+            }
+            namespace::validate_binding(parent, &self.target, expected.identity)
+        } else {
+            match unsafe {
+                windows_fs::open_relative(
+                    parent,
+                    &self.target,
+                    RelativeOptions {
+                        directory: None,
+                        create_new: false,
+                        access: windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES
+                            | windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE,
+                        sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        security: ptr::null(),
+                    },
+                )
+            } {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+                Err(error) => Err(io(error)),
+                Ok(_) => Err(io("Creation destination is occupied; admission changed")),
+            }
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Header {
     protocol: String,
     schema: u16,
@@ -62,6 +151,7 @@ struct Header {
     central_file: WindowsStableIdentity,
     parent_location: NativePath,
     target: Vec<u16>,
+    original_admission: Option<OriginalAdmission>,
     source_label: Vec<u16>,
     creator: Vec<u8>,
     stage_security: security::PrivateSecurity,
@@ -83,7 +173,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 9
+            && self.schema == 10
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -106,6 +196,9 @@ impl Header {
                 .parent_location
                 .decode()
                 .is_ok_and(|path| path.is_absolute())
+            && self.original_admission.as_ref().is_none_or(|original| {
+                original.count > 0 && original.count <= (MAX_LOG / FRAME_HEADER as u64) as usize
+            })
             && valid_leaf(&self.target)
             && valid_leaf(&self.source_label)
             && OsString::from_wide(&self.target) != self.stage_name()
@@ -348,9 +441,19 @@ impl State {
         self.undone.is_some() && (self.original.is_none() || self.original_restored.is_some())
     }
     fn original_ready_for_forward(&self) -> bool {
-        self.original.as_ref().is_none_or(|plan| {
-            plan.sealed && self.original_retain_intent && !self.original_restore_intent
-        })
+        match (&self.header, &self.original) {
+            (Some(header), None) => header.original_admission.is_none(),
+            (Some(header), Some(plan)) => {
+                header.original_admission.as_ref().is_some_and(|approved| {
+                    approved.count == plan.expected
+                        && approved.digest == plan.digest
+                        && plan.sealed
+                        && self.original_retain_intent
+                        && !self.original_restore_intent
+                })
+            }
+            _ => false,
+        }
     }
     fn original_ready_for_publication(&self) -> bool {
         self.original_ready_for_forward()
@@ -554,8 +657,15 @@ impl State {
                 }
                 return Ok(());
             }
-            Record::OriginalPlanBegin { count, .. } => {
-                if !self.verified
+            Record::OriginalPlanBegin { count, digest } => {
+                let approved = self
+                    .header
+                    .as_ref()
+                    .and_then(|header| header.original_admission.as_ref())
+                    .ok_or_else(invalid)?;
+                if *count != approved.count
+                    || *digest != approved.digest
+                    || !self.verified
                     || self.original.is_some()
                     || self.publication_intent
                     || self.original_retain_intent
@@ -1021,10 +1131,11 @@ impl Journal {
     fn create(
         stage: &namespace::PrivateStage<'_>,
         central: &File,
-        target: &OsStr,
+        destination: &DestinationAdmission,
         source_label: &OsStr,
     ) -> Result<Self, PlatformError> {
         stage.validate()?;
+        destination.validate(stage.parent())?;
         let (parent_id, stage_id) = stage.identities();
         let central_id = stable_identity_from_handle(central).map_err(io)?;
         if !central_id.is_directory_without_reparse() {
@@ -1050,7 +1161,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 9,
+            schema: 10,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -1058,7 +1169,8 @@ impl Journal {
             local_file: stable_identity_from_handle(&local).map_err(io)?,
             central_file: stable_identity_from_handle(&central_file).map_err(io)?,
             parent_location: NativePath::encode(&windows_fs::location(stage.parent()).map_err(io)?),
-            target: target.encode_wide().collect(),
+            target: destination.target.encode_wide().collect(),
+            original_admission: destination.original.as_ref().map(|(_, seal)| seal.clone()),
             source_label: source_label.encode_wide().collect(),
         };
         if !header.valid() {
@@ -1345,6 +1457,9 @@ impl Journal {
             ));
         }
         self.bindings()?;
+        if self.header.original_admission.is_none() {
+            return Err(io("Creation admission cannot become an overwrite"));
+        }
         let target = OsString::from_wide(&self.header.target);
         let root = namespace::open_source(&self.parent_dir, &target, None)?;
         let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
@@ -1363,6 +1478,16 @@ impl Journal {
             names.insert((entry.parent, entry.name.clone()));
         }
         let digest = super::evidence_digest(&evidence)?;
+        let approved = self
+            .header
+            .original_admission
+            .as_ref()
+            .ok_or_else(|| io("Creation admission cannot become an overwrite"))?;
+        if evidence.entries.len() != approved.count || digest != approved.digest {
+            return Err(io(
+                "Original destination differs from the approved snapshot; all versions retained",
+            ));
+        }
         if self.state.original.as_ref().is_some_and(|plan| {
             plan.expected != evidence.entries.len()
                 || plan.digest != digest
@@ -1930,20 +2055,21 @@ impl<'a> DurableStage<'a> {
         source: &File,
         parent: &'a File,
         central: &File,
-        target: &OsStr,
+        destination: &DestinationAdmission,
         source_label: &OsStr,
         max_entries: usize,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        windows_fs::valid_component(target).map_err(io)?;
+        destination.validate(parent)?;
         windows_fs::valid_component(source_label).map_err(io)?;
         let source = tree::PinnedTree::open(source, max_entries, &mut progress)?;
         source.reject_destination_parent(parent)?;
         source.reject_destination_parent(central)?;
+        destination.validate(parent)?;
         let stage = namespace::PrivateStage::create(parent)?;
         let retained = |error| stage_error(&stage, error);
         let mut journal =
-            Journal::create(&stage, central, target, source_label).map_err(retained)?;
+            Journal::create(&stage, central, destination, source_label).map_err(retained)?;
         tree::StagingJournal::intent(&mut journal, 0, None, &stage.candidate_name, source.root())
             .map_err(retained)?;
         let candidate = stage
@@ -3264,7 +3390,7 @@ mod tests {
             src,
             parent,
             central,
-            OsStr::new("copy"),
+            &DestinationAdmission::creation(parent, OsStr::new("copy"))?,
             OsStr::new("source"),
             100,
             |_| Ok(()),
@@ -3289,7 +3415,7 @@ mod tests {
         names[0].clone()
     }
 
-    fn original_fixture(root: &Path, directory: bool) -> OsString {
+    fn original_fixture(root: &Path, directory: bool, readonly: bool) -> OsString {
         fixture(root);
         let target = root.join("destination/copy");
         if directory {
@@ -3299,13 +3425,244 @@ mod tests {
         } else {
             std::fs::write(&target, b"old destination").unwrap();
         }
+        if readonly {
+            let mut permissions = std::fs::metadata(&target).unwrap().permissions();
+            permissions.set_readonly(true);
+            std::fs::set_permissions(&target, permissions).unwrap();
+        }
         let src = source(&root.join("source"));
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        let mut staged = stage(&src, &parent, &central).unwrap();
+        let destination =
+            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
+        let mut staged = DurableStage::create(
+            &src,
+            &parent,
+            &central,
+            &destination,
+            OsStr::new("source"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
         drop(staged.prepare_destination_security(|| Ok(())).unwrap());
         staged.stage.name.clone()
     }
+    #[test]
+    fn windows_native_destination_admission_freezes_the_original_before_source_staging() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let target = root.path().join("destination/copy");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("old"), b"approved original").unwrap();
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let admission =
+            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
+        let root_before = super::super::version(&source(&target)).unwrap();
+        let mut changed = false;
+        let mut staged = DurableStage::create(
+            &source(&root.path().join("source")),
+            &parent,
+            &central,
+            &admission,
+            OsStr::new("source"),
+            100,
+            |bytes| {
+                if bytes > 0 && !changed {
+                    std::fs::write(target.join("old"), b"changed during staging").unwrap();
+                    changed = true;
+                }
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert!(changed);
+        assert_eq!(
+            super::super::version(&source(&target)).unwrap(),
+            root_before,
+            "Root-only validation must miss this child-content change"
+        );
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        let candidate = staged.stage.candidate_name.clone();
+        drop(staged);
+        remove_undo_fixture_source(root.path());
+        let local = root.path().join("destination").join(&name).join(LOCAL);
+        let before = std::fs::read(&local).unwrap();
+        let mut journal = original_journal(root.path(), &name);
+        assert!(
+            journal
+                .prepare_original(100, |_| Ok(()))
+                .unwrap_err()
+                .to_string()
+                .contains("approved snapshot")
+        );
+        assert!(journal.state.original.is_none());
+        assert_eq!(std::fs::read(&local).unwrap(), before);
+        assert_eq!(
+            std::fs::read(
+                root.path()
+                    .join("central")
+                    .join(journal.header.central_name())
+            )
+            .unwrap(),
+            before
+        );
+        assert_eq!(
+            std::fs::read(target.join("old")).unwrap(),
+            b"changed during staging"
+        );
+        assert_eq!(
+            std::fs::read(
+                root.path()
+                    .join("destination")
+                    .join(candidate)
+                    .join("nested/file")
+            )
+            .unwrap(),
+            b"original data"
+        );
+    }
+    #[test]
+    fn windows_native_destination_admission_rejects_stale_parent_target_and_creation_before_staging()
+     {
+        for case in ["creation-occupied", "overwrite-changed", "wrong-parent"] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let target = root.path().join("destination/copy");
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let admission = if case == "creation-occupied" {
+                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+            } else {
+                std::fs::write(&target, b"approved").unwrap();
+                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
+                    .unwrap()
+            };
+            if case != "wrong-parent" {
+                std::fs::write(&target, b"unrelated current occupant").unwrap();
+            }
+            let other = root.path().join("other");
+            std::fs::create_dir(&other).unwrap();
+            let actual_parent = if case == "wrong-parent" {
+                owner(&other)
+            } else {
+                owner(&root.path().join("destination"))
+            };
+            assert!(
+                DurableStage::create(
+                    &source(&root.path().join("source")),
+                    &actual_parent,
+                    &central,
+                    &admission,
+                    OsStr::new("source"),
+                    100,
+                    |_| Ok(())
+                )
+                .is_err()
+            );
+            assert_eq!(std::fs::read_dir(&other).unwrap().count(), 0);
+            assert_eq!(
+                std::fs::read_dir(root.path().join("central"))
+                    .unwrap()
+                    .count(),
+                0
+            );
+            assert_eq!(
+                std::fs::read_dir(root.path().join("destination"))
+                    .unwrap()
+                    .count(),
+                1
+            );
+            assert_eq!(
+                std::fs::read(target).unwrap(),
+                if case == "wrong-parent" {
+                    b"approved".as_slice()
+                } else {
+                    b"unrelated current occupant".as_slice()
+                }
+            );
+        }
+    }
+    #[test]
+    fn windows_native_destination_admission_never_converts_creation_or_skips_an_approved_original()
+    {
+        for overwrite in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let target = root.path().join("destination/copy");
+            let admission = if overwrite {
+                std::fs::write(&target, b"approved original").unwrap();
+                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
+                    .unwrap()
+            } else {
+                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+            };
+            let mut staged = DurableStage::create(
+                &source(&root.path().join("source")),
+                &parent,
+                &central,
+                &admission,
+                OsStr::new("source"),
+                100,
+                |_| Ok(()),
+            )
+            .unwrap();
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            let name = staged.stage.name.clone();
+            let candidate = staged.stage.candidate_name.clone();
+            drop(staged);
+            if overwrite {
+                std::fs::rename(&target, root.path().join("destination/moved-original")).unwrap();
+            } else {
+                std::fs::write(&target, b"unrelated occupant").unwrap();
+            }
+            let local = root.path().join("destination").join(&name).join(LOCAL);
+            let before = std::fs::read(&local).unwrap();
+            if overwrite {
+                assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+                assert_eq!(
+                    std::fs::read(root.path().join("destination/moved-original")).unwrap(),
+                    b"approved original"
+                );
+                assert!(!target.exists());
+            } else {
+                let mut journal = original_journal(root.path(), &name);
+                assert!(
+                    journal
+                        .prepare_original(100, |_| Ok(()))
+                        .unwrap_err()
+                        .to_string()
+                        .contains("cannot become an overwrite")
+                );
+                assert!(
+                    journal
+                        .state
+                        .check(&Record::OriginalPlanBegin {
+                            count: 1,
+                            digest: [0; 32]
+                        })
+                        .is_err()
+                );
+                assert_eq!(std::fs::read(&target).unwrap(), b"unrelated occupant");
+            }
+            assert_eq!(std::fs::read(local).unwrap(), before);
+            assert_eq!(
+                std::fs::read(
+                    root.path()
+                        .join("destination")
+                        .join(candidate)
+                        .join("nested/file")
+                )
+                .unwrap(),
+                b"original data"
+            );
+        }
+    }
+
     fn original_journal(root: &Path, name: &OsStr) -> Journal {
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
@@ -3314,7 +3671,7 @@ mod tests {
     }
 
     fn original_move_fixture(root: &Path, directory: bool, restore: bool) -> OsString {
-        let name = original_fixture(root, directory);
+        let name = original_fixture(root, directory, false);
         remove_undo_fixture_source(root);
         let mut journal = original_journal(root, &name);
         journal.prepare_original(100, |_| Ok(())).unwrap();
@@ -4329,11 +4686,7 @@ mod tests {
             let root = tempfile::tempdir().unwrap();
             let restore = case == "restore-occupied";
             let name = if case == "readonly" {
-                let name = original_fixture(root.path(), false);
-                let target = root.path().join("destination/copy");
-                let mut permissions = std::fs::metadata(&target).unwrap().permissions();
-                permissions.set_readonly(true);
-                std::fs::set_permissions(&target, permissions).unwrap();
+                let name = original_fixture(root.path(), false, true);
                 let mut journal = original_journal(root.path(), &name);
                 journal.prepare_original(100, |_| Ok(())).unwrap();
                 drop(journal);
@@ -4421,7 +4774,7 @@ mod tests {
     fn windows_native_original_plan_is_paired_source_free_and_blocks_creation_publication() {
         for directory in [false, true] {
             let root = tempfile::tempdir().unwrap();
-            let name = original_fixture(root.path(), directory);
+            let name = original_fixture(root.path(), directory, false);
             remove_undo_fixture_source(root.path());
             let mut journal = original_journal(root.path(), &name);
             journal.prepare_original(100, |_| Ok(())).unwrap();
@@ -4469,7 +4822,7 @@ mod tests {
             .chain([(1, Step::LocalFlushed)])
         {
             let root = tempfile::tempdir().unwrap();
-            let name = original_fixture(root.path(), true);
+            let name = original_fixture(root.path(), true, false);
             remove_undo_fixture_source(root.path());
             let mut journal = original_journal(root.path(), &name);
             let sequence = journal.sequence + offset;
@@ -4532,7 +4885,7 @@ mod tests {
     fn windows_native_original_plan_binds_unwritten_children_and_refuses_source_alias_and_budget() {
         for case in ["unwritten", "source-alias", "budget"] {
             let root = tempfile::tempdir().unwrap();
-            let name = original_fixture(root.path(), true);
+            let name = original_fixture(root.path(), true, false);
             if case == "source-alias" {
                 std::fs::remove_dir_all(root.path().join("destination/copy")).unwrap();
                 std::fs::hard_link(
@@ -6561,7 +6914,7 @@ mod tests {
                 &src,
                 &parent,
                 &central,
-                OsStr::new("copy"),
+                &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
                 OsStr::new("source"),
                 1,
                 |_| Ok(())
@@ -6802,8 +7155,13 @@ mod tests {
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
         let stage = namespace::PrivateStage::create(&parent).unwrap();
-        let mut journal =
-            Journal::create(&stage, &central, OsStr::new("copy"), OsStr::new("source")).unwrap();
+        let mut journal = Journal::create(
+            &stage,
+            &central,
+            &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
+            OsStr::new("source"),
+        )
+        .unwrap();
         let src = source(&root.path().join("source"));
         let record = Record::CreateIntent {
             index: 0,
@@ -7276,7 +7634,7 @@ mod tests {
             &src,
             &parent,
             &central,
-            OsStr::new("copy"),
+            &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
             OsStr::new("file"),
             100,
             |bytes| {

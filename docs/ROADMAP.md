@@ -36,7 +36,7 @@ epoch's locks, compares the fresh paired journal bytes, then opens new typed
 The writer rechecks its creator context on every append and reserves the
 remaining publication/application tail before publication, including readonly
 reopen records. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ09` / schema 9;
+append sequence/hash state on reopen. The format is now `OTCPWJ10` / schema 10;
 superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with ordered immutable final-version records and a digest seal after a full
 content/metadata/security scan. Entry acknowledgements alone
@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 256 with 33 specialized
+The final ordinary-user Windows platform suite passes 259 with 33 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -407,6 +407,21 @@ the original profile/installation remained unchanged. Receipt:
 `.hermes/evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`.
 Initial user-conflict admission and public Copy/session/batch integration remain
 required; packages are unchanged.
+
+Initial destination admission is now explicit in the staging API. Creation
+requires native absence; overwrite freezes the approved graph before source
+staging. Schema 10 binds its complete count/digest in both begin headers and
+original preparation/decoding refuse a different graph. Fast root/parent checks
+refuse stale tokens before staging, while the full digest catches child changes
+that leave root metadata unchanged. Creation cannot become overwrite; an
+approved overwrite cannot fall back to creation after its original disappears.
+All three native admission tests pass; the complete Windows platform suite passes
+259 with 33 exclusions, Linux passes 411 with three exclusions, and the separate
+SYSTEM audit, strict Clippy and format checks pass. The disposable guest and its
+disk/NVRAM/TPM were removed; original preferences/installation stayed unchanged.
+Receipt: `.hermes/evidence/windows-copy-destination-admission-current/ACCEPTANCE.json`.
+Public user-conflict UI, session/batch and cleanup integration remain required;
+packages are unchanged.
 
 Public Windows Copy stays disabled. Session receipt/batch
 integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete

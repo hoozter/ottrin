@@ -97,6 +97,25 @@ acceptance are still required. Public Copy/Overwrite and cleanup remain gated.
 Native preparation and regression receipt:
 `.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
 
+## Initial destination admission
+
+Staging takes a `DestinationAdmission`, replacing the raw target argument.
+Creation requires native absence; access errors never imply absence. Overwrite
+captures the existing graph before source staging and retains no open handles.
+Its root version allows cheap pre-staging validation, while its complete graph
+count/digest are written into both immutable schema-10 journal headers.
+
+Original preparation revalidates the full graph against that initial approval
+before appending any original records. Changed child data cannot be silently
+adopted even when the root directory version stays unchanged. The decoder also
+requires each original-plan begin to match the header's approved count/digest.
+Creation cannot acquire original authority afterward; an approved overwrite
+cannot publish as creation merely because its original is absent. Original
+retention still requires its separate durable intent and acknowledgement.
+User conflict UI/session/batch integration and broader acceptance remain gated.
+Native admission and regression evidence:
+`.hermes/evidence/windows-copy-destination-admission-current/ACCEPTANCE.json`.
+
 ## Native namespace and sharing
 
 ### Original retention and pre-publication restoration

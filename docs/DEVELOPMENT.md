@@ -740,7 +740,7 @@ capabilities. Stream revalidation uses the caller's cancellable progress path;
 cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
 changes are retained/refused; do not normalize their metadata to resume.
 
-The format is `OTCPWJ09` / schema 9; superseded schemas are refused, without a
+The format is `OTCPWJ10` / schema 10; superseded schemas are refused, without a
 compatibility reader. Log reservation includes prospective readonly reopen
 records and a pending acknowledgement; repeated interruption remains bounded by
 the total log budget and must fail before an unreserved mutation. These native
@@ -821,6 +821,21 @@ The observations alone grant no mutation authority. Paired original-retention
 records, handoff/root binding, overwrite publication/restoration and complete
 audit-SACL/label handling are still required. The observation alone grants no
 retention authority.
+
+Schema 10 binds the initial destination decision in the paired begin headers.
+`DurableStage::create` takes a `DestinationAdmission`; its creation constructor
+requires native absence, while overwrite captures a complete original graph
+before source staging. The token binds parent identity/location and target leaf,
+retains no handles, and freezes the original root version for cheap pre-staging
+checks. The full original count/digest survives in the immutable journal header.
+Original preparation must match that approval before appending any records, and
+the decoder rejects original-plan begins that disagree with it. Creation cannot
+be converted into overwrite, and an approved overwrite cannot publish without
+its original merely because the old name became vacant. Existing source-free
+original preparation/recovery uses the same persisted initial proof.
+Native evidence: `.hermes/evidence/windows-copy-destination-admission-current/ACCEPTANCE.json`.
+This is the engine admission contract; public user-conflict/session/batch wiring
+and the remaining security/storage/package gates still apply.
 
 Schema 7 now records original-destination preparation in both journals: a begin
 count/digest, ordered per-entry evidence and a completion seal. The begin digest
