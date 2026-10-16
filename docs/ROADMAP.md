@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-16
+Last updated: 2026-10-17
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -36,7 +36,7 @@ epoch's locks, compares the fresh paired journal bytes, then opens new typed
 The writer rechecks its creator context on every append and reserves the
 remaining publication/application tail before publication, including readonly
 reopen records. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ07` / schema 7;
+append sequence/hash state on reopen. The format is now `OTCPWJ08` / schema 8;
 superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with ordered immutable final-version records and a digest seal after a full
 content/metadata/security scan. Entry acknowledgements alone
@@ -44,7 +44,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 242 with 31 specialized
+The final ordinary-user Windows platform suite passes 247 with 32 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -344,12 +344,31 @@ budget refusal. The full native suite passes 242 with 31 exclusions; Linux passe
 411 with three exclusions. SYSTEM audit, strict platform Clippy on both targets
 and Windows UI Clippy pass. Receipt:
 `.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
-The original stays in place: retention intent/acknowledgement, the native writer
-handoff, full overwrite-tail reservation and inverse restoration remain required.
+At that preparation-only checkpoint the original stayed in place; native
+retention and restoration were not yet implemented.
 There is no compatibility reader for prior schemas. Public Copy/Overwrite and
 cleanup remain gated; packages are unchanged.
 
-Public Windows Copy stays disabled. Overwrite restoration, session receipt/batch
+Schema 8 now retains and restores original file/folder destinations through one
+identity-bound, no-replace move engine. Both directions persist intent before
+mutation and acknowledge only after root/parent flush and full-tree verification.
+Replay resolves the original by native identity, preserves unrelated occupants,
+and never repairs mismatched journals. Retention reserves pre-publication
+restoration space. A pending retention acknowledgement can finish even if the
+private new copy changes, allowing the verified original to be restored while
+preserving that changed copy. Readonly original file roots explicitly refuse.
+Five native tests cover 28 injected failures and 28 real process exits across
+file/folder roots and both directions; all pass. The full native platform suite
+passes 247 with 32 exclusions, Linux passes 411 with three exclusions, and the
+separate SYSTEM audit and strict Clippy checks pass. The disposable VM, disk,
+NVRAM and TPM were removed; the original profile and installation stayed intact.
+Receipt: `.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
+This implements pre-publication cancellation/restoration only. Publication of the
+new copy over a retained original, subsequent Undo, complete overwrite-tail
+reservation and broader security/storage acceptance remain required. Packages
+are unchanged.
+
+Public Windows Copy stays disabled. Post-publication Overwrite restoration, session receipt/batch
 integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete
 SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive directories,
 specialized storage/properties, real large-tree budgets, guest power-cut acceptance,

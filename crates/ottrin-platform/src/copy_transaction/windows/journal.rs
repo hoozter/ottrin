@@ -32,7 +32,7 @@ pub(crate) use discovery::{
     restore_undo, restore_undo_at,
 };
 
-const MAGIC: &[u8; 8] = b"OTCPWJ07";
+const MAGIC: &[u8; 8] = b"OTCPWJ08";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -64,12 +64,15 @@ impl Header {
     fn candidate_name(&self) -> OsString {
         format!(".ottrin-copy-{}.candidate", self.transaction).into()
     }
+    fn original_name(&self) -> OsString {
+        format!(".ottrin-copy-{}.original", self.transaction).into()
+    }
     fn central_name(&self) -> OsString {
         format!("{}.copy-journal", self.transaction).into()
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 7
+            && self.schema == 8
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -96,6 +99,7 @@ impl Header {
             && valid_leaf(&self.source_label)
             && OsString::from_wide(&self.target) != self.stage_name()
             && OsString::from_wide(&self.target) != self.candidate_name()
+            && OsString::from_wide(&self.target) != self.original_name()
             && !(self.parent.same_object(self.central)
                 && OsString::from_wide(&self.target) == self.central_name())
     }
@@ -157,6 +161,14 @@ enum Record {
         count: usize,
         digest: [u8; 32],
     },
+    OriginalRetainIntent,
+    OriginalRetained {
+        root_version: Box<EntryVersion>,
+    },
+    OriginalRestoreIntent,
+    OriginalRestored {
+        root_version: Box<EntryVersion>,
+    },
     PublicationIntent,
     Published,
     SecurityApplyIntent {
@@ -196,6 +208,10 @@ struct State {
     planning: Option<Planning>,
     permissions: security::PermissionProgress,
     original: Option<OriginalPlan>,
+    original_retain_intent: bool,
+    original_retained: Option<EntryVersion>,
+    original_restore_intent: bool,
+    original_restored: Option<EntryVersion>,
     publication_intent: bool,
     published: bool,
     completion_verified: bool,
@@ -467,10 +483,54 @@ impl State {
                 }
                 return Ok(());
             }
+            Record::OriginalRetainIntent => {
+                if self.original.as_ref().is_none_or(|plan| !plan.sealed)
+                    || self.planned.is_none()
+                    || self.original_retain_intent
+                    || self.publication_intent
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::OriginalRetained { root_version } => {
+                let mut expected = self.original.as_ref().ok_or_else(invalid)?.evidence.entries[0]
+                    .version
+                    .clone();
+                expected.changed = root_version.changed;
+                if !self.original_retain_intent
+                    || self.original_retained.is_some()
+                    || **root_version != expected
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::OriginalRestoreIntent => {
+                if self.original_retained.is_none()
+                    || self.original_restore_intent
+                    || self.publication_intent
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
+            Record::OriginalRestored { root_version } => {
+                let mut expected = self.original_retained.as_ref().ok_or_else(invalid)?.clone();
+                expected.changed = root_version.changed;
+                if !self.original_restore_intent
+                    || self.original_restored.is_some()
+                    || **root_version != expected
+                {
+                    return Err(invalid());
+                }
+                return Ok(());
+            }
             Record::OriginalPlanBegin { count, .. } => {
                 if !self.verified
                     || self.original.is_some()
                     || self.publication_intent
+                    || self.original_retain_intent
                     || *count == 0
                     || *count > (MAX_LOG / FRAME_HEADER as u64) as usize
                 {
@@ -654,7 +714,11 @@ impl State {
                     return Err(invalid());
                 }
             }
-            Record::OriginalPlanBegin { .. }
+            Record::OriginalRetainIntent
+            | Record::OriginalRetained { .. }
+            | Record::OriginalRestoreIntent
+            | Record::OriginalRestored { .. }
+            | Record::OriginalPlanBegin { .. }
             | Record::OriginalPlanEntry { .. }
             | Record::OriginalPlanComplete { .. }
             | Record::UndoIntent
@@ -685,6 +749,14 @@ impl State {
     fn apply(&mut self, record: Record) -> Result<(), PlatformError> {
         self.check(&record)?;
         match record {
+            Record::OriginalRetainIntent => self.original_retain_intent = true,
+            Record::OriginalRetained { root_version } => {
+                self.original_retained = Some(*root_version)
+            }
+            Record::OriginalRestoreIntent => self.original_restore_intent = true,
+            Record::OriginalRestored { root_version } => {
+                self.original_restored = Some(*root_version)
+            }
             Record::OriginalPlanBegin { count, digest } => {
                 self.original = Some(OriginalPlan {
                     expected: count,
@@ -856,6 +928,53 @@ fn bound(
     namespace::validate_binding(parent, name, identity)
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OriginalMove {
+    Retain,
+    Restore,
+}
+impl OriginalMove {
+    fn intent(self) -> Record {
+        match self {
+            Self::Retain => Record::OriginalRetainIntent,
+            Self::Restore => Record::OriginalRestoreIntent,
+        }
+    }
+    fn ack(self, version: EntryVersion) -> Record {
+        match self {
+            Self::Retain => Record::OriginalRetained {
+                root_version: Box::new(version),
+            },
+            Self::Restore => Record::OriginalRestored {
+                root_version: Box::new(version),
+            },
+        }
+    }
+}
+fn identity_at(
+    parent: &File,
+    name: &OsStr,
+    expected: WindowsStableIdentity,
+) -> Result<bool, PlatformError> {
+    match unsafe {
+        windows_fs::open_relative(
+            parent,
+            name,
+            RelativeOptions {
+                directory: None,
+                create_new: false,
+                access: windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES
+                    | windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE,
+                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                security: ptr::null(),
+            },
+        )
+    } {
+        Ok(file) => Ok(stable_identity_from_handle(&file).map_err(io)? == expected),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(io(error)),
+    }
+}
 struct Journal {
     local: File,
     central: File,
@@ -903,7 +1022,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 7,
+            schema: 8,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -1158,6 +1277,7 @@ impl Journal {
     ) -> Result<(), PlatformError> {
         progress(0)?;
         if self.failed
+            || self.state.original_retain_intent
             || !self.state.verified
             || self.state.publication_intent
             || self.state.undo_intent
@@ -1247,6 +1367,213 @@ impl Journal {
             self.persist(record)?;
         }
         Ok(())
+    }
+    /// Retain or restore only the identity-bound original. The copy remains
+    /// unpublished; restoration here cancels a pre-publication overwrite.
+    fn move_original(
+        &mut self,
+        direction: OriginalMove,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.move_original_inner(direction, progress).map_err(|error| {
+            if !self.state.original_retain_intent { return error; }
+            let parent = windows_fs::location(&self.parent_dir).map(|p| p.display().to_string())
+                .unwrap_or_else(|_| "recorded native parent".into());
+            PlatformError::CleanupPending {
+                transaction: windows_fs::location(&self.stage_dir).map(|p| p.display().to_string())
+                    .unwrap_or_else(|_| self.header.stage_name().to_string_lossy().into_owned()),
+                message: format!("{error}; all versions retained. Original locations to inspect: {parent} / {:?} or {:?}; new copy: {:?}",
+                    OsString::from_wide(&self.header.target), self.header.original_name(), self.header.candidate_name()),
+            }
+        })
+    }
+    fn move_original_inner(
+        &mut self,
+        direction: OriginalMove,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress(0)?;
+        if self.failed
+            || self.state.publication_intent
+            || self.state.undo_intent
+            || self.state.readonly_pending.is_some()
+        {
+            return Err(io(
+                "original move requires a coherent unpublished transaction",
+            ));
+        }
+        self.bindings()?;
+        let evidence = self
+            .state
+            .original
+            .as_ref()
+            .filter(|plan| plan.sealed)
+            .ok_or_else(|| io("original destination has no sealed evidence"))?
+            .evidence
+            .clone();
+        let (intent, completed, base, from, to) = match direction {
+            OriginalMove::Retain => {
+                if self.state.original_restore_intent {
+                    return Err(io("original restoration already owns this transaction"));
+                }
+                (
+                    self.state.original_retain_intent,
+                    self.state.original_retained.clone(),
+                    evidence.entries[0].version.clone(),
+                    OsString::from_wide(&self.header.target),
+                    self.header.original_name(),
+                )
+            }
+            OriginalMove::Restore => (
+                self.state.original_restore_intent,
+                self.state.original_restored.clone(),
+                self.state
+                    .original_retained
+                    .clone()
+                    .ok_or_else(|| io("original was not retained"))?,
+                self.header.original_name(),
+                OsString::from_wide(&self.header.target),
+            ),
+        };
+        let resolve = |intent: bool, completed: bool| -> Result<OsString, PlatformError> {
+            match (
+                identity_at(&self.parent_dir, &from, base.identity)?,
+                identity_at(&self.parent_dir, &to, base.identity)?,
+            ) {
+                (true, false) if !completed => Ok(from.clone()),
+                (false, true) if intent => Ok(to.clone()),
+                _ => Err(io(
+                    "original identity has ambiguous or unrecorded location; all data retained",
+                )),
+            }
+        };
+        let validate = |tree: &tree::PinnedTree,
+                        name: &OsStr,
+                        intent: bool,
+                        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>|
+         -> Result<EntryVersion, PlatformError> {
+            let mut expected = evidence.clone();
+            let mut version = completed.as_ref().unwrap_or(&base).clone();
+            if completed.is_none() && intent && name == to {
+                version.changed = tree.root().changed;
+            }
+            expected.entries[0].version = version;
+            tree.validate_existing(&expected, progress)?;
+            namespace::validate_binding(&self.parent_dir, name, base.identity)?;
+            Ok(tree.root().clone())
+        };
+        let name = resolve(intent, completed.is_some())?;
+        let read = namespace::open_source(&self.parent_dir, &name, None)?;
+        let tree = tree::PinnedTree::open(&read, evidence.entries.len(), &mut progress)?;
+        validate(&tree, &name, intent, &mut progress)?;
+        if completed.is_some() {
+            return Ok(());
+        }
+        // A flushable readonly-root capability needs a separately journaled
+        // strategy; never clear attributes on an original as an implicit repair.
+        if !base.directory
+            && base.attributes & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
+                != 0
+        {
+            return Err(PlatformError::UnsupportedSafeCopy(
+                "readonly original-root retention needs its own access strategy".into(),
+            ));
+        }
+        let mut bound = base.clone();
+        bound.changed = i64::MIN;
+        let mut tail = vec![direction.ack(bound.clone())];
+        if !intent {
+            tail.push(direction.intent());
+        }
+        if direction == OriginalMove::Retain {
+            // Retention must leave room for pre-publication cancellation to
+            // return the original, not just for completing the forward move.
+            tail.push(Record::OriginalRestoreIntent);
+            tail.push(OriginalMove::Restore.ack(bound));
+        }
+        let required = tail
+            .iter()
+            .try_fold(self.permission_tail_size()?, |sum, record| {
+                sum.checked_add(FRAME_HEADER as u64 + record_payload(record)?.len() as u64)
+                    .ok_or_else(|| io("original move reservation overflow"))
+            })?;
+        if self
+            .length
+            .checked_add(required)
+            .is_none_or(|size| size > MAX_LOG)
+        {
+            return Err(io("insufficient Copy journal space for original move"));
+        }
+        // Keep the independently verified new copy pinned during retention.
+        // Restoration must remain possible even if that private copy changed.
+        let candidate = if direction == OriginalMove::Retain && name == from {
+            let tree = HeldTree::open(
+                &self.parent_dir,
+                &self.state,
+                self.header.candidate_name(),
+                None,
+                &mut progress,
+            )?;
+            tree.revalidate(&self.parent_dir, &self.state, &mut progress)?;
+            Some(tree)
+        } else {
+            None
+        };
+        if !intent {
+            self.persist(direction.intent())?;
+        }
+        drop((tree, read));
+        original_handoff(self.sequence)?;
+        let name = match (
+            identity_at(&self.parent_dir, &from, base.identity)?,
+            identity_at(&self.parent_dir, &to, base.identity)?,
+        ) {
+            (true, false) => from.clone(),
+            (false, true) => to.clone(),
+            _ => {
+                return Err(io(
+                    "original binding changed at writer handoff; all data retained",
+                ));
+            }
+        };
+        let root = windows_fs::PerObjectFile::open(&self.parent_dir, &name).map_err(io)?;
+        let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        // The shared verifier checks every stream, member, alias and descriptor
+        // again under the root capability. Close descendants for native rename.
+        let mut expected = evidence.clone();
+        let mut version = base.clone();
+        if name == to {
+            version.changed = tree.root().changed;
+        }
+        expected.entries[0].version = version;
+        tree.validate_existing(&expected, &mut progress)?;
+        namespace::validate_binding(&self.parent_dir, &name, base.identity)?;
+        drop(tree);
+        progress(0)?;
+        root.sync_all().map_err(io)?;
+        if name != to {
+            crate::move_transaction::rename_windows_handle_no_replace(
+                &root,
+                &self.parent_dir,
+                &to,
+            )?;
+        }
+        boundary(self.sequence, Step::OriginalRenamed)?;
+        root.sync_all().map_err(io)?;
+        self.parent_dir.sync_all().map_err(io)?;
+        boundary(self.sequence, Step::OriginalFlushed)?;
+        let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        let mut expected = evidence;
+        let mut version = base;
+        version.changed = tree.root().changed;
+        expected.entries[0].version = version;
+        tree.validate_existing(&expected, &mut progress)?;
+        namespace::validate_binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
+        let root_version = tree.root().clone();
+        progress(0)?;
+        let result = self.persist(direction.ack(root_version));
+        drop((tree, root, candidate));
+        result
     }
     /// A paired intent authorizes only the readonly bit transition on one
     /// fully verified candidate. Restore and flush through the newly writable
@@ -2603,6 +2930,9 @@ impl<'a> CompletedCopy<'a> {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Step {
+    OriginalReadersReleased,
+    OriginalRenamed,
+    OriginalFlushed,
     UndoReadersReleased,
     UndoRenamed,
     UndoFlushed,
@@ -2622,6 +2952,17 @@ fn undo_handoff(sequence: u64) -> Result<(), PlatformError> {
     boundary(sequence, Step::UndoReadersReleased)?;
     #[cfg(test)]
     if let Some(hook) = UNDO_HANDOFF.with(|slot| slot.borrow_mut().take()) {
+        hook();
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+thread_local! {static ORIGINAL_HANDOFF:std::cell::RefCell<Option<Box<dyn FnOnce()>>>=const {std::cell::RefCell::new(None)};}
+fn original_handoff(sequence: u64) -> Result<(), PlatformError> {
+    boundary(sequence, Step::OriginalReadersReleased)?;
+    #[cfg(test)]
+    if let Some(hook) = ORIGINAL_HANDOFF.with(|slot| slot.borrow_mut().take()) {
         hook();
     }
     Ok(())
@@ -2690,8 +3031,14 @@ mod tests {
             .unwrap()
             .map(|e| e.unwrap().file_name())
             .filter(|n| {
-                n.to_string_lossy().starts_with(".ottrin-copy-")
-                    && !n.to_string_lossy().ends_with(".candidate")
+                n.to_str()
+                    .and_then(|name| name.strip_prefix(".ottrin-copy-"))
+                    .is_some_and(|id| {
+                        id.len() == 32
+                            && id
+                                .bytes()
+                                .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+                    })
             })
             .collect();
         assert_eq!(names.len(), 1);
@@ -2720,6 +3067,393 @@ mod tests {
         let central = owner(&root.join("central"));
         let snapshot = Snapshot::load(&parent, &central, name, SnapshotAccess::Write).unwrap();
         Journal::from_snapshot(&parent, &central, snapshot).unwrap()
+    }
+
+    fn original_move_fixture(root: &Path, directory: bool, restore: bool) -> OsString {
+        let name = original_fixture(root, directory);
+        remove_undo_fixture_source(root);
+        let mut journal = original_journal(root, &name);
+        journal.prepare_original(100, |_| Ok(())).unwrap();
+        if restore {
+            journal
+                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .unwrap();
+        }
+        name
+    }
+    fn move_faults() -> [(u64, Step); 7] {
+        [
+            (0, Step::LocalFlushed),
+            (0, Step::CentralFlushed),
+            (1, Step::OriginalReadersReleased),
+            (1, Step::OriginalRenamed),
+            (1, Step::OriginalFlushed),
+            (1, Step::LocalFlushed),
+            (1, Step::CentralFlushed),
+        ]
+    }
+
+    #[test]
+    #[ignore = "abrupt-exit child; owned temporary root supplied by parent"]
+    fn windows_native_original_move_exit_child() {
+        let root = std::path::PathBuf::from(
+            std::env::var_os("OTTRIN_ORIGINAL_MOVE_CHILD").expect("owned root required"),
+        );
+        assert!(root.is_dir() && std::fs::read_dir(&root).unwrap().next().is_none());
+        let directory = std::env::var("OTTRIN_ORIGINAL_MOVE_DIRECTORY").unwrap() == "1";
+        let restore = std::env::var("OTTRIN_ORIGINAL_MOVE_RESTORE").unwrap() == "1";
+        let index: usize = std::env::var("OTTRIN_ORIGINAL_MOVE_FAULT")
+            .unwrap()
+            .parse()
+            .unwrap();
+        let name = original_move_fixture(&root, directory, restore);
+        let mut journal = original_journal(&root, &name);
+        let (offset, step) = move_faults()[index];
+        FAULT.with(|f| f.set(Some((journal.sequence + offset, step, true))));
+        let result = journal.move_original(
+            if restore {
+                OriginalMove::Restore
+            } else {
+                OriginalMove::Retain
+            },
+            |_| Ok(()),
+        );
+        panic!("Expected abrupt exit: {result:?}");
+    }
+
+    #[test]
+    fn windows_native_original_move_real_exits_recover_without_source_and_preserve_mismatches() {
+        for directory in [false, true] {
+            for restore in [false, true] {
+                for (index, (_, step)) in move_faults().into_iter().enumerate() {
+                    let root = tempfile::tempdir().unwrap();
+                    let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child", "--ignored", "--nocapture"])
+                .env("OTTRIN_ORIGINAL_MOVE_CHILD", root.path())
+                .env("OTTRIN_ORIGINAL_MOVE_DIRECTORY", if directory { "1" } else { "0" })
+                .env("OTTRIN_ORIGINAL_MOVE_RESTORE", if restore { "1" } else { "0" })
+                .env("OTTRIN_ORIGINAL_MOVE_FAULT", index.to_string()).status().unwrap();
+                    assert_eq!(status.code(), Some(86), "{directory} {restore} {index}");
+                    assert!(!root.path().join("source").exists());
+                    let name = stage_name(&root.path().join("destination"));
+                    let local = root.path().join("destination").join(&name).join(LOCAL);
+                    let bytes = std::fs::read(&local).unwrap();
+                    let header = decode(&bytes).unwrap().state.header.unwrap();
+                    let central = root.path().join("central").join(header.central_name());
+                    if step == Step::LocalFlushed {
+                        let mirror = std::fs::read(&central).unwrap();
+                        assert_ne!(bytes, mirror);
+                        assert!(
+                            Snapshot::load(
+                                &owner(&root.path().join("destination")),
+                                &owner(&root.path().join("central")),
+                                &name,
+                                SnapshotAccess::Write
+                            )
+                            .is_err()
+                        );
+                        assert_eq!(std::fs::read(&local).unwrap(), bytes);
+                        assert_eq!(std::fs::read(&central).unwrap(), mirror);
+                    } else {
+                        let mut journal = original_journal(root.path(), &name);
+                        journal
+                            .move_original(
+                                if restore {
+                                    OriginalMove::Restore
+                                } else {
+                                    OriginalMove::Retain
+                                },
+                                |_| Ok(()),
+                            )
+                            .unwrap();
+                        drop(journal);
+                        assert_original_location(root.path(), &name, directory, restore);
+                    }
+                    let public = root.path().join("destination/copy");
+                    let original = if public.exists() {
+                        public
+                    } else {
+                        root.path().join("destination").join(header.original_name())
+                    };
+                    assert_eq!(
+                        std::fs::read(if directory {
+                            original.join("old")
+                        } else {
+                            original
+                        })
+                        .unwrap(),
+                        b"old destination"
+                    );
+                    assert_eq!(
+                        std::fs::read(
+                            root.path()
+                                .join("destination")
+                                .join(header.candidate_name())
+                                .join("nested/file")
+                        )
+                        .unwrap(),
+                        b"original data"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn windows_native_original_move_restore_preserves_changed_private_copy() {
+        for pending in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let name = original_move_fixture(root.path(), true, !pending);
+            let mut journal = original_journal(root.path(), &name);
+            if pending {
+                FAULT.with(|f| f.set(Some((journal.sequence + 1, Step::OriginalRenamed, false))));
+                assert!(
+                    journal
+                        .move_original(OriginalMove::Retain, |_| Ok(()))
+                        .is_err()
+                );
+                FAULT.with(|f| f.set(None));
+                assert!(journal.state.original_retained.is_none());
+            }
+            let candidate = root
+                .path()
+                .join("destination")
+                .join(journal.header.candidate_name())
+                .join("nested/file");
+            std::fs::write(&candidate, b"external private copy").unwrap();
+            drop(journal);
+            let mut journal = original_journal(root.path(), &name);
+            if pending {
+                journal
+                    .move_original(OriginalMove::Retain, |_| Ok(()))
+                    .unwrap();
+            }
+            journal
+                .move_original(OriginalMove::Restore, |_| Ok(()))
+                .unwrap();
+            assert_eq!(
+                std::fs::read(root.path().join("destination/copy/old")).unwrap(),
+                b"old destination"
+            );
+            assert_eq!(std::fs::read(candidate).unwrap(), b"external private copy");
+        }
+    }
+
+    #[test]
+    fn windows_native_original_move_retains_and_restores_without_source_or_new_publication() {
+        for directory in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let name = original_move_fixture(root.path(), directory, false);
+            let mut journal = original_journal(root.path(), &name);
+            journal
+                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .unwrap();
+            assert!(journal.state.original_retained.is_some());
+            assert!(!root.path().join("destination/copy").exists());
+            let length = journal.length;
+            journal
+                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .unwrap();
+            assert_eq!(journal.length, length);
+            drop(journal);
+            assert_original_location(root.path(), &name, directory, false);
+            let mut journal = original_journal(root.path(), &name);
+            journal
+                .move_original(OriginalMove::Restore, |_| Ok(()))
+                .unwrap();
+            assert!(journal.state.original_restored.is_some());
+            let length = journal.length;
+            journal
+                .move_original(OriginalMove::Restore, |_| Ok(()))
+                .unwrap();
+            assert_eq!(journal.length, length);
+            assert!(
+                journal
+                    .move_original(OriginalMove::Retain, |_| Ok(()))
+                    .is_err()
+            );
+            drop(journal);
+            assert_original_location(root.path(), &name, directory, true);
+        }
+    }
+
+    fn assert_original_location(root: &Path, name: &OsStr, directory: bool, restored: bool) {
+        let journal = original_journal(root, name);
+        let base = root.join("destination").join(if restored {
+            OsString::from("copy")
+        } else {
+            journal.header.original_name()
+        });
+        assert_eq!(
+            std::fs::read(if directory { base.join("old") } else { base }).unwrap(),
+            b"old destination"
+        );
+        assert_eq!(
+            std::fs::read(
+                root.join("destination")
+                    .join(journal.header.candidate_name())
+                    .join("nested/file")
+            )
+            .unwrap(),
+            b"original data"
+        );
+    }
+
+    #[test]
+    fn windows_native_original_move_fault_prefixes_keep_both_versions_and_never_repair_mirrors() {
+        for directory in [false, true] {
+            for restore in [false, true] {
+                for (offset, step) in move_faults() {
+                    let root = tempfile::tempdir().unwrap();
+                    let name = original_move_fixture(root.path(), directory, restore);
+                    let mut journal = original_journal(root.path(), &name);
+                    let local = root.path().join("destination").join(&name).join(LOCAL);
+                    let central = root
+                        .path()
+                        .join("central")
+                        .join(journal.header.central_name());
+                    let sequence = journal.sequence + offset;
+                    FAULT.with(|f| f.set(Some((sequence, step, false))));
+                    let result = journal.move_original(
+                        if restore {
+                            OriginalMove::Restore
+                        } else {
+                            OriginalMove::Retain
+                        },
+                        |_| Ok(()),
+                    );
+                    FAULT.with(|f| f.set(None));
+                    assert!(result.is_err(), "{directory} {restore} {offset} {step:?}");
+                    drop(journal);
+                    let before = std::fs::read(&local).unwrap();
+                    let mirror = std::fs::read(&central).unwrap();
+                    if step == Step::LocalFlushed {
+                        assert_ne!(before, mirror);
+                        assert!(
+                            Snapshot::load(
+                                &owner(&root.path().join("destination")),
+                                &owner(&root.path().join("central")),
+                                &name,
+                                SnapshotAccess::Write
+                            )
+                            .is_err()
+                        );
+                        assert_eq!(std::fs::read(&local).unwrap(), before);
+                        assert_eq!(std::fs::read(&central).unwrap(), mirror);
+                    } else {
+                        let mut journal = original_journal(root.path(), &name);
+                        journal
+                            .move_original(
+                                if restore {
+                                    OriginalMove::Restore
+                                } else {
+                                    OriginalMove::Retain
+                                },
+                                |_| Ok(()),
+                            )
+                            .unwrap();
+                        drop(journal);
+                        assert_original_location(root.path(), &name, directory, restore);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn windows_native_original_move_refuses_occupants_handoff_changes_and_cancellation() {
+        for case in [
+            "retain-occupied",
+            "restore-occupied",
+            "handoff",
+            "cancel",
+            "readonly",
+            "budget",
+            "candidate",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let restore = case == "restore-occupied";
+            let name = if case == "readonly" {
+                let name = original_fixture(root.path(), false);
+                let target = root.path().join("destination/copy");
+                let mut permissions = std::fs::metadata(&target).unwrap().permissions();
+                permissions.set_readonly(true);
+                std::fs::set_permissions(&target, permissions).unwrap();
+                let mut journal = original_journal(root.path(), &name);
+                journal.prepare_original(100, |_| Ok(())).unwrap();
+                drop(journal);
+                remove_undo_fixture_source(root.path());
+                name
+            } else {
+                original_move_fixture(root.path(), false, restore)
+            };
+            let mut journal = original_journal(root.path(), &name);
+            let retention = root
+                .path()
+                .join("destination")
+                .join(journal.header.original_name());
+            let target = root.path().join("destination/copy");
+            if case == "retain-occupied" {
+                std::fs::write(&retention, b"unrelated occupant").unwrap();
+            }
+            if restore {
+                std::fs::write(&target, b"unrelated occupant").unwrap();
+            }
+            if case == "handoff" {
+                let target = target.clone();
+                ORIGINAL_HANDOFF.with(|hook| {
+                    *hook.borrow_mut() = Some(Box::new(move || {
+                        std::fs::write(target, b"external data").unwrap()
+                    }))
+                });
+            }
+            if case == "budget" {
+                journal.length = MAX_LOG - 1;
+            }
+            if case == "candidate" {
+                std::fs::write(
+                    root.path()
+                        .join("destination")
+                        .join(journal.header.candidate_name())
+                        .join("nested/file"),
+                    b"external candidate data",
+                )
+                .unwrap();
+            }
+            let result = journal.move_original(
+                if restore {
+                    OriginalMove::Restore
+                } else {
+                    OriginalMove::Retain
+                },
+                |_| {
+                    if case == "cancel" {
+                        Err(io("stop original move"))
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            ORIGINAL_HANDOFF.with(|hook| *hook.borrow_mut() = None);
+            assert!(result.is_err(), "{case}");
+            if case == "readonly" {
+                let mut permissions = std::fs::metadata(&target).unwrap().permissions();
+                #[allow(clippy::permissions_set_readonly_false)]
+                permissions.set_readonly(false);
+                std::fs::set_permissions(&target, permissions).unwrap();
+            }
+            if case == "handoff" {
+                assert_eq!(std::fs::read(target).unwrap(), b"external data");
+            } else if case == "retain-occupied" {
+                assert_eq!(std::fs::read(retention).unwrap(), b"unrelated occupant");
+                assert_eq!(std::fs::read(target).unwrap(), b"old destination");
+            } else if restore {
+                assert_eq!(std::fs::read(target).unwrap(), b"unrelated occupant");
+                assert_eq!(std::fs::read(retention).unwrap(), b"old destination");
+            } else {
+                assert_eq!(std::fs::read(target).unwrap(), b"old destination");
+            }
+        }
     }
 
     #[test]
@@ -4418,6 +5152,9 @@ mod tests {
                 Step::UndoReadersReleased => "undo-readers-released",
                 Step::UndoRenamed => "undo-renamed",
                 Step::UndoFlushed => "undo-flushed",
+                Step::OriginalReadersReleased => "original-readers-released",
+                Step::OriginalRenamed => "original-renamed",
+                Step::OriginalFlushed => "original-flushed",
             };
             let status=std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])

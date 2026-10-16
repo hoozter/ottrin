@@ -99,6 +99,39 @@ Native preparation and regression receipt:
 
 ## Native namespace and sharing
 
+### Original retention and pre-publication restoration
+
+Schema 8 adds paired original-retain and original-restore intent/acknowledgement
+records. The original moves without replacement between its public leaf and the
+transaction's sibling `.original` leaf, under the same real parent. Recovery
+probes full native identity at both slots; unrelated occupants remain untouched,
+and ambiguous or unrecorded locations refuse. The original keeps its bytes,
+permissions and attributes. Only a pending rename's native root change time may
+differ, and its resulting version is frozen in the acknowledgement.
+
+Both directions share one verifier/move path. It checks the original before
+intent, releases descendant readers for Windows rename, reacquires a typed root
+capability, and checks the entire tree again before and after the operation.
+The root and parent are flushed before acknowledgement; the final held tree
+survives the acknowledgement append. Handoff changes retain data and refuse.
+Failure messages name the transaction, original slots and staged copy.
+
+Retention pins and verifies the private new copy before moving the public original.
+If an interrupted rename already retained the original, its acknowledgement can
+finish even when the private copy changed. Restoration before publication can
+return the verified original while preserving that changed copy for review. Retention reserves its own
+records, pre-publication restoration records and the existing permission tail
+before intent. Readonly original file roots are explicitly unsupported by this
+access strategy; no attribute clearing is attempted on an original.
+
+This does not implement publication over the retained original or Undo after new
+copy publication. Full overwrite/Undo-tail reservation, readonly/rights strategies,
+complete audit/label protection, broader storage and package acceptance remain
+required. Public Copy/Overwrite and cleanup stay gated. Native evidence:
+`.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
+
+### Private candidate namespace
+
 `copy_transaction/windows/namespace.rs` pins the real destination parent. It
 creates `.ottrin-copy-ID` and the sibling `.ottrin-copy-ID.candidate` directly
 under that parent with create-new semantics. Existing entries are never adopted

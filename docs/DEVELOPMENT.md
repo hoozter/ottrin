@@ -740,7 +740,7 @@ capabilities. Stream revalidation uses the caller's cancellable progress path;
 cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
 changes are retained/refused; do not normalize their metadata to resume.
 
-The format is `OTCPWJ07` / schema 7; superseded schemas are refused, without a
+The format is `OTCPWJ08` / schema 8; superseded schemas are refused, without a
 compatibility reader. Log reservation includes prospective readonly reopen
 records and a pending acknowledgement; repeated interruption remains bounded by
 the total log budget and must fail before an unreserved mutation. These native
@@ -830,10 +830,27 @@ before append. Recording uses the held parent/target binding and revalidates the
 live original before sealing; source-free prefixes can resume without rebasing.
 Sealed replay adds no records, and local-only tails are never repaired.
 Partial or sealed original evidence blocks creation-only publication/admission.
-Original retention intent, mutation acknowledgement, full overwrite-tail
-reservation and inverse restoration remain required before Overwrite can run.
-Current receipt:
+That preparation-only checkpoint did not move originals. Receipt:
 `.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
+
+Schema 8 adds explicit original retention and pre-publication restoration. One
+`Journal::move_original` engine serves both directions, with paired intent before
+no-replace rename and a frozen root-version acknowledgement after root/parent
+flush and full tree revalidation. Root location is resolved by identity at the
+public and `.original` sibling slots, never by name presence. A pending rename
+allows only its root change time; completed replay remains exact and adds no
+records. Descendant readers close for writer handoff and native rename, then the
+entire original is checked again. The final held tree survives acknowledgement.
+
+Retention checks/pins the new private copy before moving an original that is
+still public. If an interrupted rename already retained the original, finishing
+its acknowledgement remains possible when the private copy changed; verified
+restoration can then return the original while preserving that changed copy.
+Space for pre-publication restoration is reserved before retention. Readonly
+original file roots refuse without attribute clearing. Publication over the
+retained original, Undo after new-copy publication, complete overwrite-tail
+reservation and broader rights/storage/security acceptance remain required.
+Native evidence: `.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
 
 Forward recovery admission now handles a verified unfinished Windows
 Copy without reopening its source. It captures the native header/registry IDs,
