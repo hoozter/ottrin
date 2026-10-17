@@ -72,6 +72,14 @@ ordinary-account Windows executable. This does not establish absent-name claims,
 explicitly case-sensitive directory behavior or cross-process exclusion. Exact
 scope and teardown are in
 `.hermes/evidence/windows-native-name-admission-current/ACCEPTANCE.json`.
+An additional normal-user native regression now explicitly enables and queries
+NTFS directory case sensitivity. Differently cased names are admitted as distinct
+only when actually absent; two existing variants retain independent bytes, and a
+late occupant invalidates creation admission. Disabling case sensitivity makes the
+previously absent spelling resolve to the existing file and invalidates its old
+creation approval. All five destination-admission checks pass on one executable.
+Evidence: `.hermes/evidence/windows-case-policy-current/ACCEPTANCE.json`.
+This does not establish short-name alias equivalence or cross-process exclusion.
 The native target-reservation gate remains required before public Windows Copy:
 
 - Bind claims to the actual destination-parent identity and native target name;

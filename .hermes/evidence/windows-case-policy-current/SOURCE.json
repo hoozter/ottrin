@@ -1,0 +1,8 @@
+{
+  "baseline": "042602e",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "1ea0d4df84c3c1f31499dbdbb8aee1fa2f2c27a9081d846c036517d49558de19"
+  },
+  "production_code_changed": false,
+  "new_case": "windows_native_destination_admission_respects_case_sensitive_directory_policy"
+}

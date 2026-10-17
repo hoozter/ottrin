@@ -1,0 +1,54 @@
+{
+  "status": "pass",
+  "baseline_revision": "042602e",
+  "production_code_changed": false,
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "1ea0d4df84c3c1f31499dbdbb8aee1fa2f2c27a9081d846c036517d49558de19"
+  },
+  "native_test_binary_sha256": "22e1e5465fb49ca09e73f7eb1d78347594a43f0290f2f7b8a1df35106421454b",
+  "ordinary_account": true,
+  "passed": 5,
+  "failed": 0,
+  "ignored": 0,
+  "seconds": 0.45,
+  "assertions": [
+    "Actual directory case sensitivity enabled and queried through native handles",
+    "Absent differently cased name admits creation and refuses Overwrite",
+    "Late occupant invalidates prior creation authority",
+    "Two existing variants retain independent original bytes",
+    "Changing live case policy invalidates creation when spelling now resolves to existing original",
+    "Admission creates no destination placeholders or recovery records"
+  ],
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "No cross-process durable target reservation or short-name alias acceptance",
+    "No product changes or package refresh required; public Windows Copy remains gated"
+  ],
+  "initial_build_interruption": {
+    "exit_code": 143,
+    "test_executed": false,
+    "cause": "SIGTERM; exact sender not established. Kernel journal records host memory pressure, with no matching OOM-kill record found.",
+    "retry": "Same opt-level 0 correctness profile; disable debug information only for ottrin-platform to reduce build memory."
+  },
+  "raw_receipt_sha256": {
+    "platform.stdout": "f8f4abcd918bd4d83ac9f1e88283e997cb7bdb0d06e7a8329b57967f4a428b54",
+    "teardown.log": "4b03f29cd519b34c910aa139a7c02de6054676b6e7fe00b1a840f7c485810513",
+    "RESULTS.json": "43a819c1cfb7aedee13bed1f2b09d34224a9820e55da3c5a6cbbc3b85a1881ac"
+  },
+  "harness_sha256": {
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "0475ea28445979b503124e998a6946c614949c438e40fe4d400053b5e9fbfacd",
+    ".hermes/evidence/windows-copy-cleanup-current/transport.py": "e5200f9ed805f09ea635fb79491c795bffb9e0dffa424dcf0222887eb2d719df",
+    ".hermes/evidence/windows-copy-cleanup-current/observe.py": "1babbd50bae108b235fe56f8852ea852d6ed649d78df7505cb566edac7b04667"
+  }
+}

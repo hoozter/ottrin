@@ -4030,6 +4030,101 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_destination_admission_respects_case_sensitive_directory_policy() {
+        use std::{mem::size_of, os::windows::io::AsRawHandle};
+        use windows_sys::{
+            Wdk::Storage::FileSystem::{
+                FILE_CASE_SENSITIVE_INFORMATION, FileCaseSensitiveInformation,
+                NtQueryInformationFile, NtSetInformationFile,
+            },
+            Win32::System::{IO::IO_STATUS_BLOCK, SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR},
+        };
+        fn policy(parent: &File, enabled: bool) {
+            let expected = if enabled {
+                FILE_CS_FLAG_CASE_SENSITIVE_DIR
+            } else {
+                0
+            };
+            let value = FILE_CASE_SENSITIVE_INFORMATION { Flags: expected };
+            let mut status = IO_STATUS_BLOCK::default();
+            let result = unsafe {
+                NtSetInformationFile(
+                    parent.as_raw_handle().cast(),
+                    &mut status,
+                    ptr::from_ref(&value).cast(),
+                    size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
+                    FileCaseSensitiveInformation,
+                )
+            };
+            assert!(result >= 0, "set native directory case policy: {result:#x}");
+            let mut observed = FILE_CASE_SENSITIVE_INFORMATION::default();
+            let result = unsafe {
+                NtQueryInformationFile(
+                    parent.as_raw_handle().cast(),
+                    &mut status,
+                    ptr::from_mut(&mut observed).cast(),
+                    size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
+                    FileCaseSensitiveInformation,
+                )
+            };
+            assert!(
+                result >= 0,
+                "query native directory case policy: {result:#x}"
+            );
+            assert_eq!(observed.Flags, expected);
+        }
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let directory = root.path().join("destination");
+        let parent = owner(&directory);
+        policy(&parent, true);
+        std::fs::write(directory.join("Report.txt"), b"upper original").unwrap();
+        // The differently cased name really is absent, not an alias. Admission
+        // must preserve that native distinction without creating a placeholder.
+        assert!(!directory.join("report.txt").try_exists().unwrap());
+        let creation = DestinationAdmission::creation(&parent, OsStr::new("report.txt")).unwrap();
+        creation.validate(&parent).unwrap();
+        assert!(
+            DestinationAdmission::overwrite(&parent, OsStr::new("report.txt"), 100, |_| Ok(()))
+                .is_err()
+        );
+        std::fs::write(directory.join("report.txt"), b"lower original").unwrap();
+        assert!(creation.validate(&parent).is_err());
+        for name in ["Report.txt", "report.txt"] {
+            assert!(DestinationAdmission::creation(&parent, OsStr::new(name)).is_err());
+            DestinationAdmission::overwrite(&parent, OsStr::new(name), 100, |_| Ok(()))
+                .unwrap()
+                .validate(&parent)
+                .unwrap();
+        }
+        assert_eq!(
+            std::fs::read(directory.join("Report.txt")).unwrap(),
+            b"upper original"
+        );
+        assert_eq!(
+            std::fs::read(directory.join("report.txt")).unwrap(),
+            b"lower original"
+        );
+        std::fs::remove_file(directory.join("report.txt")).unwrap();
+        let creation = DestinationAdmission::creation(&parent, OsStr::new("report.txt")).unwrap();
+        // Changing the live policy makes the previously absent spelling resolve
+        // to the existing upper-case file; old creation authority must fail.
+        policy(&parent, false);
+        assert_eq!(
+            std::fs::read(directory.join("report.txt")).unwrap(),
+            b"upper original"
+        );
+        assert!(creation.validate(&parent).is_err());
+        assert_eq!(std::fs::read_dir(&directory).unwrap().count(), 1);
+        assert_eq!(
+            std::fs::read_dir(root.path().join("central"))
+                .unwrap()
+                .count(),
+            0
+        );
+    }
+
+    #[test]
     fn windows_native_destination_admission_never_converts_creation_or_skips_an_approved_original()
     {
         for overwrite in [false, true] {

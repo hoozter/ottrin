@@ -1,0 +1,6 @@
+{
+  "exit_code": 143,
+  "test_executed": false,
+  "cause": "SIGTERM; exact sender not established. Kernel journal records host memory pressure, with no matching OOM-kill record found.",
+  "retry": "Same opt-level 0 correctness profile; disable debug information only for ottrin-platform to reduce build memory."
+}

@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-17
+Last updated: 2026-10-18
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -1108,8 +1108,12 @@ captures, private-profile preservation and clean teardown are recorded in
 `.hermes/evidence/windows-office-ui-current/ACCEPTANCE.json`. This UI run used
 the explicit OpenGL compatibility renderer; it does not accept default D3D12
 or a fresh application installation. Windows Office previews are now enabled
-in source. Exact-package acceptance remains open and packages have not yet
-been refreshed. The preceding bitmap
+in source. The clean `a6dc090` Windows portable/MSI/NSIS candidates now contain
+this integration. Exact portable-bundle Office conversion and main/Inspector
+OpenGL rendering/fallback checks pass; default D3D12 and installed lifecycle
+acceptance remain open. All four Linux formats are refreshed at `dist/packages/`.
+See `.hermes/evidence/office-package-current/ACCEPTANCE.json` for exact
+identities and scope. The preceding bitmap
 experiment remains rejected in
 `.hermes/evidence/windows-office-calc-current/DIAGNOSTIC.json`.
 
@@ -4377,3 +4381,18 @@ Evidence: `.hermes/evidence/office-package-current/ACCEPTANCE.json` and
 and payload extractions were removed; the owned VM is shut off and the original
 profile, installation, provider and login state were preserved. The roadmap
 goal remains active; user testing is deferred.
+
+## Windows Copy case-sensitive destination admission — 2026-10-18
+
+The ordinary-user Windows fixture now sets and queries the actual NTFS directory
+case-sensitivity flag. Native admission distinguishes `Report.txt` and
+`report.txt`, refuses an absent-name Overwrite, preserves both existing versions,
+and rejects creation after either a late occupant or a case-policy transition
+makes that name occupied. All five destination-admission tests pass, with zero
+skips or failures, in 0.45 seconds. Strict Windows all-target platform Clippy and
+formatting/diff checks pass. Production code and published packages are unchanged.
+
+Evidence: `.hermes/evidence/windows-case-policy-current/ACCEPTANCE.json`.
+Absent-name durable cross-process claims, short-name aliases, parent changes and
+concurrent transaction workflows remain open. Public Windows Copy stays gated;
+the roadmap goal remains active and user testing is deferred.
