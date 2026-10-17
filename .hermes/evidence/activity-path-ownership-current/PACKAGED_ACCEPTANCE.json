@@ -1,0 +1,50 @@
+{
+  "status": "verified Linux delivery; matched Windows internal candidates",
+  "source_revision": "69ab18662135933d9d3b147bf886c617fe27b8f2",
+  "linux_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "04322e9bbae00415ad5d2ba00852796333e5aca6de01886bcf6f08c7e0e585b7",
+    "Ottrin-0.1.0-x86_64.AppImage": "a2a2ce357cad233ff78c83afc86bc10ab5c43ccec41c74a4f7904069ef59e2b2",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a9173381067f6b8721f18a62b326184e6ffc6ee1355626f8d4f968a1dc85a53a",
+    "ottrin_0.1.0_amd64.deb": "c94eab54644a95c14668c632aec34bb4e2a72292a9921e6b5363815941a55b0d"
+  },
+  "windows_artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "d4335fe0ad838f565f919695015d9358d0796ae28933f102f71663a9bd38852a",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "adb92ce82f9a952493d336298c13124efab009483f34badd0b3bd3d2116e8f56",
+    "Ottrin-0.1.0-windows-x64.msi": "d9a8ba6a7ff8d30e960da83a430a1c45deda1f7aac9e01d786a2375027663fe6"
+  },
+  "source_checks": "383 Linux UI tests, eight focused Linux and eight ordinary-account Windows tests without runtime skips; 15 Windows Activity recovery scenarios. Exact scope in ACCEPTANCE.json.",
+  "linux_package_scope": "Current source/native operation-path checks, all-four Linux package content/helper/runtime identities, AppImage/RPM daemon namespace ownership and actual AppImage Light100 Undo/Cancel/cleanup regression. Exact concurrent-input GUI behavior, fresh distro lifecycle and user acceptance remain separate.",
+  "windows_package_scope": "Portable, NSIS and MSI match all 57 portable payload files; NSIS generated uninstaller, bundled index controller and transaction script checked separately. Native MSI compilation/admin extraction is not current installer lifecycle acceptance.",
+  "published_linux": "/home/campbell/Projects/Ottrin/dist/packages",
+  "internal_windows_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "public_windows_replaced": false,
+  "limits": [
+    "Exact packaged concurrent-input regression and broad native Windows window/workflow/lifecycle acceptance remain separate.",
+    "Earlier theme, preview, installer and distribution receipts retain their original source/artifact scopes.",
+    "Native Windows target reservations, interrupted staging, public Copy and remaining roadmap gates are not completed by this delivery."
+  ],
+  "cleanup": "Private Linux app, index daemon, display/profile/extraction exited/removed. Windows compiler and payload/admin extraction removed; original profile/install and Winlogon unchanged.",
+  "evidence_sha256": {
+    "ACCEPTANCE.json": "126227ad7f1bb6768cc13e4f0a81210ed1f7cf6c6d37d747043669c6c5d63e54",
+    "SOURCE_BINDING.json": "0bb3e812392a7c0c294c09f98593cb73b85948f0394902b052d1a0d8521e7eec",
+    "FINAL_PACKAGE_IDENTITIES.json": "c9120bf287c5627b3a9a9e90670e62211c145de5108111b5c32746970b79f19a",
+    "PACKAGED_NAMESPACE_APPIMAGE.json": "9c26655012380b1884f03ef80314fe2fc0321ac83829fac9dcbe173f6a5428f0",
+    "PACKAGED_NAMESPACE_RPM.json": "f3e130a83c942398c80309443ee649a49172cc907a8e981ec83f9abcb8c68723",
+    "DELIVERY.json": "a8b62647609de695b38921305231e7ab498b55dbdfa3dd9bb18451e3b32c8c5a",
+    "linux-light100/RESULTS.json": "5251ec50fb23bb23339ba47a64d9e34d3dce01e655d989df346475e95b7b53a6",
+    "linux-gui-driver.py": "4d2505f90af65b006ed78c3135d261afa536e545c9cc69279febe2c066078389",
+    "linux-package-check.py": "4c04b3f9d70ef435a8de4ddf0c35ca2e87a3ea0375b4b8aee3954d273cad8ec7",
+    "PAYLOAD.json": "fb0bd669f81926931e50ac4f378778686d72ef4d950d99d203af0844566f0eb1",
+    "DEPLOYMENT.json": "59574bb727fad6be6e2dc4bedf953766a789acde8bad4dc8aa362ee7160061a7",
+    "MSI_PAYLOAD.json": "353caf88dff31ab7bdf9c3588401acc5a443e19a109886c45dd61d6c783b751f",
+    "NSIS_PAYLOAD.json": "f92e20cb364d5c8d73d9481c9ea230da308ee9b8837793aa0c9aa6bc2305f74c",
+    "WINDOWS_PACKAGE_IDENTITIES.json": "94b8e4256a8a1ca36f95c324d468a9f6382ac1393d3ea73b409768bcd83d7d00",
+    "PACKAGE_TEARDOWN.json": "61a7b5ce346c6dac1925ee07a3d08c8ee0a5549300ddc331cdd9d443436486a6",
+    "linux-light100/available-undo-confirmation.png": "1aaeebc1e3fa49097f2b1e57f305ae966e4263b83d597c05258d9d0bc382643f",
+    "linux-light100/activity.png": "5199f0ff1c6a2d9f3c66e9ad08cedb80a31e562108ab2d80b0a212f7d2fcc3ce",
+    "linux-light100/after-undo.png": "39bfd7eb5652e0d4deda084ea8c10c53b755d35f2ea82e71fcc2486fff3c0986",
+    "linux-light100/cleared.png": "f12999e35c25a9a0f05b99bcfcf344bfa2b402da62a5bfcd621a5b15d52eadda",
+    "linux-light100/undone-confirmation.png": "d682ea588df2a17a4631cae8b085360573a965158386650282dfa24bca089336",
+    "linux-light100/default.png": "d6b14d390237add6471de3de16213f339d4b07ecde29683d054ac975456c74d5"
+  }
+}

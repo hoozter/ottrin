@@ -1,0 +1,13 @@
+{
+  "status": "payload-verified internal candidate",
+  "source_revision": "69ab18662135933d9d3b147bf886c617fe27b8f2",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "d4335fe0ad838f565f919695015d9358d0796ae28933f102f71663a9bd38852a",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "adb92ce82f9a952493d336298c13124efab009483f34badd0b3bd3d2116e8f56",
+    "Ottrin-0.1.0-windows-x64.msi": "d9a8ba6a7ff8d30e960da83a430a1c45deda1f7aac9e01d786a2375027663fe6"
+  },
+  "entries_per_payload": 57,
+  "generated_nsis_uninstaller_verified_separately": true,
+  "public_windows_replaced": false,
+  "current_installer_lifecycle_acceptance": false
+}

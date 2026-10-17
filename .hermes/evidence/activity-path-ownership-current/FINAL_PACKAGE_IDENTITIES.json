@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "source_revision": "69ab18662135933d9d3b147bf886c617fe27b8f2",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "04322e9bbae00415ad5d2ba00852796333e5aca6de01886bcf6f08c7e0e585b7",
+    "Ottrin-0.1.0-x86_64.AppImage": "a2a2ce357cad233ff78c83afc86bc10ab5c43ccec41c74a4f7904069ef59e2b2",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a9173381067f6b8721f18a62b326184e6ffc6ee1355626f8d4f968a1dc85a53a",
+    "ottrin_0.1.0_amd64.deb": "c94eab54644a95c14668c632aec34bb4e2a72292a9921e6b5363815941a55b0d"
+  },
+  "checks": [
+    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
+    "portable six payload byte identities",
+    "all four formats contain exact current guide and release docs",
+    "clean embedded source revision",
+    "all package runtime identities checked against the actual rebuilt AppImage"
+  ],
+  "scope": "Linux package content verification; native runtime acceptance retains separately recorded exact artifact scopes",
+  "verifier_sha256": "97010690934666b802f0876e8db0b909ccc92fb927a7ff037e6bf660f86ac9c3",
+  "cleanup": "private extractions removed by TemporaryDirectory"
+}

@@ -1,0 +1,22 @@
+{
+  "artifact_sha256": "a2a2ce357cad233ff78c83afc86bc10ab5c43ccec41c74a4f7904069ef59e2b2",
+  "theme": "Light",
+  "scale": "1",
+  "text_scale": 1.0,
+  "status": "pass",
+  "preset": "Ottrin",
+  "custom_theme": null,
+  "config_sha256": "8684c85e804c18f8cd7af9817d296b79fcaebda644c656fa03d873506adf99b4",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 69ab18662135933d9d3b147bf886c617fe27b8f2\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "retained_visual_workflow": "visual-only disclosure: canonical recovery bytes, retained backup, publication and source unchanged",
+  "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+  "visual_checks": [
+    "Actual rebuilt AppImage, Light theme at 100% scale",
+    "Undo warning and byte-preserving Cancel",
+    "Undo restores original publication; source remains unchanged",
+    "Neutral retained-data cleanup succeeds with no private journals or manifests left",
+    "Readable aligned Activity cards and clean process/display/profile teardown"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

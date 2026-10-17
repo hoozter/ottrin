@@ -1,0 +1,20 @@
+{
+  "status": "verified Linux packages promoted",
+  "source_revision": "69ab18662135933d9d3b147bf886c617fe27b8f2",
+  "artifact_directory": "/home/campbell/Projects/Ottrin/dist/packages",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "04322e9bbae00415ad5d2ba00852796333e5aca6de01886bcf6f08c7e0e585b7",
+    "Ottrin-0.1.0-x86_64.AppImage": "a2a2ce357cad233ff78c83afc86bc10ab5c43ccec41c74a4f7904069ef59e2b2",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a9173381067f6b8721f18a62b326184e6ffc6ee1355626f8d4f968a1dc85a53a",
+    "ottrin_0.1.0_amd64.deb": "c94eab54644a95c14668c632aec34bb4e2a72292a9921e6b5363815941a55b0d"
+  },
+  "superseded_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d0c304277c7384842508acaa028b30220135bc762180fe25d6d433b732b6c139",
+    "Ottrin-0.1.0-x86_64.AppImage": "fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b4750c8b3e6db2d4e431b1d9fa60e8df8ae78526ff27820cdec0884a30defd4e",
+    "ottrin_0.1.0_amd64.deb": "3c9b4dad2c063cfe687ef1ca3e8879237c38ace2b051fa2341da6723f216c56d"
+  },
+  "accepted_scope": "Current source/native operation-path checks, all-four Linux package content/helper/runtime identities, AppImage/RPM daemon namespace ownership and actual AppImage Light100 Undo/Cancel/cleanup regression. Exact concurrent-input GUI behavior, fresh distro lifecycle and user acceptance remain separate.",
+  "windows": "Portable/NSIS/MSI internal candidates rebuilt from the same source and payload-verified. Public Windows packages unchanged; lifecycle acceptance remains separate.",
+  "cleanup": "Private GUI app, daemon, display and profile removed. Verified staging moved to stable paths and empty staging removed."
+}

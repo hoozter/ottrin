@@ -32,9 +32,21 @@ Tests include byte preservation, retained unsaved text, refusal before elevation
 concurrent readers, unrelated work and release of completed queue ownership.
 Source/profile/install hashes and clean teardown are recorded in
 `.hermes/evidence/activity-path-ownership-current/ACCEPTANCE.json`.
-A fresh package cohort remains pending. This is an application-queue correction,
-not native cross-process target reservation or alias/case-policy acceptance.
-Those gates and the full roadmap remain open.
+Clean source `69ab186` is now delivered in all four Linux formats at
+`dist/packages/`; the AppImage SHA-256 is
+`a2a2ce357cad233ff78c83afc86bc10ab5c43ccec41c74a4f7904069ef59e2b2`.
+All four formats match current code/docs/helper identities, with AppImage/RPM
+namespace ownership checks. The actual AppImage in Light100 passes warning,
+Cancel, Undo restoring the original and retained-data cleanup; private app,
+daemon, display and data teardown passes. Portable/NSIS/MSI Windows candidates
+from the same source match all 57 payload files, with the generated NSIS
+uninstaller checked separately. These remain internal; public Windows downloads
+and broader current installer lifecycle acceptance are unchanged. Exact artifacts
+and limits are in
+`.hermes/evidence/activity-path-ownership-current/PACKAGED_ACCEPTANCE.json`.
+This is an application-queue correction, not native cross-process target
+reservation or alias/case-policy acceptance. Those gates and the full roadmap
+remain open.
 
 ## Current Windows Copy implementation checkpoint
 

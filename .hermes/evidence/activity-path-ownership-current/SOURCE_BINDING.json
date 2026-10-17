@@ -1,0 +1,11 @@
+{
+  "source_revision": "69ab18662135933d9d3b147bf886c617fe27b8f2",
+  "tested_source_files_match_commit": true,
+  "only_product_source_changes": [
+    "crates/ottrin-ui/src/copy_activity_resume.rs",
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "native_test_binary_sha256": "923db884e24472599f9814b07e7aeb6102f4bcb9f7b77b6a065daf6ebade43be",
+  "package_build_session": 49914,
+  "package_log": "linux-package-build.log"
+}
