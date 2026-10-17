@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "baseline_revision": "6ab5b89",
+  "source_sha256": {
+    "packaging/package-lifecycle.sh": "765bcb25c0abcadbf90b3a28a2f27923f77f1e21085c07f07dcbae137545789f",
+    "packaging/tests/verify-package-lifecycle.sh": "f3baca6a455cf68083ad55b30272135909dd3e0030c01dca94042b15d0cfb08b"
+  },
+  "red_baseline_publisher_sha256": "8bda3c52ae528ecbbc57ac3d8628bc249de29d5dfc5bbfa17b7c2824df12a5c2",
+  "checks": [
+    "Regression reproduces stale Linux receipt surviving replacement before the fix",
+    "AppImage, portable Linux tar, DEB and RPM replacements invalidate the current Linux cohort receipt",
+    "Missing candidates preserve previous artifact and acceptance",
+    "Injected failed rename preserves artifact, checksum, provenance, acceptance and unpublished candidate even in a conditional caller",
+    "Windows publication preserves the Linux cohort receipt",
+    "Existing dirty-worktree provenance checks pass",
+    "bash -n passes"
+  ],
+  "shellcheck": "unavailable",
+  "temporary_fixture_roots_absent": 2,
+  "artifacts_rebuilt": false
+}

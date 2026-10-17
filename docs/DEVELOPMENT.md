@@ -17,6 +17,13 @@ The supported Rust toolchain is pinned in `rust-toolchain.toml`.
 
 Use the workspace `target/` for current builds. Historical-source QA builds must use a task-owned `CARGO_TARGET_DIR` under that directory: Cargo can reuse relative-path fingerprints across worktrees and report an older executable as fresh. Keep that isolation only while its consumers need it, and remove it after QA. Record source revision and executable hashes before packaging; a successful Cargo exit does not prove artifact freshness.
 
+Publish packages through `packaging/package-lifecycle.sh`. Replacing any Linux
+format invalidates `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; failed
+replacement preserves the previous artifact and evidence. After the new cohort
+is verified, replace that current receipt with all four actual hashes, matching
+checksum/provenance sidecars and only the checks proved for those exact files.
+Keep earlier receipts under their original artifact identities.
+
 ## UI consistency requirements
 
 Every UI change must preserve shared theme roles and consistent text/icon alignment across the main window, Settings, theme editor, Inspector, menus, and dialogs. Reuse the authoritative themed widgets; previews must use production controls where they represent those controls.

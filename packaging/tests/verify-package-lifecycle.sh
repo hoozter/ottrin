@@ -21,6 +21,51 @@ ottrin_publish_artifact "$TMP/candidate" "$artifact"
 [[ "$(<"$artifact")" == 'new artifact' ]]
 [[ ! -e "$artifact.sha256" && ! -e "$TMP/candidate" && ! -e "$TMP/archive" ]]
 
+receipt="$TMP/dist/LINUX_PACKAGES_ACCEPTANCE.json"
+for filename in \
+  Ottrin-1.2.3-x86_64.AppImage \
+  Ottrin-1.2.3-linux-x86_64-portable.tar.gz \
+  ottrin_1.2.3_amd64.deb \
+  ottrin-1.2.3-1.x86_64.rpm; do
+  artifact="$TMP/dist/$filename"
+  printf 'old artifact' > "$artifact"
+  printf 'old acceptance' > "$receipt"
+  if ottrin_publish_artifact "$TMP/missing-candidate" "$artifact"; then
+    printf 'Expected failed Linux publication to preserve acceptance.\n' >&2
+    exit 1
+  fi
+  [[ "$(<"$receipt")" == 'old acceptance' ]]
+  printf 'new artifact' > "$TMP/candidate"
+  ottrin_publish_artifact "$TMP/candidate" "$artifact"
+  [[ "$(<"$artifact")" == 'new artifact' ]]
+  if [[ -e "$receipt" ]]; then
+    printf 'Stale Linux cohort acceptance survived package replacement: %s\n' "$filename" >&2
+    exit 1
+  fi
+done
+
+# A failed rename must not erase the previous package's evidence, even when
+# the caller handles failure in a conditional rather than relying on errexit.
+printf 'old checksum' > "$artifact.sha256"
+printf 'old provenance' > "$artifact.provenance.json"
+printf 'old acceptance' > "$receipt"
+printf 'unpublished artifact' > "$TMP/candidate"
+(
+  mv() { return 23; }
+  if ottrin_publish_artifact "$TMP/candidate" "$artifact"; then
+    printf 'Expected a failed artifact rename to fail publication.\n' >&2
+    exit 1
+  fi
+)
+[[ "$(<"$artifact")" == 'new artifact' ]]
+[[ "$(<"$artifact.sha256")" == 'old checksum' ]]
+[[ "$(<"$artifact.provenance.json")" == 'old provenance' ]]
+[[ "$(<"$receipt")" == 'old acceptance' ]]
+[[ "$(<"$TMP/candidate")" == 'unpublished artifact' ]]
+
+ottrin_publish_artifact "$TMP/candidate" "$TMP/dist/Ottrin-1.2.3-windows-x64-portable.zip"
+[[ "$(<"$receipt")" == 'old acceptance' ]]
+
 mkdir "$TMP/repo"
 git -C "$TMP/repo" init -q
 git -C "$TMP/repo" config user.email test@example.invalid
@@ -33,4 +78,4 @@ grep -Fqx 'Version: 1.2.3' "$TMP/provenance"
 grep -Fqx 'Working tree: tracked-dirty' "$TMP/provenance"
 grep -Eq '^Tracked diff SHA-256: [0-9a-f]{64}$' "$TMP/provenance"
 
-printf 'Verified package replacement, failed-build preservation and dirty-worktree provenance.\n'
+printf 'Verified package replacement, Linux receipt invalidation, failed-publication preservation and dirty-worktree provenance.\n'

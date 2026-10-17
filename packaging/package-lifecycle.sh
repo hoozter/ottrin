@@ -35,7 +35,15 @@ ottrin_publish_artifact() {
     printf 'Package candidate is missing or not a regular file: %s\n' "$candidate" >&2
     return 1
   }
-  mv -f -- "$candidate" "$artifact"
+  mv -f -- "$candidate" "$artifact" || return
+  # The current cohort receipt cannot accept a set containing a replaced file.
+  # Keep earlier feature receipts bound to their recorded hashes; write a fresh
+  # current receipt only after verifying the new Linux cohort.
+  case "${artifact##*/}" in
+    Ottrin-*.AppImage|Ottrin-*-linux-*-portable.tar.gz|ottrin_*.deb|ottrin-*.rpm)
+      rm -f -- "$(dirname -- "$artifact")/LINUX_PACKAGES_ACCEPTANCE.json" || return
+      ;;
+  esac
   rm -f -- "$artifact.sha256" "$artifact.provenance.json"
 }
 
