@@ -118,6 +118,28 @@ Native admission and regression evidence:
 
 ## Native namespace and sharing
 
+### Path and conflict routing
+
+The native dispatcher opens the source through a held ordinary parent, using
+read access without source deletion or write rights. It pins the destination
+directory and requires a creator-owned private registry supplied by its caller.
+Destination and registry ancestors are compared by native identity against a
+directory source; copying into that source tree is refused before staging.
+Source/destination/registry relocation and source-entry rebinding also refuse.
+
+Conflict probes use native no-follow opens under the held destination parent.
+Only NotFound means absence. Skip creates no transaction; Rename checks bounded
+numbered siblings and treats dangling links as occupants; Overwrite freezes the
+existing graph through the same destination admission used by the engine.
+Publication remains no-replace, so a late occupant is retained with the staged
+copy rather than overwritten. Late changes to an approved original also refuse.
+
+This dispatcher is currently an internal integration point taking an already
+owned registry handle. Configured-registry provisioning, public single/batch
+workflow wiring and the complete release gates remain unfinished.
+Focused native cases and the full platform regression suite are recorded in
+`.hermes/evidence/windows-copy-dispatch-current/ACCEPTANCE.json`.
+
 ### Session receipt integration
 
 `DurableStage::execute_with_receipt` joins admitted staging, final security

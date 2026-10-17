@@ -6,9 +6,10 @@
 //! ReadFile/WriteFile copying loses. Known link records are validated and installed
 //! through native handles; security and other unsupported
 //! backup records are refused rather than silently omitted. Final file metadata,
-//! guarded cleanup, Overwrite and session receipt integration remain required work.
+//! guarded cleanup and public workflow integration remain required work.
 #![cfg_attr(not(test), allow(dead_code))]
 
+mod dispatch;
 mod journal;
 pub use journal::{
     RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,

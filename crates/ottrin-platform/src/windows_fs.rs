@@ -43,6 +43,25 @@ pub(crate) struct RelativeOptions {
     pub security: *const SECURITY_DESCRIPTOR,
 }
 
+/// Pin an ordinary directory at a user-supplied path without following its leaf.
+pub(crate) fn open_directory(path: &std::path::Path, access: u32) -> io::Result<File> {
+    use std::os::windows::fs::OpenOptionsExt;
+    let file = std::fs::OpenOptions::new()
+        .access_mode(access)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+        .open(path)?;
+    if !crate::move_recovery::stable_identity_from_handle(&file)
+        .map_err(io::Error::other)?
+        .is_directory_without_reparse()
+    {
+        return Err(io::Error::other(
+            "expected an ordinary non-reparse directory",
+        ));
+    }
+    Ok(file)
+}
+
 /// Open exactly one leaf under an already opened directory. Creation never
 /// replaces an entry; opening a reparse entry never follows its target.
 ///

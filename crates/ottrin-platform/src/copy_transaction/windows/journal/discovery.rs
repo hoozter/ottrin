@@ -1,8 +1,8 @@
 //! Central Copy discovery and opaque Undo admission. Presentation fields grant no mutation authority.
 use super::*;
+use crate::windows_fs::open_directory;
 use std::{
     collections::BTreeMap,
-    os::windows::fs::OpenOptionsExt,
     path::{Path, PathBuf},
 };
 use windows_sys::Win32::{
@@ -348,22 +348,6 @@ fn registry_id(name: &OsStr) -> Option<String> {
             .bytes()
             .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)))
     .then(|| text.to_owned())
-}
-fn open_directory(path: &Path, access: u32) -> std::io::Result<File> {
-    let file = std::fs::OpenOptions::new()
-        .access_mode(access)
-        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
-        .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
-        .open(path)?;
-    if !stable_identity_from_handle(&file)
-        .map_err(std::io::Error::other)?
-        .is_directory_without_reparse()
-    {
-        return Err(std::io::Error::other(
-            "Copy registry/volume is not an ordinary directory",
-        ));
-    }
-    Ok(file)
 }
 fn registered_journal(central: &File, name: &OsStr) -> Result<(Vec<u8>, State), PlatformError> {
     let id = registry_id(name).ok_or_else(|| io("invalid Copy transaction ID"))?;

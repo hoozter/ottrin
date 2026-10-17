@@ -1010,6 +1010,15 @@ receipt tests cover source removal, creation/file/folder Overwrite, changed
 publication refusal and late committed receipt failure. Public forward routing
 and complete session/batch workflow acceptance remain separate gates.
 
+The internal Windows path dispatcher takes a caller-owned private registry
+handle and supplies native destination admission to that orchestration. Its
+`windows_native_copy_dispatch` tests exercise actual paths for file/directory
+creation, Skip/Rename/Overwrite, dangling-name collisions, source/registry
+ancestry and hard-link guards, and destination changes during staging. Changes
+injected for Overwrite must wait until staging has a journal: admission itself
+reads the original under a lock. This dispatcher does not provision the configured
+registry or enable public workflows.
+
 Native Activity integration uses an ignored platform fixture producer and a UI
 consumer. The producer only accepts a root/profile owned by that consumer. The
 consumer creates separate child processes and private profiles, renders Activity,

@@ -17,6 +17,24 @@ both retained versions' paths while Activity tracks their single transaction ID.
 The public forward dispatcher, conflict/batch workflows and guarded cleanup are
 still unfinished; this component does not enable Copy in shipped Windows builds.
 
+The internal path dispatcher now pins source/destination directories, requires a
+private registry, rejects native source ancestry and hard-link aliases, and
+routes creation/Skip/Rename/Overwrite into that admission/receipt path. Numbered
+Rename candidates use no-follow native probes; dangling links are occupied and
+access errors are never treated as absence. Late occupants and changed approved
+originals are preserved with recovery evidence. Configured registry provisioning
+and public workflow wiring remain required.
+
+Dispatcher acceptance passes three focused native tests, including twelve
+file/directory source conflict cases, ancestry/alias/private-registry refusals
+and two changes injected during staging. The full ordinary-user Windows platform
+suite passes 265 with 33 specialized exclusions; the separate SYSTEM audit
+fixture, strict platform/UI Windows Clippy and formatting pass. The first late
+change fixture attempted a write during locked admission; the corrected fixture
+waits for a staging journal, retaining the preservation assertions. Evidence:
+`.hermes/evidence/windows-copy-dispatch-current/ACCEPTANCE.json`.
+Packages remain unchanged; public Copy is still gated.
+
 The private Windows Copy backend now implements paired no-replace publication
 and ordered per-entry DACL application/recovery after a verified, sealed stage.
 Publication intent is flushed to both journals before renaming the private root;
@@ -51,7 +69,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 262 with 33 specialized
+The final ordinary-user Windows platform suite passes 265 with 33 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
