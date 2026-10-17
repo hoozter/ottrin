@@ -22,10 +22,32 @@ private registry, rejects native source ancestry and hard-link aliases, and
 routes creation/Skip/Rename/Overwrite into that admission/receipt path. Numbered
 Rename candidates use no-follow native probes; dangling links are occupied and
 access errors are never treated as absence. Late occupants and changed approved
-originals are preserved with recovery evidence. Configured registry provisioning
-and public workflow wiring remain required.
+originals are preserved with recovery evidence. Public workflow wiring remains
+required.
 
-Dispatcher acceptance passes three focused native tests, including twelve
+Configured registry provisioning now uses a private external identity anchor
+bound to the marker, parent, registry and creator. Read-only discovery and
+recovery require that admission and never initialize missing state. Replaced,
+unanchored, corrupt or partially initialized state remains a review condition;
+it grants no automatic repair/deletion authority. Configured Copy checks native
+source ancestry before creating any profile/state directory. Actual setup
+power-cut acceptance and the broader public workflow/security/storage gates
+remain unfinished.
+
+The current schema-11 component checkpoint preserves creation times across NTFS
+filename tunneling for publication, withdrawal, original retention and restoration.
+Repair requires a paired intent bound to the observed native version and changes
+only creation time. Journal reservations include optional repair frames. The
+native platform suite passes 271 tests with 34 specialized exclusions; two
+subsequently added tests separately pass malformed-record rejection and 16
+post-admission timestamp-drift refusals. The new interruption matrix covers 72
+injected failures and 72 real process exits, including readonly copies and
+source-free recovery. Current-schema Activity integration and the explicit
+SYSTEM audit fixture pass. This is component acceptance, not public workflow,
+power-cut, broad storage/security or package acceptance. Receipt:
+`.hermes/evidence/windows-copy-registry-current/ACCEPTANCE.json`.
+
+Earlier dispatcher acceptance passes three focused native tests, including twelve
 file/directory source conflict cases, ancestry/alias/private-registry refusals
 and two changes injected during staging. The full ordinary-user Windows platform
 suite passes 265 with 33 specialized exclusions; the separate SYSTEM audit
@@ -61,7 +83,7 @@ epoch's locks, compares the fresh paired journal bytes, then opens new typed
 The writer rechecks its creator context on every append and reserves the
 remaining publication/application tail before publication, including readonly
 reopen records. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ10` / schema 10;
+append sequence/hash state on reopen. The format is now `OTCPWJ11` / schema 11;
 superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with ordered immutable final-version records and a digest seal after a full
 content/metadata/security scan. Entry acknowledgements alone
@@ -69,9 +91,9 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 265 with 33 specialized
-exclusions, including the complete Copy suite. SYSTEM audit passes
-separately. The earlier publication/application phase added 26 injected journal/native
+The earlier ordinary-user Windows platform checkpoint passed 265 with 33 specialized
+exclusions, including its complete Copy suite. SYSTEM audit passed
+separately at that checkpoint. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
 covered 58 injected failures and 44 real exits. Coherent records recover without sources, including after rename
 and native DACL changes; mismatched mirrors retain data and refuse further writes.

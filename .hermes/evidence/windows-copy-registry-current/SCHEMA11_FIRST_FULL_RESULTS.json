@@ -1,0 +1,7 @@
+{
+    "status":  "fail",
+    "error":  "Native stream tests failed",
+    "test_binary_hash":  "e395292d91f3dd0b4daf2a7b7c1350930dc91a66fcaa4d9482aca2ad0e136ff3",
+    "ordinary_user":  true,
+    "exit":  101
+}

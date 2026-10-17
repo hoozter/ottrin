@@ -55,6 +55,7 @@ impl RetainedCopyResumePlan {
                 header: header.clone(),
                 staged_digest: staged_digest(&state)?,
                 original_retained: retained.retained_original_version().cloned(),
+                pending_copy: retained.pending_copy_version().cloned(),
                 permissions_digest: super::super::evidence_digest(
                     &prepared.evidence().at_root(&header.candidate_name()),
                 )?,
@@ -203,12 +204,15 @@ impl RetainedCopyUndoPlan {
         } else {
             snapshot.root_name(&parent)?
         };
+        let (pending_copy, pending_original) = pending_undo_epochs(&parent, &snapshot)?;
         Ok(Self {
             registry: windows_fs::location(&central).map_err(io)?,
             binding: Box::new(CopyUndoBinding {
                 header: header.clone(),
                 completion_digest: completion_digest(&state)?,
                 parent_location: location.clone(),
+                pending_copy,
+                pending_original,
             }),
             publication: location.join(OsString::from_wide(&header.target)),
             retention: location.join(header.candidate_name()),
@@ -554,16 +558,17 @@ pub fn discover_at_with_progress(
     }
     Ok(output)
 }
-pub(crate) fn configured_root() -> Result<PathBuf, PlatformError> {
-    let local =
-        std::env::var_os("LOCALAPPDATA").ok_or_else(|| io("LOCALAPPDATA is unavailable"))?;
-    Ok(PathBuf::from(local)
-        .join("Ottrin")
-        .join("State")
-        .join("copies"))
-}
 pub fn discover() -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
-    discover_at(&configured_root()?)
+    let Some(registry) = super::super::registry::ConfiguredRegistry::open_at(
+        &super::super::registry::configured_path()?,
+        false,
+    )?
+    else {
+        return Ok(Vec::new());
+    };
+    let result = discover_at(registry.path());
+    registry.validate()?;
+    result
 }
 pub(crate) fn restore_undo_at(
     root: &Path,
@@ -572,7 +577,14 @@ pub(crate) fn restore_undo_at(
     RetainedCopyUndoPlan::admit(root, id, |_| Ok(()))
 }
 pub(crate) fn restore_undo(id: &str) -> Result<RetainedCopyUndoPlan, PlatformError> {
-    restore_undo_at(&configured_root()?, id)
+    let registry = super::super::registry::ConfiguredRegistry::open_at(
+        &super::super::registry::configured_path()?,
+        false,
+    )?
+    .ok_or_else(|| io("Configured Copy registry is missing"))?;
+    let result = restore_undo_at(registry.path(), id);
+    registry.validate()?;
+    result
 }
 
 pub(crate) fn restore_resume_at(
@@ -582,5 +594,12 @@ pub(crate) fn restore_resume_at(
     RetainedCopyResumePlan::admit(root, id, |_| Ok(()))
 }
 pub(crate) fn restore_resume(id: &str) -> Result<RetainedCopyResumePlan, PlatformError> {
-    restore_resume_at(&configured_root()?, id)
+    let registry = super::super::registry::ConfiguredRegistry::open_at(
+        &super::super::registry::configured_path()?,
+        false,
+    )?
+    .ok_or_else(|| io("Configured Copy registry is missing"))?;
+    let result = restore_resume_at(registry.path(), id);
+    registry.validate()?;
+    result
 }

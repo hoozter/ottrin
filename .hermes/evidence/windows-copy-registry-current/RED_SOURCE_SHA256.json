@@ -1,0 +1,6 @@
+{
+  "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "f9f03808a1cf8dcbae993c7fe53c6df795396e0830c8c06fbe152b0d18508397",
+  "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "ccc4a88d45a21d74f68e9981f99250ca37dd50b30a6996060a353757a28e10b5",
+  "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "79c2e5deaabe7486817040d4d06783afb4e3cb690ea090c82711e5232e93028e",
+  "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "a0276746e9eae12801dc83ab139499d11f74aab1c8ce354b4740b1f2c8163149"
+}

@@ -1,0 +1,5 @@
+
+thread 'copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite' (6824) panicked at crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs:286:30:
+called `Result::unwrap()` on an `Err` value: CleanupPending { transaction: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.tmpbJjiA4\\destination\\.ottrin-copy-1b8c9970eb36f733f0afd2d384b20f02", message: "filesystem operation failed: Windows Copy stream staging: candidate file metadata did not match: creation 134366722103762182/134366722103741929, modified 134366722103741929/134366722103741929, accessed 134366722105742485/134366722103741929, attributes 20/20, length 11/11; Copy data and recovery evidence remain at the transaction's recorded locations" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+native ancestor rename refused: Access is denied. (os error 5)

@@ -1,7 +1,12 @@
 //! Path/conflict admission for the native Copy transaction engine.
 use super::{io, journal, namespace, security, stable_identity_from_handle, version};
 use crate::{ConflictAction, PathMoveUndoReceipt, PlatformError, windows_fs};
-use std::{ffi::OsStr, fs::File, path::Path, ptr};
+use std::{
+    ffi::{OsStr, OsString},
+    fs::File,
+    path::{Path, PathBuf},
+    ptr,
+};
 use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
     SYNCHRONIZE,
@@ -9,6 +14,100 @@ use windows_sys::Win32::Storage::FileSystem::{
 use windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED;
 
 const MAX_RENAME_CANDIDATES: usize = 10_000;
+
+struct Source {
+    parent: File,
+    file: File,
+    name: OsString,
+    version: super::EntryVersion,
+    parent_location: PathBuf,
+}
+impl Source {
+    fn open(path: &Path) -> Result<Self, PlatformError> {
+        let name = path
+            .file_name()
+            .ok_or_else(|| PlatformError::InvalidSource(path.display().to_string()))?;
+        windows_fs::valid_component(name).map_err(io)?;
+        let path = std::path::absolute(path).map_err(io)?;
+        let parent = windows_fs::open_directory(
+            path.parent()
+                .ok_or_else(|| io("Copy source has no parent"))?,
+            FILE_GENERIC_READ,
+        )
+        .map_err(io)?;
+        let file = namespace::open_source(&parent, name, None)?;
+        let version = version(&file)?;
+        let parent_location = windows_fs::location(&parent).map_err(io)?;
+        Ok(Self {
+            parent,
+            file,
+            name: name.to_os_string(),
+            version,
+            parent_location,
+        })
+    }
+    fn validate(&self) -> Result<(), PlatformError> {
+        if windows_fs::location(&self.parent).map_err(io)? != self.parent_location {
+            return Err(io("Copy source parent moved"));
+        }
+        namespace::validate_binding(&self.parent, &self.name, self.version.identity)
+    }
+    fn reject_overlap(
+        &self,
+        path: &Path,
+        allow_missing: bool,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if !self.version.identity.is_directory_without_reparse() {
+            return Ok(());
+        }
+        for ancestor in path.ancestors() {
+            progress(0)?;
+            let directory =
+                match windows_fs::open_directory(ancestor, FILE_READ_ATTRIBUTES | SYNCHRONIZE) {
+                    Ok(file) => file,
+                    Err(error) if allow_missing && error.kind() == std::io::ErrorKind::NotFound => {
+                        continue;
+                    }
+                    Err(error) => return Err(io(error)),
+                };
+            if stable_identity_from_handle(&directory).map_err(io)? == self.version.identity {
+                return Err(io(
+                    "Copy destination and registry must be outside the source tree",
+                ));
+            }
+        }
+        self.validate()
+    }
+}
+
+pub(super) fn copy_configured(
+    source: &Path,
+    destination: &Path,
+    conflict: ConflictAction,
+    max_entries: usize,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+    progress(0)?;
+    let source = Source::open(source)?;
+    let registry_path = super::registry::configured_path()?;
+    // Provisioning is itself a namespace mutation. Refuse source overlap before
+    // creating even the first missing profile/state directory or marker.
+    source.reject_overlap(&registry_path, true, &mut progress)?;
+    let registry = super::registry::ConfiguredRegistry::open_at(&registry_path, true)?
+        .ok_or_else(|| io("Copy registry initialization returned no registry"))?;
+    copy_admitted_source(
+        source,
+        destination,
+        conflict,
+        registry.root(),
+        max_entries,
+        |bytes| {
+            progress(bytes)?;
+            registry.validate()
+        },
+    )
+}
 
 /// Absence is a native NotFound result, never an arbitrary failed metadata read.
 fn entry(
@@ -45,23 +144,27 @@ pub(super) fn copy_at(
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
     progress(0)?;
-    let name = source
-        .file_name()
-        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-    windows_fs::valid_component(name).map_err(io)?;
-    let source_path = std::path::absolute(source).map_err(io)?;
-    let source_parent = windows_fs::open_directory(
-        source_path
-            .parent()
-            .ok_or_else(|| io("Copy source has no parent"))?,
-        FILE_GENERIC_READ,
+    copy_admitted_source(
+        Source::open(source)?,
+        destination,
+        conflict,
+        central,
+        max_entries,
+        progress,
     )
-    .map_err(io)?;
-    let source_file = namespace::open_source(&source_parent, name, None)?;
-    let source_version = version(&source_file)?;
+}
+
+fn copy_admitted_source(
+    source: Source,
+    destination: &Path,
+    conflict: ConflictAction,
+    central: &File,
+    max_entries: usize,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+    let name = source.name.as_os_str();
     let parent = windows_fs::open_directory(destination, MAXIMUM_ALLOWED).map_err(io)?;
     let parent_location = windows_fs::location(&parent).map_err(io)?;
-    let source_parent_location = windows_fs::location(&source_parent).map_err(io)?;
     let central_location = windows_fs::location(central).map_err(io)?;
     if !stable_identity_from_handle(central)
         .map_err(io)?
@@ -72,37 +175,22 @@ pub(super) fn copy_at(
     let creator = security::current_owner()?;
     let registry_security = security::PrivateSecurity::capture(central, &creator)?;
 
-    // Compare real native IDs, including through differently cased paths and
-    // junction ancestors. Lexical prefix comparisons cannot establish this.
-    if source_version.identity.is_directory_without_reparse() {
-        for location in [&parent_location, &central_location] {
-            for ancestor in location.ancestors() {
-                progress(0)?;
-                let directory =
-                    windows_fs::open_directory(ancestor, FILE_READ_ATTRIBUTES | SYNCHRONIZE)
-                        .map_err(io)?;
-                if stable_identity_from_handle(&directory).map_err(io)? == source_version.identity {
-                    return Err(io(
-                        "Copy destination and registry must be outside the source tree",
-                    ));
-                }
-            }
-        }
+    for location in [&parent_location, &central_location] {
+        source.reject_overlap(location, false, &mut progress)?;
     }
     let mut guarded_progress = |bytes| {
         progress(bytes)?;
         if windows_fs::location(&parent).map_err(io)? != parent_location
-            || windows_fs::location(&source_parent).map_err(io)? != source_parent_location
             || windows_fs::location(central).map_err(io)? != central_location
         {
             return Err(io("Copy source, destination or registry directory moved"));
         }
-        namespace::validate_binding(&source_parent, name, source_version.identity)?;
+        source.validate()?;
         registry_security.validate(central, &creator)
     };
     guarded_progress(0)?;
     let existing = entry(&parent, name)?;
-    if existing == Some(source_version.identity) {
+    if existing == Some(source.version.identity) {
         return Err(io(
             "Cannot copy an entry onto itself or its hard-link alias",
         ));
@@ -119,9 +207,9 @@ pub(super) fn copy_at(
             let mut chosen = None;
             for number in 1..=MAX_RENAME_CANDIDATES {
                 guarded_progress(0)?;
-                let mut candidate = source.file_stem().unwrap_or(name).to_os_string();
+                let mut candidate = Path::new(name).file_stem().unwrap_or(name).to_os_string();
                 candidate.push(format!(" ({number})"));
-                if let Some(extension) = source.extension() {
+                if let Some(extension) = Path::new(name).extension() {
                     candidate.push(".");
                     candidate.push(extension);
                 }
@@ -137,7 +225,7 @@ pub(super) fn copy_at(
         (None, _) => journal::DestinationAdmission::creation(&parent, name)?,
     };
     journal::DurableStage::execute_with_receipt(
-        &source_file,
+        &source.file,
         &parent,
         central,
         &admission,
@@ -162,6 +250,85 @@ mod tests {
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         )
         .unwrap()
+    }
+
+    #[test]
+    fn windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo() {
+        use std::{
+            mem::size_of,
+            os::windows::{fs::OpenOptionsExt, io::AsRawHandle},
+        };
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_BASIC_INFO, FILE_WRITE_ATTRIBUTES, FileBasicInfo, SetFileInformationByHandle,
+        };
+        const SOURCE_CREATED: i64 = 125_911_584_000_000_000;
+        const ORIGINAL_CREATED: i64 = 129_067_776_000_000_000;
+        let set_created = |path: &Path, time: i64| {
+            let file = std::fs::OpenOptions::new()
+                .access_mode(FILE_WRITE_ATTRIBUTES)
+                .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                .open(path)
+                .unwrap();
+            let info = FILE_BASIC_INFO {
+                CreationTime: time,
+                ..Default::default()
+            };
+            assert_ne!(
+                unsafe {
+                    SetFileInformationByHandle(
+                        file.as_raw_handle().cast(),
+                        FileBasicInfo,
+                        ptr::from_ref(&info).cast(),
+                        size_of::<FILE_BASIC_INFO>() as u32,
+                    )
+                },
+                0
+            );
+        };
+        for overwrite in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let central = registry(root.path());
+            let source = root.path().join("item.txt");
+            let destination = root.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let target = destination.join("item.txt");
+            std::fs::write(&source, b"copy").unwrap();
+            set_created(&source, SOURCE_CREATED);
+            std::fs::write(&target, b"original").unwrap();
+            set_created(&target, ORIGINAL_CREATED);
+            if !overwrite {
+                std::fs::remove_file(&target).unwrap();
+            }
+            let receipt = copy_at(
+                &source,
+                &destination,
+                ConflictAction::Overwrite,
+                &central,
+                100,
+                |_| Ok(()),
+            )
+            .unwrap()
+            .unwrap();
+            let parent = windows_fs::open_directory(&destination, FILE_GENERIC_READ).unwrap();
+            let published =
+                namespace::open_source(&parent, OsStr::new("item.txt"), Some(false)).unwrap();
+            assert_eq!(version(&published).unwrap().created, SOURCE_CREATED);
+            assert_eq!(std::fs::read(&target).unwrap(), b"copy");
+            drop((published, parent));
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt)
+                .unwrap();
+            if overwrite {
+                let parent = windows_fs::open_directory(&destination, FILE_GENERIC_READ).unwrap();
+                let original =
+                    namespace::open_source(&parent, OsStr::new("item.txt"), Some(false)).unwrap();
+                assert_eq!(version(&original).unwrap().created, ORIGINAL_CREATED);
+                assert_eq!(std::fs::read(&target).unwrap(), b"original");
+            } else {
+                assert!(!target.exists());
+            }
+            assert_eq!(std::fs::read(&source).unwrap(), b"copy");
+        }
     }
 
     #[test]

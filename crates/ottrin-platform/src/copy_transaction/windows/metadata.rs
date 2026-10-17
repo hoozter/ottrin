@@ -19,6 +19,35 @@ pub(super) const ADMITTED_ATTRIBUTES: u32 = ORDINARY_ATTRIBUTES
     | FILE_ATTRIBUTE_DIRECTORY
     | FILE_ATTRIBUTE_REPARSE_POINT;
 
+/// Only a paired, identity-bound rename metadata intent authorizes this write.
+/// It preserves the creation time through NTFS tunneling without rewriting
+/// access/write times, attributes, compression or payload.
+pub(super) fn set_creation_time(
+    file: &File,
+    before: &EntryVersion,
+    created: i64,
+) -> Result<(), PlatformError> {
+    if version(file)? != *before {
+        return Err(io("Copy creation-time intent changed before its write"));
+    }
+    let info = FILE_BASIC_INFO {
+        CreationTime: created,
+        ..Default::default()
+    };
+    if unsafe {
+        SetFileInformationByHandle(
+            file.as_raw_handle().cast(),
+            FileBasicInfo,
+            ptr::from_ref(&info).cast(),
+            size_of::<FILE_BASIC_INFO>() as u32,
+        )
+    } == 0
+    {
+        return Err(io(std::io::Error::last_os_error()));
+    }
+    Ok(())
+}
+
 pub(super) fn basic(file: &File) -> Result<FILE_BASIC_INFO, PlatformError> {
     let mut info = FILE_BASIC_INFO::default();
     if unsafe {

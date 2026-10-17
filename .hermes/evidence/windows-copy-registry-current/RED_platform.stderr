@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo' (5028) panicked at crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs:310:14:
+called `Result::unwrap()` on an `Err` value: CleanupPending { transaction: "\\\\?\\C:\\Users\\OttrinContentQA\\AppData\\Local\\Temp\\op-WindowsCopy\\.tmp20SaoL\\destination\\.ottrin-copy-f524be3336bacc5073f54d90d04d0a87", message: "filesystem operation failed: Windows Copy stream staging: candidate file metadata did not match: creation 129067776000000000/125911584000000000, modified 134366732426131068/134366732426131068, accessed 134366732429344196/134366732426131068, attributes 20/20, length 4/4; Copy data and recovery evidence remain at the transaction's recorded locations" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

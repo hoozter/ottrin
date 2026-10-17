@@ -23,6 +23,7 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 
 mod discovery;
+mod rename_creation;
 pub use discovery::{
     RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
     WindowsRetainedCopyStatus,
@@ -31,8 +32,9 @@ pub(crate) use discovery::{
     discover, discover_at, discover_at_with_progress, restore_resume, restore_resume_at,
     restore_undo, restore_undo_at,
 };
+use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ10";
+const MAGIC: &[u8; 8] = b"OTCPWJ11";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -173,7 +175,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 10
+            && self.schema == 11
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -252,6 +254,7 @@ enum Record {
     },
     ReadonlyReopened {
         index: usize,
+        version: Box<EntryVersion>,
     },
     OriginalPlanBegin {
         count: usize,
@@ -275,6 +278,14 @@ enum Record {
     },
     PublicationIntent,
     Published,
+    RenameCreationIntent {
+        kind: RenameKind,
+        before: Box<EntryVersion>,
+    },
+    RenameCreationApplied {
+        kind: RenameKind,
+        after: Box<EntryVersion>,
+    },
     SecurityApplyIntent {
         index: usize,
     },
@@ -323,6 +334,7 @@ struct State {
     undo_intent: bool,
     undone: Option<EntryVersion>,
     readonly_pending: Option<usize>,
+    rename_creation: Option<RenameCreation>,
     source_ids: BTreeSet<(u64, [u8; 16])>,
     candidate_ids: BTreeSet<(u64, [u8; 16])>,
     names: BTreeSet<(Option<usize>, Vec<u16>)>,
@@ -531,6 +543,8 @@ impl State {
         {
             // Only the identity-resolved retained root may have the rename's
             // native change time. Persistent metadata remains checked separately.
+            self.validate_creation_epoch(RenameKind::Withdraw, observed)?;
+            expected.created = observed.created;
             expected.changed = observed.changed;
             if self.readonly_pending == Some(0) {
                 expected.attributes = observed.attributes;
@@ -543,6 +557,9 @@ impl State {
     }
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
+        if self.check_creation_record(record)? {
+            return Ok(());
+        }
         if self.undone.is_some()
             && !matches!(
                 record,
@@ -583,8 +600,24 @@ impl State {
                 }
                 return Ok(());
             }
-            Record::ReadonlyReopened { index } => {
+            Record::ReadonlyReopened { index, version } => {
                 if self.readonly_pending != Some(*index) {
+                    return Err(invalid());
+                }
+                let node = self.nodes.get(*index).ok_or_else(invalid)?;
+                let mut expected = node.source.clone();
+                expected.identity = node.staged.as_ref().ok_or_else(invalid)?.candidate_identity;
+                expected.changed = version.changed;
+                if *index == 0
+                    && (self.publication_intent && !self.published
+                        || self.undo_intent && self.undone.is_none())
+                {
+                    expected.created = version.created;
+                    if let Some(intent) = &self.rename_creation {
+                        self.validate_creation_epoch(intent.kind, version)?;
+                    }
+                }
+                if **version != expected {
                     return Err(invalid());
                 }
                 return Ok(());
@@ -867,6 +900,8 @@ impl State {
             | Record::Finalized { .. }
             | Record::PublicationIntent
             | Record::Published
+            | Record::RenameCreationIntent { .. }
+            | Record::RenameCreationApplied { .. }
             | Record::SecurityApplyIntent { .. }
             | Record::SecurityApplied { .. }
             | Record::SecurityPlanBegin { .. }
@@ -886,7 +921,25 @@ impl State {
     }
     fn apply(&mut self, record: Record) -> Result<(), PlatformError> {
         self.check(&record)?;
+        if self
+            .rename_creation
+            .as_ref()
+            .is_some_and(|intent| intent.kind.acknowledges(&record))
+        {
+            self.rename_creation = None;
+        }
         match record {
+            Record::RenameCreationIntent { kind, before } => {
+                self.rename_creation = Some(RenameCreation {
+                    kind,
+                    observed_before: (*before).clone(),
+                    epoch: *before,
+                    applied: None,
+                })
+            }
+            Record::RenameCreationApplied { after, .. } => {
+                self.rename_creation.as_mut().unwrap().applied = Some(*after)
+            }
             Record::OriginalRetainIntent => self.original_retain_intent = true,
             Record::OriginalRetained { root_version } => {
                 self.original_retained = Some(*root_version)
@@ -915,7 +968,17 @@ impl State {
             Record::UndoIntent => self.undo_intent = true,
             Record::Undone { root_version } => self.undone = Some(*root_version),
             Record::ReadonlyReopenIntent { index } => self.readonly_pending = Some(index),
-            Record::ReadonlyReopened { .. } => self.readonly_pending = None,
+            Record::ReadonlyReopened { index, version } => {
+                if index == 0
+                    && let Some(intent) = &mut self.rename_creation
+                {
+                    intent.epoch = (*version).clone();
+                    if intent.applied.is_some() {
+                        intent.applied = Some(*version);
+                    }
+                }
+                self.readonly_pending = None;
+            }
             Record::FinalEntry { version, .. } => self.final_versions.push(*version),
             Record::Finalized { .. } => self.completion_verified = true,
             Record::PublicationIntent => self.publication_intent = true,
@@ -1128,6 +1191,27 @@ struct Journal {
     candidates: Vec<File>,
 }
 impl Journal {
+    fn readonly_ack_bound(&self, index: usize) -> Result<Record, PlatformError> {
+        let node = self
+            .state
+            .nodes
+            .get(index)
+            .ok_or_else(|| io("Missing readonly Copy node"))?;
+        let mut version = node.source.clone();
+        version.identity = node
+            .staged
+            .as_ref()
+            .ok_or_else(|| io("Missing readonly Copy evidence"))?
+            .candidate_identity;
+        version.changed = i64::MIN;
+        if index == 0 {
+            version.created = i64::MIN;
+        }
+        Ok(Record::ReadonlyReopened {
+            index,
+            version: Box::new(version),
+        })
+    }
     fn create(
         stage: &namespace::PrivateStage<'_>,
         central: &File,
@@ -1161,7 +1245,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 10,
+            schema: 11,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -1239,6 +1323,7 @@ impl Journal {
         if !self.state.original_restore_intent {
             records.push(Record::OriginalRestoreIntent);
         }
+        records.extend(self.creation_tail(RenameKind::RestoreOriginal)?);
         records.push(OriginalMove::Restore.ack(version));
         Ok(records)
     }
@@ -1257,11 +1342,12 @@ impl Journal {
                 if self.state.readonly_pending.is_none() {
                     records.push(Record::ReadonlyReopenIntent { index: 0 });
                 }
-                records.push(Record::ReadonlyReopened { index: 0 });
+                records.push(self.readonly_ack_bound(0)?);
             }
             let mut version = root.source.clone();
             version.identity = root.staged.as_ref().unwrap().candidate_identity;
             version.changed = i64::MIN;
+            records.extend(self.creation_tail(RenameKind::Withdraw)?);
             records.push(Record::Undone {
                 root_version: Box::new(version),
             });
@@ -1302,6 +1388,9 @@ impl Journal {
             if !self.state.publication_intent {
                 reserve(Record::PublicationIntent)?;
             }
+            for record in self.creation_tail(RenameKind::Publish)? {
+                reserve(record)?;
+            }
             reserve(Record::Published)?;
         }
         for index in self.state.permissions.completed..self.state.nodes.len() {
@@ -1313,7 +1402,7 @@ impl Journal {
         if !self.state.completion_verified {
             if !self.state.native_complete() {
                 if let Some(index) = self.state.readonly_pending {
-                    reserve(Record::ReadonlyReopened { index })?;
+                    reserve(self.readonly_ack_bound(index)?)?;
                 }
                 for (index, node) in self.state.nodes.iter().enumerate() {
                     if !node.source.directory
@@ -1322,7 +1411,7 @@ impl Journal {
                             != 0
                     {
                         reserve(Record::ReadonlyReopenIntent { index })?;
-                        reserve(Record::ReadonlyReopened { index })?;
+                        reserve(self.readonly_ack_bound(index)?)?;
                     }
                 }
             }
@@ -1554,10 +1643,11 @@ impl Journal {
     /// unpublished; restoration here cancels a pre-publication overwrite.
     fn move_original(
         &mut self,
+        admitted: Option<&EntryVersion>,
         direction: OriginalMove,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        self.move_original_inner(direction, progress).map_err(|error| {
+        self.move_original_inner(admitted,direction, progress).map_err(|error| {
             if !self.state.original_retain_intent { return error; }
             let parent = windows_fs::location(&self.parent_dir).map(|p| p.display().to_string())
                 .unwrap_or_else(|_| "recorded native parent".into());
@@ -1571,6 +1661,7 @@ impl Journal {
     }
     fn move_original_inner(
         &mut self,
+        admitted: Option<&EntryVersion>,
         direction: OriginalMove,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
@@ -1620,6 +1711,11 @@ impl Journal {
                 OsString::from_wide(&self.header.target),
             ),
         };
+        let kind = if direction == OriginalMove::Retain {
+            RenameKind::RetainOriginal
+        } else {
+            RenameKind::RestoreOriginal
+        };
         let resolve = |intent: bool, completed: bool| -> Result<OsString, PlatformError> {
             match (
                 identity_at(&self.parent_dir, &from, base.identity)?,
@@ -1640,6 +1736,8 @@ impl Journal {
             let mut expected = evidence.clone();
             let mut version = completed.as_ref().unwrap_or(&base).clone();
             if completed.is_none() && intent && name == to {
+                self.state.validate_creation_epoch(kind, tree.root())?;
+                version.created = tree.root().created;
                 version.changed = tree.root().changed;
             }
             expected.entries[0].version = version;
@@ -1648,9 +1746,20 @@ impl Journal {
             Ok(tree.root().clone())
         };
         let name = resolve(intent, completed.is_some())?;
+        self.state.validate_creation_location(kind, &name)?;
         let read = namespace::open_source(&self.parent_dir, &name, None)?;
         let tree = tree::PinnedTree::open(&read, evidence.entries.len(), &mut progress)?;
         validate(&tree, &name, intent, &mut progress)?;
+        if let Some(admitted) = admitted
+            && name == to
+            && !self
+                .state
+                .admitted_rename_matches(kind, admitted, tree.root())
+        {
+            return Err(io("Original rename admission epoch changed"));
+        }
+        let observed_name = name.clone();
+        let observed_version = tree.root().clone();
         if completed.is_some() {
             return Ok(());
         }
@@ -1666,7 +1775,8 @@ impl Journal {
         }
         let mut bound = base.clone();
         bound.changed = i64::MIN;
-        let mut tail = vec![direction.ack(bound.clone())];
+        let mut tail = self.creation_tail(kind)?;
+        tail.push(direction.ack(bound.clone()));
         if !intent {
             tail.push(direction.intent());
         }
@@ -1722,12 +1832,18 @@ impl Journal {
             }
         };
         let root = windows_fs::PerObjectFile::open(&self.parent_dir, &name).map_err(io)?;
+        self.state.validate_creation_location(kind, &name)?;
         let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        if name == observed_name && tree.root() != &observed_version {
+            return Err(io("Original metadata changed at writer handoff"));
+        }
         // The shared verifier checks every stream, member, alias and descriptor
         // again under the root capability. Close descendants for native rename.
         let mut expected = evidence.clone();
         let mut version = base.clone();
         if name == to {
+            self.state.validate_creation_epoch(kind, tree.root())?;
+            version.created = tree.root().created;
             version.changed = tree.root().changed;
         }
         expected.entries[0].version = version;
@@ -1748,12 +1864,23 @@ impl Journal {
         self.parent_dir.sync_all().map_err(io)?;
         boundary(self.sequence, Step::OriginalFlushed)?;
         let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        self.state.validate_creation_epoch(kind, tree.root())?;
+        let mut expected = evidence.clone();
+        let mut version = base.clone();
+        version.created = tree.root().created;
+        version.changed = tree.root().changed;
+        expected.entries[0].version = version;
+        tree.validate_existing(&expected, &mut progress)?;
+        namespace::validate_binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
+        drop(tree);
+        self.finish_creation(kind, &root)?;
+        let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        self.state.validate_creation_epoch(kind, tree.root())?;
         let mut expected = evidence;
         let mut version = base;
         version.changed = tree.root().changed;
         expected.entries[0].version = version;
         tree.validate_existing(&expected, &mut progress)?;
-        namespace::validate_binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
         let root_version = tree.root().clone();
         progress(0)?;
         let result = self.persist(direction.ack(root_version));
@@ -1780,8 +1907,11 @@ impl Journal {
         {
             return Ok(file);
         }
-        let evidence = node.staged.as_ref().unwrap().clone();
-        evidence.validate_reopening_metadata(&file, self.state.readonly_pending == Some(index))?;
+        let mut evidence = node.staged.as_ref().unwrap().clone();
+        self.state.validate_copy_metadata(index, &file, name)?;
+        if index == 0 && self.state.copy_rename_at(name).is_some() {
+            evidence.source.created = super::version(&file)?.created;
+        }
         self.state
             .planned
             .as_ref()
@@ -1825,7 +1955,10 @@ impl Journal {
         bound(owner, name, evidence.candidate_identity)?;
         self.bindings()?;
         self.failed = false;
-        self.persist(Record::ReadonlyReopened { index })?;
+        self.persist(Record::ReadonlyReopened {
+            index,
+            version: Box::new(super::version(&file)?),
+        })?;
         Ok(file)
     }
 
@@ -2118,7 +2251,7 @@ impl<'a> DurableStage<'a> {
                 let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
                 let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
                 journal.prepare_original(max_entries, &mut progress)?;
-                journal.move_original(OriginalMove::Retain, &mut progress)?;
+                journal.move_original(None, OriginalMove::Retain, &mut progress)?;
             }
             let mut publication = PermissionStage::publish(parent, central, &name, &mut progress)?;
             publication.apply(&mut progress)?;
@@ -2178,6 +2311,7 @@ struct CopyResumeBinding {
     staged_digest: [u8; 32],
     // Observed retained-root version, including a rename not yet acknowledged.
     original_retained: Option<EntryVersion>,
+    pending_copy: Option<EntryVersion>,
     permissions_digest: [u8; 32],
     parent_location: std::path::PathBuf,
 }
@@ -2221,10 +2355,25 @@ fn prepare_forward(
     if let Some(binding) = binding
         && (retained.snapshot.state.header.as_ref() != Some(&binding.header)
             || staged_digest(&retained.snapshot.state)? != binding.staged_digest
-            || binding
-                .original_retained
-                .as_ref()
-                .is_some_and(|expected| retained.retained_original_version() != Some(expected))
+            || binding.original_retained.as_ref().is_some_and(|expected| {
+                retained.retained_original_version().is_none_or(|actual| {
+                    !retained.snapshot.state.admitted_rename_matches(
+                        RenameKind::RetainOriginal,
+                        expected,
+                        actual,
+                    )
+                })
+            })
+            || (!retained.snapshot.state.published
+                && binding.pending_copy.as_ref().is_some_and(|expected| {
+                    retained.pending_copy_version().is_none_or(|actual| {
+                        !retained.snapshot.state.admitted_rename_matches(
+                            RenameKind::Publish,
+                            expected,
+                            actual,
+                        )
+                    })
+                }))
             || windows_fs::location(retained.parent).map_err(io)? != binding.parent_location)
     {
         return Err(io("Copy resume admission changed; refresh recovery status"));
@@ -2248,6 +2397,7 @@ fn resume_bound_copy(
     binding: &CopyResumeBinding,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
+    let mut binding = binding.clone();
     let mut retained =
         RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
     if retained.snapshot.state.original_retain_intent
@@ -2255,7 +2405,7 @@ fn resume_bound_copy(
     {
         // Validate the admitted copy, original and destination policy read-only
         // before releasing this epoch. Preparation alone grants no retention.
-        drop(prepare_forward(&retained, Some(binding), &mut progress)?);
+        drop(prepare_forward(&retained, Some(&binding), &mut progress)?);
         let expected = retained.snapshot.bytes.clone();
         drop(retained);
         let snapshot = Snapshot::load(
@@ -2270,17 +2420,22 @@ fn resume_bound_copy(
             ));
         }
         let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
-        journal.move_original(OriginalMove::Retain, &mut progress)?;
+        journal.move_original(
+            binding.original_retained.as_ref(),
+            OriginalMove::Retain,
+            &mut progress,
+        )?;
         drop(journal);
         retained =
             RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
+        binding.original_retained = retained.retained_original_version().cloned();
     }
     if retained.snapshot.state.completion_verified {
         // Completed replay stays read-only, including readonly file roots.
-        prepare_forward(&retained, Some(binding), progress)?;
+        prepare_forward(&retained, Some(&binding), progress)?;
         return Ok(());
     }
-    let mut publication = PermissionStage::from_retained(retained, Some(binding), &mut progress)?;
+    let mut publication = PermissionStage::from_retained(retained, Some(&binding), &mut progress)?;
     publication.apply(progress)
 }
 
@@ -2335,12 +2490,23 @@ impl PermissionStage {
         }
         let root = windows_fs::PerObjectFile::open(parent, &root_name)
             .map_err(|e| io(format!("opening publication root: {e}")))?;
+        if let Some(expected) = binding.and_then(|binding| binding.pending_copy.as_ref())
+            && snapshot.state.copy_rename_at(&root_name) == Some(RenameKind::Publish)
+            && !snapshot.state.admitted_rename_matches(
+                RenameKind::Publish,
+                expected,
+                &super::version(&root)?,
+            )
+        {
+            return Err(io("Copy publication epoch changed at writer handoff"));
+        }
         let root_evidence = snapshot.state.nodes[0].staged.as_ref().unwrap();
         if stable_identity_from_handle(&root).map_err(io)? != root_evidence.candidate_identity {
             return Err(io("Copy publication root identity changed"));
         }
-        root_evidence
-            .validate_reopening_metadata(&root, snapshot.state.readonly_pending == Some(0))?;
+        snapshot
+            .state
+            .validate_copy_metadata(0, &root, &root_name)?;
         namespace::validate_single_link(&root)?;
         parent_policy.validate_parent(parent)?;
         let phase = snapshot.state.permissions;
@@ -2391,6 +2557,31 @@ impl PermissionStage {
             parent_policy.validate_parent(parent)?;
             if let Some(original) = &original {
                 original.revalidate(parent, &mut progress)?;
+            }
+            if journal.state.rename_creation.is_some()
+                || super::version(&root)?.created
+                    != journal.state.rename_expected(RenameKind::Publish)?.created
+            {
+                let proof = HeldTree::open(
+                    parent,
+                    &journal.state,
+                    target.clone(),
+                    Some(&root),
+                    &mut progress,
+                )?;
+                proof.revalidate(parent, &journal.state, &mut progress)?;
+                journal.finish_creation(RenameKind::Publish, &root)?;
+                drop(proof);
+                let proof = HeldTree::open(
+                    parent,
+                    &journal.state,
+                    target.clone(),
+                    Some(&root),
+                    &mut progress,
+                )?;
+                proof.revalidate(parent, &journal.state, &mut progress)?;
+            } else {
+                journal.finish_creation(RenameKind::Publish, &root)?;
             }
             journal.persist(Record::Published)?;
         }
@@ -2485,7 +2676,11 @@ impl PermissionStage {
         progress(0)?;
         let evidence = self.journal.state.nodes[index].staged.as_ref().unwrap();
         let file = &self.candidates[index];
-        evidence.validate_retained_metadata(file)?;
+        self.journal.state.validate_copy_metadata(
+            index,
+            file,
+            &OsString::from_wide(&self.journal.header.target),
+        )?;
         if super::transfer(file, None, progress)? != evidence.streams
             || links::capture(file)? != evidence.source.link
         {
@@ -2493,7 +2688,11 @@ impl PermissionStage {
                 "Copy permission candidate contents changed; all data retained",
             ));
         }
-        evidence.validate_retained_metadata(file)
+        self.journal.state.validate_copy_metadata(
+            index,
+            file,
+            &OsString::from_wide(&self.journal.header.target),
+        )
     }
     pub(super) fn apply(
         &mut self,
@@ -2861,11 +3060,19 @@ impl HeldOriginal {
                 ));
             }
         };
+        let kind = if state.original_restore_intent {
+            RenameKind::RestoreOriginal
+        } else {
+            RenameKind::RetainOriginal
+        };
+        state.validate_creation_location(kind, &name)?;
         let root = namespace::open_source(parent, &name, None)?;
         let tree = tree::PinnedTree::open(&root, plan.evidence.entries.len(), &mut *progress)?;
         let mut evidence = plan.evidence.clone();
         evidence.entries[0].version = completed.unwrap_or(base).clone();
         if intent && completed.is_none() && name == to {
+            state.validate_creation_epoch(kind, tree.root())?;
+            evidence.entries[0].version.created = tree.root().created;
             evidence.entries[0].version.changed = tree.root().changed;
         }
         let held = Self {
@@ -3024,7 +3231,7 @@ impl HeldTree {
                     .unwrap()
                     .validate(&handle, &state.header.as_ref().unwrap().creator)?;
             }
-            evidence.validate_reopening_metadata(&handle, state.readonly_pending == Some(index))?;
+            state.validate_copy_metadata(index, &handle, &root_name)?;
             let observed = super::version(&handle)?;
             if observed.link != evidence.source.link {
                 return Err(io("retained Copy link data changed; no target followed"));
@@ -3183,6 +3390,8 @@ struct CopyUndoBinding {
     header: Header,
     completion_digest: [u8; 32],
     parent_location: std::path::PathBuf,
+    pending_copy: Option<EntryVersion>,
+    pending_original: Option<EntryVersion>,
 }
 
 fn read_undo_snapshot(
@@ -3214,6 +3423,32 @@ fn undo_bound_copy(
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
     let snapshot = read_undo_snapshot(parent, central, name, &mut progress)?;
+    if let Some(binding) = binding {
+        let (copy, original) = pending_undo_epochs(parent, &snapshot)?;
+        if binding
+            .pending_copy
+            .as_ref()
+            .zip(copy.as_ref())
+            .is_some_and(|(expected, actual)| {
+                !snapshot
+                    .state
+                    .admitted_rename_matches(RenameKind::Withdraw, expected, actual)
+            })
+            || binding
+                .pending_original
+                .as_ref()
+                .zip(original.as_ref())
+                .is_some_and(|(expected, actual)| {
+                    !snapshot.state.admitted_rename_matches(
+                        RenameKind::RestoreOriginal,
+                        expected,
+                        actual,
+                    )
+                })
+        {
+            return Err(io("Copy Undo admission epoch changed"));
+        }
+    }
     if let Some(binding) = binding
         && (snapshot.state.header.as_ref() != Some(&binding.header)
             || completion_digest(&snapshot.state)? != binding.completion_digest
@@ -3232,11 +3467,25 @@ fn undo_bound_copy(
     }
     if snapshot.state.undone.is_some() {
         let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
-        return journal.move_original(OriginalMove::Restore, progress);
+        return journal.move_original(
+            binding.and_then(|binding| binding.pending_original.as_ref()),
+            OriginalMove::Restore,
+            progress,
+        );
     }
     let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
     let root_name = snapshot.root_name(parent)?;
     let mut root = windows_fs::PerObjectFile::open(parent, &root_name).map_err(io)?;
+    if let Some(expected) = binding.and_then(|binding| binding.pending_copy.as_ref())
+        && snapshot.state.copy_rename_at(&root_name) == Some(RenameKind::Withdraw)
+        && !snapshot.state.admitted_rename_matches(
+            RenameKind::Withdraw,
+            expected,
+            &super::version(&root)?,
+        )
+    {
+        return Err(io("Copy withdrawal epoch changed at writer handoff"));
+    }
     let mut tree = HeldTree::open(
         parent,
         &snapshot.state,
@@ -3284,12 +3533,22 @@ fn undo_bound_copy(
         if let Some(original) = &original {
             original.revalidate(parent, &mut progress)?;
         }
+        journal.finish_creation(RenameKind::Withdraw, &root)?;
+        drop(tree);
+        tree = HeldTree::open(
+            parent,
+            &journal.state,
+            journal.header.candidate_name(),
+            Some(&root),
+            &mut progress,
+        )?;
+        tree.revalidate(parent, &journal.state, &mut progress)?;
         journal.persist(Record::Undone {
             root_version: Box::new(tree.entries[0].observed.clone()),
         })?;
         drop(original);
         if journal.state.original.is_some() {
-            journal.move_original(OriginalMove::Restore, &mut progress)?;
+            journal.move_original(None, OriginalMove::Restore, &mut progress)?;
         }
         Ok(())
     })();
@@ -3359,6 +3618,8 @@ enum Step {
     CentralFlushed,
     PublicationRenamed,
     PublicationFlushed,
+    CreationRestored,
+    CreationFlushed,
     PermissionsChanged,
     PermissionsFlushed,
 }
@@ -3403,6 +3664,8 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 
 #[cfg(test)]
 mod tests {
+    mod creation_times;
+
     use super::*;
     use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt, path::Path};
     use windows_sys::Win32::Storage::FileSystem::{
@@ -3887,7 +4150,7 @@ mod tests {
         journal.prepare_original(100, |_| Ok(())).unwrap();
         if restore {
             journal
-                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
                 .unwrap();
         }
         name
@@ -4219,19 +4482,21 @@ mod tests {
                 .version
                 .clone();
             version.changed = i64::MIN;
-            let retention = [
+            let mut retention_records = journal.creation_tail(RenameKind::RetainOriginal).unwrap();
+            retention_records.extend([
                 Record::OriginalRetainIntent,
                 OriginalMove::Retain.ack(version),
-            ]
-            .iter()
-            .map(|record| FRAME_HEADER as u64 + record_payload(record).unwrap().len() as u64)
-            .sum::<u64>();
+            ]);
+            let retention = retention_records
+                .iter()
+                .map(|record| FRAME_HEADER as u64 + record_payload(record).unwrap().len() as u64)
+                .sum::<u64>();
             let budget =
                 journal.length + publication + retention + if insufficient { 0 } else { inverse };
             // Lower the test-only reservation ceiling, keeping the real journal
             // bytes, lengths, owner and decoded history coherent through restart.
             let _limit = LogBudget::new(budget);
-            let result = journal.move_original(OriginalMove::Retain, |_| Ok(()));
+            let result = journal.move_original(None, OriginalMove::Retain, |_| Ok(()));
             if insufficient {
                 let error = result.unwrap_err().to_string();
                 assert!(
@@ -4342,7 +4607,7 @@ mod tests {
         FAULT.with(|fault| fault.set(Some((journal.sequence, Step::CentralFlushed, false))));
         assert!(
             journal
-                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
                 .is_err()
         );
         FAULT.with(|fault| fault.set(None));
@@ -4371,7 +4636,7 @@ mod tests {
                         });
                         assert!(
                             journal
-                                .move_original(OriginalMove::Retain, |_| Ok(()))
+                                .move_original(None, OriginalMove::Retain, |_| Ok(()))
                                 .is_err()
                         );
                         FAULT.with(|fault| fault.set(None));
@@ -4469,7 +4734,7 @@ mod tests {
                 });
                 assert!(
                     journal
-                        .move_original(OriginalMove::Retain, |_| Ok(()))
+                        .move_original(None, OriginalMove::Retain, |_| Ok(()))
                         .is_err()
                 );
                 FAULT.with(|fault| fault.set(None));
@@ -4529,10 +4794,10 @@ mod tests {
                 "restored" => {
                     let mut journal = original_journal(root.path(), &name);
                     journal
-                        .move_original(OriginalMove::Retain, |_| Ok(()))
+                        .move_original(None, OriginalMove::Retain, |_| Ok(()))
                         .unwrap();
                     journal
-                        .move_original(OriginalMove::Restore, |_| Ok(()))
+                        .move_original(None, OriginalMove::Restore, |_| Ok(()))
                         .unwrap();
                 }
                 _ => unreachable!(),
@@ -4633,6 +4898,7 @@ mod tests {
         let (offset, step) = move_faults()[index];
         FAULT.with(|f| f.set(Some((journal.sequence + offset, step, true))));
         let result = journal.move_original(
+            None,
             if restore {
                 OriginalMove::Restore
             } else {
@@ -4680,6 +4946,7 @@ mod tests {
                         let mut journal = original_journal(root.path(), &name);
                         journal
                             .move_original(
+                                None,
                                 if restore {
                                     OriginalMove::Restore
                                 } else {
@@ -4731,7 +4998,7 @@ mod tests {
                 FAULT.with(|f| f.set(Some((journal.sequence + 1, Step::OriginalRenamed, false))));
                 assert!(
                     journal
-                        .move_original(OriginalMove::Retain, |_| Ok(()))
+                        .move_original(None, OriginalMove::Retain, |_| Ok(()))
                         .is_err()
                 );
                 FAULT.with(|f| f.set(None));
@@ -4747,11 +5014,11 @@ mod tests {
             let mut journal = original_journal(root.path(), &name);
             if pending {
                 journal
-                    .move_original(OriginalMove::Retain, |_| Ok(()))
+                    .move_original(None, OriginalMove::Retain, |_| Ok(()))
                     .unwrap();
             }
             journal
-                .move_original(OriginalMove::Restore, |_| Ok(()))
+                .move_original(None, OriginalMove::Restore, |_| Ok(()))
                 .unwrap();
             assert_eq!(
                 std::fs::read(root.path().join("destination/copy/old")).unwrap(),
@@ -4768,30 +5035,30 @@ mod tests {
             let name = original_move_fixture(root.path(), directory, false);
             let mut journal = original_journal(root.path(), &name);
             journal
-                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
                 .unwrap();
             assert!(journal.state.original_retained.is_some());
             assert!(!root.path().join("destination/copy").exists());
             let length = journal.length;
             journal
-                .move_original(OriginalMove::Retain, |_| Ok(()))
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
                 .unwrap();
             assert_eq!(journal.length, length);
             drop(journal);
             assert_original_location(root.path(), &name, directory, false);
             let mut journal = original_journal(root.path(), &name);
             journal
-                .move_original(OriginalMove::Restore, |_| Ok(()))
+                .move_original(None, OriginalMove::Restore, |_| Ok(()))
                 .unwrap();
             assert!(journal.state.original_restored.is_some());
             let length = journal.length;
             journal
-                .move_original(OriginalMove::Restore, |_| Ok(()))
+                .move_original(None, OriginalMove::Restore, |_| Ok(()))
                 .unwrap();
             assert_eq!(journal.length, length);
             assert!(
                 journal
-                    .move_original(OriginalMove::Retain, |_| Ok(()))
+                    .move_original(None, OriginalMove::Retain, |_| Ok(()))
                     .is_err()
             );
             drop(journal);
@@ -4837,6 +5104,7 @@ mod tests {
                     let sequence = journal.sequence + offset;
                     FAULT.with(|f| f.set(Some((sequence, step, false))));
                     let result = journal.move_original(
+                        None,
                         if restore {
                             OriginalMove::Restore
                         } else {
@@ -4866,6 +5134,7 @@ mod tests {
                         let mut journal = original_journal(root.path(), &name);
                         journal
                             .move_original(
+                                None,
                                 if restore {
                                     OriginalMove::Restore
                                 } else {
@@ -4937,6 +5206,7 @@ mod tests {
                 .unwrap();
             }
             let result = journal.move_original(
+                None,
                 if restore {
                     OriginalMove::Restore
                 } else {
@@ -5177,6 +5447,13 @@ mod tests {
         let mut staged = stage(&src, &parent, &central).unwrap();
         drop(staged.prepare_destination_security(|| Ok(())).unwrap());
         let reserved = staged.journal.permission_tail_size().unwrap();
+        let creation_reserve = staged
+            .journal
+            .creation_tail(RenameKind::Publish)
+            .unwrap()
+            .iter()
+            .map(|record| FRAME_HEADER as u64 + record_payload(record).unwrap().len() as u64)
+            .sum::<u64>();
         let initial_length = staged.journal.length;
         let name = staged.stage.name.clone();
         let candidate = staged.stage.candidate_name.clone();
@@ -5195,8 +5472,8 @@ mod tests {
             "all native publication/completion records must fit"
         );
         assert!(
-            reserved - actual <= 19 * 3 + 64,
-            "only signed change-time and digest decimal widths may over-reserve"
+            reserved - actual <= creation_reserve + 19 * 3 + 64,
+            "only optional creation repair and signed change-time/digest widths may over-reserve"
         );
         assert_eq!(application.journal.permission_tail_size().unwrap(), 0);
         drop(application);
@@ -5364,18 +5641,19 @@ mod tests {
         nested: bool,
         readonly: bool,
     ) -> (OsString, OsString, ReadonlyCleanup) {
-        completed_undo_fixture_at(path, &path.join("destination"), nested, readonly)
+        completed_undo_fixture_at(path, &path.join("destination"), nested, readonly, None)
     }
     fn completed_undo_fixture_at(
         path: &Path,
         destination: &Path,
         nested: bool,
         readonly: bool,
+        registry: Option<&Path>,
     ) -> (OsString, OsString, ReadonlyCleanup) {
         let (name, candidate, cleanup) =
-            staged_resume_fixture_at(path, destination, nested, readonly);
+            staged_resume_fixture_at(path, destination, nested, readonly, registry);
         let parent = owner(destination);
-        let central = owner(&path.join("central"));
+        let central = owner(registry.unwrap_or(&path.join("central")));
         let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
         app.apply(|_| Ok(())).unwrap();
         (name, candidate, cleanup)
@@ -5385,6 +5663,7 @@ mod tests {
         destination: &Path,
         nested: bool,
         readonly: bool,
+        registry: Option<&Path>,
     ) -> (OsString, OsString, ReadonlyCleanup) {
         let mut cleanup = if readonly {
             readonly_fixture(path, nested)
@@ -5399,7 +5678,17 @@ mod tests {
         }));
         std::fs::create_dir_all(destination).unwrap();
         let parent = owner(destination);
-        let central = owner(&path.join("central"));
+        let central = if let Some(registry) = registry {
+            std::fs::remove_dir(path.join("central")).unwrap();
+            drop(
+                super::super::registry::ConfiguredRegistry::open_at(registry, true)
+                    .unwrap()
+                    .unwrap(),
+            );
+            owner(registry)
+        } else {
+            owner(&path.join("central"))
+        };
         let staged = stage(&src, &parent, &central).unwrap();
         let name = staged.stage.name.clone();
         let candidate = staged.stage.candidate_name.clone();
@@ -5426,6 +5715,7 @@ mod tests {
                 &root.path().join("destination"),
                 nested,
                 readonly,
+                None,
             );
             remove_undo_fixture_source(root.path());
             let path = root.path().join("destination").join(&name).join(LOCAL);
@@ -5511,6 +5801,7 @@ mod tests {
                     &root.path().join("destination"),
                     nested,
                     readonly,
+                    None,
                 );
                 remove_undo_fixture_source(root.path());
                 let path = root.path().join("destination").join(&name).join(LOCAL);
@@ -5555,8 +5846,13 @@ mod tests {
     #[test]
     fn windows_native_registered_copy_resume_refuses_coherent_rewritten_frozen_evidence() {
         let root = tempfile::tempdir().unwrap();
-        let (name, _, _cleanup) =
-            staged_resume_fixture_at(root.path(), &root.path().join("destination"), true, false);
+        let (name, _, _cleanup) = staged_resume_fixture_at(
+            root.path(),
+            &root.path().join("destination"),
+            true,
+            false,
+            None,
+        );
         let registry = root.path().join("central");
         let local = root.path().join("destination").join(&name).join(LOCAL);
         let bytes = std::fs::read(&local).unwrap();
@@ -5609,6 +5905,7 @@ mod tests {
                 &root.path().join("destination"),
                 true,
                 false,
+                None,
             );
             remove_undo_fixture_source(root.path());
             let path = root.path().join("destination").join(&name).join(LOCAL);
@@ -5652,6 +5949,7 @@ mod tests {
                 &root.path().join("destination"),
                 true,
                 false,
+                None,
             );
             let registry = root.path().join("central");
             let destination = root.path().join("destination");
@@ -5706,8 +6004,13 @@ mod tests {
     fn windows_native_registered_copy_resume_cancellation_preserves_stage_and_unverified_staging_is_not_admitted()
      {
         let root = tempfile::tempdir().unwrap();
-        let (name, _, _cleanup) =
-            staged_resume_fixture_at(root.path(), &root.path().join("destination"), true, false);
+        let (name, _, _cleanup) = staged_resume_fixture_at(
+            root.path(),
+            &root.path().join("destination"),
+            true,
+            false,
+            None,
+        );
         let path = root.path().join("destination").join(&name).join(LOCAL);
         let before = std::fs::read(&path).unwrap();
         let id = decode(&before).unwrap().state.header.unwrap().transaction;
@@ -5773,11 +6076,12 @@ mod tests {
             );
             assert!(destination.starts_with(volume));
         }
+        let registry = local.join("Ottrin/State/copies");
         let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
         let (name, candidate, _cleanup) = if case.starts_with("resume") {
-            staged_resume_fixture_at(&fixture_root, &destination, true, false)
+            staged_resume_fixture_at(&fixture_root, &destination, true, false, Some(&registry))
         } else {
-            completed_undo_fixture_at(&fixture_root, &destination, true, false)
+            completed_undo_fixture_at(&fixture_root, &destination, true, false, Some(&registry))
         };
         if case == "resume-finalizing" {
             let reference = tempfile::tempdir().unwrap();
@@ -5799,7 +6103,7 @@ mod tests {
                 .unwrap() as u64;
             FAULT.with(|f| f.set(Some((sequence, Step::CentralFlushed, false))));
             let parent = owner(&destination);
-            let central = owner(&fixture_root.join("central"));
+            let central = owner(&registry);
             let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
                 .and_then(|mut stage| stage.apply(|_| Ok(())));
             FAULT.with(|f| f.set(None));
@@ -5814,7 +6118,7 @@ mod tests {
                 stable_identity_from_handle(&owner(&destination))
                     .unwrap()
                     .volume_serial_number(),
-                stable_identity_from_handle(&owner(&fixture_root.join("central")))
+                stable_identity_from_handle(&owner(&registry))
                     .unwrap()
                     .volume_serial_number(),
                 "Cross-volume fixture must use distinct native volumes"
@@ -5823,16 +6127,13 @@ mod tests {
         remove_undo_fixture_source(&fixture_root);
         if std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").as_deref() == Ok("pending") {
             let parent = owner(&destination);
-            let central = owner(&fixture_root.join("central"));
+            let central = owner(&registry);
             FAULT.with(|f| f.set(Some((29, Step::UndoRenamed, false))));
             let result = undo_completed_copy(&parent, &central, &name, |_| Ok(()));
             FAULT.with(|f| f.set(None));
             assert!(result.is_err());
             assert!(destination.join(candidate).exists());
         }
-        let registry = local.join("Ottrin/State/copies");
-        std::fs::create_dir_all(registry.parent().unwrap()).unwrap();
-        std::fs::rename(fixture_root.join("central"), registry).unwrap();
         // The calling UI test owns root and tears it down after its child exits.
     }
     #[test]
@@ -6686,6 +6987,8 @@ mod tests {
                 Step::OriginalReadersReleased => "original-readers-released",
                 Step::OriginalRenamed => "original-renamed",
                 Step::OriginalFlushed => "original-flushed",
+                Step::CreationRestored => "creation-restored",
+                Step::CreationFlushed => "creation-flushed",
             };
             let status=std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])
@@ -7249,6 +7552,8 @@ mod tests {
             "central" => Step::CentralFlushed,
             "renamed" => Step::PublicationRenamed,
             "published-flushed" => Step::PublicationFlushed,
+            "creation-restored" => Step::CreationRestored,
+            "creation-flushed" => Step::CreationFlushed,
             "changed" => Step::PermissionsChanged,
             "permissions-flushed" => Step::PermissionsFlushed,
             "readonly-writable" => Step::ReadonlyWritable,

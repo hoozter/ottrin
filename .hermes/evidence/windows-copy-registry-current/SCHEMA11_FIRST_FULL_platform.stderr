@@ -1,0 +1,8 @@
+
+thread 'copy_transaction::windows::journal::tests::windows_native_copy_publication_and_permissions_are_source_free_and_idempotent' (6456) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:5463:9:
+only signed change-time and digest decimal widths may over-reserve
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'copy_transaction::windows::journal::tests::windows_native_overwrite_reserves_the_inverse_before_retention_and_spends_it_through_undo' (4460) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:4509:24:
+called `Result::unwrap()` on an `Err` value: Io("Windows Copy stream staging: insufficient Copy journal space for original move")
+native ancestor rename refused: Access is denied. (os error 5)

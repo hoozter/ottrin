@@ -1,0 +1,121 @@
+{
+  "status": "pass",
+  "scope": "Configured private native Windows Copy registry and journaled creation-time preservation; public forward Copy remains gated",
+  "base_revision": "54983ea06db7af493a2f7f299eb45bd8271d26e8",
+  "source_sha256": {
+    "crates/ottrin-platform/src/windows_fs.rs": "a2fc1da95459be59f5eca76c2178d279578a53db881d07e28b4f7c42b716e795",
+    "crates/ottrin-platform/src/copy_transaction.rs": "979b0d5fc95396b8ee6008a01dbdb4ff1b810c9a835985e60edbdb2e986fa65a",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "c25928d08b47712c531241322abb6ea5d5eb29aaad1d119fd4a53d822d28df50",
+    "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "ccc4a88d45a21d74f68e9981f99250ca37dd50b30a6996060a353757a28e10b5",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "dec0f4877f87a18c56313d94afe4d45e804189232be5be14bba4efc57001cb88",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "646be6fa43343e071a4bb168c17dfe1c9acca4d1139bda290f67bdc11c60babb",
+    "crates/ottrin-platform/src/copy_transaction/windows/links.rs": "167168b8cfdc73626fbfbf7383063932cbe326cd62ecca89f70686c892d27874",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "25aeb9486549b3379a920fac4dabc0c713e3b1358027224d35202f5e6c29083d",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "9790f287e655e508c746151d00c6fd18bfc028199581c3e06b8de592e926ff88",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "a0276746e9eae12801dc83ab139499d11f74aab1c8ce354b4740b1f2c8163149",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "27875810eafaac4f907c3faed34022276e5ad5194111a2de7831abc3057b18b6",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "d09d1030322c659b7c3f50646c3ba2e53243b5e5f4b3f38a15b9fa022b59618f",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "c21c9e08b7f3e07e0869192a383f1ed79139e5f44d87920a1c537dee83848202"
+  },
+  "schema": {
+    "journal": "OTCPWJ11",
+    "version": 11,
+    "configured_registry_anchor": "OTCRW01",
+    "superseded_schemas": "refused without conversion or deletion"
+  },
+  "windows": {
+    "full_platform_suite": {
+      "passed": 271,
+      "failed": 0,
+      "ignored": 34,
+      "ordinary_user": true,
+      "receipt": "SCHEMA11_FULL_RESULTS.json",
+      "binary_sha256": "be728f94b0b88406a64112394a9f9cf0f9368114c0ada24755e5aae79d912030"
+    },
+    "later_test_additions": [
+      {
+        "passed": 1,
+        "scope": "Malformed hashed-record transitions and metadata epoch checks",
+        "receipt": "SCHEMA11_CODEC_RESULTS.json",
+        "binary_sha256": "d28cce98e88ac7cee4e04713e0356c9053f083ac001e48fb6e63e6aca01af196"
+      },
+      {
+        "passed": 1,
+        "native_cases": 16,
+        "scope": "All four rename phases; before/after creation intent; creation/change-time drift after read-only plan admission refuses without file/journal mutation",
+        "receipt": "SCHEMA11_DRIFT_RESULTS.json",
+        "binary_sha256": "1171f1933a3e6a3236f36004a57edcb0f9ae79467c38591fc2f597d16345593d"
+      }
+    ],
+    "binary_scope": "Full suite and later test additions have separate executable pins. Subsequent source edits added tests only; no claim that final executable reran the whole suite.",
+    "creation_interruption_matrix": {
+      "injected_failures": 72,
+      "real_process_exits": 72,
+      "roles": [
+        "publication",
+        "withdrawal",
+        "original retention",
+        "original restoration"
+      ],
+      "readonly_copies": true,
+      "source_absent": true,
+      "coherent_prefixes": "recover",
+      "divergent_local_only_mirrors": "refuse; preserve native versions and payloads"
+    },
+    "configured_registry": "Four native tests covered provisioning/reopen, identity replacement, unanchored/partial/foreign state, configured dispatch/discovery/source-free Undo and refusal before source-overlap setup mutations; included in full suite",
+    "ui_activity": {
+      "passed": 1,
+      "child_cases": 9,
+      "ordinary_user": true,
+      "receipt": "SCHEMA11_UI_RESULTS.json",
+      "binary_sha256": "eb1d02ed8a869c717765953d2894215d370aa966f5f9a269c244dc5d7be22bf8"
+    },
+    "audit_sacl": {
+      "passed": 1,
+      "principal": "SYSTEM",
+      "scope": "Explicit inherited audit fixture only",
+      "receipt": "SCHEMA11_AUDIT_RESULTS.json",
+      "binary_sha256": "d28cce98e88ac7cee4e04713e0356c9053f083ac001e48fb6e63e6aca01af196"
+    }
+  },
+  "diagnosis": {
+    "cause": "NTFS filename tunneling substitutes cached creation time after rename into vacated names",
+    "red_receipt": "RED_RESULTS.json",
+    "native_probes": [
+      "TUNNEL_PROBE.json",
+      "HANDLE_PROBE.json"
+    ],
+    "failed_assumption": "Neither setting creation time before rename nor a -1 same-handle attempt prevents tunneling",
+    "repair": "Persist paired identity/epoch-bound intent, change only creation time, flush and verify, acknowledge; freeze pending versions through recovery admission and writer handoff"
+  },
+  "test_fixture_corrections": {
+    "receipt": "SCHEMA11_FIRST_FULL_platform.stderr",
+    "cause": "Old reservation assertions omitted optional schema11 creation frames",
+    "changes": "Explicitly account for those frames; production budget guards and no-mutation assertions preserved"
+  },
+  "static_checks": {
+    "strict_windows_platform_all_targets_clippy": "pass",
+    "strict_windows_ui_all_targets_clippy": "pass",
+    "format": "pass",
+    "diff_check": "pass"
+  },
+  "linux": "No compiled Linux code changed; unrelated Linux tests not repeated",
+  "cleanup": {
+    "receipt": "FINAL_CLEANUP.json",
+    "guest": "FINAL_GUEST.json",
+    "temporary_test_entries": 0,
+    "original_profile_and_installation": "unchanged",
+    "owned_domain_volume_nvram_tpm": "removed after normal shutdown",
+    "source_domains_and_backing": "preserved"
+  },
+  "packages": "Unchanged. No current package, public workflow, daily-driver or user acceptance claimed.",
+  "remaining": [
+    "Public single/batch clipboard/Tandem workflow integration",
+    "Guarded payload cleanup and interrupted staging policy",
+    "Full permission/audit/label/readonly-link and specialized storage matrices",
+    "Setup/mutation physical power-cut, resource/performance and exact-package acceptance"
+  ],
+  "log_normalization": "Line endings normalized to LF and trailing whitespace removed; substantive output preserved."
+}

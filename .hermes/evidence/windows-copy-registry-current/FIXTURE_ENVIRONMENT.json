@@ -1,0 +1,7 @@
+{
+    "scope":  "Owned disposable overlay only",
+    "new_boot_verified":  true,
+    "ordinary_interactive_user":  true,
+    "reason":  "Native link fixtures",
+    "developer_mode":  true
+}

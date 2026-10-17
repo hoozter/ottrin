@@ -103,7 +103,7 @@ Staging takes a `DestinationAdmission`, replacing the raw target argument.
 Creation requires native absence; access errors never imply absence. Overwrite
 captures the existing graph before source staging and retains no open handles.
 Its root version allows cheap pre-staging validation, while its complete graph
-count/digest are written into both immutable schema-10 journal headers.
+count/digest are written into both immutable schema-11 journal headers.
 
 Original preparation revalidates the full graph against that initial approval
 before appending any original records. Changed child data cannot be silently
@@ -134,11 +134,38 @@ existing graph through the same destination admission used by the engine.
 Publication remains no-replace, so a late occupant is retained with the staged
 copy rather than overwritten. Late changes to an approved original also refuse.
 
-This dispatcher is currently an internal integration point taking an already
-owned registry handle. Configured-registry provisioning, public single/batch
-workflow wiring and the complete release gates remain unfinished.
+The explicit-registry dispatcher takes an already owned handle. The configured
+entry point supplies that handle through the registry admission below. Public
+single/batch workflow wiring and the complete release gates remain unfinished.
 Focused native cases and the full platform regression suite are recorded in
 `.hermes/evidence/windows-copy-dispatch-current/ACCEPTANCE.json`.
+
+### Configured registry admission
+
+The configured registry is `%LOCALAPPDATA%\Ottrin\State\copies`. Its external
+`.ottrin-copy-recovery-root` marker sits in `State`, so replacing the entire
+registry cannot also replace its identity proof. The bounded `OTCRW01` record
+binds marker, parent and root native identities, root name, creator and initial
+root security. Marker admission requires an ordinary, single-link private file;
+the root must be an ordinary private directory with the recorded security.
+
+Fresh provisioning reserves the private marker before creating the private
+registry, writes and flushes its complete record, and flushes the root/parent.
+Open readers retain marker and root handles that deny replacement. Validation
+checks the current creator, identities, private security and parent bindings.
+Read-only discovery never creates missing state. Existing unanchored, partial,
+corrupt, moved or replaced state is retained and refused; incomplete setup is a
+review condition, with no automatic adoption, repair or deletion authority.
+Actual setup power-cut and broader security/storage acceptance remain required.
+
+Configured Copy pins its source before setup and checks the proposed registry's
+existing native ancestors before provisioning any missing profile directories.
+It refuses a registry inside a directory source without changing that source's
+namespace. After provisioning it uses the same admitted-source dispatcher;
+configured discovery and recovery also require registry admission. Explicit-root
+APIs still require the caller's separate registry authority and retain native
+journal admission; they do not act as a fallback for failed configured admission.
+Public Copy is still gated.
 
 ### Session receipt integration
 
@@ -530,3 +557,33 @@ Group/owner queries need READ_CONTROL; setters need WRITE_OWNER, as specified by
 [SECURITY_INFORMATION](https://learn.microsoft.com/en-us/windows/win32/secauthz/security-information).
 Only the native group-drift fixture opens the setter right. Production records
 security through read queries and never applies serialized descriptors.
+
+
+## Creation times after native rename
+
+NTFS filename tunneling can replace creation time when a native rename enters a
+recently vacated name. Schema 11 records a narrow creation-time intent and
+acknowledgement for publication, withdrawal, original retention and restoration.
+The intent binds the observed native version after the recorded rename; the
+write changes only creation time, then flushes and verifies before acknowledgement.
+Whole-tree payload/security and unrelated metadata checks remain mandatory.
+Completed metadata is strict; this does not authorize general metadata repair.
+Read-only action admission freezes observed pending epochs through writer handoff.
+Optional repair frames are included in forward/inverse journal reservations.
+
+The current component evidence is in
+`.hermes/evidence/windows-copy-registry-current/`: `SCHEMA11_FULL_*` records
+271 passing ordinary-user native tests, zero failures and no temporary entries.
+This includes 72 injected failures and 72 real process exits across normal and
+readonly creation/overwrite/Undo fixtures. Coherent prefixes recover without the
+source; divergent local-only prefixes preserve data and refuse writes.
+`SCHEMA11_CODEC_*` separately records the subsequently added malformed-transition
+and epoch checks passing against the newer test binary. `SCHEMA11_DRIFT_*`
+records 16 native cases that change creation or change time after read-only
+admission, before/after repair intent across all four rename roles. Each refuses
+without changing either journal or any observed payload/version. Current-schema
+Activity integration and the separate explicit SYSTEM audit fixture also pass.
+These are component
+receipts; they do not establish physical power-cut, broad storage/security,
+current package or public Copy acceptance. Full evidence and cleanup results are recorded in `ACCEPTANCE.json` in that
+directory.

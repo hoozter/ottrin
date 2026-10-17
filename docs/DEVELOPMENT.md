@@ -740,7 +740,7 @@ capabilities. Stream revalidation uses the caller's cancellable progress path;
 cancellation leaves the same journaled intent for fresh recovery. Exact completed reopen is read-only and appends nothing. Unknown
 changes are retained/refused; do not normalize their metadata to resume.
 
-The format is `OTCPWJ10` / schema 10; superseded schemas are refused, without a
+The format is `OTCPWJ11` / schema 11; superseded schemas are refused, without a
 compatibility reader. Log reservation includes prospective readonly reopen
 records and a pending acknowledgement; repeated interruption remains bounded by
 the total log budget and must fail before an unreserved mutation. These native
@@ -1016,8 +1016,11 @@ handle and supplies native destination admission to that orchestration. Its
 creation, Skip/Rename/Overwrite, dangling-name collisions, source/registry
 ancestry and hard-link guards, and destination changes during staging. Changes
 injected for Overwrite must wait until staging has a journal: admission itself
-reads the original under a lock. This dispatcher does not provision the configured
-registry or enable public workflows.
+reads the original under a lock. The configured entry point now provisions and
+admits its registry through the external native-identity anchor, with source
+overlap checked before setup. Explicit-registry fixtures supply their own
+handle; configured Activity fixtures provision the managed root before staging.
+Neither entry point enables public workflows yet.
 
 Native Activity integration uses an ignored platform fixture producer and a UI
 consumer. The producer only accepts a root/profile owned by that consumer. The
