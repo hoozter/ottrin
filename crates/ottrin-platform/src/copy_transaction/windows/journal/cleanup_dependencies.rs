@@ -25,15 +25,6 @@ pub(super) struct Dependencies {
 }
 
 impl Dependencies {
-    pub(super) fn open(
-        central: &File,
-        header: &Header,
-        manifest: &Manifest,
-        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
-    ) -> Result<Self, PlatformError> {
-        Self::open_selected(central, header, manifest, None, &mut cancel)
-    }
-
     pub(super) fn open_selected(
         central: &File,
         header: &Header,
@@ -127,6 +118,10 @@ impl Dependencies {
         };
         result.validate(central)?;
         Ok(result)
+    }
+
+    pub(super) fn namespace_proof(&self) -> (EntryVersion, Vec<OsString>) {
+        (self.stamp.clone(), self.names.clone())
     }
 
     pub(super) fn validate(&self, central: &File) -> Result<(), PlatformError> {

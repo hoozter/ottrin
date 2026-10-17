@@ -203,11 +203,7 @@ impl Admission {
         before: &super::cleanup_group::Selection,
         after: &super::cleanup_group::Selection,
     ) -> Result<(), PlatformError> {
-        if self.catalog != before.fingerprint(&self.header)? {
-            return Err(io("Copy group catalog handoff does not match admission"));
-        }
-        self.catalog = after.fingerprint(&self.header)?;
-        Ok(())
+        before.advance_catalog(&self.header, &mut self.catalog, after)
     }
 
     /// Persist cleanup intent without removing payload or metadata. The
@@ -370,8 +366,18 @@ impl Admission {
         &self,
         parent: &File,
         central: &File,
-        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<super::cleanup_finalize::Completion, PlatformError> {
+        self.reclaim_with_ack(parent, central, cancel)
+            .map(|result| result.completion)
+    }
+
+    pub(super) fn reclaim_with_ack(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<super::cleanup_finalize::Reclaimed, PlatformError> {
         let name = self.header.stage_name();
         let transaction = self.location.join(&name).display().to_string();
         let mut started = self.started;
@@ -381,8 +387,9 @@ impl Admission {
             loop {
                 let progress = journal.state.cleanup.as_ref().unwrap();
                 if progress.payload_removed {
-                    return super::cleanup_finalize::Completion::capture(
+                    return super::cleanup_finalize::Reclaimed::capture(
                         &journal,
+                        self.journal,
                         &dependencies,
                         parent,
                         central,
@@ -396,8 +403,9 @@ impl Admission {
                     journal.persist(Record::Cleanup {
                         entry: CleanupRecord::PayloadRemoved,
                     })?;
-                    return super::cleanup_finalize::Completion::capture(
+                    return super::cleanup_finalize::Reclaimed::capture(
                         &journal,
+                        self.journal,
                         &dependencies,
                         parent,
                         central,

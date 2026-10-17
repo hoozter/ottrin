@@ -110,6 +110,68 @@ impl Selection {
         )
     }
 
+    pub(super) fn advance_catalog(
+        &self,
+        header: &Header,
+        catalog: &mut [u8; 32],
+        after: &Self,
+    ) -> Result<(), PlatformError> {
+        if *catalog != self.fingerprint(header)? {
+            return Err(io("Copy group catalog handoff does not match admission"));
+        }
+        *catalog = after.fingerprint(header)?;
+        Ok(())
+    }
+
+    fn accept_payload(
+        &mut self,
+        completion: &cleanup_finalize::Completion,
+        change: &cleanup_finalize::PayloadChange,
+    ) -> Result<(), PlatformError> {
+        let header = completion.header();
+        let record = self
+            .records
+            .get_mut(&header.central_name())
+            .ok_or_else(|| io("Completed Copy member is absent from group"))?;
+        if !self.selected.contains(&header.transaction)
+            || record.digest != change.before_journal
+            || record.version.identity != change.control_version.identity
+            || change.control_version.identity != header.central_file
+        {
+            return Err(io(
+                "Copy payload acknowledgement does not match frozen control",
+            ));
+        }
+        let mut names = self.names.clone();
+        let mut root = self.root.clone();
+        if names != change.registry_names {
+            if !header.parent.same_object(header.central) {
+                return Err(io("Copy payload changed an unrelated registry namespace"));
+            }
+            let retained = change
+                .retained
+                .as_ref()
+                .ok_or_else(|| io("Copy payload has no retained root acknowledgement"))?;
+            let index = names
+                .iter()
+                .position(|name| name == retained)
+                .ok_or_else(|| io("Copy payload root was not in the frozen registry"))?;
+            names.remove(index);
+            root.modified = change.registry_stamp.modified;
+            root.changed = change.registry_stamp.changed;
+        }
+        if names != change.registry_names || root != change.registry_stamp {
+            return Err(io(
+                "Copy payload acknowledgement has an unexpected registry change",
+            ));
+        }
+        record.digest = completion.journal_digest();
+        record.version = change.control_version.clone();
+        self.names = names;
+        self.root = root;
+        Ok(())
+    }
+
     /// Only a successful held writer supplies this epoch. No reopened ID or
     /// freshly observed external catalog change is accepted as our own work.
     fn accept_start(&mut self, started: &cleanup::Started) -> Result<(), PlatformError> {
@@ -180,6 +242,7 @@ impl Selection {
 #[derive(Clone, Debug)]
 pub(super) enum Member {
     Payload(cleanup::Admission),
+    Completion(cleanup_finalize::Completion),
     Metadata(cleanup_finalize::Plan),
 }
 
@@ -187,6 +250,7 @@ impl Member {
     pub(super) fn header(&self) -> &Header {
         match self {
             Self::Payload(value) => value.header(),
+            Self::Completion(value) => value.header(),
             Self::Metadata(value) => value.header(),
         }
     }
@@ -226,6 +290,9 @@ impl Observation {
             match member {
                 Member::Payload(admission) => {
                     admission.validate_in_group(&parent, &central, &self.selection, &mut cancel)?
+                }
+                Member::Completion(completion) => {
+                    completion.validate_in_group(&parent, &central, &self.selection, &mut cancel)?
                 }
                 Member::Metadata(plan) => {
                     let current = cleanup_finalize::Plan::observe_in_group(
@@ -267,8 +334,14 @@ impl Observation {
             let mut members = self.members.clone();
             members[index] = Member::Payload(started.admission);
             for member in &mut members {
-                if let Member::Payload(admission) = member {
-                    admission.advance_catalog(&self.selection, &selection)?;
+                match member {
+                    Member::Payload(admission) => {
+                        admission.advance_catalog(&self.selection, &selection)?
+                    }
+                    Member::Completion(completion) => {
+                        completion.advance_catalog(&self.selection, &selection)?
+                    }
+                    Member::Metadata(_) => {}
                 }
             }
             // Retain our writer proof before a cancellation or external-state
@@ -277,6 +350,77 @@ impl Observation {
             self.members = members;
             self.selection.validate(&central, &mut cancel)?;
         }
+        manager.validate()
+    }
+
+    /// Reclaim one member through the ordinary physical writer. This retains
+    /// its completion proof and advances peers only from that writer's exact
+    /// control/registry acknowledgement. Shared aliases need a coordinated
+    /// per-unlink protocol; this primitive cannot bypass their protection.
+    pub(super) fn reclaim_payload(
+        &mut self,
+        index: usize,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if index >= self.members.len() {
+            return Err(io("Copy group member index is invalid"));
+        }
+        if self
+            .shared
+            .values()
+            .any(|owners| owners.iter().any(|&(owner, _)| owner == index))
+        {
+            return Err(io(
+                "Shared retained aliases require coordinated unlink acknowledgements",
+            ));
+        }
+        self.start_all(&mut cancel)?;
+        let Member::Payload(admission) = &self.members[index] else {
+            return Ok(());
+        };
+        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+            .ok_or_else(|| io("Configured Copy registry is missing"))?;
+        let central = manager.writable_root()?;
+        self.selection.validate(&central, &mut cancel)?;
+        let parent = if admission
+            .header()
+            .parent
+            .same_object(admission.header().central)
+        {
+            central.try_clone().map_err(io)?
+        } else {
+            discovery::Volumes::new(&central)?.resolve(
+                admission.header().parent,
+                FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+                &mut cancel,
+            )?
+        };
+        let reclaimed = admission.reclaim_with_ack(&parent, &central, &mut cancel)?;
+        let completion = reclaimed.completion;
+        let mut selection = self.selection.clone();
+        selection.accept_payload(&completion, &reclaimed.change)?;
+        let mut members = self.members.clone();
+        for (other, member) in members.iter_mut().enumerate() {
+            if other == index {
+                continue;
+            }
+            match member {
+                Member::Payload(admission) => {
+                    admission.advance_catalog(&self.selection, &selection)?
+                }
+                Member::Completion(completion) => {
+                    completion.advance_catalog(&self.selection, &selection)?
+                }
+                Member::Metadata(_) => {}
+            }
+        }
+        // The new completion already carries the post-unlink catalog; validate
+        // it against the acknowledged catalog rather than applying its delta twice.
+        completion.validate_catalog(&selection)?;
+        members[index] = Member::Completion(completion);
+        self.members = members;
+        self.selection = selection;
+        self.selection.validate(&central, &mut cancel)?;
         manager.validate()
     }
 
@@ -374,6 +518,9 @@ impl Observation {
             match member {
                 Member::Payload(admission) => {
                     admission.validate_metadata(&parent, central, &mut cancel)?
+                }
+                Member::Completion(completion) => {
+                    completion.validate_in_group(&parent, central, &selection, &mut cancel)?
                 }
                 Member::Metadata(plan) => {
                     let current = cleanup_finalize::Plan::observe_in_group(

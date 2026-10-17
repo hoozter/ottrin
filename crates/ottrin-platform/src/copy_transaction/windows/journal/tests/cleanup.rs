@@ -1965,15 +1965,29 @@ fn assert_only_journals_changed(
 }
 
 fn cleanup_chain_fixture(root: &Path, directory: bool, initial_overwrite: bool) -> [OsString; 2] {
+    cleanup_chain_at(root, directory, initial_overwrite, false)
+}
+
+fn cleanup_chain_at(
+    root: &Path,
+    directory: bool,
+    initial_overwrite: bool,
+    registry_destination: bool,
+) -> [OsString; 2] {
     anchored_cleanup_fixture(root);
-    let parent = owner(&root.join("destination"));
+    let destination = root.join(if registry_destination {
+        "central"
+    } else {
+        "destination"
+    });
+    let parent = owner(&destination);
     let central = owner(&root.join("central"));
     if initial_overwrite {
         if directory {
-            std::fs::create_dir(root.join("destination/copy")).unwrap();
-            std::fs::write(root.join("destination/copy/old"), b"before first").unwrap();
+            std::fs::create_dir(destination.join("copy")).unwrap();
+            std::fs::write(destination.join("copy/old"), b"before first").unwrap();
         } else {
-            std::fs::write(root.join("destination/copy"), b"before first").unwrap();
+            std::fs::write(destination.join("copy"), b"before first").unwrap();
         }
     }
     let second = root.join("second-source");
@@ -2692,5 +2706,212 @@ fn windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_pro
                 group.start_all(|_| Ok(())).unwrap();
             }
         }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_payload_handoff_preserves_remaining_members_and_completion() {
+    use super::super::cleanup_group::{Member, Observation};
+    for registry_destination in [false, true] {
+        for directory in [false, true] {
+            for overwrite in [false, true] {
+                let root = tempfile::tempdir().unwrap();
+                let names =
+                    cleanup_chain_at(root.path(), directory, overwrite, registry_destination);
+                let destination = root.path().join(if registry_destination {
+                    "central"
+                } else {
+                    "destination"
+                });
+                let parent = owner(&destination);
+                let central = owner(&root.path().join("central"));
+                let headers = names
+                    .iter()
+                    .map(|name| {
+                        Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
+                            .unwrap()
+                            .state
+                            .header
+                            .unwrap()
+                    })
+                    .collect::<Vec<_>>();
+                let ids = headers
+                    .iter()
+                    .map(|header| header.transaction.clone())
+                    .collect::<Vec<_>>();
+                drop((parent, central));
+                let mut group =
+                    Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
+                        .unwrap();
+                group.start_all(|_| Ok(())).unwrap();
+                let mut stale = group.clone();
+                for index in [1, 0] {
+                    group.reclaim_payload(index, |_| Ok(())).unwrap();
+                    assert!(matches!(group.members[index], Member::Completion(_)));
+                    assert!(!destination.join(headers[index].original_name()).exists());
+                    assert!(destination.join(headers[index].stage_name()).exists());
+                    assert!(
+                        root.path()
+                            .join("central")
+                            .join(headers[index].central_name())
+                            .exists()
+                    );
+                    let after = namespace_contents(root.path());
+                    group.reclaim_payload(index, |_| Ok(())).unwrap();
+                    assert_eq!(namespace_contents(root.path()), after);
+                }
+                let after = namespace_contents(root.path());
+                assert!(stale.reclaim_payload(0, |_| Ok(())).is_err());
+                assert_eq!(namespace_contents(root.path()), after);
+                assert_eq!(
+                    std::fs::read(destination.join(if directory { "copy/next" } else { "copy" }))
+                        .unwrap(),
+                    b"second publication"
+                );
+                let parent = owner(&destination);
+                let central = owner(&root.path().join("central"));
+                for member in &group.members {
+                    let Member::Completion(completion) = member else {
+                        unreachable!()
+                    };
+                    // Both completion proofs survived the other member's exact
+                    // control/root deltas. Finish one only after checking both.
+                    completion
+                        .validate_in_group(&parent, &central, &group.selection, |_| Ok(()))
+                        .unwrap();
+                }
+                let Member::Completion(completion) = &group.members[0] else {
+                    unreachable!()
+                };
+                completion
+                    .begin(&parent, &central, |_| Ok(()))
+                    .unwrap()
+                    .finish(&parent, &central, |_| Ok(()))
+                    .unwrap();
+                assert!(
+                    !root
+                        .path()
+                        .join("central")
+                        .join(headers[0].central_name())
+                        .exists()
+                );
+                assert_eq!(
+                    std::fs::read(destination.join(if directory { "copy/next" } else { "copy" }))
+                        .unwrap(),
+                    b"second publication"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_payload_preserves_shared_and_foreign_changes() {
+    use super::super::cleanup_group::Observation;
+    for change in 0..4 {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_peer_fixture(root.path(), change == 0);
+        let headers = ["destination", "second-destination"]
+            .iter()
+            .zip(&names)
+            .map(|(directory, name)| {
+                Snapshot::load(
+                    &owner(&root.path().join(directory)),
+                    &owner(&root.path().join("central")),
+                    name,
+                    SnapshotAccess::Read,
+                )
+                .unwrap()
+                .state
+                .header
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let mut group =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        group.start_all(|_| Ok(())).unwrap();
+        match change {
+            0 | 3 => {}
+            1 => std::fs::write(
+                root.path()
+                    .join("second-destination")
+                    .join(headers[1].original_name())
+                    .join("old"),
+                b"foreign changed retained data",
+            )
+            .unwrap(),
+            2 => std::fs::write(
+                root.path().join("central/foreign.txt"),
+                b"unrelated new occupant",
+            )
+            .unwrap(),
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(
+            group
+                .reclaim_payload(0, |_| if change == 3 {
+                    Err(io("owned cancellation"))
+                } else {
+                    Ok(())
+                })
+                .is_err()
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_payload_uncertainty_requires_fresh_group_admission() {
+    use super::super::cleanup_group::{Member, Observation};
+    for step in [Step::CleanupDispositionSet, Step::CleanupFlushed] {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_chain_fixture(root.path(), false, true);
+        let headers = names
+            .iter()
+            .map(|name| original_journal(root.path(), name).header.clone())
+            .collect::<Vec<_>>();
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let mut group =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        group.reclaim_payload(1, |_| Ok(())).unwrap();
+        assert!(matches!(group.members[1], Member::Completion(_)));
+        let peer_bytes =
+            std::fs::read(root.path().join("central").join(headers[1].central_name())).unwrap();
+        let sequence = original_journal(root.path(), &names[0]).sequence + 1;
+        FAULT.with(|slot| slot.set(Some((sequence, step, false))));
+        let result = group.reclaim_payload(0, |_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+        assert!(matches!(group.members[1], Member::Completion(_)));
+        assert_eq!(
+            std::fs::read(root.path().join("central").join(headers[1].central_name())).unwrap(),
+            peer_bytes
+        );
+        let after = namespace_contents(root.path());
+        assert!(group.reclaim_payload(0, |_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), after);
+        let mut recovered =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        for index in [0, 1] {
+            recovered.reclaim_payload(index, |_| Ok(())).unwrap();
+        }
+        assert!(
+            recovered
+                .members
+                .iter()
+                .all(|member| matches!(member, Member::Completion(_)))
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("destination/copy")).unwrap(),
+            b"second publication"
+        );
     }
 }

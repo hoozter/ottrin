@@ -856,3 +856,42 @@ A deliberately short watchdog run reports its expected failure and clears its
 processes/fixture; the subsequent focused and full runs pass. The complete cleanup
 suite has a bounded ten-minute watchdog; the test crate remains unoptimized for
 correctness testing. No application-performance or package acceptance is inferred.
+
+
+## Physical payload handoff within a cleanup group
+
+The group now retains a completed member's writer proof while reclaiming another
+member. Each successful physical writer returns a short-lived acknowledgement
+with its prior journal digest, new central-control epoch and the registry's
+verified post-unlink names/version. The group accepts only the expected retained
+root removal when the registry is also the destination; it refuses unrelated
+namespace or metadata changes. Both waiting payload admissions and already-held
+completion proofs advance through the same catalog handoff check.
+
+The unlink acknowledgement is separate from the retained completion proof and
+is released after handoff. Completed members therefore do not retain duplicate
+registry filename lists. Completion inspection and metadata authorization share
+one validation implementation. The existing single-member action uses the same
+physical writer and discards its unneeded group acknowledgement.
+
+Three focused native tests pass: eight file/directory, creation/overwrite and
+same/separate-registry shapes; changed-peer, changed-catalog, cancellation and
+shared-alias refusal; and two uncertain-unlink boundaries requiring fresh group
+admission. Completion proofs survive other members' own changes, repeat payload
+requests append nothing, and a retained completion can authorize its individual
+metadata finalization afterward. Source/public bytes remain preserved.
+
+This is a physical handoff primitive, not a complete group executor. The physical
+writer still enforces ordinary dependencies. Shared retained hard links require
+cross-member unlink/epoch/count acknowledgements, and group metadata transitions
+still need their own catalog handoffs before Activity integration. Public Windows
+Copy and application packages remain unchanged.
+
+
+`GROUP_PAYLOAD_ACCEPTANCE.json` binds the final source and test binary to 41
+passing native cleanup tests, including the existing real-process-exit matrices.
+The three focused handoff tests also pass separately. The full run took 300.52s
+under its bounded 600s correctness watchdog. Strict Windows platform/UI checks
+and owned-process/temporary-namespace teardown pass. Current application packages,
+rendered UI, group-specific process-exit matrices, metadata group handoff and
+shared-retained-alias execution retain their separate unfinished scopes.

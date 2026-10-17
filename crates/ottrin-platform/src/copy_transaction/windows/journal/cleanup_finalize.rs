@@ -171,9 +171,25 @@ pub(super) struct Completion {
     parent_security: [u8; 32],
 }
 
-impl Completion {
+#[derive(Clone, Debug)]
+pub(super) struct PayloadChange {
+    pub(super) before_journal: [u8; 32],
+    pub(super) control_version: EntryVersion,
+    pub(super) registry_stamp: EntryVersion,
+    pub(super) registry_names: Vec<OsString>,
+    pub(super) retained: Option<OsString>,
+}
+
+#[derive(Debug)]
+pub(super) struct Reclaimed {
+    pub(super) completion: Completion,
+    pub(super) change: PayloadChange,
+}
+
+impl Reclaimed {
     pub(super) fn capture(
         journal: &Journal,
+        before_journal: [u8; 32],
         dependencies: &Dependencies,
         parent: &File,
         central: &File,
@@ -197,26 +213,89 @@ impl Completion {
             cancel,
         )?;
         dependencies.revalidate_peers(central)?;
+        let (registry_stamp, registry_names) = dependencies.namespace_proof();
         Ok(Self {
-            header: journal.header.clone(),
-            journal: Sha256::digest(&bytes).into(),
-            metadata: super::super::evidence_digest(&metadata)?,
-            catalog: dependencies.fingerprint()?,
-            parent_location: windows_fs::location(parent).map_err(io)?,
-            central_location: windows_fs::location(central).map_err(io)?,
-            parent_security: security::owner_group_dacl_digest(parent)?,
+            completion: Completion {
+                header: journal.header.clone(),
+                journal: Sha256::digest(&bytes).into(),
+                metadata: super::super::evidence_digest(&metadata)?,
+                catalog: dependencies.fingerprint()?,
+                parent_location: windows_fs::location(parent).map_err(io)?,
+                central_location: windows_fs::location(central).map_err(io)?,
+                parent_security: security::owner_group_dacl_digest(parent)?,
+            },
+            change: PayloadChange {
+                before_journal,
+                control_version: metadata[2].clone(),
+                registry_stamp,
+                registry_names,
+                retained: journal
+                    .state
+                    .cleanup
+                    .as_ref()
+                    .unwrap()
+                    .manifest
+                    .entries
+                    .first()
+                    .map(|entry| OsString::from_wide(&entry.name)),
+            },
         })
     }
+}
 
-    pub(super) fn begin(
+impl Completion {
+    pub(super) fn header(&self) -> &Header {
+        &self.header
+    }
+    pub(super) fn journal_digest(&self) -> [u8; 32] {
+        self.journal
+    }
+
+    pub(super) fn validate_catalog(
+        &self,
+        selection: &super::cleanup_group::Selection,
+    ) -> Result<(), PlatformError> {
+        if self.catalog != selection.fingerprint(&self.header)? {
+            return Err(io(
+                "Copy payload completion catalog does not match its acknowledgement",
+            ));
+        }
+        Ok(())
+    }
+
+    pub(super) fn advance_catalog(
+        &mut self,
+        before: &super::cleanup_group::Selection,
+        after: &super::cleanup_group::Selection,
+    ) -> Result<(), PlatformError> {
+        before.advance_catalog(&self.header, &mut self.catalog, after)
+    }
+
+    pub(super) fn validate_in_group(
         &self,
         parent: &File,
         central: &File,
+        selection: &super::cleanup_group::Selection,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
-    ) -> Result<Plan, PlatformError> {
-        let name = self.header.stage_name();
-        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Read)?;
-        let versions = snapshot_metadata(&snapshot, &mut cancel)?;
+    ) -> Result<(), PlatformError> {
+        self.inspect(parent, central, Some(selection), &mut cancel)
+            .map(|_| ())
+    }
+
+    fn inspect(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: Option<&super::cleanup_group::Selection>,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(Snapshot, Dependencies, [EntryVersion; 3]), PlatformError> {
+        let snapshot = Snapshot::load(
+            parent,
+            central,
+            &self.header.stage_name(),
+            SnapshotAccess::Read,
+        )?;
+        let versions = snapshot_metadata(&snapshot, &mut *cancel)?;
         if snapshot.state.header.as_ref() != Some(&self.header)
             || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
             || super::super::evidence_digest(&versions)? != self.metadata
@@ -234,15 +313,32 @@ impl Completion {
             .as_ref()
             .filter(|p| p.payload_removed && !p.metadata_removal_intent)
             .ok_or_else(|| io("Copy cleanup payload is not ready for metadata finalization"))?;
-        Remaining::open(parent, &snapshot.state, progress, &mut cancel)?;
-        let dependencies =
-            Dependencies::open(central, &self.header, &progress.manifest, &mut cancel)?;
+        Remaining::open(parent, &snapshot.state, progress, &mut *cancel)?;
+        let dependencies = Dependencies::open_selected(
+            central,
+            &self.header,
+            &progress.manifest,
+            selection,
+            &mut *cancel,
+        )?;
         if dependencies.fingerprint()? != self.catalog {
             return Err(io(
                 "Copy cleanup dependencies changed before metadata authorization",
             ));
         }
         snapshot.revalidate(parent, central)?;
+        Ok((snapshot, dependencies, versions))
+    }
+
+    pub(super) fn begin(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Plan, PlatformError> {
+        let name = self.header.stage_name();
+        let (snapshot, dependencies, versions) =
+            self.inspect(parent, central, None, &mut cancel)?;
         let bytes = snapshot.bytes;
         let sequence = snapshot.sequence;
         // Release all read leases before acquiring the paired journal writer.
