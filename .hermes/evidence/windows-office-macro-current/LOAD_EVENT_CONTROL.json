@@ -1,0 +1,25 @@
+{
+  "workspace_removed": true,
+  "status": "pass",
+  "cases": [
+    {
+      "source_sha256": "CFB1C1CB5F1AB40AAC2B6D420939E85E428719EF65FB202308A2B45A5348C428",
+      "exit": 0,
+      "name": "old",
+      "converted": true,
+      "timeout": false
+    },
+    {
+      "source_sha256": "C8C7C5AA3C7C04EC0FFF1B284050D251102BB6CAAB72475F16B946EC3EE2A19B",
+      "exit": 0,
+      "name": "fixed",
+      "converted": true,
+      "timeout": false
+    }
+  ],
+  "owned_processes": 0,
+  "pdf_text": {
+    "old": "DOCX BASELINE\nThis heading is centered, blue, bold, and 20 pt in the source document.\nBold text beside italic text and ordinary body text.\nFeature\nExpected source layout\nTable\nTwo bordered columns\nFallback\nTruthful extracted text only\n\n\fPAGE TWO \u2014 right aligned in the source.\n\n\f",
+    "fixed": "DOCX BASELINE\nThis heading is centered, blue, bold, and 20 pt in the source document.\nBold text beside italic text and ordinary body text.\nFeature\nExpected source layout\nTable\nTwo bordered columns\nFallback\nTruthful extracted text only\n\n\fPAGE TWO \u2014 right aligned in the source.\n\n\f"
+  }
+}

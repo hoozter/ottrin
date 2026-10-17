@@ -1,0 +1,113 @@
+{
+  "status": "native macro-policy and production suppression acceptance passed",
+  "baseline_revision": "844b699",
+  "production_behavior_changed": false,
+  "production_options": {
+    "production_source": "crates/ottrin-preview/src/bin/ottrin-office-render.rs",
+    "source_sha256": "3a212f3b75565a7f0b473708547348a5820580a6f610f147f591c5ba2ca93f7e",
+    "production_load_options": "Batch=true,EnableMacrosExecution=false,MacroSecurityLevel=3",
+    "positive_options": "Batch=true,EnableMacrosExecution=true,MacroSecurityLevel=0",
+    "scope": "Paired explicit macro invocation diagnoses the policy itself; it does not claim automatic document event dispatch."
+  },
+  "native_payload": {
+    "sha256": {
+      "native.exe": "d4a2ea8550120e2fc6e3e41193f9267eccf53e48860b72570c2a8ed5ad08740a",
+      "ottrin-office-render.exe": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+      "pdfium.dll": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4",
+      "macro.odt": "d60b31372d711a79cd5812aa2917164ab53f9bed7fcc0325c31616e9ddbd1b0a",
+      "enabled.pdf": "1bd54cf7b3e832eaaf31f523450b517c64277dea7c79c56d75a7a9a9c075e74d",
+      "denied.pdf": "747ea685a474be620e44a74e577159ff03d71fbbc10f34d901cc055a59d8dd19"
+    },
+    "test_profile": {
+      "opt_level": "1",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "source_revision": "844b699 plus paired-policy acceptance test",
+    "macro_controls": "Same fixture; explicit invocation with enabled policy versus exact production load options",
+    "unstripped_test_sha256": "151bcb29226fa7ea38df80063e88d99f31fa21b02012ecb88351d9525eb90695",
+    "debug_sections_removed_for_transfer": true,
+    "source_sha256": {
+      "crates/ottrin-preview/tests/native_office_boundary_contract.rs": "b9295437193fc5d7c238d3400651c7f0cb578bf7de31f3eeadbb48fd3420220c",
+      "crates/ottrin-preview/src/bin/ottrin-office-render.rs": "3a212f3b75565a7f0b473708547348a5820580a6f610f147f591c5ba2ca93f7e"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_root_removed": true,
+    "filtered_administrator_membership": false,
+    "temporary_entries": 0,
+    "effective_administrator": false,
+    "interactive": true,
+    "status": "pass",
+    "owned_processes": 0
+  },
+  "controls": "CONTROL_COMPARISON.json",
+  "checks": {
+    "test": "native_installed_office_suppresses_document_macros",
+    "native_parent_tests": 1,
+    "runtime_skips": 0,
+    "seconds": 3.82,
+    "strict_windows_test_clippy": "pass",
+    "format": "pass",
+    "diff": "pass"
+  },
+  "scope": [
+    "The enabled and denied controls explicitly invoke the same harmless Basic macro in the same ODT with fresh private profiles.",
+    "The macro inserts an in-memory text marker only; automatic Kit document events did not fire and are not claimed as verified.",
+    "The actual production helper exposes no macro invocation option; its AppContainer conversion preserves baseline text and original source bytes, omits the macro marker and removes private state.",
+    "This verifies a development helper, not a release package. Windows Office UI detection remains gated pending representative fidelity and UI fallback acceptance."
+  ],
+  "teardown": {
+    "owned_stage_removed": true,
+    "login_settings_unchanged": true,
+    "credentials_not_created": true,
+    "original_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "provider": {
+      "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+      "version": "26.8.1.1",
+      "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+    },
+    "owned_interactive_task_removed": true,
+    "status": "pass",
+    "original_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "owned_native_processes": 0,
+    "owned_vm_state": "shut off"
+  },
+  "cleanup": "Removed owned VM staging/task/profiles and shut down VM; removed disposable host executables, transfer archives, duplicate fixtures and superseded generated outputs. Current Cargo outputs and shared caches preserved.",
+  "evidence_sha256": {
+    "CONTROL_COMPARISON.json": "a0910112a689c250d7b98aa96b78c139e9be097db6dd489d46f55e8f0e631be2",
+    "FIXTURE.json": "d1eb18dee887fc8caff481b20d2bba14a72feefd6a3ec48a5e9dab74cadbda66",
+    "LOAD_EVENT_CONTROL.json": "310818febfbac96048ba36fa8be74441e44b99d004eb8f3bcf90c94e8a0ec377",
+    "NATIVE_PAYLOAD.json": "8620f665f0c0a234596f7062f041d3437ccd725adcc98b07ef5e7034cbc0d441",
+    "NATIVE_RESULTS.json": "824cf0586314c4cafec6872b2a8101a06995c6ef4019dd4b405d3c1a07abcf68",
+    "POLICY.json": "1211c8f3d35f125064f6f96ba69d4a4dc5e94f72932a0af32edbf4e2aa40219a",
+    "TEARDOWN.json": "93b969d8e41de2899e43e7a1926354d1dca361ef95828df2f9b3b981f16f03ff",
+    "build.log": "b3a6ea4aecaf86494daa6b8c41a842ea523c1b9780c9085e9d885636122391f7",
+    "clippy.log": "a904fbbc287875a57b5d73553da09493ddd76e1e3e93896608e1da174a536042",
+    "denied.c": "222e0611674e07defe857fe76b113ee747ba2ad5cd317fa2614547fe5d8381aa",
+    "denied.pdf": "747ea685a474be620e44a74e577159ff03d71fbbc10f34d901cc055a59d8dd19",
+    "denied.ps1": "8e08f2ecf88630f3a5007e238d19239d1e6239034888cbcb64d82865c8b1233b",
+    "denied.stderr": "c6113a585e8ba30443fea27e23ce9379a68ea61f3934b50bd3a221443ab31018",
+    "diagnostic.c": "e65bd095301789f7946ddf442faa1ba60dc40f6a5f997ba7feaca559470933cb",
+    "diagnostic.pdf": "1bd54cf7b3e832eaaf31f523450b517c64277dea7c79c56d75a7a9a9c075e74d",
+    "diagnostic.ps1": "76cada20c3997fd9994a7403550dbf520b38c18feb35aac6d3b4c523a3cfe912",
+    "diagnostic.stderr": "6f71a90078a42fd8d5053bf61ba1a574d3fedcf30427dc134a045eede69f5b82",
+    "export-macro.odt": "d60b31372d711a79cd5812aa2917164ab53f9bed7fcc0325c31616e9ddbd1b0a",
+    "native-interactive.ps1": "e534fb27664a7876556392a4c96d7178b44eb88e84ff3b356a3228b2e6f601ff",
+    "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native.stdout": "8b42e7da778a9153cdada23b2a13e498513409282806a990bf61279140ba25c4",
+    "teardown.ps1": "9b5f91ac986a80c7d19a355ce289433a3d91a2edcc55fd0f7c2a4d1fd81c986d"
+  },
+  "native_text_normalization": {
+    "description": "UTF-8 LF text with trailing whitespace removed; content unchanged",
+    "original_sha256": {
+      "NATIVE_RESULTS.json": "f001b6ba98660029cf1d2202b332dbcf727eeb8503a4517210d89a4d066b9088",
+      "denied.stderr": "30b7793b8d1c97896fa08e84cfa7e1c035ce7aa78d6e2cc9c4bed0e332cc86da",
+      "diagnostic.stderr": "9f238eec1d1b449e4c118f82cd1702fc407d57d5360c7800375410a3db1c61ec",
+      "native.stdout": "013ff762e703e93d58a4c35089f9fd08a4193374816515885f90006dd4be8f24"
+    }
+  }
+}

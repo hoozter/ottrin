@@ -1,0 +1,51 @@
+{
+  "scope": "Explicit invocation of the same harmless document macro, using controls whose source differs only in load policy. Automatic load/export events did not execute and are not claimed as a positive control.",
+  "controls": {
+    "enabled": {
+      "source": "diagnostic.c",
+      "source_sha256": "e65bd095301789f7946ddf442faa1ba60dc40f6a5f997ba7feaca559470933cb",
+      "executable_sha256": "73614f18fa751132f6862067f60d84d733b9273ee23e5341b1e25c0c43f8f739",
+      "fixture_sha256": "d60b31372d711a79cd5812aa2917164ab53f9bed7fcc0325c31616e9ddbd1b0a",
+      "pdf_sha256": "1bd54cf7b3e832eaaf31f523450b517c64277dea7c79c56d75a7a9a9c075e74d",
+      "pdf_text": "DOCX BASELINE\nThis heading is centered, blue, bold, and 20 pt in the source document.\nBold text beside italic text and ordinary body text.\nFeature\nExpected source layout\nTable\nTwo bordered columns\nFallback\nTruthful extracted text only\n\n\fPAGE TWO \u2014 right aligned in the source.\nOTTRIN MACRO EXECUTED\n\n\f",
+      "load_policy": "Batch=true,EnableMacrosExecution=true,MacroSecurityLevel=0",
+      "native_report": {
+        "workspace_removed": true,
+        "status": "pass",
+        "cases": [
+          {
+            "source_sha256": "D60B31372D711A79CD5812AA2917164AB53F9BED7FCC0325C31616E9DDBD1B0A",
+            "exit": 0,
+            "name": "export",
+            "converted": true,
+            "timeout": false
+          }
+        ],
+        "owned_processes": 0
+      }
+    },
+    "production_policy": {
+      "source": "denied.c",
+      "source_sha256": "222e0611674e07defe857fe76b113ee747ba2ad5cd317fa2614547fe5d8381aa",
+      "executable_sha256": "5ee49951c40b21fe74dd62073ba4b7363460c67f40542538c7a5f15d9a6072d4",
+      "fixture_sha256": "d60b31372d711a79cd5812aa2917164ab53f9bed7fcc0325c31616e9ddbd1b0a",
+      "pdf_sha256": "747ea685a474be620e44a74e577159ff03d71fbbc10f34d901cc055a59d8dd19",
+      "pdf_text": "DOCX BASELINE\nThis heading is centered, blue, bold, and 20 pt in the source document.\nBold text beside italic text and ordinary body text.\nFeature\nExpected source layout\nTable\nTwo bordered columns\nFallback\nTruthful extracted text only\n\n\fPAGE TWO \u2014 right aligned in the source.\n\n\f",
+      "load_policy": "Batch=true,EnableMacrosExecution=false,MacroSecurityLevel=3",
+      "native_report": {
+        "workspace_removed": true,
+        "status": "pass",
+        "cases": [
+          {
+            "source_sha256": "D60B31372D711A79CD5812AA2917164AB53F9BED7FCC0325C31616E9DDBD1B0A",
+            "exit": 0,
+            "name": "export",
+            "converted": true,
+            "timeout": false
+          }
+        ],
+        "owned_processes": 0
+      }
+    }
+  }
+}

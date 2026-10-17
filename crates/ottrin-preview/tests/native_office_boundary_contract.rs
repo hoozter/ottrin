@@ -376,7 +376,7 @@ fn native_installed_office_cancels_after_provider_start_and_releases_files() {
 
 #[cfg(target_os = "windows")]
 #[test]
-#[ignore = "requires the verified macro-positive-control fixture and installed LibreOffice/PDFium"]
+#[ignore = "requires paired macro-policy controls and installed LibreOffice/PDFium"]
 fn native_installed_office_suppresses_document_macros() {
     use ottrin_preview::{
         InstalledLibreOfficeConverter, OfficeFormat, OfficeRenderPolicy, OfficeRenderRequest,
@@ -385,8 +385,9 @@ fn native_installed_office_suppresses_document_macros() {
     use std::sync::atomic::AtomicBool;
     use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-    // The companion ordinary-user Kit positive control must export the text
-    // marker before this negative assertion establishes macro suppression.
+    // Companion ordinary-user Kit controls explicitly invoke the same harmless
+    // document macro with macros enabled and with the production load policy.
+    // Automatic document events alone are not a sufficient positive control.
     let fixture = std::path::PathBuf::from(
         std::env::var_os("OTTRIN_NATIVE_OFFICE_MACRO_FIXTURE").expect("verified macro fixture"),
     );
@@ -408,6 +409,21 @@ fn native_installed_office_suppresses_document_macros() {
         "positive control macro did not run: {control_text:?}"
     );
     drop(control);
+    let denied_path = std::path::PathBuf::from(
+        std::env::var_os("OTTRIN_NATIVE_OFFICE_MACRO_DENIED_CONTROL_PDF")
+            .expect("production-policy macro challenge PDF"),
+    );
+    let denied = pdfium.load_pdf_from_file(&denied_path, None).unwrap();
+    let denied_text = denied
+        .pages()
+        .iter()
+        .map(|page| page.text().unwrap().all())
+        .collect::<String>();
+    assert!(
+        denied_text.contains("DOCX BASELINE") && !denied_text.contains("OTTRIN MACRO EXECUTED"),
+        "production-policy control must load the document and deny the same macro: {denied_text:?}"
+    );
+    drop(denied);
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()

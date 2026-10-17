@@ -266,11 +266,18 @@ Macro suppression requires a working positive control, not merely a macro-free
 PDF. The ignored `native_installed_office_suppresses_document_macros` native
 fixture takes `OTTRIN_NATIVE_OFFICE_MACRO_FIXTURE` (the owned ODT) and
 `OTTRIN_NATIVE_OFFICE_MACRO_CONTROL_PDF` (the PDF exported from that exact ODT
-with macros enabled in an ordinary-user control). It requires the control's
-`OTTRIN MACRO EXECUTED` marker before checking the production PDF for unchanged
-baseline content, absent marker, preserved source and cleaned private state.
-The current control has not executed its load event; the test correctly refuses
-acceptance. Do not weaken that prerequisite or treat an ignored test as passed.
+with macros enabled in an ordinary-user control), plus
+`OTTRIN_NATIVE_OFFICE_MACRO_DENIED_CONTROL_PDF` (the same explicit macro challenge
+using the production load options). It requires the enabled control's
+`OTTRIN MACRO EXECUTED` marker and the denied control's unchanged baseline with
+no marker before checking the actual contained production conversion, source
+preservation and private-state cleanup. Pin the fixture, helper, controls and
+test binary together in the acceptance receipt. Automatic document load events
+did not execute in the Kit control, so they cannot establish suppression by
+themselves. The paired control explicitly invokes the harmless document macro;
+it does not establish automatic event dispatch or expose macro execution in
+the production helper. Do not weaken these prerequisites or treat an ignored
+test as passed.
 
 The Windows converter uses the packaged `ottrin-office-render.exe` helper with
 installed LibreOfficeKit rather than the CLI, whose global named pipe is denied

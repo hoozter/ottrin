@@ -1,0 +1,9 @@
+{
+  "old_sha256": "cfb1c1cb5f1ab40aac2b6d420939e85e428719ef65fb202308a2b45a5348c428",
+  "change": "Restore xmlns:dom, xmlns:ooo and xmlns:office declarations used by QName attribute values that ElementTree serialization removed. Macro body unchanged; it only inserts a text marker into the document.",
+  "namespace_only_intermediate_sha256": "c8c7c5aa3c7c04ec0fff1b284050d251102bb6caab72475f16b946ec3ee2a19b",
+  "accepted_fixture": "export-macro.odt",
+  "accepted_sha256": "d60b31372d711a79cd5812aa2917164ab53f9bed7fcc0325c31616e9ddbd1b0a",
+  "additional_change": "Add office:save-to event referencing the same document macro. Neither load nor export automatic events executed in Kit controls; acceptance uses explicit invocation instead.",
+  "macro_module": "<script:module xmlns:script=\"http://openoffice.org/2000/script\" script:name=\"Module1\" script:language=\"StarBasic\">Sub OnOpen\nThisComponent.Text.insertString(ThisComponent.Text.getEnd(), Chr(10) &amp; \"OTTRIN MACRO EXECUTED\", False)\nEnd Sub</script:module>"
+}

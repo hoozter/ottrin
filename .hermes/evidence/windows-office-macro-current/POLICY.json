@@ -1,0 +1,7 @@
+{
+  "production_source": "crates/ottrin-preview/src/bin/ottrin-office-render.rs",
+  "source_sha256": "3a212f3b75565a7f0b473708547348a5820580a6f610f147f591c5ba2ca93f7e",
+  "production_load_options": "Batch=true,EnableMacrosExecution=false,MacroSecurityLevel=3",
+  "positive_options": "Batch=true,EnableMacrosExecution=true,MacroSecurityLevel=0",
+  "scope": "Paired explicit macro invocation diagnoses the policy itself; it does not claim automatic document event dispatch."
+}

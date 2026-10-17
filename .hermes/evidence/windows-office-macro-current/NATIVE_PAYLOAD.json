@@ -1,0 +1,25 @@
+{
+  "sha256": {
+    "native.exe": "d4a2ea8550120e2fc6e3e41193f9267eccf53e48860b72570c2a8ed5ad08740a",
+    "ottrin-office-render.exe": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+    "pdfium.dll": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4",
+    "macro.odt": "d60b31372d711a79cd5812aa2917164ab53f9bed7fcc0325c31616e9ddbd1b0a",
+    "enabled.pdf": "1bd54cf7b3e832eaaf31f523450b517c64277dea7c79c56d75a7a9a9c075e74d",
+    "denied.pdf": "747ea685a474be620e44a74e577159ff03d71fbbc10f34d901cc055a59d8dd19"
+  },
+  "test_profile": {
+    "opt_level": "1",
+    "debuginfo": 2,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "source_revision": "844b699 plus paired-policy acceptance test",
+  "macro_controls": "Same fixture; explicit invocation with enabled policy versus exact production load options",
+  "unstripped_test_sha256": "151bcb29226fa7ea38df80063e88d99f31fa21b02012ecb88351d9525eb90695",
+  "debug_sections_removed_for_transfer": true,
+  "source_sha256": {
+    "crates/ottrin-preview/tests/native_office_boundary_contract.rs": "b9295437193fc5d7c238d3400651c7f0cb578bf7de31f3eeadbb48fd3420220c",
+    "crates/ottrin-preview/src/bin/ottrin-office-render.rs": "3a212f3b75565a7f0b473708547348a5820580a6f610f147f591c5ba2ca93f7e"
+  }
+}
