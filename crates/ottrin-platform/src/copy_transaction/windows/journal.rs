@@ -2088,6 +2088,52 @@ impl<'a> DurableStage<'a> {
             tree,
         })
     }
+    /// Complete one admitted Copy through the same staging, original-retention,
+    /// publication and receipt admission engines used by restart recovery.
+    pub(super) fn execute_with_receipt(
+        source: &File,
+        parent: &'a File,
+        central: &File,
+        destination: &DestinationAdmission,
+        source_label: &OsStr,
+        max_entries: usize,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<crate::PathMoveUndoReceipt, PlatformError> {
+        let mut staged = Self::create(
+            source,
+            parent,
+            central,
+            destination,
+            source_label,
+            max_entries,
+            &mut progress,
+        )?;
+        let name = staged.stage.name.clone();
+        let transaction = windows_fs::location(&staged.stage.directory).map_err(io)?;
+        let result = (|| {
+            drop(staged.prepare_destination_security(|| progress(0))?);
+            // Native directory rename needs descendant capabilities released.
+            drop(staged);
+            if destination.original.is_some() {
+                let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+                let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+                journal.prepare_original(max_entries, &mut progress)?;
+                journal.move_original(OriginalMove::Retain, &mut progress)?;
+            }
+            let mut publication = PermissionStage::publish(parent, central, &name, &mut progress)?;
+            publication.apply(&mut progress)?;
+            drop(publication);
+            discovery::session_receipt(parent, central, &name, &mut progress)
+        })();
+        result.map_err(|error| {
+            let committed = inspect(parent, central, &name).is_ok_and(|state| state.completion_verified)
+                || matches!(error, PlatformError::CommittedCleanupPending { .. });
+            let transaction = transaction.display().to_string();
+            let message = format!("{error}; Copy data and recovery evidence remain at the transaction's recorded locations");
+            if committed { PlatformError::CommittedCleanupPending { transaction, message } }
+            else { PlatformError::CleanupPending { transaction, message } }
+        })
+    }
     pub(super) fn prepare_destination_security(
         &mut self,
         mut progress: impl FnMut() -> Result<(), PlatformError>,
@@ -3132,7 +3178,7 @@ pub(super) fn undo_completed_copy(
     undo_bound_copy(parent, central, name, None, &mut progress)
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct CopyUndoBinding {
     header: Header,
     completion_digest: [u8; 32],
@@ -3661,6 +3707,170 @@ mod tests {
                 b"original data"
             );
         }
+    }
+
+    #[test]
+    fn windows_native_copy_session_receipt_executes_admitted_creation_and_overwrite_then_public_undo()
+     {
+        use crate::PlatformOps;
+        for original in [None, Some(false), Some(true)] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let target = root.path().join("destination/copy");
+            if let Some(directory) = original {
+                if directory {
+                    std::fs::create_dir(&target).unwrap();
+                    std::fs::write(target.join("old"), b"old data").unwrap();
+                } else {
+                    std::fs::write(&target, b"old data").unwrap();
+                }
+            }
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let admission = if original.is_some() {
+                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
+                    .unwrap()
+            } else {
+                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+            };
+            let src = source(&root.path().join("source"));
+            let receipt = DurableStage::execute_with_receipt(
+                &src,
+                &parent,
+                &central,
+                &admission,
+                OsStr::new("source"),
+                100,
+                |_| Ok(()),
+            )
+            .unwrap();
+            drop(src);
+            assert_eq!(
+                receipt.path_pairs().len(),
+                if original.is_some() { 2 } else { 1 }
+            );
+            assert!(receipt.copy_transaction_id().is_some());
+            assert_eq!(
+                std::fs::read(receipt.after_path().join("nested/file")).unwrap(),
+                b"original data"
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            remove_undo_fixture_source(root.path());
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt)
+                .unwrap();
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt.clone())
+                .unwrap();
+            assert_eq!(
+                std::fs::read(receipt.before_path().join("nested/file")).unwrap(),
+                b"original data"
+            );
+            match original {
+                None => assert!(!target.exists()),
+                Some(directory) => assert_eq!(
+                    std::fs::read(if directory {
+                        target.join("old")
+                    } else {
+                        target
+                    })
+                    .unwrap(),
+                    b"old data"
+                ),
+            }
+        }
+    }
+    #[test]
+    fn windows_native_copy_session_receipt_rejects_missing_authority_and_changed_publications() {
+        use crate::PlatformOps;
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let admission = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+        let receipt = DurableStage::execute_with_receipt(
+            &source(&root.path().join("source")),
+            &parent,
+            &central,
+            &admission,
+            OsStr::new("source"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
+        let mut malformed = receipt.clone();
+        malformed.windows_copy = None;
+        assert!(matches!(
+            crate::DefaultPlatform.undo_copy_with_receipt(&malformed),
+            Err(PlatformError::InvalidPathMoveUndoReceipt(_))
+        ));
+        let published = receipt.after_path().join("nested/file");
+        std::fs::write(&published, b"external data").unwrap();
+        assert!(
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt)
+                .is_err()
+        );
+        assert_eq!(std::fs::read(published).unwrap(), b"external data");
+        assert!(!receipt.before_path().exists());
+    }
+    #[test]
+    fn windows_native_copy_session_receipt_failure_preserves_committed_classification_and_data() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let admission = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+        let mut changed = false;
+        let result = DurableStage::execute_with_receipt(
+            &source(&root.path().join("source")),
+            &parent,
+            &central,
+            &admission,
+            OsStr::new("source"),
+            100,
+            |_| {
+                if !changed {
+                    let names = std::fs::read_dir(root.path().join("destination"))
+                        .unwrap()
+                        .filter_map(Result::ok)
+                        .filter(|entry| entry.path().join(LOCAL).is_file())
+                        .map(|entry| entry.file_name())
+                        .collect::<Vec<_>>();
+                    if let Some(name) = names.first()
+                        && inspect(&parent, &central, name)
+                            .is_ok_and(|state| state.completion_verified)
+                    {
+                        std::fs::write(
+                            root.path().join("destination/copy/nested/file"),
+                            b"external after completion",
+                        )
+                        .unwrap();
+                        changed = true;
+                    }
+                }
+                Ok(())
+            },
+        );
+        assert!(
+            changed,
+            "The receipt failure must happen after verified publication"
+        );
+        assert!(
+            matches!(result, Err(PlatformError::CommittedCleanupPending { .. })),
+            "{result:?}"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("destination/copy/nested/file")).unwrap(),
+            b"external after completion"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
     }
 
     fn original_journal(root: &Path, name: &OsStr) -> Journal {

@@ -117,9 +117,49 @@ impl RetainedCopyResumePlan {
     }
 }
 
+/// Bridge a freshly verified completion into the ordinary session receipt.
+/// The persisted journals remain authoritative; paths alone grant no Undo.
+pub(super) fn session_receipt(
+    parent: &File,
+    central: &File,
+    name: &OsStr,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<crate::PathMoveUndoReceipt, PlatformError> {
+    let completed = CompletedCopy::open(parent, central, name, &mut progress)?;
+    let state = &completed.retained.snapshot.state;
+    let header = state.header.as_ref().unwrap();
+    let location = windows_fs::location(parent).map_err(io)?;
+    let registry = windows_fs::location(central).map_err(io)?;
+    let plan = RetainedCopyUndoPlan::admit(&registry, &header.transaction, progress)?;
+    if &plan.binding.header != header || plan.binding.completion_digest != completion_digest(state)?
+    {
+        return Err(io(
+            "Copy completion changed while issuing the session receipt",
+        ));
+    }
+    Ok(crate::PathMoveUndoReceipt {
+        before_path: location.join(header.candidate_name()),
+        after_path: location.join(OsString::from_wide(&header.target)),
+        identity: crate::PathMoveIdentity {
+            windows: state.final_versions[0].identity,
+        },
+        displaced_identity: state.original_retained.as_ref().map(|version| {
+            crate::PathMoveIdentity {
+                windows: version.identity,
+            }
+        }),
+        retained_displaced_path: state
+            .original
+            .as_ref()
+            .map(|_| location.join(header.original_name())),
+        requirement: crate::PathMoveUndoRequirement::None,
+        windows_copy: Some(plan),
+    })
+}
+
 /// Opaque action admission, distinct from public presentation fields. No file
 /// handles survive admission; execution reopens and checks the bound identities.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RetainedCopyUndoPlan {
     registry: PathBuf,
     binding: Box<CopyUndoBinding>,

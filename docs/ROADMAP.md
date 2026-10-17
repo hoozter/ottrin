@@ -10,6 +10,13 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
+The admitted native staging/publication path now returns ordinary session Undo
+receipts through a fresh completion and native recovery-plan admission. Session
+Undo uses the same persisted guards as restart Undo. Overwrite receipts reserve
+both retained versions' paths while Activity tracks their single transaction ID.
+The public forward dispatcher, conflict/batch workflows and guarded cleanup are
+still unfinished; this component does not enable Copy in shipped Windows builds.
+
 The private Windows Copy backend now implements paired no-replace publication
 and ordered per-entry DACL application/recovery after a verified, sealed stage.
 Publication intent is flushed to both journals before renaming the private root;
@@ -44,7 +51,7 @@ do not report final verification. Per-entry work checks its payload and ancestry
 with whole-tree scans at phase boundaries instead of rereading every payload for
 every entry. Real large-tree resource/performance acceptance remains required.
 
-The final ordinary-user Windows platform suite passes 259 with 33 specialized
+The final ordinary-user Windows platform suite passes 262 with 33 specialized
 exclusions, including the complete Copy suite. SYSTEM audit passes
 separately. The earlier publication/application phase added 26 injected journal/native
 failures and 26 real process exits; that checkpoint combined with staging/planning
@@ -423,7 +430,18 @@ Receipt: `.hermes/evidence/windows-copy-destination-admission-current/ACCEPTANCE
 Public user-conflict UI, session/batch and cleanup integration remain required;
 packages are unchanged.
 
-Public Windows Copy stays disabled. Session receipt/batch
+The native session receipt bridge passes creation and file/folder Overwrite,
+source removal before public Undo, cloned-receipt replay, missing-authority and
+changed-publication refusal, and late committed receipt failure. The same binary
+passes all 262 regular Windows platform tests (33 specialized exclusions) and the
+separate SYSTEM audit fixture. Native Activity integration passes nine recovery
+scenarios. Linux passes 411 platform and 379 UI tests (four total exclusions),
+including distinct session transaction-ID/path bookkeeping. Strict Linux/Windows
+UI/platform Clippy and formatting pass. Evidence:
+`.hermes/evidence/windows-copy-session-receipt-current/ACCEPTANCE.json`.
+Packages remain unchanged; these are source/native component checks.
+
+Public Windows Copy stays disabled. Public session/batch workflow
 integration, guarded cleanup, forward recovery acceptance and interrupted-staging policy, complete
 SACL/audit/label drift, privilege/elevation, sparse/EFS, case-sensitive directories,
 specialized storage/properties, real large-tree budgets, guest power-cut acceptance,

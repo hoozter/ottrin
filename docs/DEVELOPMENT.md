@@ -1000,6 +1000,16 @@ retry progress and refresh status after refusal. The plan revalidates its native
 binding before writing. Retained entries survive Clear finished, including after
 Undo while their data and bookkeeping remain owned.
 
+Windows session Copy receipts also carry a freshly admitted opaque native Undo
+plan. `DurableStage::execute_with_receipt` is the shared forward orchestration;
+`DefaultPlatform::undo_copy_with_receipt` reopens persisted evidence before the
+inverse, including on cloned-receipt replay. Activity obtains conflict paths and
+transaction IDs from receipt methods, preserving the displaced-original
+reservation without duplicating the transaction in restored history. Native
+receipt tests cover source removal, creation/file/folder Overwrite, changed
+publication refusal and late committed receipt failure. Public forward routing
+and complete session/batch workflow acceptance remain separate gates.
+
 Native Activity integration uses an ignored platform fixture producer and a UI
 consumer. The producer only accepts a root/profile owned by that consumer. The
 consumer creates separate child processes and private profiles, renders Activity,

@@ -835,7 +835,7 @@ impl CopyBatchUndoReceipt {
         match self {
             Self::Session { receipts, .. } => receipts
                 .iter()
-                .map(|r| (r.before_path(), r.after_path()))
+                .flat_map(PathMoveUndoReceipt::path_pairs)
                 .collect(),
             #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Retained(plan) => plan.path_pairs(),
@@ -870,6 +870,7 @@ impl OperationUndoReceipt {
     fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         match self {
             Self::CopyBatch(batch) => batch.path_pairs(),
+            Self::PathMove(receipt) => receipt.path_pairs(),
             _ => vec![(self.before_path(), self.after_path())],
         }
     }
@@ -1398,19 +1399,18 @@ fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
             .map(str::to_owned)
             .collect();
     }
-    token
-        .receipt
-        .path_pairs()
-        .iter()
-        .filter_map(|(before, _)| {
-            before
-                .parent()?
-                .file_name()?
-                .to_str()?
-                .strip_prefix(".ottrin-txn-")
-                .map(str::to_owned)
-        })
-        .collect()
+    match &token.receipt {
+        OperationUndoReceipt::PathMove(receipt) => receipt
+            .copy_transaction_id()
+            .map(str::to_owned)
+            .into_iter()
+            .collect(),
+        OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Session { receipts, .. }) => receipts
+            .iter()
+            .filter_map(|receipt| receipt.copy_transaction_id().map(str::to_owned))
+            .collect(),
+        _ => Vec::new(),
+    }
 }
 
 type RetainedMoveSnapshot = (Vec<RetainedMoveActivity>, Option<String>);
@@ -28605,6 +28605,16 @@ mod tests {
             panic!("batch receipts missing")
         };
         assert_eq!(batch.path_pairs().len(), 2);
+        let transaction_ids = copy_receipt_transaction_ids(record);
+        assert_eq!(transaction_ids.len(), 2);
+        assert_ne!(transaction_ids[0], transaction_ids[1]);
+        for transaction_id in transaction_ids {
+            assert!(batch.path_pairs().iter().any(|(before, _)| {
+                before.components().any(|part| {
+                    part.as_os_str() == format!(".ottrin-txn-{transaction_id}").as_str()
+                })
+            }));
+        }
         for name in ["a", "b"] {
             assert_eq!(
                 std::fs::read_to_string(destination.join(name)).unwrap(),

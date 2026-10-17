@@ -361,15 +361,18 @@ pub fn is_windows_reserved_creation_name(name: &str) -> bool {
         })
 }
 
-/// Link-entry identity captured for a reversible Linux pathname publication.
+/// Native entry identity captured for a reversible pathname publication.
 ///
 /// On Linux this is `symlink_metadata`'s device and inode pair, so it binds a
 /// symlink entry rather than the symlink target. It is intentionally opaque to
-/// callers: only this crate may compare it before an inverse rename.
+/// callers: only this crate may compare it before an inverse rename. Windows
+/// Copy receipts carry the native volume/file identity and an admitted journal plan.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(target_os = "linux", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(target_os = "linux", serde(deny_unknown_fields))]
 pub struct PathMoveIdentity {
+    #[cfg(target_os = "windows")]
+    windows: move_recovery::WindowsStableIdentity,
     #[cfg(target_os = "linux")]
     device: u64,
     #[cfg(target_os = "linux")]
@@ -395,6 +398,8 @@ struct CrossFilesystemUndoState {
 /// Session-only proof required to attempt one inverse of a completed pathname publication.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PathMoveUndoReceipt {
+    #[cfg(target_os = "windows")]
+    windows_copy: Option<RetainedCopyUndoPlan>,
     before_path: PathBuf,
     after_path: PathBuf,
     identity: PathMoveIdentity,
@@ -458,6 +463,25 @@ impl PathMoveUndoReceipt {
 
     pub fn after_path(&self) -> &Path {
         &self.after_path
+    }
+    /// Reserved inverse names, including a displaced Windows Copy original.
+    pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
+        #[cfg(target_os = "windows")]
+        if let Some(plan) = &self.windows_copy {
+            return plan.path_pairs();
+        }
+        vec![(self.before_path(), self.after_path())]
+    }
+    pub fn copy_transaction_id(&self) -> Option<&str> {
+        #[cfg(target_os = "windows")]
+        if let Some(plan) = &self.windows_copy {
+            return plan.transaction_ids().into_iter().next();
+        }
+        self.before_path
+            .parent()?
+            .file_name()?
+            .to_str()?
+            .strip_prefix(".ottrin-txn-")
     }
 }
 
@@ -1743,7 +1767,16 @@ impl PlatformOps for DefaultPlatform {
             }
             undo_path_move_linux(receipt)
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            let mut plan = receipt.windows_copy.clone().ok_or_else(|| {
+                PlatformError::InvalidPathMoveUndoReceipt(
+                    "Windows Copy receipt has no native completion binding".into(),
+                )
+            })?;
+            plan.undo_next()
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             let _ = receipt;
             Err(PlatformError::NotAvailable(

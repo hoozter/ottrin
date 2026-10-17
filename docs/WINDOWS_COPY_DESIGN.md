@@ -118,6 +118,26 @@ Native admission and regression evidence:
 
 ## Native namespace and sharing
 
+### Session receipt integration
+
+`DurableStage::execute_with_receipt` joins admitted staging, final security
+planning, original retention when approved, publication and receipt admission.
+It releases descendant capabilities before directory renames and uses the same
+native engines as restart recovery. Failures retain the transaction location;
+once publication has a verified completion, a later receipt failure is reported
+as committed with recovery work pending.
+
+The session receipt contains an opaque admitted native Undo plan. Issuing it
+requires a fresh completion check and matching independently admitted journal
+header/completion digest. `DefaultPlatform::undo_copy_with_receipt` executes that
+plan; persisted evidence, rather than the cloned receipt's cached state, controls
+replay. Activity reserves both the copied publication and retained original paths
+for Overwrite, while tracking one transaction ID per receipt.
+
+This bridge does not enable the public forward Copy dispatcher. Path/conflict
+routing, normal single/batch workflows, guarded cleanup and package acceptance
+remain required.
+
 ### Original retention and pre-publication restoration
 
 Schema 8 adds paired original-retain and original-restore intent/acknowledgement
