@@ -1,5 +1,5 @@
-//! Read-only admission of a selected cleanup cohort. This records relationships;
-//! it does not turn a selected ID list into permission to remove anything.
+//! Bound admission and start barrier for selected cleanup cohorts. Physical
+//! removal is separate; selected IDs alone never grant mutation authority.
 use super::super::registry::ConfiguredRegistry;
 use super::*;
 use std::collections::BTreeMap;
@@ -89,6 +89,49 @@ impl Selection {
         Ok(result)
     }
 
+    pub(super) fn fingerprint(&self, header: &Header) -> Result<[u8; 32], PlatformError> {
+        if header.central != self.root.identity {
+            return Err(io("Copy group registry binding changed"));
+        }
+        cleanup_dependencies::catalog_fingerprint(
+            header.central,
+            &self.root,
+            &self.security,
+            &self.creator,
+            &self.names,
+            self.names.iter().filter_map(|name| {
+                if *name == header.central_name() {
+                    return None;
+                }
+                self.records
+                    .get(name)
+                    .map(|record| (name.as_os_str(), record.digest, &record.version))
+            }),
+        )
+    }
+
+    /// Only a successful held writer supplies this epoch. No reopened ID or
+    /// freshly observed external catalog change is accepted as our own work.
+    fn accept_start(&mut self, started: &cleanup::Started) -> Result<(), PlatformError> {
+        let header = started.admission.header();
+        let record = self
+            .records
+            .get_mut(&header.central_name())
+            .ok_or_else(|| io("Started Copy member is absent from group"))?;
+        if !self.selected.contains(&header.transaction)
+            || record.digest != started.before
+            || record.version.identity != started.central.identity
+            || started.central.identity != header.central_file
+        {
+            return Err(io(
+                "Copy group start acknowledgement does not match its frozen control",
+            ));
+        }
+        record.digest = started.after;
+        record.version = started.central.clone();
+        Ok(())
+    }
+
     fn check(&self, record: &discovery::RegisteredJournal) -> Result<(), PlatformError> {
         let header = record.state.header.as_ref().unwrap();
         let expected = self
@@ -162,6 +205,81 @@ pub(super) struct Observation {
 }
 
 impl Observation {
+    /// Commit every selected payload member's cleanup intent before physical
+    /// removal is allowed. Each successful start advances only that writer's
+    /// catalog record; failures preserve acknowledged earlier starts for retry.
+    /// This method never removes payloads or transaction metadata.
+    pub(super) fn start_all(
+        &mut self,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        cancel(0)?;
+        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+            .ok_or_else(|| io("Configured Copy group registry is missing"))?;
+        let central = manager.writable_root()?;
+        self.selection.validate(&central, &mut cancel)?;
+        let mut volumes = discovery::Volumes::new(&central)?;
+        // Validate every confirmed payload before the first durable begin.
+        for member in &self.members {
+            let header = member.header();
+            let parent = volumes.resolve(header.parent, FILE_GENERIC_READ, &mut cancel)?;
+            match member {
+                Member::Payload(admission) => {
+                    admission.validate_in_group(&parent, &central, &self.selection, &mut cancel)?
+                }
+                Member::Metadata(plan) => {
+                    let current = cleanup_finalize::Plan::observe_in_group(
+                        &parent,
+                        &central,
+                        &header.stage_name(),
+                        &self.selection,
+                        &mut cancel,
+                    )?;
+                    if current != *plan {
+                        return Err(io("Copy group metadata member changed before start"));
+                    }
+                }
+            }
+        }
+        self.selection.validate(&central, &mut cancel)?;
+        for index in 0..self.members.len() {
+            let Member::Payload(admission) = &self.members[index] else {
+                continue;
+            };
+            cancel(0)?;
+            let parent = if admission
+                .header()
+                .parent
+                .same_object(admission.header().central)
+            {
+                central.try_clone().map_err(io)?
+            } else {
+                volumes.resolve(
+                    admission.header().parent,
+                    FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+                    &mut cancel,
+                )?
+            };
+            let started =
+                admission.start_in_group(&parent, &central, &self.selection, &mut cancel)?;
+            let mut selection = self.selection.clone();
+            selection.accept_start(&started)?;
+            let mut members = self.members.clone();
+            members[index] = Member::Payload(started.admission);
+            for member in &mut members {
+                if let Member::Payload(admission) = member {
+                    admission.advance_catalog(&self.selection, &selection)?;
+                }
+            }
+            // Retain our writer proof before a cancellation or external-state
+            // recheck can fail. No handles escape this method.
+            self.selection = selection;
+            self.members = members;
+            self.selection.validate(&central, &mut cancel)?;
+        }
+        manager.validate()
+    }
+
     pub(super) fn observe_at(
         path: &Path,
         ids: &[String],
@@ -265,7 +383,7 @@ impl Observation {
                         &selection,
                         &mut cancel,
                     )?;
-                    if current.header() != plan.header() {
+                    if current != *plan {
                         return Err(io("Copy metadata group member changed"));
                     }
                 }

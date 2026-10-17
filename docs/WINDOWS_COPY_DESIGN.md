@@ -795,9 +795,9 @@ native objects explicitly, then rechecks member metadata and the complete frozen
 catalog. Its result retains no file handles, decoded peer graphs or raw journals.
 The same reference interpretation serves individual and group inspection.
 
-Group selection only permits read-only inspection of otherwise overlapping
-selected members. Ordinary start/reclaim operations still enforce dependencies;
-metadata removal explicitly refuses a read-only selection. This component does
+Group selection permits inspection of otherwise overlapping selected members.
+Ordinary individual start/reclaim operations still enforce dependencies; metadata
+removal explicitly refuses a read-only selection. This component does
 not authorize deleting a selected group or silently refresh member proofs after
 another member changes the catalog.
 
@@ -813,3 +813,46 @@ root handle, respecting its deliberate denial of delete sharing.
 Known-own catalog handoff, shared retained-alias changes, coordinated execution
 and Activity confirmation/retry remain required. Packages and the public Windows
 Copy gate are unchanged.
+
+
+## Group cleanup start barrier
+
+The admitted group can now start every payload member without removing data or
+metadata. It first revalidates the entire frozen catalog and every member's
+confirmed payload or partial-metadata proof. A changed later member refuses
+before the first begin. Partial-metadata proofs compare all their bound fields,
+including the destination parent's permission digest, rather than just headers.
+
+Each start uses the same writer acquisition, reservation, paired Begin and native
+revalidation as an individual start. The successful held writer returns its new
+control digest and native epoch with the updated member admission. The group
+accepts only that exact record change and advances the other members' catalog
+fingerprints using one shared encoding. It never reopens IDs to adopt changed
+claims. Acknowledged state is retained before subsequent cancellation/revalidation
+can fail. Uncertain member writes leave their old proof stale and require fresh
+read-only admission; repeating a fully acknowledged barrier appends nothing.
+
+The scoped writer path is used only for start. Physical payload reclamation and
+metadata removal retain their existing dependency checks. Shared retained aliases
+therefore remain protected after the barrier. The initial relationship map is
+still evidence for the forthcoming executor, not an assertion that historical
+publication claims remain active after Begin. Physical known-own alias changes,
+remaining payload/metadata catalog handoffs, full execution/retry and Activity
+integration are still required. This barrier does not enable public Windows Copy.
+
+
+`GROUP_START_ACCEPTANCE.json` records 38 passing native cleanup tests and a
+separate four-test start-barrier run. Six chain/peer shapes cover acknowledged
+catalog handoff and repeat starts; four preflight refusal cases preserve all
+journals; two injected paired-write failures reject stale retries; and four
+partial-metadata cases isolate parent-permission drift across separate folders.
+The broader suite retains the existing crash/recovery matrices. This establishes
+the start barrier, not physical group cleanup or rendered Activity acceptance.
+
+An incomplete preliminary run produced no final result file and is not accepted.
+The local native runner now writes a result even when teardown raises, validates
+process termination, and detects a terminal scheduled task without a result file.
+A deliberately short watchdog run reports its expected failure and clears its
+processes/fixture; the subsequent focused and full runs pass. The complete cleanup
+suite has a bounded ten-minute watchdog; the test crate remains unoptimized for
+correctness testing. No application-performance or package acceptance is inferred.

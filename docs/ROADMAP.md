@@ -20,23 +20,28 @@ intent without removing data; a started peer protects its remaining retained
 identities and metadata rather than relinquished publication references.
 Read-only group admission now freezes selected and unselected catalog proofs,
 records cross-member references and shared retained objects, and admits partial
-metadata cleanup without granting group deletion authority.
+metadata cleanup without granting group deletion authority. A group start barrier
+now revalidates all confirmed members before any begin, then advances compact
+catalog proofs using only each successful held writer's acknowledged control
+change. Partial-metadata members compare their full confirmed proof. Physical
+reclamation retains the existing dependency checks.
 
-The latest scoped native cleanup run passes **34 tests**, including 187 real
+The latest scoped native cleanup run passes **38 tests**, including 187 real
 process exits, the existing injected-failure matrices, 64 configured-action
 scenarios, six retention shapes, four two-copy start-boundary scenarios and the new group
-observation/refusal cases.
+observation/refusal and four group-start cases.
 The separate native Activity status test passed at the catalog checkpoint.
 These correctness tests use a package-specific unoptimized test crate; they do
 not establish application performance, rendered UI, full current-platform or
 release-package acceptance. Current proof:
-`GROUP_OBSERVATION_ACCEPTANCE.json`, `START_ACCEPTANCE.json`,
+`GROUP_START_ACCEPTANCE.json`, `GROUP_OBSERVATION_ACCEPTANCE.json`,
+`START_ACCEPTANCE.json`,
 `CLEANUP_ACTION_ACCEPTANCE.json` and
 `CATALOG_ACCEPTANCE.json` under `.hermes/evidence/windows-copy-cleanup-current/`.
 Earlier checkpoints and their narrower scopes remain in `WINDOWS_COPY_DESIGN.md`.
 
-**Still required:** coordinated batch execution, known-own catalog
-handoffs, shared-retained alias epoch/count coordination, and Activity cleanup
+**Still required:** coordinated physical batch execution, known-own payload and
+metadata catalog handoffs, shared-retained alias epoch/count coordination, and Activity cleanup
 confirmation/execution/retry. Reserved-target protection, interrupted-staging
 reclamation, measured resource/storage/security and power-cut matrices, broader
 workflow acceptance and current package gates remain open. Public Windows Copy

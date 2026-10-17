@@ -17,7 +17,7 @@ pub(super) enum Payload {
 /// A handle-free read-only observation. Digests bind the complete journal,
 /// native payload epoch, private metadata and dependency catalog through the
 /// later writer handoff without retaining raw journals or decoded peer graphs.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub(super) struct Admission {
     header: Header,
     journal: [u8; 32],
@@ -29,6 +29,14 @@ pub(super) struct Admission {
     started: bool,
     location: std::path::PathBuf,
     parent_security: [u8; 32],
+}
+
+/// The new central control epoch comes from the successful held start writer.
+pub(super) struct Started {
+    pub(super) admission: Admission,
+    pub(super) before: [u8; 32],
+    pub(super) after: [u8; 32],
+    pub(super) central: EntryVersion,
 }
 
 fn cleanup_error(error: PlatformError, started: bool, transaction: String) -> PlatformError {
@@ -168,18 +176,73 @@ impl Admission {
         snapshot.revalidate(parent, central)
     }
 
+    pub(super) fn validate_in_group(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let current = Self::observe_in_group(
+            parent,
+            central,
+            &self.header.stage_name(),
+            selection,
+            cancel,
+        )?;
+        if current != *self {
+            return Err(io(
+                "Copy group member no longer matches confirmed admission",
+            ));
+        }
+        Ok(())
+    }
+
+    pub(super) fn advance_catalog(
+        &mut self,
+        before: &super::cleanup_group::Selection,
+        after: &super::cleanup_group::Selection,
+    ) -> Result<(), PlatformError> {
+        if self.catalog != before.fingerprint(&self.header)? {
+            return Err(io("Copy group catalog handoff does not match admission"));
+        }
+        self.catalog = after.fingerprint(&self.header)?;
+        Ok(())
+    }
+
     /// Persist cleanup intent without removing payload or metadata. The
     /// returned proof is captured from this writer, not readmitted by ID.
     pub(super) fn start(
         &self,
         parent: &File,
         central: &File,
-        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        self.start_selected(parent, central, None, cancel)
+            .map(|started| started.admission)
+    }
+
+    pub(super) fn start_in_group(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Started, PlatformError> {
+        self.start_selected(parent, central, Some(selection), cancel)
+    }
+
+    fn start_selected(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: Option<&super::cleanup_group::Selection>,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Started, PlatformError> {
         let mut started = self.started;
         let result = (|| {
             let (journal, remaining, dependencies) =
-                self.writer(parent, central, &mut started, &mut cancel)?;
+                self.writer(parent, central, &mut started, selection, &mut cancel)?;
             remaining.revalidate(
                 parent,
                 &journal.state,
@@ -201,7 +264,7 @@ impl Admission {
                 &bytes,
                 &mut cancel,
             )?;
-            Ok(Self {
+            let admission = Self {
                 header: journal.header.clone(),
                 journal: Sha256::digest(&bytes).into(),
                 metadata: super::super::evidence_digest(&metadata)?,
@@ -212,6 +275,12 @@ impl Admission {
                 started: true,
                 location: self.location.clone(),
                 parent_security: self.parent_security,
+            };
+            Ok(Started {
+                after: admission.journal,
+                admission,
+                before: self.journal,
+                central: metadata[2].clone(),
             })
         })();
         result.map_err(|error| {
@@ -231,6 +300,7 @@ impl Admission {
         parent: &File,
         central: &File,
         started: &mut bool,
+        selection: Option<&super::cleanup_group::Selection>,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(Journal, Remaining, Dependencies), PlatformError> {
         let name = self.header.stage_name();
@@ -261,8 +331,13 @@ impl Admission {
             .as_ref()
             .or(initial.as_ref())
             .unwrap();
-        let dependencies =
-            Dependencies::open(central, &self.header, &progress.manifest, &mut *cancel)?;
+        let dependencies = Dependencies::open_selected(
+            central,
+            &self.header,
+            &progress.manifest,
+            selection,
+            &mut *cancel,
+        )?;
         if dependencies.fingerprint()? != self.catalog {
             return Err(io("Copy cleanup dependency admission changed"));
         }
@@ -302,7 +377,7 @@ impl Admission {
         let mut started = self.started;
         let result = (|| {
             let (mut journal, mut remaining, mut dependencies) =
-                self.writer(parent, central, &mut started, &mut cancel)?;
+                self.writer(parent, central, &mut started, None, &mut cancel)?;
             loop {
                 let progress = journal.state.cleanup.as_ref().unwrap();
                 if progress.payload_removed {

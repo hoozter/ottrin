@@ -1,0 +1,138 @@
+{
+  "scope": "Bound cleanup-start barrier and known-own control-record handoff for Windows Copy groups; physical group cleanup and Activity remain unfinished",
+  "parent_revision": "dd789fb316c23ce3b24e0b6fecf531694edd687c",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "91c5a1c0dd9a6b1580d60667f525f633d443e4729ca6610d3387b062057e12b8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "eefd8c8f9409323e618dcb4bb03084183c667368042711ea456a545544e5350f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "915459ab816021492f4fc3f52576f0f2645adb822676d411f38e1d1f4626a744",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "51f71f72ba3bcc5f5a78135a32464d9fc09cda91fd1c5bf079b4f8bc628d6d6a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "02ccd91565bde4cbd7d919d24cc6eb7c304f6850b1c58be9555f0d0518d278a1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "215fd65634f201fef34605e9ec8a52ab6ea74e7ed20f7011721c7fb5f5497b16",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2"
+  },
+  "binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup --nocapture --test-threads=1",
+    "watchdog_ms": 600000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "4251c2c521b9ca74531f671fb5ac175d0cb56ca5017884d8f1ffb0d7c13ec5e1",
+    "transferred_sha256": "b38fd75632e142b7c41b64b2b02069d1fbb3397e7b94821c99208960b48de743",
+    "retained_sections": {
+      ".text": "53e10e9da0793497b0e2fe0886dac15b068e1ee195844a72bc61d923dab3d721",
+      ".data": "6c45a71fd8944520af836a04b1acd218512c12f108ac3310fe8ce5d390e96207",
+      ".rdata": "5829e765fb18e1f2699261ccdd623fab533f2fb15f0022d46ddfa637d94fab3a",
+      ".pdata": "6cc53c32c89d2124c492dbae45988a221249ac766529895d2d78a9174be690c6",
+      ".xdata": "a290d2e8fd4cb4d0f45605bb2e5e052b30a4906ed7181ccc8e220568179b5a4f",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "874dcdaf072897c63e64d077e13644b46b1bd2b9f4183e8f86c08b1152039177",
+      ".CRT": "08bea91574dbda769cb36d263302dc3c6cac4610741b8bc1ed26bcbfec8b3f30",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "ef793214c08aae100245731e7bc1b0a012c464cebd4bf17644aab459611d0845"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "b38fd75632e142b7c41b64b2b02069d1fbb3397e7b94821c99208960b48de743",
+    "status": "pass"
+  },
+  "suite": {
+    "passed": 38,
+    "failed": 0,
+    "ignored_child_harnesses": 2,
+    "unrelated_filtered": 307,
+    "seconds": 287.34
+  },
+  "focused": {
+    "passed": 4,
+    "failed": 0,
+    "seconds": 13.9,
+    "native_result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "b38fd75632e142b7c41b64b2b02069d1fbb3397e7b94821c99208960b48de743",
+      "status": "pass"
+    }
+  },
+  "scenarios": {
+    "successful_chain_shapes": 4,
+    "independent_or_shared_retained_peers": 2,
+    "preflight_refusals_without_begin": 4,
+    "injected_uncertain_paired_writes": 2,
+    "partial_metadata_separate_parent_permission_cases": 4
+  },
+  "properties": [
+    "All selected payloads and complete partial-metadata proofs rechecked before first begin",
+    "Successful held writer supplies exact new control digest/native epoch and member proof",
+    "One fingerprint encoding for native leases and handle-free group catalogs",
+    "Only acknowledged own control change advances member catalogs; no fresh-by-ID adoption",
+    "Fully acknowledged repeat appends nothing; stale group and uncertain member proofs refuse",
+    "Shared retained hard links remain protected by ordinary physical reclamation checks",
+    "No payload or metadata deletion by the group barrier",
+    "No file handles remain while awaiting confirmation"
+  ],
+  "runner_recovery": {
+    "preliminary_run": "Not accepted: incomplete pre-metadata-proof run, scheduled task result 1, no result file; original exception not recovered",
+    "ordinary_account_fixture_cleanup": {
+      "user": "OttrinCopyQA",
+      "status": "pass",
+      "before": "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:PAI(A;OICI;FA;;;OW)",
+      "remaining": false
+    },
+    "terminal_without_result_regression": "Expected explicit observer failure instead of indefinite waiting",
+    "watchdog_ms": 1,
+    "expected_watchdog_failure": {
+      "status": "fail",
+      "error": "Owned test remains live: 3444",
+      "test_binary_hash": "b38fd75632e142b7c41b64b2b02069d1fbb3397e7b94821c99208960b48de743",
+      "ordinary_user": true
+    },
+    "watchdog_teardown": "No teardown_error; following ordinary-account focused run proves prior temporary root absent and no native processes remained",
+    "complete_suite_watchdog_ms": 600000,
+    "local_harness_sha256": {
+      "run-native.py": "9c264bc5de7c1db7b09eb9bb7a8bc80e2f52c4c2ae11b4c0e44c31945eea7d6f",
+      "observe.py": "89738de98a2a8bafbcf432d5b6239a5bc7b318bac48e4f26028589f7df8fe927",
+      "transport.py": "e5200f9ed805f09ea635fb79491c795bffb9e0dffa424dcf0222887eb2d719df"
+    }
+  },
+  "static_checks": [
+    "Windows platform/UI all-target strict Clippy passed after final Rust edit",
+    "cargo fmt --all -- --check passed",
+    "git diff --check passed"
+  ],
+  "teardown": {
+    "task_state": "Ready",
+    "task_result": 0,
+    "process_count": 0,
+    "temporary_exists": false
+  },
+  "limitations": [
+    "Physical group execution and payload/metadata catalog handoffs remain open",
+    "Cross-member retained-alias epoch/link-count acknowledgements remain open",
+    "Activity confirmation/execution/retry remains open",
+    "No new group-specific real-process-exit matrix; existing cleanup crash matrices remain covered",
+    "No full unrelated platform, rendered UI, application performance or current-package acceptance inferred",
+    "Public Windows Copy remains gated; application packages unchanged"
+  ],
+  "environment": "Owned offline Windows QA COW retained for immediate coordinated-execution consumer; source VM/backing disk and user settings preserved"
+}

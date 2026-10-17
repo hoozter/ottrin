@@ -141,30 +141,16 @@ impl Dependencies {
     /// Freeze dependency claims for a confirmation plan that retains no leases.
     /// Raw UTF-16 names preserve native names that are not Unicode scalar text.
     pub(super) fn fingerprint(&self) -> Result<[u8; 32], PlatformError> {
-        let names: Vec<Vec<u16>> = self
-            .names
-            .iter()
-            .map(|name| name.encode_wide().collect())
-            .collect();
-        let peers: Vec<_> = self
-            .peers
-            .iter()
-            .map(|(name, peer)| {
-                (
-                    name.encode_wide().collect::<Vec<_>>(),
-                    peer.digest,
-                    &peer.version,
-                )
-            })
-            .collect();
-        super::super::evidence_digest(&(
+        catalog_fingerprint(
             self.central,
             &self.stamp,
             &self.security,
             &self.creator,
-            names,
-            peers,
-        ))
+            &self.names,
+            self.peers
+                .iter()
+                .map(|(name, peer)| (name.as_os_str(), peer.digest, &peer.version)),
+        )
     }
 
     pub(super) fn revalidate_peers(&self, central: &File) -> Result<(), PlatformError> {
@@ -251,4 +237,23 @@ pub(super) fn references(state: &State) -> Vec<WindowsStableIdentity> {
         }
     }
     references
+}
+
+/// One encoding for held dependency leases and handle-free group catalogs.
+pub(super) fn catalog_fingerprint<'a>(
+    central: WindowsStableIdentity,
+    stamp: &EntryVersion,
+    security: &security::PrivateSecurity,
+    creator: &[u8],
+    names: &[OsString],
+    peers: impl Iterator<Item = (&'a OsStr, [u8; 32], &'a EntryVersion)>,
+) -> Result<[u8; 32], PlatformError> {
+    let names: Vec<Vec<u16>> = names
+        .iter()
+        .map(|name| name.encode_wide().collect())
+        .collect();
+    let peers: Vec<_> = peers
+        .map(|(name, digest, version)| (name.encode_wide().collect::<Vec<_>>(), digest, version))
+        .collect();
+    super::super::evidence_digest(&(central, stamp, security, creator, names, peers))
 }

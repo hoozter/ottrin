@@ -289,7 +289,7 @@ impl Completion {
 
 /// A completed paired metadata intent grants only these exact native objects.
 /// Retaining this opaque proof permits an idempotent retry after central unlink.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub(super) struct Plan {
     header: Header,
     digest: [u8; 32],

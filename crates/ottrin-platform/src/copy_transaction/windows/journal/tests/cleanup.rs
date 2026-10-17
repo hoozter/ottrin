@@ -1943,9 +1943,16 @@ fn assert_only_journals_changed(
         .iter()
         .flat_map(|header| {
             [
-                std::path::PathBuf::from("destination")
-                    .join(header.stage_name())
-                    .join(LOCAL),
+                std::path::PathBuf::from(
+                    header
+                        .parent_location
+                        .decode()
+                        .unwrap()
+                        .file_name()
+                        .unwrap(),
+                )
+                .join(header.stage_name())
+                .join(LOCAL),
                 std::path::PathBuf::from("central").join(header.central_name()),
             ]
         })
@@ -2396,5 +2403,294 @@ fn windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_fr
             super::super::discovery::RegisteredJournal::open(&central, &headers[1].central_name())
                 .unwrap();
         assert!(group.selection.admits(&record).is_err());
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_start_hands_off_only_its_own_control_changes() {
+    use super::super::cleanup_group::{Member, Observation};
+    for directory in [false, true] {
+        for overwrite in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let names = cleanup_chain_fixture(root.path(), directory, overwrite);
+            let headers = names
+                .iter()
+                .map(|name| original_journal(root.path(), name).header.clone())
+                .collect::<Vec<_>>();
+            let ids = headers
+                .iter()
+                .map(|header| header.transaction.clone())
+                .collect::<Vec<_>>();
+            let mut group =
+                Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+            let mut stale = group.clone();
+            let before = namespace_contents(root.path());
+            group.start_all(|_| Ok(())).unwrap();
+            let after = namespace_contents(root.path());
+            assert_only_journals_changed(&before, &after, &headers);
+            for name in &names {
+                let journal = original_journal(root.path(), name);
+                let progress = journal.state.cleanup.as_ref().unwrap();
+                assert_eq!(progress.completed, 0);
+                assert!(!progress.payload_removed && !progress.metadata_removal_intent);
+            }
+            assert!(stale.start_all(|_| Ok(())).is_err());
+            assert_eq!(namespace_contents(root.path()), after);
+            group.start_all(|_| Ok(())).unwrap();
+            assert_eq!(namespace_contents(root.path()), after);
+            // The later member is now individually admitted by the group
+            // handoff; the old publication reference was durably relinquished.
+            let Member::Payload(admission) = &group.members[1] else {
+                unreachable!()
+            };
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            admission
+                .validate_in_group(&parent, &central, &group.selection, |_| Ok(()))
+                .unwrap();
+            admission.reclaim(&parent, &central, |_| Ok(())).unwrap();
+            assert_eq!(
+                std::fs::read(root.path().join(if directory {
+                    "destination/copy/next"
+                } else {
+                    "destination/copy"
+                }))
+                .unwrap(),
+                b"second publication"
+            );
+        }
+    }
+    for shared in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_peer_fixture(root.path(), shared);
+        let mut headers = Vec::new();
+        for (directory, name) in ["destination", "second-destination"].iter().zip(&names) {
+            let snapshot = Snapshot::load(
+                &owner(&root.path().join(directory)),
+                &owner(&root.path().join("central")),
+                name,
+                SnapshotAccess::Read,
+            )
+            .unwrap();
+            headers.push(snapshot.state.header.unwrap());
+        }
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let mut group =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        let before = namespace_contents(root.path());
+        group.start_all(|_| Ok(())).unwrap();
+        let after = namespace_contents(root.path());
+        assert_only_journals_changed(&before, &after, &headers);
+        group.start_all(|_| Ok(())).unwrap();
+        assert_eq!(namespace_contents(root.path()), after);
+        if shared {
+            let Member::Payload(admission) = &group.members[0] else {
+                unreachable!()
+            };
+            assert!(
+                admission
+                    .reclaim(
+                        &owner(&root.path().join("destination")),
+                        &owner(&root.path().join("central")),
+                        |_| Ok(())
+                    )
+                    .is_err()
+            );
+            assert_eq!(namespace_contents(root.path()), after);
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_start_revalidates_every_member_before_first_begin() {
+    use super::super::cleanup_group::Observation;
+    for change in 0..4 {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_chain_fixture(root.path(), false, true);
+        let headers = names
+            .iter()
+            .map(|name| original_journal(root.path(), name).header.clone())
+            .collect::<Vec<_>>();
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let mut group =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        match change {
+            0 => std::fs::write(
+                root.path()
+                    .join("destination")
+                    .join(headers[1].original_name()),
+                b"changed second retained file",
+            )
+            .unwrap(),
+            1 => std::fs::write(root.path().join("central/unrelated.txt"), b"new entry").unwrap(),
+            2 => {
+                owner(&root.path().join("central").join(headers[1].central_name()))
+                    .set_times(std::fs::FileTimes::new().set_modified(
+                        std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_700_000_000),
+                    ))
+                    .unwrap();
+            }
+            3 => {}
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(
+            group
+                .start_all(|_| if change == 3 {
+                    Err(io("owned cancellation"))
+                } else {
+                    Ok(())
+                })
+                .is_err()
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+        for name in &names {
+            assert!(original_journal(root.path(), name).state.cleanup.is_none());
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id() {
+    use super::super::cleanup_group::Observation;
+    for step in [Step::LocalFlushed, Step::CentralFlushed] {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_chain_fixture(root.path(), false, true);
+        let headers = names
+            .iter()
+            .map(|name| original_journal(root.path(), name).header.clone())
+            .collect::<Vec<_>>();
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let mut group =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        let before = namespace_contents(root.path());
+        let first_control = root.path().join("central").join(headers[0].central_name());
+        let first_bytes = std::fs::read(&first_control).unwrap();
+        let second_sequence = original_journal(root.path(), &names[1]).sequence;
+        let mut armed = false;
+        let result = group.start_all(|_| {
+            if !armed && std::fs::read(&first_control).unwrap() != first_bytes {
+                FAULT.with(|slot| slot.set(Some((second_sequence, step, false))));
+                armed = true;
+            }
+            Ok(())
+        });
+        FAULT.with(|slot| slot.set(None));
+        assert!(armed);
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+        let after = namespace_contents(root.path());
+        assert_only_journals_changed(&before, &after, &headers);
+        assert!(
+            original_journal(root.path(), &names[0])
+                .state
+                .cleanup
+                .is_some()
+        );
+        assert!(group.start_all(|_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), after);
+        if step == Step::CentralFlushed {
+            let mut recovered =
+                Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+            recovered.start_all(|_| Ok(())).unwrap();
+            assert_eq!(namespace_contents(root.path()), after);
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_proof() {
+    use super::super::cleanup_group::Observation;
+    for role in [CleanupMetadataRole::Local, CleanupMetadataRole::Stage] {
+        for drift in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let names = cleanup_peer_fixture(root.path(), false);
+            let manager = super::super::super::registry::ConfiguredRegistry::open_at(
+                &root.path().join("central"),
+                false,
+            )
+            .unwrap()
+            .unwrap();
+            let central = manager.writable_root().unwrap();
+            let parent = owner(&root.path().join("destination"));
+            let headers = ["destination", "second-destination"]
+                .iter()
+                .zip(&names)
+                .map(|(directory, name)| {
+                    Snapshot::load(
+                        &owner(&root.path().join(directory)),
+                        &central,
+                        name,
+                        SnapshotAccess::Read,
+                    )
+                    .unwrap()
+                    .state
+                    .header
+                    .unwrap()
+                })
+                .collect::<Vec<_>>();
+            let ids = headers
+                .iter()
+                .map(|header| header.transaction.clone())
+                .collect::<Vec<_>>();
+            let plan =
+                super::super::cleanup_finalize::prepare(&parent, &central, &names[0], |_| Ok(()))
+                    .unwrap();
+            let sequence = Snapshot::load(&parent, &central, &names[0], SnapshotAccess::Read)
+                .unwrap()
+                .sequence;
+            FAULT.with(|slot| {
+                slot.set(Some((
+                    sequence,
+                    Step::CleanupMetadata {
+                        role,
+                        point: CleanupMetadataPoint::Flushed,
+                    },
+                    false,
+                )))
+            });
+            let result = plan.finish(&parent, &central, |_| Ok(()));
+            FAULT.with(|slot| slot.set(None));
+            assert!(result.is_err());
+            let mut group =
+                Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+            if drift {
+                let old = super::super::super::security::owner_group_dacl_digest(&parent).unwrap();
+                super::super::super::tests::set_dacl(
+                    &root.path().join("destination"),
+                    "D:P(A;;FA;;;OW)",
+                );
+                assert_ne!(
+                    super::super::super::security::owner_group_dacl_digest(&parent).unwrap(),
+                    old
+                );
+            }
+            let before = namespace_contents(root.path());
+            let result = group.start_all(|_| Ok(()));
+            if drift {
+                assert!(result.is_err());
+                assert_eq!(namespace_contents(root.path()), before);
+                let snapshot = Snapshot::load(
+                    &owner(&root.path().join("second-destination")),
+                    &central,
+                    &names[1],
+                    SnapshotAccess::Read,
+                )
+                .unwrap();
+                assert!(snapshot.state.cleanup.is_none());
+            } else {
+                result.unwrap();
+                assert_only_journals_changed(&before, &namespace_contents(root.path()), &headers);
+                group.start_all(|_| Ok(())).unwrap();
+            }
+        }
     }
 }
