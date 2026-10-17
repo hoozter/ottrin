@@ -78,6 +78,7 @@ run_gate "Strict Clippy" \
 
 shell_scripts=(
   packaging/package-lifecycle.sh
+  packaging/tests/verify-package-lifecycle.sh
   build-all.sh
   packaging/linux/package-appimage.sh
   packaging/linux/package-portable.sh
@@ -126,6 +127,8 @@ shell_scripts=(
 )
 
 run_gate "Shell syntax" bash -n "${shell_scripts[@]}"
+run_gate "Package publication lifecycle" \
+  bash packaging/tests/verify-package-lifecycle.sh
 run_gate "Windows PowerShell installer provenance guard" \
   bash packaging/tests/verify-windows-installer-powershell-provenance.sh
 run_gate "Windows installer staged package-version guard" \

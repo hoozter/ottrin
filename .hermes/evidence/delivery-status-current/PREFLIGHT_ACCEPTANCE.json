@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "scope": "Package lifecycle gate added to existing release preflight; direct lifecycle, preflight contract-coverage and shell-coverage checks plus affected Bash syntax pass.",
+  "source_sha256": {
+    "scripts/release-preflight.sh": "e6be9b3bf672bc435c1b6eeba375c4be2f5a6243f636f38ec83ba373d64494cf",
+    "packaging/tests/verify-release-preflight-contract-coverage.sh": "2e97c7a0797c0b3bb96ea51615ad81aa7b156a6fea7ef2df84bf1306b24193ed",
+    "packaging/tests/verify-release-preflight-shell-coverage.sh": "f184eb4397ab9d90f3c08db0f45ecf9cf73347e278b20823eb7f8856e6b62399"
+  },
+  "full_workspace_preflight_executed": false,
+  "temporary_fixture_roots_absent": 1
+}

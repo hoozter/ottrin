@@ -17,6 +17,7 @@ require_contract_gate() {
 # so a regression in an artifact producer or final verifier is not deferred
 # until a manually assembled artifact directory happens to be available.
 for script in \
+  packaging/tests/verify-package-lifecycle.sh \
   packaging/tests/verify-linux-appimage-documentation.sh \
   packaging/tests/verify-linux-gio-runtime-contract.sh \
   packaging/tests/verify-linux-portable-running-instructions.sh \
