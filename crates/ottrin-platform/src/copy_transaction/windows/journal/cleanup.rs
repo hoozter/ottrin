@@ -31,8 +31,8 @@ pub(super) struct Admission {
     parent_security: [u8; 32],
 }
 
-/// The new central control epoch comes from the successful held start writer.
-pub(super) struct Started {
+/// The central control epoch comes from the successful held journal writer.
+pub(super) struct ControlChange {
     pub(super) admission: Admission,
     pub(super) before: [u8; 32],
     pub(super) after: [u8; 32],
@@ -224,7 +224,7 @@ impl Admission {
         central: &File,
         selection: &super::cleanup_group::Selection,
         cancel: impl FnMut(u64) -> Result<(), PlatformError>,
-    ) -> Result<Started, PlatformError> {
+    ) -> Result<ControlChange, PlatformError> {
         self.start_selected(parent, central, Some(selection), cancel)
     }
 
@@ -233,12 +233,84 @@ impl Admission {
         parent: &File,
         central: &File,
         selection: Option<&super::cleanup_group::Selection>,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<ControlChange, PlatformError> {
+        self.change_selected(parent, central, selection, |_| Ok(()), cancel)
+            .map(|(started, ())| started)
+    }
+
+    pub(super) fn prepare_owner_unlink(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        shared: &BTreeSet<(u64, [u8; 16])>,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(ControlChange, super::cleanup_peer::Intent), PlatformError> {
+        self.change_selected(
+            parent,
+            central,
+            Some(selection),
+            |journal| {
+                let progress = journal.state.cleanup.as_ref().unwrap();
+                let index = *progress
+                    .manifest
+                    .order
+                    .get(progress.completed)
+                    .ok_or_else(|| io("No remaining group payload"))?;
+                let node = &progress.manifest.entries[index];
+                if progress.manifest.owner != super::cleanup_protocol::Owner::Original
+                    || node.version.directory
+                    || !shared.contains(&node.version.identity.object_key())
+                    || progress.peer_unlink.is_some()
+                    || progress.expected_links(index)? < 2
+                {
+                    return Err(io(
+                        "Next owner entry is not a selected shared original file",
+                    ));
+                }
+                if !progress.pending {
+                    journal.persist(Record::Cleanup {
+                        entry: CleanupRecord::EntryIntent { index },
+                    })?;
+                }
+                super::cleanup_peer::Intent::capture(journal)
+            },
+            cancel,
+        )
+    }
+
+    pub(super) fn prepare_peer_unlink(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        intent: &super::cleanup_peer::Intent,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<ControlChange, PlatformError> {
+        self.change_selected(
+            parent,
+            central,
+            Some(selection),
+            |journal| journal.prepare_peer_unlink(intent.bind_local(&journal.state)?),
+            cancel,
+        )
+        .map(|(started, ())| started)
+    }
+
+    fn change_selected<T>(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: Option<&super::cleanup_group::Selection>,
+        operation: impl FnOnce(&mut Journal) -> Result<T, PlatformError>,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
-    ) -> Result<Started, PlatformError> {
+    ) -> Result<(ControlChange, T), PlatformError> {
         let mut started = self.started;
         let result = (|| {
-            let (journal, remaining, dependencies) =
+            let (mut journal, remaining, dependencies) =
                 self.writer(parent, central, &mut started, selection, &mut cancel)?;
+            let value = operation(&mut journal)?;
             remaining.revalidate(
                 parent,
                 &journal.state,
@@ -251,7 +323,7 @@ impl Admission {
                 || security::owner_group_dacl_digest(parent)? != self.parent_security
                 || dependencies.fingerprint()? != self.catalog
             {
-                return Err(io("Copy cleanup admission changed while starting"));
+                return Err(io("Copy cleanup admission changed during control update"));
             }
             let bytes = read(&journal.local)?;
             let metadata = super::cleanup_finalize::metadata_files(
@@ -272,12 +344,15 @@ impl Admission {
                 location: self.location.clone(),
                 parent_security: self.parent_security,
             };
-            Ok(Started {
-                after: admission.journal,
-                admission,
-                before: self.journal,
-                central: metadata[2].clone(),
-            })
+            Ok((
+                ControlChange {
+                    after: admission.journal,
+                    admission,
+                    before: self.journal,
+                    central: metadata[2].clone(),
+                },
+                value,
+            ))
         })();
         result.map_err(|error| {
             cleanup_error(

@@ -1048,3 +1048,28 @@ in `PEER_ACK_ACCEPTANCE.json`. No owned native process or temporary root remains
 Unrelated journal/core suites were not repeated for this change; the schema and
 decoder are unchanged. Earlier test results retain their own source/binary scope.
 No package, rendered UI or performance acceptance is implied.
+
+
+## Group shared-unlink preparation
+
+The group now prepares one pending original-file entry and every selected
+co-owner's peer intent through the existing bound writer handoff. Each successful
+writer supplies the exact control change used to advance the confirmed catalog.
+The owner's prefix digest must match that acknowledged change. The group keeps
+the pending owner, refuses switching owners or invoking ordinary payload/metadata
+removal, and supports idempotent preparation retry. A fresh observer also refuses
+a different durable pending owner before writing another entry intent.
+
+Three focused ordinary-account native tests pass in 17.53 seconds. They cover
+co-owned aliases plus an outside alias, paired intent records accepted by the
+existing peer validator, unchanged file contents, retries, changed data/control
+and cancellation refusal, and failures after either owner's or peer's local and
+central flushes. Divergent mirrors remain refused; paired records permit fresh
+readmission and retry. This is fresh in-process observation, not complete group
+process-exit/history recovery. The same exact binary passes the full cleanup
+batch: 59 passed, two existing ignored entry points, zero failed, 494.48 seconds.
+The exact 61-case set matches native enumeration in
+`GROUP_SHARED_PREPARE_COVERAGE.json`; source, profile, binary and successful
+owned-process/temporary-root teardown are recorded in
+`GROUP_SHARED_PREPARE_ACCEPTANCE.json`. No physical shared unlink, rendered UI,
+performance or package acceptance is established by this preparation step.

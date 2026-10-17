@@ -4,6 +4,86 @@ use super::cleanup_protocol::PeerUnlink;
 use super::cleanup_tree::Remaining;
 use super::*;
 
+/// A successful owner writer's pending entry; it contains no deletion handle.
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct Intent {
+    pub(super) transaction: String,
+    pub(super) control: WindowsStableIdentity,
+    pub(super) parent: WindowsStableIdentity,
+    pub(super) name: Vec<u16>,
+    pub(super) index: usize,
+    pub(super) sequence: u64,
+    pub(super) digest: [u8; 32],
+    pub(super) expected: EntryVersion,
+    pub(super) links: u32,
+}
+
+impl Intent {
+    pub(super) fn capture(journal: &Journal) -> Result<Self, PlatformError> {
+        let progress = journal
+            .state
+            .cleanup
+            .as_ref()
+            .ok_or_else(|| io("Missing owner cleanup"))?;
+        let index = *progress
+            .manifest
+            .order
+            .get(progress.completed)
+            .ok_or_else(|| io("No remaining owner entry"))?;
+        let node = &progress.manifest.entries[index];
+        if !progress.pending
+            || progress.peer_unlink.is_some()
+            || progress.manifest.owner != cleanup_protocol::Owner::Original
+            || node.version.directory
+            || progress.expected_links(index)? < 2
+        {
+            return Err(io("Owner has no pending shared-file unlink"));
+        }
+        let parent = node
+            .parent
+            .map(|p| progress.expected(p).identity)
+            .unwrap_or(journal.header.parent);
+        Ok(Self {
+            transaction: journal.header.transaction.clone(),
+            control: journal.header.central_file,
+            parent,
+            name: node.name.clone(),
+            index,
+            sequence: journal.sequence,
+            digest: Sha256::digest(read(&journal.local)?).into(),
+            expected: progress.expected(index).clone(),
+            links: progress.expected_links(index)?,
+        })
+    }
+
+    pub(super) fn bind_local(&self, local: &State) -> Result<PeerUnlink, PlatformError> {
+        let progress = local
+            .cleanup
+            .as_ref()
+            .ok_or_else(|| io("Missing local cleanup"))?;
+        let index = progress.manifest.order[progress.completed..]
+            .iter()
+            .copied()
+            .find(|&index| progress.expected(index).identity == self.expected.identity)
+            .ok_or_else(|| io("Peer does not retain the shared object"))?;
+        if progress.expected(index) != &self.expected
+            || progress.expected_links(index)? != self.links
+        {
+            return Err(io("Peer retained version/count differs from owner intent"));
+        }
+        Ok(PeerUnlink {
+            index,
+            transaction: self.transaction.clone(),
+            control: self.control,
+            parent: self.parent,
+            name: self.name.clone(),
+            peer_index: self.index,
+            sequence: self.sequence,
+            intent_digest: self.digest,
+        })
+    }
+}
+
 pub(super) struct Observation {
     control: File,
     snapshot: Snapshot,

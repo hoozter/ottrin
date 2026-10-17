@@ -42,10 +42,14 @@ That peer-binding checkpoint passes four focused ordinary-account native tests.
 The next implementation now validates surviving aliases before recording a peer
 unlink acknowledgement, retaining both local and peer evidence through the
 paired append. Pending peer intents protect the owner's canonical control until
-acknowledgement finishes. Five focused native tests pass. The same exact binary
-passes all 58 enumerated cleanup cases: 56 passed, two existing ignored entry
-points, zero failures, 636.11 seconds; owned processes and temporary data are
-absent afterward. Group physical unlink/acknowledgement integration remains
+acknowledgement finishes. The group now prepares one owner entry intent and all
+selected co-owner intents through the same bound control-writer handoff. It
+retains the pending owner, refuses conflicting actions and permits idempotent
+retry; fresh admission refuses switching durable pending owners. Three focused
+native tests pass. The same exact binary passes all 61 enumerated cleanup cases:
+59 passed, two existing ignored entry points, zero failures, 494.48 seconds;
+owned processes and temporary data are absent afterward. This preparation step
+removes no payload. Physical shared unlink/acknowledgement integration remains
 required.
 
 The preceding peer-binding checkpoint accounts for all **153 Windows Copy journal
@@ -58,8 +62,10 @@ status test retains its earlier catalog-checkpoint scope.
 
 These unoptimized correctness checks do not establish application performance,
 rendered UI, full unrelated platform or release-package acceptance. Current
-acknowledgement proof is `PEER_ACK_ACCEPTANCE.json` and `PEER_ACK_COVERAGE.json`.
-The preceding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
+group preparation proof is `GROUP_SHARED_PREPARE_ACCEPTANCE.json` and
+`GROUP_SHARED_PREPARE_COVERAGE.json`. Earlier acknowledgement proof remains in
+`PEER_ACK_ACCEPTANCE.json` and `PEER_ACK_COVERAGE.json`. The preceding
+peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 `PEER_BINDING_COVERAGE.json` under
 `.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.

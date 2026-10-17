@@ -3924,3 +3924,204 @@ fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ac
             .exists()
     );
 }
+
+fn shared_unlink_preparation_fixture(
+    root: &Path,
+) -> (super::super::cleanup_group::Observation, Vec<Header>) {
+    let names = cleanup_peer_fixture_with_aliases(root, true, true);
+    let central = owner(&root.join("central"));
+    let headers = ["destination", "second-destination"]
+        .iter()
+        .zip(names.iter())
+        .map(|(directory, name)| {
+            Snapshot::load(
+                &owner(&root.join(directory)),
+                &central,
+                name,
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .state
+            .header
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    drop(central);
+    let ids = headers
+        .iter()
+        .map(|h| h.transaction.clone())
+        .collect::<Vec<_>>();
+    let group =
+        super::super::cleanup_group::Observation::observe_at(&root.join("central"), &ids, |_| {
+            Ok(())
+        })
+        .unwrap();
+    (group, headers)
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_prepare_is_bound_idempotent_and_never_unlinks() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+    let before = namespace_contents(root.path());
+    let intent = group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+    assert_eq!(intent.control, headers[0].central_file);
+    assert_eq!(intent.links, 4);
+    let after = namespace_contents(root.path());
+    assert_only_journals_changed(&before, &after, &headers);
+    let central = owner(&root.path().join("central"));
+    for (index, directory) in ["destination", "second-destination"].iter().enumerate() {
+        let snapshot = Snapshot::load(
+            &owner(&root.path().join(directory)),
+            &central,
+            &headers[index].stage_name(),
+            SnapshotAccess::Read,
+        )
+        .unwrap();
+        assert_eq!(
+            snapshot.bytes,
+            std::fs::read(
+                root.path()
+                    .join("central")
+                    .join(headers[index].central_name())
+            )
+            .unwrap()
+        );
+        let progress = snapshot.state.cleanup.as_ref().unwrap();
+        if index == 0 {
+            assert!(progress.pending);
+            assert!(progress.peer_unlink.is_none());
+        } else {
+            assert_eq!(
+                progress.peer_unlink.as_deref(),
+                Some(&intent.bind_local(&snapshot.state).unwrap())
+            );
+            let observed = super::super::cleanup_peer::Observation::open(
+                &central,
+                &snapshot.state,
+                |_| Ok(()),
+            )
+            .unwrap();
+            assert!(!observed.removed());
+        }
+    }
+    drop(central);
+    assert_eq!(group.prepare_shared_unlink(0, |_| Ok(())).unwrap(), intent);
+    assert_eq!(namespace_contents(root.path()), after);
+    assert!(group.prepare_shared_unlink(1, |_| Ok(())).is_err());
+    assert!(group.reclaim_payload(0, |_| Ok(())).is_err());
+    assert!(group.reclaim_payload(1, |_| Ok(())).is_err());
+    assert!(group.finish_metadata(0, |_| Ok(())).is_err());
+    assert_eq!(namespace_contents(root.path()), after);
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_prepare_checks_all_members_before_entry_intent() {
+    for change in 0..3 {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+        match change {
+            0 => std::fs::write(root.path().join("outside"), b"changed retained data").unwrap(),
+            1 => {
+                let control = root.path().join("central").join(headers[1].central_name());
+                let mut bytes = std::fs::read(&control).unwrap();
+                bytes.push(1);
+                std::fs::write(control, bytes).unwrap();
+            }
+            2 => {}
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(
+            group
+                .prepare_shared_unlink(0, |_| {
+                    if change == 2 {
+                        Err(io("owned shared preparation cancellation"))
+                    } else {
+                        Ok(())
+                    }
+                })
+                .is_err()
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_prepare_uncertain_owner_and_peer_require_bound_retry() {
+    for target in 0..2 {
+        for step in [Step::LocalFlushed, Step::CentralFlushed] {
+            let root = tempfile::tempdir().unwrap();
+            let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+            group.start_all(|_| Ok(())).unwrap();
+            let central = owner(&root.path().join("central"));
+            let parent = owner(&root.path().join(if target == 0 {
+                "destination"
+            } else {
+                "second-destination"
+            }));
+            let snapshot = Snapshot::load(
+                &parent,
+                &central,
+                &headers[target].stage_name(),
+                SnapshotAccess::Read,
+            )
+            .unwrap();
+            let sequence = snapshot.sequence;
+            drop(snapshot);
+            drop(parent);
+            drop(central);
+            let owner_control = root.path().join("central").join(headers[0].central_name());
+            let owner_bytes = std::fs::read(&owner_control).unwrap();
+            let before = namespace_contents(root.path());
+            let mut armed = target == 0;
+            if armed {
+                FAULT.with(|slot| slot.set(Some((sequence, step, false))));
+            }
+            let result = group.prepare_shared_unlink(0, |_| {
+                if !armed && std::fs::read(&owner_control).unwrap() != owner_bytes {
+                    FAULT.with(|slot| slot.set(Some((sequence, step, false))));
+                    armed = true;
+                }
+                Ok(())
+            });
+            FAULT.with(|slot| slot.set(None));
+            assert!(armed);
+            assert!(result.is_err());
+            let after = namespace_contents(root.path());
+            assert_only_journals_changed(&before, &after, &headers);
+            assert!(group.prepare_shared_unlink(0, |_| Ok(())).is_err());
+            assert_eq!(namespace_contents(root.path()), after);
+            let ids = headers
+                .iter()
+                .map(|h| h.transaction.clone())
+                .collect::<Vec<_>>();
+            let fresh = super::super::cleanup_group::Observation::observe_at(
+                &root.path().join("central"),
+                &ids,
+                |_| Ok(()),
+            );
+            if step == Step::CentralFlushed {
+                let mut fresh = fresh.unwrap();
+                assert!(fresh.prepare_shared_unlink(1, |_| Ok(())).is_err());
+                assert_eq!(namespace_contents(root.path()), after);
+                fresh.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+                let complete = namespace_contents(root.path());
+                assert_only_journals_changed(&before, &complete, &headers);
+                fresh.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+                assert_eq!(namespace_contents(root.path()), complete);
+            } else {
+                assert!(fresh.is_err());
+                assert_eq!(namespace_contents(root.path()), after);
+            }
+            assert_eq!(
+                std::fs::read(root.path().join("outside")).unwrap(),
+                b"old original data"
+            );
+        }
+    }
+}

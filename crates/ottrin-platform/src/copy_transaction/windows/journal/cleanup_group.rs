@@ -199,7 +199,7 @@ impl Selection {
         Ok(())
     }
 
-    fn accept_start(&mut self, started: &cleanup::Started) -> Result<(), PlatformError> {
+    fn accept_change(&mut self, started: &cleanup::ControlChange) -> Result<(), PlatformError> {
         self.accept_control(
             started.admission.header(),
             started.before,
@@ -338,9 +338,40 @@ pub(super) struct Observation {
     pub(super) references: BTreeSet<(usize, usize)>,
     pub(super) shared: BTreeMap<Object, Vec<(usize, usize)>>,
     pending_metadata: Option<usize>,
+    pending_unlink: Option<(usize, super::cleanup_peer::Intent)>,
 }
 
 impl Observation {
+    fn accept_member_change(
+        &mut self,
+        index: usize,
+        started: cleanup::ControlChange,
+        central: &File,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let mut selection = self.selection.clone();
+        selection.accept_change(&started)?;
+        let mut members = self.members.clone();
+        members[index] = Member::Payload(started.admission);
+        for member in &mut members {
+            match member {
+                Member::Payload(admission) => {
+                    admission.advance_catalog(&self.selection, &selection)?
+                }
+                Member::Completion(completion) => {
+                    completion.advance_catalog(&self.selection, &selection)?
+                }
+                Member::Metadata(_) | Member::Complete(_) => {}
+            }
+        }
+        // Retain our writer proof before a cancellation or external-state
+        // recheck can fail. No handles escape this method.
+        self.selection = selection;
+        self.members = members;
+        self.selection.validate(central, cancel)?;
+        Ok(())
+    }
+
     /// Commit every selected payload member's cleanup intent before physical
     /// removal is allowed. Each successful start advances only that writer's
     /// catalog record; failures preserve acknowledged earlier starts for retry.
@@ -410,28 +441,129 @@ impl Observation {
             };
             let started =
                 admission.start_in_group(&parent, &central, &self.selection, &mut cancel)?;
-            let mut selection = self.selection.clone();
-            selection.accept_start(&started)?;
-            let mut members = self.members.clone();
-            members[index] = Member::Payload(started.admission);
-            for member in &mut members {
-                match member {
-                    Member::Payload(admission) => {
-                        admission.advance_catalog(&self.selection, &selection)?
-                    }
-                    Member::Completion(completion) => {
-                        completion.advance_catalog(&self.selection, &selection)?
-                    }
-                    Member::Metadata(_) | Member::Complete(_) => {}
-                }
-            }
-            // Retain our writer proof before a cancellation or external-state
-            // recheck can fail. No handles escape this method.
-            self.selection = selection;
-            self.members = members;
-            self.selection.validate(&central, &mut cancel)?;
+            self.accept_member_change(index, started, &central, &mut cancel)?;
         }
         manager.validate()
+    }
+
+    /// Prepare the exact next shared owner entry and each affected peer intent.
+    /// No payload is removed. A partially prepared cohort can retry this owner;
+    /// its successful control epochs are retained before cancellation checks.
+    pub(super) fn prepare_shared_unlink(
+        &mut self,
+        owner: usize,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<super::cleanup_peer::Intent, PlatformError> {
+        if owner >= self.members.len()
+            || self
+                .pending_unlink
+                .as_ref()
+                .is_some_and(|(index, _)| *index != owner)
+        {
+            return Err(io("Invalid or different pending shared unlink owner"));
+        }
+        self.start_all(&mut cancel)?;
+        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+            .ok_or_else(|| io("Configured Copy group registry is missing"))?;
+        let central = manager.writable_root()?;
+        self.selection.validate(&central, &mut cancel)?;
+        let owner_header = self.members[owner].header().clone();
+        // A fresh observer must not prepare another owner while durable peers
+        // are waiting for an existing owner, even before any physical unlink.
+        for member in &self.members {
+            if matches!(member, Member::Complete(_)) {
+                continue;
+            }
+            let record = discovery::RegisteredJournal::dependency(
+                &central,
+                &member.header().central_name(),
+            )?;
+            self.selection.check(&record)?;
+            if record.state.cleanup.as_ref().is_some_and(|progress| {
+                progress.pending && member.header().transaction != owner_header.transaction
+                    || progress
+                        .peer_unlink
+                        .as_deref()
+                        .is_some_and(|proof| proof.transaction != owner_header.transaction)
+            }) {
+                return Err(io("Another durable owner or peer unlink must finish first"));
+            }
+        }
+        let Member::Payload(admission) = &self.members[owner] else {
+            return Err(io("Shared unlink owner has no retained payload"));
+        };
+        let shared = self
+            .shared
+            .iter()
+            .filter(|(_, members)| members.iter().any(|(member, _)| *member == owner))
+            .map(|(object, _)| *object)
+            .collect();
+        let parent = Self::writable_parent(&central, &owner_header, &mut cancel)?;
+        let (started, intent) = admission.prepare_owner_unlink(
+            &parent,
+            &central,
+            &self.selection,
+            &shared,
+            &mut cancel,
+        )?;
+        if intent.digest != started.after {
+            return Err(io(
+                "Owner intent does not match acknowledged control prefix",
+            ));
+        }
+        if self
+            .pending_unlink
+            .as_ref()
+            .is_some_and(|(_, prior)| prior != &intent)
+        {
+            return Err(io("Prepared shared unlink intent changed"));
+        }
+        self.pending_unlink = Some((owner, intent.clone()));
+        self.accept_member_change(owner, started, &central, &mut cancel)?;
+        let peers = self
+            .shared
+            .get(&intent.expected.identity.object_key())
+            .ok_or_else(|| io("Prepared owner object is not shared"))?
+            .iter()
+            .filter_map(|(member, _)| (*member != owner).then_some(*member))
+            .collect::<BTreeSet<_>>();
+        if peers.is_empty() {
+            return Err(io("Prepared unlink has no selected peer"));
+        }
+        for peer in peers {
+            cancel(0)?;
+            let Member::Payload(admission) = &self.members[peer] else {
+                return Err(io("Shared peer has no retained payload"));
+            };
+            let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+            let started = admission.prepare_peer_unlink(
+                &parent,
+                &central,
+                &self.selection,
+                &intent,
+                &mut cancel,
+            )?;
+            self.references.insert((peer, owner));
+            self.accept_member_change(peer, started, &central, &mut cancel)?;
+        }
+        manager.validate()?;
+        Ok(intent)
+    }
+
+    fn writable_parent(
+        central: &File,
+        header: &Header,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<File, PlatformError> {
+        if header.parent.same_object(header.central) {
+            central.try_clone().map_err(io)
+        } else {
+            discovery::Volumes::new(central)?.resolve(
+                header.parent,
+                FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+                cancel,
+            )
+        }
     }
 
     /// Reclaim one member through the ordinary physical writer. This retains
@@ -443,6 +575,11 @@ impl Observation {
         index: usize,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if self.pending_unlink.is_some() {
+            return Err(io(
+                "Finish the prepared shared unlink before another group action",
+            ));
+        }
         if index >= self.members.len() {
             return Err(io("Copy group member index is invalid"));
         }
@@ -510,6 +647,11 @@ impl Observation {
         index: usize,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if self.pending_unlink.is_some() {
+            return Err(io(
+                "Finish the prepared shared unlink before another group action",
+            ));
+        }
         if index >= self.members.len() {
             return Err(io("Copy group member index is invalid"));
         }
@@ -758,6 +900,7 @@ impl Observation {
             references,
             shared: retained,
             pending_metadata: None,
+            pending_unlink: None,
         })
     }
 }

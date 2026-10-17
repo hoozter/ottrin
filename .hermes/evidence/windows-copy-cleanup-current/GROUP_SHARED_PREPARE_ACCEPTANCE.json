@@ -1,0 +1,101 @@
+{
+  "scope": "Group owner/peer shared unlink intent preparation; no physical shared deletion or package acceptance",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "79bf6689afba6bc35cf81c555281ce7fd372fdccbf7d1ed3f7d6c2bf7d928f23",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "08ae909f091b0d43cc4c58d499c1a6147a1f8dd383bc6e6140d7ea12e1beed70",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "ef20319ad06eb20bf1971b62bdbd1e900bb867b8f3ca3ecb53e99ed3551e189c",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "0289757aef6cdf9a97f88edbc99102b1cfdcf807048fa7fdc4bf7f392514bb9a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "9d9a5960f706757200a922516943d69f011b8feb9d36cb3048705a4fcafd2ec3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "315390b819bfdad8651d8fee0f7465348233628e6d34d56fa6ebde3d267b3fea",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "fb4c582655d7c9ce6b583dadda7f4dd71e8e5917d40700d750e9fef36422396d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "464984415d5aed2e65ddb7ff9ec1dbf11a63fbb896b408f5b15884e90d6d5541",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_peer.rs": "b2adbd96fc5f78e36b19c88792d155e1c7baa05fa9c9369012d63f8b0ab75941"
+  },
+  "native_binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup_group_shared_prepare --nocapture --test-threads=1",
+    "watchdog_ms": 300000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "4f85db9030cecfc9927cc8563a753f793c8593f378dc10d764fda3983e8b2a5d",
+    "transferred_sha256": "e5814d837f05c8a7ffdb0bf0185669837cee9eb19d1900e9954977b79d70c965",
+    "retained_sections": {
+      ".text": "29918cc8d70b228e9fae491c9226dc850b6ab49f79f5d5e27cf3bfcc8447682b",
+      ".data": "66ad222cde43cbfe14bd07b94bcdde2a22e6389ce11e59dd70b27f0ce7bdf2c8",
+      ".rdata": "1d5829e710e9df1372633dc83ddca0e645bd695c739501901b3cb3b41cdedf07",
+      ".pdata": "45d1e651f3cb5bcc6eed0bd0c006fa805aff186dccdcd68d4676ecce1a0b029c",
+      ".xdata": "9d48c041d8e4cb32c00453484543b79f071460c16f591e09f8330c0ff56286ed",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "69555ad803ac7c83542026cf5faa09fb906b19a55fa7c06e48475813b9ffc0fa",
+      ".CRT": "7195b220fea260bee4606fd2fbd150339d08d054b7cc4d767ac280f6a4261711",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "c6eedc99f8ec9e3b0546cbea6e1349b41e735b6e27293356d433a9bafb9460a6"
+    }
+  },
+  "focused_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "e5814d837f05c8a7ffdb0bf0185669837cee9eb19d1900e9954977b79d70c965",
+    "status": "pass"
+  },
+  "focused_tests": {
+    "passed": 3,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 365,
+    "seconds": 17.53
+  },
+  "broader_cleanup_verification": "All 61 enumerated native cleanup cases accounted for:59 passed,2 existing ignored entry points. Exact outcomes in GROUP_SHARED_PREPARE_COVERAGE.json.",
+  "static_checks": [
+    "strict Windows ottrin-platform and ottrin-ui all-target Clippy",
+    "cargo fmt --all",
+    "git diff --check"
+  ],
+  "initial_failure": "Fixture retained MAX rights registry handle across registry admission (Windows sharing error32 before coordinator). Corrected fixture handle lifetimes; production sharing unchanged.",
+  "remaining": [
+    "per-entry shared physical unlink and acknowledgements with known own control/root changes",
+    "group real process-exit/history recovery",
+    "Activity cleanup workflow",
+    "current packages"
+  ],
+  "cleanup_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "e5814d837f05c8a7ffdb0bf0185669837cee9eb19d1900e9954977b79d70c965",
+    "status": "pass"
+  },
+  "cleanup_tests": {
+    "passed": 59,
+    "failed": 0,
+    "ignored_existing": 2,
+    "filtered": 307,
+    "seconds": 494.48,
+    "watchdog_ms": 900000
+  },
+  "teardown": {
+    "task": "Ready",
+    "result": 0,
+    "owned_processes": 0,
+    "temp_present": false
+  },
+  "enumeration": "Controller --list after ordinary-account functional tests; enumeration itself is not a functional test.",
+  "verification_limit": "Unrelated journal/core suites were not repeated; schema/codec/decoder unchanged. No physical shared unlink, full group process-exit/history, UI, performance or package acceptance."
+}
