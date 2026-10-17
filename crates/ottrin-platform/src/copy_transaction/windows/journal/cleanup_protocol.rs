@@ -10,6 +10,29 @@ pub(super) enum Owner {
     Original,
 }
 
+/// Binding to one peer's durable, pending unlink. A runtime writer must verify
+/// the native peer record and slot; this token alone never permits a deletion.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct PeerUnlink {
+    pub(super) index: usize,
+    pub(super) transaction: String,
+    pub(super) control: WindowsStableIdentity,
+    pub(super) parent: WindowsStableIdentity,
+    pub(super) name: Vec<u16>,
+    pub(super) peer_index: usize,
+    pub(super) sequence: u64,
+    pub(super) intent_digest: [u8; 32],
+}
+
+impl PeerUnlink {
+    // The same peer entry cannot be counted again through another local alias,
+    // a rewritten sequence or a different claimed digest.
+    pub(super) fn key(&self) -> Result<[u8; 32], PlatformError> {
+        super::super::evidence_digest(&(&self.transaction, self.control, self.peer_index))
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "step", rename_all = "kebab-case", deny_unknown_fields)]
 pub(super) enum CleanupRecord {
@@ -25,6 +48,13 @@ pub(super) enum CleanupRecord {
         index: usize,
         parent_after: Option<Box<EntryVersion>>,
         alias_after: Option<Box<EntryVersion>>,
+    },
+    PeerUnlinkIntent {
+        proof: Box<PeerUnlink>,
+    },
+    PeerUnlinkRemoved {
+        key: [u8; 32],
+        after: Box<EntryVersion>,
     },
     PayloadRemoved,
     MetadataRemovalIntent,
@@ -63,6 +93,8 @@ pub(super) struct Progress {
     pub(super) pending: bool,
     pub(super) payload_removed: bool,
     pub(super) metadata_removal_intent: bool,
+    pub(super) peer_unlink: Option<Box<PeerUnlink>>,
+    peer_removed: BTreeSet<[u8; 32]>,
     versions: BTreeMap<(u64, [u8; 16]), EntryVersion>,
     removed_links: BTreeMap<(u64, [u8; 16]), u32>,
 }
@@ -75,6 +107,8 @@ impl Progress {
             pending: false,
             payload_removed: false,
             metadata_removal_intent: false,
+            peer_unlink: None,
+            peer_removed: BTreeSet::new(),
             versions: BTreeMap::new(),
             removed_links: BTreeMap::new(),
         }
@@ -87,7 +121,8 @@ impl Progress {
     }
 
     /// Original hard links may also exist outside this tree. Only names removed
-    /// by this transaction reduce the expected link count; no outside name is
+    /// by this transaction or acknowledged peer unlinks reduce the expected count;
+    /// no outside name is
     /// discovered, adopted or granted deletion authority.
     pub(super) fn expected_links(&self, index: usize) -> Result<u32, PlatformError> {
         let entry = &self.manifest.entries[index];
@@ -287,13 +322,71 @@ impl State {
         }
         let progress = self.cleanup.as_ref().ok_or_else(invalid)?;
         if matches!(entry, CleanupRecord::MetadataRemovalIntent) {
-            return if progress.payload_removed && !progress.metadata_removal_intent {
+            return if progress.payload_removed
+                && !progress.metadata_removal_intent
+                && progress.peer_unlink.is_none()
+            {
                 Ok(true)
             } else {
                 Err(invalid())
             };
         }
         if progress.payload_removed {
+            return Err(invalid());
+        }
+        match entry {
+            CleanupRecord::PeerUnlinkIntent { proof } => {
+                let header = self.header.as_ref().unwrap();
+                let Some(node) = progress.manifest.entries.get(proof.index) else {
+                    return Err(invalid());
+                };
+                let local_parent = node
+                    .parent
+                    .map(|index| progress.expected(index).identity)
+                    .unwrap_or(header.parent);
+                let peer_name = OsString::from(format!("{}.copy-journal", proof.transaction));
+                if progress.manifest.owner != Owner::Original
+                    || progress.pending
+                    || progress.peer_unlink.is_some()
+                    || !progress.manifest.order[progress.completed..].contains(&proof.index)
+                    || node.version.directory
+                    || progress.expected_links(proof.index)? < 2
+                    || discovery::registry_id(&peer_name).as_deref()
+                        != Some(proof.transaction.as_str())
+                    || proof.transaction == header.transaction
+                    || !proof.control.is_regular_file_without_reparse()
+                    || proof.control == header.central_file
+                    || proof.control == header.local_file
+                    || proof.control.volume_serial_number() != header.central.volume_serial_number()
+                    || !proof.parent.is_directory_without_reparse()
+                    || proof.parent.volume_serial_number()
+                        != node.version.identity.volume_serial_number()
+                    || proof.parent == local_parent && proof.name == node.name
+                    || !valid_leaf(&proof.name)
+                    || proof.sequence == 0
+                    || proof.intent_digest == [0; 32]
+                    || proof.peer_index >= MAX_LOG as usize / FRAME_HEADER
+                    || progress.peer_removed.contains(&proof.key()?)
+                {
+                    return Err(invalid());
+                }
+                return Ok(true);
+            }
+            CleanupRecord::PeerUnlinkRemoved { key, after } => {
+                let proof = progress.peer_unlink.as_ref().ok_or_else(invalid)?;
+                let mut expected = progress.expected(proof.index).clone();
+                expected.changed = after.changed;
+                if *key != proof.key()?
+                    || **after != expected
+                    || progress.expected_links(proof.index)? < 2
+                {
+                    return Err(invalid());
+                }
+                return Ok(true);
+            }
+            _ => {}
+        }
+        if progress.peer_unlink.is_some() {
             return Err(invalid());
         }
         if matches!(entry, CleanupRecord::PayloadRemoved) {
@@ -359,6 +452,18 @@ impl State {
         }
         let progress = self.cleanup.as_mut().unwrap();
         match record {
+            CleanupRecord::PeerUnlinkIntent { proof } => progress.peer_unlink = Some(proof),
+            CleanupRecord::PeerUnlinkRemoved { key, after } => {
+                *progress
+                    .removed_links
+                    .entry(after.identity.object_key())
+                    .or_default() += 1;
+                progress
+                    .versions
+                    .insert(after.identity.object_key(), *after);
+                progress.peer_removed.insert(key);
+                progress.peer_unlink = None;
+            }
             CleanupRecord::EntryIntent { .. } => progress.pending = true,
             CleanupRecord::EntryRemoved {
                 index,
@@ -422,6 +527,20 @@ impl Journal {
                 .ok_or_else(|| io("Copy cleanup reservation overflow"))?;
             Ok(())
         };
+        if let Some(proof) = self
+            .state
+            .cleanup
+            .as_ref()
+            .and_then(|progress| progress.peer_unlink.as_ref())
+        {
+            let progress = self.state.cleanup.as_ref().unwrap();
+            let mut after = progress.expected(proof.index).clone();
+            after.changed = i64::MIN;
+            add(CleanupRecord::PeerUnlinkRemoved {
+                key: [255; 32],
+                after: Box::new(after),
+            })?;
+        }
         if self.state.cleanup.is_none() {
             add(CleanupRecord::Begin {
                 owner: manifest.owner,
@@ -449,6 +568,55 @@ impl Journal {
         add(CleanupRecord::PayloadRemoved)?;
         add(CleanupRecord::MetadataRemovalIntent)?;
         Ok(bytes)
+    }
+
+    /// Reserve both peer records and all remaining own cleanup acknowledgements
+    /// before publishing this intent. Runtime peer validation belongs to the
+    /// bound group writer; this method only enforces the durable codec/budget.
+    pub(super) fn prepare_peer_unlink(&mut self, proof: PeerUnlink) -> Result<(), PlatformError> {
+        if self.failed {
+            return Err(io("Copy journal write is uncertain; data retained"));
+        }
+        self.bindings()?;
+        if self
+            .state
+            .cleanup
+            .as_ref()
+            .and_then(|progress| progress.peer_unlink.as_deref())
+            == Some(&proof)
+        {
+            return self.reserve_cleanup_tail();
+        }
+        let record = Record::Cleanup {
+            entry: CleanupRecord::PeerUnlinkIntent {
+                proof: Box::new(proof.clone()),
+            },
+        };
+        self.state.check(&record)?;
+        let progress = self.state.cleanup.as_ref().unwrap();
+        let mut after = progress.expected(proof.index).clone();
+        after.changed = i64::MIN;
+        let ack = Record::Cleanup {
+            entry: CleanupRecord::PeerUnlinkRemoved {
+                key: [255; 32],
+                after: Box::new(after),
+            },
+        };
+        let intent_bytes = record_payload(&record)?.len() as u64;
+        let acknowledgement_bytes = record_payload(&ack)?.len() as u64;
+        let bytes = self
+            .length
+            .checked_add(self.cleanup_tail_size()?)
+            .and_then(|bytes| bytes.checked_add(2 * FRAME_HEADER as u64))
+            .and_then(|bytes| bytes.checked_add(intent_bytes))
+            .and_then(|bytes| bytes.checked_add(acknowledgement_bytes))
+            .ok_or_else(|| io("Copy peer unlink reservation overflow"))?;
+        if bytes > log_budget() {
+            return Err(io(
+                "Copy journal has insufficient peer unlink space; all data retained",
+            ));
+        }
+        self.persist(record)
     }
 
     pub(super) fn reserve_cleanup_tail(&self) -> Result<(), PlatformError> {

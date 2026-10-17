@@ -1268,6 +1268,14 @@ fn anchored_cleanup_fixture(root: &Path) {
 }
 
 fn cleanup_peer_fixture(root: &Path, shared: bool) -> [OsString; 2] {
+    cleanup_peer_fixture_with_aliases(root, shared, false)
+}
+
+fn cleanup_peer_fixture_with_aliases(
+    root: &Path,
+    shared: bool,
+    extra_aliases: bool,
+) -> [OsString; 2] {
     anchored_cleanup_fixture(root);
     let first = root.join("destination");
     let second = root.join("second-destination");
@@ -1280,6 +1288,11 @@ fn cleanup_peer_fixture(root: &Path, shared: bool) -> [OsString; 2] {
         std::fs::hard_link(first.join("copy/old"), second.join("copy/old")).unwrap();
     } else {
         std::fs::write(second.join("copy/old"), b"old original data").unwrap();
+    }
+    if extra_aliases {
+        assert!(shared);
+        std::fs::hard_link(first.join("copy/old"), second.join("copy/other")).unwrap();
+        std::fs::hard_link(first.join("copy/old"), root.join("outside")).unwrap();
     }
     // Both original graphs exist before either retention rename; native
     // child epochs therefore remain exact in the shared-hardlink case.
@@ -3186,4 +3199,310 @@ fn windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pe
             b"second publication"
         );
     }
+}
+
+fn peer_unlink_codec_fixture(
+    root: &Path,
+) -> (
+    Journal,
+    super::super::cleanup_protocol::PeerUnlink,
+    std::path::PathBuf,
+) {
+    let names = cleanup_peer_fixture_with_aliases(root, true, true);
+    let headers = ["destination", "second-destination"]
+        .iter()
+        .zip(&names)
+        .map(|(directory, name)| {
+            Snapshot::load(
+                &owner(&root.join(directory)),
+                &owner(&root.join("central")),
+                name,
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .state
+            .header
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let ids = headers
+        .iter()
+        .map(|header| header.transaction.clone())
+        .collect::<Vec<_>>();
+    super::super::cleanup_group::Observation::observe_at(&root.join("central"), &ids, |_| Ok(()))
+        .unwrap()
+        .start_all(|_| Ok(()))
+        .unwrap();
+    let mut peer = original_journal(root, &names[0]);
+    let progress = peer.state.cleanup.as_ref().unwrap();
+    let peer_index = progress.manifest.order[progress.completed];
+    let parent = progress
+        .expected(progress.manifest.entries[peer_index].parent.unwrap())
+        .identity;
+    let name = progress.manifest.entries[peer_index].name.clone();
+    peer.persist(Record::Cleanup {
+        entry: super::super::cleanup_protocol::CleanupRecord::EntryIntent { index: peer_index },
+    })
+    .unwrap();
+    let bytes = read(&peer.central).unwrap();
+    let sequence = peer.sequence;
+    drop(peer);
+    let parent_b = owner(&root.join("second-destination"));
+    let central = owner(&root.join("central"));
+    let snapshot = Snapshot::load(&parent_b, &central, &names[1], SnapshotAccess::Write).unwrap();
+    let journal = Journal::from_snapshot(&parent_b, &central, snapshot).unwrap();
+    let index = journal
+        .state
+        .cleanup
+        .as_ref()
+        .unwrap()
+        .manifest
+        .entries
+        .iter()
+        .position(|entry| !entry.version.directory && entry.links > 1)
+        .unwrap();
+    let proof = super::super::cleanup_protocol::PeerUnlink {
+        index,
+        transaction: headers[0].transaction.clone(),
+        control: headers[0].central_file,
+        parent,
+        name,
+        peer_index,
+        sequence,
+        intent_digest: Sha256::digest(bytes).into(),
+    };
+    (
+        journal,
+        proof,
+        root.join("destination")
+            .join(headers[0].original_name())
+            .join("old"),
+    )
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_unlink_codec_replays_one_external_alias_acknowledgement() {
+    use super::super::cleanup_protocol::CleanupRecord;
+    let root = tempfile::tempdir().unwrap();
+    let (mut journal, proof, removed) = peer_unlink_codec_fixture(root.path());
+    let key = proof.key().unwrap();
+    journal.prepare_peer_unlink(proof.clone()).unwrap();
+    let intent_bytes = read(&journal.local).unwrap();
+    journal.prepare_peer_unlink(proof.clone()).unwrap();
+    assert_eq!(read(&journal.local).unwrap(), intent_bytes);
+    let own_index = journal.state.cleanup.as_ref().unwrap().manifest.order[0];
+    assert!(
+        journal
+            .persist(Record::Cleanup {
+                entry: CleanupRecord::EntryIntent { index: own_index }
+            })
+            .is_err()
+    );
+    let before = journal
+        .state
+        .cleanup
+        .as_ref()
+        .unwrap()
+        .expected(proof.index)
+        .clone();
+    for field in 0..4 {
+        let mut after = before.clone();
+        let mut candidate_key = key;
+        match field {
+            0 => candidate_key[0] ^= 1,
+            1 => after.length += 1,
+            2 => after.modified += 1,
+            3 => after.attributes ^= 2,
+            _ => unreachable!(),
+        }
+        assert!(
+            journal
+                .persist(Record::Cleanup {
+                    entry: CleanupRecord::PeerUnlinkRemoved {
+                        key: candidate_key,
+                        after: Box::new(after)
+                    }
+                })
+                .is_err()
+        );
+        assert_eq!(read(&journal.local).unwrap(), intent_bytes);
+    }
+    // Test-only native unlink represents the peer's pending operation. Runtime
+    // peer-proof validation/removal is intentionally not implemented by this codec.
+    std::fs::remove_file(&removed).unwrap();
+    owner(removed.parent().unwrap()).sync_all().unwrap();
+    let retained = root
+        .path()
+        .join("second-destination")
+        .join(journal.header.original_name())
+        .join("old");
+    let file = owner(&retained);
+    let after = super::super::super::version(&file).unwrap();
+    assert_eq!(
+        super::super::super::namespace::link_count(&file).unwrap(),
+        3
+    );
+    journal
+        .persist(Record::Cleanup {
+            entry: CleanupRecord::PeerUnlinkRemoved {
+                key,
+                after: Box::new(after.clone()),
+            },
+        })
+        .unwrap();
+    let progress = journal.state.cleanup.as_ref().unwrap();
+    assert!(progress.peer_unlink.is_none());
+    for &alias in progress.manifest.same_object(proof.index) {
+        assert_eq!(progress.expected_links(alias).unwrap(), 3);
+        assert_eq!(progress.expected(alias), &after);
+    }
+    drop(file);
+    super::super::cleanup_tree::Remaining::open(
+        &owner(&root.path().join("second-destination")),
+        &journal.state,
+        progress,
+        |_| Ok(()),
+    )
+    .unwrap();
+    let bytes = read(&journal.local).unwrap();
+    let parent = owner(&root.path().join("second-destination"));
+    let central = owner(&root.path().join("central"));
+    let name = journal.header.stage_name();
+    drop(journal);
+    let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+    assert_eq!(snapshot.bytes, bytes);
+    assert_eq!(
+        snapshot
+            .state
+            .cleanup
+            .as_ref()
+            .unwrap()
+            .expected_links(proof.index)
+            .unwrap(),
+        3
+    );
+    let mut duplicate = proof.clone();
+    duplicate.sequence += 1;
+    duplicate.intent_digest = [42; 32];
+    duplicate.index = own_index;
+    assert_eq!(duplicate.key().unwrap(), key);
+    assert!(
+        snapshot
+            .state
+            .check(&Record::Cleanup {
+                entry: CleanupRecord::PeerUnlinkIntent {
+                    proof: Box::new(duplicate)
+                }
+            })
+            .is_err()
+    );
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+    assert_eq!(std::fs::read(retained).unwrap(), b"old original data");
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_unlink_codec_rejects_unbound_and_out_of_order_records() {
+    use super::super::cleanup_protocol::CleanupRecord;
+    let root = tempfile::tempdir().unwrap();
+    let (mut journal, proof, _) = peer_unlink_codec_fixture(root.path());
+    let before = read(&journal.local).unwrap();
+    let version = journal
+        .state
+        .cleanup
+        .as_ref()
+        .unwrap()
+        .expected(proof.index)
+        .clone();
+    assert!(
+        journal
+            .persist(Record::Cleanup {
+                entry: CleanupRecord::PeerUnlinkRemoved {
+                    key: proof.key().unwrap(),
+                    after: Box::new(version)
+                }
+            })
+            .is_err()
+    );
+    for change in 0..10 {
+        let mut candidate = proof.clone();
+        match change {
+            0 => candidate.transaction = journal.header.transaction.clone(),
+            1 => candidate.transaction = "A".repeat(32),
+            2 => candidate.control = journal.header.local_file,
+            3 => candidate.parent = journal.header.central_file,
+            4 => candidate.name = "../escape".encode_utf16().collect(),
+            5 => candidate.index = usize::MAX,
+            6 => candidate.sequence = 0,
+            7 => candidate.intent_digest = [0; 32],
+            8 => {
+                let progress = journal.state.cleanup.as_ref().unwrap();
+                let entry = &progress.manifest.entries[candidate.index];
+                candidate.parent = progress.expected(entry.parent.unwrap()).identity;
+                candidate.name = entry.name.clone();
+            }
+            9 => candidate.index = 0,
+            _ => unreachable!(),
+        }
+        assert!(
+            journal.prepare_peer_unlink(candidate).is_err(),
+            "accepted change {change}"
+        );
+        assert_eq!(read(&journal.local).unwrap(), before);
+    }
+    let mut header = journal.header.clone();
+    header.schema = 12;
+    assert!(!header.valid());
+    let mut old_magic = before.clone();
+    old_magic[..8].copy_from_slice(b"OTCPWJ12");
+    assert!(decode(&old_magic).is_err());
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_unlink_codec_reserves_acknowledgement_before_intent() {
+    use super::super::cleanup_protocol::CleanupRecord;
+    let root = tempfile::tempdir().unwrap();
+    let (mut journal, proof, _) = peer_unlink_codec_fixture(root.path());
+    let before = read(&journal.local).unwrap();
+    let intent = Record::Cleanup {
+        entry: CleanupRecord::PeerUnlinkIntent {
+            proof: Box::new(proof.clone()),
+        },
+    };
+    let mut after = journal
+        .state
+        .cleanup
+        .as_ref()
+        .unwrap()
+        .expected(proof.index)
+        .clone();
+    after.changed = i64::MIN;
+    let ack = Record::Cleanup {
+        entry: CleanupRecord::PeerUnlinkRemoved {
+            key: [255; 32],
+            after: Box::new(after),
+        },
+    };
+    let required = journal.length
+        + journal.cleanup_tail_size().unwrap()
+        + 2 * FRAME_HEADER as u64
+        + record_payload(&intent).unwrap().len() as u64
+        + record_payload(&ack).unwrap().len() as u64;
+    let previous = LOG_BUDGET.with(|limit| limit.replace(required - 1));
+    let refused = journal.prepare_peer_unlink(proof.clone());
+    LOG_BUDGET.with(|limit| limit.set(previous));
+    assert!(refused.is_err());
+    assert_eq!(read(&journal.local).unwrap(), before);
+    let previous = LOG_BUDGET.with(|limit| limit.replace(required));
+    let accepted = journal.prepare_peer_unlink(proof);
+    let tail = journal.reserve_cleanup_tail();
+    LOG_BUDGET.with(|limit| limit.set(previous));
+    accepted.unwrap();
+    tail.unwrap();
+    assert_eq!(
+        journal.length + journal.cleanup_tail_size().unwrap(),
+        required
+    );
 }

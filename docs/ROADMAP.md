@@ -33,31 +33,33 @@ complete, group metadata authorization/removal now advances member catalogs from
 the held writer and a retained Plan. Interrupted removal freezes other actions;
 the same Plan verifies only its expected metadata-name disappearances before
 retry, including a missing final central journal. Complete members stay complete
-without reopening deleted controls.
+without reopening deleted controls. Schema 13 now records pending peer-unlink
+intent and exact-once link-count/version acknowledgements, with complete-tail
+reservation before intent. This is codec/accounting groundwork; live peer/prefix
+and native slot validation and the shared physical coordinator remain required.
 
-The latest scoped native cleanup run passes **44 tests**, including 187 real
-process exits, the existing injected-failure matrices, 64 configured-action
-scenarios, six retention shapes, four two-copy start-boundary scenarios and the new group
-observation/refusal, four group-start, three payload-handoff and three group
-metadata cases.
-The separate native Activity status test passed at the catalog checkpoint.
-These correctness tests use a package-specific unoptimized test crate; they do
-not establish application performance, rendered UI, full current-platform or
-release-package acceptance. Current proof:
-`GROUP_METADATA_ACCEPTANCE.json`, `GROUP_PAYLOAD_ACCEPTANCE.json`,
-`GROUP_START_ACCEPTANCE.json`,
-`GROUP_OBSERVATION_ACCEPTANCE.json`,
-`START_ACCEPTANCE.json`,
-`CLEANUP_ACTION_ACCEPTANCE.json` and
-`CATALOG_ACCEPTANCE.json` under `.hermes/evidence/windows-copy-cleanup-current/`.
-Earlier checkpoints and their narrower scopes remain in `WINDOWS_COPY_DESIGN.md`.
+Schema 13 verification accounts for all **149 Windows Copy journal cases**:
+**141 successful cases** and eight existing ignored entry points, including
+**47 successful cleanup cases**. The initial all-in-one run hit its 900-second
+watchdog after 122 successful cases and seven ignored entries; the remaining
+batch passed 19 cases with one existing ignored entry. The timeout is retained
+as a failed run, not presented as a one-shot suite pass. A per-case manifest
+checks the exact union against the native test list on the same binary.
+The separate peer-accounting focus passes three tests. The native Activity status
+test retains its earlier catalog-checkpoint scope.
 
-**Still required:** shared-retained alias epoch/count coordination, complete group
-process-exit/history recovery, and Activity cleanup
-confirmation/execution/retry. Reserved-target protection, interrupted-staging
-reclamation, measured resource/storage/security and power-cut matrices, broader
-workflow acceptance and current package gates remain open. Public Windows Copy
-stays gated. Application packages are unchanged by these cleanup checkpoints.
+These unoptimized correctness checks do not establish application performance,
+rendered UI, full unrelated platform or release-package acceptance. Current proof:
+`PEER_UNLINK_CODEC_ACCEPTANCE.json` and `PEER_UNLINK_CODEC_COVERAGE.json` under
+`.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
+`WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
+
+**Still required:** live peer/prefix/native-slot validation and shared-retained
+alias execution, complete group process-exit/history recovery, and Activity
+cleanup confirmation/execution/retry. Reserved-target protection, interrupted-
+staging reclamation, measured resource/storage/security and power-cut matrices,
+broader workflow acceptance and current package gates remain open. Public Windows
+Copy stays gated. Application packages are unchanged by these checkpoints.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session

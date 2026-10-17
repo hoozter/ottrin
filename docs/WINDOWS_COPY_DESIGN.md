@@ -938,3 +938,51 @@ tests in 83.02s; the full correctness run passes in 549.69s under its bounded
 teardown pass. The test crate is unoptimized; these durations establish neither
 application performance nor current package/UI acceptance. No journal schema or
 public Windows Copy gate changed.
+
+
+## Durable peer-unlink accounting — schema 13
+
+`OTCPWJ13` adds peer-unlink intent and acknowledgement records. An intent names
+one remaining local original-file alias and binds a distinct peer transaction,
+control identity, native parent/name, entry index, pending sequence and intent
+digest. Same-entry names, directory payloads, unbound references and impossible
+link counts are refused. Pending peer intent blocks ordinary cleanup transitions
+until its acknowledgement is recorded.
+
+The acknowledgement changes only the shared file's expected change time and
+reduces its expected link count once. All remaining local aliases receive that
+same version/count through the existing object-key accounting. The deduplication
+key binds peer transaction/control/entry, independently of local representative
+index, claimed sequence or digest; a replay cannot count one physical unlink
+again. Journal replay retains the pending state and acknowledged keys.
+
+Intent preparation reserves its frame, a worst-case acknowledgement and the full
+remaining local cleanup tail before writing anything. The exact-budget boundary
+and repeat-without-append path are covered. Poisoned writers remain refused.
+Older schema records are not converted or deleted; they remain review conditions.
+
+Three focused ordinary-user native tests pass: native alias removal represented
+by test-only fixture code and replay across multiple retained aliases, duplicate/
+wrong-order/unbound/change-field refusal, and the acknowledgement budget boundary.
+An alias outside the retained tree remains unchanged. The test-only unlink is
+not the product's shared-unlink path. Live peer-record/prefix validation, native
+slot/alias checks, group per-entry coordination and interruption recovery must be
+connected before physical shared cleanup can be enabled. Existing physical
+shared-dependency protection remains in place.
+
+
+`PEER_UNLINK_CODEC_ACCEPTANCE.json` records three focused native codec tests
+passing in 6.12s. Broader schema verification enumerates 149 Copy journal cases.
+The initial all-in-one run timed out at its 900s watchdog after 122 cases passed
+and seven existing entry points were ignored. The unfinished overwrite matrix
+and remaining cases were dispatched as a separate batch on the same binary:
+19 passed, zero failed, one existing ignored entry, 184.08s. The exact union of
+successful/ignored case names is checked against the native list and committed
+in `PEER_UNLINK_CODEC_COVERAGE.json`: 141 successful and eight existing ignored,
+including 47 successful cleanup cases. This is complete per-case coverage across
+runs, not a one-shot pass; the timed-out run remains explicit evidence.
+
+Strict Windows platform/UI checks, formatting and owned process/temporary-root
+cleanup pass. No additional exclusions were introduced. The unoptimized test
+profile does not establish application performance, current package/UI acceptance,
+or runtime shared-unlink support.

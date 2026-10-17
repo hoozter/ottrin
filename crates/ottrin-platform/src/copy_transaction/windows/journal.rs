@@ -42,7 +42,7 @@ pub(crate) use discovery::{
 };
 use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ12";
+const MAGIC: &[u8; 8] = b"OTCPWJ13";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -183,7 +183,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 12
+            && self.schema == 13
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -1262,7 +1262,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 12,
+            schema: 13,
             transaction: name,
             parent: parent_id,
             stage: stage_id,

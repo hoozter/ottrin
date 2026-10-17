@@ -1,0 +1,130 @@
+{
+  "scope": "Schema13 peer-unlink intent/ack accounting and budget; runtime shared-unlink coordination remains unfinished",
+  "parent_revision": "b385b3e691c89a4ee4149fc724f9df1fea940877",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "8daed89dba68772afa53a233a3cfb80855532e653bfc3e899e5fddc996859605",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "3a93b0180b7a0793891fbcc446ac770b0adfbc4886626cf649ea78017e8316b1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "08b4e1a4dbcf07d0c85c5348805930ee1938c4dbd6bf22c1b43e3d9ccbff644b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "0289757aef6cdf9a97f88edbc99102b1cfdcf807048fa7fdc4bf7f392514bb9a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "f045ebb66311fae731d5131ae1ee9a89b85d66a27ab0ce4251507f3f6b5e4ec1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "315390b819bfdad8651d8fee0f7465348233628e6d34d56fa6ebde3d267b3fea",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "e98da1d7ad175097ca735d3cf5deac7b1bb6c2ad6875ef7d21c3eb735d2ad8c9",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2"
+  },
+  "binary": {
+    "test_crate": "ottrin_platform",
+    "watchdog_ms": 900000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "0774649bedc76e0167f37b0a7d2e03092ae9b0148a9eebc4236853d590c542f0",
+    "transferred_sha256": "4e6066e9851e421c65a66fa05fb40ed1ce401c1bc3f5d96229c90a17e957a457",
+    "retained_sections": {
+      ".text": "0ed0e2a87500b8cb51e4f9b7ea985f7a9a74c9f2299f7ce7dcbd09f77e9a4aab",
+      ".data": "986f4c63921b82686b028ac72eb3c1921e2f79b687bcd588c747fd2a92e3f439",
+      ".rdata": "682b333651082a60dfdf1c7bbc9bcf4cea2c42c383d09251d0fd4386bd712af1",
+      ".pdata": "59c88b869d270caa2c2c2484ef2c06aaece589abc472540e20fbaf068c1ce735",
+      ".xdata": "31c7543970ea7b09b373f83a1535f3b1ec0b6df4ad2572410ded07e2be08a534",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "3ce55d545d8cb48d9947e1efb05afb98d06b3903385404511ccb220a73948e53",
+      ".CRT": "cd54e2f338340092cd4e0ea672b17ea704b0212a8a15aab490fbe4a2b2000c73",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "c53df2418f0f06563b7c4d39251383686218e4247cde7d9a7d2e0fd02ba9d3ec"
+    },
+    "test_arguments_sha256": "a87c9c3fd6b3a6560ff6255ad4f49768577612a952ed7f9191c48dc3dba8a541"
+  },
+  "focused": {
+    "passed": 3,
+    "failed": 0,
+    "seconds": 6.12,
+    "native_result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "4e6066e9851e421c65a66fa05fb40ed1ce401c1bc3f5d96229c90a17e957a457",
+      "status": "pass"
+    }
+  },
+  "journal_coverage": {
+    "enumerated": 149,
+    "successful": 141,
+    "existing_ignored_entrypoints": 8,
+    "cleanup_successful_subset": 47,
+    "manifest": ".hermes/evidence/windows-copy-cleanup-current/PEER_UNLINK_CODEC_COVERAGE.json",
+    "manifest_sha256": "ea3ed8206faf1cb7b37808313b2e4043c6862e60af24de3e3124f9c2aebfa093",
+    "one_shot_suite_pass": false
+  },
+  "wide_attempt": {
+    "watchdog_ms": 900000,
+    "native_result": {
+      "status": "fail",
+      "error": "Owned test remains live: 2492",
+      "test_binary_hash": "4e6066e9851e421c65a66fa05fb40ed1ce401c1bc3f5d96229c90a17e957a457",
+      "ordinary_user": true
+    },
+    "completed_successfully_before_watchdog": 122,
+    "existing_ignored_before_watchdog": 7,
+    "interrupted_test": "copy_transaction::windows::journal::tests::windows_native_overwrite_all_mutation_prefixes_recover_or_preserve_divergent_mirrors",
+    "outcome": "Timed out while progressing; not accepted as a completed run. Per-test successful results preserved separately."
+  },
+  "remaining_batch": {
+    "passed": 19,
+    "failed": 0,
+    "existing_ignored": 1,
+    "filtered": 336,
+    "seconds": 184.08,
+    "native_result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "4e6066e9851e421c65a66fa05fb40ed1ce401c1bc3f5d96229c90a17e957a457",
+      "status": "pass"
+    },
+    "selection_sha256": "605dbb06c0f4dc7a0f38a9f87e89144908c98d6034323c4cb1fdd68e0780fcc7"
+  },
+  "properties": [
+    "Pending external unlink blocks own cleanup until matching acknowledgement",
+    "One peer control/transaction/entry can be counted only once across all local aliases",
+    "Only expected change-time and link-count delta updates shared-file accounting",
+    "Journal replay preserves pending and acknowledged peer state",
+    "Full intent/ack/remaining-tail budget reserved before intent; exact boundary verified",
+    "Idempotent preparation never appends twice; poisoned writers refused",
+    "Unbound, self, same-slot, directory, out-of-order and changed-field records refused",
+    "Native test-only unlink preserves other retained aliases and outside alias",
+    "Old schema/magic refused without conversion or deletion"
+  ],
+  "static_checks": [
+    "Windows platform/UI all-target strict Clippy passed",
+    "cargo fmt --all -- --check passed",
+    "git diff --check passed"
+  ],
+  "teardown": {
+    "task_state": "Ready",
+    "task_result": 0,
+    "process_count": 0,
+    "temporary_exists": false
+  },
+  "limitations": [
+    "Live peer record/prefix/native slot validation not connected yet",
+    "Shared physical deletion remains guarded and unsupported by this groundwork",
+    "Group-specific process exits/history and Activity integration remain open",
+    "Initial all-in-one run timed out; full case coverage is accounted across runs",
+    "Unoptimized correctness checks do not establish application performance",
+    "No current package/rendered UI/full unrelated platform acceptance; packages unchanged/public Windows Copy gated"
+  ]
+}
