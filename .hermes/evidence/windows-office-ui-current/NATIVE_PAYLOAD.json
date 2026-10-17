@@ -1,0 +1,12 @@
+{
+  "baseline_revision": "8c6975e",
+  "source_sha256": "2e84a7596212246f156e93841606f50288a8ff4ce9cb750f784655c1f9a75f8f",
+  "actor_sha256": "90389f49d262d232d25fc8a10e9446d87c92281f82b757c3fcc58f19e37fedb2",
+  "sha256": {
+    "ottrin.exe": "e93f6bcb4febe20f5c9b76417a00cccfa3f426315fda7aa20d85c35ebfcbc50d",
+    "ottrin-indexd.exe": "a44ccbd5b477820a60de982aad5cf976cb11ded05237a74954f4bc0978dd3cc0",
+    "ottrin-office-render.exe": "de18e6cd37359a223a715e4f007d92f3bb335f1dffcd6cd2a115858bf28b0a69"
+  },
+  "profile": "default release; no debug-section transformation",
+  "pixel_gate": "At least 100 sampled pixels in each unique image half, plus an observed non-metadata conversion child and visual review. The 1-in-4 sampling yields 144 per half in the narrow main preview; the initial 150 threshold incorrectly rejected that complete image."
+}

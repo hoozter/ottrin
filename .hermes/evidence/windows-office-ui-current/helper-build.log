@@ -1,0 +1,4 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling windows-sys v0.61.2
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 3m 38s

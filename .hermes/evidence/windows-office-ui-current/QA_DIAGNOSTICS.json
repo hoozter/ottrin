@@ -1,0 +1,38 @@
+{
+  "cli_argument": {
+    "report": {
+      "effective_administrator": false,
+      "filtered_administrator_membership": false,
+      "stack": "at Wait-Colored, C:\\OttrinCopyCleanupQA\\office-ui\\actor.ps1: line 43\r\nat <ScriptBlock>, C:\\OttrinCopyCleanupQA\\office-ui\\actor.ps1: line 69",
+      "private_temp_removed": true,
+      "error": "System.Management.Automation.RuntimeException: Early Ottrin exit 1",
+      "interactive": true,
+      "private_profile_removed": true,
+      "status": "fail",
+      "owned_processes": 0,
+      "cases": {}
+    },
+    "stderr": "ottrin: unknown command: select\n",
+    "resolution": "Correct QA argument select to --select; no product change."
+  },
+  "sampling_threshold": {
+    "report": {
+      "effective_administrator": false,
+      "filtered_administrator_membership": false,
+      "stack": "at Wait-Colored, C:\\OttrinCopyCleanupQA\\office-ui\\actor.ps1: line 53\r\nat <ScriptBlock>, C:\\OttrinCopyCleanupQA\\office-ui\\actor.ps1: line 69",
+      "private_temp_removed": true,
+      "error": "System.Management.Automation.RuntimeException: Source image halves not rendered: main-rendered 144 144",
+      "interactive": true,
+      "private_profile_removed": true,
+      "status": "fail",
+      "owned_processes": 0,
+      "cases": {}
+    },
+    "resolution": "At least 100 sampled pixels in each unique image half, plus an observed non-metadata conversion child and visual review. The 1-in-4 sampling yields 144 per half in the narrow main preview; the initial 150 threshold incorrectly rejected that complete image."
+  },
+  "terminated_build": {
+    "exit": 143,
+    "cause": "Not established. Terminal handle exited and child compiler was gone before resume.",
+    "resolution": "Resumed Cargo build exited 0; only its completed artifact was staged."
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "status": "Windows Office UI integration accepted in source; packaging pending",
+  "baseline_revision": "8c6975e",
+  "source_sha256": "2e84a7596212246f156e93841606f50288a8ff4ce9cb750f784655c1f9a75f8f",
+  "implementation": [
+    "Shared provider discovery/render worker uses native Linux or Windows isolation.",
+    "Detection wakes the UI through the existing result notifier; no polling timer added.",
+    "Current-generation failures select native previews and explain fallback in Miller and Quick Inspector. Disabled previews and replaced files do not retain the notice."
+  ],
+  "native_payload": {
+    "baseline_revision": "8c6975e",
+    "source_sha256": "2e84a7596212246f156e93841606f50288a8ff4ce9cb750f784655c1f9a75f8f",
+    "actor_sha256": "90389f49d262d232d25fc8a10e9446d87c92281f82b757c3fcc58f19e37fedb2",
+    "sha256": {
+      "ottrin.exe": "e93f6bcb4febe20f5c9b76417a00cccfa3f426315fda7aa20d85c35ebfcbc50d",
+      "ottrin-indexd.exe": "a44ccbd5b477820a60de982aad5cf976cb11ded05237a74954f4bc0978dd3cc0",
+      "ottrin-office-render.exe": "de18e6cd37359a223a715e4f007d92f3bb335f1dffcd6cd2a115858bf28b0a69"
+    },
+    "profile": "default release; no debug-section transformation",
+    "pixel_gate": "At least 100 sampled pixels in each unique image half, plus an observed non-metadata conversion child and visual review. The 1-in-4 sampling yields 144 per half in the narrow main preview; the initial 150 threshold incorrectly rejected that complete image."
+  },
+  "native_result": {
+    "effective_administrator": false,
+    "filtered_administrator_membership": false,
+    "source_sha256": {
+      "01-office.docx": "753F80C48A1B08B785DCCE98306FA76EC1016B19E1223C96A4D49865BE65F471",
+      "02-office.xlsx": "C20213E5A26D4F619A922339FA0801EF6715544D22A276DE928417C3D7A75978"
+    },
+    "private_temp_removed": true,
+    "original_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "temporary_entries": 0,
+    "interactive": true,
+    "private_profile_removed": true,
+    "status": "pass",
+    "owned_processes": 0,
+    "cases": {
+      "main": {
+        "title": "Ottrin",
+        "cyan": 144,
+        "conversions": [
+          {
+            "parent": 7632,
+            "pid": 5448,
+            "arguments": "C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-7632-1792271371762645600\\.ottrin-7632-1792271371764042300\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/OttrinCopyCleanupQA/office-ui/temp/ottrin-office-preview-7632-1792271371762645600/.ottrin-7632-1792271371764042300 C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-7632-1792271371762645600\\.ottrin-7632-1792271371764042300\\input\\01-office.docx C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-7632-1792271371762645600",
+            "executable": "C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-7632-1792271371762645600\\.ottrin-7632-1792271371764042300\\office-render.exe"
+          }
+        ],
+        "orange": 144
+      },
+      "main_fallback": {
+        "review": "Host must confirm worksheet and fallback notice before continuing",
+        "injection": "Owned helper removed after successful main preview"
+      },
+      "fallback": {
+        "injection": "Owned helper removed after successful provider detection/conversion",
+        "title": "Ottrin Quick Inspector \u2014 02-office.xlsx"
+      },
+      "inspector": {
+        "title": "Ottrin Quick Inspector \u2014 01-office.docx",
+        "cyan": 3025,
+        "conversions": [
+          {
+            "parent": 1716,
+            "pid": 204,
+            "arguments": "C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-1716-1792271431660762700\\.ottrin-1716-1792271431661913100\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/OttrinCopyCleanupQA/office-ui/temp/ottrin-office-preview-1716-1792271431660762700/.ottrin-1716-1792271431661913100 C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-1716-1792271431660762700\\.ottrin-1716-1792271431661913100\\input\\01-office.docx C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-1716-1792271431660762700",
+            "executable": "C:\\OttrinCopyCleanupQA\\office-ui\\temp\\ottrin-office-preview-1716-1792271431660762700\\.ottrin-1716-1792271431661913100\\office-render.exe"
+          }
+        ],
+        "orange": 3025
+      }
+    }
+  },
+  "visual_review": "VISUAL_REVIEW.json",
+  "checks": {
+    "office_ui_tests": 9,
+    "wake_tests": 2,
+    "operation_undo_wake_tests": 1,
+    "strict_linux_and_windows_ui_clippy": "pass",
+    "release_app_and_helper_builds": "pass",
+    "runtime_skips": 0,
+    "reviewed_window_captures": 4,
+    "source_files_preserved": true,
+    "private_temporary_entries_after_close": 0,
+    "format_and_diff": "pass"
+  },
+  "scope": [
+    "Existing non-administrator interactive QA account with private AppData/LocalAppData/temp. Original configuration copied read-only and changed only in private profile.",
+    "Actual release GUI/index daemon/Office helper; installed LibreOffice 26.8.1.1. Graphics/PDFium dependencies copied read-only from prior installation after package-pin verification.",
+    "Explicit OpenGL compatibility renderer. Default-D3D12, fresh installation and exact-package acceptance remain open.",
+    "Public Linux/Windows packages unchanged."
+  ],
+  "teardown": {
+    "owned_stage_removed": true,
+    "login_settings_unchanged": true,
+    "credentials_not_created": true,
+    "original_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "provider": {
+      "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+      "version": "26.8.1.1",
+      "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+    },
+    "owned_interactive_task_removed": true,
+    "status": "pass",
+    "original_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "owned_native_processes": 0,
+    "owned_vm_state": "shut off"
+  },
+  "native_text_normalization": {
+    "description": "Windows PowerShell ANSI JSON decoded as CP1252 where needed; UTF-8 LF with trailing whitespace removed. PNGs retained verbatim.",
+    "original_sha256": {
+      "inspector.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "final-build.log": "a68cfdad2f2cabb5fbbaa189be0e78a40f68a38100a23034651e34f5b799be97",
+      "windows-clippy.log": "6e0cdb2b99ff164b8d99b61baa5e0a66133e78b4d92d1cd935bac21b0083e754",
+      "main.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "linux-office-tests.log": "5045fa6ee2674125c7c7c0f2dc3c6f3a30714dbf8a736c7847b7169e9653ba20",
+      "linux-clippy.log": "36362510311ee9b7b06f70cb3ed35094d96c68dcdcd39e1100a5f8f3d12730f0",
+      "NATIVE_RESULTS.json": "9210f039c1e0446c19eb25a0b5c3bf88818d78615e9ccd0264a8564c025bbe4d",
+      "main.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "linux-operation-wake.log": "702550743f440a11654505f6dabd6b1518969de1fa6f024dfd501d5b3204f465",
+      "linux-wake-tests.log": "4adca0fc4b70dd418e1f945be1e6f2e949140937cd2d1ae03be65e4b2b7d75e1",
+      "helper-build.log": "dda4c6e587d9b4e9df18e7b59269e31f0ed5020f377821a07774119bcda929ab",
+      "inspector.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "host_cleanup": "Transfer archive, PID files, redundant logs/receipts and superseded capture removed; compact current evidence and reusable QA scripts retained. Current Cargo outputs/shared caches preserved.",
+  "evidence_sha256": {
+    "NATIVE_PAYLOAD.json": "5f2d8c984bfce44221d329d127b1db16d42f570110440ac91b380dbaddf9c631",
+    "NATIVE_RESULTS.json": "72ebc17b9aa4937c185e2416b1985ea326259a3c45150efd3a6d10246cfc28e4",
+    "QA_DIAGNOSTICS.json": "f3699088cf293c150085fc46978119dad96de7fce63603d5c563f3458cb05c4b",
+    "RUNTIME_PINS.json": "7adcf2a7ed2577ebb63ccb99e050841b5c6ad614349e42e6eee5a72167e5515f",
+    "TEARDOWN.json": "93b969d8e41de2899e43e7a1926354d1dca361ef95828df2f9b3b981f16f03ff",
+    "VISUAL_REVIEW.json": "b3f76b15e05ea55700062867680486a71d1c02f7a4068065200e5c1009d4d989",
+    "final-build.log": "a68cfdad2f2cabb5fbbaa189be0e78a40f68a38100a23034651e34f5b799be97",
+    "helper-build.log": "dda4c6e587d9b4e9df18e7b59269e31f0ed5020f377821a07774119bcda929ab",
+    "inspector-fallback.png": "759cc9d52b8c0625ff529ce9ca84971369e7f7b0acc4ac0d39c65b70fc3aa5cb",
+    "inspector-rendered.png": "1d383da744d3cf2f1afe25cc7b0e64cfe704e6dcc47aa366e553435738e30a57",
+    "inspector.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "inspector.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux-clippy.log": "36362510311ee9b7b06f70cb3ed35094d96c68dcdcd39e1100a5f8f3d12730f0",
+    "linux-office-tests.log": "afc22f2f051e64a49bdebc9995c8aa1ada3118e48414ad56c44690969422f530",
+    "linux-operation-wake.log": "340e679610e5241f023fe7b5491df98e7f29bba69a3b38c1569ec9325538082e",
+    "linux-wake-tests.log": "6054c7433d96c77bfced78bbf8d3072ec720e721454cd5a5ff416d40484ce05f",
+    "main-fallback.png": "536af9474d61948da49c9a2ea4bbfecdfdad73391d9037773e45b6bb480e2c23",
+    "main-rendered.png": "bb91aa1483e3b75dc18f80bb386e5c5539ad376c3837c542b5fda7a483f47b8e",
+    "main.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "main.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-interactive.ps1": "90389f49d262d232d25fc8a10e9446d87c92281f82b757c3fcc58f19e37fedb2",
+    "phase.py": "b3205ceec5d099d3bb74903a133c6cd8798fc479d9e54e9b6b55a61dceb677c1",
+    "teardown.ps1": "7594391c1fe8de528fb738f2b5408367a3812edc3d84052b95b3074e83b621e0",
+    "windows-clippy.log": "6e0cdb2b99ff164b8d99b61baa5e0a66133e78b4d92d1cd935bac21b0083e754"
+  }
+}

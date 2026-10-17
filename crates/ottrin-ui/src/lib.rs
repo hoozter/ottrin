@@ -39,6 +39,10 @@ use ottrin_platform::{
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
+#[cfg(target_os = "linux")]
+use ottrin_preview::LinuxBubblewrapIsolation as NativeOfficeIsolation;
+#[cfg(target_os = "windows")]
+use ottrin_preview::WindowsJobObjectIsolation as NativeOfficeIsolation;
 #[cfg(test)]
 use ottrin_preview::load_preview;
 use ottrin_preview::{
@@ -3230,10 +3234,14 @@ impl ResultRepaint {
     }
 
     fn send<T>(&self, tx: &Sender<T>, result: T) {
+        if tx.send(result).is_ok() {
+            self.wake();
+        }
+    }
+
+    fn wake(&self) {
         let ctx = self.0.lock().expect("result repaint context").clone();
-        if tx.send(result).is_ok()
-            && let Some(ctx) = ctx
-        {
+        if let Some(ctx) = ctx {
             ctx.request_repaint();
         }
     }
@@ -3490,17 +3498,19 @@ impl OttrinApp {
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
         let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
         let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
+        let result_repaint = ResultRepaint::default();
         let office_provider = Arc::new(Mutex::new(None));
-        #[cfg(all(target_os = "linux", not(test)))]
+        #[cfg(all(any(target_os = "linux", target_os = "windows"), not(test)))]
         {
             let office_provider = Arc::clone(&office_provider);
+            let provider_repaint = result_repaint.clone();
             std::thread::spawn(move || {
                 let cancelled = AtomicBool::new(false);
-                if let Ok(detected) = ottrin_preview::detect_installed_libreoffice(
-                    &ottrin_preview::LinuxBubblewrapIsolation,
-                    &cancelled,
-                ) {
+                if let Ok(detected) =
+                    ottrin_preview::detect_installed_libreoffice(&NativeOfficeIsolation, &cancelled)
+                {
                     *office_provider.lock().expect("Office provider cache") = Some(detected);
+                    provider_repaint.wake();
                 }
             });
         }
@@ -3508,7 +3518,6 @@ impl OttrinApp {
             spawn_preview_loader_with(load_preview_cancellable);
         let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
 
-        let result_repaint = ResultRepaint::default();
         let listing_repaint = result_repaint.clone();
 
         // Single long-lived listing worker thread; later requests supersede stale responses.
@@ -3616,7 +3625,7 @@ impl OttrinApp {
                 {
                     None
                 } else if office_provider_candidate {
-                    #[cfg(target_os = "linux")]
+                    #[cfg(any(target_os = "linux", target_os = "windows"))]
                     {
                         let detected = req.office_provider.as_ref().expect("checked above");
                         let format = ottrin_preview::office_format_for_path(&req.path)
@@ -3637,7 +3646,7 @@ impl OttrinApp {
                         let rendered = std::fs::create_dir(&output_dir)
                             .map_err(|error| error.to_string())
                             .and_then(|()| {
-                                let isolation = ottrin_preview::LinuxBubblewrapIsolation;
+                                let isolation = NativeOfficeIsolation;
                                 let converter = ottrin_preview::InstalledLibreOfficeConverter::new(
                                     detected.executable.clone(),
                                     &isolation,
@@ -3689,7 +3698,7 @@ impl OttrinApp {
                             }
                         }
                     }
-                    #[cfg(not(target_os = "linux"))]
+                    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
                     {
                         None
                     }
@@ -4758,11 +4767,7 @@ impl OttrinApp {
         }
         let format = ottrin_preview::office_format_for_path(path)?;
         let generation = ottrin_preview::office_preview_source_generation(path)?;
-        if self
-            .failed_office_provider_generations
-            .get(path)
-            .is_some_and(|failed| failed == &generation)
-        {
+        if self.office_provider_failed_for_generation(path, &generation) {
             return None;
         }
         self.office_provider
@@ -4771,6 +4776,29 @@ impl OttrinApp {
             .as_ref()
             .filter(|detected| detected.capability.formats.contains(&format))
             .cloned()
+    }
+
+    fn office_provider_failed_for_generation(
+        &self,
+        path: &Path,
+        generation: &ottrin_preview::OfficePreviewSourceGeneration,
+    ) -> bool {
+        self.failed_office_provider_generations.get(path) == Some(generation)
+    }
+
+    fn render_office_provider_fallback_notice(&self, ui: &mut egui::Ui, path: &Path) {
+        if self.state.config.installed_office_previews_enabled
+            && let Some(generation) = ottrin_preview::office_preview_source_generation(path)
+            && self.office_provider_failed_for_generation(path, &generation)
+        {
+            ui.label(
+                RichText::new(
+                    "LibreOffice could not render this file. Showing Ottrin’s native preview.",
+                )
+                .color(self.colors.text_dim)
+                .size(11.0 * self.colors.font_scale),
+            );
+        }
     }
 
     fn office_provider_cache_key(
@@ -17712,6 +17740,7 @@ impl OttrinApp {
                 });
                 let uses_sizing_controls = use_visual_renderer || matches!(preview.kind, PreviewKind::Text | PreviewKind::OfficeMetadata);
                 let toolbar_top = ui.cursor().top();
+                self.render_office_provider_fallback_notice(ui, &entry.path);
                 if uses_sizing_controls {
                     ui.horizontal_wrapped(|ui| {
                         if use_visual_renderer {
@@ -19253,6 +19282,7 @@ impl OttrinApp {
                             (self.preview.visual_zoom * gesture_zoom).clamp(0.1, 8.0);
                     }
 
+                    self.render_office_provider_fallback_notice(ui, &path);
                     preview_render::preview_content_frame(ui, ui.available_size(), self.preview.text_editor.is_none() && self.preview.visual_fit && self.preview.visual_fit_width && (preview_uses_visual_preview(&path, preview.kind) || uses_office_provider), |ui| {
                     let specialized_body_renderer = (preview.kind == PreviewKind::Text
                         && self.preview.text_editor.is_some())
@@ -28225,6 +28255,40 @@ mod tests {
         assert!(
             app.office_provider_for_path(&path).is_none(),
             "the current source generation must proceed through the native fallback"
+        );
+
+        let notice_is_visible = |app: &OttrinApp| {
+            let ctx = Context::default();
+            install_application_fonts(&ctx);
+            let render = |ctx: &Context| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    app.render_office_provider_fallback_notice(ui, &path);
+                });
+            };
+            let _ = ctx.run(egui::RawInput::default(), render);
+            ctx.run(egui::RawInput::default(), render)
+                .shapes
+                .iter()
+                .any(|shape| {
+                    matches!(&shape.shape, egui::Shape::Text(text)
+                    if text.galley.job.text.contains("Showing Ottrin’s native preview"))
+                })
+        };
+        assert!(
+            notice_is_visible(&app),
+            "failed conversion must be explained"
+        );
+        app.state.config.installed_office_previews_enabled = false;
+        assert!(
+            !notice_is_visible(&app),
+            "intentional disable is not a failure"
+        );
+        app.state.config.installed_office_previews_enabled = true;
+        std::fs::write(&path, b"replacement-generation-with-different-content").unwrap();
+        assert!(app.office_provider_for_path(&path).is_some());
+        assert!(
+            !notice_is_visible(&app),
+            "old failure must not label a changed file"
         );
 
         std::fs::remove_file(path).expect("remove Office source");

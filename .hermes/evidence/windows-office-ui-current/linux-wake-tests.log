@@ -1,0 +1,8 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 1.14s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-79a909d55133516b)
+
+running 2 tests
+test tests::storage_location_refresh_wakes_an_idle_ui_within_the_bound ... ok
+test tests::listing_completion_wakes_the_ui_without_input_or_polling ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 384 filtered out; finished in 0.01s

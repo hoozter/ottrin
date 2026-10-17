@@ -290,6 +290,16 @@ The Windows run and all five page reviews are recorded in
 `.hermes/evidence/windows-office-fidelity-current/ACCEPTANCE.json`; this is
 representative layout evidence, not arbitrary Office or packaged-UI acceptance.
 
+Windows UI provider detection and conversion use the same scheduling/rendering
+path as Linux, with the platform's native isolation launcher. Detection completion
+wakes the GUI through the existing event-driven result notifier. A failure for the
+current source generation selects Ottrin's native preview and displays an
+explanation in both the Miller preview and Quick Inspector; disabling the provider
+or replacing the file does not retain that failure notice. Native source-built
+release/OpenGL UI evidence is recorded in
+`.hermes/evidence/windows-office-ui-current/ACCEPTANCE.json`. This does not establish
+exact-package or default-D3D12 acceptance.
+
 The Windows converter uses the packaged `ottrin-office-render.exe` helper with
 installed LibreOfficeKit rather than the CLI, whose global named pipe is denied
 by AppContainer. The helper reads provider version metadata without starting
@@ -299,15 +309,17 @@ Each invocation stages helper bytes inside the private sandbox ACL, so portable
 builds need no permanent permission changes. Development/native test builds use
 `--features windows-office --bin ottrin-office-render` and set
 `OTTRIN_OFFICE_HELPER` to that absolute helper path. Packaged builds discover the
-helper beside Ottrin. The Windows UI provider remains gated: the earlier CLI
-acceptance below predates the AppContainer work and does not accept this path.
+helper beside Ottrin. The Windows UI provider is enabled in source after the
+current contained helper and native UI checks described above. Earlier CLI
+acceptance predates the AppContainer work and does not establish this boundary.
 
 The historical pre-AppContainer CLI fixture passed macro-free DOC, DOCX, ODT,
 XLS, XLSX, XLSM, ODS, PPTX and ODP (`office-formats-final-results.log`, 27.95s).
-The current contained Kit sweep passes DOC/DOCX/ODT and times out on the other
-six formats at 30 seconds each (`windows-20261011/helper-formats.log`). An
-uncontained Calc control also times out; worker/message-pump and SDK runLoop
-controls do not convert it. Production threading remains unchanged. The
+The pre-owner-thread contained Kit sweep passed DOC/DOCX/ODT and timed out on
+the other six formats at 30 seconds each (`windows-20261011/helper-formats.log`).
+An uncontained Calc control also timed out; worker/message-pump and SDK runLoop
+controls did not convert it and were rejected. The subsequent owner-thread
+repair passes all nine formats; current receipts are listed above. The
 historical fixture checks actual
 PDFium pixels and expected document text, unchanged source bytes, and private
 profile/log cleanup. Spreadsheet thumbnail ink can be antialiased gray (XLS's

@@ -1,0 +1,20 @@
+{
+  "status": "four owned-window captures visually inspected; pass",
+  "screens": {
+    "main-rendered.png": "Styled document including both image halves; actual non-metadata conversion child observed.",
+    "main-fallback.png": "Next worksheet has native grid and wrapped fallback explanation, fitting above the controls.",
+    "inspector-rendered.png": "Styled document and Page 1 of 2 controls; actual conversion child observed.",
+    "inspector-fallback.png": "Right-arrow selects next worksheet; native grid and explicit explanation appear."
+  },
+  "sha256": {
+    "inspector-fallback.png": "759cc9d52b8c0625ff529ce9ca84971369e7f7b0acc4ac0d39c65b70fc3aa5cb",
+    "inspector-rendered.png": "1d383da744d3cf2f1afe25cc7b0e64cfe704e6dcc47aa366e553435738e30a57",
+    "main-fallback.png": "536af9474d61948da49c9a2ea4bbfecdfdad73391d9037773e45b6bb480e2c23",
+    "main-rendered.png": "bb91aa1483e3b75dc18f80bb386e5c5539ad376c3837c542b5fda7a483f47b8e"
+  },
+  "limits": [
+    "Fit-width portrait page scrolls vertically.",
+    "Native worksheet fallback shows extracted values, not print layout, chart fidelity or formula evaluation.",
+    "Explicit OpenGL compatibility renderer; not default-D3D12 or fresh-install acceptance."
+  ]
+}

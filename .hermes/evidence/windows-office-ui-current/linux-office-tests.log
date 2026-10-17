@@ -1,0 +1,19 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 1m 08s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-79a909d55133516b)
+
+running 9 tests
+test tests::native_legacy_doc_renderer_precedes_installed_office_provider ... ok
+test tests::office_response_from_an_intermediate_generation_is_rejected_after_a_to_b_to_a ... ok
+test tests::thumbnail_supported_preview_path_includes_safe_text_but_not_office_packages ... ok
+test thumbnail_cache::tests::office_preview_uses_visual_renderer_not_raw_package_bytes ... ok
+test tests::quick_inspector_page_count_prefers_generation_bound_office_provider_metadata ... ok
+test tests::installed_office_previews_disabled_selects_native_fallback_without_discarding_detection ... ok
+test tests::disabled_installed_office_previews_hide_prior_provider_metadata ... ok
+test tests::office_provider_metadata_lookup_rejects_a_replaced_source_generation ... ok
+test tests::disabling_libreoffice_does_not_hide_an_ottrin_native_doc_page ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 377 filtered out; finished in 0.01s
