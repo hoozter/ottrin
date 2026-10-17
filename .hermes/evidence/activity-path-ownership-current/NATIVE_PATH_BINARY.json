@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_ui",
+  "test_arguments": "--exact tests::operation_admission_preserves_files_during_undo_and_releases_after_completion --nocapture --test-threads=1 tests::queued_operation_footprints_cover_delete_permissions_batches_and_rename_targets tests::independent_copy_reads_can_run_together_but_exclude_writers tests::dirty_quick_inspector_native_close_request_is_cancelled tests::dirty_quick_inspector_text_edits_require_an_explicit_close_or_cancel tests::quick_inspector_text_save_conflict_keeps_the_editor_buffer tests::unchanged_quick_inspector_text_save_does_not_create_an_undo_operation tests::quick_inspector_text_save_is_session_undoable",
+  "watchdog_ms": 300000,
+  "compiler_profile": {
+    "opt_level": "1",
+    "debuginfo": 2,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-9cae9ea4a8b91d65.exe",
+  "compiler_sha256": "f053f30bb7e3508d13cb368a05b3fc368515fe65a2f0069ba01877f390bc3ae5",
+  "transferred_sha256": "923db884e24472599f9814b07e7aeb6102f4bcb9f7b77b6a065daf6ebade43be",
+  "retained_sections": {
+    ".text": "ec81671b2273ff4a230b058dab21652a2b0484b3902b43f1668a46534c385908",
+    ".data": "35fbbd92582489d5a01a483d7afc56b124b1c6b2b3cf5da4088c78f99f24ddc5",
+    ".rdata": "6202f4d7f4a7bcb1433d76af9713a0d14268004d87e036be1581f2c1b652d5fa",
+    ".pdata": "d471a897db850fa4bae6eeedc50ba6cf9c1c0d63a00070e8589b8e7a3c89a56e",
+    ".xdata": "adf66ca86a52a93419651a01f25ce5b8c65e7ea2457ac3a43636c8e9873f5121",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "d2740afa42dc857f93cc63469c923062dd10a8c0ef97babcea63360a74fd7755",
+    ".CRT": "ed2f66b0e225197e5e047931abb2274a931625b1c03e89402c4f4ffac8449643",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "a9229b8bb048968e019e13dc550accd06846331d35156ce89ffc39e7285b1b01"
+  }
+}

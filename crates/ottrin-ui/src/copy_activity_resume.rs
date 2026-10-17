@@ -80,7 +80,11 @@ impl OttrinApp {
             return;
         }
         let paths = plan.path_pairs();
-        let paths = (paths[0].0.to_path_buf(), paths[0].1.to_path_buf());
+        let paths = paths
+            .into_iter()
+            .flat_map(|(before, after)| [before.to_path_buf(), after.to_path_buf()])
+            .map(OperationPath::write)
+            .collect();
         let record = self
             .operation_history
             .iter_mut()
@@ -89,7 +93,7 @@ impl OttrinApp {
         record.status = OperationStatus::Queued;
         record.finished_at = None;
         record.message = None;
-        record.path_move_paths = Some(paths);
+        record.operation_paths = paths;
         self.copy_resume.errors.remove(&id);
         let cancellation = Arc::new(AtomicBool::new(false));
         let worker_cancel = cancellation.clone();
@@ -141,6 +145,7 @@ impl OttrinApp {
             .iter_mut()
             .find(|record| record.id == id)
         {
+            record.operation_paths = Vec::new();
             record.finished_at = Some(Instant::now());
             record.status = if result.is_ok() {
                 OperationStatus::Completed

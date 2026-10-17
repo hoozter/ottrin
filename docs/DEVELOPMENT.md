@@ -58,6 +58,12 @@ A configured native probe also exposed a missing `/bin` sandbox mount: `/usr/lib
 
 ## Build And Verify
 
+Text-edit UI tests use `text_edit_fixture_root()`: Linux needs a disk-backed
+filesystem with FIEMAP, while the ordinary Windows actor uses its owned NTFS
+temporary root. Do not probe an unrelated `/tmp` filesystem and return early
+from an otherwise reported passing test. Unsupported platforms should have
+explicit test exclusions; supported-platform fixture failures must remain failures.
+
 Run filesystem and UI tests with private XDG state, configuration, cache and data directories, and remove that test profile after all test processes exit. Copy recovery journals must never be written into the operator's state directory. `scripts/test-workspace.py` provides the disposable home and state while retaining Cargo/Rustup caches and the session IPC needed by systemd-isolated renderers. Forward Cargo test options to that runner; native graphical QA uses its own private display harness.
 
 ```sh

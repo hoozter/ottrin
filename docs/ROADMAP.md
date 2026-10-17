@@ -8,6 +8,34 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Operation-path ownership correction
+
+The queue now records complete operation paths independently of Undo support.
+Delete, permission changes, batch Move and both Rename names participate in the
+same conflict checks as Copy. New mutable operations check running work and Undo
+before a worker is created. Shared Copy source reads remain concurrent. Copy
+forward recovery retains every plan path pair.
+Administrator retries, text saves, image rotation and Trash actions use the same
+admission. Completed jobs release queue-only path storage. Cleanup keeps its
+existing whole-queue exclusion until termination. Unrelated known paths remain usable, and informational Properties reserves no data.
+
+The real-files regression proves rejected Delete/Rename/Create leave the admitted
+publication unchanged, starts unrelated work while Undo owns its paths, and
+releases the names when the Undo state becomes terminal. Linux UI checks pass 383
+with one existing mount-namespace exclusion, and strict Linux/Windows all-target Clippy passes.
+All eight focused tests also pass under the ordinary Windows QA account with no
+runtime skips, as does the existing 15-scenario Activity recovery integration on
+the same exact executable. The three older editor tests now execute on an owned
+supported filesystem instead of silently returning because `/tmp` lacks FIEMAP.
+Linux's eight focused filesystem/editor tests explicitly pass without skips too.
+Tests include byte preservation, retained unsaved text, refusal before elevation,
+concurrent readers, unrelated work and release of completed queue ownership.
+Source/profile/install hashes and clean teardown are recorded in
+`.hermes/evidence/activity-path-ownership-current/ACCEPTANCE.json`.
+A fresh package cohort remains pending. This is an application-queue correction,
+not native cross-process target reservation or alias/case-policy acceptance.
+Those gates and the full roadmap remain open.
+
 ## Current Windows Copy implementation checkpoint
 
 Windows cleanup has bound read-only admission, an anchored single-transaction
@@ -647,9 +675,9 @@ power-loss, release or daily-driver readiness. Packages are unchanged; current
 deliverables remain at the checkpoint below. User testing is deferred and the
 full roadmap goal stays active.
 
-## Current delivered preview checkpoint
+## Earlier delivered preview checkpoint (e9e6783)
 
-Clean runtime source `e9e6783` is now the stable four-format Linux cohort at
+Clean runtime source `e9e6783` supplied the preceding four-format Linux cohort at
 `dist/packages/` and three-format internal Windows cohort at
 `.hermes/packaging-tmp/windows-current/`. The AppImage SHA-256 is
 `1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608`.

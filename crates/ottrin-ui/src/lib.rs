@@ -767,6 +767,23 @@ enum OperationRecoverability {
     Informational,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct OperationPath {
+    path: PathBuf,
+    writes: bool,
+}
+impl OperationPath {
+    fn write(path: PathBuf) -> Self {
+        Self { path, writes: true }
+    }
+    fn read(path: PathBuf) -> Self {
+        Self {
+            path,
+            writes: false,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 struct OperationRecord {
     id: u64,
@@ -777,7 +794,7 @@ struct OperationRecord {
     queued_at: Instant,
     finished_at: Option<Instant>,
     message: Option<String>,
-    path_move_paths: Option<(PathBuf, PathBuf)>,
+    operation_paths: Vec<OperationPath>,
     path_move_undo: Option<PathMoveUndoState>,
     undo_kind: Option<PathMoveUndoKind>,
     path_move_undo_token: Option<PathMoveUndoToken>,
@@ -5130,6 +5147,9 @@ impl OttrinApp {
     }
 
     fn rotate_inspector_image(&mut self, path: &Path, clockwise: bool) {
+        if !self.admit_mutation_paths(&[OperationPath::write(path.to_path_buf())]) {
+            return;
+        }
         let title = if clockwise {
             "Rotate image right"
         } else {
@@ -6235,7 +6255,7 @@ impl OttrinApp {
                     queued_at: Instant::now(),
                     finished_at: Some(Instant::now()),
                     message: None,
-                    path_move_paths: None,
+                    operation_paths: Vec::new(),
                     path_move_undo: Some(group.undo),
                     undo_kind: Some(PathMoveUndoKind::Copy),
                     path_move_undo_token: restored_copy_token(group.receipt),
@@ -6542,10 +6562,6 @@ impl OttrinApp {
                 .iter_mut()
                 .find(|record| record.id == res.op_id)
             {
-                record.path_move_paths = Some((
-                    receipt.before_path().to_path_buf(),
-                    receipt.after_path().to_path_buf(),
-                ));
                 record.path_move_undo = Some(PathMoveUndoState::Available);
                 record.undo_kind = Some(kind);
                 record.path_move_undo_token = Some(PathMoveUndoToken {
@@ -6700,6 +6716,15 @@ impl OttrinApp {
     }
 
     fn activity_paths_conflict(&self, op_id: u64, requested: &[(&Path, &Path)]) -> bool {
+        let requested: Vec<_> = requested
+            .iter()
+            .flat_map(|(before, after)| [before.to_path_buf(), after.to_path_buf()])
+            .map(OperationPath::write)
+            .collect();
+        self.activity_operation_conflict(op_id, &requested)
+    }
+
+    fn activity_operation_conflict(&self, op_id: u64, requested: &[OperationPath]) -> bool {
         self.operation_history.iter().any(|record| {
             if record.id == op_id {
                 return false;
@@ -6708,25 +6733,55 @@ impl OttrinApp {
             if record.status != OperationStatus::Queued && !running_undo {
                 return false;
             }
+            let undo_paths;
             let paths = if running_undo {
-                record
+                undo_paths = record
                     .path_move_undo_token
                     .as_ref()
-                    .map(|token| token.receipt.path_pairs())
-                    .unwrap_or_default()
+                    .map(|token| {
+                        token
+                            .receipt
+                            .path_pairs()
+                            .into_iter()
+                            .flat_map(|(before, after)| [before.to_path_buf(), after.to_path_buf()])
+                            .map(OperationPath::write)
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default();
+                &undo_paths
             } else {
-                record
-                    .path_move_paths
-                    .as_ref()
-                    .map(|(before, after)| vec![(before.as_path(), after.as_path())])
-                    .unwrap_or_default()
+                &record.operation_paths
             };
-            paths.iter().any(|(before, after)| {
-                requested.iter().any(|(other_before, other_after)| {
-                    path_move_paths_overlap(before, after, other_before, other_after)
+            if paths.is_empty() {
+                return running_undo
+                    || record.recoverability != OperationRecoverability::Informational;
+            }
+            if requested.is_empty() {
+                return true;
+            }
+            paths.iter().any(|first| {
+                requested.iter().any(|second| {
+                    (first.writes || second.writes)
+                        && path_move_paths_overlap(
+                            &first.path,
+                            &first.path,
+                            &second.path,
+                            &second.path,
+                        )
                 })
             })
         })
+    }
+
+    fn admit_mutation_paths(&mut self, paths: &[OperationPath]) -> bool {
+        if self.copy_cleanup.running() || self.activity_operation_conflict(u64::MAX, paths) {
+            self.set_status_message(
+                "Operation was not started because recovery or another operation is using these files. Wait for it to finish.", false, 6,
+            );
+            false
+        } else {
+            true
+        }
     }
 
     fn run_path_move_undo(&mut self, op_id: u64) {
@@ -9243,6 +9298,12 @@ impl OttrinApp {
     }
 
     fn save_preview_text_edit(&mut self) {
+        let Some(path) = self.preview.path.clone() else {
+            return;
+        };
+        if !self.admit_mutation_paths(&[OperationPath::write(path)]) {
+            return;
+        }
         let Some(editor) = self.preview.text_editor.as_mut() else {
             return;
         };
@@ -9306,7 +9367,6 @@ impl OttrinApp {
                             && let Ok(storage_bindings) = storage_bindings
                             && !storage_bindings.is_empty()
                         {
-                            record.path_move_paths = Some((path.clone(), path.clone()));
                             record.path_move_undo = Some(PathMoveUndoState::Available);
                             record.path_move_undo_token = Some(PathMoveUndoToken {
                                 receipt: OperationUndoReceipt::TextEdit(TextEditUndoReceipt {
@@ -10176,6 +10236,11 @@ impl OttrinApp {
         clipboard_generation: Option<u64>,
         preconfirmed_conflict_action: Option<ConflictAction>,
     ) -> bool {
+        if !matches!(cmd, FileCommand::ShowProperties { .. })
+            && !self.admit_mutation_paths(&operation_paths_for_command(&cmd))
+        {
+            return false;
+        }
         // Reconcile before accepting mutable input. Callers with previously
         // captured provenance carry those exact bindings through this refresh;
         // they are never reconstructed from raw paths.
@@ -10516,7 +10581,7 @@ impl OttrinApp {
             .iter_mut()
             .find(|record| record.id == id)
         {
-            record.path_move_paths = path_move_paths_for_command(&cmd);
+            record.operation_paths = operation_paths_for_command(&cmd);
         }
         id
     }
@@ -10537,7 +10602,7 @@ impl OttrinApp {
             queued_at: Instant::now(),
             finished_at: None,
             message: None,
-            path_move_paths: None,
+            operation_paths: Vec::new(),
             path_move_undo: None,
             undo_kind: None,
             path_move_undo_token: None,
@@ -10573,6 +10638,9 @@ impl OttrinApp {
             .find(|record| record.id == op_id)
         {
             record.status = status;
+            if status != OperationStatus::Queued {
+                record.operation_paths = Vec::new();
+            }
             record.finished_at = Some(Instant::now());
             record.message = message;
         }
@@ -10582,6 +10650,14 @@ impl OttrinApp {
         &mut self,
         retry: PendingPrivilegedRetry,
     ) -> Result<(), String> {
+        if !matches!(retry.cmd, FileCommand::ShowProperties { .. })
+            && !self.admit_mutation_paths(&operation_paths_for_command(&retry.cmd))
+        {
+            return Err(
+                "Privileged retry was not started because another operation is using these files."
+                    .into(),
+            );
+        }
         self.reconcile_storage_location_availability(discover_storage_locations());
         validate_privileged_retry(&retry, &self.known_storage_locations)?;
         let PendingPrivilegedRetry {
@@ -14139,7 +14215,9 @@ impl OttrinApp {
                     validate_trash_restore_provenance(&item, &self.known_storage_locations)
                 {
                     self.set_status_message(message, false, 6);
-                } else {
+                } else if self
+                    .admit_mutation_paths(&[OperationPath::write(item.original_path.clone())])
+                {
                     let op_id = self.queue_activity_record_with_recoverability(
                         "Restore from Trash",
                         format!("{} to {}", item.name, path_label(&item.original_path)),
@@ -14680,7 +14758,7 @@ impl OttrinApp {
     }
 
     fn empty_trash_now(&mut self) {
-        if self.trash_panel.emptying {
+        if self.trash_panel.emptying || !self.admit_mutation_paths(&[]) {
             return;
         }
         let request_id = self.next_id();
@@ -24280,25 +24358,35 @@ fn operation_recoverability(cmd: &FileCommand) -> OperationRecoverability {
     }
 }
 
-fn path_move_paths_for_command(cmd: &FileCommand) -> Option<(PathBuf, PathBuf)> {
+/// Complete queue-time footprint, independent of whether an action supports Undo.
+/// Destination directories cover conflict-driven Rename choices as well.
+fn operation_paths_for_command(cmd: &FileCommand) -> Vec<OperationPath> {
     match cmd {
+        FileCommand::ShowProperties { .. } => Vec::new(),
         FileCommand::CreateFile { parent, name } | FileCommand::CreateFolder { parent, name } => {
-            let created = parent.join(name);
-            Some((created.clone(), created))
+            vec![OperationPath::write(parent.join(name))]
         }
-        FileCommand::Rename { source, new_name } => source
-            .parent()
-            .map(|parent| (source.clone(), parent.join(new_name))),
-        FileCommand::Symlink { link_path, .. } => Some((link_path.clone(), link_path.clone())),
-        FileCommand::Copy { destination, .. } => Some((destination.clone(), destination.clone())),
-        FileCommand::Move {
+        FileCommand::Rename { source, new_name } => {
+            let mut paths = vec![OperationPath::write(source.clone())];
+            if let Some(parent) = source.parent() {
+                paths.push(OperationPath::write(parent.join(new_name)));
+            }
+            paths
+        }
+        FileCommand::Copy {
             sources,
             destination,
-            conflict: ConflictAction::Skip,
-        } if sources.len() == 1 => sources[0]
-            .file_name()
-            .map(|name| (sources[0].clone(), destination.join(name))),
-        _ => None,
+            ..
+        } => sources
+            .iter()
+            .cloned()
+            .map(OperationPath::read)
+            .chain(std::iter::once(OperationPath::write(destination.clone())))
+            .collect(),
+        _ => file_command_paths(cmd)
+            .into_iter()
+            .map(|(path, _)| OperationPath::write(path.to_path_buf()))
+            .collect(),
     }
 }
 
@@ -27232,13 +27320,6 @@ mod tests {
         root.expect("owned text-edit fixture root")
     }
 
-    fn text_edit_fixture_supported() -> bool {
-        let root = tempfile::tempdir().expect("create text-edit fixture root");
-        let path = root.path().join("support.txt");
-        std::fs::write(&path, "ordinary text\n").expect("write text-edit fixture");
-        TextEditSession::open(&path).is_ok()
-    }
-
     #[test]
     fn search_fixtures_use_distinct_owned_roots() {
         let first = SearchTestFixture::new("distinct");
@@ -29372,6 +29453,198 @@ mod tests {
     }
 
     #[test]
+    fn queued_operation_footprints_cover_delete_permissions_batches_and_rename_targets() {
+        let path = PathBuf::from("/work/item");
+        let commands = [
+            FileCommand::Delete {
+                targets: vec![path.clone()],
+                mode: DeleteMode::Permanent,
+            },
+            FileCommand::Chmod {
+                target: path.clone(),
+                mode_str: "600".into(),
+            },
+            FileCommand::Move {
+                sources: vec![path.clone(), PathBuf::from("/work/second")],
+                destination: PathBuf::from("/archive"),
+                conflict: ConflictAction::Rename,
+            },
+            FileCommand::Rename {
+                source: PathBuf::from("/work/before"),
+                new_name: "item".into(),
+            },
+        ];
+        for command in commands {
+            let mut app = OttrinApp::default();
+            let id = app.queue_operation_record(command);
+            assert!(app.activity_paths_conflict(u64::MAX, &[(path.as_path(), path.as_path())]));
+            assert!(!app.activity_paths_conflict(id, &[(path.as_path(), path.as_path())]));
+            assert!(!app.activity_paths_conflict(
+                u64::MAX,
+                &[(Path::new("/elsewhere/file"), Path::new("/elsewhere/file"))]
+            ));
+            app.finish_operation_record(id, OperationStatus::Completed, None);
+            assert!(
+                app.operation_history
+                    .iter()
+                    .find(|record| record.id == id)
+                    .unwrap()
+                    .operation_paths
+                    .is_empty()
+            );
+            assert!(!app.activity_paths_conflict(u64::MAX, &[(path.as_path(), path.as_path())]));
+        }
+    }
+
+    #[test]
+    fn independent_copy_reads_can_run_together_but_exclude_writers() {
+        let source = PathBuf::from("/source/item");
+        let command = |destination: &str| FileCommand::Copy {
+            sources: vec![source.clone()],
+            destination: PathBuf::from(destination),
+            conflict: ConflictAction::Rename,
+        };
+        let mut app = OttrinApp::default();
+        app.queue_operation_record(command("/first"));
+        assert!(!app.activity_operation_conflict(
+            u64::MAX,
+            &operation_paths_for_command(&command("/second"))
+        ));
+        for path in [&source, &PathBuf::from("/first/item")] {
+            assert!(
+                app.activity_operation_conflict(u64::MAX, &[OperationPath::write(path.clone())])
+            );
+        }
+        assert!(app.activity_paths_conflict(u64::MAX, &[(source.as_path(), source.as_path())]));
+    }
+
+    #[test]
+    fn operation_admission_preserves_files_during_undo_and_releases_after_completion() {
+        let root = text_edit_fixture_root();
+        let before = root.path().join("before");
+        let after = root.path().join("after");
+        std::fs::write(&before, b"original").unwrap();
+        let receipt = match DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after")
+            .unwrap()
+        {
+            Some(receipt) => OperationUndoReceipt::PathMove(receipt),
+            // Windows Rename does not issue session Undo. Use its actual native
+            // text-edit receipt to exercise the same admission boundary there.
+            None => OperationUndoReceipt::TextEdit(TextEditUndoReceipt {
+                session: Arc::new(TextEditSession::open(&after).unwrap()),
+                original: "original".into(),
+                path: after.clone(),
+            }),
+        };
+        let reserved_name = receipt
+            .before_path()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .into_owned();
+        let kind = if matches!(receipt, OperationUndoReceipt::TextEdit(_)) {
+            PathMoveUndoKind::TextEdit
+        } else {
+            PathMoveUndoKind::Rename
+        };
+        let mut app = OttrinApp::default();
+        let id = app.queue_operation_record(FileCommand::Rename {
+            source: before.clone(),
+            new_name: "after".into(),
+        });
+        let record = app
+            .operation_history
+            .iter_mut()
+            .find(|r| r.id == id)
+            .unwrap();
+        record.status = OperationStatus::Completed;
+        record.path_move_undo = Some(PathMoveUndoState::UndoQueued);
+        record.undo_kind = Some(kind);
+        record.path_move_undo_token = Some(PathMoveUndoToken {
+            receipt,
+            storage_bindings: Vec::new(),
+            origin_tab_id: None,
+        });
+        for command in [
+            FileCommand::Delete {
+                targets: vec![after.clone()],
+                mode: DeleteMode::Permanent,
+            },
+            FileCommand::Rename {
+                source: after.clone(),
+                new_name: "elsewhere".into(),
+            },
+            FileCommand::CreateFile {
+                parent: root.path().to_path_buf(),
+                name: reserved_name,
+            },
+        ] {
+            assert!(!app.run_file_op_bound(
+                command,
+                None,
+                Vec::new(),
+                Some(Vec::new()),
+                None,
+                None
+            ));
+            assert_eq!(app.operation_history.len(), 1);
+            assert!(app.op_rx.try_recv().is_err());
+            assert_eq!(std::fs::read(&after).unwrap(), b"original");
+            assert!(!before.exists());
+        }
+        let retry = PendingPrivilegedRetry::capture(
+            FileCommand::Delete {
+                targets: vec![after.clone()],
+                mode: DeleteMode::Permanent,
+            },
+            None,
+            &[],
+        );
+        assert!(
+            app.retry_file_op_with_privileges(retry)
+                .unwrap_err()
+                .contains("using these files")
+        );
+        assert!(app.privileged_status.is_none());
+        app.preview.path = Some(after.clone());
+        app.begin_preview_text_edit(&after);
+        app.preview.text_editor.as_mut().unwrap().buffer = "unsaved replacement".into();
+        app.save_preview_text_edit();
+        assert_eq!(
+            app.preview.text_editor.as_ref().unwrap().buffer,
+            "unsaved replacement"
+        );
+        app.rotate_inspector_image(&after, false);
+        assert_eq!(app.operation_history.len(), 1);
+        assert_eq!(std::fs::read(&after).unwrap(), b"original");
+        let command = FileCommand::CreateFile {
+            parent: root.path().to_path_buf(),
+            name: "unrelated".into(),
+        };
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        let result = app.op_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert!(result.error.is_none());
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+        assert!(root.path().join("unrelated").is_file());
+        app.operation_history
+            .iter_mut()
+            .find(|r| r.id == id)
+            .unwrap()
+            .path_move_undo = Some(PathMoveUndoState::Undone);
+        let command = FileCommand::CreateFile {
+            parent: root.path().to_path_buf(),
+            name: "before".into(),
+        };
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        let result = app.op_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert!(result.error.is_none());
+        assert!(before.is_file());
+        assert_eq!(std::fs::read(after).unwrap(), b"original");
+    }
+
+    #[test]
     fn symlink_records_its_created_link_path_for_conflict_checks() {
         let link = PathBuf::from("/destination/shortcut");
         let command = FileCommand::Symlink {
@@ -29380,8 +29653,8 @@ mod tests {
         };
 
         assert_eq!(
-            path_move_paths_for_command(&command),
-            Some((link.clone(), link))
+            operation_paths_for_command(&command),
+            vec![OperationPath::write(link)]
         );
     }
 
@@ -29400,16 +29673,19 @@ mod tests {
                 destination: PathBuf::from("/destination"),
                 conflict,
             };
-            let (before, after) = path_move_paths_for_command(&command).unwrap();
+            let paths = operation_paths_for_command(&command);
             for name in ["first", "second", "first (1)"] {
                 let affected = PathBuf::from("/destination").join(name);
                 assert!(path_move_paths_overlap(
-                    &before, &after, &affected, &affected
+                    &paths.last().unwrap().path,
+                    &paths.last().unwrap().path,
+                    &affected,
+                    &affected
                 ));
             }
             assert!(!path_move_paths_overlap(
-                &before,
-                &after,
+                &paths.last().unwrap().path,
+                &paths.last().unwrap().path,
                 Path::new("/unrelated/item"),
                 Path::new("/unrelated/item")
             ));
@@ -29425,11 +29701,11 @@ mod tests {
         };
 
         assert_eq!(
-            path_move_paths_for_command(&command),
-            Some((
-                PathBuf::from("/source/entry.txt"),
-                PathBuf::from("/destination/entry.txt"),
-            ))
+            operation_paths_for_command(&command),
+            vec![
+                OperationPath::write(PathBuf::from("/source/entry.txt")),
+                OperationPath::write(PathBuf::from("/destination"))
+            ]
         );
     }
 
@@ -30322,11 +30598,7 @@ mod tests {
 
     #[test]
     fn dirty_quick_inspector_native_close_request_is_cancelled() {
-        if !text_edit_fixture_supported() {
-            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
-            return;
-        }
-        let fixture = tempfile::tempdir().expect("create text-edit fixture root");
+        let fixture = text_edit_fixture_root();
         let path = fixture.path().join("original.txt");
         std::fs::write(&path, "original\n").expect("write original text");
         let session = TextEditSession::open(&path).expect("open editable text");
@@ -30349,19 +30621,8 @@ mod tests {
 
     #[test]
     fn dirty_quick_inspector_text_edits_require_an_explicit_close_or_cancel() {
-        if !text_edit_fixture_supported() {
-            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
-            return;
-        }
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-ui-text-edit-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("clock after epoch")
-                .as_nanos(),
-        ));
-        std::fs::create_dir(&root).expect("create fixture directory");
+        let fixture = text_edit_fixture_root();
+        let root = fixture.path();
         let original = root.join("original.txt");
         let next = root.join("next.txt");
         std::fs::write(&original, "original\n").expect("write original text");
@@ -30397,25 +30658,12 @@ mod tests {
         app.cancel_preview_text_edit();
         assert!(app.request_preview_close());
         assert!(app.preview.text_editor.is_none());
-
-        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
     fn quick_inspector_text_save_conflict_keeps_the_editor_buffer() {
-        if !text_edit_fixture_supported() {
-            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
-            return;
-        }
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-ui-text-save-conflict-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("clock after epoch")
-                .as_nanos(),
-        ));
-        std::fs::create_dir(&root).expect("create fixture directory");
+        let fixture = text_edit_fixture_root();
+        let root = fixture.path();
         let path = root.join("notes.txt");
         std::fs::write(&path, "original\n").expect("write source text");
         let session = TextEditSession::open(&path).expect("open editable text");
@@ -30447,8 +30695,6 @@ mod tests {
                 .is_some_and(|error| matches!(error, TextEditError::Conflict))
         );
         assert_eq!(std::fs::read_to_string(path).unwrap(), "external edit\n");
-
-        let _ = std::fs::remove_dir_all(root);
     }
 
     #[cfg(target_os = "linux")]

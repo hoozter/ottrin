@@ -46,6 +46,42 @@ Before enabling the public path, implement and accept:
    cases, then rebuilt portable/NSIS/MSI workflows. Broader storage, blocked/network
    I/O cancellation and release gates remain required.
 
+## Operation admission and native target reservations
+
+The application queue owns one complete path footprint per running operation,
+independent of whether that operation supports Undo. Delete and permission changes
+reserve their targets; Rename reserves both names; Copy and all Move variants
+reserve their destination directory, including conflict-selected names. Copy sources
+are read claims: independent readers may run together while excluding writers;
+Move source claims are mutations.
+Forward Copy recovery retains every plan path pair, including displaced originals.
+Undo checks those footprints, and new file operations check running operations and
+Undo before queuing a worker. The same admission applies to administrator retries,
+text saves, image rotation and Trash actions. Completed work drops queue-only path
+storage; Undo paths remain in its actual receipt. Informational Properties does not
+reserve data.
+Unknown mutation footprints cannot claim a disjoint-path exemption. Cleanup retains
+its existing whole-queue exclusion until its worker actually terminates.
+
+These are in-process scheduling guards, not native ownership or cross-process
+reservations. Lexical path checks do not establish native alias equivalence.
+The native target-reservation gate remains required before public Windows Copy:
+
+- Bind claims to the actual destination-parent identity and native target name;
+  account for native case policy, directory aliases and changed locations.
+- Persist intent before any displacement/publication and admit new transactions
+  against outstanding forward/Undo claims, including currently absent targets.
+- Close simultaneous-admission races without globally serializing independent
+  copies or relying on cached Activity records. Process exit must not lose claims.
+- Read-only discovery must preserve unknown, corrupt or divergent evidence and
+  refuse uncertain admission. Cleanup may release only durably relinquished claims.
+- Accept separate-process concurrent creation/Overwrite/Rename, interrupted
+  withdrawal/restoration, parent rename/alias, changed evidence and unrelated-copy
+  progress with exact native data-preservation assertions.
+
+The queue correction does not satisfy that native gate by itself. Current source,
+checks and package scope belong to the roadmap's operation-path checkpoint.
+
 ## Existing destination observations for Overwrite
 
 `PinnedTree::freeze_existing` uses the same no-follow traversal and backup-stream

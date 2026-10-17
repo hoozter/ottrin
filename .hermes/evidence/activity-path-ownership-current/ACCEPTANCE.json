@@ -1,0 +1,92 @@
+{
+  "status": "source and native checks pass; package refresh pending",
+  "baseline_revision": "2b71be388124869cd68e932bc2d8ccf18b370391",
+  "changed_source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "1bc531f44f941ed0a7ac61b87d6b3699e324874bec5d0842494864214a3175ed",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "5cf7602cadfee8433d5ff34d78c8bf6da0135935b1d827ca30e7419b9bfa1143"
+  },
+  "source_diff_sha256": "09f659651b4e87ec031cf076067d2a673333d6ab9cccd4ee7a7260913b37e390",
+  "implemented": [
+    "One read/write path footprint per queued operation, independent of Undo support. Copy readers can share sources; writers cannot overlap readers or writers.",
+    "Delete, permissions, all Move variants, both Rename names and every forward-recovery path participate.",
+    "Admission shared by normal operations, privileged retries, text save, image rotation and Trash actions. Conflicts refuse before worker creation or elevation.",
+    "Completed work drops queue-only path storage; Undo retains its actual receipt paths.",
+    "Three editor tests now use owned supported filesystem fixtures instead of silently returning on unrelated tmpfs probes."
+  ],
+  "linux": {
+    "ui_suite": {
+      "passed": 383,
+      "failed": 0,
+      "ignored": "local_storage_binding_rejects_real_mount_replacement_under_discovered_parent requires an explicitly owned private mount namespace",
+      "seconds": 4.41
+    },
+    "focused_native_filesystem_tests": 8,
+    "focused_runtime_skips": 0,
+    "fixture_filesystem": "disk-backed project filesystem with FIEMAP",
+    "strict_all_target_clippy": "pass"
+  },
+  "windows": {
+    "focused_tests": 8,
+    "focused_runtime_skips": 0,
+    "ordinary_user": true,
+    "test_binary_sha256": "923db884e24472599f9814b07e7aeb6102f4bcb9f7b77b6a065daf6ebade43be",
+    "activity_parent_seconds": 15.07,
+    "activity_scenarios": [
+      "success",
+      "changed",
+      "moved",
+      "pending",
+      "resume-staged",
+      "resume-finalizing",
+      "resume-changed",
+      "resume-moved",
+      "resume-stopped",
+      "cleanup-success",
+      "cleanup-changed",
+      "cleanup-retry",
+      "cleanup-stopped-metadata",
+      "cleanup-cohort",
+      "cleanup-cohort-partial"
+    ],
+    "strict_all_target_clippy": "pass"
+  },
+  "fixture_corrections": [
+    "Initial Windows fixture incorrectly expected Rename to return a session Undo receipt. It now uses the supported native text-edit receipt on that platform.",
+    "Additional editor exercise needs FIEMAP on Linux; it now uses the existing disk-backed fixture helper. No assertions were removed."
+  ],
+  "limits": [
+    "In-process lexical path scheduling is not native alias/case-equivalence or cross-process target reservation.",
+    "Native Windows target reservation, interrupted-staging reclamation, public Copy workflows, storage/security/resource and power-cut gates remain open.",
+    "No exact-package concurrent-input or native desktop acceptance is claimed for this source correction.",
+    "Current public Linux AppImage remains source 693e515, SHA fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa until a newly accepted cohort replaces it. Public Windows Copy remains disabled."
+  ],
+  "teardown": {
+    "test_executable_cache_preserved": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "winlogon_unchanged": true,
+    "temporary_login_credential_absent": true,
+    "status": "pass",
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "owned_temp_root_absent": true,
+    "owned_native_processes": 0,
+    "owned_vm_state": "shut off"
+  },
+  "evidence_sha256": {
+    "NATIVE_PATH_RESULT.json": "66b477d351220ed22c92704eff65148a297a6607eea6f5878f945307d63516bb",
+    "NATIVE_PATH_BINARY.json": "15a6b19a98e571492b9a5c3c837c1fad72e0bb20872a71a41be015393e449546",
+    "NATIVE_ACTIVITY_RESULT.json": "66b477d351220ed22c92704eff65148a297a6607eea6f5878f945307d63516bb",
+    "NATIVE_ACTIVITY_BINARY.json": "9d4656d879747d2215b0a707773288b3e93ccf6d67761b67f2d1c53f898fb728",
+    "TEARDOWN.json": "d23f2ab665838108b5befe6915ab634f0a6c4afad08c691754e62138d3dff0e8",
+    "native-path.stdout": "5334b6a887607cf2f7fa10173bbca61647016c2c1926c8f1c5b91fd274f00290",
+    "native-path.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-activity.stdout": "4d5e558c606ebd1a5035a5c1315e33bab74f4685abc69a5bcc9e2969bf23a6b6",
+    "native-activity.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "NATIVE_PATH_ACTOR.ps1": "ea23fd9f06312423c03bc12d06616d9ee84b39f4c2e306c51bb8f8115bae2100",
+    "NATIVE_ACTIVITY_ACTOR.ps1": "495824fe1c7b39597f27b6f3b9d01e89d76894e6fd7d7b4df395e8f9d038ae92",
+    "linux-focused.log": "059d59659e817f656b1abb6fdd9216705d445eacc57a4cf163dbb3c4c870073f",
+    "linux-suite.log": "2d4860a2c7112eab7b5995a755204ea1f5e5adcda97962a29544058f494a638d",
+    "linux-clippy.log": "624df2802be2d7e36e3b31630bc60471d863e83e409f89afa5d5277cda39a241",
+    "windows-clippy.log": "dc5b8ea7cfc19f00e1bb5b3509f627d02dfb0b2e3a6667dcc97714abbd5bed73",
+    "windows-build.log": "4c2d6cbe07c65bdf30ae408a2cceb1891520ac6382873bd32e6d7eff268470c7"
+  }
+}
