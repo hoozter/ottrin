@@ -1,0 +1,134 @@
+{
+  "scope": "Bound cleanup-start phase and correct relinquishment of publication references; coordinated batch executor remains open",
+  "parent_revision": "68d4df3a6785b88b6c891141cbf2164e9b506310",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "31309ef3124d6751fc8fbfd8c880a24d1d7ca7b4f8aac6d6187dcc61daf8c87b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "94e5933980367e83f343fc71c2ebeeb7c10f71a5e50ec3d85edc9353e9fdaf8a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "e446016769c45f4a23a0b2d905a3bf8a66f5a18d2677f47e6d37723ae074a82f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "053c3744548748098c28667d2fb6e5f9d6d0956dc7f1a333ddd5a171af92b6be",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "b6d3115b3a99f137f48f39d11034a734ead5c33fa7d29fbd8270a8ec847d0b40",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2"
+  },
+  "binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup --nocapture --test-threads=1",
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "0bc8bf46413035c9388a9171a69a55f21864ca566549e564ce9c77883b8ec2c9",
+    "transferred_sha256": "9673fa685f93fdafa9570caeacc39e20a8cbc6fa7845eba5f06d00a26d4e2777",
+    "retained_sections": {
+      ".text": "c4924180974d669d5f3025c011cd252607f83f2e395e6af403d416a841cb8dcf",
+      ".data": "4d7d256336cd72f274381b78ee4fc9280207bd9ab4e8cf265f8a1123d542c1d3",
+      ".rdata": "b842b1980fb8b087313bdd228a4cef8315dc4322a95560074e370b771718e55a",
+      ".pdata": "a3bad25878e5a670cc8d5a32619947466f806b078a9e79b04b873d7cb08a2922",
+      ".xdata": "86fa0baf63bf335fddee0e8ec433999416ed100e890f0dc0e1c9fa0ed1c7b2da",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "7757c190bf51ea46486a944c23ce78ccebe97bfe5960f525714d3d8ca5e7fb10",
+      ".CRT": "f227e1b84fdb4bb1418b8c39e360a89a83db94e43df724b2d6f53ce9f9702aaa",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "c4de9dac64a65b3143c8bf17dd8f0d4e2f4425c26d0a44284b1bb891e8fb3729"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "9673fa685f93fdafa9570caeacc39e20a8cbc6fa7845eba5f06d00a26d4e2777",
+    "status": "pass"
+  },
+  "suite": {
+    "passed": 31,
+    "failed": 0,
+    "ignored_child_harnesses": 2,
+    "unrelated_filtered": 307,
+    "seconds": 204.4,
+    "base_injected_failures": 187,
+    "base_real_process_exits": 187,
+    "configured_action_injected_metadata_failures": 48,
+    "additional_start_paired_write_faults": 2
+  },
+  "start_cases": {
+    "retained_role_shapes": 6,
+    "early_cancellation_without_writes": 6,
+    "repeat_without_additional_writes": 6,
+    "stale_pre_start_tokens_refused": 6
+  },
+  "chain_cases": {
+    "scenarios": 4,
+    "separate_native_result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "9673fa685f93fdafa9570caeacc39e20a8cbc6fa7845eba5f06d00a26d4e2777",
+      "status": "pass"
+    },
+    "seconds": 2.77,
+    "dimensions": [
+      "file/directory",
+      "creation-to-overwrite or overwrite-to-overwrite"
+    ],
+    "properties": [
+      "Later member initially blocked by earlier publication reference",
+      "Cleanup begin disables reverse authority without removing either retained payload",
+      "Committed peer begins retain actual remaining data/metadata claims but relinquish publications",
+      "An old individual token refuses another member start instead of refreshing its catalog",
+      "Explicit recovery admission still finishes already-started members with current publication preserved"
+    ]
+  },
+  "paired_start_faults": [
+    "Local-only flushed begin does not release a peer publication claim",
+    "Lost acknowledgement after both mirrors flush permits fresh admission, with all payload bytes retained"
+  ],
+  "properties": [
+    "One writer acquisition/validation/reservation/begin implementation used by start and reclaim",
+    "Start result is captured from successful writer and retains no files",
+    "Configured action stores Started proof before payload removal",
+    "Cleanup peers continue protecting remaining manifest identities and transaction metadata",
+    "Already-started shared-original peer still blocks deletion of its retained hard-link data",
+    "No journal schema change or compatibility path"
+  ],
+  "checks": [
+    "Strict Windows platform/UI all-target Clippy passed (14346,4.87s)",
+    "cargo fmt --all",
+    "git diff --check"
+  ],
+  "limitations": [
+    "This is the begin-barrier primitive, not complete coordinated batch admission/execution",
+    "Known-own catalog handoff and shared-retained alias epoch/count coordination remain open",
+    "Activity cleanup controls and execution remain unfinished",
+    "Large-operation resource/performance acceptance, storage/security/power-cut and package gates remain open",
+    "Application packages unchanged; public Windows Copy stays gated"
+  ],
+  "teardown": {
+    "task": "Ready",
+    "task_result": 0,
+    "owned_native_processes": 0,
+    "temporary_namespace": false,
+    "owned_vm": "retained for immediate group coordinator work"
+  },
+  "storage_cleanup": {
+    "removed_superseded_platform_test": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d96d074ed6581567.exe",
+    "bytes": 535375219,
+    "sha256": "82d58e14ccefdc8bb448cfbe56d3b03eb37673832cb25772f5993ace015716c3",
+    "consumer_check": "fuser returned 1 with no process IDs",
+    "retained_platform_test": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "shared_dependencies": "preserved"
+  }
+}

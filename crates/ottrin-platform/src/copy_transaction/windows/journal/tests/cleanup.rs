@@ -1315,6 +1315,34 @@ fn windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_o
         let peer_local = second.join(&names[1]).join(LOCAL);
         let peer_bytes = std::fs::read(&peer_local).unwrap();
         let peer_header = decode(&peer_bytes).unwrap().state.header.unwrap();
+        if shared {
+            assert!(
+                super::super::cleanup::Admission::observe(
+                    &owner(&first),
+                    &central,
+                    &names[0],
+                    |_| Ok(())
+                )
+                .is_err()
+            );
+            // A peer starting cleanup gives up publication claims, not its
+            // actual remaining retained hard-link names.
+            let other_parent = owner(&second);
+            let snapshot =
+                Snapshot::load(&other_parent, &central, &names[1], SnapshotAccess::Write).unwrap();
+            let mut writer = Journal::from_snapshot(&other_parent, &central, snapshot).unwrap();
+            let manifest = writer.state.cleanup_manifest().unwrap();
+            writer.reserve_cleanup_tail().unwrap();
+            writer
+                .persist(Record::Cleanup {
+                    entry: super::super::cleanup_protocol::CleanupRecord::Begin {
+                        owner: manifest.owner,
+                        count: manifest.entries.len(),
+                        digest: manifest.digest,
+                    },
+                })
+                .unwrap();
+        }
         let before = namespace_contents(root.path());
         let parent = owner(&first);
         if drift != 0 {
@@ -1882,5 +1910,261 @@ fn windows_native_copy_cleanup_unrecognized_registry_names_stay_visible_and_bloc
             );
         }
         assert_eq!(namespace_contents(root.path()), before);
+    }
+}
+
+fn assert_only_journals_changed(
+    before: &BTreeMap<std::path::PathBuf, Option<Vec<u8>>>,
+    after: &BTreeMap<std::path::PathBuf, Option<Vec<u8>>>,
+    headers: &[Header],
+) {
+    assert_eq!(
+        before.keys().collect::<Vec<_>>(),
+        after.keys().collect::<Vec<_>>()
+    );
+    let journals: BTreeSet<_> = headers
+        .iter()
+        .flat_map(|header| {
+            [
+                std::path::PathBuf::from("destination")
+                    .join(header.stage_name())
+                    .join(LOCAL),
+                std::path::PathBuf::from("central").join(header.central_name()),
+            ]
+        })
+        .collect();
+    for (path, bytes) in before {
+        if !journals.contains(path) {
+            assert_eq!(after.get(path), Some(bytes), "{}", path.display());
+        }
+    }
+}
+
+fn cleanup_chain_fixture(root: &Path, directory: bool, initial_overwrite: bool) -> [OsString; 2] {
+    fixture(root);
+    let parent = owner(&root.join("destination"));
+    let central = owner(&root.join("central"));
+    if initial_overwrite {
+        if directory {
+            std::fs::create_dir(root.join("destination/copy")).unwrap();
+            std::fs::write(root.join("destination/copy/old"), b"before first").unwrap();
+        } else {
+            std::fs::write(root.join("destination/copy"), b"before first").unwrap();
+        }
+    }
+    let second = root.join("second-source");
+    if directory {
+        std::fs::create_dir(&second).unwrap();
+        std::fs::write(second.join("next"), b"second publication").unwrap();
+    } else {
+        std::fs::write(&second, b"second publication").unwrap();
+    }
+    let mut names = Vec::new();
+    for index in 0..2 {
+        let input_path = if index == 0 {
+            root.join(if directory {
+                "source"
+            } else {
+                "source/nested/file"
+            })
+        } else {
+            second.clone()
+        };
+        let input = source(&input_path);
+        let overwrite = initial_overwrite || index == 1;
+        let admission = if overwrite {
+            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap()
+        } else {
+            DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+        };
+        let mut staged = DurableStage::create(
+            &input,
+            &parent,
+            &central,
+            &admission,
+            OsStr::new("source"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        drop((staged, input));
+        if overwrite {
+            let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
+            let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
+            journal.prepare_original(100, |_| Ok(())).unwrap();
+            journal
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                .unwrap();
+        }
+        PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+            .unwrap()
+            .apply(|_| Ok(()))
+            .unwrap();
+        names.push(name);
+    }
+    remove_undo_fixture_source(root);
+    if directory {
+        std::fs::remove_dir_all(second).unwrap();
+    } else {
+        std::fs::remove_file(second).unwrap();
+    }
+    names.try_into().unwrap()
+}
+
+#[test]
+fn windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload() {
+    for case in 0..6 {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _readonly) = cleanup_fault_fixture(root.path(), case);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let admission =
+            super::super::cleanup::Admission::observe(&parent, &central, &name, |_| Ok(()))
+                .unwrap();
+        let header = admission.header().clone();
+        let before = namespace_contents(root.path());
+        assert!(
+            admission
+                .start(&parent, &central, |_| Err(io("owned start cancellation")))
+                .is_err()
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+        let started = admission.start(&parent, &central, |_| Ok(())).unwrap();
+        let after = namespace_contents(root.path());
+        assert_only_journals_changed(&before, &after, std::slice::from_ref(&header));
+        let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+        let progress = snapshot.state.cleanup.as_ref().unwrap();
+        assert_eq!(progress.completed, 0);
+        assert!(
+            !progress.pending && !progress.payload_removed && !progress.metadata_removal_intent
+        );
+        assert!(snapshot.state.check(&Record::UndoIntent).is_err());
+        drop(snapshot);
+        assert!(admission.reclaim(&parent, &central, |_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), after);
+        let repeated = started.start(&parent, &central, |_| Ok(())).unwrap();
+        assert_eq!(namespace_contents(root.path()), after);
+        repeated
+            .reclaim(&parent, &central, |_| Ok(()))
+            .unwrap()
+            .begin(&parent, &central, |_| Ok(()))
+            .unwrap()
+            .finish(&parent, &central, |_| Ok(()))
+            .unwrap();
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims() {
+    for directory in [false, true] {
+        for initial_overwrite in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let names = cleanup_chain_fixture(root.path(), directory, initial_overwrite);
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let headers: Vec<_> = names
+                .iter()
+                .map(|name| original_journal(root.path(), name).header.clone())
+                .collect();
+            let before = namespace_contents(root.path());
+            assert!(
+                super::super::cleanup::Admission::observe(&parent, &central, &names[1], |_| Ok(()))
+                    .is_err()
+            );
+            assert_eq!(namespace_contents(root.path()), before);
+            let first =
+                super::super::cleanup::Admission::observe(&parent, &central, &names[0], |_| Ok(()))
+                    .unwrap()
+                    .start(&parent, &central, |_| Ok(()))
+                    .unwrap();
+            let second =
+                super::super::cleanup::Admission::observe(&parent, &central, &names[1], |_| Ok(()))
+                    .unwrap()
+                    .start(&parent, &central, |_| Ok(()))
+                    .unwrap();
+            let barrier = namespace_contents(root.path());
+            assert_only_journals_changed(&before, &barrier, &headers);
+            for name in &names {
+                let snapshot =
+                    Snapshot::load(&parent, &central, name, SnapshotAccess::Read).unwrap();
+                let progress = snapshot.state.cleanup.as_ref().unwrap();
+                assert_eq!(progress.completed, 0);
+                assert!(!progress.pending && !progress.payload_removed);
+                assert!(snapshot.state.check(&Record::UndoIntent).is_err());
+            }
+            // A plain old member token must not silently adopt another member's
+            // start. The eventual group executor needs a known-own catalog handoff.
+            assert!(first.reclaim(&parent, &central, |_| Ok(())).is_err());
+            assert_eq!(namespace_contents(root.path()), barrier);
+            second
+                .reclaim(&parent, &central, |_| Ok(()))
+                .unwrap()
+                .begin(&parent, &central, |_| Ok(()))
+                .unwrap()
+                .finish(&parent, &central, |_| Ok(()))
+                .unwrap();
+            if initial_overwrite {
+                let original = root
+                    .path()
+                    .join("destination")
+                    .join(headers[0].original_name());
+                assert_eq!(
+                    std::fs::read(if directory {
+                        original.join("old")
+                    } else {
+                        original
+                    })
+                    .unwrap(),
+                    b"before first"
+                );
+            }
+            // Explicit recovery admission of the already-started first member,
+            // not a coordinated-batch implementation or a blind refresh in it.
+            super::super::cleanup::Admission::observe(&parent, &central, &names[0], |_| Ok(()))
+                .unwrap()
+                .reclaim(&parent, &central, |_| Ok(()))
+                .unwrap()
+                .begin(&parent, &central, |_| Ok(()))
+                .unwrap()
+                .finish(&parent, &central, |_| Ok(()))
+                .unwrap();
+            assert_eq!(
+                std::fs::read(root.path().join(if directory {
+                    "destination/copy/next"
+                } else {
+                    "destination/copy"
+                }))
+                .unwrap(),
+                b"second publication"
+            );
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim() {
+    for step in [Step::LocalFlushed, Step::CentralFlushed] {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_chain_fixture(root.path(), false, false);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let header = original_journal(root.path(), &names[0]).header.clone();
+        let admission =
+            super::super::cleanup::Admission::observe(&parent, &central, &names[0], |_| Ok(()))
+                .unwrap();
+        let sequence = original_journal(root.path(), &names[0]).sequence;
+        let before = namespace_contents(root.path());
+        FAULT.with(|slot| slot.set(Some((sequence, step, false))));
+        let result = admission.start(&parent, &central, |_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+        let after = namespace_contents(root.path());
+        assert_only_journals_changed(&before, &after, std::slice::from_ref(&header));
+        let peer =
+            super::super::cleanup::Admission::observe(&parent, &central, &names[1], |_| Ok(()));
+        assert_eq!(peer.is_ok(), step == Step::CentralFlushed);
+        assert_eq!(namespace_contents(root.path()), after);
     }
 }

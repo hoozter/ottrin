@@ -120,6 +120,129 @@ impl Admission {
         result.map_err(|error| cleanup_error(error, started, transaction))
     }
 
+    /// Persist cleanup intent without removing payload or metadata. The
+    /// returned proof is captured from this writer, not readmitted by ID.
+    pub(super) fn start(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let mut started = self.started;
+        let result = (|| {
+            let (journal, remaining, dependencies) =
+                self.writer(parent, central, &mut started, &mut cancel)?;
+            remaining.revalidate(
+                parent,
+                &journal.state,
+                journal.state.cleanup.as_ref().unwrap(),
+                &mut cancel,
+            )?;
+            dependencies.revalidate_peers(central)?;
+            journal.bindings()?;
+            if windows_fs::location(parent).map_err(io)? != self.location
+                || security::owner_group_dacl_digest(parent)? != self.parent_security
+                || dependencies.fingerprint()? != self.catalog
+            {
+                return Err(io("Copy cleanup admission changed while starting"));
+            }
+            let bytes = read(&journal.local)?;
+            let metadata = super::cleanup_finalize::metadata_files(
+                &journal.header,
+                [&journal.stage_dir, &journal.local, &journal.central],
+                &bytes,
+                &mut cancel,
+            )?;
+            Ok(Self {
+                header: journal.header.clone(),
+                journal: Sha256::digest(&bytes).into(),
+                metadata: super::super::evidence_digest(&metadata)?,
+                observed: self.observed,
+                catalog: self.catalog,
+                pending_absent: self.pending_absent,
+                sequence: journal.sequence,
+                started: true,
+                location: self.location.clone(),
+                parent_security: self.parent_security,
+            })
+        })();
+        result.map_err(|error| {
+            cleanup_error(
+                error,
+                started,
+                self.location
+                    .join(self.header.stage_name())
+                    .display()
+                    .to_string(),
+            )
+        })
+    }
+
+    fn writer(
+        &self,
+        parent: &File,
+        central: &File,
+        started: &mut bool,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(Journal, Remaining, Dependencies), PlatformError> {
+        let name = self.header.stage_name();
+        cancel(0)?;
+        cleanup_handoff(self.sequence)?;
+        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+        if snapshot.state.header.as_ref() != Some(&self.header)
+            || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
+            || windows_fs::location(parent).map_err(io)? != self.location
+            || security::owner_group_dacl_digest(parent)? != self.parent_security
+            || super::super::evidence_digest(&super::cleanup_finalize::snapshot_metadata(
+                &snapshot,
+                &mut *cancel,
+            )?)? != self.metadata
+        {
+            return Err(io(
+                "Copy cleanup admission changed before writer acquisition",
+            ));
+        }
+        let initial = if snapshot.state.cleanup.is_none() {
+            Some(Progress::new(snapshot.state.cleanup_manifest()?))
+        } else {
+            None
+        };
+        let progress = snapshot
+            .state
+            .cleanup
+            .as_ref()
+            .or(initial.as_ref())
+            .unwrap();
+        let dependencies =
+            Dependencies::open(central, &self.header, &progress.manifest, &mut *cancel)?;
+        if dependencies.fingerprint()? != self.catalog {
+            return Err(io("Copy cleanup dependency admission changed"));
+        }
+        let remaining = Remaining::open(parent, &snapshot.state, progress, &mut *cancel)?;
+        if super::super::evidence_digest(&remaining.observed)? != self.observed
+            || remaining.pending_absent != self.pending_absent
+        {
+            return Err(io(
+                "Copy cleanup retained epoch changed after read-only admission",
+            ));
+        }
+        let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+        journal.reserve_cleanup_tail()?;
+        if journal.state.cleanup.is_none() {
+            let manifest = journal.state.cleanup_manifest()?;
+            *started = true;
+            journal.persist(Record::Cleanup {
+                entry: CleanupRecord::Begin {
+                    owner: manifest.owner,
+                    count: manifest.entries.len(),
+                    digest: manifest.digest,
+                },
+            })?;
+        }
+        drop(initial);
+        Ok((journal, remaining, dependencies))
+    }
+
     pub(super) fn reclaim(
         &self,
         parent: &File,
@@ -130,60 +253,8 @@ impl Admission {
         let transaction = self.location.join(&name).display().to_string();
         let mut started = self.started;
         let result = (|| {
-            cancel(0)?;
-            cleanup_handoff(self.sequence)?;
-            let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
-            if snapshot.state.header.as_ref() != Some(&self.header)
-                || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
-                || windows_fs::location(parent).map_err(io)? != self.location
-                || security::owner_group_dacl_digest(parent)? != self.parent_security
-                || super::super::evidence_digest(&super::cleanup_finalize::snapshot_metadata(
-                    &snapshot,
-                    &mut cancel,
-                )?)? != self.metadata
-            {
-                return Err(io(
-                    "Copy cleanup admission changed before writer acquisition",
-                ));
-            }
-            let initial = if snapshot.state.cleanup.is_none() {
-                Some(Progress::new(snapshot.state.cleanup_manifest()?))
-            } else {
-                None
-            };
-            let progress = snapshot
-                .state
-                .cleanup
-                .as_ref()
-                .or(initial.as_ref())
-                .unwrap();
-            let mut dependencies =
-                Dependencies::open(central, &self.header, &progress.manifest, &mut cancel)?;
-            if dependencies.fingerprint()? != self.catalog {
-                return Err(io("Copy cleanup dependency admission changed"));
-            }
-            let mut remaining = Remaining::open(parent, &snapshot.state, progress, &mut cancel)?;
-            if super::super::evidence_digest(&remaining.observed)? != self.observed
-                || remaining.pending_absent != self.pending_absent
-            {
-                return Err(io(
-                    "Copy cleanup retained epoch changed after read-only admission",
-                ));
-            }
-            let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
-            journal.reserve_cleanup_tail()?;
-            if journal.state.cleanup.is_none() {
-                let manifest = journal.state.cleanup_manifest()?;
-                started = true;
-                journal.persist(Record::Cleanup {
-                    entry: CleanupRecord::Begin {
-                        owner: manifest.owner,
-                        count: manifest.entries.len(),
-                        digest: manifest.digest,
-                    },
-                })?;
-            }
-            drop(initial);
+            let (mut journal, mut remaining, mut dependencies) =
+                self.writer(parent, central, &mut started, &mut cancel)?;
             loop {
                 let progress = journal.state.cleanup.as_ref().unwrap();
                 if progress.payload_removed {

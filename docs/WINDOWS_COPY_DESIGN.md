@@ -754,3 +754,28 @@ Co-owned batch references, interrupted staging reclamation and realistic registr
 large-operation resource limits remain open. Process exits do not establish
 physical power-cut acceptance; specialized storage/security and current package/UI
 gates retain their separate scopes. Public Windows Copy remains gated.
+
+
+The bound start phase reuses the same writer acquisition, observation checks,
+capacity reservation and paired Begin append as payload reclamation. It returns
+an updated handle-free admission from that successful writer without deleting
+payload or metadata. Repeating that start performs no append. The configured
+single action now retains a Started phase before physical removal; no second
+interpretation of the transaction is admitted by name between these phases.
+
+A peer with committed cleanup intent has no Undo/forward recovery authority.
+Its dependency claims therefore cover remaining manifest entries and transaction
+metadata, not historical publication/source graphs. A pending unacknowledged
+entry stays protected. A local-only begin leaves the central peer state unchanged
+and does not release a publication claim. Retained shared hard links remain
+protected even after a peer starts cleanup.
+
+`START_ACCEPTANCE.json` records 31 passing native cleanup tests. Six retention
+shapes verify cancellation, paired start, no data/name removal, stale-token
+refusal and idempotence. Four creation/overwrite file/directory chains verify both
+members' begin records before any payload deletion. Two write-failure cases
+verify the local-only and fully flushed boundaries. These are the primitives
+for a coordinated executor, not batch completion: an individual token still
+refuses another member's journal change. Known-own catalog handoff and shared
+retained-alias epoch/count coordination must precede complete batch admission
+and Activity execution. Resource/performance and package acceptance remain open.

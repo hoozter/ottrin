@@ -79,15 +79,26 @@ impl Dependencies {
                 other.local_file,
                 other.central_file,
             ];
-            references.extend(peer.state.nodes.iter().filter_map(|node| node.created));
-            if let Some(original) = &peer.state.original {
+            if let Some(cleanup) = &peer.state.cleanup {
+                // Durable cleanup intent disables Undo/forward recovery. The
+                // peer still owns its remaining retained names and metadata,
+                // but no longer claims publications through stale source graphs.
                 references.extend(
-                    original
-                        .evidence
-                        .entries
+                    cleanup.manifest.order[cleanup.completed..]
                         .iter()
-                        .map(|entry| entry.version.identity),
+                        .map(|&index| cleanup.manifest.entries[index].version.identity),
                 );
+            } else {
+                references.extend(peer.state.nodes.iter().filter_map(|node| node.created));
+                if let Some(original) = &peer.state.original {
+                    references.extend(
+                        original
+                            .evidence
+                            .entries
+                            .iter()
+                            .map(|entry| entry.version.identity),
+                    );
+                }
             }
             if references
                 .iter()

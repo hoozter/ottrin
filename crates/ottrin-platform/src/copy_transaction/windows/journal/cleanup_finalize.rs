@@ -74,7 +74,7 @@ pub(super) fn snapshot_metadata(
     )
 }
 
-fn metadata_files(
+pub(super) fn metadata_files(
     header: &Header,
     files: [&File; 3],
     bytes: &[u8],

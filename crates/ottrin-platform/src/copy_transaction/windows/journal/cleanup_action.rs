@@ -8,6 +8,7 @@ use windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE;
 #[derive(Clone, Debug)]
 enum Action {
     Payload(cleanup::Admission),
+    Started(cleanup::Admission),
     Completion(cleanup_finalize::Completion),
     Metadata(cleanup_finalize::Plan),
     Complete,
@@ -139,6 +140,9 @@ impl RetainedCopyCleanupPlan {
                 )?
             };
             if let Action::Payload(plan) = &self.action {
+                self.action = Action::Started(plan.start(&parent, &central, &mut progress)?);
+            }
+            if let Action::Started(plan) = &self.action {
                 self.action = Action::Completion(plan.reclaim(&parent, &central, &mut progress)?);
             }
             if let Action::Completion(completion) = &self.action {

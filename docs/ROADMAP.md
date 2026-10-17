@@ -10,55 +10,32 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
-The private cleanup backend now removes recorded retained payloads and finalizes
-local/stage/central metadata in guarded order. The latest full native platform run
-passes 294 tests with zero failures and 36 specialized exclusions. Its 21 cleanup
-tests cover 187 injected failures and 187 real process exits, readonly data,
-outside-hardlink preservation, source-free retries, unknown metadata/occupant
-refusal, mapped writers and registry dependencies. The separate disabled-policy
-link preservation test passes against the same checksum-pinned executable.
-Evidence: `.hermes/evidence/windows-copy-cleanup-current/ACCEPTANCE.json`.
-Activity cleanup, co-owned batch and interrupted-staging cleanup,
-resource/storage/security matrices and package gates remain open. Public Windows
-Copy stays gated. Existing-only writable registry admission now also passes 16
-native creation/overwrite/Undo file/directory cases, including the registry as
-the destination. The manager keeps its read-only anchor proof while cleanup gains
-flush rights; registry root, external anchor and public data remain unchanged.
-Receipt: `REGISTRY_WRITER_ACCEPTANCE.json` in the same evidence directory.
-The shared handle-free admission now also passes 25 native cleanup tests. Its
-writer binds confirmation-time journal/metadata/payload/catalog observations;
-changed pending epochs are refused instead of re-observed and adopted. Public
-name reuse stays allowed. Receipt: `ADMISSION_ACCEPTANCE.json`.
-Read-only remaining-metadata inspection now shares the removal validators and
-passes 26 native cleanup tests. It validates local-present, local-removed and
-stage-removed layouts without writing or flushing; it cannot initiate cleanup.
-Receipt: `METADATA_INSPECTION_ACCEPTANCE.json` in the same evidence directory.
-Discovery now uses those read-only admissions before requiring a complete stage,
-so authenticated local/stage removal prefixes show verified interrupted cleanup.
-Unknown content still needs review; the surviving central record supplies the
-current recovery location. The 26-test native cleanup suite passes, including
-72 partial-metadata discovery cases. Activity status handling passes static
-Windows checks; its cleanup action remains unfinished. Evidence:
-`CLEANUP_DISCOVERY_ACCEPTANCE.json`.
+Windows cleanup has bound read-only admission, an anchored single-transaction
+action, source-free recovery and guarded payload/local/stage/central removal.
+The action retains proof across uncertain final-central removal. Discovery shows
+partial cleanup and unrecognized recovery filenames without inventing authority.
+Catalogs retain compact native/security/version/digest leases instead of every
+peer's decoded tree. Starting cleanup is now a separate bound step that persists
+intent without removing data; a started peer protects its remaining retained
+identities and metadata rather than relinquished publication references.
 
-The configured single-transaction cleanup action now passes 64 native scenarios,
-including ordinary retries and failures after local, stage and central removal.
-It keeps anchored ownership checks and the same admitted metadata proof through
-retries. Payload completion is bound to its own successful writer before metadata
-authorization; changed metadata/catalog state is refused. The scoped suite now
-passes 27 tests. Evidence: `CLEANUP_ACTION_ACCEPTANCE.json`. Activity controls,
-coordinated independent/co-owned batch cleanup and the remaining gates are still
-unfinished; this does not enable public Windows Copy or update application packages.
+The latest scoped native cleanup run passes **31 tests**, including 187 real
+process exits, the existing injected-failure matrices, 64 configured-action
+scenarios, six retention shapes and four two-copy start-boundary scenarios.
+The separate native Activity status test passed at the catalog checkpoint.
+These correctness tests use a package-specific unoptimized test crate; they do
+not establish application performance, rendered UI, full current-platform or
+release-package acceptance. Current proof:
+`START_ACCEPTANCE.json`, `CLEANUP_ACTION_ACCEPTANCE.json` and
+`CATALOG_ACCEPTANCE.json` under `.hermes/evidence/windows-copy-cleanup-current/`.
+Earlier checkpoints and their narrower scopes remain in `WINDOWS_COPY_DESIGN.md`.
 
-Catalog leases now release each peer's decoded graph after overlap checking,
-retaining compact native/security/version/digest proof. Peer metadata drift is
-included in confirmation binding. Case-variant, malformed and raw UTF-16 journal
-names remain visible for review and block cleanup without acquiring a false
-transaction identity; ordinary unrelated files stay allowed. All 28 scoped native
-cleanup tests and the native Activity status test pass. The latter checks normal
-row behavior and distinct, accurately titled unidentified-record rows with no
-recovery tokens. Evidence: `CATALOG_ACCEPTANCE.json`. Large-registry RSS acceptance,
-batch coordination, Activity cleanup controls and the broader gates remain open.
+**Still required:** coordinated batch admission/execution, known-own catalog
+handoffs, shared-retained alias epoch/count coordination, and Activity cleanup
+confirmation/execution/retry. Reserved-target protection, interrupted-staging
+reclamation, measured resource/storage/security and power-cut matrices, broader
+workflow acceptance and current package gates remain open. Public Windows Copy
+stays gated. Application packages are unchanged by these cleanup checkpoints.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session
