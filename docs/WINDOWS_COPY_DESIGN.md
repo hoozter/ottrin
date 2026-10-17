@@ -870,3 +870,14 @@ measured resource/storage/security matrices, physical power-cut acceptance,
 broader workflows and exact current package/UI acceptance remain open. These
 unoptimized backend tests establish neither application performance nor rendered
 acceptance. Public Windows Copy stays gated; application packages are unchanged.
+
+### Activity cleanup wording after Undo
+
+Native-window inspection found that an already-undone Copy incorrectly offered
+“Discard Copy undo.” The action and confirmation now describe clearing retained
+data; selections with available Undo retain the explicit Undo-loss warning.
+The Windows Activity integration passed on the corrected executable (13.87s,
+ordinary QA user, no temporary entries left); the two focused Linux cleanup
+tests also passed. `WORDING_ACCEPTANCE.json` records the exact source and native
+test hashes. Corrected package construction and native-window acceptance remain
+pending; this checkpoint does not replace the delivered packages.

@@ -1,0 +1,18 @@
+{
+  "scope": "Activity cleanup wording after completed Undo",
+  "source_sha256": "fe9f931bdbefb7ff7f9eaee0ea77ece0ad17e5432b284ddd8d8989df032e83f4",
+  "windows_activity_integration": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "12ba5ad01c6028a32c5fe1bd5da2c9824340656e6c86a5dc2621c6b96289a13f",
+    "status": "pass"
+  },
+  "windows_seconds": 13.87,
+  "linux_cleanup_tests": {
+    "passed": 2,
+    "failed": 0
+  },
+  "native_window_observation": "Previous candidate showed Discard Copy undo after Copy undone. Screenshot retained in windows-activity-desktop-current/activity-undone-before.png. Corrected package desktop acceptance pending.",
+  "package_status": "Source fix only; current deliverables not replaced by this checkpoint."
+}

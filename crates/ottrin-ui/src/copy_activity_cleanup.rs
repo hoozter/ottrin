@@ -69,8 +69,10 @@ impl CopyCleanupUi {
             "Finish Copy cleanup"
         } else if self.failed(record) {
             "Retry Copy cleanup"
-        } else {
+        } else if record.path_move_undo == Some(PathMoveUndoState::Available) {
             "Discard Copy undo and clear…"
+        } else {
+            "Clear retained Copy data…"
         }
     }
     pub(super) fn progress(&self) -> &str {
@@ -613,6 +615,22 @@ impl OttrinApp {
         let Some(ids) = self.copy_cleanup.confirmation.clone() else {
             return;
         };
+        let discards_undo = self.operation_history.iter().any(|record| {
+            ids.contains(&record.id) && record.path_move_undo == Some(PathMoveUndoState::Available)
+        });
+        let (title, action, consequence) = if discards_undo {
+            (
+                "Discard Copy undo and clear history?",
+                "Discard undo and clear",
+                "Undo will no longer be available.",
+            )
+        } else {
+            (
+                "Clear retained Copy data and history?",
+                "Clear retained data",
+                "Retained versions cannot be restored after clearing.",
+            )
+        };
         let c = self.colors;
         let mut choice = None;
         let response = egui::Modal::new(egui::Id::new("copy_cleanup_confirmation"))
@@ -620,14 +638,14 @@ impl OttrinApp {
                 .corner_radius(c.app_radius).inner_margin(18))
             .show(ctx, |ui| {
                 ui.set_width(400.0 * c.font_scale);
-                ui.label(RichText::new("Discard Copy undo and clear history?").color(c.heading).strong().size(15.0 * c.font_scale));
+                ui.label(RichText::new(title).color(c.heading).strong().size(15.0 * c.font_scale));
                 ui.add_space(8.0);
-                ui.label(format!("This clears {} finished Copy operation{} and removes the retained undo versions. Current files and original sources stay in place. Undo will no longer be available.", ids.len(), plural_s(ids.len())));
+                ui.label(format!("This clears {} finished Copy operation{} and removes retained versions and recovery records. Current files and original sources stay in place. {consequence}", ids.len(), plural_s(ids.len())));
                 ui.label("Changed or uncertain retained data stays available for review and retry.");
                 ui.add_space(12.0);
                 ui.horizontal(|ui| {
                     if ui.add(egui::Button::new("Cancel").themed(&c)).clicked() { choice = Some(false); }
-                    if ui.add(egui::Button::new("Discard undo and clear").themed(&c)).clicked() { choice = Some(true); }
+                    if ui.add(egui::Button::new(action).themed(&c)).clicked() { choice = Some(true); }
                 });
             });
         if choice == Some(false) || response.should_close() {
@@ -927,7 +945,7 @@ pub(super) fn windows_test_case(root: &Path) {
     let initial_action = if count == 2 {
         "Clear finished"
     } else {
-        "Discard Copy undo and clear…"
+        "Clear retained Copy data…"
     };
     click(&mut app, initial_action);
     assert!(app.copy_cleanup.confirmation.is_some());
@@ -957,7 +975,7 @@ pub(super) fn windows_test_case(root: &Path) {
     ) {
         app.copy_cleanup.stop_when_missing = Some(control.clone());
     }
-    click(&mut app, "Discard undo and clear");
+    click(&mut app, "Clear retained data");
     assert!(app.copy_cleanup.running());
     wait(&mut app);
     assert_eq!(
