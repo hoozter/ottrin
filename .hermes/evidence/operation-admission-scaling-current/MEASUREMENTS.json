@@ -1,0 +1,27 @@
+{
+  "scope": "Optimized local conflict-admission probes, including index creation but excluding path allocation and app/file I/O. Three samples per point; no filesystem throughput claim.",
+  "nanoseconds": {
+    "baseline": {
+      "1000": 1364299,
+      "10000": 55104669,
+      "20000": 255447671
+    },
+    "indexed": {
+      "1000": 446021,
+      "10000": 5339238,
+      "20000": 9460441
+    },
+    "baseline-writes": {
+      "1000": 466392118,
+      "3000": 4224326997,
+      "5000": 16477242509
+    },
+    "indexed-writes": {
+      "1000": 1424033,
+      "3000": 4490800,
+      "5000": 9131792
+    }
+  },
+  "read_only_shared_20000_speedup": 27.001666307099214,
+  "independent_writes_5000_speedup": 1804.3821529224494
+}

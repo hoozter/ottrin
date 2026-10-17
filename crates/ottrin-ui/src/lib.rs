@@ -63,6 +63,8 @@ const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer ins
 
 mod appearance_editor;
 mod config;
+mod operation_paths;
+use operation_paths::{OperationPath, OperationPathIndex};
 mod copy_activity_cleanup;
 #[cfg(target_os = "windows")]
 mod copy_activity_resume;
@@ -767,23 +769,6 @@ enum OperationRecoverability {
     Informational,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct OperationPath {
-    path: PathBuf,
-    writes: bool,
-}
-impl OperationPath {
-    fn write(path: PathBuf) -> Self {
-        Self { path, writes: true }
-    }
-    fn read(path: PathBuf) -> Self {
-        Self {
-            path,
-            writes: false,
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 struct OperationRecord {
     id: u64,
@@ -957,6 +942,7 @@ fn path_move_parent_directories(before: &Path, after: &Path) -> Vec<PathBuf> {
     parents
 }
 
+#[cfg(test)]
 fn path_move_paths_overlap(
     first_before: &Path,
     first_after: &Path,
@@ -6725,6 +6711,7 @@ impl OttrinApp {
     }
 
     fn activity_operation_conflict(&self, op_id: u64, requested: &[OperationPath]) -> bool {
+        let mut requested_index = None;
         self.operation_history.iter().any(|record| {
             if record.id == op_id {
                 return false;
@@ -6759,17 +6746,9 @@ impl OttrinApp {
             if requested.is_empty() {
                 return true;
             }
-            paths.iter().any(|first| {
-                requested.iter().any(|second| {
-                    (first.writes || second.writes)
-                        && path_move_paths_overlap(
-                            &first.path,
-                            &first.path,
-                            &second.path,
-                            &second.path,
-                        )
-                })
-            })
+            requested_index
+                .get_or_insert_with(|| OperationPathIndex::new(requested))
+                .conflicts(paths)
         })
     }
 

@@ -8,6 +8,30 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Large-batch operation admission
+
+A measured queue-admission stall now has an indexed implementation. The previous
+pairwise loop took a local optimized median 255 ms for two 20,000-item Copy read
+batches and 16.5 seconds for independent 5,000-item write batches. A borrowed
+component-prefix index reduces those probes to 9.5 ms and 9.1 ms, including index
+construction. These are three-sample conflict-check measurements, not filesystem
+throughput or whole-application benchmarks. The index is created only when a
+running operation actually needs comparison, then reused within that admission.
+
+Reference cases compare read/write decisions across relative, absolute, dot,
+drive and UNC path shapes. Large-batch tests verify both disjoint work and late
+exact/ancestor conflicts. All 385 Linux UI tests pass with one existing explicit
+mount-namespace exclusion. Ten focused ordinary-account Windows tests pass with
+no runtime skips, and the same executable passes all 15 Activity recovery
+scenarios. Strict Linux/Windows all-target Clippy passes. A sequential CPU control
+also shows the 5,000-write probe spending 23.5 user-CPU seconds before versus
+32 ms after (including input setup), confirming actual CPU work was removed.
+Native alias/case-equivalence, cross-process reservation and broader
+resource/storage gates remain open; current downloads remain source `69ab186`
+until a rebuilt cohort is accepted. Exact source, executable, measurement scope
+and teardown are recorded in
+`.hermes/evidence/operation-admission-scaling-current/ACCEPTANCE.json`.
+
 ## Operation-path ownership correction
 
 The queue now records complete operation paths independently of Undo support.

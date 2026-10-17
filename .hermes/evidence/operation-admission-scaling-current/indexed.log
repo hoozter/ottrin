@@ -1,0 +1,3 @@
+sources=1000 median_ns=446021 samples_ns=[439498, 446021, 447252]
+sources=10000 median_ns=5339238 samples_ns=[4750889, 5339238, 6272716]
+sources=20000 median_ns=9460441 samples_ns=[9008188, 9460441, 9792636]

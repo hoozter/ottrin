@@ -1,0 +1,14 @@
+
+running 10 tests
+test operation_paths::tests::indexed_claims_match_component_prefix_reference ... ok
+test operation_paths::tests::large_independent_batches_preserve_read_and_write_exclusion ... ok
+test tests::dirty_quick_inspector_native_close_request_is_cancelled ... ok
+test tests::dirty_quick_inspector_text_edits_require_an_explicit_close_or_cancel ... ok
+test tests::independent_copy_reads_can_run_together_but_exclude_writers ... ok
+test tests::operation_admission_preserves_files_during_undo_and_releases_after_completion ... ok
+test tests::queued_operation_footprints_cover_delete_permissions_batches_and_rename_targets ... ok
+test tests::quick_inspector_text_save_conflict_keeps_the_editor_buffer ... ok
+test tests::quick_inspector_text_save_is_session_undoable ... ok
+test tests::unchanged_quick_inspector_text_save_does_not_create_an_undo_operation ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.95s

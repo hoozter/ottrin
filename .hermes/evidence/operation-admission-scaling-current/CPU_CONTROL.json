@@ -1,0 +1,17 @@
+{
+  "scope": "Sequential optimized single-sample 5000-write probes. CPU includes input allocation; inner timing excludes it. No file I/O throughput claim.",
+  "measurements": {
+    "baseline": {
+      "wall_seconds": 23.69365652097622,
+      "user_cpu_seconds": 23.484532,
+      "system_cpu_seconds": 0.005989999999999995,
+      "probe_stdout": "sources=5000 median_ns=23685692826 samples_ns=[23685692826]\n"
+    },
+    "indexed": {
+      "wall_seconds": 0.03648139501456171,
+      "user_cpu_seconds": 0.03229400000000027,
+      "system_cpu_seconds": 0.0030280000000000307,
+      "probe_stdout": "sources=5000 median_ns=21492391 samples_ns=[21492391]\n"
+    }
+  }
+}

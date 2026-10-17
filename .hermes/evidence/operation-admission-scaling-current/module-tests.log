@@ -1,0 +1,6 @@
+
+running 2 tests
+test operation_paths::tests::indexed_claims_match_component_prefix_reference ... ok
+test operation_paths::tests::large_independent_batches_preserve_read_and_write_exclusion ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s

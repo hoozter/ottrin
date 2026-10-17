@@ -1,0 +1,116 @@
+{
+  "status": "source and native checks pass; package refresh pending",
+  "baseline_revision": "eb689af45b2f25ff1d8800e02e6676628a9e789f",
+  "changed_source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "c99a97c91470b3b6f93e6ac5d08d969986275876a9dadaee8d00b9da45c3104c",
+    "crates/ottrin-ui/src/operation_paths.rs": "3cad29cf40ecb55c433cfa6b1f1f4cde2781e99abbc52d69ac862431b57727e9"
+  },
+  "implementation": "Borrowed all-path/write-path component indexes, built lazily once per admission and reused across running records. No cached ownership or filesystem facts; no pairwise runtime fallback.",
+  "measurements": {
+    "scope": "Optimized local conflict-admission probes, including index creation but excluding path allocation and app/file I/O. Three samples per point; no filesystem throughput claim.",
+    "nanoseconds": {
+      "baseline": {
+        "1000": 1364299,
+        "10000": 55104669,
+        "20000": 255447671
+      },
+      "indexed": {
+        "1000": 446021,
+        "10000": 5339238,
+        "20000": 9460441
+      },
+      "baseline-writes": {
+        "1000": 466392118,
+        "3000": 4224326997,
+        "5000": 16477242509
+      },
+      "indexed-writes": {
+        "1000": 1424033,
+        "3000": 4490800,
+        "5000": 9131792
+      }
+    },
+    "read_only_shared_20000_speedup": 27.001666307099214,
+    "independent_writes_5000_speedup": 1804.3821529224494
+  },
+  "controlled_cpu_check": {
+    "scope": "Sequential optimized single-sample 5000-write probes. CPU includes input allocation; inner timing excludes it. No file I/O throughput claim.",
+    "measurements": {
+      "baseline": {
+        "wall_seconds": 23.69365652097622,
+        "user_cpu_seconds": 23.484532,
+        "system_cpu_seconds": 0.005989999999999995,
+        "probe_stdout": "sources=5000 median_ns=23685692826 samples_ns=[23685692826]\n"
+      },
+      "indexed": {
+        "wall_seconds": 0.03648139501456171,
+        "user_cpu_seconds": 0.03229400000000027,
+        "system_cpu_seconds": 0.0030280000000000307,
+        "probe_stdout": "sources=5000 median_ns=21492391 samples_ns=[21492391]\n"
+      }
+    }
+  },
+  "linux_ui_suite": {
+    "passed": 385,
+    "failed": 0,
+    "ignored": 1,
+    "seconds": 5.63,
+    "ignored_reason": "Existing explicitly owned private mount-namespace fixture remains excluded."
+  },
+  "windows": {
+    "focused_cases": 10,
+    "runtime_skips": 0,
+    "activity_subprocess_scenarios": 15,
+    "activity_seconds": 14.55,
+    "ordinary_user": true,
+    "test_binary_sha256": "ad6beeea62965fbabd753a3049b1a774d90a3fe9cfd6b22ef03ff78f17749fd6"
+  },
+  "strict_linux_and_windows_all_target_clippy": "pass",
+  "semantic_evidence": "Pairwise reference across component path shapes, mixed sets, a sibling/descendant ordering canary, and 20,000-path read/write exclusion. Local Rust 1.94 std source confirms Path ordering compares components.",
+  "limits": [
+    "Measurements isolate optimized conflict admission, not transfer throughput, real large-tree copy performance or a universal hardware budget.",
+    "Native alias/case-equivalence, cross-process reservations and the broader Windows Copy/resource/storage gates remain open.",
+    "Current public packages remain source 69ab186 until this source correction is rebuilt and accepted."
+  ],
+  "teardown": {
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "owned_temp_root_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_native_processes": 0,
+    "owned_vm_state": "shut off"
+  },
+  "evidence_sha256": {
+    "BASELINE_SOURCE.json": "5de5c4287dc7f0e2b0d5f950f035bd3e59c6bdf7afd8deece03c9342e4559523",
+    "MEASUREMENTS.json": "1987bad386d1d7c3240fec37ae6ca96e653125bcf8d1054c5a38e6d96994bcfe",
+    "CPU_CONTROL.json": "4f842154c0aa3373b59ab57360b3528e90216ac728501b9d2643f0d40b8b686c",
+    "baseline.rs": "dc3c8257de002ac5b7d2c4764f635a3017cb22ffcfed1816b062e2ea338a8ecd",
+    "indexed.rs": "96137e0f60dc3fa05b1ff4085cc7afe8219aba115ad4a78036975b6a81e80123",
+    "baseline-writes.rs": "63647b84ccf3d42191c72b2aa2bb1c26854028182608e2fbcf570e38406101ec",
+    "indexed-writes.rs": "cd62db1e1c003990ea700d61338b28b1a7925b67f7312e10243a28be1492ac64",
+    "baseline-cpu.rs": "afd878fedfdaba32949d758b4dd5d01d1126376351e11ad2af91c075c4c3c695",
+    "indexed-cpu.rs": "ccb2d4ee084770e927c421882b6efa74e6587f8755eb1e6bab7839fa519166c1",
+    "baseline.log": "a644ed8a719ed143f3aea518c4a3465d650c774cfe595fda971ddec866b8e2ac",
+    "indexed.log": "23af99f6a8fc3b9d251e8deb63718ac301f9314009852ac6b4d246072ffc623f",
+    "baseline-writes.log": "9cf29340d7f26c30bd31228553d40c559aea7ba796f60a78e0ed585d09dea83a",
+    "indexed-writes.log": "b550ae99e1d606ef22516d944aa8d938b5e98bb2d3a0fd0c486276965204f28b",
+    "baseline-cpu.log": "2ee11ffe3478624eeb73f18e52f46c52c6b2c8c0acbf5c2ce6b66865d5a86e14",
+    "indexed-cpu.log": "4a653b4678cdeccf45531b79fe9625552d468c006d9d32665446b834a0b6b9de",
+    "module-tests.rs": "b42aa2225266fc483ac2a449603a41d28ce4a9524ad4ff8d36fd5efb7b27607d",
+    "module-tests.log": "0d205104e8765a2cb23b38f0855037d243a37e9897b314c7db38fbbb27e0b2dc",
+    "descendant-order.rs": "5c7b91848c06d61a8446e4e4fa6eeb43b6a397cb4e05dc828e4438769740753a",
+    "descendant-order.log": "3a67c3425f095342a982f90511a08d202928591a0a5c7073e9d275b27e6c4721",
+    "linux-ui-suite.log": "ee77d9bd4acffbf93490294c402ef94068df3537daf34237f7bb0434641f6995",
+    "linux-clippy.log": "68c2645a0daffd3f62f3ea5f329b5d69978eedf0b951d593eeb19d06600e6d99",
+    "windows-clippy.log": "e3799321fa547e730682f5e5cc49fa8879aac2900200459c0cac98c45f753fbf",
+    "NATIVE_FOCUSED_RESULT.json": "aa7a93db99e8f700b04f500c11df80b3eca58934dba87f9f00333ef2ce0f4a48",
+    "NATIVE_FOCUSED_BINARY.json": "c2265860c81c9e5bc4ecd60611eaffbb22b1839a2fec5e5f0b9c76b17c67e450",
+    "native-focused.stdout": "008112e94eb261861306ec865fe5619506236b37463fa9e9684e3a7530b3e455",
+    "native-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "NATIVE_ACTIVITY_RESULT.json": "aa7a93db99e8f700b04f500c11df80b3eca58934dba87f9f00333ef2ce0f4a48",
+    "NATIVE_ACTIVITY_BINARY.json": "ba0417ee33460693b4dea60486fbcf8622e01f9f9b2415470fef309d76d72236",
+    "native-activity.stdout": "fac98dbe20c56b85d5c464ebe328c6a297cb7915aa3980f39e4cbdeded9d243f",
+    "native-activity.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "TEARDOWN.json": "038cc971989fbfa9302e37dfa6286d61a1887007f15b32332f51c480d7bafa81"
+  }
+}

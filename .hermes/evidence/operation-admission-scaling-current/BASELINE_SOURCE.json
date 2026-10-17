@@ -1,0 +1,6 @@
+{
+  "revision": "eb689af",
+  "source_file_sha256": "1bc531f44f941ed0a7ac61b87d6b3699e324874bec5d0842494864214a3175ed",
+  "extracted_core_sha256": "e973ca28d7474290a353e7915c0774827b8cdd6c1b4ad26f9656631f466a728f",
+  "scope": "Exact current pairwise conflict loop, optimized standalone probe. Excludes app construction and path allocation from timings."
+}

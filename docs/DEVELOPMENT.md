@@ -620,6 +620,7 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 ## Performance Discipline
 
 - Keep filesystem operations off the UI thread.
+- Admission for large batches must use component-prefix indexes rather than a cross-product of path pairs. Read-only claims may overlap; writers must still exclude ancestors and descendants. Keep the index local to one check, and verify lexical semantics separately from native filesystem authority.
 - Use background workers for directory listing, preview loading, search, trash loading, and long operations.
 - Cap expensive UI rendering for very large folders.
 - Preserve release-mode search benchmark coverage.
