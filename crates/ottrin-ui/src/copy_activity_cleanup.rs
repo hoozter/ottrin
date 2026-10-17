@@ -990,6 +990,27 @@ pub(super) fn windows_test_case(root: &Path) {
         assert_eq!(std::fs::read(&control).unwrap(), before);
         assert_eq!(app.operation_history.len(), count);
         assert!(app.copy_cleanup.failed(&app.operation_history[0]));
+        ctx.style_mut(|style| style.animation_time = 0.0);
+        let detail = app.operation_history[0].detail.clone();
+        let message = app.operation_history[0].message.clone().unwrap();
+        let labels = super::tests::activity_text(&mut app, &ctx);
+        assert!(labels.iter().any(|label| label
+            == "Cleanup could not finish. Remaining data is kept for review and retry."));
+        assert!(!labels.contains(&detail));
+        assert!(!labels.contains(&message));
+        click(&mut app, "Recovery details");
+        let labels = super::tests::activity_text(&mut app, &ctx);
+        assert!(
+            labels.contains(&detail),
+            "Recovery location and identity must remain available"
+        );
+        assert!(
+            labels.contains(&message),
+            "The complete refusal diagnostic must remain available"
+        );
+        click(&mut app, "Recovery details");
+        let labels = super::tests::activity_text(&mut app, &ctx);
+        assert!(!labels.contains(&message));
     } else {
         if busy.is_some()
             || matches!(

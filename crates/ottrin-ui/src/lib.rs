@@ -14202,8 +14202,7 @@ impl OttrinApp {
     fn render_activity_sidebar(&mut self, ui: &mut egui::Ui) {
         let c = self.colors;
         smart_panel_header(ui, &c, MI_HISTORY, "Activity");
-        ui.horizontal(|ui| {
-            ui.add_space(10.0);
+        ui.horizontal_wrapped(|ui| {
             let queued = self
                 .operation_history
                 .iter()
@@ -14238,20 +14237,18 @@ impl OttrinApp {
                     .color(c.text_muted)
                     .size(11.0 * c.font_scale),
             );
-            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                if ui
-                    .add_enabled(
-                        !self.copy_cleanup.running() && self.operation_history.iter().any(|record| record.can_clear_history() || copy_activity_cleanup::can_cleanup(record)),
-                        egui::Button::new("Clear finished").themed(&c),
-                    )
-                    .on_hover_text("Clear finished history. Copy entries require confirmation before retained undo versions are discarded. Other owned recovery data stays available.")
-                    .clicked()
-                {
-                    let copies = self.operation_history.iter().filter(|record| copy_activity_cleanup::can_cleanup(record)).map(|record| record.id).collect::<Vec<_>>();
-                    self.clear_finished_activity();
-                    if !copies.is_empty() { self.request_copy_cleanup(copies); }
-                }
-            });
+            if ui
+                .add_enabled(
+                    !self.copy_cleanup.running() && self.operation_history.iter().any(|record| record.can_clear_history() || copy_activity_cleanup::can_cleanup(record)),
+                    egui::Button::new("Clear finished").themed(&c),
+                )
+                .on_hover_text("Clear finished history. Copy entries require confirmation before retained undo versions are discarded. Other owned recovery data stays available.")
+                .clicked()
+            {
+                let copies = self.operation_history.iter().filter(|record| copy_activity_cleanup::can_cleanup(record)).map(|record| record.id).collect::<Vec<_>>();
+                self.clear_finished_activity();
+                if !copies.is_empty() { self.request_copy_cleanup(copies); }
+            }
         });
         ui.add_space(8.0);
         ui.painter().hline(
@@ -14423,6 +14420,23 @@ impl OttrinApp {
                     OperationStatus::Failed => ("Failed", c.error, MI_CLEAR),
                     OperationStatus::NeedsReview => ("Needs review", c.error, MI_HISTORY),
                 }};
+                let recovery_summary = record.retained_copy.as_ref().map(|_| {
+                    if self.copy_cleanup.owns(record) {
+                        "Removing retained copy data…"
+                    } else if self.copy_cleanup.failed(record) {
+                        "Cleanup could not finish. Remaining data is kept for review and retry."
+                    } else if copy_resume_available {
+                        "Verified copy data is available to finish this operation."
+                    } else if matches!(record.status, OperationStatus::Failed | OperationStatus::NeedsReview) {
+                        "Retained copy data needs review before continuing."
+                    } else if matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)) {
+                        "Retained files can now be cleared."
+                    } else if matches!(record.path_move_undo, Some(PathMoveUndoState::Available)) {
+                        "Retained copy data is verified and available for Undo."
+                    } else {
+                        "Retained copy data is kept for recovery or cleanup."
+                    }
+                });
                 Frame::new()
                     .fill(c.panel)
                     .stroke(Stroke::new(
@@ -14437,24 +14451,27 @@ impl OttrinApp {
                     .inner_margin(egui::Margin::symmetric(9, 8))
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
-                        ui.horizontal(|ui| {
+                        ui.horizontal_top(|ui| {
                             ui.label(RichText::new(status_icon).size(14.0 * c.font_scale).color(status_color));
-                            ui.vertical(|ui| {
-                                ui.label(
-                                    RichText::new(&record.title)
-                                        .color(c.text)
-                                        .size(12.0 * c.font_scale)
-                                        .strong(),
-                                );
-                                ui.label(
-                                    RichText::new(&record.detail).color(c.text_muted).size(10.0 * c.font_scale),
-                                );
+                            let status = egui::WidgetText::from(RichText::new(status_text).color(status_color).size(10.0 * c.font_scale))
+                                .into_galley(ui, Some(egui::TextWrapMode::Extend), f32::INFINITY, egui::TextStyle::Body);
+                            let status_width = status.size().x;
+                            let text_width = (ui.available_width() - status_width - ui.spacing().item_spacing.x).max(1.0);
+                            ui.allocate_ui_with_layout(egui::vec2(text_width, 0.0), Layout::top_down(Align::Min), |ui| {
+                                ui.add(egui::Label::new(
+                                    RichText::new(&record.title).color(c.text).size(12.0 * c.font_scale).strong(),
+                                ).wrap());
+                                let detail = match recovery_summary {
+                                    Some(summary) => summary,
+                                    None => record.detail.as_str(),
+                                };
+                                ui.add(egui::Label::new(
+                                    RichText::new(detail).color(c.text_muted).size(10.0 * c.font_scale),
+                                ).wrap());
                             });
-                            ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                ui.label(RichText::new(status_text).color(status_color).size(10.0 * c.font_scale));
-                            });
+                            ui.label(status);
                         });
-                        if let Some(msg) = &record.message {
+                        if record.retained_copy.is_none() && let Some(msg) = &record.message {
                             ui.add_space(4.0);
                             let message_color = if matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)) { c.text_muted } else { c.error };
                             ui.label(RichText::new(msg).color(message_color).size(10.0 * c.font_scale));
@@ -14600,7 +14617,7 @@ impl OttrinApp {
                                     ("Undo unavailable", c.error)
                                 }
                             };
-                            let label = if self.copy_cleanup.failed(record) {
+                            let label = if self.copy_cleanup.failed(record) || record.retained_copy.is_some() {
                                 label.to_string()
                             } else if let PathMoveUndoState::Unavailable { reason } = path_move_undo {
                                 format!("Undo unavailable: {reason}")
@@ -14624,6 +14641,18 @@ impl OttrinApp {
                             && ui.add_enabled(!self.copy_cleanup.running(), egui::Button::new(
                                 self.copy_cleanup.action_label(record)
                             ).themed(&c)).clicked() { clear_copy = Some(record.id); }
+                        if record.retained_copy.is_some() {
+                            egui::CollapsingHeader::new(RichText::new("Recovery details").color(c.text_muted).size(10.0 * c.font_scale))
+                                .id_salt(("activity_copy_recovery", record.id))
+                                .show(ui, |ui| {
+                                    ui.add(egui::Label::new(RichText::new(&record.detail).color(c.text_muted).size(10.0 * c.font_scale)).wrap().selectable(true));
+                                    if let Some(message) = &record.message {
+                                        ui.add(egui::Label::new(RichText::new(message).color(c.text).size(10.0 * c.font_scale)).wrap().selectable(true));
+                                    } else if let Some(PathMoveUndoState::Unavailable { reason }) = &record.path_move_undo {
+                                        ui.add(egui::Label::new(RichText::new(reason).color(c.text).size(10.0 * c.font_scale)).wrap().selectable(true));
+                                    }
+                                });
+                        }
                         ui.label(
                             RichText::new(if record.retained_copy.as_ref().is_some_and(|owner| owner.restored) {
                                 "Restored history · original time unavailable".to_owned()
@@ -25434,24 +25463,111 @@ fn format_search_duration(duration_ms: u64) -> String {
 mod tests {
     use super::*;
 
+    #[test]
+    fn activity_headers_keep_status_visible_with_long_titles_and_scaled_text() {
+        for width in [320.0, 420.0] {
+            for scale in [1.0, 1.5, 2.0] {
+                for (state, label) in [
+                    (OperationStatus::Queued, "Queued"),
+                    (OperationStatus::Completed, "Done"),
+                    (OperationStatus::NeedsReview, "Needs review"),
+                ] {
+                    let mut app = OttrinApp::default();
+                    app.colors.font_scale = scale;
+                    let title =
+                        "Move an unusually long file name into a deeply nested destination folder"
+                            .repeat(3);
+                    let id = app.queue_activity_record_with_recoverability(
+                        title.clone(),
+                        "/very/deep/destination/with/a/long/file/name".repeat(6),
+                        OperationRecoverability::NotUndoable,
+                    );
+                    app.finish_operation_record(id, state, None);
+                    let ctx = Context::default();
+                    let mut frame = || {
+                        ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    egui::vec2(width, 1600.0),
+                                )),
+                                ..Default::default()
+                            },
+                            |ctx| {
+                                egui::CentralPanel::default()
+                                    .show(ctx, |ui| app.render_activity_sidebar(ui));
+                            },
+                        )
+                    };
+                    frame();
+                    let output = frame();
+                    let text_rect = |text: &str| {
+                        output
+                            .shapes
+                            .iter()
+                            .find_map(|shape| match &shape.shape {
+                                egui::Shape::Text(item) if item.galley.job.text == text => Some((
+                                    Rect::from_min_size(item.pos, item.galley.size()),
+                                    shape.clip_rect,
+                                    item.galley.job.wrap.max_width,
+                                )),
+                                _ => None,
+                            })
+                            .expect("Activity title and status must be rendered")
+                    };
+                    let (status, clip, _) = text_rect(label);
+                    let (title, _, wrap_width) = text_rect(&title);
+                    assert!(
+                        clip.expand(0.5).contains_rect(status),
+                        "Status clipped at width {width}, scale {scale}: {status:?} inside {clip:?}; title {title:?}, wrap width {wrap_width}"
+                    );
+                    assert!(
+                        title.right() <= status.left(),
+                        "Title overlaps status at width {width}, scale {scale}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    fn activity_frame(
+        app: &mut OttrinApp,
+        ctx: &Context,
+        events: Vec<egui::Event>,
+    ) -> egui::FullOutput {
+        ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(900.0, 1000.0),
+                )),
+                events,
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
+                app.render_copy_cleanup_confirmation(ctx);
+            },
+        )
+    }
+
+    #[cfg(target_os = "windows")]
+    pub(super) fn activity_text(app: &mut OttrinApp, ctx: &Context) -> Vec<String> {
+        activity_frame(app, ctx, Vec::new());
+        activity_frame(app, ctx, Vec::new())
+            .shapes
+            .into_iter()
+            .filter_map(|shape| match shape.shape {
+                egui::Shape::Text(text) => Some(text.galley.job.text.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
     #[cfg(target_os = "windows")]
     pub(super) fn click_activity_action(app: &mut OttrinApp, ctx: &Context, label: &str) {
-        let frame = |app: &mut OttrinApp, events| {
-            ctx.run(
-                egui::RawInput {
-                    screen_rect: Some(Rect::from_min_size(
-                        egui::Pos2::ZERO,
-                        egui::vec2(900.0, 1000.0),
-                    )),
-                    events,
-                    ..Default::default()
-                },
-                |ctx| {
-                    egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
-                    app.render_copy_cleanup_confirmation(ctx);
-                },
-            )
-        };
+        let frame = |app: &mut OttrinApp, events| activity_frame(app, ctx, events);
         frame(app, Vec::new());
         let output = frame(app, Vec::new());
         let point = output

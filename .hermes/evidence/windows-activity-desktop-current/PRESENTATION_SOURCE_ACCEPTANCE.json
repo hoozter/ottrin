@@ -1,0 +1,47 @@
+{
+  "status": "source-checks-pass",
+  "baseline_revision": "3a0baf8",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "422bbf89e19567f21700949e8a80300fe922305904e354e92af6f8291ac0f7fc",
+    "crates/ottrin-ui/src/copy_activity_cleanup.rs": "4db05bcbdd43c138fc356986ca164b59dffce91ff06c14f0a61a817a2c74da04"
+  },
+  "windows_activity_integration": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "068fccde82a8f180c4c131de096b40182441df0e8f1f902936324981a009aeb9",
+    "status": "pass"
+  },
+  "windows_activity_seconds": 16.03,
+  "windows_activity_scope": "Existing 15 source-free recovery/Undo/cleanup subprocess scenarios, including actual metadata refusal; rendered error summary excludes raw data until Recovery details is expanded, then full identity/location and refusal text are present; collapsing hides them again.",
+  "linux_layout": {
+    "status": "pass",
+    "private_profile_runner": "scripts/test-workspace.py",
+    "test": "tests::activity_headers_keep_status_visible_with_long_titles_and_scaled_text",
+    "scenes": 18,
+    "widths": [
+      320,
+      420
+    ],
+    "text_scales": [
+      1,
+      1.5,
+      2
+    ],
+    "states": [
+      "Queued",
+      "Done",
+      "Needs review"
+    ],
+    "assertions": [
+      "Status stays within its visible clip",
+      "Wrapped title does not overlap status"
+    ]
+  },
+  "strict_clippy": {
+    "linux_all_targets": "pass",
+    "windows_all_targets": "pass"
+  },
+  "format_and_diff": "pass",
+  "packaged_window_acceptance": "Pending rebuild; preceding packaged acceptance remains scoped to b87228d."
+}

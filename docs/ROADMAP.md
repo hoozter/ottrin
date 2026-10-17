@@ -111,9 +111,16 @@ formats pass content/source/runtime identity checks; AppImage and RPM daemon
 namespace ownership checks pass. Exact artifacts and limits are recorded in
 `.hermes/evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
 
-These are candidates, not replacement public downloads. Windows Activity still
-puts native metadata and raw error diagnostics directly in its cards; readable
-status with expandable technical details is the next UI correction. Desktop
+These are candidates, not replacement public downloads. A subsequent source
+repair now separates readable Copy status from selectable, expandable Recovery
+details and keeps raw paths/diagnostics out of the default card. Status badges
+reserve their actual font width; the Activity toolbar wraps rather than widening
+the panel. Eighteen rendered layout cases pass at widths 320/420 and text scales
+1.0/1.5/2.0 across queued/completed/review states. The final native Windows Activity
+integration passes all 15 scenarios, including diagnostic disclosure after a real
+refusal; strict Linux/Windows all-target Clippy passes. Source hashes and limits
+are in `PRESENTATION_SOURCE_ACCEPTANCE.json`. New packages and native-window
+inspection of this presentation repair remain pending. Desktop
 Stop/retry, other theme/scale combinations, broader workflows and current
 installer lifecycle acceptance retain their separate gates. Public `dist/`
 artifacts remain unchanged. Candidate packages are kept at the stable
