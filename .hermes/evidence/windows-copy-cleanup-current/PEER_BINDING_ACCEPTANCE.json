@@ -1,0 +1,117 @@
+{
+  "scope": "Read-only live peer journal/prefix and retained-slot validation; no physical shared unlink or package acceptance",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "79bf6689afba6bc35cf81c555281ce7fd372fdccbf7d1ed3f7d6c2bf7d928f23",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "3a93b0180b7a0793891fbcc446ac770b0adfbc4886626cf649ea78017e8316b1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "08b4e1a4dbcf07d0c85c5348805930ee1938c4dbd6bf22c1b43e3d9ccbff644b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "0289757aef6cdf9a97f88edbc99102b1cfdcf807048fa7fdc4bf7f392514bb9a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "f045ebb66311fae731d5131ae1ee9a89b85d66a27ab0ce4251507f3f6b5e4ec1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "315390b819bfdad8651d8fee0f7465348233628e6d34d56fa6ebde3d267b3fea",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "4db2daa7fa83d3cc012520244c6c80a2ad15292738913d653c8637bcb53b6c03",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "82ee5623fd16a646d00490f32e2e1e9807b06cba54a253ab1e089631200cb1f2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_peer.rs": "4a468b83c91dfdf3fd791fb4f3a5746865f23b4742cdfe87fcfc5e4cd05c8e04"
+  },
+  "native_binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup_peer_binding --nocapture --test-threads=1",
+    "watchdog_ms": 300000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "79a23fc7eb74eeb21a76c99d08682a6fe830849f108e0e036e2fb30ca57c5f1a",
+    "transferred_sha256": "36101f49bee0183f0bad35853577b3f839e042a09393cb264e98076a74e363df",
+    "retained_sections": {
+      ".text": "388560ee14793b8ea9762050c5a93ea432f6e7f45779939333b5b7366a315071",
+      ".data": "30b0eb25b80cdd6e764cc35a7f6aec905325c61f2b32e40a0564e26f91e58e91",
+      ".rdata": "a5143426feaf17aaa973c06da04778dbe8d77cc9b6085cad69f2653ce36ba6f0",
+      ".pdata": "f1ebb07ddfff9d12cc7332d13c2a41a8234401bc0d17b752b817bae312ea9f72",
+      ".xdata": "47fa9a4283039851aa35ad2a2a47987954f1bccf91402f65c3e1a214dafcca86",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "4698ebd5c69cfe0350414922ea092f13203d3320291baaf2e0a13d3ba7ff30ff",
+      ".CRT": "5b7839672bb09fa7bdee7079ea993b0881edc0f7b01a2ba47834b86cade292a3",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "e3ac2e3359300a2b58481406b5afc7c8014ce798bb8f2768af409818e1272890"
+    }
+  },
+  "focused_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "36101f49bee0183f0bad35853577b3f839e042a09393cb264e98076a74e363df",
+    "status": "pass"
+  },
+  "focused_tests": {
+    "passed": 4,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 356,
+    "seconds": 17.79
+  },
+  "static_checks": [
+    "strict Windows ottrin-platform and ottrin-ui all-target Clippy",
+    "cargo fmt --all -- --check",
+    "git diff --check"
+  ],
+  "broader_verification": "All 153 native journal cases accounted for across two disjoint completed batches:145 passed,8 existing ignored. Exact native enumeration and per-case outcomes in PEER_BINDING_COVERAGE.json.",
+  "earlier_failures": [
+    "Peer control reopening conflicted with its held delete lease: fixed by duplicating the held handle while retaining full snapshot validation.",
+    "Parent-policy test removed inheritable permissions: fixed fixture, repaired and removed owned data under ordinary test account."
+  ],
+  "remaining": [
+    "per-entry group unlink and peer acknowledgement coordination",
+    "group process-exit/history recovery",
+    "Activity workflow and exact current packages"
+  ],
+  "cleanup_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "36101f49bee0183f0bad35853577b3f839e042a09393cb264e98076a74e363df",
+    "status": "pass"
+  },
+  "cleanup_tests": {
+    "passed": 51,
+    "failed": 0,
+    "ignored": 2,
+    "filtered": 307,
+    "seconds": 580.91,
+    "watchdog_ms": 900000
+  },
+  "core_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "36101f49bee0183f0bad35853577b3f839e042a09393cb264e98076a74e363df",
+    "status": "pass"
+  },
+  "core_tests": {
+    "passed": 94,
+    "failed": 0,
+    "ignored": 6,
+    "filtered": 260,
+    "seconds": 477.55,
+    "watchdog_ms": 900000
+  },
+  "teardown": {
+    "task": "Ready",
+    "task_result": 0,
+    "owned_native_processes": 0,
+    "temporary_root_present": false
+  },
+  "enumeration": "Native executable --list via guest controller after ordinary-account test batches completed; enumeration itself is not a functional test."
+}

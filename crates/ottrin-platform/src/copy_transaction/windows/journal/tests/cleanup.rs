@@ -3506,3 +3506,187 @@ fn windows_native_copy_cleanup_peer_unlink_codec_reserves_acknowledgement_before
         required
     );
 }
+
+#[test]
+fn windows_native_copy_cleanup_peer_binding_checks_present_absent_and_historical_intent() {
+    use super::super::cleanup_peer::Observation;
+    use super::super::cleanup_protocol::CleanupRecord;
+    let root = tempfile::tempdir().unwrap();
+    let (mut local, proof, removed) = peer_unlink_codec_fixture(root.path());
+    local.prepare_peer_unlink(proof.clone()).unwrap();
+    let central = owner(&root.path().join("central"));
+    let before = namespace_contents(root.path());
+    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    assert!(!observation.removed());
+    observation.revalidate(&central, |_| Ok(())).unwrap();
+    assert_eq!(namespace_contents(root.path()), before);
+    drop(observation);
+    std::fs::remove_file(&removed).unwrap();
+    owner(removed.parent().unwrap()).sync_all().unwrap();
+    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    assert!(observation.removed());
+    observation.revalidate(&central, |_| Ok(())).unwrap();
+    drop(observation);
+    let name = OsString::from(format!(".ottrin-copy-{}", proof.transaction));
+    let mut peer = original_journal(root.path(), &name);
+    let parent_after = super::super::super::version(&owner(removed.parent().unwrap())).unwrap();
+    peer.persist(Record::Cleanup {
+        entry: CleanupRecord::EntryRemoved {
+            index: proof.peer_index,
+            parent_after: Some(Box::new(parent_after)),
+            alias_after: None,
+        },
+    })
+    .unwrap();
+    peer.persist(Record::Cleanup {
+        entry: CleanupRecord::EntryIntent { index: 0 },
+    })
+    .unwrap();
+    let retained_root = removed.parent().unwrap().to_path_buf();
+    std::fs::remove_dir(&retained_root).unwrap();
+    owner(retained_root.parent().unwrap()).sync_all().unwrap();
+    peer.persist(Record::Cleanup {
+        entry: CleanupRecord::EntryRemoved {
+            index: 0,
+            parent_after: None,
+            alias_after: None,
+        },
+    })
+    .unwrap();
+    peer.persist(Record::Cleanup {
+        entry: CleanupRecord::PayloadRemoved,
+    })
+    .unwrap();
+    drop(peer);
+    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    assert!(observation.removed());
+    // The historical intent remains bound even after the peer advances; a new
+    // occupant in its old root slot must invalidate the live absence check.
+    std::fs::write(&retained_root, b"unknown root occupant").unwrap();
+    let before = namespace_contents(root.path());
+    assert!(observation.revalidate(&central, |_| Ok(())).is_err());
+    assert_eq!(namespace_contents(root.path()), before);
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_binding_rejects_unmatched_control_prefix_and_slot() {
+    use super::super::cleanup_peer::Observation;
+    for change in 0..7 {
+        let root = tempfile::tempdir().unwrap();
+        let (mut local, mut proof, _) = peer_unlink_codec_fixture(root.path());
+        let control = root
+            .path()
+            .join("central")
+            .join(format!("{}.copy-journal", proof.transaction));
+        match change {
+            0 => {
+                let snapshot = Snapshot::load(
+                    &owner(&root.path().join("destination")),
+                    &owner(&root.path().join("central")),
+                    &OsString::from(format!(".ottrin-copy-{}", proof.transaction)),
+                    SnapshotAccess::Read,
+                )
+                .unwrap();
+                proof.control = snapshot.state.header.unwrap().local_file;
+            }
+            1 => proof.intent_digest[0] ^= 1,
+            2 => {
+                proof.sequence -= 1;
+                let bytes = std::fs::read(&control).unwrap();
+                let (_, end) = decode_until(&bytes, Some(proof.sequence)).unwrap();
+                proof.intent_digest = Sha256::digest(&bytes[..end]).into();
+            }
+            3 => proof.sequence += 1,
+            4 => proof.name = "missing".encode_utf16().collect(),
+            5 => {
+                proof.parent = super::super::super::stable_identity_from_handle(&owner(
+                    &root.path().join("destination"),
+                ))
+                .unwrap()
+            }
+            6 => proof.peer_index = 0,
+            _ => unreachable!(),
+        }
+        local.prepare_peer_unlink(proof).unwrap();
+        let before = namespace_contents(root.path());
+        assert!(
+            Observation::open(&owner(&root.path().join("central")), &local.state, |_| Ok(
+                ()
+            ))
+            .is_err(),
+            "accepted binding change {change}"
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_binding_preserves_missing_mirrors_changes_and_cancellation() {
+    use super::super::cleanup_peer::Observation;
+    for change in 0..4 {
+        let root = tempfile::tempdir().unwrap();
+        let (mut local, proof, removed) = peer_unlink_codec_fixture(root.path());
+        local.prepare_peer_unlink(proof.clone()).unwrap();
+        match change {
+            0 => std::fs::remove_file(
+                root.path()
+                    .join("central")
+                    .join(format!("{}.copy-journal", proof.transaction)),
+            )
+            .unwrap(),
+            1 => {
+                let path = root
+                    .path()
+                    .join("destination")
+                    .join(format!(".ottrin-copy-{}", proof.transaction))
+                    .join(LOCAL);
+                std::fs::OpenOptions::new()
+                    .append(true)
+                    .open(path)
+                    .unwrap()
+                    .write_all(b"unpaired local bytes")
+                    .unwrap();
+            }
+            2 => std::fs::write(removed, b"changed peer retained payload").unwrap(),
+            3 => {}
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(
+            Observation::open(&owner(&root.path().join("central")), &local.state, |_| {
+                if change == 3 {
+                    Err(io("owned peer cancellation"))
+                } else {
+                    Ok(())
+                }
+            })
+            .is_err()
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_binding_revalidates_parent_policy_without_writes() {
+    use super::super::cleanup_peer::Observation;
+    let root = tempfile::tempdir().unwrap();
+    let (mut local, proof, _) = peer_unlink_codec_fixture(root.path());
+    local.prepare_peer_unlink(proof).unwrap();
+    let central = owner(&root.path().join("central"));
+    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    let parent = root.path().join("destination");
+    let old_policy =
+        super::super::super::security::owner_group_dacl_digest(&owner(&parent)).unwrap();
+    super::super::super::tests::set_dacl(&parent, "D:P(A;OICI;FA;;;OW)");
+    assert_ne!(
+        super::super::super::security::owner_group_dacl_digest(&owner(&parent)).unwrap(),
+        old_policy
+    );
+    let before = namespace_contents(root.path());
+    assert!(observation.revalidate(&central, |_| Ok(())).is_err());
+    assert_eq!(namespace_contents(root.path()), before);
+}

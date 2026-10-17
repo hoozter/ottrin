@@ -115,15 +115,6 @@ impl Remaining {
                 Err(error) => return Err(io(error)),
             }
         }
-        if !manifest.entries.is_empty() && !result.present[0] {
-            // A removed root does not license adoption of an occupant at its old
-            // name. Access errors are never evidence of native absence.
-            match entry(parent, &manifest.entries[0].name, FILE_GENERIC_READ) {
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-                Err(error) => return Err(io(error)),
-                Ok(_) => return Err(io("Copy cleanup retained slot has an unexpected occupant")),
-            }
-        }
         for index in 0..manifest.entries.len() {
             if result.present[index] {
                 result.observed[index] =
@@ -216,6 +207,13 @@ impl Remaining {
         progress: &Progress,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if !progress.manifest.entries.is_empty() && !self.present[0] {
+            // Recheck absence on every observation, not just initial admission.
+            absent(
+                parent,
+                &OsString::from_wide(&progress.manifest.entries[0].name),
+            )?;
+        }
         let mut children = vec![Vec::new(); self.present.len()];
         for (index, node) in progress.manifest.entries.iter().enumerate() {
             if self.present[index]

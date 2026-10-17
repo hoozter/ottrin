@@ -28,6 +28,7 @@ pub use cleanup_action::RetainedCopyCleanupPlan;
 mod cleanup_dependencies;
 mod cleanup_finalize;
 mod cleanup_group;
+mod cleanup_peer;
 mod cleanup_protocol;
 mod cleanup_tree;
 mod discovery;
@@ -1071,6 +1072,10 @@ struct Decoded {
     previous: [u8; 32],
 }
 fn decode(bytes: &[u8]) -> Result<Decoded, PlatformError> {
+    decode_until(bytes, None).map(|(decoded, _)| decoded)
+}
+
+fn decode_until(bytes: &[u8], limit: Option<u64>) -> Result<(Decoded, usize), PlatformError> {
     if bytes.len() as u64 > MAX_LOG {
         return Err(io("Copy journal exceeds inspection budget"));
     }
@@ -1078,7 +1083,7 @@ fn decode(bytes: &[u8]) -> Result<Decoded, PlatformError> {
     let mut at = 0usize;
     let mut sequence = 0u64;
     let mut previous = [0u8; 32];
-    while at < bytes.len() {
+    while at < bytes.len() && limit.is_none_or(|limit| sequence < limit) {
         let header = bytes
             .get(at..at + FRAME_HEADER)
             .ok_or_else(|| io("torn Copy journal frame; data retained"))?;
@@ -1108,14 +1113,20 @@ fn decode(bytes: &[u8]) -> Result<Decoded, PlatformError> {
         sequence += 1;
         at = end;
     }
+    if limit.is_some_and(|limit| sequence != limit) {
+        return Err(io("Copy journal prefix sequence is unavailable"));
+    }
     if state.header.is_none() {
         return Err(io("empty Copy journal; data retained"));
     }
-    Ok(Decoded {
-        state,
-        sequence,
-        previous,
-    })
+    Ok((
+        Decoded {
+            state,
+            sequence,
+            previous,
+        },
+        at,
+    ))
 }
 fn open(
     parent: &File,
@@ -2888,6 +2899,28 @@ impl Snapshot {
         name: &OsStr,
         access: SnapshotAccess,
     ) -> Result<Self, PlatformError> {
+        Self::load_control(parent, central, name, access, None)
+    }
+
+    fn read_with_control(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        control: &File,
+    ) -> Result<Self, PlatformError> {
+        Self::load_control(parent, central, name, SnapshotAccess::Read, Some(control))
+    }
+
+    fn load_control(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        access: SnapshotAccess,
+        control: Option<&File>,
+    ) -> Result<Self, PlatformError> {
+        if control.is_some() && access != SnapshotAccess::Read {
+            return Err(io("A held peer control is only a read capability"));
+        }
         let entry = |parent: &File, name: &OsStr, directory| {
             if access == SnapshotAccess::Inspect {
                 open(parent, name, Some(directory), FILE_GENERIC_READ)
@@ -2936,7 +2969,11 @@ impl Snapshot {
         if name != header.stage_name() {
             return Err(io("Copy journal name does not match its transaction"));
         }
-        let mirror = entry(central, &header.central_name(), false)?;
+        let mirror = if let Some(control) = control {
+            control.try_clone().map_err(io)?
+        } else {
+            entry(central, &header.central_name(), false)?
+        };
         let result = Self {
             stage,
             local,

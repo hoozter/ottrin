@@ -986,3 +986,33 @@ Strict Windows platform/UI checks, formatting and owned process/temporary-root
 cleanup pass. No additional exclusions were introduced. The unoptimized test
 profile does not establish application performance, current package/UI acceptance,
 or runtime shared-unlink support.
+
+
+## Live peer-prefix observation
+
+`cleanup_peer::Observation` binds a recorded peer intent to the canonical held
+control, its exact authenticated journal prefix, paired mirrors and retained
+native tree. The prefix must end at the named pending entry intent; transaction,
+control, parent, raw name, object version and link count must agree. Historical
+prefixes remain verifiable after the peer acknowledges its removal. Missing or
+changed records are refused. This is a held read capability, not permission to
+unlink or acknowledge another member.
+
+Snapshot loading duplicates the already-held peer control rather than reopening
+it with incompatible Windows sharing flags. Identity, private security, single
+link, namespace bindings and mirror equality retain the common validation path.
+Retained-root absence is now checked on every tree revalidation, so a later
+occupant invalidates an earlier absence observation.
+
+Four ordinary-account native tests pass in 17.79 seconds on the exact binary
+recorded in `PEER_BINDING_ACCEPTANCE.json`. They cover present/absent/historical
+intents, mismatched control/prefix/slot fields, missing or changed evidence,
+cancellation, changed parent policy and later root reoccupation, with content
+preservation. Broader verification passes in two disjoint completed batches on
+that same binary: cleanup 51 passed/two existing ignored in 580.91 seconds, and
+other journal tests 94 passed/six existing ignored in 477.55 seconds. The exact
+union matches all 153 cases enumerated by the native binary; per-case outcomes
+are recorded in `PEER_BINDING_COVERAGE.json`. Owned processes and temporary data
+are absent afterward. These are unoptimized correctness tests, not package, UI
+or performance acceptance. Physical shared cleanup and its interruption recovery
+remain unfinished.

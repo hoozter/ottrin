@@ -35,26 +35,27 @@ the same Plan verifies only its expected metadata-name disappearances before
 retry, including a missing final central journal. Complete members stay complete
 without reopening deleted controls. Schema 13 now records pending peer-unlink
 intent and exact-once link-count/version acknowledgements, with complete-tail
-reservation before intent. This is codec/accounting groundwork; live peer/prefix
-and native slot validation and the shared physical coordinator remain required.
+reservation before intent. A held read-only peer observer now validates the
+canonical control, authenticated pending-intent prefix, paired mirrors and native
+retained slot, including historical acknowledgements and later root reoccupation.
+Four focused ordinary-account native tests pass. Group physical
+unlink/acknowledgement integration remains required.
 
-Schema 13 verification accounts for all **149 Windows Copy journal cases**:
-**141 successful cases** and eight existing ignored entry points, including
-**47 successful cleanup cases**. The initial all-in-one run hit its 900-second
-watchdog after 122 successful cases and seven ignored entries; the remaining
-batch passed 19 cases with one existing ignored entry. The timeout is retained
-as a failed run, not presented as a one-shot suite pass. A per-case manifest
-checks the exact union against the native test list on the same binary.
-The separate peer-accounting focus passes three tests. The native Activity status
-test retains its earlier catalog-checkpoint scope.
+Current peer-binding verification accounts for all **153 Windows Copy journal
+cases** on one exact binary: **145 passed** and eight existing ignored entry
+points. Both disjoint batches completed: cleanup 51 passed/two ignored in
+580.91 seconds; other journal tests 94 passed/six ignored in 477.55 seconds.
+The exact union matches the native test list, with no overlapping or missing
+cases. A separate four-test peer-binding focus also passes. The native Activity
+status test retains its earlier catalog-checkpoint scope.
 
 These unoptimized correctness checks do not establish application performance,
 rendered UI, full unrelated platform or release-package acceptance. Current proof:
-`PEER_UNLINK_CODEC_ACCEPTANCE.json` and `PEER_UNLINK_CODEC_COVERAGE.json` under
+`PEER_BINDING_ACCEPTANCE.json` and `PEER_BINDING_COVERAGE.json` under
 `.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
 
-**Still required:** live peer/prefix/native-slot validation and shared-retained
+**Still required:** integration of peer validation with shared-retained
 alias execution, complete group process-exit/history recovery, and Activity
 cleanup confirmation/execution/retry. Reserved-target protection, interrupted-
 staging reclamation, measured resource/storage/security and power-cut matrices,

@@ -1,0 +1,773 @@
+{
+  "scope": "All native Windows Copy journal cases; two disjoint completed batches on one exact unoptimized test binary",
+  "binary_sha256": "36101f49bee0183f0bad35853577b3f839e042a09393cb264e98076a74e363df",
+  "passed": 145,
+  "ignored_existing": 8,
+  "cases": [
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_admission_is_readonly_handle_free_and_keeps_public_reuse",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_admission_refuses_payload_metadata_catalog_and_progress_drift",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_removal",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_exit_child",
+      "outcome": "ignored_existing",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_finalizes_metadata_and_replays_its_admitted_proof",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalog_handoffs",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pending",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_observation_admits_chains_and_retained_aliases_without_writes",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_freezes_peer_epochs",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_observation_preserves_unselected_claims_changes_and_cancellation",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_payload_handoff_preserves_remaining_members_and_completion",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_payload_preserves_shared_and_foreign_changes",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_payload_uncertainty_requires_fresh_group_admission",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_proof",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_hands_off_only_its_own_control_changes",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_revalidates_every_member_before_first_begin",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_handoff_drift_refuses_before_recording_intent",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_injected_failures_resume_coherent_prefixes_only",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_authority_requires_matching_intent_mirrors",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_exit_child",
+      "outcome": "ignored_existing",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_inspection_never_authorizes_cleanup",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_rechecks_control_before_any_unlink",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_refuses_unknown_content_and_aliases",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_cancellation_during_validation_is_retryable",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_preserves_changed_payloads_and_unexpected_stage_data",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_refuses_unfinished_work_and_cancellation",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_uses_only_retained_payloads",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_payload_completion_binds_metadata_authorization",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_checks_present_absent_and_historical_intent",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_preserves_missing_mirrors_changes_and_cancellation",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_rejects_unmatched_control_prefix_and_slot",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_revalidates_parent_policy_without_writes",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_unlink_codec_rejects_unbound_and_out_of_order_records",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_unlink_codec_replays_one_external_alias_acknowledgement",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_unlink_codec_reserves_acknowledgement_before_intent",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_pending_absence_admission_never_adopts_a_later_parent_epoch",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_protocol_binds_terminal_evidence_and_ordered_progress",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_protocol_tracks_retained_hardlinks_without_claiming_outside_names",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_real_process_exits_resume_without_sources",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_reclaims_only_retained_payloads_and_replays_without_sources",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_reclaims_readonly_candidates_without_changing_public_data",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_originals",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unlinks_retained_hardlinks_and_preserves_the_outside_alias",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unrecognized_registry_names_stay_visible_and_block_mutation",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unverified_registry_peer_refuses_before_any_write",
+      "outcome": "pass",
+      "batch": "cleanup"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_admission_refuses_external_timestamp_drift_without_mutation",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_codec_rejects_unowned_or_incomplete_repairs",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child",
+      "outcome": "ignored_existing",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_fault_and_exit_prefixes_recover_or_preserve_divergence",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_copy_activity_fixture",
+      "outcome": "ignored_existing",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_application_cancellation_resumes_between_entries",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_application_flush_and_native_failures_recover_or_retain",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_application_process_exits_recover_without_sources",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_application_records_require_publication_and_ordered_acknowledgements",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_application_refuses_permission_drift_outside_pending_entry",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_application_refuses_unrecorded_candidate_hard_links",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_completion_prefix_resumes_after_failure_or_cancellation_without_source",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_cancels_payload_read_without_any_journal_mutation",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_distinguishes_staged_completed_pending_and_undone",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_missing_registry_is_readonly_and_root_junction_is_refused",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_preserves_mismatched_mirrors_and_unverified_staging",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_refuses_drifted_staged_permission_plan_without_repair",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume",
+      "outcome": "ignored_existing",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_discovery_uses_native_parent_identity_after_rename_and_ignores_path_hints",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_final_versions_refuse_same_bytes_and_restored_write_time",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_acknowledges_planned_link_type_transition",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child",
+      "outcome": "ignored_existing",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_flush_failures_retain_and_never_publish",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_pairs_tree_records_and_reopens_without_writer",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_process_exit_retains_unpublished_staging",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_rejects_overlap_and_budget_before_destination_mutation",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_rejects_rebound_and_damaged_mirror_without_repair",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_rejects_torn_modified_and_reordered_frames",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_journal_uncertain_owner_cannot_retry_or_repair",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_pending_readonly_reopen_refuses_changed_payload_without_restoring_it",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_plan_prefix_reopens_without_source_or_original_writer",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_plan_recovery_flush_failures_and_process_exits_keep_evidence",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_private_security_drift_during_validation_is_retained",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_private_security_records_and_rejects_permission_drift",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_private_security_rejects_foreign_creator_and_malformed_records",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_private_security_staging_drift_never_records_success",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_publication_and_permissions_are_source_free_and_idempotent",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_publication_collision_keeps_both_entries_and_retries",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_publication_refuses_changed_parent_policy_before_rename",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_published_link_roots_leave_populated_targets_unchanged",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_readonly_reopening_failures_and_exits_resume_without_source",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_readonly_root_and_child_publish_and_reopen_with_attributes_intact",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_readonly_stream_revalidation_cancels_and_resumes_under_its_intent",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_cancellation_releases_without_mutation",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_hashes_streams_even_with_restored_metadata",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_needs_no_source_and_holds_read_only_handles",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_never_follows_a_dangling_link",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_refuses_active_writer_and_unverified_journal",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_refuses_membership_rebinding_and_extra_records",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_executes_admitted_creation_and_overwrite_then_public_undo",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_failure_preserves_committed_classification_and_data",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_rejects_missing_authority_and_changed_publications",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_cancelled_prefix_resumes_without_duplicate_records",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_requires_ordered_complete_seal",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_tree_security_cached_acl_is_not_native_authority_even_with_valid_hashes",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_tree_security_live_and_retained_plans_agree_without_sources",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_tree_security_plan_flush_faults_keep_private_data_and_both_versions",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_tree_security_plan_is_durable_idempotent_and_refuses_reinterpretation",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_tree_security_plans_dangling_file_and_directory_link_leaves",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_undo_cancellation_after_retraction_keeps_a_resumable_intent",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_undo_directory_handoff_drift_retains_changed_data_without_completion",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_undo_flush_failures_and_process_exits_recover_or_retain",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_undo_preserves_occupied_retention_and_new_publication_names",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_undo_refuses_an_active_writer_without_journal_mutation_then_retries",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_undo_refuses_changed_data_and_unrecorded_aliases_before_intent",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_copy_undo_retains_files_trees_and_readonly_data_without_source",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_destination_admission_freezes_the_original_before_source_staging",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_destination_admission_never_converts_creation_or_skips_an_approved_original",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_destination_admission_rejects_stale_parent_target_and_creation_before_staging",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child",
+      "outcome": "ignored_existing",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_move_fault_prefixes_keep_both_versions_and_never_repair_mirrors",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_move_real_exits_recover_without_source_and_preserve_mismatches",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_move_refuses_occupants_handoff_changes_and_cancellation",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_move_restore_preserves_changed_private_copy",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_move_retains_and_restores_without_source_or_new_publication",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_plan_binds_unwritten_children_and_refuses_source_alias_and_budget",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_plan_is_paired_source_free_and_blocks_creation_publication",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_original_plan_resumes_every_paired_prefix_and_refuses_local_only_tail",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_overwrite_all_mutation_prefixes_recover_or_preserve_divergent_mirrors",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child",
+      "outcome": "ignored_existing",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_overwrite_real_process_exits_recover_original_and_replacement",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_overwrite_refuses_drift_and_occupants_without_deleting_either_version",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_overwrite_reserves_the_inverse_before_retention_and_spends_it_through_undo",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_overwrite_restore_after_withdrawal_preserves_changed_private_replacement",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_overwrite_resume_and_undo_restore_original_and_replay_without_sources",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_cancellation_preserves_stage_and_unverified_staging_is_not_admitted",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_finishes_partial_finalization_without_payload_writers",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_is_source_free_and_completed_replay_is_readonly",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_refuses_coherent_rewritten_frozen_evidence",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_refuses_stale_policy_paths_registry_and_payload_before_writes",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_retries_publication_and_permission_outcomes_with_original_binding",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_admission_is_readonly_and_source_free",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_cancellation_and_interrupted_retry_keep_binding",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_refuses_replaced_registry_and_changed_payload",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_rejects_moved_display_path_then_fresh_admission_works",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_retention_resume_cancellation_retries_the_same_admission",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_retention_resume_recovers_injected_and_real_exit_prefixes_without_source",
+      "outcome": "pass",
+      "batch": "core"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::windows_native_retention_resume_refuses_observation_only_drift_and_restoration",
+      "outcome": "pass",
+      "batch": "core"
+    }
+  ]
+}
