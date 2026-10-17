@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+  "artifacts": {
+    "Ottrin-0.1.0-x86_64.AppImage": "1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "dd10eaa71dc686240256b0bb0e0d1299a0ebacc7642c717ae1e7e079371cb06c",
+    "ottrin_0.1.0_amd64.deb": "32a263b632b84fa4d7a8c89042199fb60fb9ef5e182786d07186c722a8ceaa28",
+    "ottrin-0.1.0-1.x86_64.rpm": "8db5b1f88c77c6c986fb9117526d5b7243ea426832a2c44f17b13daa5c4aa743"
+  },
+  "checks": [
+    "All four exact extracted-package content/provider/notices/watch/paging checks pass",
+    "Release executable payload identity passes; RPM .text/.rodata match after standard stripping",
+    "Exact AppImage PLY/Affinity/EPS Inspector pixels, unchanged sources and clean close pass",
+    "Exact AppImage VCF read-only arrows/Space, shared titlebar and stable PDF bounds pass"
+  ],
+  "scope": "Targeted private X11/software OpenGL Dark 100% and CLI fixture checks; not physical GPU/Wayland, broad theme/DPI, explicit edit/save or complete distro acceptance"
+}

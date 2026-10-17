@@ -1,17 +1,18 @@
 {
   "status": "pass",
-  "source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+  "source_revision": "a6dc0905a61277b3fb896ea76ff0524d552a757c",
   "artifacts": {
-    "Ottrin-0.1.0-x86_64.AppImage": "1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "dd10eaa71dc686240256b0bb0e0d1299a0ebacc7642c717ae1e7e079371cb06c",
-    "ottrin_0.1.0_amd64.deb": "32a263b632b84fa4d7a8c89042199fb60fb9ef5e182786d07186c722a8ceaa28",
-    "ottrin-0.1.0-1.x86_64.rpm": "8db5b1f88c77c6c986fb9117526d5b7243ea426832a2c44f17b13daa5c4aa743"
+    "ottrin-0.1.0-1.x86_64.rpm": "14e4102c444f5bc99ede989e529cf80e05b9c6dd1c05b222a2f9f9ddda691130",
+    "Ottrin-0.1.0-x86_64.AppImage": "f2a49b3a97364e8d734aadd4c172bd8c044dc20b71f102243b2fc8e1574d5d6d",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "c223309c1b3e5a18de4d3f367f0e0843b8a8ef09101608cca37929fb564ed0d4",
+    "ottrin_0.1.0_amd64.deb": "20253fc0fd473ab6d80c636915677b686e363fc38551863e6f1c734dd0a9a3d2"
   },
   "checks": [
-    "All four exact extracted-package content/provider/notices/watch/paging checks pass",
-    "Release executable payload identity passes; RPM .text/.rodata match after standard stripping",
-    "Exact AppImage PLY/Affinity/EPS Inspector pixels, unchanged sources and clean close pass",
-    "Exact AppImage VCF read-only arrows/Space, shared titlebar and stable PDF bounds pass"
+    "All four exact packages pass recorded payload, current documentation and clean source provenance checks",
+    "Portable/AppImage executable and PDFium identities match; native package control/dependency/policy checks pass",
+    "Actual AppImage and RPM private daemon namespace ownership fixtures pass",
+    "Exact AppImage Light100 Activity Cancel, Undo, explicit retained-data Clear and normal close pass"
   ],
-  "scope": "Targeted private X11/software OpenGL Dark 100% and CLI fixture checks; not physical GPU/Wayland, broad theme/DPI, explicit edit/save or complete distro acceptance"
+  "scope": "Current package-content verification and targeted private X11 Activity/namespace acceptance only. Prior preview, content/watch/paging, theme/DPI, distro lifecycle and physical desktop receipts retain their original hashes and scopes. Full release acceptance remains open.",
+  "evidence": ".hermes/evidence/office-package-current/ACCEPTANCE.json"
 }

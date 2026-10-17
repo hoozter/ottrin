@@ -8,6 +8,26 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
+## Current delivery and remaining outcomes
+
+The latest published Linux delivery is clean source `a6dc090`. All four formats
+are available at the stable paths in `dist/packages/`. The current AppImage is
+`Ottrin-0.1.0-x86_64.AppImage`, SHA-256
+`f2a49b3a97364e8d734aadd4c172bd8c044dc20b71f102243b2fc8e1574d5d6d`.
+Exact package and runtime scopes are recorded in
+[`OFFICE_UI_ACCEPTANCE.json`](../dist/packages/OFFICE_UI_ACCEPTANCE.json).
+
+| Area | Current evidence | Remaining outcome |
+| --- | --- | --- |
+| Linux | Four published package formats pass payload/provenance checks. The current AppImage passes Activity Cancel, Undo, retained-data cleanup and normal close. Earlier workflow receipts retain their own artifact scopes. | Complete the remaining software outcomes below, then the concentrated clean-desktop, real-device, media, elevation and final candidate acceptance pass. |
+| Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
+| Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
+| Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
+
+User acceptance is deferred. Continue independently executable work; each
+checkpoint below retains its recorded source and artifact scope. These outcomes
+remain required before release.
+
 ## Large-batch operation admission
 
 A measured queue-admission stall now has an indexed implementation. The previous
@@ -27,8 +47,8 @@ scenarios. Strict Linux/Windows all-target Clippy passes. A sequential CPU contr
 also shows the 5,000-write probe spending 23.5 user-CPU seconds before versus
 32 ms after (including input setup), confirming actual CPU work was removed.
 Native alias/case-equivalence, cross-process reservation and broader
-resource/storage gates remain open. Clean source `7117067` is now published in
-all four Linux formats at `dist/packages/`. The AppImage SHA-256 is
+resource/storage gates remain open. This checkpoint was published from clean
+source `7117067` in all four Linux formats. Its AppImage SHA-256 was
 `4aed720d885462796bc435394a193b627b84452d5dea827991b2237723cae18c`.
 The actual AppImage passes the Light100 Cancel/Undo/cleanup workflow, with
 all-four-format payload verification and AppImage/RPM namespace checks.
@@ -921,17 +941,17 @@ suite. Complete/lower-bound reporting for bounded system filename discovery and
 pre-index fallback also remains required. User testing stays deferred; these
 agent-executable requirements are not waiting on it.
 
-## Current Linux delivery status
+## Earlier Linux preview delivery checkpoint
 
-The current four-format Linux cohort uses clean runtime source `9df0224` at
-stable paths under `dist/packages/`. Exact checksums and scope are in
-`LINUX_PACKAGES_ACCEPTANCE.json`. All four artifacts pass private-provider and
+This recorded four-format Linux cohort used clean runtime source `9df0224`.
+The current delivery is identified in the overview above; this checkpoint
+retains its original artifact hashes and verification scope. All four artifacts pass private-provider and
 release-payload identity, independent saved/live content roots, watcher changes,
 policy/Unicode/error handling and complete ordered Name/path pages for 137 and
 160 matches. The exact AppImage passes PLY/Affinity preview GUI checks, read-only
 VCF navigation/Space, shared Inspector chrome and 70 stable PDF captures, with
 clean exits. All four settled five-second tiny-fixture CPU samples measured 0%
-of one core; this is not full-workload acceptance. Current detailed evidence is
+of one core; this is not full-workload acceptance. Detailed evidence for that checkpoint is
 `.hermes/evidence/preview-package-current/ACCEPTANCE.json`. Older theme/DPI,
 distribution lifecycle, editing and broader GUI receipts retain their own
 artifact hashes and scopes. Broader release gates remain open.
@@ -942,17 +962,17 @@ The October 3 native clipboard-event repair is part of the current source. The S
 
 These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
 
-## Current Windows local delivery — 2026-10-16
+## Windows local delivery checkpoint — 2026-10-16
 
-Public portable, NSIS and MSI at the stable `dist/` paths still use clean source
-`41027a0`; identities remain in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. The newer
-coherent internal cohort at `.hermes/packaging-tmp/windows-current/` uses clean
-source `42a1beb`. Its `CANDIDATE_ACCEPTANCE.json` records all three exact hashes,
+At this checkpoint, public portable, NSIS and MSI used clean source `41027a0`;
+identities were recorded in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. The recorded
+internal cohort used clean source `42a1beb`. Staging paths have since been reused;
+the current candidate is identified in the overview above. That checkpoint recorded
 57 payload identities and bounded accepted scopes. Portable, NSIS and native MSI
 administrative extraction agree for every payload file, including the pinned
 live-content provider and its notices.
 
-All three current packages pass ordered Name/path pages for 137 saved/live
+Those three packages passed ordered Name/path pages for 137 saved/live
 content matches and 160 after adding live-only matches, beyond-end/invalid-limit
 checks, ordinary-user saved-content extraction and real
 watcher edits, subtree moves/deletion, watch detachment and zero-metadata-root

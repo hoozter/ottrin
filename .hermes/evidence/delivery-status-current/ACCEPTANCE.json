@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "scope": "Current Linux aggregate delivery receipt reconciled against four actual artifact hashes, checksum sidecars and clean provenance; runtime assertions reuse exact office-package-current receipts without rebinding older scopes.",
+  "previous_receipt_source_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+  "previous_receipt_sha256": "4eddc33c7ae4c6b4106e1fa92a12795f35ed97a43e394a482c53171ba0bc04fd",
+  "previous_receipt_artifacts_matched_current": false,
+  "current_source_revision": "a6dc0905a61277b3fb896ea76ff0524d552a757c",
+  "current_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "14e4102c444f5bc99ede989e529cf80e05b9c6dd1c05b222a2f9f9ddda691130",
+    "Ottrin-0.1.0-x86_64.AppImage": "f2a49b3a97364e8d734aadd4c172bd8c044dc20b71f102243b2fc8e1574d5d6d",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "c223309c1b3e5a18de4d3f367f0e0843b8a8ef09101608cca37929fb564ed0d4",
+    "ottrin_0.1.0_amd64.deb": "20253fc0fd473ab6d80c636915677b686e363fc38551863e6f1c734dd0a9a3d2"
+  },
+  "current_receipt_sha256": "6fa5e45284967247730bf91d3c1b12ae797c0033bc190b89e83fd4dc20ea7324",
+  "historical_receipt_preserved": ".hermes/evidence/delivery-status-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+}
