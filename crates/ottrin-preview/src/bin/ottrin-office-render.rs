@@ -15,6 +15,10 @@ fn main() {
 }
 
 #[cfg(windows)]
+#[path = "ottrin-office-render/backend_thread.rs"]
+mod backend_thread;
+
+#[cfg(windows)]
 mod windows {
     use std::ffi::{CStr, CString, c_char};
     use std::mem::size_of;
@@ -145,10 +149,66 @@ mod windows {
             .map_err(|_| "file URL contains NUL".into())
     }
 
+    struct Conversion<'a> {
+        kit: *mut Kit,
+        class: &'a KitClass,
+        input: &'a CStr,
+        output: &'a CStr,
+    }
+    // SAFETY: the caller lends this context to one synchronous backend-thread
+    // invocation and does not access Kit until it completes. The vtable and
+    // strings are immutable and remain alive throughout the invocation.
+    unsafe impl Send for Conversion<'_> {}
+    impl Conversion<'_> {
+        fn run(self) -> Result<(), String> {
+            // SAFETY: Kit/vtable prefixes were validated by the caller, and
+            // this runs on the owning Windows backend thread.
+            unsafe {
+                let Self {
+                    kit,
+                    class,
+                    input,
+                    output,
+                } = self;
+                let load = class
+                    .load_options
+                    .ok_or("LibreOfficeKit load API is unavailable")?;
+                let document = load(
+                    kit,
+                    input.as_ptr(),
+                    c"Batch=true,EnableMacrosExecution=false,MacroSecurityLevel=3".as_ptr(),
+                );
+                if document.is_null() {
+                    return Err(last_error(kit, class, "document could not load"));
+                }
+                if (*document).class.is_null()
+                    || (*document).class.cast::<usize>().read() < size_of::<DocumentClass>()
+                {
+                    return Err("LibreOfficeKit document ABI is unsupported".into());
+                }
+                let dc = &*(*document).class;
+                let close = dc
+                    .destroy
+                    .ok_or("LibreOfficeKit document destroy API is unavailable")?;
+                let saved = dc
+                    .save
+                    .map(|save| save(document, output.as_ptr(), c"pdf".as_ptr(), null()))
+                    .unwrap_or(0);
+                close(document);
+                if saved == 0 {
+                    Err(last_error(kit, class, "PDF export failed"))
+                } else {
+                    Ok(())
+                }
+            }
+        }
+    }
+
     fn convert(program: &Path, profile: &str, input: &Path, output: &Path) -> Result<(), String> {
         if !program.is_absolute() || !output.is_dir() {
             return Err("installed program and private output directories are required".into());
         }
+        let backend_program = program;
         let library = wide(&program.join("mergedlo.dll"));
         let program = CString::new(
             program
@@ -190,40 +250,14 @@ mod windows {
             let destroy = class
                 .destroy
                 .ok_or("LibreOfficeKit destroy API is unavailable")?;
-            let result = (|| {
-                let load = class
-                    .load_options
-                    .ok_or("LibreOfficeKit load API is unavailable")?;
-                // These are actual LOK options, not UNO property names. Batch
-                // cancels dialogs; macro execution is explicitly disabled.
-                let document = load(
-                    kit,
-                    input.as_ptr(),
-                    c"Batch=true,EnableMacrosExecution=false,MacroSecurityLevel=3".as_ptr(),
-                );
-                if document.is_null() {
-                    return Err(last_error(kit, class, "document could not load"));
-                }
-                if (*document).class.is_null()
-                    || (*document).class.cast::<usize>().read() < size_of::<DocumentClass>()
-                {
-                    return Err("LibreOfficeKit document ABI is unsupported".into());
-                }
-                let dc = &*(*document).class;
-                let close = dc
-                    .destroy
-                    .ok_or("LibreOfficeKit document destroy API is unavailable")?;
-                let saved = dc
-                    .save
-                    .map(|save| save(document, output.as_ptr(), c"pdf".as_ptr(), null()))
-                    .unwrap_or(0);
-                close(document);
-                if saved == 0 {
-                    Err(last_error(kit, class, "PDF export failed"))
-                } else {
-                    Ok(())
-                }
-            })();
+            let conversion = Conversion {
+                kit,
+                class,
+                input: &input,
+                output: &output,
+            };
+            let result = super::backend_thread::run(backend_program, move || conversion.run())
+                .and_then(|result| result);
             destroy(kit);
             result
         }

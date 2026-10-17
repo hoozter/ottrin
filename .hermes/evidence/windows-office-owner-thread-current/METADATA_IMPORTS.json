@@ -1,0 +1,16 @@
+{
+  "dll_imports": [
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "bcryptprimitives.dll",
+    "kernel32.dll",
+    "shlwapi.dll",
+    "version.dll",
+    "KERNEL32.dll",
+    "msvcrt.dll",
+    "ntdll.dll",
+    "USERENV.dll",
+    "WS2_32.dll"
+  ],
+  "user32_static_import": false,
+  "ui_loaded_on_conversion_only": true
+}

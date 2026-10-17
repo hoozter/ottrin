@@ -1,0 +1,20 @@
+from pathlib import Path
+import sys,json,hashlib,subprocess,time
+p=Path(__file__).resolve().parent;sys.path.insert(0,str(p.parent/'windows-copy-cleanup-current'));import transport as n
+pins=json.loads((p/'FIXTURES.json').read_text())['sha256'];pins['office-probe.exe']=json.loads((p/'HELPER.json').read_text())['sha256']
+checks=''.join("if((Get-FileHash 'C:\\OttrinCopyCleanupQA\\"+name+"').Hash.ToLowerInvariant()-ne'"+digest.lower()+"'){throw 'Owned probe asset changed'};" for name,digest in pins.items())
+script=r'''$r='C:\OttrinCopyCleanupQA';foreach($name in @('Ottrin Office Interactive QA','Ottrin Copy Cleanup QA')){if((Get-ScheduledTask $name).State.ToString()-in@('Running','Queued')){throw 'Owned actor live'}};if(@(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-like"$r\*"}).Count){throw 'Owned native process live'};$profile=(Get-FileHash 'C:\Users\campbell\AppData\Roaming\ottrin\config.json').Hash;$install=(Get-FileHash 'C:\Users\campbell\AppData\Local\Programs\Ottrin\Uninstall.exe').Hash;if($profile-ne'5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D'-or$install-ne'DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3'){throw 'Original profile or install changed'};if(Test-Path "$r\office-probe"){throw 'Prototype temporary profile remains'};if(Test-Path "$r\office-native\temp"){throw 'Native temporary profile remains'};$key=Get-Item 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon';if($key.GetValueNames()-contains'DefaultPassword'){throw 'Unexpected login credential'};$backup=Get-Content "$r\desktop-winlogon-backup.json" -Raw|ConvertFrom-Json;foreach($property in $backup.PSObject.Properties){if($property.Name-eq'DefaultPassword'){continue};$b=$property.Value;$present=$key.GetValueNames()-contains$property.Name;if($present-ne$b.present){throw 'Login field presence changed'};if($present-and(($key.GetValueKind($property.Name).ToString()-ne$b.kind)-or($key.GetValue($property.Name)-ne$b.value))){throw 'Login field changed'}};CHECKS;$program='C:\Program Files\LibreOffice\program';$provider=@{version=(Get-Item "$program\soffice.exe").VersionInfo.FileVersion;mergedlo_sha256=(Get-FileHash "$program\mergedlo.dll").Hash;vcl_windows_sha256=(Get-FileHash "$program\vclplug_winlo.dll").Hash};Unregister-ScheduledTask 'Ottrin Office Interactive QA' -Confirm:$false;Remove-Item -LiteralPath "$r\office-native" -Recurse -Force;foreach($name in @('document.docx','sheet.xlsx','slides.pptx','office-probe.exe')){Remove-Item -LiteralPath (Join-Path $r $name)};foreach($name in @('writer-default','calc-default','impress-default')){foreach($suffix in @('.stdout','.stderr','.pdf')){$f="$r\results\office-$name$suffix";if(Test-Path $f){Remove-Item -LiteralPath $f}}};Remove-Item -LiteralPath "$r\results\OWNER_PROBE.json";@{status='pass';provider=$provider;source_profile_sha256=$profile;source_installation_sha256=$install;owned_native_processes=0;owned_staging_removed=$true;owned_interactive_task_removed=$true;login_settings_unchanged=$true;credentials_not_created=$true}|ConvertTo-Json -Depth 5|Set-Content "$r\OFFICE_OWNER_TEARDOWN.json"'''.replace('CHECKS',checks)
+pid=n.start(script);(p/'teardown.pid').write_text(str(pid))
+while True:
+ try:n.wait(pid,45);break
+ except TimeoutError:print('Observing same native teardown',flush=True)
+n.download('OFFICE_OWNER_TEARDOWN.json',p/'TEARDOWN.json')
+disk=subprocess.check_output(['virsh','-c','qemu:///system','domblklist','ottrin-copy-cleanup-qa'],text=True);assert '/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2' in disk
+subprocess.run(['virsh','-c','qemu:///system','shutdown','ottrin-copy-cleanup-qa','--mode','agent'],check=True)
+end=time.monotonic()+45
+while time.monotonic()<end:
+ state=subprocess.check_output(['virsh','-c','qemu:///system','domstate','ottrin-copy-cleanup-qa'],text=True).strip()
+ if state=='shut off':break
+ time.sleep(1)
+assert state=='shut off',state
+m=json.loads((p/'TEARDOWN.json').read_text(encoding='utf-8-sig'));m['owned_vm_state']=state;(p/'TEARDOWN.json').write_text(json.dumps(m,indent=2)+'\n')

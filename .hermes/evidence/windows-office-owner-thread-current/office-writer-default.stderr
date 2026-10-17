@@ -1,0 +1,9 @@
+Private directory canonicalization length=50 error=0
+Existing private directory create=0 error=183
+Installed preset copy=1 error=0
+Initializing private LibreOfficeKit
+Loading installed DLL
+Calling installed Kit hook
+Caller=3088 backend=7440
+Converting on backend thread 7440
+saveAs=1

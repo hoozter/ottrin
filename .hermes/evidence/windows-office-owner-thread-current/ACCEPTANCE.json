@@ -1,0 +1,117 @@
+{
+  "status": "native source correction verified; packaging and Windows UI enablement pending",
+  "baseline_revision": "199a604",
+  "source_sha256": {
+    "crates/ottrin-preview/Cargo.toml": "2497fbbf5a6fb96adb9361fcf8dfdf048cd032cac3ef191fbb015b47cf10bd2b",
+    "crates/ottrin-preview/src/bin/ottrin-office-render.rs": "3a212f3b75565a7f0b473708547348a5820580a6f610f147f591c5ba2ca93f7e",
+    "crates/ottrin-preview/src/bin/ottrin-office-render/backend_thread.rs": "d7e8df929387dc7ab55325b8223d2cb7ffd5e4185adc2951085970e47e0c7325",
+    "crates/ottrin-preview/tests/native_office_boundary_contract.rs": "a86f06405e5d012a3e3625e7112058dd1d336426c68ee8ffe21db6826ec956b3"
+  },
+  "implementation": "A single synchronous dispatch onto the current-process Windows backend owner thread; immutable admitted module identity, scoped thread hook/context and completion lifetime. No SDK threading override, alternate converter or isolation change. System UI APIs load only for conversion so metadata probing stays desktop-independent.",
+  "native_executables": {
+    "ottrin-office-render.exe": {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-office-render.exe",
+      "sha256": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+      "compiler_profile": {
+        "opt_level": "1",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": false
+      },
+      "stripped": false
+    },
+    "native.exe": {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/native_office_boundary_contract-b59b07b52984880e.exe",
+      "sha256": "7af570bbe9734fb0438687e24de3ff7b7288eca2cd572d186b7db628eb63082c",
+      "compiler_profile": {
+        "opt_level": "1",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "stripped": false
+    }
+  },
+  "provider": {
+    "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+    "version": "26.8.1.1",
+    "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+  },
+  "native_checks": {
+    "interactive_account": "existing non-administrator QA console; not a fresh installation test",
+    "interactive_parent_tests": 3,
+    "all_advertised_formats": [
+      "document.doc",
+      "document.docx",
+      "document.odt",
+      "sheet.xls",
+      "sheet.xlsx",
+      "sheet.xlsm",
+      "sheet.ods",
+      "slides.pptx",
+      "slides.odp"
+    ],
+    "rendered_pixels_and_text_checked": true,
+    "source_bytes_preserved": true,
+    "provider_start_cancellation": "pass; expected cancellation diagnostic retained",
+    "private_outputs_profiles_cleanup": "pass",
+    "batch_session_zero_metadata_parent_tests": 1,
+    "runtime_skips": 0,
+    "interactive_seconds": 24.02,
+    "batch_metadata_seconds": 0.38
+  },
+  "strict_windows_preview_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "limits": [
+    "Macro-suppression positive-control acceptance, representative fidelity and UI fallback presentation remain open; Windows UI provider detection stays Linux-only.",
+    "These tests use the actual production AppContainer path and a development-profile helper, not an accepted release package or broad installed-app lifecycle.",
+    "Published Linux/Windows packages are unchanged; no source-only fix is claimed as a delivered application update."
+  ],
+  "teardown": {
+    "login_settings_unchanged": true,
+    "owned_interactive_task_removed": true,
+    "credentials_not_created": true,
+    "owned_staging_removed": true,
+    "provider": {
+      "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+      "version": "26.8.1.1",
+      "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+    },
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "owned_native_processes": 0,
+    "owned_vm_state": "shut off"
+  },
+  "evidence_sha256": {
+    "NATIVE_BINARY.json": "c09d33bdde6719aa8c876450b83edc0739829cd456d26a7cad9e720dcb38da6d",
+    "NATIVE_PAYLOAD.json": "9416879850bdd292827ac2bfeefeeb930680eeaab6478b26f1620ba3070c1f73",
+    "NATIVE_RESULTS.json": "6278343561d92a1cf437977c0858726e94af090c6efcbce3e1a791af6ceb9fb4",
+    "METADATA_RESULTS.json": "cd0400e257f3fdc5b338dd77d639b182d9274f06929a031ae1f5a523a75ab1d0",
+    "METADATA_IMPORTS.json": "3b6eec4d5dcad720048c8dfa7948e4d50e4fa91a79a29f6a588d953ee988261b",
+    "native.stdout": "0572892022a7726ef42aa3dcfd67d39774277b353efca371df4c21db62b96a78",
+    "native.stderr": "19e13dde33e3cd7743672cd8c4d5c1aa437eb5ab9e91f7a854586510d3252fcd",
+    "metadata.stdout": "b7e51b209942ecc7468e016949ced9f42e724c612af09c9b421e4395d823b761",
+    "metadata.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-interactive.ps1": "31bac40c621e583ffd712111530a2a71b79de1f6ac3e3762bbdcf1de8d527a8e",
+    "metadata.ps1": "61c9b2c29f6c30100e0ecd2eb98a5664820ef3406e4e24c4ddb1c824651534d1",
+    "TEARDOWN.json": "370f06fab201fb0b3895ec5ddac6a462bdde9cb1a364872a35e7258f8808125d",
+    "teardown.py": "b40290ccd8e374e8a6f037685874171ba8cae76d6b839fe64d0d798743a90a6b",
+    "teardown.log": "63d812b6ccb1555b18e80d63f66d9000911be39b2cbbd137f28abf6fcd2a2918",
+    "clippy.log": "07c839ff139394c608759c70d9a8b8b434bf8ac0da9dd237e8dc87fe82baaa0a",
+    "build.log": "16b4f91d70c03d3f172a0152f072dfd41915fc0248a456cc78a5adc1fd354528",
+    "UNOPTIMIZED_LINK_REFUSAL.json": "56e2acc3ded4545f8203ecb60b8e1b1e6910342006c50a344be7a746ab1f0080",
+    "probe.c": "7e6df521ed9a61a42c40ef9efc67dd25d89b65fda849f54e2d7a5cf336e0bb64",
+    "HELPER.json": "aaacafe153eff0a8802c48558db22725bc6d214df4daa3895110699a3ffecaf9",
+    "FIXTURES.json": "76a2dcd31840f80a774df202af3392050ececf257194cda880b22a214214fc29",
+    "RESULTS.json": "d36c6a722a70077880f7c66e9d94a784fcbcf33ee2ade8c58965ba7853b85dfb",
+    "BATCH_STARTUP_BASELINE.json": "551bf8bd9514fede3a236277b0f5752cdd5a3887355d990b6b98c912e58ea52e",
+    "probe.ps1": "754bc24a024842725679dcfa62ae9a3489da177a5e80d2c6ece332c7af9de6de",
+    "office-writer-default.stderr": "06054f5ef864b731befc4057e90b3311dee32cb308213ece85c0c8f67bb40a6a",
+    "office-calc-default.stderr": "b2e25de3ff2c6a70ca254d59f696060bc27e6d0f797de5d2c1c64687990c029e",
+    "office-impress-default.stderr": "4a13e517844ac0a005bdf03ec509aa1ad69fcee6f8205a9f7f96627ddb5871b0"
+  },
+  "host_cleanup": "Disposable prototype executable and downloaded fixture copies removed; current Cargo helper/test outputs and useful shared caches retained."
+}

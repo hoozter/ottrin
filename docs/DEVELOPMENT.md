@@ -190,6 +190,19 @@ audible playback or exact-package acceptance.
 
 ### Windows Office process boundary
 
+The Windows Kit helper executes load/export/close on the admitted backend module's
+own UI thread, using a current-process-only scoped message hook. It does not change
+AppContainer capabilities, source snapshots or parent process/resource limits.
+UI imports are resolved only during conversion; `--version` must remain usable in
+a noninteractive session. `windows_native_office_metadata_probe_is_desktop_independent`
+is the ignored installed-provider regression for that boundary. Current native
+format/cancellation/cleanup evidence is in
+`.hermes/evidence/windows-office-owner-thread-current/ACCEPTANCE.json`.
+
+Keep native preview tests on the workspace's default preview test profile.
+Forcing its `rwml` dependency to optimization level zero exceeds GNU PE's export
+ordinal limit; the backend-only `ottrin-platform` test profile is a separate case.
+
 Run the native Job Object fixtures on Windows as the ordinary test user:
 
 ```powershell

@@ -1,0 +1,16 @@
+{
+  "login_settings_unchanged": true,
+  "owned_interactive_task_removed": true,
+  "credentials_not_created": true,
+  "owned_staging_removed": true,
+  "provider": {
+    "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+    "version": "26.8.1.1",
+    "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+  },
+  "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+  "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+  "status": "pass",
+  "owned_native_processes": 0,
+  "owned_vm_state": "shut off"
+}

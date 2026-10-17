@@ -1,0 +1,5 @@
+{
+  "sha256": "aee7400801204113fef37902bce56013cd29bfe7ce1d1754f9c7d030850c178d",
+  "source_sha256": "7e6df521ed9a61a42c40ef9efc67dd25d89b65fda849f54e2d7a5cf336e0bb64",
+  "scope": "Diagnostic owner-thread dispatch prototype; not production code or containment acceptance"
+}

@@ -21,6 +21,18 @@ fn native_office_boundary_is_an_explicit_launcher_capability() {
     assert_launcher::<NativeOfficeIsolation>();
 }
 
+#[cfg(target_os = "windows")]
+#[test]
+#[ignore = "requires installed LibreOffice and the production helper; also run in a batch session"]
+fn windows_native_office_metadata_probe_is_desktop_independent() {
+    let detected = ottrin_preview::detect_installed_libreoffice(
+        &NativeOfficeIsolation,
+        &std::sync::atomic::AtomicBool::new(false),
+    )
+    .expect("sandboxed metadata probing must not initialize a Windows desktop");
+    assert!(detected.executable.is_file());
+}
+
 #[test]
 #[ignore = "requires installed LibreOffice and a packaged PDFium runtime"]
 fn native_installed_office_converts_and_cleans_private_state() {

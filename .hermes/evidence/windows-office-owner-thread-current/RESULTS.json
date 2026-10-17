@@ -1,0 +1,31 @@
+{
+  "workspace_removed": true,
+  "status": "pass",
+  "cases": [
+    {
+      "elapsed_ms": 11839,
+      "name": "writer-default",
+      "converted": true,
+      "input_sha256": "29D4044EFA1EABAD7046A8BC1A4210BD1C9F2469B3F6848CCA51C08462C7ECB6",
+      "exit": 0,
+      "timeout": false
+    },
+    {
+      "elapsed_ms": 2769,
+      "name": "calc-default",
+      "converted": true,
+      "input_sha256": "25C7F92E985C0C54CEF19C4CD5729D4D9178921700E2ACCC668E2EFF3E821B04",
+      "exit": 0,
+      "timeout": false
+    },
+    {
+      "elapsed_ms": 2479,
+      "name": "impress-default",
+      "converted": true,
+      "input_sha256": "B98DC138A8499E8D35D87249EA3FEBA885AD4E45067890EE2C6FEF70D616D9B2",
+      "exit": 0,
+      "timeout": false
+    }
+  ],
+  "owned_helpers": 0
+}

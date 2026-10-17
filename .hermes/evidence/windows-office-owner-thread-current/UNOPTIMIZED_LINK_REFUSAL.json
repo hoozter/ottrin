@@ -1,0 +1,8 @@
+{
+  "scope": "Native preview test build; not a runtime result",
+  "reason": "rwml unoptimized Windows cdylib exceeds GNU PE export ordinal limit",
+  "diagnostics": [
+    "515db5ba20d83c03.dll\" \"-Wl,--gc-sections\" \"-shared\" \"-Wl,--out-implib=/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.dll.a\" \"-nodefaultlibs\"\n  = note: some arguments are omitted. use `--verbose` to show all linker arguments\n  = note: /usr/bin/x86_64-w64-mingw32-ld: error: export ordinal too large: 104697\n          collect2: error: ld returned 1 exit status\n          \n\n"
+  ],
+  "resolution": "Use the existing default opt-level 1 preview correctness profile; no dependency source patch or linker workaround."
+}

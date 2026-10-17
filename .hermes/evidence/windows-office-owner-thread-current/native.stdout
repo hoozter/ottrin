@@ -1,0 +1,15 @@
+running 3 tests
+test native_installed_office_cancels_after_provider_start_and_releases_files ... ok
+test native_installed_office_converts_and_cleans_private_state ... ok
+test native_installed_office_renders_each_advertised_format ... accepted document.doc; darkest rendered pixel 2
+accepted document.docx; darkest rendered pixel 2
+accepted document.odt; darkest rendered pixel 2
+accepted sheet.xls; darkest rendered pixel 129
+accepted sheet.xlsx; darkest rendered pixel 128
+accepted sheet.xlsm; darkest rendered pixel 128
+accepted sheet.ods; darkest rendered pixel 124
+accepted slides.pptx; darkest rendered pixel 18
+accepted slides.odp; darkest rendered pixel 18
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 24.02s

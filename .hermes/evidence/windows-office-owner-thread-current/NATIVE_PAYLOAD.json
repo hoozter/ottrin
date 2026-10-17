@@ -1,0 +1,14 @@
+{
+  "native.exe": "7af570bbe9734fb0438687e24de3ff7b7288eca2cd572d186b7db628eb63082c",
+  "ottrin-office-render.exe": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+  "pdfium.dll": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4",
+  "corpus/document.doc": "5b5650beb0301749429a48e3b9478fe60cc85027cb034b76304f37d0b3e7c201",
+  "corpus/document.docx": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6",
+  "corpus/document.odt": "b8fcaae59b9e42fd6b5066cfb035ff02f055397aaecd551e26844356611e645d",
+  "corpus/sheet.xls": "46f322d0f3abd8c123ddbbc4525591c231df2eade6011b3e4f2ce913a183328d",
+  "corpus/sheet.xlsx": "25c7f92e985c0c54cef19c4cd5729d4d9178921700e2accc668e2eff3e821b04",
+  "corpus/sheet.xlsm": "4ce94083836cd9ac390172f641e527f61b8c532d00060c03f44950c0119ffdef",
+  "corpus/sheet.ods": "8e27336b61a2cd8cbc205fb739098966571752c1c914acfe3de69be98aa69f7c",
+  "corpus/slides.pptx": "b98dc138a8499e8d35d87249ea3feba885ad4e45067890ee2c6fef70d616d9b2",
+  "corpus/slides.odp": "5707e39fdc142ad0848bede56a45cb20f352acbe3e4f963b79c35f11160f77ae"
+}

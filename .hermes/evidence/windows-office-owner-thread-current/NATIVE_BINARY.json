@@ -1,0 +1,26 @@
+{
+  "ottrin-office-render.exe": {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-office-render.exe",
+    "sha256": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+    "compiler_profile": {
+      "opt_level": "1",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": false
+    },
+    "stripped": false
+  },
+  "native.exe": {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/native_office_boundary_contract-b59b07b52984880e.exe",
+    "sha256": "7af570bbe9734fb0438687e24de3ff7b7288eca2cd572d186b7db628eb63082c",
+    "compiler_profile": {
+      "opt_level": "1",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "stripped": false
+  }
+}

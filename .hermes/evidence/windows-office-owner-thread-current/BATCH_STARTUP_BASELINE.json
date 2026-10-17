@@ -1,0 +1,13 @@
+{
+  "scope": "initial production dispatch prototype before deferred UI imports; not final acceptance",
+  "helper_sha256": "896b7dd4802ec85d9d86caf93b851e95a5330001e9059bcece8184e3a3068248",
+  "result": {
+    "status": "fail",
+    "error": "System.Management.Automation.RuntimeException: Native contained format sweep failed",
+    "temporary_root_removed": true,
+    "owned_processes": 0,
+    "exit": 101
+  },
+  "stderr": "Office child exited 3221225794: \nOffice child exited 3221225794: \n\nthread 'native_installed_office_renders_each_advertised_format' (4540) panicked at crates/ottrin-preview/tests/native_office_boundary_contract.rs:142:72:\ncalled `Result::unwrap()` on an `Err` value: Unhealthy\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+  "final_metadata_regression": "METADATA_RESULTS.json; same batch task/session zero now succeeds"
+}
