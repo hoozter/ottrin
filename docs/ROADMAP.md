@@ -28,25 +28,32 @@ reclamation retains the existing dependency checks. The group can now retain a
 member's payload-completion proof while reclaiming other members, advancing their
 catalogs only from the successful physical writer's control/root acknowledgement.
 Same-registry retained-root removal is bound explicitly; shared aliases remain
-protected pending cross-member unlink acknowledgements.
+protected pending cross-member unlink acknowledgements. After every payload is
+complete, group metadata authorization/removal now advances member catalogs from
+the held writer and a retained Plan. Interrupted removal freezes other actions;
+the same Plan verifies only its expected metadata-name disappearances before
+retry, including a missing final central journal. Complete members stay complete
+without reopening deleted controls.
 
-The latest scoped native cleanup run passes **41 tests**, including 187 real
+The latest scoped native cleanup run passes **44 tests**, including 187 real
 process exits, the existing injected-failure matrices, 64 configured-action
 scenarios, six retention shapes, four two-copy start-boundary scenarios and the new group
-observation/refusal, four group-start and three payload-handoff cases.
+observation/refusal, four group-start, three payload-handoff and three group
+metadata cases.
 The separate native Activity status test passed at the catalog checkpoint.
 These correctness tests use a package-specific unoptimized test crate; they do
 not establish application performance, rendered UI, full current-platform or
 release-package acceptance. Current proof:
-`GROUP_PAYLOAD_ACCEPTANCE.json`, `GROUP_START_ACCEPTANCE.json`,
+`GROUP_METADATA_ACCEPTANCE.json`, `GROUP_PAYLOAD_ACCEPTANCE.json`,
+`GROUP_START_ACCEPTANCE.json`,
 `GROUP_OBSERVATION_ACCEPTANCE.json`,
 `START_ACCEPTANCE.json`,
 `CLEANUP_ACTION_ACCEPTANCE.json` and
 `CATALOG_ACCEPTANCE.json` under `.hermes/evidence/windows-copy-cleanup-current/`.
 Earlier checkpoints and their narrower scopes remain in `WINDOWS_COPY_DESIGN.md`.
 
-**Still required:** complete coordinated physical batch execution, group metadata
-catalog handoffs, shared-retained alias epoch/count coordination, and Activity cleanup
+**Still required:** shared-retained alias epoch/count coordination, complete group
+process-exit/history recovery, and Activity cleanup
 confirmation/execution/retry. Reserved-target protection, interrupted-staging
 reclamation, measured resource/storage/security and power-cut matrices, broader
 workflow acceptance and current package gates remain open. Public Windows Copy

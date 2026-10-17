@@ -2915,3 +2915,275 @@ fn windows_native_copy_cleanup_group_payload_uncertainty_requires_fresh_group_ad
         );
     }
 }
+
+fn observed_chain_group(
+    root: &Path,
+    registry_destination: bool,
+    directory: bool,
+    overwrite: bool,
+) -> (super::super::cleanup_group::Observation, Vec<Header>) {
+    let names = cleanup_chain_at(root, directory, overwrite, registry_destination);
+    let headers = {
+        let parent = owner(&root.join(if registry_destination {
+            "central"
+        } else {
+            "destination"
+        }));
+        let central = owner(&root.join("central"));
+        names
+            .iter()
+            .map(|name| {
+                Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
+                    .unwrap()
+                    .state
+                    .header
+                    .unwrap()
+            })
+            .collect::<Vec<_>>()
+    };
+    let ids = headers
+        .iter()
+        .map(|header| header.transaction.clone())
+        .collect::<Vec<_>>();
+    (
+        super::super::cleanup_group::Observation::observe_at(&root.join("central"), &ids, |_| {
+            Ok(())
+        })
+        .unwrap(),
+        headers,
+    )
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalog_handoffs() {
+    use super::super::cleanup_group::{Member, Observation};
+    for registry_destination in [false, true] {
+        for directory in [false, true] {
+            for overwrite in [false, true] {
+                for order in [[0, 1], [1, 0]] {
+                    let root = tempfile::tempdir().unwrap();
+                    let (mut group, headers) = observed_chain_group(
+                        root.path(),
+                        registry_destination,
+                        directory,
+                        overwrite,
+                    );
+                    for index in [1, 0] {
+                        group.reclaim_payload(index, |_| Ok(())).unwrap();
+                    }
+                    for index in order {
+                        group.finish_metadata(index, |_| Ok(())).unwrap();
+                        assert!(matches!(group.members[index], Member::Complete(_)));
+                        let destination = root.path().join(if registry_destination {
+                            "central"
+                        } else {
+                            "destination"
+                        });
+                        assert!(!destination.join(headers[index].stage_name()).exists());
+                        assert!(
+                            !root
+                                .path()
+                                .join("central")
+                                .join(headers[index].central_name())
+                                .exists()
+                        );
+                        let after = namespace_contents(root.path());
+                        group.finish_metadata(index, |_| Ok(())).unwrap();
+                        assert_eq!(namespace_contents(root.path()), after);
+                    }
+                    assert!(
+                        group
+                            .members
+                            .iter()
+                            .all(|member| matches!(member, Member::Complete(_)))
+                    );
+                    let after = namespace_contents(root.path());
+                    group.start_all(|_| Ok(())).unwrap();
+                    for index in 0..2 {
+                        group.reclaim_payload(index, |_| Ok(())).unwrap();
+                    }
+                    assert_eq!(namespace_contents(root.path()), after);
+                    let ids = headers
+                        .iter()
+                        .map(|header| header.transaction.clone())
+                        .collect::<Vec<_>>();
+                    assert!(
+                        Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
+                            .is_err()
+                    );
+                    assert_eq!(
+                        std::fs::read(
+                            root.path()
+                                .join(if registry_destination {
+                                    "central"
+                                } else {
+                                    "destination"
+                                })
+                                .join(if directory { "copy/next" } else { "copy" })
+                        )
+                        .unwrap(),
+                        b"second publication"
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal() {
+    use super::super::cleanup_group::{Member, Observation};
+    for registry_destination in [false, true] {
+        for peer_finished in [false, true] {
+            for role in [
+                CleanupMetadataRole::Local,
+                CleanupMetadataRole::Stage,
+                CleanupMetadataRole::Central,
+            ] {
+                for point in [
+                    CleanupMetadataPoint::DispositionSet,
+                    CleanupMetadataPoint::HandleClosed,
+                    CleanupMetadataPoint::Flushed,
+                ] {
+                    let root = tempfile::tempdir().unwrap();
+                    let (mut group, headers) =
+                        observed_chain_group(root.path(), registry_destination, false, true);
+                    for index in [1, 0] {
+                        group.reclaim_payload(index, |_| Ok(())).unwrap();
+                    }
+                    if peer_finished {
+                        group.finish_metadata(1, |_| Ok(())).unwrap();
+                    }
+                    let destination = root.path().join(if registry_destination {
+                        "central"
+                    } else {
+                        "destination"
+                    });
+                    let sequence = Snapshot::load(
+                        &owner(&destination),
+                        &owner(&root.path().join("central")),
+                        &headers[0].stage_name(),
+                        SnapshotAccess::Read,
+                    )
+                    .unwrap()
+                    .sequence
+                        + 1;
+                    FAULT.with(|slot| {
+                        slot.set(Some((
+                            sequence,
+                            Step::CleanupMetadata { role, point },
+                            false,
+                        )))
+                    });
+                    let result = group.finish_metadata(0, |_| Ok(()));
+                    FAULT.with(|slot| slot.set(None));
+                    assert!(
+                        matches!(result, Err(PlatformError::CleanupPending { .. })),
+                        "unexpected result for {registry_destination}/{peer_finished}/{role:?}/{point:?}: {result:?}"
+                    );
+                    assert!(matches!(group.members[0], Member::Metadata(_)));
+                    let after = namespace_contents(root.path());
+                    assert!(group.start_all(|_| Ok(())).is_err());
+                    assert!(group.finish_metadata(1, |_| Ok(())).is_err());
+                    assert_eq!(namespace_contents(root.path()), after);
+                    if !root
+                        .path()
+                        .join("central")
+                        .join(headers[0].central_name())
+                        .exists()
+                    {
+                        let ids = headers
+                            .iter()
+                            .map(|header| header.transaction.clone())
+                            .collect::<Vec<_>>();
+                        assert!(
+                            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
+                                .is_err()
+                        );
+                    }
+                    group.finish_metadata(0, |_| Ok(())).unwrap();
+                    if !peer_finished {
+                        group.finish_metadata(1, |_| Ok(())).unwrap();
+                    }
+                    assert!(
+                        group
+                            .members
+                            .iter()
+                            .all(|member| matches!(member, Member::Complete(_)))
+                    );
+                    assert_eq!(
+                        std::fs::read(destination.join("copy")).unwrap(),
+                        b"second publication"
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pending() {
+    for change in 0..3 {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, headers) = observed_chain_group(root.path(), true, false, true);
+        let before = namespace_contents(root.path());
+        assert!(group.finish_metadata(0, |_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), before);
+        for index in [1, 0] {
+            group.reclaim_payload(index, |_| Ok(())).unwrap();
+        }
+        let sequence = Snapshot::load(
+            &owner(&root.path().join("central")),
+            &owner(&root.path().join("central")),
+            &headers[0].stage_name(),
+            SnapshotAccess::Read,
+        )
+        .unwrap()
+        .sequence
+            + 1;
+        FAULT.with(|slot| {
+            slot.set(Some((
+                sequence,
+                Step::CleanupMetadata {
+                    role: CleanupMetadataRole::Local,
+                    point: CleanupMetadataPoint::Flushed,
+                },
+                false,
+            )))
+        });
+        let result = group.finish_metadata(0, |_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+        match change {
+            0 => std::fs::write(
+                root.path()
+                    .join("central")
+                    .join(headers[0].stage_name())
+                    .join("unknown"),
+                b"preserve unknown metadata-stage data",
+            )
+            .unwrap(),
+            1 => {
+                owner(&root.path().join("central").join(headers[1].central_name()))
+                    .set_times(std::fs::FileTimes::new().set_modified(
+                        std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_700_000_000),
+                    ))
+                    .unwrap();
+            }
+            2 => std::fs::write(
+                root.path().join("central/foreign.txt"),
+                b"preserve unrelated data",
+            )
+            .unwrap(),
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(group.finish_metadata(0, |_| Ok(())).is_err());
+        assert!(group.finish_metadata(1, |_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), before);
+        assert_eq!(
+            std::fs::read(root.path().join("central/copy")).unwrap(),
+            b"second publication"
+        );
+    }
+}

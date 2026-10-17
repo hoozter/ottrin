@@ -174,24 +174,82 @@ impl Selection {
 
     /// Only a successful held writer supplies this epoch. No reopened ID or
     /// freshly observed external catalog change is accepted as our own work.
-    fn accept_start(&mut self, started: &cleanup::Started) -> Result<(), PlatformError> {
-        let header = started.admission.header();
+    fn accept_control(
+        &mut self,
+        header: &Header,
+        before: [u8; 32],
+        after: [u8; 32],
+        version: &EntryVersion,
+    ) -> Result<(), PlatformError> {
         let record = self
             .records
             .get_mut(&header.central_name())
-            .ok_or_else(|| io("Started Copy member is absent from group"))?;
+            .ok_or_else(|| io("Changed Copy member is absent from group"))?;
         if !self.selected.contains(&header.transaction)
-            || record.digest != started.before
-            || record.version.identity != started.central.identity
-            || started.central.identity != header.central_file
+            || record.digest != before
+            || record.version.identity != version.identity
+            || version.identity != header.central_file
         {
             return Err(io(
-                "Copy group start acknowledgement does not match its frozen control",
+                "Copy control acknowledgement does not match frozen member",
             ));
         }
-        record.digest = started.after;
-        record.version = started.central.clone();
+        record.digest = after;
+        record.version = version.clone();
         Ok(())
+    }
+
+    fn accept_start(&mut self, started: &cleanup::Started) -> Result<(), PlatformError> {
+        self.accept_control(
+            started.admission.header(),
+            started.before,
+            started.after,
+            &started.central,
+        )
+    }
+
+    /// Reconcile only metadata names already authorized by this retained Plan.
+    /// Every surviving control and all unrelated names/attributes stay frozen.
+    fn reconcile_metadata(
+        &self,
+        plan: &cleanup_finalize::Plan,
+        parent: &File,
+        central: &File,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let header = plan.header();
+        let root = super::super::version(central)?;
+        let names =
+            windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
+                .map_err(io)?;
+        let mut expected = self.names.clone();
+        let mut allowed = vec![header.central_name()];
+        if header.parent.same_object(header.central) {
+            allowed.push(header.stage_name());
+        }
+        for name in &allowed {
+            if !names.contains(name) {
+                expected.retain(|entry| entry != name);
+            }
+        }
+        let mut expected_root = self.root.clone();
+        if expected != self.names {
+            expected_root.modified = root.modified;
+            expected_root.changed = root.changed;
+        }
+        if names != expected || root != expected_root {
+            return Err(io("Copy metadata cleanup has an unrelated registry change"));
+        }
+        let mut next = self.clone();
+        next.root = root;
+        next.names = names;
+        if !next.names.contains(&header.central_name()) {
+            next.records.remove(&header.central_name());
+        }
+        next.validate(central, cancel)?;
+        plan.validate_in_group(parent, central, &next, &mut *cancel)?;
+        next.validate(central, cancel)?;
+        Ok(next)
     }
 
     fn check(&self, record: &discovery::RegisteredJournal) -> Result<(), PlatformError> {
@@ -244,6 +302,7 @@ pub(super) enum Member {
     Payload(cleanup::Admission),
     Completion(cleanup_finalize::Completion),
     Metadata(cleanup_finalize::Plan),
+    Complete(Box<Header>),
 }
 
 impl Member {
@@ -252,6 +311,18 @@ impl Member {
             Self::Payload(value) => value.header(),
             Self::Completion(value) => value.header(),
             Self::Metadata(value) => value.header(),
+            Self::Complete(header) => header,
+        }
+    }
+    fn advance_catalog(
+        &mut self,
+        before: &Selection,
+        after: &Selection,
+    ) -> Result<(), PlatformError> {
+        match self {
+            Self::Payload(value) => value.advance_catalog(before, after),
+            Self::Completion(value) => value.advance_catalog(before, after),
+            Self::Metadata(_) | Self::Complete(_) => Ok(()),
         }
     }
 }
@@ -266,6 +337,7 @@ pub(super) struct Observation {
     pub(super) members: Vec<Member>,
     pub(super) references: BTreeSet<(usize, usize)>,
     pub(super) shared: BTreeMap<Object, Vec<(usize, usize)>>,
+    pending_metadata: Option<usize>,
 }
 
 impl Observation {
@@ -277,6 +349,11 @@ impl Observation {
         &mut self,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if self.pending_metadata.is_some() {
+            return Err(io(
+                "Finish the pending Copy metadata member before another group action",
+            ));
+        }
         cancel(0)?;
         let manager = ConfiguredRegistry::open_at(&self.registry, false)?
             .ok_or_else(|| io("Configured Copy group registry is missing"))?;
@@ -285,6 +362,9 @@ impl Observation {
         let mut volumes = discovery::Volumes::new(&central)?;
         // Validate every confirmed payload before the first durable begin.
         for member in &self.members {
+            if matches!(member, Member::Complete(_)) {
+                continue;
+            }
             let header = member.header();
             let parent = volumes.resolve(header.parent, FILE_GENERIC_READ, &mut cancel)?;
             match member {
@@ -294,6 +374,7 @@ impl Observation {
                 Member::Completion(completion) => {
                     completion.validate_in_group(&parent, &central, &self.selection, &mut cancel)?
                 }
+                Member::Complete(_) => {}
                 Member::Metadata(plan) => {
                     let current = cleanup_finalize::Plan::observe_in_group(
                         &parent,
@@ -341,7 +422,7 @@ impl Observation {
                     Member::Completion(completion) => {
                         completion.advance_catalog(&self.selection, &selection)?
                     }
-                    Member::Metadata(_) => {}
+                    Member::Metadata(_) | Member::Complete(_) => {}
                 }
             }
             // Retain our writer proof before a cancellation or external-state
@@ -411,7 +492,7 @@ impl Observation {
                 Member::Completion(completion) => {
                     completion.advance_catalog(&self.selection, &selection)?
                 }
-                Member::Metadata(_) => {}
+                Member::Metadata(_) | Member::Complete(_) => {}
             }
         }
         // The new completion already carries the post-unlink catalog; validate
@@ -422,6 +503,129 @@ impl Observation {
         self.selection = selection;
         self.selection.validate(&central, &mut cancel)?;
         manager.validate()
+    }
+
+    pub(super) fn finish_metadata(
+        &mut self,
+        index: usize,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if index >= self.members.len() {
+            return Err(io("Copy group member index is invalid"));
+        }
+        if self
+            .pending_metadata
+            .is_some_and(|pending| pending != index)
+        {
+            return Err(io(
+                "Finish the pending Copy metadata member before another group action",
+            ));
+        }
+        if matches!(self.members[index], Member::Complete(_)) {
+            return Ok(());
+        }
+        if self
+            .members
+            .iter()
+            .any(|member| matches!(member, Member::Payload(_)))
+        {
+            return Err(io("Complete all group payloads before metadata removal"));
+        }
+        cancel(0)?;
+        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+            .ok_or_else(|| io("Configured Copy registry is missing"))?;
+        let central = manager.writable_root()?;
+        let header = self.members[index].header().clone();
+        let parent = if header.parent.same_object(header.central) {
+            central.try_clone().map_err(io)?
+        } else {
+            discovery::Volumes::new(&central)?.resolve(
+                header.parent,
+                FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+                &mut cancel,
+            )?
+        };
+        if self.pending_metadata.is_none() {
+            self.selection.validate(&central, &mut cancel)?;
+            // The entire surviving cohort is still bound before any intent.
+            for member in &self.members {
+                if matches!(member, Member::Complete(_)) {
+                    continue;
+                }
+                let peer_parent = discovery::Volumes::new(&central)?.resolve(
+                    member.header().parent,
+                    FILE_GENERIC_READ,
+                    &mut cancel,
+                )?;
+                match member {
+                    Member::Completion(completion) => completion.validate_in_group(
+                        &peer_parent,
+                        &central,
+                        &self.selection,
+                        &mut cancel,
+                    )?,
+                    Member::Metadata(plan) => plan.validate_in_group(
+                        &peer_parent,
+                        &central,
+                        &self.selection,
+                        &mut cancel,
+                    )?,
+                    Member::Payload(_) | Member::Complete(_) => unreachable!(),
+                }
+            }
+            if let Member::Completion(completion) = &self.members[index] {
+                let authorized = completion.begin_with_ack(&parent, &central, &mut cancel)?;
+                let mut selection = self.selection.clone();
+                selection.accept_control(
+                    authorized.plan.header(),
+                    authorized.before_journal,
+                    authorized.plan.journal_digest(),
+                    &authorized.control_version,
+                )?;
+                let mut members = self.members.clone();
+                for (other, member) in members.iter_mut().enumerate() {
+                    if other != index {
+                        member.advance_catalog(&self.selection, &selection)?;
+                    }
+                }
+                members[index] = Member::Metadata(authorized.plan);
+                self.members = members;
+                self.selection = selection;
+            }
+            self.pending_metadata = Some(index);
+        }
+        let Member::Metadata(plan) = &self.members[index] else {
+            return Err(io("Copy group member lacks metadata authority"));
+        };
+        // A retained Plan, never a missing ID, licenses reconciliation after an
+        // uncertain own metadata unlink. Freeze all other members until done.
+        let selection = self
+            .selection
+            .reconcile_metadata(plan, &parent, &central, &mut cancel)?;
+        let mut members = self.members.clone();
+        for member in &mut members {
+            member.advance_catalog(&self.selection, &selection)?;
+        }
+        self.members = members;
+        self.selection = selection;
+        let Member::Metadata(plan) = &self.members[index] else {
+            unreachable!()
+        };
+        let result = plan.finish(&parent, &central, &mut cancel);
+        let selection = self
+            .selection
+            .reconcile_metadata(plan, &parent, &central, &mut cancel)?;
+        let mut members = self.members.clone();
+        for member in &mut members {
+            member.advance_catalog(&self.selection, &selection)?;
+        }
+        self.members = members;
+        self.selection = selection;
+        result?;
+        manager.validate()?;
+        self.members[index] = Member::Complete(Box::new(header));
+        self.pending_metadata = None;
+        Ok(())
     }
 
     pub(super) fn observe_at(
@@ -522,6 +726,7 @@ impl Observation {
                 Member::Completion(completion) => {
                     completion.validate_in_group(&parent, central, &selection, &mut cancel)?
                 }
+                Member::Complete(_) => {}
                 Member::Metadata(plan) => {
                     let current = cleanup_finalize::Plan::observe_in_group(
                         &parent,
@@ -552,6 +757,7 @@ impl Observation {
             members,
             references,
             shared: retained,
+            pending_metadata: None,
         })
     }
 }

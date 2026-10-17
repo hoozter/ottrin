@@ -895,3 +895,46 @@ under its bounded 600s correctness watchdog. Strict Windows platform/UI checks
 and owned-process/temporary-namespace teardown pass. Current application packages,
 rendered UI, group-specific process-exit matrices, metadata group handoff and
 shared-retained-alias execution retain their separate unfinished scopes.
+
+
+## Group metadata authorization, removal and retry
+
+After all selected payloads reach completion, the group can authorize and remove
+members' metadata in either order. Metadata authorization returns the successful
+held writer's plan, prior digest and new control epoch. The group advances the
+other member proofs from that exact control change before attempting removal.
+The ordinary single-member action uses the same authorization implementation.
+
+An in-flight metadata member retains its original bound Plan and freezes other
+group actions. Retry does not reconstruct authority from an absent transaction
+ID. Reconciliation accepts only disappearance of that plan's central journal and,
+when the registry is also the destination, its stage. Every surviving control,
+unrelated name, private permission binding and other root attributes remains
+frozen. Modified/changed root timestamps can advance only with that expected
+name removal. The existing Plan inspector verifies the authorized state before
+and after reconciliation. Unknown stage contents and changed peer records remain
+review conditions, not deletion inputs.
+
+The group retains acknowledged namespace changes and completion proofs even when
+an unlink reports failure. Once the same Plan successfully finishes its flush/
+absence checks, that member becomes Complete; later requests perform no further
+removal. A new factory still refuses missing IDs. Already-complete members do not
+need to reopen deleted control records when remaining members continue.
+
+Three focused native tests pass across 55 scenarios: sixteen complete cleanup
+shapes/orders; thirty-six local/stage/central disposition/close/flush failures
+with the peer pending or complete and both registry layouts; and three foreign
+change refusals while pending. The early metadata-phase guard preserves journals,
+and public publication bytes remain intact. This establishes in-session retry
+with retained authority. Group-specific real process-exit/history recovery,
+shared retained-hardlink coordination, Activity integration and release-package
+acceptance remain open. Public Windows Copy stays gated.
+
+
+`GROUP_METADATA_ACCEPTANCE.json` binds this source and exact native test binary
+to 44 passing cleanup tests. The separate focused run passes all three metadata
+tests in 83.02s; the full correctness run passes in 549.69s under its bounded
+600s watchdog. Strict Windows platform/UI checks and owned-process/temporary-root
+teardown pass. The test crate is unoptimized; these durations establish neither
+application performance nor current package/UI acceptance. No journal schema or
+public Windows Copy gate changed.

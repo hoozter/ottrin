@@ -334,8 +334,18 @@ impl Completion {
         &self,
         parent: &File,
         central: &File,
-        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Plan, PlatformError> {
+        self.begin_with_ack(parent, central, cancel)
+            .map(|authorized| authorized.plan)
+    }
+
+    pub(super) fn begin_with_ack(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Authorized, PlatformError> {
         let name = self.header.stage_name();
         let (snapshot, dependencies, versions) =
             self.inspect(parent, central, None, &mut cancel)?;
@@ -377,10 +387,28 @@ impl Completion {
             central_location: self.central_location.clone(),
             parent_security: self.parent_security,
         };
+        let versions = metadata_files(
+            &journal.header,
+            [&journal.stage_dir, &journal.local, &journal.central],
+            &read(&journal.local)?,
+            &mut cancel,
+        )?;
+        let control_version = versions[2].clone();
         drop((journal, dependencies));
         plan.run(parent, central, Action::Inspect, None, &mut cancel)?;
-        Ok(plan)
+        Ok(Authorized {
+            plan,
+            before_journal: self.journal,
+            control_version,
+        })
     }
+}
+
+#[derive(Debug)]
+pub(super) struct Authorized {
+    pub(super) plan: Plan,
+    pub(super) before_journal: [u8; 32],
+    pub(super) control_version: EntryVersion,
 }
 
 /// A completed paired metadata intent grants only these exact native objects.
@@ -417,6 +445,26 @@ impl Action {
 impl Plan {
     pub(super) fn header(&self) -> &Header {
         &self.header
+    }
+
+    pub(super) fn journal_digest(&self) -> [u8; 32] {
+        self.digest
+    }
+
+    pub(super) fn validate_in_group(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.run(
+            parent,
+            central,
+            Action::Inspect,
+            Some(selection),
+            &mut cancel,
+        )
     }
 
     /// Inspect existing paired removal authority without writing, flushing or
