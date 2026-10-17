@@ -613,8 +613,13 @@ Per-object alias groups avoid rescanning the complete deletion order for each
 record. The journal reserves the entire remaining cleanup tail before mutation.
 Starting cleanup revokes ordinary forward/Undo authority.
 
-`cleanup.rs` freezes read-only journal bytes and observed retained versions,
-releases its readers, then compares fresh writer admission with that observation.
+`cleanup.rs::Admission` is the shared, handle-free read-only observation for
+immediate execution and future confirmation plans. It freezes the header,
+journal/private-metadata and observed-version digests, pending absence, registry
+catalog fingerprint, destination location and parent permissions. Native registry
+names are hashed as raw UTF-16. The writer reacquires and compares those exact
+observations; it never replaces a confirmation's pending epoch with a fresh one.
+Raw journal buffers and version graphs are released after observation.
 `cleanup_dependencies.rs` pins registry records and refuses unverified peers or
 references to selected native objects. An independent peer remains untouched;
 a peer sharing a retained original blocks single-transaction cleanup. New registry
@@ -673,9 +678,15 @@ both registry and separate destinations; public bytes, root and external anchor
 remain intact. `REGISTRY_WRITER_ACCEPTANCE.json` records this added capability's
 source/binary proof. This does not initialize missing state or enable public Copy.
 
-Public cleanup remains unfinished: it needs read-only action admission bound
-through the mutation handoff, partial-finalization discovery and Activity
-confirmation/retry.
+The shared admission now passes 25 native cleanup tests, including the prior
+187 injected failures and 187 process exits. Twelve new cases verify read-only
+observation/handle release, public reuse and refusal of payload, metadata,
+catalog, progress and later pending-parent epoch changes. Exact source/binary
+proof: `ADMISSION_ACCEPTANCE.json` in the cleanup evidence directory.
+
+Public cleanup remains unfinished: it needs the opaque configured action wrapper
+around this admission, partial-finalization discovery and Activity confirmation/
+retry.
 Co-owned batch references, interrupted staging reclamation and realistic registry/
 large-operation resource limits remain open. Process exits do not establish
 physical power-cut acceptance; specialized storage/security and current package/UI

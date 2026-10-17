@@ -25,6 +25,11 @@ native creation/overwrite/Undo file/directory cases, including the registry as
 the destination. The manager keeps its read-only anchor proof while cleanup gains
 flush rights; registry root, external anchor and public data remain unchanged.
 Receipt: `REGISTRY_WRITER_ACCEPTANCE.json` in the same evidence directory.
+The shared handle-free admission now also passes 25 native cleanup tests. Its
+writer binds confirmation-time journal/metadata/payload/catalog observations;
+changed pending epochs are refused instead of re-observed and adopted. Public
+name reuse stays allowed. Receipt: `ADMISSION_ACCEPTANCE.json`. Public wrapper,
+partial metadata discovery and Activity integration remain open.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session

@@ -14,29 +14,56 @@ pub(super) enum Payload {
     Original(HeldOriginal),
 }
 
-/// Reclaim only the recorded retained payload. Journal/stage finalization is a
-/// separate guarded phase; public cleanup remains unavailable until it exists.
-pub(super) fn reclaim_payload(
-    parent: &File,
-    central: &File,
-    name: &OsStr,
-    mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
-) -> Result<(), PlatformError> {
-    let transaction = windows_fs::location(parent)
-        .map_err(io)?
-        .join(name)
-        .display()
-        .to_string();
-    let mut started = false;
-    let result = (|| {
-        cancel(0)?;
+/// A handle-free read-only observation. Digests bind the complete journal,
+/// native payload epoch, private metadata and dependency catalog through the
+/// later writer handoff without retaining raw journals or decoded peer graphs.
+#[derive(Clone, Debug)]
+pub(super) struct Admission {
+    header: Header,
+    journal: [u8; 32],
+    metadata: [u8; 32],
+    observed: [u8; 32],
+    catalog: [u8; 32],
+    pending_absent: bool,
+    sequence: u64,
+    started: bool,
+    location: std::path::PathBuf,
+    parent_security: [u8; 32],
+}
+
+fn cleanup_error(error: PlatformError, started: bool, transaction: String) -> PlatformError {
+    if started {
+        PlatformError::CleanupPending {
+            transaction,
+            message: format!("{error}; cleanup stopped, remaining data and journals retained"),
+        }
+    } else {
+        PlatformError::CopyCleanupRefused(format!("{error}; {transaction}"))
+    }
+}
+
+impl Admission {
+    pub(super) fn header(&self) -> &Header {
+        &self.header
+    }
+
+    pub(super) fn observe(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
         let location = windows_fs::location(parent).map_err(io)?;
-        let parent_security = security::owner_group_dacl_digest(parent)?;
-        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
-        validate_stage_entries(&snapshot.stage)?;
-        started = snapshot.state.cleanup.is_some();
-        let (bytes, observed, pending_absent, sequence, mut dependencies) =
-            if let Some(progress) = &snapshot.state.cleanup {
+        let transaction = location.join(name).display().to_string();
+        let mut started = false;
+        let result = (|| {
+            cancel(0)?;
+            let parent_security = security::owner_group_dacl_digest(parent)?;
+            let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
+            started = snapshot.state.cleanup.is_some();
+            let (snapshot, observed, pending_absent, catalog) = if let Some(progress) =
+                &snapshot.state.cleanup
+            {
                 let remaining = Remaining::open(parent, &snapshot.state, progress, &mut cancel)?;
                 let dependencies = Dependencies::open(
                     central,
@@ -44,17 +71,12 @@ pub(super) fn reclaim_payload(
                     &progress.manifest,
                     &mut cancel,
                 )?;
-                snapshot.revalidate(parent, central)?;
-                let observation = (
-                    snapshot.bytes.clone(),
-                    remaining.observed.clone(),
-                    remaining.pending_absent,
-                    snapshot.sequence,
-                    dependencies,
-                );
-                drop(remaining);
-                drop(snapshot);
-                observation
+                let observed = super::super::evidence_digest(&remaining.observed)?;
+                let absent = remaining.pending_absent;
+                let catalog = dependencies.fingerprint()?;
+                remaining.revalidate(parent, &snapshot.state, progress, &mut cancel)?;
+                drop((remaining, dependencies));
+                (snapshot, observed, absent, catalog)
             } else {
                 drop(snapshot);
                 let held = HeldCleanup::open(parent, central, name, &mut cancel)?;
@@ -69,119 +91,169 @@ pub(super) fn reclaim_payload(
                 let observed = manifest
                     .entries
                     .iter()
-                    .map(|entry| Some(entry.version.clone()))
-                    .collect();
-                (
-                    held.snapshot.bytes.clone(),
-                    observed,
-                    false,
-                    held.snapshot.sequence,
-                    dependencies,
-                )
+                    .map(|entry| Some(&entry.version))
+                    .collect::<Vec<_>>();
+                let observed = super::super::evidence_digest(&observed)?;
+                let catalog = dependencies.fingerprint()?;
+                drop(dependencies);
+                let HeldCleanup {
+                    snapshot, payload, ..
+                } = held;
+                drop(payload);
+                (snapshot, observed, false, catalog)
             };
-        cleanup_handoff(sequence)?;
-        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Write)?;
-        validate_stage_entries(&snapshot.stage)?;
-        if snapshot.bytes != bytes
-            || windows_fs::location(parent).map_err(io)? != location
-            || security::owner_group_dacl_digest(parent)? != parent_security
-        {
-            return Err(io(
-                "Copy cleanup admission changed before writer acquisition",
-            ));
-        }
-        let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
-        dependencies.revalidate_peers(central)?;
-        let initial;
-        let progress = if let Some(progress) = &journal.state.cleanup {
-            progress
-        } else {
-            initial = Progress::new(journal.state.cleanup_manifest()?);
-            &initial
-        };
-        let mut remaining = Remaining::open(parent, &journal.state, progress, &mut cancel)?;
-        if remaining.observed != observed || remaining.pending_absent != pending_absent {
-            return Err(io(
-                "Copy cleanup retained epoch changed after read-only admission",
-            ));
-        }
-        journal.reserve_cleanup_tail()?;
-        if journal.state.cleanup.is_none() {
-            let manifest = journal.state.cleanup_manifest()?;
-            started = true;
-            journal.persist(Record::Cleanup {
-                entry: CleanupRecord::Begin {
-                    owner: manifest.owner,
-                    count: manifest.entries.len(),
-                    digest: manifest.digest,
-                },
-            })?;
-        }
-        loop {
-            let progress = journal.state.cleanup.as_ref().unwrap();
-            if progress.payload_removed {
-                return Ok(());
-            }
-            dependencies.validate(central)?;
-            journal.reserve_cleanup_tail()?;
-            if progress.completed == progress.manifest.entries.len() {
-                Remaining::open(parent, &journal.state, progress, &mut cancel)?;
-                journal.persist(Record::Cleanup {
-                    entry: CleanupRecord::PayloadRemoved,
-                })?;
-                return Ok(());
-            }
-            let index = progress.manifest.order[progress.completed];
-            remaining
-                .acquire(parent, &journal.state, progress, index, &mut cancel)
-                .map_err(|error| io(format!("Copy cleanup entry {index} acquisition: {error}")))?;
-            if !progress.pending {
-                journal.persist(Record::Cleanup {
-                    entry: CleanupRecord::EntryIntent { index },
-                })?;
-            }
-            let progress = journal.state.cleanup.as_ref().unwrap();
-            remaining.revalidate_path(parent, &journal.state, progress, index, &mut cancel)?;
-            dependencies.validate(central)?;
-            journal.bindings()?;
-            let registry_root_unlink = progress.manifest.entries[index].parent.is_none()
-                && journal.header.parent.same_object(journal.header.central)
-                && !remaining.pending_absent;
-            let root_name = OsString::from_wide(&progress.manifest.entries[index].name);
-            // Any uncertain native result requires fresh admission. In
-            // particular, unwinding can close a pending POSIX delete handle.
-            journal.failed = true;
-            let acknowledgement = remaining
-                .remove(
-                    parent,
-                    &journal.state,
-                    progress,
-                    index,
-                    journal.sequence,
+            let metadata = super::cleanup_finalize::snapshot_metadata(&snapshot, &mut cancel)?;
+            snapshot.revalidate(parent, central)?;
+            Ok(Self {
+                header: snapshot.state.header.as_ref().unwrap().clone(),
+                journal: Sha256::digest(&snapshot.bytes).into(),
+                metadata: super::super::evidence_digest(&metadata)?,
+                observed,
+                catalog,
+                pending_absent,
+                sequence: snapshot.sequence,
+                started,
+                location,
+                parent_security,
+            })
+        })();
+        result.map_err(|error| cleanup_error(error, started, transaction))
+    }
+
+    pub(super) fn reclaim(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let name = self.header.stage_name();
+        let transaction = self.location.join(&name).display().to_string();
+        let mut started = self.started;
+        let result = (|| {
+            cancel(0)?;
+            cleanup_handoff(self.sequence)?;
+            let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+            if snapshot.state.header.as_ref() != Some(&self.header)
+                || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
+                || windows_fs::location(parent).map_err(io)? != self.location
+                || security::owner_group_dacl_digest(parent)? != self.parent_security
+                || super::super::evidence_digest(&super::cleanup_finalize::snapshot_metadata(
+                    &snapshot,
                     &mut cancel,
-                )
-                .map_err(|error| io(format!("Copy cleanup entry {index} removal: {error}")))?;
-            if registry_root_unlink {
-                dependencies.own_root_removed(central, &root_name)?;
+                )?)? != self.metadata
+            {
+                return Err(io(
+                    "Copy cleanup admission changed before writer acquisition",
+                ));
             }
-            dependencies.validate(central)?;
-            journal.failed = false;
-            journal.persist(Record::Cleanup {
-                entry: acknowledgement,
-            })?;
-            remaining.acknowledged();
-        }
-    })();
-    result.map_err(|error: PlatformError| {
-        if started {
-            PlatformError::CleanupPending {
-                transaction,
-                message: format!("{error}; cleanup stopped, remaining data and journals retained"),
+            let initial = if snapshot.state.cleanup.is_none() {
+                Some(Progress::new(snapshot.state.cleanup_manifest()?))
+            } else {
+                None
+            };
+            let progress = snapshot
+                .state
+                .cleanup
+                .as_ref()
+                .or(initial.as_ref())
+                .unwrap();
+            let mut dependencies =
+                Dependencies::open(central, &self.header, &progress.manifest, &mut cancel)?;
+            if dependencies.fingerprint()? != self.catalog {
+                return Err(io("Copy cleanup dependency admission changed"));
             }
-        } else {
-            PlatformError::CopyCleanupRefused(format!("{error}; {transaction}"))
-        }
-    })
+            let mut remaining = Remaining::open(parent, &snapshot.state, progress, &mut cancel)?;
+            if super::super::evidence_digest(&remaining.observed)? != self.observed
+                || remaining.pending_absent != self.pending_absent
+            {
+                return Err(io(
+                    "Copy cleanup retained epoch changed after read-only admission",
+                ));
+            }
+            let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+            journal.reserve_cleanup_tail()?;
+            if journal.state.cleanup.is_none() {
+                let manifest = journal.state.cleanup_manifest()?;
+                started = true;
+                journal.persist(Record::Cleanup {
+                    entry: CleanupRecord::Begin {
+                        owner: manifest.owner,
+                        count: manifest.entries.len(),
+                        digest: manifest.digest,
+                    },
+                })?;
+            }
+            drop(initial);
+            loop {
+                let progress = journal.state.cleanup.as_ref().unwrap();
+                if progress.payload_removed {
+                    return Ok(());
+                }
+                dependencies.validate(central)?;
+                journal.reserve_cleanup_tail()?;
+                if progress.completed == progress.manifest.entries.len() {
+                    Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+                    journal.persist(Record::Cleanup {
+                        entry: CleanupRecord::PayloadRemoved,
+                    })?;
+                    return Ok(());
+                }
+                let index = progress.manifest.order[progress.completed];
+                remaining
+                    .acquire(parent, &journal.state, progress, index, &mut cancel)
+                    .map_err(|error| {
+                        io(format!("Copy cleanup entry {index} acquisition: {error}"))
+                    })?;
+                if !progress.pending {
+                    journal.persist(Record::Cleanup {
+                        entry: CleanupRecord::EntryIntent { index },
+                    })?;
+                }
+                let progress = journal.state.cleanup.as_ref().unwrap();
+                remaining.revalidate_path(parent, &journal.state, progress, index, &mut cancel)?;
+                dependencies.validate(central)?;
+                journal.bindings()?;
+                let registry_root_unlink = progress.manifest.entries[index].parent.is_none()
+                    && journal.header.parent.same_object(journal.header.central)
+                    && !remaining.pending_absent;
+                let root_name = OsString::from_wide(&progress.manifest.entries[index].name);
+                // Any uncertain native result requires fresh admission. In
+                // particular, unwinding can close a pending POSIX delete handle.
+                journal.failed = true;
+                let acknowledgement = remaining
+                    .remove(
+                        parent,
+                        &journal.state,
+                        progress,
+                        index,
+                        journal.sequence,
+                        &mut cancel,
+                    )
+                    .map_err(|error| io(format!("Copy cleanup entry {index} removal: {error}")))?;
+                if registry_root_unlink {
+                    dependencies.own_root_removed(central, &root_name)?;
+                }
+                dependencies.validate(central)?;
+                journal.failed = false;
+                journal.persist(Record::Cleanup {
+                    entry: acknowledgement,
+                })?;
+                remaining.acknowledged();
+            }
+        })();
+        result.map_err(|error| cleanup_error(error, started, transaction))
+    }
+}
+
+/// Reclaim the recorded retained payload through the same observation used by
+/// longer-lived confirmation plans. Metadata finalization is a separate phase.
+pub(super) fn reclaim_payload(
+    parent: &File,
+    central: &File,
+    name: &OsStr,
+    mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<(), PlatformError> {
+    Admission::observe(parent, central, name, &mut cancel)?.reclaim(parent, central, cancel)
 }
 
 /// Keep only transaction-owned retained payloads pinned. A successful public

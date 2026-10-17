@@ -1452,3 +1452,132 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
         }
     }
 }
+
+#[test]
+fn windows_native_copy_cleanup_admission_is_readonly_handle_free_and_keeps_public_reuse() {
+    use super::super::cleanup::Admission;
+    for case in 0..6 {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _readonly) = cleanup_fault_fixture(root.path(), case);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let before = namespace_contents(root.path());
+        let admission = Admission::observe(&parent, &central, &name, |_| Ok(())).unwrap();
+        assert_eq!(admission.header().stage_name(), name);
+        assert_eq!(namespace_contents(root.path()), before);
+        // Confirmation retains no readers: the user's public name can be
+        // changed/reused, and is still outside the admitted cleanup set.
+        let public = root.path().join("destination/copy");
+        if public.is_dir() {
+            std::fs::remove_dir_all(&public).unwrap();
+        } else if public.exists() {
+            std::fs::remove_file(&public).unwrap();
+        }
+        std::fs::write(&public, b"user data after admission").unwrap();
+        admission.reclaim(&parent, &central, |_| Ok(())).unwrap();
+        assert_eq!(
+            std::fs::read(&public).unwrap(),
+            b"user data after admission"
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_admission_refuses_payload_metadata_catalog_and_progress_drift() {
+    use super::super::cleanup::Admission;
+    for case in 0..5 {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _readonly) = cleanup_fault_fixture(root.path(), 1);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let admission = Admission::observe(&parent, &central, &name, |_| Ok(())).unwrap();
+        let stage = root.path().join("destination").join(&name);
+        let local = stage.join(LOCAL);
+        match case {
+            0 => {
+                let file = root
+                    .path()
+                    .join("destination")
+                    .join(admission.header().candidate_name())
+                    .join("nested/file");
+                std::fs::write(file, b"external retained edit").unwrap();
+            }
+            1 => {
+                let before = super::super::super::version(&source(&local)).unwrap();
+                let bytes = std::fs::read(&local).unwrap();
+                std::fs::write(&local, bytes).unwrap();
+                assert_ne!(
+                    super::super::super::version(&source(&local)).unwrap(),
+                    before
+                );
+            }
+            2 => {
+                std::fs::write(stage.join("unknown"), b"unrecorded data").unwrap();
+            }
+            3 => {
+                std::fs::write(
+                    root.path()
+                        .join("central/00000000000000000000000000000000.copy-journal"),
+                    b"new unknown peer",
+                )
+                .unwrap();
+            }
+            4 => {
+                super::super::cleanup::reclaim_payload(&parent, &central, &name, |_| Ok(()))
+                    .unwrap();
+            }
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(
+            admission.reclaim(&parent, &central, |_| Ok(())).is_err(),
+            "case {case}"
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_pending_absence_admission_never_adopts_a_later_parent_epoch() {
+    use super::super::cleanup::Admission;
+    let root = tempfile::tempdir().unwrap();
+    let (name, _readonly) = cleanup_fault_fixture(root.path(), 1);
+    let parent = owner(&root.path().join("destination"));
+    let central = owner(&root.path().join("central"));
+    let journal = original_journal(root.path(), &name);
+    let sequence = journal.sequence;
+    let header = journal.header.clone();
+    drop(journal);
+    FAULT.with(|slot| slot.set(Some((sequence + 2, Step::CleanupFlushed, false))));
+    let result = super::super::cleanup::reclaim_payload(&parent, &central, &name, |_| Ok(()));
+    FAULT.with(|slot| slot.set(None));
+    assert!(result.is_err());
+    let admission = Admission::observe(&parent, &central, &name, |_| Ok(())).unwrap();
+    let nested = root
+        .path()
+        .join("destination")
+        .join(header.candidate_name())
+        .join("nested");
+    assert!(!nested.join("file").exists());
+    let file = owner(&nested);
+    let before = super::super::super::version(&file).unwrap();
+    let modified = std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_700_000_000);
+    file.set_times(std::fs::FileTimes::new().set_modified(modified))
+        .unwrap();
+    let changed = super::super::super::version(&file).unwrap();
+    assert_ne!(changed, before);
+    drop(file);
+    let before = namespace_contents(root.path());
+    let error = admission
+        .reclaim(&parent, &central, |_| Ok(()))
+        .unwrap_err();
+    assert!(
+        error.to_string().contains("retained epoch changed"),
+        "{error}"
+    );
+    assert_eq!(namespace_contents(root.path()), before);
+    assert_eq!(
+        super::super::super::version(&owner(&nested)).unwrap(),
+        changed
+    );
+}

@@ -62,7 +62,7 @@ fn metadata(
     Ok(before)
 }
 
-fn snapshot_metadata(
+pub(super) fn snapshot_metadata(
     snapshot: &Snapshot,
     cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<[EntryVersion; 3], PlatformError> {

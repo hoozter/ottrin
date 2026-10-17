@@ -1,0 +1,80 @@
+{
+  "scope": "Shared handle-free read-only cleanup admission and bound writer execution; public action/Activity wrapper remains open",
+  "parent_revision": "1552fe6c10395cb06425cd15c6042695203d237e",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "9b9d9be1b5a5504a1d21dc529e30851755d9fced8826086705532064a6e5f8f1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "1e17ac80cb01ebbd3f07ee1199b4bf531f019f4692c975a5a273413ce38f1618",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "9464d6cd17cd8608d25496fc448df0c7a68af4d27d5b5ee5d97cd857fcd3c7a3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "ac5d6f20d952355825907824b3fc41ea9f79ed18972e3bc3b1263b6a8c026cfb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "61431f9e531992282f2844e4ac0aaa96ee7daa58742fd3cbaaea4adfed2096fe",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "eb3aa427cf74e2226a7e612a057db18c65752940d6e651e04cc59fb61484772a",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "14b084b36efa2a7be45b0630fa12634da6353312475574cccc8b466106f35643"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "6ff467f4c4fcc5a5c2d59282913f0fd6b1bcaaf704df3dfb3dca4e3cd166b8bc",
+    "transferred_sha256": "bffe8371c6da1eaaa939a9ad149c77e8de086e081c259c6d3c4810a5c9ca5a4e",
+    "retained_sections": {
+      ".text": "ea2f4e0f54854954df88127f7b04275420600dfeadb731b5ba625941ef9c9283",
+      ".data": "60bb9d844d87ce6170721b40a4e48b7257e6df3790e878940fa89615dc4f059f",
+      ".rdata": "7b4940a3e5f840e03b42d1eecdb8fd4a822c1a6146f909577c5bfe7a462db3c1",
+      ".pdata": "9331a1020c46b96846ee5df6e94daf23aeaf501d67c8cdc597ba1fa6ee44aafc",
+      ".xdata": "2a7100159b2a7f25c6f14c8442701aaedb173d8d5aa74c7c8ddb58016fe5c27b",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "2a1f4cf14acf620d6abad68a748ad097f10662e583a781095c0b623a5b229ee6",
+      ".CRT": "817c66b1b62c4596676e21877a4008da62bfb3e3917af775ca0545a830129505",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "aad04c4e0949671c8174376062a4985eaeb8c632b8352b85efeb0ffb4401aa04"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "bffe8371c6da1eaaa939a9ad149c77e8de086e081c259c6d3c4810a5c9ca5a4e",
+    "status": "pass"
+  },
+  "suite": {
+    "passed": 25,
+    "failed": 0,
+    "child_harnesses_ignored": 2,
+    "unrelated_tests_filtered": 307,
+    "seconds": 162.63,
+    "injected_failures": 187,
+    "real_process_exits": 187
+  },
+  "new_admission_cases": {
+    "public_reuse_and_readonly_observation": 6,
+    "payload_metadata_catalog_and_progress_drift": 5,
+    "later_parent_timestamp_after_pending_unlink_absence": 1
+  },
+  "binding": [
+    "Exact header, complete journal digest and private metadata epoch",
+    "Observed retained versions and pending-absence state",
+    "Dependency catalog identity/security/version/names/peer record digests",
+    "Destination location and parent permission digest"
+  ],
+  "properties": [
+    "Observe changes no files or journals and returns no retained handles",
+    "Writer revalidates the admitted observation; it does not adopt a fresh epoch by transaction ID",
+    "Public name reuse remains outside the cleanup set",
+    "Uncertain mutation still requires a fresh read-only admission",
+    "Digests avoid retaining raw journal bytes and version graphs in confirmation objects",
+    "Native registry names are hashed as raw UTF-16"
+  ],
+  "checks": [
+    "strict Windows platform/UI all-target Clippy (admission-clippy.log)",
+    "cargo fmt --all",
+    "git diff --check"
+  ],
+  "limitations": [
+    "Public cleanup wrapper, partial metadata discovery and Activity remain unfinished",
+    "Catalog admission still retains decoded peer graphs temporarily; resource optimization remains open",
+    "Co-owned batch graphs, interrupted staging, broader storage/security and physical power cuts remain open",
+    "No new application package or public Windows Copy acceptance"
+  ]
+}

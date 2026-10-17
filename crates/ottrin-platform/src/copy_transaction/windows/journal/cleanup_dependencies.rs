@@ -110,6 +110,34 @@ impl Dependencies {
         self.security.validate(central, &self.creator)
     }
 
+    /// Freeze dependency claims for a confirmation plan that retains no leases.
+    /// Raw UTF-16 names preserve native names that are not Unicode scalar text.
+    pub(super) fn fingerprint(&self) -> Result<[u8; 32], PlatformError> {
+        let names: Vec<Vec<u16>> = self
+            .names
+            .iter()
+            .map(|name| name.encode_wide().collect())
+            .collect();
+        let peers: Vec<(Vec<u16>, [u8; 32])> = self
+            .peers
+            .iter()
+            .map(|(name, peer)| {
+                (
+                    name.encode_wide().collect(),
+                    Sha256::digest(&peer.bytes).into(),
+                )
+            })
+            .collect();
+        super::super::evidence_digest(&(
+            self.central,
+            &self.stamp,
+            &self.security,
+            &self.creator,
+            names,
+            peers,
+        ))
+    }
+
     pub(super) fn revalidate_peers(&self, central: &File) -> Result<(), PlatformError> {
         self.validate(central)?;
         self.peer_bindings(central)
