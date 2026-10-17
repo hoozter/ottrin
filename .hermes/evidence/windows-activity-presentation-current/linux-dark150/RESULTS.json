@@ -1,0 +1,22 @@
+{
+  "artifact_sha256": "fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa",
+  "theme": "Dark",
+  "scale": "1.5",
+  "text_scale": 1.35,
+  "status": "pass",
+  "preset": "Nord",
+  "custom_theme": "Activity QA",
+  "config_sha256": "515529104e9aefffd619dc0c7f3ae341bd59bdb10117b6da321f29a8ab8f2187",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 693e515f3e867c26cf04c775b77148cd57fb7921\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "cancel_preserved_backup": true,
+  "changed_backup": "/tmp/ottrin-tabs-gdqeskip/destination/.ottrin-txn-6e03076d9ba1edd22ca5eb14438aeeba/candidate",
+  "refusal_workflow": "changed retained file, canonical recovery record, published file and source preserved after refusal",
+  "visual_checks": [
+    "Paired custom Dark theme at 150% desktop scale and 1.35 text scale",
+    "Changed retained data safely refused and preserved with recovery control, source and publication",
+    "Concise error is shown by default",
+    "Full refusal and path remain readable in expandable details without clipping or moving status"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

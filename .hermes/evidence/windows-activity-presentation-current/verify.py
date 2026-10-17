@@ -1,0 +1,15 @@
+from pathlib import Path
+import sys,json,runpy
+p=Path(__file__).resolve().parent
+sys.path.insert(0,str(p.parent/'windows-copy-cleanup-current'));import transport as n
+case,phase=sys.argv[1:]
+assert case in ['success','changed','cohort'] and phase in ['before','cleared','refused','change','snapshot','unchanged']
+script=r'''$root='C:\OttrinCopyCleanupQA\desktop\cases\CASE';$destinations=@("$root\fixture\destination");if('CASE'-eq'cohort'){$destinations+=@("$root\fixture-second\destination")};$retained=@();foreach($destination in $destinations){if([IO.File]::ReadAllText("$destination\copy\nested\file")-cne'new independent public data'){throw 'Independent public data changed'};$retained+=@(Get-ChildItem -LiteralPath $destination -Force|Where-Object{$_.Name-like'.ottrin-copy-*'})};$registry="$root\profile\Ottrin\State\copies";$controls=@(Get-ChildItem -LiteralPath $registry -Force -ErrorAction Stop);$expected=if('CASE'-eq'cohort'){2}else{1};if('PHASE'-eq'cleared'){if($retained.Count-or$controls.Count){throw 'Retained artifacts remain after successful cleanup'}}else{if(@($controls|Where-Object{$_.Name-like'*.copy-journal'}).Count-ne$expected){throw 'Recovery controls changed unexpectedly'};$candidates=@($retained|Where-Object{$_.Name-like'*.candidate'});if($candidates.Count-ne$expected){throw 'Retained candidate count changed'};if('PHASE'-eq'change'){[IO.File]::WriteAllText((Join-Path $candidates[0].FullName 'nested\file'),'foreign retained data')};if('PHASE'-eq'refused'){if([IO.File]::ReadAllText((Join-Path $candidates[0].FullName 'nested\file'))-cne'foreign retained data'){throw 'Changed retained data was not preserved'}}};if('PHASE'-in@('snapshot','unchanged')){$files=@($controls|Where-Object{-not$_.PSIsContainer});foreach($entry in $retained){if($entry.PSIsContainer){$files+=@(Get-ChildItem -LiteralPath $entry.FullName -Recurse -File -Force)}else{$files+=@($entry)}};$proof=@($files|Sort-Object FullName|ForEach-Object{[pscustomobject]@{path=$_.FullName;sha256=(Get-FileHash -LiteralPath $_.FullName).Hash}})|ConvertTo-Json -Compress;$snapshot='C:\OttrinCopyCleanupQA\desktop\results\CASE-snapshot.json';if('PHASE'-eq'snapshot'){$proof|Set-Content $snapshot}else{if((Get-Content $snapshot -Raw).Trim()-cne$proof){throw 'Cancellation changed recovery or retained file bytes'}}};@{case='CASE';phase='PHASE';public_files_preserved=$destinations.Count;retained_entries=$retained.Count;controls=$controls.Count;status='pass'}|ConvertTo-Json|Set-Content 'C:\OttrinCopyCleanupQA\desktop\results\VERIFY.json';Get-Content 'C:\OttrinCopyCleanupQA\desktop\results\VERIFY.json' '''.replace('CASE',case).replace('PHASE',phase)
+(p/'verify.ps1').write_text(script)
+n.GROOT=r'C:\OttrinCopyCleanupQA\desktop'
+n.upload(p/'desktop.ps1','desktop.ps1')
+n.upload(p/'verify.ps1','verify.ps1')
+sys.argv=[str(p/'desktop.py'),json.dumps({'op':'verify','case':case})]
+runpy.run_path(str(p/'desktop.py'),run_name='__main__')
+n.download('results\\VERIFY.json',p/f'{case}-{phase}.json')
+print((p/f'{case}-{phase}.json').read_text(encoding='utf-8-sig'))

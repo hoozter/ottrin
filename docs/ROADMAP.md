@@ -111,26 +111,29 @@ formats pass content/source/runtime identity checks; AppImage and RPM daemon
 namespace ownership checks pass. Exact artifacts and limits are recorded in
 `.hermes/evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
 
-These are candidates, not replacement public downloads. A subsequent source
-repair now separates readable Copy status from selectable, expandable Recovery
-details and keeps raw paths/diagnostics out of the default card. Status badges
-reserve their actual font width; the Activity toolbar wraps rather than widening
-the panel. Eighteen rendered layout cases pass at widths 320/420 and text scales
-1.0/1.5/2.0 across queued/completed/review states. The final native Windows Activity
-integration passes all 15 scenarios, including diagnostic disclosure after a real
-refusal; strict Linux/Windows all-target Clippy passes. Source hashes and limits
-are in `PRESENTATION_SOURCE_ACCEPTANCE.json`. The `38fa595` native prototype then exposed a shrinking text column: short-card
-badges floated inward. The corrected source fills the allocated column; all 18
-layout scenes now compare short/long card trailing edges as well as bounds and
-overlap. The final 15-scenario Windows interaction suite and strict checks pass;
-`ALIGNMENT_SOURCE_ACCEPTANCE.json` records the regression and exact executable.
-Prototype packages remain unpromoted. Rebuild and native-window inspection of the
-final correction remain pending. Desktop
-Stop/retry, other theme/scale combinations, broader workflows and current
-installer lifecycle acceptance retain their separate gates. Public `dist/`
-artifacts remain unchanged. Candidate packages are kept at the stable
-`.hermes/packaging-tmp/windows-activity-candidate/` and
-`.hermes/packaging-tmp/linux-activity-candidate/` paths.
+The subsequent clean build `693e515` is now delivered in all four Linux formats
+at `dist/packages/`. Activity cards separate readable status from selectable,
+expandable Recovery details. Status badges share a trailing edge across short and
+long cards, and the toolbar wraps at narrow widths. Eighteen rendered layout
+scenes pass at widths 320/420 and text scales 1/1.5/2; the final native Windows
+Activity integration passes all 15 scenarios. Strict Linux/Windows all-target
+Clippy and the Linux UI suite pass (380 passed; one explicit mount-namespace
+fixture remains ignored).
+
+The exact AppImage passes private native-window checks in Light/Dark at 100% and
+paired custom Light/Dark at 150% desktop scale with 1.35 text scale. Warning,
+Cancel, Undo restoration, neutral cleanup and changed-data refusal preserve the
+expected source/public/recovery bytes. All four Linux package content checks and
+AppImage/RPM daemon namespace checks pass. The actual Windows default-renderer
+window passes Light100 refusal/disclosure and custom Dark text1.35 disclosure;
+Windows 150% DPI is not claimed. Portable/NSIS/MSI payload identities match all
+57 files. Windows packages remain internal candidates at
+`.hermes/packaging-tmp/windows-activity-candidate/`; public Windows packages have
+not been replaced. Exact hashes, screenshots, scope and clean teardown are in
+`.hermes/evidence/windows-activity-presentation-current/ACCEPTANCE.json` and
+`DELIVERY.json`. Earlier acceptance retains its original artifact scope.
+Desktop Stop/retry, broader current Windows workflows/installer lifecycle and the
+remaining Copy/security/resource gates below remain open.
 
 The preceding peer-binding checkpoint accounts for all **153 Windows Copy journal
 cases** on one exact binary: **145 passed** and eight existing ignored entry
@@ -160,7 +163,7 @@ peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 **Still required:** remaining native desktop Activity and current-package acceptance,
 reserved-target protection, interrupted-staging reclamation, measured resource/storage/security and power-cut matrices,
 broader workflow acceptance and current package gates remain open. Public Windows
-Copy stays gated. Application packages are unchanged by these checkpoints.
+Copy stays gated. The scoped Linux Activity delivery above is separate from these backend checkpoints.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session

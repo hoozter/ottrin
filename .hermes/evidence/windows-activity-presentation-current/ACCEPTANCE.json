@@ -1,0 +1,90 @@
+{
+  "status": "accepted for scoped Linux delivery; Windows remains an internal candidate",
+  "source_revision": "693e515f3e867c26cf04c775b77148cd57fb7921",
+  "linux_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d0c304277c7384842508acaa028b30220135bc762180fe25d6d433b732b6c139",
+    "Ottrin-0.1.0-x86_64.AppImage": "fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b4750c8b3e6db2d4e431b1d9fa60e8df8ae78526ff27820cdec0884a30defd4e",
+    "ottrin_0.1.0_amd64.deb": "3c9b4dad2c063cfe687ef1ca3e8879237c38ace2b051fa2341da6723f216c56d"
+  },
+  "windows_artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "27dd2859d86c833e653a50d7144fb02604a75bd9536e8c5aa258d678214eb1b5",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "af5ba612afce057b6f9ddfd29a2f6dc591c9bc4f143f23a28939e3598c6f7f33",
+    "Ottrin-0.1.0-windows-x64.msi": "4929575306369d78492d955a4ebc1c00f1739a615908af580f99ce5a9c2c830f"
+  },
+  "linux_scope": {
+    "native_windows": "Actual AppImage in private Xvfb: Ottrin Light/Dark at 100%; paired custom Nord-based Light/Dark at 150% desktop scale and 1.35 text scale. Readable summary, aligned trailing status, selectable expanded diagnostics. Light100 confirms available-Undo warning, Cancel, original restoration and neutral cleanup; Dark150 confirms changed-retained-data refusal and preservation.",
+    "package_checks": "All four Linux formats: current source/docs, executable/helper identities, permissions and native dependencies/hooks. AppImage/RPM daemon namespace ownership checks pass.",
+    "ui_suite": {
+      "passed": 380,
+      "failed": 0,
+      "ignored": 1,
+      "ignored_reason": "Real mount-replacement test requires an explicitly owned private user/mount namespace."
+    },
+    "rendered_layout": "18 scenes compare short/long cards at widths 320/420, text scales 1/1.5/2, Queued/Done/Needs review."
+  },
+  "windows_scope": {
+    "native_window": "Default renderer, ordinary user: Light100 cleanup confirmation, actual changed-data refusal and preservation, concise/expanded diagnostics. Custom paired Dark palette at desktop100% and text1.35 disclosure; this is not 150% Windows DPI acceptance.",
+    "functional": "15 current native Activity subprocess scenarios; exact test binary in ALIGNMENT_SOURCE_ACCEPTANCE.json.",
+    "packages": "Portable, NSIS and MSI each contain the same 57 verified payload files; this is content acceptance, not installer lifecycle acceptance."
+  },
+  "remaining": [
+    "Windows public Copy remains disabled pending reserved-target protection, interrupted-staging reclamation and complete public workflows.",
+    "Desktop Stop/retry and broader current Windows package workflow/installer lifecycle gates remain open.",
+    "Resource/storage/security and power-cut matrices, full roadmap and user acceptance remain open.",
+    "Other existing package receipts retain their original hashes and scopes; this delivery does not renew unrelated historical acceptance."
+  ],
+  "published": {
+    "linux": "dist/packages",
+    "windows": false
+  },
+  "cleanup": "Linux app/daemon/display/profile cleanup passes in all four runs. Windows owned fixtures, desktop payload and compiler extraction removed; source profile/install and Winlogon restored/unchanged.",
+  "evidence_sha256": {
+    "FINAL_PACKAGE_IDENTITIES.json": "e31c5427b01b4ff375fde2f1a30d22628a80b75b6c6fc184626a0e9c76205332",
+    "DELIVERY.json": "59db352a470fcc967ba67837e14156fdf28920f3603ff9c00ab41b37332906e8",
+    "PAYLOAD.json": "5b5e2851071daa67d77de76a60ece63b7ff866025bcd7e02d651e7f04f892677",
+    "DEPLOYMENT.json": "a950329bd67efffdbc959abfdf46bea0a1ad2c8101b7a825079a45b9dc173bfd",
+    "MSI_PAYLOAD.json": "44490234d7809570b39f0525a0583ebb93794313ce0724ed055724e26ec477a2",
+    "NSIS_PAYLOAD.json": "91f4243d00b0113818c2f3dbffd47f2bfb8c95f453045a3c632e9a05b92a3923",
+    "changed-refused.json": "c38ca524665c10218fd1a6495b5907cfe4ea4d645640a17fcee84f3480dc4253",
+    "TEARDOWN.json": "69ad54569466ff0aa968885d6a5e1624db74505489613453e6b0187a1afbc404",
+    "WINDOWS_FIXTURE_CLEANUP.json": "466c2aab87eda574bdc2f803f31a9a7a56a384fdde3a5aa3b422064b9c10d340",
+    "ALIGNMENT_SOURCE_ACCEPTANCE.json": "e150c8d19926f4d71aa9d2dc6f40fe37be215761f3cc046fc322cebd778f120b",
+    "PACKAGED_NAMESPACE_APPIMAGE.json": "9c26655012380b1884f03ef80314fe2fc0321ac83829fac9dcbe173f6a5428f0",
+    "PACKAGED_NAMESPACE_RPM.json": "f3e130a83c942398c80309443ee649a49172cc907a8e981ec83f9abcb8c68723",
+    "linux-ui-suite.log": "e2eed11b2f4d6c9e4851d3e9afa2a7eab83c6a6e8459a83b255d12b629a8e542",
+    "linux-clippy.log": "e53bffe28029d7d3a1a445ab95dd216e4e859ef3f13dfa742bdb6d0b829262d4",
+    "windows-clippy.log": "4fe3b49b1438cc352cbca0de3c46f350624cb0ae5644d509429c43954f562c49",
+    "desktop.ps1": "d22e0c9f40e52d2d147a842950a50ff3348abcdeca30ab0aa42a9fbd85cb6d92",
+    "desktop.py": "e405aad97884e36106413ac3e2002c3855dccb68eb223493c2d115ad2e2531ce",
+    "verify.py": "3727da09632b32536ef23b1ed0e52c623637cf527d5b6e0846c0853c40222920",
+    "verify.ps1": "866f3220c91addb089c7d7208821e01db77b3d1dc62530632656cee83f063a48",
+    "linux-gui-driver.py": "dce0e67c378c24fd373f52bcb1dd8579780842ed913f67d9f8b30ff1aae20f27",
+    "linux-package-check.py": "2381308a5eb82b753f4215f1370207ba58f5426393bfb90584fea0e4b244a871",
+    "linux-light100/RESULTS.json": "4646992c848f35a25431e0d437727881903bd43fcb1e35e8f7585802c8447e23",
+    "linux-dark100/RESULTS.json": "2071a42e48968a258579157085a25fa5c2b3c778e2cee16e7625e1498c91becc",
+    "linux-light150/RESULTS.json": "77cb0426b5efd3c64328f2919eba93b00dbebc08cd14832bfefd55c013458ce0",
+    "linux-dark150/RESULTS.json": "ef2848ba69314b0e302564132ba020a07d3ecdfda13f517cc8e03cd727e3ee6e",
+    "windows-light100-collapsed.png": "2a84e5c8448267a7099fe75490b6ae7468101073e8d0147bbf111ee75dad8f5a",
+    "windows-light100-refused.png": "3f0d7e5338cd83349c2cccc776b8e25d5c98269464d43f83bf4f61e743c51443",
+    "windows-light100-confirmation.png": "e2131c9dacf313083dde8a58f397265ebfac9ae52bd97514b7e6b4494964df98",
+    "windows-light100-expanded.png": "5e302aa971c0a498fba440e201d3f3ef7eadb4d988884c6175a2952b4a1600cc",
+    "windows-dark-text135-collapsed.png": "89661b46b55079bcec4630d404a7786e3883794094ac25060ac1383d313c3895",
+    "windows-dark-text135-expanded.png": "195f272ed56f1c07d7578e41bd42b0e23f2363cbda2d34bdc778691f92449c70",
+    "linux-dark150/refused-collapsed.png": "f56ba4678c8b389e479ede09e4bd56bdc84a3629c3edde74a402ec40f638165c",
+    "linux-dark150/refused-expanded.png": "37ac92cd6a4be5a9d74ac0d010fe6e334f727766d342eb856b2f8749a755ebdc",
+    "linux-dark150/confirmation.png": "6ae1baa452eab63a96183b45ab6bb332c50cbd08d14d36e9aaa471677b19daf0",
+    "linux-dark150/collapsed.png": "0af32c46fd161ab06c5de4793feee0f329cecac4f58bab002abfc16883362957",
+    "linux-light100/available-undo-confirmation.png": "a540abaf860667af7a357b4a8970badcd47d1e1eb0f6f918a1361497e1a6d23f",
+    "linux-light100/activity.png": "d33b9afd92ad108a31171b4eb1acf3b12a5117bf2f9ce33a6ea942607c7fb1a1",
+    "linux-light100/after-undo.png": "b0f65637cc0b53fc51ee983855dc52c74669c107739ec8e99d2b53f644d54f7d",
+    "linux-light100/cleared.png": "41d613b64230e898a28f0cccb2c580b33714a3bf5480e50c22cf4dc32ec60a6d",
+    "linux-light100/undone-confirmation.png": "497c1f0b8c5ad4b969b122c3ea1ef9f46b617c6960a377509819830656017b31",
+    "linux-light100/default.png": "0e3bdda773e0154d06971deaf726e4aee53c8da61b6d705c0837fa9f9edf6a3f",
+    "linux-dark100/expanded.png": "fbdcff04dfdb254e3c459c84bc4163ad5e5fc3e9cd22dec8d130ebdb16a1f93d",
+    "linux-dark100/collapsed.png": "6c0ce424343a314a36777ebcd2420117098991584346167716a7ede633c9395d",
+    "linux-light150/expanded.png": "06ac1c8970477ea35829798302aa7b18e7ab4beba9225872de4d2daf9d79577b",
+    "linux-light150/collapsed.png": "aaae9a1b3b157c52bfb3ba3e70b452b23b4cce35be578aae888459749e6406d6",
+    "linux-light150/default.png": "98efc140d856e3f5f7e8b34a762309a9e0c12ae4b09b557bbf8f4b3589719204"
+  }
+}

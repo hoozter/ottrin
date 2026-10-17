@@ -1,0 +1,18 @@
+{
+  "status": "promoted verified Linux packages",
+  "source_revision": "693e515f3e867c26cf04c775b77148cd57fb7921",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d0c304277c7384842508acaa028b30220135bc762180fe25d6d433b732b6c139",
+    "Ottrin-0.1.0-x86_64.AppImage": "fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b4750c8b3e6db2d4e431b1d9fa60e8df8ae78526ff27820cdec0884a30defd4e",
+    "ottrin_0.1.0_amd64.deb": "3c9b4dad2c063cfe687ef1ca3e8879237c38ace2b051fa2341da6723f216c56d"
+  },
+  "superseded_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "8db5b1f88c77c6c986fb9117526d5b7243ea426832a2c44f17b13daa5c4aa743",
+    "Ottrin-0.1.0-x86_64.AppImage": "1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "dd10eaa71dc686240256b0bb0e0d1299a0ebacc7642c717ae1e7e079371cb06c",
+    "ottrin_0.1.0_amd64.deb": "32a263b632b84fa4d7a8c89042199fb60fb9ef5e182786d07186c722a8ceaa28"
+  },
+  "destination": "/home/campbell/Projects/Ottrin/dist/packages",
+  "scope": "Current Activity native-window checks and Linux package identity checks; other acceptance receipts retain their own exact artifact scopes. Windows packages remain internal candidates."
+}

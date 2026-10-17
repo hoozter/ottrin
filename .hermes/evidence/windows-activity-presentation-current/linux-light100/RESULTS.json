@@ -1,0 +1,22 @@
+{
+  "artifact_sha256": "fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa",
+  "theme": "Light",
+  "scale": "1",
+  "text_scale": 1.0,
+  "status": "pass",
+  "preset": "Ottrin",
+  "custom_theme": null,
+  "config_sha256": "6ca5441a441324e1316d439501d0b2659830218163c159420c60febb6258bc67",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 693e515f3e867c26cf04c775b77148cd57fb7921\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "retained_visual_workflow": "visual-only disclosure: canonical recovery bytes, retained backup, publication and source unchanged",
+  "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+  "visual_checks": [
+    "Status remains at the trailing edge before and after Undo",
+    "Available Undo loss warning and neutral post-Undo confirmation",
+    "Cancel preserves canonical recovery bytes and data",
+    "Cleanup preserves restored original and source and removes all private records",
+    "Light theme at 100% remains coherent"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

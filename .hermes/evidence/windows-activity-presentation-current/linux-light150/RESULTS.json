@@ -1,0 +1,20 @@
+{
+  "artifact_sha256": "fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa",
+  "theme": "Light",
+  "scale": "1.5",
+  "text_scale": 1.35,
+  "status": "pass",
+  "preset": "Nord",
+  "custom_theme": "Activity QA",
+  "config_sha256": "8c234868375cf59514469a057ed33eecc689204f1b58606c1933c6a2162cc59c",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 693e515f3e867c26cf04c775b77148cd57fb7921\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "retained_visual_workflow": "visual-only disclosure: canonical recovery bytes, retained backup, publication and source unchanged",
+  "visual_checks": [
+    "Custom paired Light theme at 150% desktop scale and 1.35 text scale remains coherent",
+    "Status at trailing edge and wrapped labels do not overlap",
+    "Expanded Recovery details remains inside card",
+    "Disclosure preserves canonical recovery bytes and retained/public/source data"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

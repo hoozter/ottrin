@@ -1,0 +1,20 @@
+{
+  "artifact_sha256": "fada9f5ad1c5a0d2091a9cb3b9b114959e83663f750997fd5164200b8072a9aa",
+  "theme": "Dark",
+  "scale": "1",
+  "text_scale": 1.0,
+  "status": "pass",
+  "preset": "Ottrin",
+  "custom_theme": null,
+  "config_sha256": "01bc68cd569bb24e0b1698594a30d52ce3e50878edb0ab52424c60c1adaad708",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 693e515f3e867c26cf04c775b77148cd57fb7921\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "retained_visual_workflow": "visual-only disclosure: canonical recovery bytes, retained backup, publication and source unchanged",
+  "visual_checks": [
+    "Dark 100% card and controls use the theme coherently",
+    "Status badge is aligned to trailing edge",
+    "Recovery details expands without shifting status or clipping text",
+    "Disclosure leaves canonical control bytes and retained/public/source files unchanged"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}
