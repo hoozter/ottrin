@@ -119,8 +119,13 @@ the panel. Eighteen rendered layout cases pass at widths 320/420 and text scales
 1.0/1.5/2.0 across queued/completed/review states. The final native Windows Activity
 integration passes all 15 scenarios, including diagnostic disclosure after a real
 refusal; strict Linux/Windows all-target Clippy passes. Source hashes and limits
-are in `PRESENTATION_SOURCE_ACCEPTANCE.json`. New packages and native-window
-inspection of this presentation repair remain pending. Desktop
+are in `PRESENTATION_SOURCE_ACCEPTANCE.json`. The `38fa595` native prototype then exposed a shrinking text column: short-card
+badges floated inward. The corrected source fills the allocated column; all 18
+layout scenes now compare short/long card trailing edges as well as bounds and
+overlap. The final 15-scenario Windows interaction suite and strict checks pass;
+`ALIGNMENT_SOURCE_ACCEPTANCE.json` records the regression and exact executable.
+Prototype packages remain unpromoted. Rebuild and native-window inspection of the
+final correction remain pending. Desktop
 Stop/retry, other theme/scale combinations, broader workflows and current
 installer lifecycle acceptance retain their separate gates. Public `dist/`
 artifacts remain unchanged. Candidate packages are kept at the stable

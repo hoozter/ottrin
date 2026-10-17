@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 32.61s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-79a909d55133516b)
+
+running 1 test
+test tests::activity_headers_keep_status_visible_with_long_titles_and_scaled_text ... FAILED
+
+failures:
+
+---- tests::activity_headers_keep_status_visible_with_long_titles_and_scaled_text stdout ----
+
+thread 'tests::activity_headers_keep_status_visible_with_long_titles_and_scaled_text' (2385130) panicked at crates/ottrin-ui/src/lib.rs:25535:21:
+Status edges differ between long and short cards at width 320, scale 1: [[[261.2 117.0] - [297.0 128.0]], [[104.8 315.0] - [140.6 326.0]]]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::activity_headers_keep_status_visible_with_long_titles_and_scaled_text
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 380 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

@@ -14458,6 +14458,7 @@ impl OttrinApp {
                             let status_width = status.size().x;
                             let text_width = (ui.available_width() - status_width - ui.spacing().item_spacing.x).max(1.0);
                             ui.allocate_ui_with_layout(egui::vec2(text_width, 0.0), Layout::top_down(Align::Min), |ui| {
+                                ui.set_width(text_width);
                                 ui.add(egui::Label::new(
                                     RichText::new(&record.title).color(c.text).size(12.0 * c.font_scale).strong(),
                                 ).wrap());
@@ -25474,6 +25475,12 @@ mod tests {
                 ] {
                     let mut app = OttrinApp::default();
                     app.colors.font_scale = scale;
+                    let short = app.queue_activity_record_with_recoverability(
+                        "Move item",
+                        "File moved",
+                        OperationRecoverability::NotUndoable,
+                    );
+                    app.finish_operation_record(short, state, None);
                     let title =
                         "Move an unusually long file name into a deeply nested destination folder"
                             .repeat(3);
@@ -25489,7 +25496,7 @@ mod tests {
                             egui::RawInput {
                                 screen_rect: Some(Rect::from_min_size(
                                     egui::Pos2::ZERO,
-                                    egui::vec2(width, 1600.0),
+                                    egui::vec2(width, 3200.0),
                                 )),
                                 ..Default::default()
                             },
@@ -25515,6 +25522,21 @@ mod tests {
                             })
                             .expect("Activity title and status must be rendered")
                     };
+                    let badges = output
+                        .shapes
+                        .iter()
+                        .filter_map(|shape| match &shape.shape {
+                            egui::Shape::Text(item) if item.galley.job.text == label => {
+                                Some(Rect::from_min_size(item.pos, item.galley.size()))
+                            }
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>();
+                    assert_eq!(badges.len(), 2);
+                    assert!(
+                        (badges[0].right() - badges[1].right()).abs() <= 0.5,
+                        "Status edges differ between long and short cards at width {width}, scale {scale}: {badges:?}"
+                    );
                     let (status, clip, _) = text_rect(label);
                     let (title, _, wrap_width) = text_rect(&title);
                     assert!(

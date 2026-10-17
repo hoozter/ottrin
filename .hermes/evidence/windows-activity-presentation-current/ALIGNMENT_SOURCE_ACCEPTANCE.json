@@ -1,0 +1,44 @@
+{
+  "status": "source-checks-pass",
+  "baseline_revision": "38fa595d11c35363ecc6bfc6a3db74e3ce7743b1",
+  "source_sha256": "f221328e65cd8e33d2a99be39fffe3fcb90737e0c088430195dc247843aeae82",
+  "regression": "Native prototype and regression test exposed title-column shrink: short/long status right edges differed (140.6 vs 297.0 at width 320, text scale 1). The column now occupies its allocated width.",
+  "linux_rendered_geometry": {
+    "private_profile": true,
+    "scenes": 18,
+    "cards_per_scene": 2,
+    "widths": [
+      320,
+      420
+    ],
+    "text_scales": [
+      1,
+      1.5,
+      2
+    ],
+    "states": [
+      "Queued",
+      "Done",
+      "Needs review"
+    ],
+    "checks": [
+      "Equal trailing status edges across short and long cards",
+      "Status fully inside visible clip",
+      "Title does not overlap status"
+    ],
+    "status": "pass"
+  },
+  "negative_log_sha256": "1b6db38d286c8d327bee1e73cf04f292c13d69f52845b8463e35272a0e28396b",
+  "positive_log_sha256": "333c973ba230a95727ebe7ecff6c2790fbc60dccf02e560f19fb71213542aaf2",
+  "windows_activity_integration": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "e5bdad145de44763dfe34d1f7347ac515f5e6607c269c8e5012ab26d22171a80",
+    "status": "pass"
+  },
+  "windows_seconds": 14.22,
+  "windows_scenarios": 15,
+  "strict_clippy_linux_and_windows_all_targets": "pass",
+  "package_scope": "38fa595 prototype packages are not accepted for promotion because of the trailing-alignment defect. Rebuild and native-window checks of this correction remain pending."
+}
