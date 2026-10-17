@@ -1,0 +1,43 @@
+{
+  "scope": "Native Windows public cleanup actions and functional egui Activity flows with real worker/filesystem effects",
+  "platform_tests": [
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+      "outcome": "pass"
+    },
+    {
+      "test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations",
+      "outcome": "pass"
+    }
+  ],
+  "ui_tests": [
+    {
+      "test": "tests::windows_copy_recovery_activity_integration",
+      "outcome": "pass"
+    },
+    {
+      "test": "tests::windows_retained_copy_activity_keeps_evidence_and_actions_separate",
+      "outcome": "pass"
+    }
+  ],
+  "integration_parent": "tests::windows_copy_recovery_activity_integration",
+  "integration_scenarios_asserted_by_parent": [
+    "success",
+    "changed",
+    "moved",
+    "pending",
+    "resume-staged",
+    "resume-finalizing",
+    "resume-changed",
+    "resume-moved",
+    "resume-stopped",
+    "cleanup-success",
+    "cleanup-changed",
+    "cleanup-retry",
+    "cleanup-stopped-metadata",
+    "cleanup-cohort",
+    "cleanup-cohort-partial"
+  ],
+  "scenario_count": 15,
+  "native_desktop_rendering_accepted": false
+}

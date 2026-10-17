@@ -66,6 +66,10 @@ fn cleanup_error(error: PlatformError, started: bool, transaction: String) -> Pl
 }
 
 impl Admission {
+    pub(super) fn cleanup_started(&self) -> bool {
+        self.started
+    }
+
     pub(super) fn header(&self) -> &Header {
         &self.header
     }

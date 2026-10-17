@@ -85,6 +85,21 @@ passes. Production source is unchanged from the preceding full cleanup checkpoin
 only test fixtures and docs changed. `GROUP_EXIT_ACCEPTANCE.json` and
 `GROUP_EXIT_COVERAGE.json` bind the exact source, executable, case set and scopes.
 
+Windows Activity cleanup now uses one public cohort plan for both single and
+multiple transactions. Confirmation/cancel, worker execution, Stop and proof-bound
+retry are implemented. A retry card resumes the previously authorized cohort;
+only durably completed members clear from history. The same proof survives final
+journal disappearance. Unsupported forward/staging phases do not offer cleanup.
+Two native action tests pass, including the existing 64-shape metadata-retry
+matrix and a mixed three-owner action. A Windows integration parent passes all
+**15 subprocess scenarios**, including six cleanup flows and the prior nine
+Undo/forward-recovery flows. Status/action checks pass on the same UI executable.
+Source, separate executable hashes, actual test lists and clean teardown are in
+`ACTIVITY_ACCEPTANCE.json` and `ACTIVITY_COVERAGE.json`. These are functional egui
+and real filesystem-worker checks; native desktop/window and current-package
+acceptance remain open. The first UI attempt exposed a fixture with no retained
+payload; the corrected fixture uses completed Undo plus independent public data.
+
 The preceding peer-binding checkpoint accounts for all **153 Windows Copy journal
 cases** on one exact binary: **145 passed** and eight existing ignored entry
 points. Both disjoint batches completed: cleanup 51 passed/two ignored in
@@ -95,7 +110,8 @@ status test retains its earlier catalog-checkpoint scope.
 
 These unoptimized correctness checks do not establish application performance,
 rendered UI, full unrelated platform or release-package acceptance. Current
-group crash/history proof is `GROUP_EXIT_ACCEPTANCE.json` and
+Activity proof is `ACTIVITY_ACCEPTANCE.json` and `ACTIVITY_COVERAGE.json`.
+Earlier group crash/history proof is `GROUP_EXIT_ACCEPTANCE.json` and
 `GROUP_EXIT_COVERAGE.json`. Earlier mixed-workflow proof is
 `GROUP_MIXED_ACCEPTANCE.json` and `GROUP_MIXED_COVERAGE.json`.
 Earlier shared-unlink proof is
@@ -109,8 +125,8 @@ peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 `.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
 
-**Still required:** Activity cleanup confirmation/execution/retry. Reserved-target
-protection, interrupted-staging reclamation, measured resource/storage/security and power-cut matrices,
+**Still required:** native desktop Activity and current-package acceptance,
+reserved-target protection, interrupted-staging reclamation, measured resource/storage/security and power-cut matrices,
 broader workflow acceptance and current package gates remain open. Public Windows
 Copy stays gated. Application packages are unchanged by these checkpoints.
 

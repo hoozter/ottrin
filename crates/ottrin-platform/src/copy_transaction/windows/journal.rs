@@ -6237,6 +6237,33 @@ mod tests {
             assert!(result.is_err());
             assert!(destination.join(candidate).exists());
         }
+        let retain_for_cleanup = |destination: &Path, name: &OsStr| {
+            undo_completed_copy(&owner(destination), &owner(&registry), name, |_| Ok(())).unwrap();
+            std::fs::create_dir_all(destination.join("copy/nested")).unwrap();
+            std::fs::write(
+                destination.join("copy/nested/file"),
+                b"new independent public data",
+            )
+            .unwrap();
+        };
+        if case.starts_with("cleanup") {
+            drop(_cleanup); // Clear fixture attributes before freezing the withdrawn copy.
+            retain_for_cleanup(&destination, &name);
+        }
+        if case.starts_with("cleanup-cohort") {
+            let second = root.join("fixture-second");
+            std::fs::create_dir(&second).unwrap();
+            let (second_name, _, second_cleanup) = completed_undo_fixture_at(
+                &second,
+                &second.join("destination"),
+                true,
+                false,
+                Some(&registry),
+            );
+            remove_undo_fixture_source(&second);
+            drop(second_cleanup);
+            retain_for_cleanup(&second.join("destination"), &second_name);
+        }
         // The calling UI test owns root and tears it down after its child exits.
     }
     #[test]

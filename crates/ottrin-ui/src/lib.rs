@@ -1068,6 +1068,8 @@ struct RetainedCopyOwnership {
     finalization: Option<String>,
     #[cfg(target_os = "windows")]
     resume: Option<ottrin_platform::RetainedCopyResumePlan>,
+    #[cfg(target_os = "windows")]
+    cleanup_phase: Option<ottrin_platform::WindowsCopyPhase>,
 }
 
 #[derive(Debug, Clone)]
@@ -1326,6 +1328,7 @@ fn windows_retained_copy_activity(
             blocked_by: Vec::new(),
             restored: true,
             finalization: None,
+            cleanup_phase: entry.phase,
             resume,
         },
         detail,
@@ -14260,6 +14263,21 @@ impl OttrinApp {
 
         if self.copy_cleanup.running() {
             ui.label(RichText::new(self.copy_cleanup.progress()).color(c.accent));
+            #[cfg(target_os = "windows")]
+            if ui
+                .add_enabled(
+                    !self.copy_cleanup.stopping(),
+                    egui::Button::new(if self.copy_cleanup.stopping() {
+                        "Stopping…"
+                    } else {
+                        "Stop cleanup"
+                    })
+                    .themed(&c),
+                )
+                .clicked()
+            {
+                self.copy_cleanup.stop();
+            }
         }
         if self.retained_copy_activity_loader.pending {
             ui.label(RichText::new("Checking retained Copy history…").color(c.text_muted));
@@ -25430,6 +25448,7 @@ mod tests {
                 },
                 |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
+                    app.render_copy_cleanup_confirmation(ctx);
                 },
             )
         };
@@ -25499,6 +25518,13 @@ mod tests {
                 copy_activity_resume::test_case(&root);
                 return;
             }
+            if std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE")
+                .unwrap()
+                .starts_with("cleanup")
+            {
+                copy_activity_cleanup::windows_test_case(&root);
+                return;
+            }
             let mut wrong = ottrin_platform::discover_retained_copy_transactions()
                 .unwrap()
                 .remove(0);
@@ -25558,9 +25584,10 @@ mod tests {
                 Some(PathMoveUndoState::Available)
             ));
             assert!(app.operation_history[0].path_move_undo_token.is_some());
-            assert!(!copy_activity_cleanup::can_cleanup(
-                &app.operation_history[0]
-            ));
+            assert_eq!(
+                copy_activity_cleanup::can_cleanup(&app.operation_history[0]),
+                std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").as_deref() != Ok("pending")
+            );
             app.clear_finished_activity();
             assert_eq!(
                 app.operation_history.len(),
@@ -25672,6 +25699,12 @@ mod tests {
             "resume-changed",
             "resume-moved",
             "resume-stopped",
+            "cleanup-success",
+            "cleanup-changed",
+            "cleanup-retry",
+            "cleanup-stopped-metadata",
+            "cleanup-cohort",
+            "cleanup-cohort-partial",
         ] {
             let root = tempfile::tempdir().unwrap();
             let destination_root = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_VOLUME")
@@ -31130,6 +31163,8 @@ mod tests {
                 finalization: None,
                 #[cfg(target_os = "windows")]
                 resume: None,
+                #[cfg(target_os = "windows")]
+                cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
             },
             detail: "restored".into(),
             undo: PathMoveUndoState::Undone,

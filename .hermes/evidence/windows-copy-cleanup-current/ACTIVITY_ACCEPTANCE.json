@@ -1,0 +1,189 @@
+{
+  "scope": "Native Windows public cleanup actions and functional egui Activity flows with real worker/filesystem effects",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "f01fc73542ac8b786db897bf8c31ff22e36baa8b86a761e1371416bc032fb822",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "1dc636b3e1ffd0c3000e82207fbe8b1149e3129434255c40eb37d7152d166bfe",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "836986d8c532d8dd423f62b9660b1cd0ddce2c5e4f0cd37a255e3d9a3a1dbb6f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "dacd6fdb1b08d6a6a7096e2c17f2b07cc773193e99338d2f2f98eac39d190b7f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "d2c6d4cb22922efd2bcfe6c972c5e9dbe0932c404ef1c5ce0f746bd504ed9e79",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "0bc18d71bb1967eff8ef2c258569f8ffbebe43a47668be3f3b9d43a755f427e1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "3b39dcf34ea8341589244943060e10920d34f588397d226f550a5f549c5600e3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "67066d80f1cd5577e575b2eadd77ee0ad4943b4b2adc24ceaddefcfbb606d370",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "cd124557e09e08e6497370bb232d598f4118a1bf4193c5896ec1cc71960b8d79",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "f1a0c6299e2b968018d1d0c0947cc2b06a90192ff0293a08fdf7adbc15f5c82f",
+    "crates/ottrin-ui/src/lib.rs": "a7d173231def72d0951d505e9ba7621228c5674d727022191b42f04582729f22",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_peer.rs": "cf9d85029fdc00b8d7c8b8ef4db385336c0a063d01f2f8410224209d2b129b52",
+    "crates/ottrin-ui/src/copy_activity_cleanup.rs": "6167a4dd3a21538438b838ea5f591768fd7b1f05870390bbc75fe3f94326737d"
+  },
+  "platform_action_lane": {
+    "binary": {
+      "test_crate": "ottrin_platform",
+      "test_arguments": "windows_native_copy_cleanup_configured --nocapture --test-threads=1",
+      "watchdog_ms": 600000,
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d96d074ed6581567.exe",
+      "compiler_sha256": "6fdbdf14d8f5ba1f37c1f3506725923c90f7befff34627e65fe7a55f1c04481c",
+      "transferred_sha256": "11d886b21934a57545ced2159c4a7b78fed036b25ab327f91ad218e59ad3627e",
+      "retained_sections": {
+        ".text": "55f8a75d33e93de3854c54886ed234ae89bfbfb186b59aa158c58218774fe7f4",
+        ".data": "8d3405e4eeb773fca738991ccb121f143850215f2a3edac6a018a321a05b23ee",
+        ".rdata": "d8a1544d48ad0281a84a3b6b92b19acb3178f1d01e8a6c984d78e1fa6beb97ec",
+        ".pdata": "fcd6883f6bb288088c340087b8f89d5166df2b9beac3c3dcac3dfeff43a68383",
+        ".xdata": "34fb5b2e4d61175fe480ec7cca98b1bfe88280c055d27d7ba6ec2bcbf0fa1145",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "78afae8347a8886d97eb0546adde2018b9c657adba08b40c1f2eaf9c83cc1664",
+        ".CRT": "19fb072d19625453b32faa97e2c12cc47cde6e6c35506b6b8c1ac2972001e07c",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "89a3c125998f4fbca0928a90f1d23ea0cc1cca8bb5019db731c89a864f8db041"
+      }
+    },
+    "result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "11d886b21934a57545ced2159c4a7b78fed036b25ab327f91ad218e59ad3627e",
+      "status": "pass"
+    },
+    "passed": 2,
+    "failed": 0,
+    "seconds": 45.62,
+    "tests": [
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations"
+    ]
+  },
+  "ui_integration_lane": {
+    "binary": {
+      "test_crate": "ottrin_ui",
+      "test_arguments": "--exact tests::windows_copy_recovery_activity_integration --nocapture --test-threads=1 --ignored",
+      "watchdog_ms": 900000,
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-98d491679d016e62.exe",
+      "compiler_sha256": "f08b0079c41f5c803a1c207e1b3859c6d8aced3037fcfd008cf0dba109c2ebb0",
+      "transferred_sha256": "ff3d93df2c55034ca27f21748ff8e21464d8bf292af90f6f3d56644c394aeef6",
+      "retained_sections": {
+        ".text": "c0226224796cfba387a586676d1150ca506940711180f5f2982cb7018381ed28",
+        ".data": "b3ef3e31c3d3b4bb284f6da077d7170be91b7bf6e893ff1b3f68f1eaba14b685",
+        ".rdata": "d0df98cde02c701acdcb01d86816d552e0ff6730a377c5e9cd410f09cf4f9c7a",
+        ".pdata": "87a67c70e33f76cfce1fb4d902aa4d45b73190958f85316a840a1217a5a6e043",
+        ".xdata": "7a0dde1778679ada98c564d518b3451af60aa84e5d7ab8f468ce24e861da3f06",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "9b133d3bf6b0587d92517cc4cd93bb04b9dd2f9f76d5fed7033a18999dc492ba",
+        ".CRT": "6f10f84b4ffdee050f0a7495977d0275004e060e4a0ce9f3ddbe6106a105aa40",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "1a034ef6218f7f02c1f1d6671a779d5cb040a044cfe46cee177e68da5b95436c"
+      }
+    },
+    "result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "ff3d93df2c55034ca27f21748ff8e21464d8bf292af90f6f3d56644c394aeef6",
+      "status": "pass"
+    },
+    "passed": 1,
+    "failed": 0,
+    "seconds": 12.56,
+    "tests": [
+      "tests::windows_copy_recovery_activity_integration"
+    ]
+  },
+  "ui_status_lane": {
+    "binary": {
+      "test_crate": "ottrin_ui",
+      "test_arguments": "--exact tests::windows_retained_copy_activity_keeps_evidence_and_actions_separate --nocapture --test-threads=1",
+      "watchdog_ms": 900000,
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-98d491679d016e62.exe",
+      "compiler_sha256": "f08b0079c41f5c803a1c207e1b3859c6d8aced3037fcfd008cf0dba109c2ebb0",
+      "transferred_sha256": "ff3d93df2c55034ca27f21748ff8e21464d8bf292af90f6f3d56644c394aeef6",
+      "retained_sections": {
+        ".text": "c0226224796cfba387a586676d1150ca506940711180f5f2982cb7018381ed28",
+        ".data": "b3ef3e31c3d3b4bb284f6da077d7170be91b7bf6e893ff1b3f68f1eaba14b685",
+        ".rdata": "d0df98cde02c701acdcb01d86816d552e0ff6730a377c5e9cd410f09cf4f9c7a",
+        ".pdata": "87a67c70e33f76cfce1fb4d902aa4d45b73190958f85316a840a1217a5a6e043",
+        ".xdata": "7a0dde1778679ada98c564d518b3451af60aa84e5d7ab8f468ce24e861da3f06",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "9b133d3bf6b0587d92517cc4cd93bb04b9dd2f9f76d5fed7033a18999dc492ba",
+        ".CRT": "6f10f84b4ffdee050f0a7495977d0275004e060e4a0ce9f3ddbe6106a105aa40",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "1a034ef6218f7f02c1f1d6671a779d5cb040a044cfe46cee177e68da5b95436c"
+      }
+    },
+    "result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "ff3d93df2c55034ca27f21748ff8e21464d8bf292af90f6f3d56644c394aeef6",
+      "status": "pass"
+    },
+    "passed": 1,
+    "failed": 0,
+    "seconds": 0.0,
+    "tests": [
+      "tests::windows_retained_copy_activity_keeps_evidence_and_actions_separate"
+    ]
+  },
+  "teardown": {
+    "temporary_root_exists": false,
+    "task_result": 0,
+    "owned_processes": 0,
+    "fixture_sha256": "11d886b21934a57545ced2159c4a7b78fed036b25ab327f91ad218e59ad3627e",
+    "ui_sha256": "ff3d93df2c55034ca27f21748ff8e21464d8bf292af90f6f3d56644c394aeef6",
+    "task_state": "Ready"
+  },
+  "integration_scenarios": [
+    "success",
+    "changed",
+    "moved",
+    "pending",
+    "resume-staged",
+    "resume-finalizing",
+    "resume-changed",
+    "resume-moved",
+    "resume-stopped",
+    "cleanup-success",
+    "cleanup-changed",
+    "cleanup-retry",
+    "cleanup-stopped-metadata",
+    "cleanup-cohort",
+    "cleanup-cohort-partial"
+  ],
+  "static_checks": {
+    "windows_platform_ui_all_targets_clippy": "passed with -D warnings",
+    "linux_platform_ui_all_targets_clippy": "passed with -D warnings",
+    "format_and_diff": "passed"
+  },
+  "resolved_initial_fixture_failure": "The first cleanup UI fixture created a new copy with no retained payload. It was replaced with a completed Undo and an independent public occupant; the retained-data and public-preservation assertions now execute against real native evidence. First failure diagnostics remain in ACTIVITY_UI_FIRST_FAILURE_*.",
+  "limits": [
+    "Functional egui event/layout tests on Windows; no native desktop screenshot/window acceptance.",
+    "Unoptimized correctness tests; no application resource/performance acceptance.",
+    "Focused public-action, UI integration and status tests only; broad cleanup/journal suites were not rerun for this adapter change. Earlier full-suite receipts retain their own source/executable scope.",
+    "Application packages unchanged and public Windows Copy remains gated."
+  ]
+}

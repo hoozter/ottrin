@@ -230,6 +230,10 @@ pub(super) fn test_case(root: &Path) {
     assert_eq!(app.operation_history.len(), 1);
     let id = app.operation_history[0].id;
     assert!(can_resume(&app.operation_history[0]));
+    assert!(
+        !copy_activity_cleanup::can_cleanup(&app.operation_history[0]),
+        "Forward recovery has no supported cleanup action yet"
+    );
     assert!(app.operation_history[0].path_move_undo_token.is_none());
     app.clear_finished_activity();
     assert_eq!(

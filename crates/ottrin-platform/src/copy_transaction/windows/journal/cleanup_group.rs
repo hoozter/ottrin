@@ -350,6 +350,19 @@ pub(super) struct Observation {
 }
 
 impl Observation {
+    pub(super) fn started(&self) -> bool {
+        self.members.iter().any(|member| match member {
+            Member::Payload(admission) => admission.cleanup_started(),
+            _ => true,
+        })
+    }
+
+    pub(super) fn requires_retained_retry(&self) -> bool {
+        self.pending_metadata.is_some() || self.pending_unlink.as_ref().is_some_and(|(owner, _)| {
+            matches!(&self.members[*owner], Member::Payload(admission) if admission.pending_entry_absent())
+        })
+    }
+
     fn accept_member_change(
         &mut self,
         index: usize,

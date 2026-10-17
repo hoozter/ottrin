@@ -1635,15 +1635,23 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                             + 3;
                         drop(snapshot);
                         let before = namespace_contents(root.path());
-                        let mut plan =
-                            RetainedCopyCleanupPlan::observe_at(&path, &header.transaction, |_| {
-                                Ok(())
-                            })
-                            .unwrap();
+                        let mut plan = RetainedCopyCleanupPlan::observe_at(
+                            &path,
+                            std::slice::from_ref(&header.transaction),
+                            |_| Ok(()),
+                        )
+                        .unwrap();
                         assert_eq!(namespace_contents(root.path()), before);
-                        assert_eq!(plan.transaction_id(), header.transaction);
+                        assert_eq!(plan.transaction_ids(), [header.transaction.as_str()]);
                         assert_eq!(
-                            plan.admitted_phase(),
+                            discovery::discover_at(&path)
+                                .unwrap()
+                                .into_iter()
+                                .find(|entry| entry.transaction_id.as_deref()
+                                    == Some(header.transaction.as_str()))
+                                .unwrap()
+                                .phase
+                                .unwrap(),
                             if undone {
                                 WindowsCopyPhase::Undone
                             } else {
@@ -1671,10 +1679,11 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                                 "{same_root} {directory} {overwrite} {undone} {role:?}"
                             );
                             assert!(!plan.complete());
+                            assert!(plan.requires_retained_retry());
                             let before_retry = namespace_contents(root.path());
                             let fresh = RetainedCopyCleanupPlan::observe_at(
                                 &path,
-                                &header.transaction,
+                                std::slice::from_ref(&header.transaction),
                                 |_| Ok(()),
                             );
                             if role == CleanupMetadataRole::Central {
@@ -1694,6 +1703,11 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                             result.unwrap();
                         }
                         assert!(plan.complete());
+                        assert_eq!(
+                            plan.completed_transaction_ids(),
+                            [header.transaction.as_str()]
+                        );
+                        assert!(!plan.requires_retained_retry());
                         plan.reclaim(|_| Ok(())).unwrap();
                         registry.validate().unwrap();
                         assert!(path.is_dir());
@@ -5146,4 +5160,46 @@ fn windows_native_copy_cleanup_group_process_exit_metadata_and_history_recovery(
         let root = tempfile::tempdir().unwrap();
         run_group_exit_case(root.path(), "metadata", index);
     }
+}
+
+#[test]
+fn windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort() {
+    let root = tempfile::tempdir().unwrap();
+    let (group, ids) = mixed_cleanup_fixture(root.path());
+    drop(group);
+    let before = namespace_contents(root.path());
+    let mut plan =
+        RetainedCopyCleanupPlan::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
+            .unwrap();
+    assert_eq!(namespace_contents(root.path()), before);
+    assert_eq!(plan.transaction_ids().len(), 3);
+    assert!(plan.completed_transaction_ids().is_empty());
+    plan.reclaim(|_| Ok(())).unwrap();
+    assert!(plan.complete());
+    assert_eq!(plan.completed_transaction_ids().len(), 3);
+    assert!(!plan.requires_retained_retry());
+    assert_eq!(
+        namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        1
+    );
+    assert!(
+        discovery::discover_at(&root.path().join("central"))
+            .unwrap()
+            .is_empty()
+    );
+    for directory in ["destination", "second-destination", "third-destination"] {
+        assert!(
+            root.path()
+                .join(directory)
+                .join("copy/nested/file")
+                .is_file()
+        );
+        assert_eq!(
+            std::fs::read_dir(root.path().join(directory))
+                .unwrap()
+                .count(),
+            1
+        );
+    }
+    plan.reclaim(|_| Ok(())).unwrap();
 }

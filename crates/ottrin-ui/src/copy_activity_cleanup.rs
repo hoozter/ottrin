@@ -9,8 +9,17 @@ struct Selection {
     finalization: Option<String>,
 }
 
+#[cfg(target_os = "windows")]
+type WindowsPlan = Arc<std::sync::Mutex<Option<ottrin_platform::RetainedCopyCleanupPlan>>>;
+
 #[derive(Default)]
 pub(super) struct CopyCleanupUi {
+    #[cfg(target_os = "windows")]
+    windows_plan: Option<WindowsPlan>,
+    #[cfg(target_os = "windows")]
+    cancellation: Option<Arc<AtomicBool>>,
+    #[cfg(all(test, target_os = "windows"))]
+    stop_when_missing: Option<PathBuf>,
     confirmation: Option<Vec<u64>>,
     receiver: Option<Receiver<Event>>,
     active: Vec<Selection>,
@@ -19,6 +28,19 @@ pub(super) struct CopyCleanupUi {
 }
 
 impl CopyCleanupUi {
+    #[cfg(target_os = "windows")]
+    pub(super) fn stop(&self) {
+        if let Some(flag) = &self.cancellation {
+            flag.store(true, Ordering::Release);
+        }
+    }
+    #[cfg(target_os = "windows")]
+    pub(super) fn stopping(&self) -> bool {
+        self.cancellation
+            .as_ref()
+            .is_some_and(|flag| flag.load(Ordering::Acquire))
+    }
+
     pub(super) fn running(&self) -> bool {
         self.receiver.is_some()
     }
@@ -42,6 +64,7 @@ impl CopyCleanupUi {
             .retained_copy
             .as_ref()
             .is_some_and(|owner| owner.finalization.is_some())
+            || (cleanup_started(record) && !self.failed(record))
         {
             "Finish Copy cleanup"
         } else if self.failed(record) {
@@ -75,8 +98,41 @@ fn transactions(record: &OperationRecord) -> Vec<String> {
         .unwrap_or_else(|| copy_receipt_transaction_ids(record))
 }
 
+fn cleanup_started(record: &OperationRecord) -> bool {
+    record.retained_copy.as_ref().is_some_and(|owner| {
+        if owner.finalization.is_some() {
+            return true;
+        }
+        #[cfg(target_os = "windows")]
+        {
+            owner.cleanup_phase == Some(ottrin_platform::WindowsCopyPhase::CleaningUp)
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            false
+        }
+    })
+}
+
 pub(super) fn can_cleanup(record: &OperationRecord) -> bool {
-    cfg!(target_os = "linux")
+    #[cfg(target_os = "windows")]
+    let supported = record.retained_copy.as_ref().map_or(
+        record.status == OperationStatus::Completed
+            || matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)),
+        |owner| {
+            matches!(
+                owner.cleanup_phase,
+                Some(
+                    ottrin_platform::WindowsCopyPhase::Completed
+                        | ottrin_platform::WindowsCopyPhase::Undone
+                        | ottrin_platform::WindowsCopyPhase::CleaningUp
+                )
+            )
+        },
+    );
+    #[cfg(not(target_os = "windows"))]
+    let supported = cfg!(target_os = "linux");
+    supported
         && record.undo_kind == Some(PathMoveUndoKind::Copy)
         && record.status != OperationStatus::Queued
         && !matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
@@ -154,7 +210,96 @@ fn run(selections: &[Selection], progress: &mut impl FnMut(String)) -> Outcome {
     outcome
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "windows")]
+fn windows_selection_matches(
+    plan: &ottrin_platform::RetainedCopyCleanupPlan,
+    selected: &std::collections::BTreeSet<String>,
+) -> bool {
+    let completed = plan.completed_transaction_ids();
+    let all = plan.transaction_ids();
+    selected.iter().all(|id| all.contains(&id.as_str()))
+        && all
+            .iter()
+            .filter(|id| !completed.contains(id))
+            .all(|id| selected.contains(*id))
+}
+
+#[cfg(target_os = "windows")]
+fn run(
+    selections: &[Selection],
+    slot: &WindowsPlan,
+    cancellation: &AtomicBool,
+    #[cfg(test)] stop_when_missing: Option<&Path>,
+    progress: &mut impl FnMut(String),
+) -> Outcome {
+    let mut outcome = Outcome::default();
+    let selected = selections
+        .iter()
+        .flat_map(|selection| selection.transactions.iter().cloned())
+        .collect::<std::collections::BTreeSet<_>>();
+    let mut guard = match slot.lock() {
+        Ok(guard) => guard,
+        Err(_) => {
+            return Outcome {
+                error: Some(
+                    "Copy cleanup worker failed; its recovery proof is retained for review.".into(),
+                ),
+                ..Default::default()
+            };
+        }
+    };
+    let mut native_progress = |_| {
+        #[cfg(test)]
+        if stop_when_missing.is_some_and(|path| !path.exists()) {
+            cancellation.store(true, Ordering::Release);
+        }
+        if cancellation.load(Ordering::Acquire) {
+            Err(PlatformError::Io(
+                "Copy cleanup stopped; retained data and recovery proof are preserved for retry."
+                    .into(),
+            ))
+        } else {
+            Ok(())
+        }
+    };
+    let retain = guard
+        .as_ref()
+        .is_some_and(|plan| plan.requires_retained_retry());
+    if retain && !windows_selection_matches(guard.as_ref().unwrap(), &selected) {
+        outcome.error = Some("Finish the pending Copy cleanup selection first.".into());
+        return outcome;
+    }
+    if !retain {
+        progress("Checking retained Copy data…".into());
+        match ottrin_platform::RetainedCopyCleanupPlan::observe(
+            &selected.into_iter().collect::<Vec<_>>(),
+            &mut native_progress,
+        ) {
+            Ok(plan) => *guard = Some(plan),
+            Err(error) => {
+                outcome.error = Some(error.to_string());
+                return outcome;
+            }
+        }
+    }
+    let plan = guard.as_mut().unwrap();
+    progress("Reclaiming retained Copy data and recovery bookkeeping…".into());
+    outcome.error = plan
+        .reclaim(&mut native_progress)
+        .err()
+        .map(|error| error.to_string());
+    outcome.completed.extend(
+        plan.completed_transaction_ids()
+            .into_iter()
+            .map(str::to_owned),
+    );
+    if plan.complete() || !plan.requires_retained_retry() {
+        *guard = None;
+    }
+    outcome
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 fn run(_selections: &[Selection], _progress: &mut impl FnMut(String)) -> Outcome {
     Outcome {
         error: Some("Retained Copy cleanup is not available on this platform".into()),
@@ -189,11 +334,7 @@ impl OttrinApp {
             let previously_authorized = selected.iter().all(|id| {
                 self.operation_history.iter().any(|record| {
                     record.id == *id
-                        && (self.copy_cleanup.failed(record)
-                            || record
-                                .retained_copy
-                                .as_ref()
-                                .is_some_and(|owner| owner.finalization.is_some()))
+                        && (self.copy_cleanup.failed(record) || cleanup_started(record))
                 })
             });
             if previously_authorized {
@@ -235,19 +376,104 @@ impl OttrinApp {
             );
             return;
         }
+        #[cfg(target_os = "windows")]
+        let (windows_plan, selected) = {
+            let mut selected = selected;
+            let slot = self
+                .copy_cleanup
+                .windows_plan
+                .get_or_insert_with(|| Arc::new(std::sync::Mutex::new(None)))
+                .clone();
+            let requested = selected
+                .iter()
+                .flat_map(|selection| selection.transactions.iter().cloned())
+                .collect::<std::collections::BTreeSet<_>>();
+            let allowed = match slot.lock() {
+                Ok(guard) => match guard.as_ref() {
+                    Some(plan) if plan.requires_retained_retry() => {
+                        let all = plan
+                            .transaction_ids()
+                            .into_iter()
+                            .map(str::to_owned)
+                            .collect::<std::collections::BTreeSet<_>>();
+                        let completed = plan
+                            .completed_transaction_ids()
+                            .into_iter()
+                            .map(str::to_owned)
+                            .collect::<std::collections::BTreeSet<_>>();
+                        let pending = all
+                            .difference(&completed)
+                            .cloned()
+                            .collect::<std::collections::BTreeSet<_>>();
+                        if requested.is_subset(&all) && !requested.is_disjoint(&pending) {
+                            // Any Retry card resumes the entire already-authorized
+                            // cohort, including cards whose control is now absent.
+                            selected = self
+                                .operation_history
+                                .iter()
+                                .filter(|record| {
+                                    can_cleanup(record)
+                                        && transactions(record)
+                                            .iter()
+                                            .any(|id| pending.contains(id))
+                                })
+                                .map(|record| Selection {
+                                    transactions: transactions(record),
+                                })
+                                .collect();
+                            let expanded = selected
+                                .iter()
+                                .flat_map(|selection| selection.transactions.iter().cloned())
+                                .collect();
+                            windows_selection_matches(plan, &expanded)
+                        } else {
+                            false
+                        }
+                    }
+                    _ => true,
+                },
+                Err(_) => false,
+            };
+            if !allowed {
+                self.set_status_message("Finish the pending Copy cleanup selection first; its recovery proof is still retained.", false, 8);
+                return;
+            }
+            (slot, selected)
+        };
+        #[cfg(target_os = "windows")]
+        let worker_cancel = {
+            let cancellation = Arc::new(AtomicBool::new(false));
+            self.copy_cleanup.cancellation = Some(cancellation.clone());
+            cancellation
+        };
+        #[cfg(all(test, target_os = "windows"))]
+        let stop_when_missing = self.copy_cleanup.stop_when_missing.take();
         let (tx, rx) = mpsc::channel();
         let active = selected.clone();
         let repaint = self.result_repaint.clone();
         let spawn = std::thread::Builder::new()
             .name("ottrin-copy-cleanup".into())
             .spawn(move || {
-                let outcome = run(&selected, &mut |message| {
-                    // A closed UI does not revoke already-authorized durable cleanup.
-                    repaint.send(&tx, Event::Progress(message));
-                });
+                let outcome = run(
+                    &selected,
+                    #[cfg(target_os = "windows")]
+                    &windows_plan,
+                    #[cfg(target_os = "windows")]
+                    &worker_cancel,
+                    #[cfg(all(test, target_os = "windows"))]
+                    stop_when_missing.as_deref(),
+                    &mut |message| {
+                        // A closed UI does not revoke already-authorized durable cleanup.
+                        repaint.send(&tx, Event::Progress(message));
+                    },
+                );
                 repaint.send(&tx, Event::Finished(outcome));
             });
         if let Err(error) = spawn {
+            #[cfg(target_os = "windows")]
+            {
+                self.copy_cleanup.cancellation = None;
+            }
             self.set_status_message(format!("Could not start Copy cleanup: {error}"), false, 8);
             return;
         }
@@ -278,6 +504,10 @@ impl OttrinApp {
             return;
         };
         self.copy_cleanup.receiver = None;
+        #[cfg(target_os = "windows")]
+        {
+            self.copy_cleanup.cancellation = None;
+        }
         let active = std::mem::take(&mut self.copy_cleanup.active);
         for id in &outcome.completed {
             self.copy_cleanup.errors.remove(id);
@@ -286,6 +516,30 @@ impl OttrinApp {
             let ids = transactions(record);
             ids.is_empty() || !ids.iter().all(|id| outcome.completed.contains(id))
         });
+        #[cfg(target_os = "windows")]
+        for record in &mut self.operation_history {
+            let remaining = transactions(record)
+                .into_iter()
+                .filter(|id| !outcome.completed.contains(id))
+                .collect::<Vec<_>>();
+            if let Some(owner) = &mut record.retained_copy {
+                owner.transactions = remaining;
+            } else if !remaining.is_empty()
+                && transactions(record)
+                    .iter()
+                    .any(|id| outcome.completed.contains(id))
+            {
+                record.retained_copy = Some(RetainedCopyOwnership {
+                    key: format!("cleanup-selection:{}", record.id),
+                    transactions: remaining,
+                    blocked_by: Vec::new(),
+                    restored: true,
+                    finalization: None,
+                    resume: None,
+                    cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
+                });
+            }
+        }
         if let Some(error) = &outcome.error {
             for id in active.iter().flat_map(|selection| &selection.transactions) {
                 if !outcome.completed.contains(id) {
@@ -309,10 +563,17 @@ impl OttrinApp {
                             finalization: None,
                             #[cfg(target_os = "windows")]
                             resume: None,
+                            #[cfg(target_os = "windows")]
+                            cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
                         });
                     }
                     if let Some(owner) = &mut record.retained_copy {
                         owner.restored = true;
+                        #[cfg(target_os = "windows")]
+                        {
+                            owner.resume = None;
+                            record.path_move_undo_token = None;
+                        }
                         if let Some((id, members)) = &outcome.finalization
                             && owner
                                 .transactions
@@ -597,5 +858,177 @@ mod tests {
                 String::from_utf8_lossy(&output.stderr)
             );
         }
+    }
+}
+
+#[cfg(all(test, target_os = "windows"))]
+pub(super) fn windows_test_case(root: &Path) {
+    use std::os::windows::fs::OpenOptionsExt;
+    let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
+    let destination = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_DESTINATION")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| root.join("fixture/destination"));
+    let registry = root.join("profile/Ottrin/State/copies");
+    let mut controls = std::fs::read_dir(&registry)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| {
+            path.extension()
+                .is_some_and(|extension| extension == "copy-journal")
+        })
+        .collect::<Vec<_>>();
+    controls.sort();
+    let control = if case == "cleanup-cohort-partial" {
+        controls.pop().unwrap()
+    } else {
+        controls.remove(0)
+    };
+    let retained = std::fs::read_dir(&destination)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .find(|path| path.file_name().unwrap() != "copy" && path.join("nested/file").is_file())
+        .unwrap();
+    let public = std::fs::read(destination.join("copy/nested/file")).unwrap();
+    let second_public = (case.starts_with("cleanup-cohort")).then(|| {
+        let path = root.join("fixture-second/destination/copy/nested/file");
+        let bytes = std::fs::read(&path).unwrap();
+        (path, bytes)
+    });
+    let before = std::fs::read(&control).unwrap();
+    let mut app = OttrinApp::default();
+    app.operation_history.clear();
+    app.retained_copy_activity_loader =
+        RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+    app.refresh_retained_copy_activity();
+    fn wait(app: &mut OttrinApp) {
+        let deadline = Instant::now() + Duration::from_secs(60);
+        loop {
+            app.poll_copy_cleanup();
+            app.poll_retained_copy_activity();
+            if !app.copy_cleanup.running() && !app.retained_copy_activity_loader.pending {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "Windows cleanup worker did not finish"
+            );
+            std::thread::sleep(Duration::from_millis(5));
+        }
+    }
+    wait(&mut app);
+    let count = if case.starts_with("cleanup-cohort") {
+        2
+    } else {
+        1
+    };
+    assert_eq!(app.operation_history.len(), count);
+    let ctx = Context::default();
+    let click = |app: &mut OttrinApp, label| super::tests::click_activity_action(app, &ctx, label);
+    let initial_action = if count == 2 {
+        "Clear finished"
+    } else {
+        "Discard Copy undo and clear…"
+    };
+    click(&mut app, initial_action);
+    assert!(app.copy_cleanup.confirmation.is_some());
+    assert!(!app.copy_cleanup.running());
+    click(&mut app, "Cancel");
+    assert!(app.copy_cleanup.confirmation.is_none());
+    assert_eq!(std::fs::read(&control).unwrap(), before);
+    assert!(retained.join("nested/file").is_file());
+    click(&mut app, initial_action);
+    let busy = if case == "cleanup-retry" {
+        Some(
+            std::fs::OpenOptions::new()
+                .read(true)
+                .share_mode(3)
+                .open(retained.join("nested/file"))
+                .unwrap(),
+        )
+    } else {
+        None
+    };
+    if case == "cleanup-changed" {
+        std::fs::write(retained.join("nested/file"), b"foreign retained data").unwrap();
+    }
+    if matches!(
+        case.as_str(),
+        "cleanup-stopped-metadata" | "cleanup-cohort" | "cleanup-cohort-partial"
+    ) {
+        app.copy_cleanup.stop_when_missing = Some(control.clone());
+    }
+    click(&mut app, "Discard undo and clear");
+    assert!(app.copy_cleanup.running());
+    wait(&mut app);
+    assert_eq!(
+        std::fs::read(destination.join("copy/nested/file")).unwrap(),
+        public
+    );
+    if case == "cleanup-changed" {
+        assert_eq!(
+            std::fs::read(retained.join("nested/file")).unwrap(),
+            b"foreign retained data"
+        );
+        assert_eq!(std::fs::read(&control).unwrap(), before);
+        assert_eq!(app.operation_history.len(), count);
+        assert!(app.copy_cleanup.failed(&app.operation_history[0]));
+    } else {
+        if busy.is_some()
+            || matches!(
+                case.as_str(),
+                "cleanup-stopped-metadata" | "cleanup-cohort" | "cleanup-cohort-partial"
+            )
+        {
+            assert_eq!(
+                app.operation_history.len(),
+                if case == "cleanup-cohort-partial" {
+                    1
+                } else {
+                    count
+                }
+            );
+            assert!(app.copy_cleanup.failed(&app.operation_history[0]));
+            if matches!(
+                case.as_str(),
+                "cleanup-stopped-metadata" | "cleanup-cohort" | "cleanup-cohort-partial"
+            ) {
+                assert!(!control.exists());
+                assert!(
+                    app.copy_cleanup
+                        .windows_plan
+                        .as_ref()
+                        .unwrap()
+                        .lock()
+                        .unwrap()
+                        .as_ref()
+                        .unwrap()
+                        .requires_retained_retry()
+                );
+            }
+            drop(busy);
+            click(&mut app, "Retry Copy cleanup");
+            assert!(app.copy_cleanup.confirmation.is_none());
+            assert!(app.copy_cleanup.running());
+            wait(&mut app);
+        }
+        assert!(app.operation_history.is_empty());
+        assert!(!retained.exists());
+        assert!(std::fs::read_dir(&registry).unwrap().next().is_none());
+        assert!(
+            app.copy_cleanup
+                .windows_plan
+                .as_ref()
+                .unwrap()
+                .lock()
+                .unwrap()
+                .is_none()
+        );
+    }
+    assert_eq!(
+        std::fs::read(destination.join("copy/nested/file")).unwrap(),
+        public
+    );
+    if let Some((path, bytes)) = second_public {
+        assert_eq!(std::fs::read(path).unwrap(), bytes);
     }
 }

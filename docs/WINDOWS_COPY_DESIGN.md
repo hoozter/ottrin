@@ -660,13 +660,13 @@ uncertain append poisons the writer. Matching durable mirrors can be freshly
 admitted; a local-only append leaves divergent mirrors for review, without
 repair. Cancellation and foreign changes stop further work.
 
-`RetainedCopyCleanupPlan` provides configured, existing-only admission and action
-for one transaction. Its separate start phase appends Begin without deleting
-anything; repeating an acknowledged start adds no record. Completion freezes the
-successful writer's header, journal, private metadata, catalog, location and
-parent security for metadata authorization. An in-session action retains its
-metadata Plan across uncertain final-central unlink; uncertain payload/intent
-writes require fresh admission.
+`RetainedCopyCleanupPlan` provides configured, existing-only admission for one or
+several selected transactions through the same group executor. It exposes the
+selected IDs, durably completed IDs and whether retry requires retaining the
+existing proof. Completion is idempotent without reopening removed controls.
+Uncertain payload/intent writes require fresh admission; known metadata/shared
+removal retains its original proof. Error classification reflects acknowledged
+cleanup progress and keeps the recovery location available.
 
 ### Group execution and known writer handoffs
 
@@ -772,12 +772,46 @@ NeedsReview. A shared dependency can require group admission even if an individu
 history inspection cannot authorize that member. Activity must keep observation
 and action authority separate; constructed-row tests are not rendered acceptance.
 
+### Windows Activity integration
+
+Activity offers cleanup for completed copies, completed Undo and interrupted
+cleanup. Staged/unfinished forward recovery and unidentified records have no
+unsupported discard action. A new discard requests confirmation; existing cleanup
+intent and explicit retry retain prior authorization. Canceling confirmation
+performs no cleanup. Existing theme styles apply to the dialog and controls.
+
+The Windows worker admits the selected cohort before mutation and performs native
+validation/deletion off the UI thread. Stop uses the native progress callback.
+A shared mutex slot holds the actual opaque plan before thread creation, preserving
+its authority across worker outcomes and failed spawns. Poisoned state refuses
+further execution for review. No held files are stored in the UI.
+
+When metadata removal needs the same proof, retry reuses that object even if its
+final journal is absent. Retrying any card in the previously authorized cohort
+resumes its remaining members. Unrelated selections cannot replace pending
+proof. Activity removes only IDs reported durably complete; partially completed
+cards retain their remaining ownership. Failed cleanup clears stale Undo/forward
+capabilities and leaves an explicit review/retry state. Discovery remains an
+observation, and IDs never become removal authority.
+
 ### Verification and remaining gates
 
 All receipts are under `.hermes/evidence/windows-copy-cleanup-current/` and bind
 their own source, executable, profile and scope. Earlier component receipts are
 historical evidence, not claims about a newer executable.
 
+- `ACTIVITY_ACCEPTANCE.json` and `ACTIVITY_COVERAGE.json`: two native public-action
+  tests pass in 45.62s, including the 64-shape single-member metadata-retry matrix
+  and a mixed three-owner cohort. One Windows integration parent asserts all 15
+  subprocess scenarios in 12.56s: the prior nine Undo/forward-recovery cases plus
+  confirmation/cancel, changed retained data, busy-file retry, stop after final
+  journal removal, a two-operation retry from one card, and partial completion.
+  A separate status/action test passes on the same UI executable. Native lists
+  match all four reported parent test names; processes and temporary root are
+  absent afterward. These exercise egui events/layout and real filesystem workers,
+  rather than native desktop rendering or a packaged build. Broader cleanup/journal
+  suites were not repeated for this adapter change; their earlier receipts keep
+  their source/executable scopes.
 - `GROUP_EXIT_ACCEPTANCE.json` and `GROUP_EXIT_COVERAGE.json`: all 32 enumerated
   grouped-cleanup cases on one executable, 31 passed/zero failed/one parent-owned
   child entry ignored in 508.37s. Both that run and its separate focused run
@@ -830,7 +864,7 @@ task finishes successfully with no owned native process or temporary root left.
 Unrelated cleanup/journal suites were not repeated for this test-only change;
 their earlier source/executable scopes remain explicit.
 
-Activity confirmation, execution and retry, reserved-target protection,
+Native desktop Activity acceptance, reserved-target protection,
 interrupted-staging reclamation,
 measured resource/storage/security matrices, physical power-cut acceptance,
 broader workflows and exact current package/UI acceptance remain open. These
