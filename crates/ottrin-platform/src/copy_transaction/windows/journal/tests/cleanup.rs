@@ -3690,3 +3690,237 @@ fn windows_native_copy_cleanup_peer_binding_revalidates_parent_policy_without_wr
     assert!(observation.revalidate(&central, |_| Ok(())).is_err());
     assert_eq!(namespace_contents(root.path()), before);
 }
+
+#[test]
+fn windows_native_copy_cleanup_peer_acknowledgement_validates_replays_and_counts_once() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut journal, proof, removed) = peer_unlink_codec_fixture(root.path());
+    journal.prepare_peer_unlink(proof.clone()).unwrap();
+    let intent = read(&journal.local).unwrap();
+    assert!(journal.acknowledge_peer_unlink(|_| Ok(())).is_err());
+    assert_eq!(read(&journal.local).unwrap(), intent);
+    std::fs::remove_file(&removed).unwrap();
+    owner(removed.parent().unwrap()).sync_all().unwrap();
+    let before = namespace_contents(root.path());
+    journal.acknowledge_peer_unlink(|_| Ok(())).unwrap();
+    assert_only_journals_changed(
+        &before,
+        &namespace_contents(root.path()),
+        &[journal.header.clone()],
+    );
+    let progress = journal.state.cleanup.as_ref().unwrap();
+    assert!(progress.peer_unlink.is_none());
+    for &alias in progress.manifest.same_object(proof.index) {
+        assert_eq!(progress.expected_links(alias).unwrap(), 3);
+    }
+    let bytes = read(&journal.local).unwrap();
+    assert_eq!(bytes, read(&journal.central).unwrap());
+    let parent = owner(&root.path().join("second-destination"));
+    let central = owner(&root.path().join("central"));
+    let name = journal.header.stage_name();
+    drop(journal);
+    let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
+    let mut replayed = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
+    super::super::cleanup_tree::Remaining::open(
+        &parent,
+        &replayed.state,
+        replayed.state.cleanup.as_ref().unwrap(),
+        |_| Ok(()),
+    )
+    .unwrap();
+    assert!(replayed.acknowledge_peer_unlink(|_| Ok(())).is_err());
+    assert!(replayed.prepare_peer_unlink(proof).is_err());
+    assert_eq!(read(&replayed.local).unwrap(), bytes);
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_acknowledgement_preserves_changed_or_missing_evidence() {
+    for change in 0..5 {
+        let root = tempfile::tempdir().unwrap();
+        let (mut journal, proof, removed) = peer_unlink_codec_fixture(root.path());
+        journal.prepare_peer_unlink(proof.clone()).unwrap();
+        std::fs::remove_file(&removed).unwrap();
+        owner(removed.parent().unwrap()).sync_all().unwrap();
+        match change {
+            0 => std::fs::remove_file(root.path().join("outside")).unwrap(),
+            1 => std::fs::write(root.path().join("outside"), b"external replacement data").unwrap(),
+            2 => {
+                let alias = root
+                    .path()
+                    .join("second-destination")
+                    .join(journal.header.original_name())
+                    .join("old");
+                std::fs::remove_file(alias).unwrap();
+            }
+            3 => std::fs::remove_file(
+                root.path()
+                    .join("central")
+                    .join(format!("{}.copy-journal", proof.transaction)),
+            )
+            .unwrap(),
+            4 => {}
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(
+            journal
+                .acknowledge_peer_unlink(|_| {
+                    if change == 4 {
+                        Err(io("owned peer acknowledgement cancellation"))
+                    } else {
+                        Ok(())
+                    }
+                })
+                .is_err()
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+        assert!(
+            journal
+                .state
+                .cleanup
+                .as_ref()
+                .unwrap()
+                .peer_unlink
+                .is_some()
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_acknowledgement_read_handles_never_grant_delete() {
+    use super::super::{cleanup_peer::Observation, cleanup_tree::Remaining};
+    let root = tempfile::tempdir().unwrap();
+    let (mut journal, proof, removed) = peer_unlink_codec_fixture(root.path());
+    journal.prepare_peer_unlink(proof.clone()).unwrap();
+    std::fs::remove_file(&removed).unwrap();
+    owner(removed.parent().unwrap()).sync_all().unwrap();
+    let central = owner(&root.path().join("central"));
+    let parent = owner(&root.path().join("second-destination"));
+    let observation = Observation::open(&central, &journal.state, |_| Ok(())).unwrap();
+    let mut remaining =
+        Remaining::after_peer_unlink(&parent, &journal.state, &observation, |_| Ok(())).unwrap();
+    let before = namespace_contents(root.path());
+    let progress = journal.state.cleanup.as_ref().unwrap();
+    assert!(
+        remaining
+            .acquire(&parent, &journal.state, progress, proof.index, &mut |_| Ok(
+                ()
+            ))
+            .is_err()
+    );
+    assert!(
+        remaining
+            .remove(
+                &parent,
+                &journal.state,
+                progress,
+                proof.index,
+                journal.sequence,
+                &mut |_| Ok(())
+            )
+            .is_err()
+    );
+    remaining
+        .revalidate(&parent, &journal.state, progress, &mut |_| Ok(()))
+        .unwrap();
+    assert_eq!(namespace_contents(root.path()), before);
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_acknowledgement_uncertain_mirrors_preserve_data() {
+    for step in [Step::LocalFlushed, Step::CentralFlushed] {
+        let root = tempfile::tempdir().unwrap();
+        let (mut journal, proof, removed) = peer_unlink_codec_fixture(root.path());
+        journal.prepare_peer_unlink(proof).unwrap();
+        std::fs::remove_file(&removed).unwrap();
+        owner(removed.parent().unwrap()).sync_all().unwrap();
+        let before = namespace_contents(root.path());
+        let header = journal.header.clone();
+        let parent = owner(&root.path().join("second-destination"));
+        let central = owner(&root.path().join("central"));
+        FAULT.with(|slot| slot.set(Some((journal.sequence, step, false))));
+        let result = journal.acknowledge_peer_unlink(|_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(result.is_err());
+        let after = namespace_contents(root.path());
+        assert_only_journals_changed(&before, &after, std::slice::from_ref(&header));
+        assert!(journal.acknowledge_peer_unlink(|_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), after);
+        drop(journal);
+        let snapshot = Snapshot::load(
+            &parent,
+            &central,
+            &header.stage_name(),
+            SnapshotAccess::Write,
+        );
+        if step == Step::CentralFlushed {
+            let mut recovered =
+                Journal::from_snapshot(&parent, &central, snapshot.unwrap()).unwrap();
+            assert!(
+                recovered
+                    .state
+                    .cleanup
+                    .as_ref()
+                    .unwrap()
+                    .peer_unlink
+                    .is_none()
+            );
+            assert!(recovered.acknowledge_peer_unlink(|_| Ok(())).is_err());
+            assert_eq!(namespace_contents(root.path()), after);
+        } else {
+            assert!(snapshot.is_err());
+            assert_eq!(namespace_contents(root.path()), after);
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ack() {
+    use super::super::cleanup_dependencies::Dependencies;
+    let root = tempfile::tempdir().unwrap();
+    let (local, proof, removed) = peer_unlink_codec_fixture(root.path());
+    let local_name = local.header.stage_name();
+    let peer_name = OsString::from(format!(".ottrin-copy-{}", proof.transaction));
+    let local_parent = owner(&root.path().join("second-destination"));
+    let central = owner(&root.path().join("central"));
+    drop(local);
+    let peer = original_journal(root.path(), &peer_name);
+    let header = peer.header.clone();
+    // Isolate the metadata dependency: old payload IDs must not make this
+    // accidentally pass by refusing the still-shared file instead of control.
+    let mut metadata_only = peer.state.cleanup_manifest().unwrap();
+    metadata_only.entries.clear();
+    metadata_only.order.clear();
+    drop(Dependencies::open_selected(&central, &header, &metadata_only, None, |_| Ok(())).unwrap());
+    let snapshot =
+        Snapshot::load(&local_parent, &central, &local_name, SnapshotAccess::Write).unwrap();
+    let mut local = Journal::from_snapshot(&local_parent, &central, snapshot).unwrap();
+    local.prepare_peer_unlink(proof).unwrap();
+    drop(local);
+    let before = namespace_contents(root.path());
+    assert!(
+        Dependencies::open_selected(&central, &header, &metadata_only, None, |_| Ok(())).is_err()
+    );
+    assert_eq!(namespace_contents(root.path()), before);
+    drop(peer);
+    std::fs::remove_file(&removed).unwrap();
+    owner(removed.parent().unwrap()).sync_all().unwrap();
+    let snapshot =
+        Snapshot::load(&local_parent, &central, &local_name, SnapshotAccess::Write).unwrap();
+    let mut local = Journal::from_snapshot(&local_parent, &central, snapshot).unwrap();
+    local.acknowledge_peer_unlink(|_| Ok(())).unwrap();
+    drop(local);
+    let before = namespace_contents(root.path());
+    drop(Dependencies::open_selected(&central, &header, &metadata_only, None, |_| Ok(())).unwrap());
+    assert_eq!(namespace_contents(root.path()), before);
+    assert!(
+        root.path()
+            .join("central")
+            .join(header.central_name())
+            .exists()
+    );
+}

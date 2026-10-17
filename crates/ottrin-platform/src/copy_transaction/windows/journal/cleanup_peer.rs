@@ -1,4 +1,4 @@
-//! Held, read-only validation of a recorded peer unlink. No token or absent
+//! Bound validation and acknowledgement of a recorded peer unlink. No token or absent
 //! pathname independently grants permission to remove or acknowledge data.
 use super::cleanup_protocol::PeerUnlink;
 use super::cleanup_tree::Remaining;
@@ -12,6 +12,8 @@ pub(super) struct Observation {
     control_version: EntryVersion,
     parent_security: [u8; 32],
     removed: bool,
+    local_control: WindowsStableIdentity,
+    proof: PeerUnlink,
 }
 
 impl Observation {
@@ -91,6 +93,8 @@ impl Observation {
             control_version,
             parent_security,
             removed,
+            local_control: local_header.central_file,
+            proof: proof.clone(),
         };
         result.revalidate(central, &mut cancel)?;
         Ok(result)
@@ -134,6 +138,25 @@ impl Observation {
         self.removed
     }
 
+    pub(super) fn removed_identity(
+        &self,
+        local: &State,
+    ) -> Result<WindowsStableIdentity, PlatformError> {
+        let progress = local
+            .cleanup
+            .as_ref()
+            .ok_or_else(|| io("Missing peer cleanup state"))?;
+        if !self.removed
+            || local.header.as_ref().map(|header| header.central_file) != Some(self.local_control)
+            || progress.peer_unlink.as_deref() != Some(&self.proof)
+        {
+            return Err(io(
+                "Peer observation does not certify this local pending unlink",
+            ));
+        }
+        Ok(progress.expected(self.proof.index).identity)
+    }
+
     pub(super) fn revalidate(
         &self,
         central: &File,
@@ -160,5 +183,45 @@ impl Observation {
             self.snapshot.state.cleanup.as_ref().unwrap(),
             &mut cancel,
         )
+    }
+}
+
+impl Journal {
+    /// Record one peer unlink only after its canonical intent/absence and every
+    /// local retained alias have been checked under held read capabilities.
+    /// This removes no payload and grants no authority for another unlink.
+    pub(super) fn acknowledge_peer_unlink(
+        &mut self,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        cancel(0)?;
+        if self.failed {
+            return Err(io("Copy journal write is uncertain; data retained"));
+        }
+        self.bindings()?;
+        self.reserve_cleanup_tail()?;
+        let parent_security = security::owner_group_dacl_digest(&self.parent_dir)?;
+        let observation = Observation::open(&self.central_dir, &self.state, &mut cancel)?;
+        let remaining =
+            Remaining::after_peer_unlink(&self.parent_dir, &self.state, &observation, &mut cancel)?;
+        let progress = self.state.cleanup.as_ref().unwrap();
+        let proof = progress.peer_unlink.as_deref().unwrap();
+        let after = remaining.observed[proof.index]
+            .as_ref()
+            .ok_or_else(|| io("Copy peer acknowledgement has no surviving local alias"))?
+            .clone();
+        let key = proof.key()?;
+        observation.revalidate(&self.central_dir, &mut cancel)?;
+        remaining.revalidate(&self.parent_dir, &self.state, progress, &mut cancel)?;
+        if security::owner_group_dacl_digest(&self.parent_dir)? != parent_security {
+            return Err(io("Copy local parent changed during peer acknowledgement"));
+        }
+        self.bindings()?;
+        self.persist(Record::Cleanup {
+            entry: cleanup_protocol::CleanupRecord::PeerUnlinkRemoved {
+                key,
+                after: Box::new(after),
+            },
+        })
     }
 }

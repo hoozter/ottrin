@@ -1,0 +1,100 @@
+{
+  "scope": "Validated peer-unlink acknowledgement and pending owner-control dependency; no physical group unlink or package acceptance",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "79bf6689afba6bc35cf81c555281ce7fd372fdccbf7d1ed3f7d6c2bf7d928f23",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "3a93b0180b7a0793891fbcc446ac770b0adfbc4886626cf649ea78017e8316b1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "ef20319ad06eb20bf1971b62bdbd1e900bb867b8f3ca3ecb53e99ed3551e189c",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "0289757aef6cdf9a97f88edbc99102b1cfdcf807048fa7fdc4bf7f392514bb9a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "f045ebb66311fae731d5131ae1ee9a89b85d66a27ab0ce4251507f3f6b5e4ec1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "315390b819bfdad8651d8fee0f7465348233628e6d34d56fa6ebde3d267b3fea",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "fb4c582655d7c9ce6b583dadda7f4dd71e8e5917d40700d750e9fef36422396d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "fc14f2000a462eb0ae80c9c3d0dd88606b04e2db76f80be04ec4214bfe86ce8e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_peer.rs": "c574c8e7bad8c6c6bfb8c203f9b04ea79e30a01d680f96e54e140c0d40d00d2c"
+  },
+  "native_binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup_peer_acknowledgement --nocapture --test-threads=1",
+    "watchdog_ms": 300000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "30467eb0c8bea3955231bd91437869ed9fe52ee4284fe3245cc984395cece3ef",
+    "transferred_sha256": "da6597462ea76445b02539cf29756ecea4b3fbfc356943342b2bb2285ee8a277",
+    "retained_sections": {
+      ".text": "660a975e8cc5eb500cada751d00bd99a8a7f9e1fe41cda62e10f98672b5ad589",
+      ".data": "d8771d1f25030012f61bdb9ced0ade37294a0838ee68a2634206afc0f162fb3b",
+      ".rdata": "5fd4d9233fa3c150db8e6c8c24522145683f29d27e9002dc1459aa9df126002d",
+      ".pdata": "143dd53ac27e2e2537883bfaf6b3e461732dbe0a6b317390a0114c5753835f36",
+      ".xdata": "666e2701ee5bb6dd9fcf6f510263d42e7ba1f6babd709896193874b35bca657e",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "fe57ac25e2fe3cc1fe8773f9439f029f28e2d98268895c67131ec6930e8650b4",
+      ".CRT": "58a62f5773e90df5a929e0b3af03714438dbffc403b29583f10fd8c65b6bfc92",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "17f279f6eb78c6a0bf090e5d00ec9f57bd2af3df5f8cea40d12f936074279d61"
+    }
+  },
+  "focused_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "da6597462ea76445b02539cf29756ecea4b3fbfc356943342b2bb2285ee8a277",
+    "status": "pass"
+  },
+  "focused_tests": {
+    "passed": 5,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 360,
+    "seconds": 20.9
+  },
+  "broader_cleanup_verification": "All 58 native cleanup cases enumerated on this exact binary accounted for:56 passed,2 existing ignored entry points. Case outcomes in PEER_ACK_COVERAGE.json.",
+  "static_checks": [
+    "strict Windows ottrin-platform and ottrin-ui all-target Clippy",
+    "cargo fmt --all -- --check",
+    "git diff --check"
+  ],
+  "remaining": [
+    "group per-entry shared physical coordination and successful own-control epoch handoff",
+    "group process-exit/history recovery",
+    "Activity cleanup workflow",
+    "current packages"
+  ],
+  "cleanup_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "da6597462ea76445b02539cf29756ecea4b3fbfc356943342b2bb2285ee8a277",
+    "status": "pass"
+  },
+  "cleanup_tests": {
+    "passed": 56,
+    "failed": 0,
+    "ignored_existing": 2,
+    "filtered": 307,
+    "seconds": 636.11,
+    "watchdog_ms": 900000
+  },
+  "teardown": {
+    "task": "Ready",
+    "result": 0,
+    "owned_processes": 0,
+    "temp_present": false
+  },
+  "enumeration": "Controller --list after ordinary-account functional tests; enumeration is not itself a functional test.",
+  "verification_limit": "Unrelated journal/core and platform suites were not repeated: codec/schema/decoder unchanged. Earlier receipt scopes remain separate. No package/UI/performance acceptance."
+}

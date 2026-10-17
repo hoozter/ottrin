@@ -66,6 +66,7 @@ pub(super) struct Remaining {
     present: Vec<bool>,
     pub(super) pending_absent: bool,
     writable: BTreeSet<usize>,
+    peer_change: Option<WindowsStableIdentity>,
 }
 
 impl Remaining {
@@ -82,6 +83,34 @@ impl Remaining {
         progress: &Progress,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        Self::open_adjusted(parent, state, progress, None, &mut cancel)
+    }
+
+    /// Read capabilities only: the peer observer must certify its recorded
+    /// absence before this permits one link-count/change-time adjustment.
+    pub(super) fn after_peer_unlink(
+        parent: &File,
+        state: &State,
+        observation: &super::cleanup_peer::Observation,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let identity = observation.removed_identity(state)?;
+        Self::open_adjusted(
+            parent,
+            state,
+            state.cleanup.as_ref().unwrap(),
+            Some(identity),
+            cancel,
+        )
+    }
+
+    fn open_adjusted(
+        parent: &File,
+        state: &State,
+        progress: &Progress,
+        peer_change: Option<WindowsStableIdentity>,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
         let manifest = &progress.manifest;
         let mut present = vec![true; manifest.entries.len()];
         for &index in &manifest.order[..progress.completed] {
@@ -94,6 +123,7 @@ impl Remaining {
             present,
             pending_absent: false,
             writable: BTreeSet::new(),
+            peer_change,
         };
         for index in 0..manifest.entries.len() {
             cancel(0)?;
@@ -142,6 +172,9 @@ impl Remaining {
                 expected.changed = actual.changed;
             }
         }
+        if self.peer_change == Some(actual.identity) {
+            expected.changed = actual.changed;
+        }
         expected
     }
 
@@ -166,6 +199,11 @@ impl Remaining {
             links = links
                 .checked_sub(1)
                 .ok_or_else(|| io("Copy cleanup pending alias underflow"))?;
+        }
+        if self.peer_change == Some(actual.identity) {
+            links = links
+                .checked_sub(1)
+                .ok_or_else(|| io("Copy cleanup peer alias underflow"))?;
         }
         if actual != self.expected_version(progress, index, &actual)
             || namespace::link_count(file)? != links
@@ -264,6 +302,11 @@ impl Remaining {
         index: usize,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if self.peer_change.is_some() {
+            return Err(io(
+                "Peer acknowledgement observation grants no removal capability",
+            ));
+        }
         if let Some(p) = progress.manifest.entries[index].parent
             && !self.writable.contains(&p)
         {
@@ -358,6 +401,11 @@ impl Remaining {
         sequence: u64,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<CleanupRecord, PlatformError> {
+        if self.peer_change.is_some() {
+            return Err(io(
+                "Peer acknowledgement observation grants no removal capability",
+            ));
+        }
         if self.present[index] {
             let file = self.handles[index].as_ref().unwrap();
             dispose(file)?;

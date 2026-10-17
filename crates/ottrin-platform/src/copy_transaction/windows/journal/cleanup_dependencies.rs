@@ -214,6 +214,9 @@ pub(super) fn references(state: &State) -> Vec<WindowsStableIdentity> {
         header.central_file,
     ];
     if let Some(cleanup) = &state.cleanup {
+        // A pending peer acknowledgement needs the owner's canonical journal
+        // and paired metadata for native replay, even after its payload is gone.
+        references.extend(cleanup.peer_unlink.as_ref().map(|proof| proof.control));
         references.extend(
             cleanup.manifest.order[cleanup.completed..]
                 .iter()

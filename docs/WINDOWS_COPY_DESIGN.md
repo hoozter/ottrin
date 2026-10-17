@@ -1016,3 +1016,35 @@ are recorded in `PEER_BINDING_COVERAGE.json`. Owned processes and temporary data
 are absent afterward. These are unoptimized correctness tests, not package, UI
 or performance acceptance. Physical shared cleanup and its interruption recovery
 remain unfinished.
+
+## Validated peer-unlink acknowledgement
+
+`Journal::acknowledge_peer_unlink` updates the local paired journal only after
+its recorded peer prefix and native absence are validated. It uses the writer's
+held parent and registry, checks creator/bindings and failed-writer state, and
+reserves the complete remaining journal tail. The observation binds the exact
+pending proof to the local native control.
+
+The common remaining-tree validator supports a read-only peer-change observation.
+For the shared native object it accepts only the recorded version with changed
+time updated and exactly one fewer hard link. Every surviving local alias must
+still match content, streams, permissions, compression and all other metadata;
+other retained objects and namespace entries keep their normal checks. These
+read capabilities explicitly refuse `acquire` and `remove`. Local and peer
+capabilities remain held through final revalidation and paired acknowledgement.
+
+A failed append poisons that writer. Paired durable acknowledgement replays once;
+a local-only append retains divergent mirrors for review. This step deletes no
+payload. Group physical unlink coordination and its catalog handoff remain
+unfinished. Pending peer intents also contribute the owner's canonical control
+to dependency references, so metadata cleanup cannot discard the journal needed
+for replay before acknowledgement. A native regression isolates that control
+from payload overlap and checks release after acknowledgement. Five focused
+ordinary-account native tests pass in 20.90 seconds. The same exact binary passes
+the full cleanup batch: 56 passed, two existing ignored entry points, zero failed,
+636.11 seconds. Its 58 case names exactly match native enumeration, recorded in
+`PEER_ACK_COVERAGE.json`; source hashes, binary, profile and teardown are bound
+in `PEER_ACK_ACCEPTANCE.json`. No owned native process or temporary root remains.
+Unrelated journal/core suites were not repeated for this change; the schema and
+decoder are unchanged. Earlier test results retain their own source/binary scope.
+No package, rendered UI or performance acceptance is implied.
