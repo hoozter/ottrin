@@ -1,0 +1,53 @@
+{
+  "status": "pass",
+  "scope": "Windows native Copy destination naming-policy binding; complete enumerated journal case accounting in two disjoint batches. Not public Windows Copy, GUI, package or full-platform acceptance.",
+  "source": {
+    "baseline_revision": "5da46a6",
+    "schema": 14,
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "3d0fd5ea767e8c74d4ddb9f8a95a00d0ccaf9509d8278f6a91e241d0b315e4d3",
+      "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+    }
+  },
+  "compiler_test_binary_sha256": "180aa11fb4a8cd1c941ae55725c3f6f0a650459f7191fe2f97c17ba6923f4996",
+  "transferred_test_binary_sha256": "da23c76a38d12fa5b861586c8adf1e64a6a2bc400fbb646b447c9e8717ebb534",
+  "native_account": "ordinary OttrinCopyQA",
+  "focused": {
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 1.57
+  },
+  "journal": {
+    "enumerated": 181,
+    "passed": 172,
+    "failed": 0,
+    "ignored": 9,
+    "core_seconds": 428.5,
+    "cleanup_seconds": 808.21,
+    "exact_case_coverage": ".hermes/evidence/windows-admission-policy-current/JOURNAL_COVERAGE.json"
+  },
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "red_regression": "Unchanged production code admitted an absent target after a native case-policy transition: four focused checks passed and one failed. RED source patch, source hash, binary hash and output retained.",
+  "fixture_setup_correction": "The first corrected binary run failed two setup calls with STATUS_DIRECTORY_NOT_EMPTY. Final fixtures use permitted empty-directory transitions both ways and populated true-to-false transitions; no failed setup was skipped or counted as acceptance.",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "Durable cross-process native target claims remain unimplemented; public Windows Copy stays gated.",
+    "Seven parent-owned crash-child entries, one Activity export fixture and one owned-secondary-volume fixture are explicitly ignored in the ordinary batches; their exact names/reasons are recorded in JOURNAL_COVERAGE.json.",
+    "This does not accept Activity GUI integration or the separate secondary-volume fixture for the new source.",
+    "Policy-changed or unsupported retained state remains for review; no automatic policy repair.",
+    "Schema 14 rejects previous schemas without converting or deleting their data.",
+    "Published app packages are unchanged; this source change is Windows-only."
+  ],
+  "red_source_reconstruction": "Applying decompressed RED_REGRESSION.patch.gz to 5da46a6 reproduces RED_SOURCE.json journal SHA-256 exactly."
+}

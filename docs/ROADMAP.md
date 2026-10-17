@@ -4416,3 +4416,36 @@ Evidence: `.hermes/evidence/windows-case-policy-current/ACCEPTANCE.json`.
 Absent-name durable cross-process claims, short-name aliases, parent changes and
 concurrent transaction workflows remain open. Public Windows Copy stays gated;
 the roadmap goal remains active and user testing is deferred.
+
+## Windows Copy destination naming-policy binding — 2026-10-18
+
+A native regression reproduced stale creation approval after the destination
+folder's case-sensitivity policy changed while its target remained absent.
+Admission now captures the actual policy through the held directory and checks
+it around target validation. Schema 14 records that policy in both immutable
+journal headers. Journal writers and reopened snapshots refuse changed or
+unreadable policy, retaining data for review. Earlier schemas are not migrated
+or deleted. This is a prerequisite for durable target claims, not a reservation
+implementation or public Windows Copy enablement.
+
+Six focused ordinary-account native tests pass, including both empty-directory
+transition directions, unchanged Overwrite targets and byte-preserving refusal
+before publication and Undo. The first corrected fixture attempted to enable
+case sensitivity on a populated directory and failed setup; the final fixtures
+use OS-permitted transitions without skipping a failure or weakening assertions.
+
+The same exact executable accounts for all 181 named journal cases. The disjoint
+core batch passes 97 with 6 ignored in 428.50 seconds; cleanup passes 75 with 3
+ignored in 808.21 seconds. There are zero failures. The nine ignored rows are
+seven parent-owned crash-child entry points, one Activity export fixture and one
+owned-secondary-volume fixture. These batches do not accept the separate
+Activity consumer or secondary-volume gate. Strict Windows platform all-target
+Clippy, formatting and diff checks pass. Owned temporary data and the uploaded
+executable are removed, the VM is shut off and original profile/installation/login
+state is unchanged. Exact source, binary, case accounting and teardown are in
+`.hermes/evidence/windows-admission-policy-current/ACCEPTANCE.json`.
+
+Published application packages are unchanged by this Windows-only source fix.
+Durable cross-process target claims, remaining Copy staging/security/resource
+work, current public workflows and package/platform acceptance remain open.
+The full roadmap goal remains active; user testing is deferred.

@@ -1,0 +1,27 @@
+{
+  "status": "pass",
+  "scope": "Six focused ordinary-account native Windows destination-admission tests; broader journal results are recorded in ACCEPTANCE.json.",
+  "source": {
+    "baseline_revision": "5da46a6",
+    "schema": 14,
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "3d0fd5ea767e8c74d4ddb9f8a95a00d0ccaf9509d8278f6a91e241d0b315e4d3",
+      "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+    }
+  },
+  "test_binary_sha256": "da23c76a38d12fa5b861586c8adf1e64a6a2bc400fbb646b447c9e8717ebb534",
+  "passed": 6,
+  "failed": 0,
+  "ignored": 0,
+  "seconds": 1.57,
+  "red_regression": "Unchanged production implementation: four pass, one failure because a policy transition left absent-name creation admitted. Exact RED source patch and binary/result preserved.",
+  "fixture_correction": "First corrected build passed four and failed two setup calls with STATUS_DIRECTORY_NOT_EMPTY. Corrected fixtures use empty-directory transitions both ways and populated true-to-false transitions with unambiguous names. No setup failure was counted as acceptance.",
+  "strict_windows_platform_clippy": "pass",
+  "format_and_diff": "pass",
+  "limits": [
+    "This fixes a naming-policy precondition; durable cross-process claims remain unimplemented.",
+    "Schema 14 refuses previous journals for review; no migration or deletion.",
+    "Current Windows packages and public Copy gating are unchanged.",
+    "Policy-changed retained state refuses mutation; automatic policy repair is not implemented."
+  ]
+}

@@ -1367,3 +1367,21 @@ alone does not prove cancellation happened after provider startup. The current
 test records readiness duration and budget and still requires source preservation
 and private-process/profile cleanup. Package source and test-runner identities
 are separate when only acceptance code changes after packaging.
+
+## Windows Copy directory case policy
+
+Read the actual directory policy through the held parent handle with
+[NtQueryInformationFile / FileCaseSensitiveInformation](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntqueryinformationfile).
+Do not infer it from Windows defaults or current filename occupancy. The
+immutable transaction header retains the admitted policy; native writer and
+recovery validation require it again. Unsupported or unknown flags do not grant
+admission. This is one prerequisite for durable native target reservations.
+
+The normal-user native fixture sets and queries the actual flag. Empty-directory
+transitions exercise both directions. Staging/publication fixtures start with
+case sensitivity enabled and disable it only with unambiguous names; they do not
+try to re-enable it on populated directories. Windows imposes
+[directory-state and permission constraints](https://learn.microsoft.com/en-us/windows/wsl/case-sensitivity)
+on those transitions. A fixture setup refusal is a failed run, never a passing
+policy test or an implicit skip. Sources and journal/publication bytes must remain
+unchanged when authority is refused.

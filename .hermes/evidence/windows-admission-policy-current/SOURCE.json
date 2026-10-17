@@ -1,0 +1,8 @@
+{
+  "baseline_revision": "5da46a6",
+  "schema": 14,
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "3d0fd5ea767e8c74d4ddb9f8a95a00d0ccaf9509d8278f6a91e241d0b315e4d3",
+    "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+  }
+}

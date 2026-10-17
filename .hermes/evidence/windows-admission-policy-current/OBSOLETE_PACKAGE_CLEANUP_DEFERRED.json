@@ -1,0 +1,15 @@
+{
+  "superseded_revision": "e9e678372c23e2476e98145e4585a993ae5f23e9",
+  "removed_artifact_sha256": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "28293264d72fe35dd02f6f6c4909e6c158b9bfc14e40fd15d17e552f8ca144b0",
+    "Ottrin-0.1.0-windows-x64.msi": "5cfc47f45100305a6255db355cfceed7caaceaedaef560e722d6e2d14fdd0283",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ee0cb8c88069e9a66fb2f99b0099b08a5a260b63bbb940da8277711e4bd8ab31"
+  },
+  "verified_old_payload_files": 57,
+  "current_candidate_source_revision": "a6dc0905a61277b3fb896ea76ff0524d552a757c",
+  "current_candidate_retained": ".hermes/packaging-tmp/windows-activity-candidate",
+  "consumer_check": "User lsof found no open entries but warned about inaccessible Docker mounts. Docker API and passwordless privileged lsof are unavailable, so complete consumer exclusion was not established.",
+  "historical_receipt_retained": ".hermes/packaging-tmp/windows-current/CANDIDATE_ACCEPTANCE.json",
+  "status": "deferred",
+  "generated_output_removed": false
+}

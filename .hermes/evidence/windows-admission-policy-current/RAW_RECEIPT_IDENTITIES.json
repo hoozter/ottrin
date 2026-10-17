@@ -1,0 +1,17 @@
+{
+  "RED_RESULTS.json": "47becfb17e93fb42f2301a586cbde27d46dea3cf69e505657a54b04f68ba57ba",
+  "RED_observe.log": "068fc5c682c54dc27d296939883c6876903c1a9d94a1a56488f9ae816397f223",
+  "FIXTURE_FAILURE_platform.stdout": "60caf0266112fc0d0a9472547227ed04c31394f8719d183099af8242498a64cd",
+  "JOURNAL_LIST.txt": "8c2adc99109735946f332ebc9d095ee67ba7e2a49f481b267e3475f32ad2ec93",
+  "platform.stdout": "9c9511f5187ae6f6914a4d9761db6ec4a4d64a827dfefe4a66316ebad7d93a66",
+  "teardown.log": "17d524c6a186bdd175e7eebcf280e055d5d64d8f717c8480791445a1e9730544",
+  "RED_platform.stdout": "c40c6992a48fe8558672e6f3a00677f7f7329e33c21a98c8fd402a1e01a1dc8e",
+  "FIXTURE_FAILURE_observe.log": "fc9145875ed270f6d2d1e9bf7ead68b3459cb4ff986760e60112f1709be18460",
+  "FIXTURE_FAILURE_RESULTS.json": "df81e0bb055539ca14ea0c4ea4a773ae50680519c5afbb0f15433def2d6032c8",
+  "RESULTS.json": "c59909e2d5b4f3bebbc51bcb94c72effa1a3fe961afb8282135453c436089a70",
+  "cleanup/platform.stdout": "884ceebabefe6cdea0d19bba313d695be3d34de47e2599bf3c3739f1de0893b8",
+  "cleanup/RESULTS.json": "c59909e2d5b4f3bebbc51bcb94c72effa1a3fe961afb8282135453c436089a70",
+  "core/platform.stdout": "2f84d790feef3624948036ba28256f2e936ca67253b4dfb364065a7b0ecc5d97",
+  "core/RESULTS.json": "c59909e2d5b4f3bebbc51bcb94c72effa1a3fe961afb8282135453c436089a70",
+  "RED_REGRESSION.patch": "18dcd6c3e8a0e9028fc8cde22e76dd2b35fc7df76b4da33f03abf87570f4339a"
+}

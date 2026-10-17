@@ -62,6 +62,34 @@ pub(crate) fn open_directory(path: &std::path::Path, access: u32) -> io::Result<
     Ok(file)
 }
 
+/// Query the held directory's native naming policy. Unknown/unsupported policy
+/// is an error; transaction callers must not assume case-insensitive names.
+pub(crate) fn directory_case_sensitive(parent: &File) -> io::Result<bool> {
+    use windows_sys::Win32::System::SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR;
+    let mut value = FILE_CASE_SENSITIVE_INFORMATION::default();
+    let mut status = IO_STATUS_BLOCK::default();
+    let result = unsafe {
+        NtQueryInformationFile(
+            parent.as_raw_handle().cast(),
+            &mut status,
+            ptr::from_mut(&mut value).cast(),
+            size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
+            FileCaseSensitiveInformation,
+        )
+    };
+    if result < 0 {
+        return Err(io::Error::from_raw_os_error(
+            unsafe { RtlNtStatusToDosError(result) } as i32,
+        ));
+    }
+    if status.Information != size_of::<FILE_CASE_SENSITIVE_INFORMATION>()
+        || value.Flags & !FILE_CS_FLAG_CASE_SENSITIVE_DIR != 0
+    {
+        return Err(io::Error::other("unknown native directory case policy"));
+    }
+    Ok(value.Flags & FILE_CS_FLAG_CASE_SENSITIVE_DIR != 0)
+}
+
 /// Open exactly one leaf under an already opened directory. Creation never
 /// replaces an entry; opening a reparse entry never follows its target.
 ///

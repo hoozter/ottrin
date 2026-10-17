@@ -80,6 +80,19 @@ previously absent spelling resolve to the existing file and invalidates its old
 creation approval. All five destination-admission checks pass on one executable.
 Evidence: `.hermes/evidence/windows-case-policy-current/ACCEPTANCE.json`.
 This does not establish short-name alias equivalence or cross-process exclusion.
+Admission now captures the native case policy independently of current target
+occupancy. A changed policy invalidates both creation and Overwrite approval,
+even if the name remains absent or the approved original is unchanged. Policy
+queries use the held parent handle, reject unsupported/unknown results and are
+rechecked around target validation. Schema 14 persists that decision in both
+journals; writer and snapshot validation enforce it during later operations.
+This pins naming semantics but does not itself claim or reserve a target name.
+The six focused ordinary-user native tests pass. The same executable accounts
+for all 181 journal cases in disjoint core/cleanup batches: 172 pass, zero fail,
+and nine specialized fixture/child entries are ignored with exact reasons
+recorded. Original source, retained/public data and journal bytes survive policy
+refusal in staged and published fixtures. Source, binary, case lists and clean
+teardown: `.hermes/evidence/windows-admission-policy-current/ACCEPTANCE.json`.
 The native target-reservation gate remains required before public Windows Copy:
 
 - Bind claims to the actual destination-parent identity and native target name;
@@ -654,7 +667,11 @@ unchanged nor treats them as removal input.
 | Overwrite completed | Displaced original at its recorded private name | Published copy |
 | Undo completed | Withdrawn copy at its recorded candidate name | Restored original or reused public name |
 
-The current journal schema is `OTCPWJ13`. Paired `Cleanup::Begin` binds the
+The current journal schema is `OTCPWJ14`. The immutable paired header also
+binds the destination parent's native case-sensitivity policy. Writer bindings
+and reopened snapshots reject a changed or unreadable policy before granting
+publication or recovery authority. Prior schemas remain review conditions.
+Paired `Cleanup::Begin` binds the
 immutable retained role, count and manifest digest. Entry intents and
 acknowledgements follow reverse manifest order, removing children before parents.
 Starting cleanup revokes forward/Undo authority. A peer's claims then cover its

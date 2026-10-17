@@ -43,7 +43,7 @@ pub(crate) use discovery::{
 };
 use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ13";
+const MAGIC: &[u8; 8] = b"OTCPWJ14";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -70,6 +70,7 @@ struct OriginalAdmission {
 /// admission; the complete original digest becomes part of both journal headers.
 pub(super) struct DestinationAdmission {
     parent: WindowsStableIdentity,
+    case_sensitive: bool,
     location: std::path::PathBuf,
     target: OsString,
     original: Option<(EntryVersion, OriginalAdmission)>,
@@ -83,6 +84,7 @@ impl DestinationAdmission {
         }
         Ok(Self {
             parent: parent_id,
+            case_sensitive: windows_fs::directory_case_sensitive(parent).map_err(io)?,
             location: windows_fs::location(parent).map_err(io)?,
             target: target.to_os_string(),
             original: None,
@@ -114,12 +116,19 @@ impl DestinationAdmission {
         result.validate(parent)?;
         Ok(result)
     }
-    fn validate(&self, parent: &File) -> Result<(), PlatformError> {
+    fn validate_parent(&self, parent: &File) -> Result<(), PlatformError> {
         if stable_identity_from_handle(parent).map_err(io)? != self.parent
             || windows_fs::location(parent).map_err(io)? != self.location
         {
             return Err(io("Copy destination parent changed since admission"));
         }
+        if windows_fs::directory_case_sensitive(parent).map_err(io)? != self.case_sensitive {
+            return Err(io("Copy destination case policy changed since admission"));
+        }
+        Ok(())
+    }
+    fn validate(&self, parent: &File) -> Result<(), PlatformError> {
+        self.validate_parent(parent)?;
         if let Some((expected, _)) = &self.original {
             let root = namespace::open_source(parent, &self.target, None)?;
             if super::version(&root)? != *expected {
@@ -145,7 +154,8 @@ impl DestinationAdmission {
                 Err(error) => Err(io(error)),
                 Ok(_) => Err(io("Creation destination is occupied; admission changed")),
             }
-        }
+        }?;
+        self.validate_parent(parent)
     }
 }
 
@@ -156,6 +166,7 @@ struct Header {
     schema: u16,
     transaction: String,
     parent: WindowsStableIdentity,
+    parent_case_sensitive: bool,
     stage: WindowsStableIdentity,
     central: WindowsStableIdentity,
     local_file: WindowsStableIdentity,
@@ -170,6 +181,14 @@ struct Header {
     central_security: security::PrivateSecurity,
 }
 impl Header {
+    fn validate_parent_policy(&self, parent: &File) -> Result<(), PlatformError> {
+        if windows_fs::directory_case_sensitive(parent).map_err(io)? != self.parent_case_sensitive {
+            return Err(io(
+                "Copy destination case policy changed; all data retained",
+            ));
+        }
+        Ok(())
+    }
     fn stage_name(&self) -> OsString {
         format!(".ottrin-copy-{}", self.transaction).into()
     }
@@ -184,7 +203,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 13
+            && self.schema == 14
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -1273,9 +1292,10 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 13,
+            schema: 14,
             transaction: name,
             parent: parent_id,
+            parent_case_sensitive: destination.case_sensitive,
             stage: stage_id,
             central: central_id,
             local_file: stable_identity_from_handle(&local).map_err(io)?,
@@ -2048,6 +2068,7 @@ impl Journal {
         security.validate(candidate, &self.header.creator)
     }
     fn bindings(&self) -> Result<(), PlatformError> {
+        self.header.validate_parent_policy(&self.parent_dir)?;
         if security::current_owner()? != self.header.creator {
             return Err(io("Copy journal writer creator context changed"));
         }
@@ -2989,6 +3010,7 @@ impl Snapshot {
     }
     fn revalidate(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
         let header = self.state.header.as_ref().unwrap();
+        header.validate_parent_policy(parent)?;
         namespace::validate_single_link(&self.local)?;
         namespace::validate_single_link(&self.mirror)?;
         if self.requires_creator && security::current_owner()? != header.creator {
@@ -4029,8 +4051,7 @@ mod tests {
         );
     }
 
-    #[test]
-    fn windows_native_destination_admission_respects_case_sensitive_directory_policy() {
+    fn set_case_policy(parent: &File, enabled: bool) {
         use std::{mem::size_of, os::windows::io::AsRawHandle};
         use windows_sys::{
             Wdk::Storage::FileSystem::{
@@ -4039,46 +4060,65 @@ mod tests {
             },
             Win32::System::{IO::IO_STATUS_BLOCK, SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR},
         };
-        fn policy(parent: &File, enabled: bool) {
-            let expected = if enabled {
-                FILE_CS_FLAG_CASE_SENSITIVE_DIR
-            } else {
-                0
-            };
-            let value = FILE_CASE_SENSITIVE_INFORMATION { Flags: expected };
-            let mut status = IO_STATUS_BLOCK::default();
-            let result = unsafe {
-                NtSetInformationFile(
-                    parent.as_raw_handle().cast(),
-                    &mut status,
-                    ptr::from_ref(&value).cast(),
-                    size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
-                    FileCaseSensitiveInformation,
-                )
-            };
-            assert!(result >= 0, "set native directory case policy: {result:#x}");
-            let mut observed = FILE_CASE_SENSITIVE_INFORMATION::default();
-            let result = unsafe {
-                NtQueryInformationFile(
-                    parent.as_raw_handle().cast(),
-                    &mut status,
-                    ptr::from_mut(&mut observed).cast(),
-                    size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
-                    FileCaseSensitiveInformation,
-                )
-            };
-            assert!(
-                result >= 0,
-                "query native directory case policy: {result:#x}"
-            );
-            assert_eq!(observed.Flags, expected);
-        }
+        let expected = if enabled {
+            FILE_CS_FLAG_CASE_SENSITIVE_DIR
+        } else {
+            0
+        };
+        let value = FILE_CASE_SENSITIVE_INFORMATION { Flags: expected };
+        let mut status = IO_STATUS_BLOCK::default();
+        let result = unsafe {
+            NtSetInformationFile(
+                parent.as_raw_handle().cast(),
+                &mut status,
+                ptr::from_ref(&value).cast(),
+                size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
+                FileCaseSensitiveInformation,
+            )
+        };
+        assert!(result >= 0, "set native directory case policy: {result:#x}");
+        let mut observed = FILE_CASE_SENSITIVE_INFORMATION::default();
+        let result = unsafe {
+            NtQueryInformationFile(
+                parent.as_raw_handle().cast(),
+                &mut status,
+                ptr::from_mut(&mut observed).cast(),
+                size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
+                FileCaseSensitiveInformation,
+            )
+        };
+        assert!(
+            result >= 0,
+            "query native directory case policy: {result:#x}"
+        );
+        assert_eq!(observed.Flags, expected);
+    }
+
+    #[test]
+    fn windows_native_destination_admission_respects_case_sensitive_directory_policy() {
         let root = tempfile::tempdir().unwrap();
         fixture(root.path());
         let directory = root.path().join("destination");
         let parent = owner(&directory);
-        policy(&parent, true);
+        for initial in [false, true] {
+            set_case_policy(&parent, initial);
+            let empty = DestinationAdmission::creation(&parent, OsStr::new("unused.txt")).unwrap();
+            set_case_policy(&parent, !initial);
+            assert!(
+                empty
+                    .validate(&parent)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("case policy"),
+                "A policy change must invalidate admission even while the target stays absent"
+            );
+            assert!(!directory.join("unused.txt").try_exists().unwrap());
+        }
+        set_case_policy(&parent, true);
         std::fs::write(directory.join("Report.txt"), b"upper original").unwrap();
+        let unchanged =
+            DestinationAdmission::overwrite(&parent, OsStr::new("Report.txt"), 100, |_| Ok(()))
+                .unwrap();
         // The differently cased name really is absent, not an alias. Admission
         // must preserve that native distinction without creating a placeholder.
         assert!(!directory.join("report.txt").try_exists().unwrap());
@@ -4109,12 +4149,20 @@ mod tests {
         let creation = DestinationAdmission::creation(&parent, OsStr::new("report.txt")).unwrap();
         // Changing the live policy makes the previously absent spelling resolve
         // to the existing upper-case file; old creation authority must fail.
-        policy(&parent, false);
+        set_case_policy(&parent, false);
         assert_eq!(
             std::fs::read(directory.join("report.txt")).unwrap(),
             b"upper original"
         );
         assert!(creation.validate(&parent).is_err());
+        assert!(
+            unchanged
+                .validate(&parent)
+                .unwrap_err()
+                .to_string()
+                .contains("case policy"),
+            "The same original bytes do not authorize a changed native naming policy"
+        );
         assert_eq!(std::fs::read_dir(&directory).unwrap().count(), 1);
         assert_eq!(
             std::fs::read_dir(root.path().join("central"))
@@ -4122,6 +4170,68 @@ mod tests {
                 .count(),
             0
         );
+    }
+
+    #[test]
+    fn windows_native_destination_admission_case_policy_is_bound_through_publication_and_undo() {
+        // Windows allows disabling this flag for these unambiguous names, but
+        // refuses enabling it on a populated directory. Test both actual phases
+        // independently rather than relocating retained data to reset a fixture.
+        for published in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let directory = root.path().join("destination");
+            let parent = owner(&directory);
+            let central = owner(&root.path().join("central"));
+            set_case_policy(&parent, true);
+            let staged = stage(
+                &source(&root.path().join("source/nested/file")),
+                &parent,
+                &central,
+            )
+            .unwrap();
+            assert!(staged.journal.header.parent_case_sensitive);
+            let name = staged.stage.name.clone();
+            let candidate = staged.stage.candidate_name.clone();
+            let local = directory.join(&name).join(LOCAL);
+            let mirror = root
+                .path()
+                .join("central")
+                .join(staged.journal.header.central_name());
+            if published {
+                drop(staged);
+                let mut publication =
+                    PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+                publication.apply(|_| Ok(())).unwrap();
+            } else {
+                let mut staged = staged;
+                let before = std::fs::read(&local).unwrap();
+                set_case_policy(&parent, false);
+                assert!(staged.prepare_destination_security(|| Ok(())).is_err());
+                assert_eq!(std::fs::read(&local).unwrap(), before);
+            }
+            let before = std::fs::read(&local).unwrap();
+            assert_eq!(before, std::fs::read(&mirror).unwrap());
+            if published {
+                set_case_policy(&parent, false);
+            }
+            assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(RetainedStage::open(&parent, &central, &name, &mut |_| Ok(())).is_err());
+            assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
+            assert_eq!(std::fs::read(&local).unwrap(), before);
+            assert_eq!(std::fs::read(&mirror).unwrap(), before);
+            let data = if published {
+                directory.join("copy")
+            } else {
+                directory.join(candidate)
+            };
+            assert_eq!(std::fs::read(data).unwrap(), b"original data");
+            assert_eq!(directory.join("copy").try_exists().unwrap(), published);
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+        }
     }
 
     #[test]

@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::journal::tests::windows_native_destination_admission_respects_case_sensitive_directory_policy' (4864) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:4083:9:
+A policy change must invalidate admission even while the target stays absent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

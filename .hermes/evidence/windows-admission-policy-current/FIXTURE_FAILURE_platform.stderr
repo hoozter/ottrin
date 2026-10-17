@@ -1,0 +1,7 @@
+
+thread 'copy_transaction::windows::journal::tests::windows_native_destination_admission_case_policy_is_bound_through_publication_and_undo' (3396) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:4079:9:
+set native directory case policy: 0xc0000101
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'copy_transaction::windows::journal::tests::windows_native_destination_admission_respects_case_sensitive_directory_policy' (532) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:4079:9:
+set native directory case policy: 0xc0000101
