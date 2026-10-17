@@ -24,22 +24,107 @@ pub(super) struct Dependencies {
     names: Vec<OsString>,
 }
 
+enum Scope<'a> {
+    Ordinary,
+    Inspect(&'a super::cleanup_group::Selection),
+    Entry(
+        &'a super::cleanup_group::Selection,
+        &'a super::cleanup_peer::Intent,
+        bool,
+    ),
+}
+
 impl Dependencies {
     pub(super) fn open_selected(
         central: &File,
-        header: &Header,
+        state: &State,
         manifest: &Manifest,
         selection: Option<&super::cleanup_group::Selection>,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::open_scope(
+            central,
+            state,
+            manifest,
+            selection.map(Scope::Inspect).unwrap_or(Scope::Ordinary),
+            cancel,
+        )
+    }
+
+    pub(super) fn shared_unlink(
+        central: &File,
+        journal: &Journal,
+        selection: &super::cleanup_group::Selection,
+        intent: &super::cleanup_peer::Intent,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::shared_entry(central, journal, selection, intent, false, cancel)
+    }
+
+    pub(super) fn shared_acknowledgement(
+        central: &File,
+        journal: &Journal,
+        selection: &super::cleanup_group::Selection,
+        intent: &super::cleanup_peer::Intent,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::shared_entry(central, journal, selection, intent, true, cancel)
+    }
+
+    fn shared_entry(
+        central: &File,
+        journal: &Journal,
+        selection: &super::cleanup_group::Selection,
+        intent: &super::cleanup_peer::Intent,
+        acknowledged: bool,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        journal.bindings()?;
+        if super::cleanup_peer::Intent::capture(journal)? != *intent {
+            return Err(io("Shared entry does not match held owner intent"));
+        }
+        Self::open_scope(
+            central,
+            &journal.state,
+            &journal.state.cleanup.as_ref().unwrap().manifest,
+            Scope::Entry(selection, intent, acknowledged),
+            cancel,
+        )
+    }
+
+    fn open_scope(
+        central: &File,
+        state: &State,
+        manifest: &Manifest,
+        scope: Scope<'_>,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        let header = state.header.as_ref().unwrap();
         let creator = security::current_owner()?;
         let security = security::PrivateSecurity::capture(central, &creator)?;
         let stamp = super::super::version(central)?;
-        let mut protected: BTreeSet<_> = manifest
-            .entries
-            .iter()
-            .map(|entry| entry.version.identity.object_key())
-            .collect();
+        let mut protected: BTreeSet<_> = match &scope {
+            Scope::Entry(_, intent, _) => BTreeSet::from([intent.expected.identity.object_key()]),
+            _ => {
+                if let Some(progress) = &state.cleanup {
+                    progress.manifest.order[progress.completed..]
+                        .iter()
+                        .map(|&index| {
+                            progress.manifest.entries[index]
+                                .version
+                                .identity
+                                .object_key()
+                        })
+                        .collect()
+                } else {
+                    manifest
+                        .entries
+                        .iter()
+                        .map(|entry| entry.version.identity.object_key())
+                        .collect()
+                }
+            }
+        };
         protected.extend(
             [header.stage, header.local_file, header.central_file].map(|id| id.object_key()),
         );
@@ -75,19 +160,45 @@ impl Dependencies {
                 )));
             }
             let references = references(&peer.state);
+            let selection = match &scope {
+                Scope::Ordinary => None,
+                Scope::Inspect(selection) | Scope::Entry(selection, _, _) => Some(*selection),
+            };
             let selected = selection
-                .map(|scope| scope.admits(&peer))
+                .map(|s| s.admits(&peer))
                 .transpose()?
                 .unwrap_or(false);
-            if !selected
-                && references
-                    .iter()
-                    .any(|id| protected.contains(&id.object_key()))
-            {
-                return Err(io(format!(
-                    "Copy cleanup would affect dependent transaction {}",
-                    other.transaction
-                )));
+            let overlaps = references
+                .iter()
+                .filter(|id| protected.contains(&id.object_key()))
+                .collect::<Vec<_>>();
+            if !overlaps.is_empty() {
+                let allowed = match &scope {
+                    Scope::Ordinary => false,
+                    Scope::Inspect(_) => selected,
+                    Scope::Entry(_, intent, acknowledged) => {
+                        let matching = if *acknowledged {
+                            intent.acknowledged_by(&peer.state)?
+                        } else {
+                            let proof = intent.bind_local(&peer.state)?;
+                            peer.state
+                                .cleanup
+                                .as_ref()
+                                .is_some_and(|p| p.peer_unlink.as_deref() == Some(&proof))
+                        };
+                        selected
+                            && matching
+                            && overlaps.iter().all(|id| {
+                                **id == intent.expected.identity || **id == intent.control
+                            })
+                    }
+                };
+                if !allowed {
+                    return Err(io(format!(
+                        "Copy cleanup would affect dependent transaction {}",
+                        other.transaction
+                    )));
+                }
             }
             let lease = Peer {
                 version: super::super::version(&peer.file)?,

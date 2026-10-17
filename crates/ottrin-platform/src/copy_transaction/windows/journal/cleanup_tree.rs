@@ -70,6 +70,10 @@ pub(super) struct Remaining {
 }
 
 impl Remaining {
+    pub(super) fn observes_peer_unlink(&self) -> bool {
+        self.peer_change.is_some()
+    }
+
     fn parent<'a>(&'a self, parent: &'a File, progress: &Progress, index: usize) -> &'a File {
         progress.manifest.entries[index]
             .parent

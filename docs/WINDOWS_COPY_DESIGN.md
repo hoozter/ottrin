@@ -1073,3 +1073,40 @@ The exact 61-case set matches native enumeration in
 owned-process/temporary-root teardown are recorded in
 `GROUP_SHARED_PREPARE_ACCEPTANCE.json`. No physical shared unlink, rendered UI,
 performance or package acceptance is established by this preparation step.
+
+
+## Grouped shared-alias unlink
+
+The coordinator now executes one prepared shared-original alias: validate matching
+selected peer intents, remove the owner's recorded native name, acknowledge the
+link-count/version change in every affected peer, then acknowledge the owner's
+entry removal. Only the successful held writer's control or registry-root delta
+advances group proofs. Completed aliases leave the shared-claim map. Ordinary
+tail cleanup protects actual remaining entries, so removed aliases do not keep
+blocking unrelated retained payloads or metadata.
+
+The single-entry dependency scope permits only matching selected peer intents or
+acknowledgements for that entry/control. Unselected, mismatched and unrelated
+metadata claims remain protected. Peer acknowledgement releases incompatible
+owner-control leases before acquiring its validator, and binds the original
+confirmed local journal before accepting the exact one-link native change.
+Fresh read-only admission can validate this recorded pending-peer change; it
+does not grant deletion authority to a missing name.
+
+Seven focused ordinary-account native tests pass in 23.71 seconds. They exercise
+full payload/metadata completion, three owners and multiple local aliases, an
+outside alias, unselected-owner refusal, owner data directly inside the registry,
+ordinary registry-neighbor preservation, unknown occupants and foreign peer data,
+unlink disposition/close/flush failures, local/central owner and peer ack failures,
+fresh paired-record retry, and retry of a known successful physical change when
+the peer is busy. Divergent mirrors remain refused. Native failure injection and
+fresh in-process observation do not establish complete group process-exit/history
+recovery. The same exact binary passes all 68 enumerated cleanup cases:
+66 passed, two existing ignored entry points, zero failed, 434.29 seconds.
+`GROUP_SHARED_UNLINK_COVERAGE.json` records the exact case set;
+`GROUP_SHARED_UNLINK_ACCEPTANCE.json` binds source, profile, binary, arguments,
+and successful teardown with no owned process or temporary root remaining.
+Unrelated journal/core suites were not repeated; schema, codec and decoder are
+unchanged. Mixed-workflow execution, Activity, resource/storage/security/power-cut
+and current package gates remain open. These correctness tests do not establish
+rendered UI, performance or packaged-app acceptance.

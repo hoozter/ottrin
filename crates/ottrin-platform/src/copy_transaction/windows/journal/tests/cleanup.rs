@@ -1276,30 +1276,63 @@ fn cleanup_peer_fixture_with_aliases(
     shared: bool,
     extra_aliases: bool,
 ) -> [OsString; 2] {
+    cleanup_peer_fixture_at(
+        root,
+        shared,
+        extra_aliases,
+        &["destination", "second-destination"],
+        false,
+    )
+    .try_into()
+    .unwrap()
+}
+
+fn cleanup_peer_fixture_at(
+    root: &Path,
+    shared: bool,
+    extra_aliases: bool,
+    directories: &[&str],
+    root_file: bool,
+) -> Vec<OsString> {
     anchored_cleanup_fixture(root);
-    let first = root.join("destination");
-    let second = root.join("second-destination");
-    std::fs::create_dir(&second).unwrap();
-    for destination in [&first, &second] {
-        std::fs::create_dir(destination.join("copy")).unwrap();
+    let destinations = directories
+        .iter()
+        .map(|name| root.join(name))
+        .collect::<Vec<_>>();
+    for destination in &destinations {
+        if !destination.exists() {
+            std::fs::create_dir(destination).unwrap();
+        }
+        if !root_file {
+            std::fs::create_dir(destination.join("copy")).unwrap();
+        }
     }
-    std::fs::write(first.join("copy/old"), b"old original data").unwrap();
-    if shared {
-        std::fs::hard_link(first.join("copy/old"), second.join("copy/old")).unwrap();
-    } else {
-        std::fs::write(second.join("copy/old"), b"old original data").unwrap();
+    let leaf = if root_file { "copy" } else { "copy/old" };
+    std::fs::write(destinations[0].join(leaf), b"old original data").unwrap();
+    for destination in destinations.iter().skip(1) {
+        if shared {
+            std::fs::hard_link(destinations[0].join(leaf), destination.join(leaf)).unwrap();
+        } else {
+            std::fs::write(destination.join(leaf), b"old original data").unwrap();
+        }
     }
     if extra_aliases {
         assert!(shared);
-        std::fs::hard_link(first.join("copy/old"), second.join("copy/other")).unwrap();
-        std::fs::hard_link(first.join("copy/old"), root.join("outside")).unwrap();
+        if !root_file {
+            std::fs::hard_link(
+                destinations[0].join(leaf),
+                destinations[1].join("copy/other"),
+            )
+            .unwrap();
+        }
+        std::fs::hard_link(destinations[0].join(leaf), root.join("outside")).unwrap();
     }
     // Both original graphs exist before either retention rename; native
     // child epochs therefore remain exact in the shared-hardlink case.
     let input = source(&root.join("source"));
     let central = owner(&root.join("central"));
     let mut names = Vec::new();
-    for destination in [&first, &second] {
+    for destination in &destinations {
         let parent = owner(destination);
         let admission =
             DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
@@ -1319,19 +1352,46 @@ fn cleanup_peer_fixture_with_aliases(
         let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
         let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
         journal.prepare_original(100, |_| Ok(())).unwrap();
-        journal
-            .move_original(None, OriginalMove::Retain, |_| Ok(()))
-            .unwrap();
+        if root_file {
+            // Finish all root renames before acknowledging their shared file
+            // epoch. Recovery captures the real final epoch without rewriting
+            // records or fabricating filesystem timestamps.
+            FAULT.with(|slot| slot.set(Some((journal.sequence + 1, Step::OriginalRenamed, false))));
+            let result = journal.move_original(None, OriginalMove::Retain, |_| Ok(()));
+            FAULT.with(|slot| slot.set(None));
+            assert!(result.is_err());
+        } else {
+            journal
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                .unwrap();
+        }
         drop(journal);
-        PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
-            .unwrap()
-            .apply(|_| Ok(()))
-            .unwrap();
+        if !root_file {
+            PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                .unwrap()
+                .apply(|_| Ok(()))
+                .unwrap();
+        }
         names.push(name);
+    }
+    if root_file {
+        for (destination, name) in destinations.iter().zip(&names) {
+            let parent = owner(destination);
+            let snapshot = Snapshot::load(&parent, &central, name, SnapshotAccess::Write).unwrap();
+            let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
+            journal
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                .unwrap();
+            drop(journal);
+            PermissionStage::publish(&parent, &central, name, |_| Ok(()))
+                .unwrap()
+                .apply(|_| Ok(()))
+                .unwrap();
+        }
     }
     drop(input);
     remove_undo_fixture_source(root);
-    names.try_into().unwrap()
+    names
 }
 
 #[test]
@@ -3507,28 +3567,14 @@ fn windows_native_copy_cleanup_peer_unlink_codec_reserves_acknowledgement_before
     );
 }
 
-#[test]
-fn windows_native_copy_cleanup_peer_binding_checks_present_absent_and_historical_intent() {
-    use super::super::cleanup_peer::Observation;
+fn finish_peer_payload_fixture(
+    root: &Path,
+    proof: &super::super::cleanup_protocol::PeerUnlink,
+    removed: &Path,
+) {
     use super::super::cleanup_protocol::CleanupRecord;
-    let root = tempfile::tempdir().unwrap();
-    let (mut local, proof, removed) = peer_unlink_codec_fixture(root.path());
-    local.prepare_peer_unlink(proof.clone()).unwrap();
-    let central = owner(&root.path().join("central"));
-    let before = namespace_contents(root.path());
-    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
-    assert!(!observation.removed());
-    observation.revalidate(&central, |_| Ok(())).unwrap();
-    assert_eq!(namespace_contents(root.path()), before);
-    drop(observation);
-    std::fs::remove_file(&removed).unwrap();
-    owner(removed.parent().unwrap()).sync_all().unwrap();
-    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
-    assert!(observation.removed());
-    observation.revalidate(&central, |_| Ok(())).unwrap();
-    drop(observation);
     let name = OsString::from(format!(".ottrin-copy-{}", proof.transaction));
-    let mut peer = original_journal(root.path(), &name);
+    let mut peer = original_journal(root, &name);
     let parent_after = super::super::super::version(&owner(removed.parent().unwrap())).unwrap();
     peer.persist(Record::Cleanup {
         entry: CleanupRecord::EntryRemoved {
@@ -3558,6 +3604,29 @@ fn windows_native_copy_cleanup_peer_binding_checks_present_absent_and_historical
     })
     .unwrap();
     drop(peer);
+}
+
+#[test]
+fn windows_native_copy_cleanup_peer_binding_checks_present_absent_and_historical_intent() {
+    use super::super::cleanup_peer::Observation;
+    let root = tempfile::tempdir().unwrap();
+    let (mut local, proof, removed) = peer_unlink_codec_fixture(root.path());
+    local.prepare_peer_unlink(proof.clone()).unwrap();
+    let central = owner(&root.path().join("central"));
+    let before = namespace_contents(root.path());
+    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    assert!(!observation.removed());
+    observation.revalidate(&central, |_| Ok(())).unwrap();
+    assert_eq!(namespace_contents(root.path()), before);
+    drop(observation);
+    std::fs::remove_file(&removed).unwrap();
+    owner(removed.parent().unwrap()).sync_all().unwrap();
+    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    assert!(observation.removed());
+    observation.revalidate(&central, |_| Ok(())).unwrap();
+    drop(observation);
+    let retained_root = removed.parent().unwrap().to_path_buf();
+    finish_peer_payload_fixture(root.path(), &proof, &removed);
     let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
     assert!(observation.removed());
     // The historical intent remains bound even after the peer advances; a new
@@ -3882,45 +3951,69 @@ fn windows_native_copy_cleanup_peer_acknowledgement_uncertain_mirrors_preserve_d
 fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ack() {
     use super::super::cleanup_dependencies::Dependencies;
     let root = tempfile::tempdir().unwrap();
-    let (local, proof, removed) = peer_unlink_codec_fixture(root.path());
+    let (mut local, proof, removed) = peer_unlink_codec_fixture(root.path());
     let local_name = local.header.stage_name();
     let peer_name = OsString::from(format!(".ottrin-copy-{}", proof.transaction));
     let local_parent = owner(&root.path().join("second-destination"));
     let central = owner(&root.path().join("central"));
+    local.prepare_peer_unlink(proof.clone()).unwrap();
     drop(local);
-    let peer = original_journal(root.path(), &peer_name);
-    let header = peer.header.clone();
-    // Isolate the metadata dependency: old payload IDs must not make this
-    // accidentally pass by refusing the still-shared file instead of control.
-    let mut metadata_only = peer.state.cleanup_manifest().unwrap();
-    metadata_only.entries.clear();
-    metadata_only.order.clear();
-    drop(Dependencies::open_selected(&central, &header, &metadata_only, None, |_| Ok(())).unwrap());
-    let snapshot =
-        Snapshot::load(&local_parent, &central, &local_name, SnapshotAccess::Write).unwrap();
-    let mut local = Journal::from_snapshot(&local_parent, &central, snapshot).unwrap();
-    local.prepare_peer_unlink(proof).unwrap();
-    drop(local);
-    let before = namespace_contents(root.path());
-    assert!(
-        Dependencies::open_selected(&central, &header, &metadata_only, None, |_| Ok(())).is_err()
-    );
-    assert_eq!(namespace_contents(root.path()), before);
-    drop(peer);
     std::fs::remove_file(&removed).unwrap();
     owner(removed.parent().unwrap()).sync_all().unwrap();
+    finish_peer_payload_fixture(root.path(), &proof, &removed);
+    let before = namespace_contents(root.path());
+    {
+        let peer = Snapshot::load(
+            &owner(&root.path().join("destination")),
+            &central,
+            &peer_name,
+            SnapshotAccess::Read,
+        )
+        .unwrap();
+        let progress = peer.state.cleanup.as_ref().unwrap();
+        assert!(progress.payload_removed);
+        assert!(
+            Dependencies::open_selected(
+                &central,
+                &peer.state,
+                &progress.manifest,
+                None,
+                |_| Ok(())
+            )
+            .is_err()
+        );
+    }
+    assert_eq!(namespace_contents(root.path()), before);
     let snapshot =
         Snapshot::load(&local_parent, &central, &local_name, SnapshotAccess::Write).unwrap();
     let mut local = Journal::from_snapshot(&local_parent, &central, snapshot).unwrap();
     local.acknowledge_peer_unlink(|_| Ok(())).unwrap();
     drop(local);
     let before = namespace_contents(root.path());
-    drop(Dependencies::open_selected(&central, &header, &metadata_only, None, |_| Ok(())).unwrap());
+    {
+        let peer = Snapshot::load(
+            &owner(&root.path().join("destination")),
+            &central,
+            &peer_name,
+            SnapshotAccess::Read,
+        )
+        .unwrap();
+        drop(
+            Dependencies::open_selected(
+                &central,
+                &peer.state,
+                &peer.state.cleanup.as_ref().unwrap().manifest,
+                None,
+                |_| Ok(()),
+            )
+            .unwrap(),
+        );
+    }
     assert_eq!(namespace_contents(root.path()), before);
     assert!(
         root.path()
             .join("central")
-            .join(header.central_name())
+            .join(format!("{}.copy-journal", proof.transaction))
             .exists()
     );
 }
@@ -4123,5 +4216,441 @@ fn windows_native_copy_cleanup_group_shared_prepare_uncertain_owner_and_peer_req
                 b"old original data"
             );
         }
+    }
+}
+
+fn finish_shared_fixture_group(group: &mut super::super::cleanup_group::Observation) {
+    for member in 0..group.members.len() {
+        group.reclaim_payload(member, |_| Ok(())).unwrap();
+    }
+    for member in 0..group.members.len() {
+        group.finish_metadata(member, |_| Ok(())).unwrap();
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_unlink_reclaims_one_alias_then_finishes_cohort() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+    let before = namespace_contents(root.path());
+    group.unlink_shared_entry(0, |_| Ok(())).unwrap();
+    assert!(
+        !root
+            .path()
+            .join("destination")
+            .join(headers[0].original_name())
+            .join("old")
+            .exists()
+    );
+    {
+        let central = owner(&root.path().join("central"));
+        for (index, directory) in ["destination", "second-destination"].iter().enumerate() {
+            let snapshot = Snapshot::load(
+                &owner(&root.path().join(directory)),
+                &central,
+                &headers[index].stage_name(),
+                SnapshotAccess::Read,
+            )
+            .unwrap();
+            let progress = snapshot.state.cleanup.as_ref().unwrap();
+            assert!(!progress.pending && progress.peer_unlink.is_none());
+            if index == 0 {
+                assert_eq!(progress.completed, 1);
+            } else {
+                for node in &progress.manifest.order[progress.completed..] {
+                    if !progress.expected(*node).directory {
+                        assert_eq!(progress.expected_links(*node).unwrap(), 3);
+                    }
+                }
+            }
+        }
+    }
+    finish_shared_fixture_group(&mut group);
+    for (path, bytes) in before {
+        if path.starts_with("destination/copy")
+            || path.starts_with("second-destination/copy")
+            || path == Path::new("outside")
+        {
+            assert_eq!(
+                namespace_contents(root.path()).get(&path),
+                Some(&bytes),
+                "{}",
+                path.display()
+            );
+        }
+    }
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        1
+    );
+    for (index, directory) in ["destination", "second-destination"].iter().enumerate() {
+        assert!(
+            !root
+                .path()
+                .join(directory)
+                .join(headers[index].stage_name())
+                .exists()
+        );
+        assert!(
+            !root
+                .path()
+                .join("central")
+                .join(headers[index].central_name())
+                .exists()
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_unlink_native_failures_resume_without_double_counting()
+{
+    for step in [
+        Step::CleanupDispositionSet,
+        Step::CleanupHandleClosed,
+        Step::CleanupFlushed,
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+        group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+        let sequence = decode(
+            &std::fs::read(root.path().join("central").join(headers[0].central_name())).unwrap(),
+        )
+        .unwrap()
+        .sequence;
+        FAULT.with(|slot| slot.set(Some((sequence, step, false))));
+        let result = group.unlink_shared_entry(0, |_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(result.is_err());
+        let after = namespace_contents(root.path());
+        assert!(group.unlink_shared_entry(0, |_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), after);
+        let ids = headers
+            .iter()
+            .map(|h| h.transaction.clone())
+            .collect::<Vec<_>>();
+        let mut fresh = super::super::cleanup_group::Observation::observe_at(
+            &root.path().join("central"),
+            &ids,
+            |_| Ok(()),
+        )
+        .unwrap();
+        fresh.unlink_shared_entry(0, |_| Ok(())).unwrap();
+        finish_shared_fixture_group(&mut fresh);
+        assert_eq!(
+            std::fs::read(root.path().join("outside")).unwrap(),
+            b"old original data"
+        );
+        assert_eq!(
+            super::super::super::namespace::link_count(&owner(&root.path().join("outside")))
+                .unwrap(),
+            1
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_unlink_ack_failures_preserve_or_replay_paired_records()
+{
+    for target in 0..2 {
+        for step in [Step::LocalFlushed, Step::CentralFlushed] {
+            let root = tempfile::tempdir().unwrap();
+            let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+            group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+            let sequence = decode(
+                &std::fs::read(
+                    root.path()
+                        .join("central")
+                        .join(headers[target].central_name()),
+                )
+                .unwrap(),
+            )
+            .unwrap()
+            .sequence;
+            let peer_control = root.path().join("central").join(headers[1].central_name());
+            let peer_before = std::fs::read(&peer_control).unwrap();
+            let mut armed = target == 1;
+            if armed {
+                FAULT.with(|slot| slot.set(Some((sequence, step, false))));
+            }
+            let result = group.unlink_shared_entry(0, |_| {
+                if !armed && std::fs::read(&peer_control).unwrap() != peer_before {
+                    FAULT.with(|slot| slot.set(Some((sequence, step, false))));
+                    armed = true;
+                }
+                Ok(())
+            });
+            FAULT.with(|slot| slot.set(None));
+            assert!(armed);
+            assert!(result.is_err());
+            let after = namespace_contents(root.path());
+            assert!(group.unlink_shared_entry(0, |_| Ok(())).is_err());
+            assert_eq!(namespace_contents(root.path()), after);
+            let ids = headers
+                .iter()
+                .map(|h| h.transaction.clone())
+                .collect::<Vec<_>>();
+            let fresh = super::super::cleanup_group::Observation::observe_at(
+                &root.path().join("central"),
+                &ids,
+                |_| Ok(()),
+            );
+            if step == Step::CentralFlushed {
+                let mut fresh = fresh.unwrap();
+                if target == 1 {
+                    fresh.unlink_shared_entry(0, |_| Ok(())).unwrap();
+                }
+                finish_shared_fixture_group(&mut fresh);
+                assert_eq!(
+                    super::super::super::namespace::link_count(&owner(
+                        &root.path().join("outside")
+                    ))
+                    .unwrap(),
+                    1
+                );
+            } else {
+                assert!(fresh.is_err());
+                assert_eq!(namespace_contents(root.path()), after);
+            }
+            assert_eq!(
+                std::fs::read(root.path().join("outside")).unwrap(),
+                b"old original data"
+            );
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_unlink_retries_known_physical_change_after_peer_busy() {
+    use std::{cell::RefCell, rc::Rc};
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+    group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+    let removed = root
+        .path()
+        .join("destination")
+        .join(headers[0].original_name())
+        .join("old");
+    let peer_control = root.path().join("central").join(headers[1].central_name());
+    let holder = Rc::new(RefCell::new(None));
+    let mut armed = false;
+    let result = group.unlink_shared_entry(0, |_| {
+        if !armed && !removed.exists() {
+            let holder = holder.clone();
+            let path = peer_control.clone();
+            CLEANUP_HANDOFF.with(|slot| {
+                *slot.borrow_mut() = Some(Box::new(move || {
+                    *holder.borrow_mut() = Some(
+                        OpenOptions::new()
+                            .read(true)
+                            .share_mode(FILE_SHARE_READ)
+                            .open(path)
+                            .unwrap(),
+                    );
+                }))
+            });
+            armed = true;
+        }
+        Ok(())
+    });
+    CLEANUP_HANDOFF.with(|slot| *slot.borrow_mut() = None);
+    assert!(armed && holder.borrow().is_some());
+    assert!(result.is_err());
+    holder.borrow_mut().take();
+    assert!(!removed.exists());
+    group.unlink_shared_entry(0, |_| Ok(())).unwrap();
+    finish_shared_fixture_group(&mut group);
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        1
+    );
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_unlink_coordinates_three_owners_and_local_aliases() {
+    let root = tempfile::tempdir().unwrap();
+    let directories = ["destination", "second-destination", "third-destination"];
+    let names = cleanup_peer_fixture_at(root.path(), true, true, &directories, false);
+    let headers = directories
+        .iter()
+        .zip(&names)
+        .map(|(directory, name)| {
+            Snapshot::load(
+                &owner(&root.path().join(directory)),
+                &owner(&root.path().join("central")),
+                name,
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .state
+            .header
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let ids = headers
+        .iter()
+        .map(|h| h.transaction.clone())
+        .collect::<Vec<_>>();
+    let before = namespace_contents(root.path());
+    assert!(
+        super::super::cleanup_group::Observation::observe_at(
+            &root.path().join("central"),
+            &ids[..2],
+            |_| Ok(())
+        )
+        .is_err()
+    );
+    assert_eq!(namespace_contents(root.path()), before);
+    let mut group = super::super::cleanup_group::Observation::observe_at(
+        &root.path().join("central"),
+        &ids,
+        |_| Ok(()),
+    )
+    .unwrap();
+    group.unlink_shared_entry(0, |_| Ok(())).unwrap();
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        4
+    );
+    group.unlink_shared_entry(1, |_| Ok(())).unwrap();
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        3
+    );
+    group.unlink_shared_entry(1, |_| Ok(())).unwrap();
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        2
+    );
+    finish_shared_fixture_group(&mut group);
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        1
+    );
+    for (directory, header) in directories.iter().zip(&headers) {
+        assert!(
+            !root
+                .path()
+                .join(directory)
+                .join(header.stage_name())
+                .exists()
+        );
+        assert!(
+            root.path()
+                .join(directory)
+                .join("copy/nested/file")
+                .exists()
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_unlink_acknowledges_registry_root_file_removal() {
+    let root = tempfile::tempdir().unwrap();
+    let directories = ["central", "second-destination"];
+    let names = cleanup_peer_fixture_at(root.path(), true, true, &directories, true);
+    std::fs::write(
+        root.path().join("central/ordinary-unrelated"),
+        b"keep registry neighbor",
+    )
+    .unwrap();
+    let headers = directories
+        .iter()
+        .zip(&names)
+        .map(|(directory, name)| {
+            Snapshot::load(
+                &owner(&root.path().join(directory)),
+                &owner(&root.path().join("central")),
+                name,
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .state
+            .header
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let ids = headers
+        .iter()
+        .map(|h| h.transaction.clone())
+        .collect::<Vec<_>>();
+    let mut group = super::super::cleanup_group::Observation::observe_at(
+        &root.path().join("central"),
+        &ids,
+        |_| Ok(()),
+    )
+    .unwrap();
+    group.unlink_shared_entry(0, |_| Ok(())).unwrap();
+    assert!(
+        !root
+            .path()
+            .join("central")
+            .join(headers[0].original_name())
+            .exists()
+    );
+    finish_shared_fixture_group(&mut group);
+    assert_eq!(
+        std::fs::read(root.path().join("central/ordinary-unrelated")).unwrap(),
+        b"keep registry neighbor"
+    );
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        1
+    );
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_shared_unlink_preserves_reoccupants_and_foreign_peer_changes()
+{
+    for after_unlink in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+        group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+        let removed = root
+            .path()
+            .join("destination")
+            .join(headers[0].original_name())
+            .join("old");
+        let extra = root
+            .path()
+            .join("second-destination")
+            .join(headers[1].original_name())
+            .join("unknown");
+        if !after_unlink {
+            std::fs::remove_file(&removed).unwrap();
+            std::fs::write(&removed, b"unrelated reoccupant").unwrap();
+        }
+        let mut changed = !after_unlink;
+        let result = group.unlink_shared_entry(0, |_| {
+            if !changed && !removed.exists() {
+                std::fs::write(&extra, b"foreign peer data").unwrap();
+                changed = true;
+            }
+            Ok(())
+        });
+        assert!(changed && result.is_err());
+        let after = namespace_contents(root.path());
+        assert!(group.unlink_shared_entry(0, |_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), after);
+        if after_unlink {
+            assert_eq!(std::fs::read(&extra).unwrap(), b"foreign peer data");
+        } else {
+            assert_eq!(std::fs::read(&removed).unwrap(), b"unrelated reoccupant");
+        }
+        assert_eq!(
+            std::fs::read(root.path().join("outside")).unwrap(),
+            b"old original data"
+        );
     }
 }

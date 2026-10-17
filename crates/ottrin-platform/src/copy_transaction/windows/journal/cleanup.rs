@@ -25,6 +25,7 @@ pub(super) struct Admission {
     observed: [u8; 32],
     catalog: [u8; 32],
     pending_absent: bool,
+    peer_absent: bool,
     sequence: u64,
     started: bool,
     location: std::path::PathBuf,
@@ -89,30 +90,32 @@ impl Admission {
             let parent_security = security::owner_group_dacl_digest(parent)?;
             let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
             started = snapshot.state.cleanup.is_some();
-            let (snapshot, observed, pending_absent, catalog) = if let Some(progress) =
+            let (snapshot, observed, pending_absent, catalog, peer_absent) = if let Some(progress) =
                 &snapshot.state.cleanup
             {
-                let remaining = Remaining::open(parent, &snapshot.state, progress, &mut cancel)?;
+                let remaining =
+                    Self::read_remaining(parent, central, &snapshot.state, progress, &mut cancel)?;
                 let dependencies = Dependencies::open_selected(
                     central,
-                    snapshot.state.header.as_ref().unwrap(),
+                    &snapshot.state,
                     &progress.manifest,
                     selection,
                     &mut cancel,
                 )?;
                 let observed = super::super::evidence_digest(&remaining.observed)?;
                 let absent = remaining.pending_absent;
+                let peer_absent = remaining.observes_peer_unlink();
                 let catalog = dependencies.fingerprint()?;
                 remaining.revalidate(parent, &snapshot.state, progress, &mut cancel)?;
                 drop((remaining, dependencies));
-                (snapshot, observed, absent, catalog)
+                (snapshot, observed, absent, catalog, peer_absent)
             } else {
                 drop(snapshot);
                 let held = HeldCleanup::open(parent, central, name, &mut cancel)?;
                 let manifest = held.snapshot.state.cleanup_manifest()?;
                 let dependencies = Dependencies::open_selected(
                     central,
-                    held.snapshot.state.header.as_ref().unwrap(),
+                    &held.snapshot.state,
                     &manifest,
                     selection,
                     &mut cancel,
@@ -130,7 +133,7 @@ impl Admission {
                     snapshot, payload, ..
                 } = held;
                 drop(payload);
-                (snapshot, observed, false, catalog)
+                (snapshot, observed, false, catalog, false)
             };
             let metadata = super::cleanup_finalize::snapshot_metadata(&snapshot, &mut cancel)?;
             snapshot.revalidate(parent, central)?;
@@ -141,6 +144,7 @@ impl Admission {
                 observed,
                 catalog,
                 pending_absent,
+                peer_absent,
                 sequence: snapshot.sequence,
                 started,
                 location,
@@ -292,7 +296,13 @@ impl Admission {
             parent,
             central,
             Some(selection),
-            |journal| journal.prepare_peer_unlink(intent.bind_local(&journal.state)?),
+            |journal| {
+                if intent.acknowledged_by(&journal.state)? {
+                    Ok(())
+                } else {
+                    journal.prepare_peer_unlink(intent.bind_local(&journal.state)?)
+                }
+            },
             cancel,
         )
         .map(|(started, ())| started)
@@ -311,48 +321,18 @@ impl Admission {
             let (mut journal, remaining, dependencies) =
                 self.writer(parent, central, &mut started, selection, &mut cancel)?;
             let value = operation(&mut journal)?;
-            remaining.revalidate(
-                parent,
-                &journal.state,
-                journal.state.cleanup.as_ref().unwrap(),
-                &mut cancel,
-            )?;
-            dependencies.revalidate_peers(central)?;
-            journal.bindings()?;
-            if windows_fs::location(parent).map_err(io)? != self.location
-                || security::owner_group_dacl_digest(parent)? != self.parent_security
-                || dependencies.fingerprint()? != self.catalog
-            {
-                return Err(io("Copy cleanup admission changed during control update"));
+            if dependencies.fingerprint()? != self.catalog {
+                return Err(io("Copy control update changed its catalog"));
             }
-            let bytes = read(&journal.local)?;
-            let metadata = super::cleanup_finalize::metadata_files(
-                &journal.header,
-                [&journal.stage_dir, &journal.local, &journal.central],
-                &bytes,
+            let change = self.capture_change(
+                &journal,
+                &remaining,
+                &dependencies,
+                parent,
+                central,
                 &mut cancel,
             )?;
-            let admission = Self {
-                header: journal.header.clone(),
-                journal: Sha256::digest(&bytes).into(),
-                metadata: super::super::evidence_digest(&metadata)?,
-                observed: self.observed,
-                catalog: self.catalog,
-                pending_absent: self.pending_absent,
-                sequence: journal.sequence,
-                started: true,
-                location: self.location.clone(),
-                parent_security: self.parent_security,
-            };
-            Ok((
-                ControlChange {
-                    after: admission.journal,
-                    admission,
-                    before: self.journal,
-                    central: metadata[2].clone(),
-                },
-                value,
-            ))
+            Ok((change, value))
         })();
         result.map_err(|error| {
             cleanup_error(
@@ -366,14 +346,82 @@ impl Admission {
         })
     }
 
-    fn writer(
+    fn read_remaining(
+        parent: &File,
+        central: &File,
+        state: &State,
+        progress: &Progress,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Remaining, PlatformError> {
+        if progress.peer_unlink.is_some() {
+            let peer = super::cleanup_peer::Observation::open(central, state, &mut cancel)?;
+            if peer.removed() {
+                return Remaining::after_peer_unlink(parent, state, &peer, cancel);
+            }
+        }
+        Remaining::open(parent, state, progress, cancel)
+    }
+
+    pub(super) fn pending_entry_absent(&self) -> bool {
+        self.pending_absent
+    }
+
+    fn capture_change(
+        &self,
+        journal: &Journal,
+        remaining: &Remaining,
+        dependencies: &Dependencies,
+        parent: &File,
+        central: &File,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<ControlChange, PlatformError> {
+        remaining.revalidate(
+            parent,
+            &journal.state,
+            journal.state.cleanup.as_ref().unwrap(),
+            &mut *cancel,
+        )?;
+        dependencies.revalidate_peers(central)?;
+        journal.bindings()?;
+        if windows_fs::location(parent).map_err(io)? != self.location
+            || security::owner_group_dacl_digest(parent)? != self.parent_security
+        {
+            return Err(io("Copy cleanup admission changed during control update"));
+        }
+        let bytes = read(&journal.local)?;
+        let metadata = super::cleanup_finalize::metadata_files(
+            &journal.header,
+            [&journal.stage_dir, &journal.local, &journal.central],
+            &bytes,
+            &mut *cancel,
+        )?;
+        let admission = Self {
+            header: journal.header.clone(),
+            journal: Sha256::digest(&bytes).into(),
+            metadata: super::super::evidence_digest(&metadata)?,
+            observed: super::super::evidence_digest(&remaining.observed)?,
+            catalog: dependencies.fingerprint()?,
+            pending_absent: remaining.pending_absent,
+            peer_absent: remaining.observes_peer_unlink(),
+            sequence: journal.sequence,
+            started: true,
+            location: self.location.clone(),
+            parent_security: self.parent_security,
+        };
+        Ok(ControlChange {
+            after: admission.journal,
+            admission,
+            before: self.journal,
+            central: metadata[2].clone(),
+        })
+    }
+
+    fn bound_snapshot(
         &self,
         parent: &File,
         central: &File,
-        started: &mut bool,
-        selection: Option<&super::cleanup_group::Selection>,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
-    ) -> Result<(Journal, Remaining, Dependencies), PlatformError> {
+    ) -> Result<Snapshot, PlatformError> {
         let name = self.header.stage_name();
         cancel(0)?;
         cleanup_handoff(self.sequence)?;
@@ -391,6 +439,18 @@ impl Admission {
                 "Copy cleanup admission changed before writer acquisition",
             ));
         }
+        Ok(snapshot)
+    }
+
+    fn writer(
+        &self,
+        parent: &File,
+        central: &File,
+        started: &mut bool,
+        selection: Option<&super::cleanup_group::Selection>,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(Journal, Remaining, Dependencies), PlatformError> {
+        let snapshot = self.bound_snapshot(parent, central, cancel)?;
         let initial = if snapshot.state.cleanup.is_none() {
             Some(Progress::new(snapshot.state.cleanup_manifest()?))
         } else {
@@ -402,9 +462,11 @@ impl Admission {
             .as_ref()
             .or(initial.as_ref())
             .unwrap();
+        let remaining =
+            Self::read_remaining(parent, central, &snapshot.state, progress, &mut *cancel)?;
         let dependencies = Dependencies::open_selected(
             central,
-            &self.header,
+            &snapshot.state,
             &progress.manifest,
             selection,
             &mut *cancel,
@@ -412,9 +474,9 @@ impl Admission {
         if dependencies.fingerprint()? != self.catalog {
             return Err(io("Copy cleanup dependency admission changed"));
         }
-        let remaining = Remaining::open(parent, &snapshot.state, progress, &mut *cancel)?;
         if super::super::evidence_digest(&remaining.observed)? != self.observed
             || remaining.pending_absent != self.pending_absent
+            || remaining.observes_peer_unlink() != self.peer_absent
         {
             return Err(io(
                 "Copy cleanup retained epoch changed after read-only admission",
@@ -435,6 +497,219 @@ impl Admission {
         }
         drop(initial);
         Ok((journal, remaining, dependencies))
+    }
+
+    fn pending_error(&self, error: PlatformError) -> PlatformError {
+        cleanup_error(
+            error,
+            true,
+            self.location
+                .join(self.header.stage_name())
+                .display()
+                .to_string(),
+        )
+    }
+
+    pub(super) fn unlink_shared_entry(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        intent: &super::cleanup_peer::Intent,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(ControlChange, super::cleanup_finalize::PayloadChange), PlatformError> {
+        (|| {
+            let snapshot = self.bound_snapshot(parent, central, &mut cancel)?;
+            let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+            let mut dependencies =
+                Dependencies::shared_unlink(central, &journal, selection, intent, &mut cancel)?;
+            if dependencies.fingerprint()? != self.catalog {
+                return Err(io("Shared unlink catalog changed"));
+            }
+            let progress = journal.state.cleanup.as_ref().unwrap();
+            let mut remaining = Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+            if remaining.pending_absent
+                || self.pending_absent
+                || self.peer_absent
+                || super::super::evidence_digest(&remaining.observed)? != self.observed
+            {
+                return Err(io("Shared owner payload changed before unlink"));
+            }
+            journal.reserve_cleanup_tail()?;
+            remaining.acquire(parent, &journal.state, progress, intent.index, &mut cancel)?;
+            remaining.revalidate_path(
+                parent,
+                &journal.state,
+                progress,
+                intent.index,
+                &mut cancel,
+            )?;
+            dependencies.revalidate_peers(central)?;
+            journal.bindings()?;
+            let root_unlink = progress.manifest.entries[intent.index].parent.is_none()
+                && journal.header.parent.same_object(journal.header.central);
+            let root_name = OsString::from_wide(&progress.manifest.entries[intent.index].name);
+            journal.failed = true;
+            remaining.remove(
+                parent,
+                &journal.state,
+                progress,
+                intent.index,
+                journal.sequence,
+                &mut cancel,
+            )?;
+            if root_unlink {
+                dependencies.own_root_removed(central, &root_name)?;
+            }
+            dependencies.validate(central)?;
+            journal.failed = false;
+            let change = self.capture_change(
+                &journal,
+                &remaining,
+                &dependencies,
+                parent,
+                central,
+                &mut cancel,
+            )?;
+            let (registry_stamp, registry_names) = dependencies.namespace_proof();
+            let delta = super::cleanup_finalize::PayloadChange {
+                before_journal: self.journal,
+                control_version: change.central.clone(),
+                registry_stamp,
+                registry_names,
+                retained: progress
+                    .manifest
+                    .entries
+                    .first()
+                    .map(|entry| OsString::from_wide(&entry.name)),
+            };
+            Ok((change, delta))
+        })()
+        .map_err(|error| self.pending_error(error))
+    }
+
+    pub(super) fn acknowledge_shared_peer(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        intent: &super::cleanup_peer::Intent,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<ControlChange, PlatformError> {
+        (|| {
+            let snapshot = self.bound_snapshot(parent, central, &mut cancel)?;
+            let progress = snapshot
+                .state
+                .cleanup
+                .as_ref()
+                .ok_or_else(|| io("Missing shared peer cleanup"))?;
+            let acknowledged = intent.acknowledged_by(&snapshot.state)?;
+            if !acknowledged
+                && progress.peer_unlink.as_deref() != Some(&intent.bind_local(&snapshot.state)?)
+            {
+                return Err(io("Peer has no matching pending shared unlink"));
+            }
+            let dependencies = Dependencies::open_selected(
+                central,
+                &snapshot.state,
+                &progress.manifest,
+                Some(selection),
+                &mut cancel,
+            )?;
+            if dependencies.fingerprint()? != self.catalog {
+                return Err(io("Shared peer catalog changed"));
+            }
+            dependencies.revalidate_peers(central)?;
+            // The peer validator needs this same owner control with its strict
+            // delete lease. Release dependency leases before that acquisition.
+            drop(dependencies);
+            let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+            if !acknowledged {
+                journal.acknowledge_peer_unlink(&mut cancel)?;
+            }
+            let progress = journal.state.cleanup.as_ref().unwrap();
+            let remaining = Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+            let dependencies = Dependencies::open_selected(
+                central,
+                &journal.state,
+                &progress.manifest,
+                Some(selection),
+                &mut cancel,
+            )?;
+            if dependencies.fingerprint()? != self.catalog {
+                return Err(io("Shared peer catalog changed after acknowledgement"));
+            }
+            self.capture_change(
+                &journal,
+                &remaining,
+                &dependencies,
+                parent,
+                central,
+                &mut cancel,
+            )
+        })()
+        .map_err(|error| self.pending_error(error))
+    }
+
+    pub(super) fn finish_shared_entry(
+        &self,
+        parent: &File,
+        central: &File,
+        selection: &super::cleanup_group::Selection,
+        intent: &super::cleanup_peer::Intent,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<ControlChange, PlatformError> {
+        (|| {
+            let snapshot = self.bound_snapshot(parent, central, &mut cancel)?;
+            let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+            let dependencies = Dependencies::shared_acknowledgement(
+                central,
+                &journal,
+                selection,
+                intent,
+                &mut cancel,
+            )?;
+            if dependencies.fingerprint()? != self.catalog {
+                return Err(io("Shared owner completion catalog changed"));
+            }
+            let progress = journal.state.cleanup.as_ref().unwrap();
+            let mut remaining = Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+            if !remaining.pending_absent
+                || !self.pending_absent
+                || self.peer_absent
+                || super::super::evidence_digest(&remaining.observed)? != self.observed
+            {
+                return Err(io("Shared owner has no bound missing entry"));
+            }
+            remaining.acquire(parent, &journal.state, progress, intent.index, &mut cancel)?;
+            dependencies.revalidate_peers(central)?;
+            journal.bindings()?;
+            journal.reserve_cleanup_tail()?;
+            journal.failed = true;
+            let acknowledgement = remaining.remove(
+                parent,
+                &journal.state,
+                progress,
+                intent.index,
+                journal.sequence,
+                &mut cancel,
+            )?;
+            dependencies.validate(central)?;
+            journal.failed = false;
+            journal.persist(Record::Cleanup {
+                entry: acknowledgement,
+            })?;
+            remaining.acknowledged();
+            self.capture_change(
+                &journal,
+                &remaining,
+                &dependencies,
+                parent,
+                central,
+                &mut cancel,
+            )
+        })()
+        .map_err(|error| self.pending_error(error))
     }
 
     pub(super) fn reclaim(

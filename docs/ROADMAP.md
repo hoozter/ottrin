@@ -27,8 +27,8 @@ change. Partial-metadata members compare their full confirmed proof. Physical
 reclamation retains the existing dependency checks. The group can now retain a
 member's payload-completion proof while reclaiming other members, advancing their
 catalogs only from the successful physical writer's control/root acknowledgement.
-Same-registry retained-root removal is bound explicitly; shared aliases remain
-protected pending cross-member unlink acknowledgements. After every payload is
+Same-registry retained-root removal is bound explicitly. Shared aliases require
+the bound per-entry intent/unlink/acknowledgement protocol described below. After every payload is
 complete, group metadata authorization/removal now advances member catalogs from
 the held writer and a retained Plan. Interrupted removal freezes other actions;
 the same Plan verifies only its expected metadata-name disappearances before
@@ -39,18 +39,20 @@ reservation before intent. A held read-only peer observer now validates the
 canonical control, authenticated pending-intent prefix, paired mirrors and native
 retained slot, including historical acknowledgements and later root reoccupation.
 That peer-binding checkpoint passes four focused ordinary-account native tests.
-The next implementation now validates surviving aliases before recording a peer
-unlink acknowledgement, retaining both local and peer evidence through the
-paired append. Pending peer intents protect the owner's canonical control until
-acknowledgement finishes. The group now prepares one owner entry intent and all
-selected co-owner intents through the same bound control-writer handoff. It
-retains the pending owner, refuses conflicting actions and permits idempotent
-retry; fresh admission refuses switching durable pending owners. Three focused
-native tests pass. The same exact binary passes all 61 enumerated cleanup cases:
-59 passed, two existing ignored entry points, zero failures, 494.48 seconds;
-owned processes and temporary data are absent afterward. This preparation step
-removes no payload. Physical shared unlink/acknowledgement integration remains
-required.
+Surviving aliases are validated before recording a peer unlink acknowledgement,
+retaining local and peer evidence through the paired append. Pending peer intents
+protect the owner's canonical control until acknowledgement finishes. The group
+prepares owner/co-owner intents, then executes one shared-original alias unlink,
+validates every peer acknowledgement, records the owner's removal, advances only
+known writer/root changes and retires that completed shared claim. Fresh read-only
+admission supports recorded pending-peer changes without inventing authority for
+missing names. Ordinary tail/metadata protection uses actual remaining claims.
+
+Seven focused native tests pass, including full fixture-cohort completion, three
+owners, multiple aliases, registry-root data, unselected-owner refusal, foreign
+changes and unlink/ack failure retries. The same exact binary passes all 68
+native cleanup cases: **66 passed**, two existing ignored entry points, zero
+failures, 434.29 seconds. Owned processes and temporary data are absent afterward.
 
 The preceding peer-binding checkpoint accounts for all **153 Windows Copy journal
 cases** on one exact binary: **145 passed** and eight existing ignored entry
@@ -62,16 +64,18 @@ status test retains its earlier catalog-checkpoint scope.
 
 These unoptimized correctness checks do not establish application performance,
 rendered UI, full unrelated platform or release-package acceptance. Current
-group preparation proof is `GROUP_SHARED_PREPARE_ACCEPTANCE.json` and
-`GROUP_SHARED_PREPARE_COVERAGE.json`. Earlier acknowledgement proof remains in
+shared-unlink proof is `GROUP_SHARED_UNLINK_ACCEPTANCE.json` and
+`GROUP_SHARED_UNLINK_COVERAGE.json`. Preparation proof remains in
+`GROUP_SHARED_PREPARE_ACCEPTANCE.json` and `GROUP_SHARED_PREPARE_COVERAGE.json`.
+Earlier acknowledgement proof remains in
 `PEER_ACK_ACCEPTANCE.json` and `PEER_ACK_COVERAGE.json`. The preceding
 peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 `PEER_BINDING_COVERAGE.json` under
 `.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
 
-**Still required:** integration of peer validation with shared-retained
-alias execution, complete group process-exit/history recovery, and Activity
+**Still required:** complete mixed group execution, group-specific real
+process-exit/history recovery, and Activity
 cleanup confirmation/execution/retry. Reserved-target protection, interrupted-
 staging reclamation, measured resource/storage/security and power-cut matrices,
 broader workflow acceptance and current package gates remain open. Public Windows

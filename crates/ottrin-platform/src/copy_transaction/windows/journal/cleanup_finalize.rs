@@ -316,7 +316,7 @@ impl Completion {
         Remaining::open(parent, &snapshot.state, progress, &mut *cancel)?;
         let dependencies = Dependencies::open_selected(
             central,
-            &self.header,
+            &snapshot.state,
             &progress.manifest,
             selection,
             &mut *cancel,
@@ -610,7 +610,7 @@ impl Plan {
         let progress = control.state.cleanup.as_ref().unwrap();
         let mut dependencies = Dependencies::open_selected(
             central,
-            &self.header,
+            &control.state,
             &progress.manifest,
             selection,
             &mut *cancel,

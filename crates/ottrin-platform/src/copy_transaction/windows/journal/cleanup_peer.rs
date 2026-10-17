@@ -71,7 +71,11 @@ impl Intent {
         {
             return Err(io("Peer retained version/count differs from owner intent"));
         }
-        Ok(PeerUnlink {
+        Ok(self.proof(index))
+    }
+
+    fn proof(&self, index: usize) -> PeerUnlink {
+        PeerUnlink {
             index,
             transaction: self.transaction.clone(),
             control: self.control,
@@ -80,7 +84,39 @@ impl Intent {
             peer_index: self.index,
             sequence: self.sequence,
             intent_digest: self.digest,
-        })
+        }
+    }
+
+    pub(super) fn acknowledged_by(&self, local: &State) -> Result<bool, PlatformError> {
+        let progress = local
+            .cleanup
+            .as_ref()
+            .ok_or_else(|| io("Missing peer cleanup"))?;
+        let Some(index) = progress.manifest.order[progress.completed..]
+            .iter()
+            .copied()
+            .find(|&i| progress.expected(i).identity == self.expected.identity)
+        else {
+            return Ok(false);
+        };
+        if !progress.has_peer_acknowledgement(&self.proof(index).key()?) {
+            return Ok(false);
+        }
+        let actual = progress.expected(index);
+        let mut expected = self.expected.clone();
+        expected.changed = actual.changed;
+        if progress.peer_unlink.is_some()
+            || progress.pending
+            || *actual != expected
+            || progress.expected_links(index)?
+                != self
+                    .links
+                    .checked_sub(1)
+                    .ok_or_else(|| io("Invalid peer alias count"))?
+        {
+            return Err(io("Acknowledged peer alias no longer matches owner unlink"));
+        }
+        Ok(true)
     }
 }
 

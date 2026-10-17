@@ -128,7 +128,15 @@ impl Selection {
         completion: &cleanup_finalize::Completion,
         change: &cleanup_finalize::PayloadChange,
     ) -> Result<(), PlatformError> {
-        let header = completion.header();
+        self.accept_payload_change(completion.header(), completion.journal_digest(), change)
+    }
+
+    fn accept_payload_change(
+        &mut self,
+        header: &Header,
+        after_journal: [u8; 32],
+        change: &cleanup_finalize::PayloadChange,
+    ) -> Result<(), PlatformError> {
         let record = self
             .records
             .get_mut(&header.central_name())
@@ -165,7 +173,7 @@ impl Selection {
                 "Copy payload acknowledgement has an unexpected registry change",
             ));
         }
-        record.digest = completion.journal_digest();
+        record.digest = after_journal;
         record.version = change.control_version.clone();
         self.names = names;
         self.root = root;
@@ -548,6 +556,116 @@ impl Observation {
         }
         manager.validate()?;
         Ok(intent)
+    }
+
+    /// Execute one prepared shared alias, acknowledge each peer, then close the
+    /// owner's pending entry. Only successful held changes advance the cohort.
+    pub(super) fn unlink_shared_entry(
+        &mut self,
+        owner: usize,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let intent = match &self.pending_unlink {
+            Some((pending, intent))
+                if *pending == owner
+                    && matches!(self.members.get(owner), Some(Member::Payload(admission)) if admission.pending_entry_absent()) =>
+            {
+                // A successful held physical change is already retained.
+                // Peers still have their pre-unlink epochs until their ack;
+                // validate that exact delta instead of starting them again.
+                intent.clone()
+            }
+            _ => self.prepare_shared_unlink(owner, &mut cancel)?,
+        };
+        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+            .ok_or_else(|| io("Configured Copy group registry is missing"))?;
+        let central = manager.writable_root()?;
+        self.selection.validate(&central, &mut cancel)?;
+        let peers = self
+            .shared
+            .get(&intent.expected.identity.object_key())
+            .ok_or_else(|| io("Shared unlink object is missing"))?
+            .iter()
+            .filter_map(|(member, _)| (*member != owner).then_some(*member))
+            .collect::<BTreeSet<_>>();
+        let Member::Payload(admission) = &self.members[owner] else {
+            return Err(io("Missing shared owner payload"));
+        };
+        if !admission.pending_entry_absent() {
+            let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+            let (change, delta) = admission.unlink_shared_entry(
+                &parent,
+                &central,
+                &self.selection,
+                &intent,
+                &mut cancel,
+            )?;
+            let mut selection = self.selection.clone();
+            selection.accept_payload_change(change.admission.header(), change.after, &delta)?;
+            let mut members = self.members.clone();
+            for (index, member) in members.iter_mut().enumerate() {
+                if index != owner {
+                    member.advance_catalog(&self.selection, &selection)?;
+                }
+            }
+            // This admission already contains the successful post-unlink root
+            // catalog; do not advance that root twice.
+            members[owner] = Member::Payload(change.admission);
+            self.selection = selection;
+            self.members = members;
+            self.selection.validate(&central, &mut cancel)?;
+        }
+        for peer in peers {
+            let Member::Payload(admission) = &self.members[peer] else {
+                return Err(io("Missing shared peer payload"));
+            };
+            let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+            let change = admission.acknowledge_shared_peer(
+                &parent,
+                &central,
+                &self.selection,
+                &intent,
+                &mut cancel,
+            )?;
+            self.accept_member_change(peer, change, &central, &mut cancel)?;
+        }
+        let Member::Payload(admission) = &self.members[owner] else {
+            return Err(io("Missing shared owner completion"));
+        };
+        let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+        let change = admission.finish_shared_entry(
+            &parent,
+            &central,
+            &self.selection,
+            &intent,
+            &mut cancel,
+        )?;
+        // Publish our known control change before an external-state/cancel
+        // check can fail; a fresh observer can replay the paired entry ack.
+        let mut selection = self.selection.clone();
+        selection.accept_change(&change)?;
+        let mut members = self.members.clone();
+        members[owner] = Member::Payload(change.admission);
+        for member in &mut members {
+            member.advance_catalog(&self.selection, &selection)?;
+        }
+        self.selection = selection;
+        self.members = members;
+        if let Some(owners) = self.shared.get_mut(&intent.expected.identity.object_key()) {
+            owners.retain(|&(member, index)| member != owner || index != intent.index);
+            if owners
+                .iter()
+                .map(|(member, _)| *member)
+                .collect::<BTreeSet<_>>()
+                .len()
+                < 2
+            {
+                self.shared.remove(&intent.expected.identity.object_key());
+            }
+        }
+        self.pending_unlink = None;
+        self.selection.validate(&central, &mut cancel)?;
+        manager.validate()
     }
 
     fn writable_parent(

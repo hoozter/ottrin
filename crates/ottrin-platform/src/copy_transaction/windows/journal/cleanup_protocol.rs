@@ -100,6 +100,10 @@ pub(super) struct Progress {
 }
 
 impl Progress {
+    pub(super) fn has_peer_acknowledgement(&self, key: &[u8; 32]) -> bool {
+        self.peer_removed.contains(key)
+    }
+
     pub(super) fn new(manifest: Manifest) -> Self {
         Self {
             manifest,
