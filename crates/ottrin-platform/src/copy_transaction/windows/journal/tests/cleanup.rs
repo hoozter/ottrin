@@ -1259,7 +1259,7 @@ fn windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_re
 
 #[test]
 fn windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_originals() {
-    for shared in [false, true] {
+    for (shared, drift) in [(false, 0), (false, 1), (false, 2), (false, 3), (true, 0)] {
         let root = tempfile::tempdir().unwrap();
         fixture(root.path());
         let first = root.path().join("destination");
@@ -1317,6 +1317,32 @@ fn windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_o
         let peer_header = decode(&peer_bytes).unwrap().state.header.unwrap();
         let before = namespace_contents(root.path());
         let parent = owner(&first);
+        if drift != 0 {
+            let admission =
+                super::super::cleanup::Admission::observe(&parent, &central, &names[0], |_| Ok(()))
+                    .unwrap();
+            let peer_control = root.path().join("central").join(peer_header.central_name());
+            if drift == 1 {
+                std::fs::write(&peer_control, &peer_bytes).unwrap();
+            }
+            if drift <= 2 {
+                owner(&peer_control)
+                    .set_times(std::fs::FileTimes::new().set_modified(
+                        std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_700_000_000),
+                    ))
+                    .unwrap();
+            } else {
+                std::fs::hard_link(&peer_control, root.path().join("outside-peer-alias")).unwrap();
+            }
+            let changed = namespace_contents(root.path());
+            assert!(
+                admission.reclaim(&parent, &central, |_| Ok(())).is_err(),
+                "adopted peer drift {drift}"
+            );
+            assert_eq!(namespace_contents(root.path()), changed);
+            assert_eq!(std::fs::read(&peer_local).unwrap(), peer_bytes);
+            continue;
+        }
         let result =
             super::super::cleanup_finalize::prepare(&parent, &central, &names[0], |_| Ok(()));
         if shared {
@@ -1782,5 +1808,79 @@ fn windows_native_copy_cleanup_payload_completion_binds_metadata_authorization()
                     .unwrap();
             }
         }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_unrecognized_registry_names_stay_visible_and_block_mutation() {
+    for case in 0..5 {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _readonly) = cleanup_fault_fixture(root.path(), 1);
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let control = original_journal(root.path(), &name);
+        let old_name = control.header.central_name();
+        drop(control);
+        let unrecognized = match case {
+            0 => OsString::from(format!("{}.COPY-JOURNAL", "0".repeat(32))),
+            1 => OsString::from(format!("{}.copy-journal", "A".repeat(32))),
+            2 => OsString::from("broken.copy-journal"),
+            3 => {
+                let mut units = vec![0xd800];
+                units.extend(".CoPy-JoUrNaL".encode_utf16());
+                OsString::from_wide(&units)
+            }
+            4 => OsString::from(old_name.to_str().unwrap().to_ascii_uppercase()),
+            _ => unreachable!(),
+        };
+        if case == 4 {
+            std::fs::rename(
+                root.path().join("central").join(&old_name),
+                root.path().join("central").join(&unrecognized),
+            )
+            .unwrap();
+        } else {
+            let mut file =
+                windows_fs::create_private(&central, &unrecognized, false, FILE_SHARE_READ)
+                    .unwrap();
+            file.write_all(b"unknown recovery claims must remain")
+                .unwrap();
+            file.sync_all().unwrap();
+        }
+        // Legitimate ordinary data in a same-root registry is still unrelated.
+        std::fs::write(root.path().join("central/unrelated.txt"), b"user data").unwrap();
+        let before = namespace_contents(root.path());
+        let statuses = discover_at(&root.path().join("central")).unwrap();
+        assert_eq!(statuses.len(), if case == 4 { 1 } else { 2 });
+        let unknown = statuses
+            .iter()
+            .find(|entry| entry.transaction_id.is_none())
+            .unwrap();
+        assert_eq!(unknown.phase, None);
+        assert!(matches!(
+            unknown.evidence,
+            WindowsCopyRecoveryEvidence::NeedsReview { .. }
+        ));
+        assert_eq!(
+            unknown.transaction,
+            Some(windows_fs::location(&central).unwrap().join(&unrecognized))
+        );
+        assert!(
+            unknown.publication.is_none()
+                && unknown.retained.is_none()
+                && unknown.owned_location.is_none()
+        );
+        let result =
+            super::super::cleanup::Admission::observe(&parent, &central, &name, |_| Ok(()));
+        assert!(result.is_err(), "ignored unrecognized registry name {case}");
+        if case != 4 {
+            assert!(
+                result
+                    .unwrap_err()
+                    .to_string()
+                    .contains("unrecognized registry record")
+            );
+        }
+        assert_eq!(namespace_contents(root.path()), before);
     }
 }

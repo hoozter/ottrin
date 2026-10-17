@@ -499,12 +499,14 @@ mod tests {
             let entries = crate::discover_retained_copy_transactions().unwrap();
             assert_eq!(entries.len(), 1);
             assert_eq!(
-                Some(entries[0].transaction_id.as_str()),
+                entries[0].transaction_id.as_deref(),
                 receipt.copy_transaction_id()
             );
             std::fs::remove_file(&source).unwrap();
-            let mut plan =
-                crate::restore_retained_copy_undo_plan(&entries[0].transaction_id).unwrap();
+            let mut plan = crate::restore_retained_copy_undo_plan(
+                entries[0].transaction_id.as_deref().unwrap(),
+            )
+            .unwrap();
             plan.undo_next().unwrap();
             assert!(!destination.join("source.txt").exists());
             assert_eq!(

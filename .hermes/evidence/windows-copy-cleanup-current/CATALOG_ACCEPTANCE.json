@@ -1,0 +1,186 @@
+{
+  "scope": "Compact Windows Copy dependency leases, native peer-epoch binding, unrecognized journal namespace preservation and Activity review identity",
+  "parent_revision": "2942939d384e74a8b12b5d3103d3507cd5162e8c",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "31309ef3124d6751fc8fbfd8c880a24d1d7ca7b4f8aac6d6187dcc61daf8c87b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "c264c0c8f6657bc4beda95393d7760ce523d8ba10a93d53c3d17f0614f0cc2dc",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "6bb645d441352adcb0e9653705ec3a6c66604d48b341028ea18c51d542c02879",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "5c8ee12c865aa5cf9458cd5ef30b44a3208e2a78403642d6d10520a73e9df9df",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "82fbda4f695ecdb2ff3cfab58b814617365a7dd1908be44a107bafdf42ad733e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "dcd2b1d7ced04737c7c2b4e919616ce0d156c4e458bd95596630650d3180cf9d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2"
+  },
+  "build_profile": {
+    "scope": "Native correctness tests; no application/RSS performance acceptance",
+    "overrides": [
+      "profile.test.package.ottrin-platform.opt-level=0",
+      "profile.test.package.ottrin-ui.opt-level=0"
+    ],
+    "test_packages": [
+      "ottrin-platform",
+      "ottrin-ui"
+    ],
+    "workspace_target": "/home/campbell/Projects/Ottrin/target"
+  },
+  "platform": {
+    "binary": {
+      "test_crate": "ottrin_platform",
+      "test_arguments": "windows_native_copy_cleanup --nocapture --test-threads=1",
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d96d074ed6581567.exe",
+      "compiler_sha256": "82d58e14ccefdc8bb448cfbe56d3b03eb37673832cb25772f5993ace015716c3",
+      "transferred_sha256": "442ff6a9b2bcac873bd35b7f93cec7f1d1156eece2c676a40a1ad2782c2efc55",
+      "retained_sections": {
+        ".text": "d9d18d5d0df4b2c69f29f64e739541089d1d2796ec02148a57016744a077628c",
+        ".data": "cb9175f37b7f0183f27185b42c430e2c939392e2bc2b1b8c4f8c757f710e7d40",
+        ".rdata": "cad8d6d90fbbcb2a2e45882bfc2052f68f41dc90529a3141601df23a090c9671",
+        ".pdata": "50be3070b2f506a244b3258f452939b001a4a7b8bce6f1b3d6b312f557030225",
+        ".xdata": "30a59e1f6d1306cbdd03e7c7fdc685477f25be39901db1242d1bfe92817ea99b",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "18780df3dc25312b53e81607b26b01726c250b0b28aa61db2464d2fa550e17a0",
+        ".CRT": "fdb97f7f14ca25d321a8b89121dfc4a21e716a475cd017478f10d92e77a322d8",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "795c36285a334d1f6c03b425492695c4dab59514cff29bbed5d487494c21243a"
+      }
+    },
+    "native_result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "442ff6a9b2bcac873bd35b7f93cec7f1d1156eece2c676a40a1ad2782c2efc55",
+      "status": "pass"
+    },
+    "suite": {
+      "passed": 28,
+      "failed": 0,
+      "ignored_child_harnesses": 2,
+      "unrelated_filtered": 307,
+      "seconds": 241.22,
+      "base_injected_failures": 187,
+      "base_real_process_exits": 187,
+      "configured_action_added_metadata_failures": 48
+    }
+  },
+  "unrecognized_names": {
+    "separate_native_case_result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "442ff6a9b2bcac873bd35b7f93cec7f1d1156eece2c676a40a1ad2782c2efc55",
+      "status": "pass"
+    },
+    "scenarios": 5,
+    "seconds": 1.93,
+    "cases": [
+      "uppercase suffix",
+      "uppercase hexadecimal prefix",
+      "invalid ASCII transaction prefix",
+      "unpaired UTF-16 prefix with mixed-case suffix",
+      "case-renamed genuine control journal"
+    ],
+    "properties": [
+      "Visible NeedsReview entry with no invented transaction identifier",
+      "Current native recovery path preserved",
+      "Admission refuses before mutation",
+      "Unrelated ordinary catalog data remains outside journal classification"
+    ]
+  },
+  "native_ui_status": {
+    "binary": {
+      "test_crate": "ottrin_ui",
+      "test_arguments": "--exact tests::windows_retained_copy_activity_keeps_evidence_and_actions_separate --nocapture --test-threads=1",
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-98d491679d016e62.exe",
+      "compiler_sha256": "52dcb3acb15aff18edf635a2b3ea01484059874a6c9906150c24f6bc2d4357a3",
+      "transferred_sha256": "2810608d6836a16becf7d47ca9aa790180ecc0cc87d5e19c7e4e7838f7f57cd1",
+      "retained_sections": {
+        ".text": "7e2ae3a7eb02ecef6c49a9640504716d2d2d8bfdafedcb6871dd9878e5af691f",
+        ".data": "2ef91d81f5fbdd8e37c16742adfccbe10979bdef3e9a9ff99134b4d75e89b9b2",
+        ".rdata": "6f5ab4032138d170a08dcee495110732a13f41d392f9defc49dc240475f73258",
+        ".pdata": "cb23a577c5f5c19cb095aa31bc87459f0c2d6c1e6f0becbf5ec4b88e9d222fce",
+        ".xdata": "41ca01c57629bbd8630e3a594b149d3e5088edc32b215b9e1f058528108dd146",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "e04af89084a6755f3e2d08099c80d43eb4ac92f60d9f395b3b4c93834a1c0be3",
+        ".CRT": "2e9929248776c7d171531b2cfac38ec46d98582ed6a4ff747fac1a68d1ab69e2",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "8e00529778abb8debbbaf6693fc9cf292ee40d15afe57f2a56ed2764562a1dcb"
+      }
+    },
+    "result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "2810608d6836a16becf7d47ca9aa790180ecc0cc87d5e19c7e4e7838f7f57cd1",
+      "status": "pass"
+    },
+    "passed_tests": 1,
+    "unrelated_filtered": 347,
+    "seconds": 0.0,
+    "constructed_rows": 63,
+    "properties": [
+      "60 phase/evidence combinations retain action/evidence separation",
+      "Canonical corrupt record remains reviewable",
+      "Two distinct unpaired UTF-16 names produce distinct review keys",
+      "Unidentified records have no Undo/forward token or transaction IDs",
+      "Review title is accurate; normal row title preserved"
+    ]
+  },
+  "catalog_properties": [
+    "Each decoded peer graph/raw journal is released after overlap validation",
+    "Held peers retain native file lease/version, private security/creator and SHA256 only",
+    "Confirmation fingerprint includes native peer epoch as well as bytes",
+    "Three peer drift cases (identical-byte rewrite, timestamp change, added alias) refuse without further writes",
+    "Existing independent peer preservation and shared-original refusal remain verified"
+  ],
+  "checks": [
+    "Strict Windows platform/UI all-target Clippy passed (70114,6.24s)",
+    "Strict Linux UI all-target Clippy passed (18247,17.27s)",
+    "cargo fmt --all",
+    "git diff --check"
+  ],
+  "limitations": [
+    "Structural memory retention improvement; no measured RSS/large-registry resource acceptance",
+    "Native UI test covers status logic, not rendered UI or full Windows UI suite",
+    "Coordinated batch and Activity cleanup controls/execution remain unfinished",
+    "Reserved targets, interrupted staging and broader storage/security/power-cut/package gates remain open",
+    "Application packages unchanged; public Windows Copy remains gated"
+  ],
+  "teardown": {
+    "task": "Ready",
+    "task_result": 0,
+    "owned_native_processes": 0,
+    "temporary_namespace": false,
+    "owned_vm": "retained for immediate coordinated batch work"
+  },
+  "storage_cleanup": {
+    "removed_superseded_test_executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "bytes": 530745052,
+    "sha256": "88e1e6ccdf2e478b9b5b4fc731bd3869cba5da089212e1fa7cd05344f2602117",
+    "consumer_check": "fuser returned 1 with no process IDs",
+    "retained_current_platform_test": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d96d074ed6581567.exe",
+    "retained_current_ui_test": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-98d491679d016e62.exe",
+    "shared_dependencies": "preserved"
+  }
+}

@@ -1078,6 +1078,16 @@ struct RestoredCopyActivity {
     receipt: Option<CopyBatchUndoReceipt>,
 }
 
+impl RestoredCopyActivity {
+    fn title(&self) -> &'static str {
+        if self.ownership.transactions.is_empty() {
+            "Copy recovery record needs review"
+        } else {
+            "Copy from previous session"
+        }
+    }
+}
+
 type RetainedCopySnapshot = (Vec<RestoredCopyActivity>, Option<String>);
 
 #[cfg(target_os = "linux")]
@@ -1120,12 +1130,16 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
             entries
                 .into_iter()
                 .map(|entry| {
-                    let admission = windows_copy_can_admit(&entry).then(|| {
-                        ottrin_platform::restore_retained_copy_undo_plan(&entry.transaction_id)
-                    });
-                    let resume = windows_copy_can_resume(&entry).then(|| {
-                        ottrin_platform::restore_retained_copy_resume_plan(&entry.transaction_id)
-                    });
+                    let admission = entry
+                        .transaction_id
+                        .as_deref()
+                        .filter(|_| windows_copy_can_admit(&entry))
+                        .map(ottrin_platform::restore_retained_copy_undo_plan);
+                    let resume = entry
+                        .transaction_id
+                        .as_deref()
+                        .filter(|_| windows_copy_can_resume(&entry))
+                        .map(ottrin_platform::restore_retained_copy_resume_plan);
                     windows_retained_copy_activity(entry, admission, resume)
                 })
                 .collect(),
@@ -1137,6 +1151,9 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
 
 #[cfg(target_os = "windows")]
 fn windows_copy_can_admit(entry: &ottrin_platform::WindowsRetainedCopyStatus) -> bool {
+    if entry.transaction_id.is_none() {
+        return false;
+    }
     use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
     match entry.evidence {
         Evidence::VerifiedTree => {
@@ -1150,7 +1167,8 @@ fn windows_copy_can_admit(entry: &ottrin_platform::WindowsRetainedCopyStatus) ->
 #[cfg(target_os = "windows")]
 fn windows_copy_can_resume(entry: &ottrin_platform::WindowsRetainedCopyStatus) -> bool {
     use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
-    entry.evidence == Evidence::VerifiedTree
+    entry.transaction_id.is_some()
+        && entry.evidence == Evidence::VerifiedTree
         && matches!(
             entry.phase,
             Some(
@@ -1229,7 +1247,12 @@ fn windows_retained_copy_activity(
     let mut receipt = None;
     if eligible {
         match admission {
-            Some(Ok(plan)) if plan.transaction_ids() == vec![entry.transaction_id.as_str()] => {
+            Some(Ok(plan))
+                if entry
+                    .transaction_id
+                    .as_deref()
+                    .is_some_and(|id| plan.transaction_ids() == vec![id]) =>
+            {
                 phase = match plan.admitted_phase() {
                     Phase::UndoPending => "Undo interrupted · ready to resume",
                     _ => "Completed copy · ready to undo",
@@ -1254,7 +1277,7 @@ fn windows_retained_copy_activity(
     let mut resume = None;
     if resumable {
         match resume_admission {
-            Some(Ok(plan)) if plan.transaction_id() == entry.transaction_id => {
+            Some(Ok(plan)) if Some(plan.transaction_id()) == entry.transaction_id.as_deref() => {
                 phase = "Verified copy · ready to resume";
                 location = Some(plan.observed_location().to_path_buf());
                 resume = Some(plan);
@@ -1272,17 +1295,34 @@ fn windows_retained_copy_activity(
             None => {}
         }
     }
+    let key = if let Some(id) = &entry.transaction_id {
+        format!("transaction:{id}")
+    } else {
+        use std::os::windows::ffi::OsStrExt;
+        // Internal row identity must preserve raw native names; do not turn a
+        // display label or a lossy filename into a transaction ID.
+        let native_key = entry
+            .transaction
+            .as_ref()
+            .into_iter()
+            .flat_map(|path| path.as_os_str().encode_wide())
+            .map(|unit| format!("{unit:04x}"))
+            .collect::<String>();
+        format!("unrecognized-copy-record:{native_key}")
+    };
     let mut detail = format!("{phase} · {evidence}");
     if let Some(location) = location {
         detail.push_str(&format!(" · Data: {}", path_label(&location)));
     } else if let Some(location) = entry.transaction {
         detail.push_str(&format!(" · Recovery location: {}", path_label(&location)));
     }
-    detail.push_str(&format!(" · Transaction: {}", entry.transaction_id));
+    if let Some(id) = &entry.transaction_id {
+        detail.push_str(&format!(" · Transaction: {id}"));
+    }
     RestoredCopyActivity {
         ownership: RetainedCopyOwnership {
-            key: format!("transaction:{}", entry.transaction_id),
-            transactions: vec![entry.transaction_id],
+            key,
+            transactions: entry.transaction_id.into_iter().collect(),
             blocked_by: Vec::new(),
             restored: true,
             finalization: None,
@@ -6115,6 +6155,7 @@ impl OttrinApp {
             }
         }
         for group in activity {
+            let title = group.title();
             if group.ownership.finalization.is_some() {
                 // One manifest owns the whole interrupted clear, even when it
                 // originally covered multiple operation cards.
@@ -6184,7 +6225,7 @@ impl OttrinApp {
                 let id = self.next_id();
                 self.operation_history.push_back(OperationRecord {
                     id,
-                    title: "Copy from previous session".into(),
+                    title: title.into(),
                     detail: group.detail,
                     status: restored_copy_status(&group.undo),
                     recoverability: OperationRecoverability::SessionTracked,
@@ -25461,9 +25502,11 @@ mod tests {
             let mut wrong = ottrin_platform::discover_retained_copy_transactions()
                 .unwrap()
                 .remove(0);
-            let receipt =
-                ottrin_platform::restore_retained_copy_undo_plan(&wrong.transaction_id).unwrap();
-            wrong.transaction_id = "0".repeat(32);
+            let receipt = ottrin_platform::restore_retained_copy_undo_plan(
+                wrong.transaction_id.as_deref().unwrap(),
+            )
+            .unwrap();
+            wrong.transaction_id = Some("0".repeat(32));
             let rejected = windows_retained_copy_activity(wrong, Some(Ok(receipt)), None);
             assert!(
                 rejected.receipt.is_none(),
@@ -25747,7 +25790,7 @@ mod tests {
                 let review = matches!(evidence, Evidence::NeedsReview { .. });
                 let activity = windows_retained_copy_activity(
                     ottrin_platform::WindowsRetainedCopyStatus {
-                        transaction_id: "a".repeat(32),
+                        transaction_id: Some("a".repeat(32)),
                         phase: Some(phase),
                         publication: Some(PathBuf::from(r"C:\old\copy")),
                         retained: Some(PathBuf::from(r"C:\old\candidate")),
@@ -25760,6 +25803,7 @@ mod tests {
                     None,
                 );
                 assert!(activity.receipt.is_none());
+                assert_eq!(activity.title(), "Copy from previous session");
                 assert!(restored_copy_token(activity.receipt.clone()).is_none());
                 assert!(!path_move_undo_action_is_available(
                     restored_copy_status(&activity.undo),
@@ -25781,7 +25825,7 @@ mod tests {
         }
         let unknown = windows_retained_copy_activity(
             ottrin_platform::WindowsRetainedCopyStatus {
-                transaction_id: "b".repeat(32),
+                transaction_id: Some("b".repeat(32)),
                 phase: None,
                 publication: None,
                 retained: None,
@@ -25798,6 +25842,39 @@ mod tests {
         assert!(unknown.detail.contains("Copy journal needs review"));
         assert!(unknown.detail.contains(&"b".repeat(32)));
         assert!(!unknown.detail.contains("Data:"));
+        use std::os::windows::ffi::OsStringExt;
+        let mut keys = HashSet::new();
+        for surrogate in [0xd800, 0xd801] {
+            let mut units = r"C:\state\".encode_utf16().collect::<Vec<_>>();
+            units.push(surrogate);
+            units.extend(".COPY-JOURNAL".encode_utf16());
+            let entry = ottrin_platform::WindowsRetainedCopyStatus {
+                transaction_id: None,
+                phase: None,
+                publication: None,
+                retained: None,
+                owned_location: None,
+                transaction: Some(PathBuf::from(std::ffi::OsString::from_wide(&units))),
+                source_label: None,
+                evidence: Evidence::NeedsReview {
+                    reason: "Unrecognized recovery filename".into(),
+                },
+            };
+            assert!(!windows_copy_can_admit(&entry));
+            assert!(!windows_copy_can_resume(&entry));
+            let activity = windows_retained_copy_activity(entry, None, None);
+            assert!(activity.ownership.transactions.is_empty());
+            assert_eq!(activity.title(), "Copy recovery record needs review");
+            assert!(activity.receipt.is_none() && activity.ownership.resume.is_none());
+            assert!(activity.detail.contains("Recovery location:"));
+            assert!(!activity.detail.contains("Transaction:"));
+            keys.insert(activity.ownership.key);
+        }
+        assert_eq!(
+            keys.len(),
+            2,
+            "Native names must retain distinct review rows"
+        );
     }
 
     #[test]

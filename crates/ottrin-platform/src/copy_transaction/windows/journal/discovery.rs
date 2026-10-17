@@ -313,7 +313,8 @@ pub enum WindowsCopyRecoveryEvidence {
 /// file handles and never creates the configured registry or repairs its data.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct WindowsRetainedCopyStatus {
-    pub transaction_id: String,
+    /// Unrecognized recovery filenames have no admitted transaction identity.
+    pub transaction_id: Option<String>,
     pub phase: Option<WindowsCopyPhase>,
     pub publication: Option<PathBuf>,
     pub retained: Option<PathBuf>,
@@ -359,6 +360,25 @@ pub(super) fn registry_id(name: &OsStr) -> Option<String> {
             .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)))
     .then(|| text.to_owned())
 }
+/// Recognize possible journal claims without lossy UTF-16 conversion or
+/// silently treating a case-variant/corrupt filename as unrelated user data.
+pub(super) fn registry_candidate(name: &OsStr) -> bool {
+    let units: Vec<_> = name.encode_wide().collect();
+    let suffix = b".copy-journal";
+    units.len() >= suffix.len()
+        && units[units.len() - suffix.len()..]
+            .iter()
+            .zip(suffix)
+            .all(|(unit, byte)| {
+                let folded = if (65..=90).contains(unit) {
+                    *unit + 32
+                } else {
+                    *unit
+                };
+                folded == u16::from(*byte)
+            })
+}
+
 fn registered_journal(central: &File, name: &OsStr) -> Result<(Vec<u8>, State), PlatformError> {
     let record = RegisteredJournal::open(central, name)?;
     Ok((record.bytes, record.state))
@@ -535,9 +555,10 @@ pub fn discover_at_with_progress(
         windows_fs::directory_children_limited(&central, MAX_REGISTRY_ENTRIES).map_err(io)?
     {
         progress(0)?;
-        let Some(id) = registry_id(&name) else {
+        let id = registry_id(&name);
+        if id.is_none() && !registry_candidate(&name) {
             continue;
-        };
+        }
         let mut status = WindowsRetainedCopyStatus {
             transaction_id: id,
             phase: None,
@@ -550,6 +571,14 @@ pub fn discover_at_with_progress(
                 reason: "Copy journal was not inspected".into(),
             },
         };
+        if status.transaction_id.is_none() {
+            status.transaction = Some(windows_fs::location(&central).map_err(io)?.join(&name));
+            status.evidence = WindowsCopyRecoveryEvidence::NeedsReview {
+                reason: "Unrecognized Copy recovery filename; record preserved without adopting a transaction identity".into(),
+            };
+            output.push(status);
+            continue;
+        }
         let result = (|| {
             let (bytes, state) = registered_journal(&central, &name)?;
             let header = state.header.as_ref().unwrap();

@@ -203,15 +203,19 @@ pub(super) fn test_case(root: &Path) {
     let mut entry = ottrin_platform::discover_retained_copy_transactions()
         .unwrap()
         .remove(0);
-    let journal = root
-        .join("profile/Ottrin/State/copies")
-        .join(format!("{}.copy-journal", entry.transaction_id));
+    let journal = root.join("profile/Ottrin/State/copies").join(format!(
+        "{}.copy-journal",
+        entry.transaction_id.as_deref().unwrap()
+    ));
     let before = std::fs::read(&journal).unwrap();
     let local_journal = entry.transaction.as_ref().unwrap().join("journal");
     let local_before = std::fs::read(&local_journal).unwrap();
     let data = entry.owned_location.as_ref().unwrap().join("nested/file");
-    let plan = ottrin_platform::restore_retained_copy_resume_plan(&entry.transaction_id).unwrap();
-    entry.transaction_id = "0".repeat(32);
+    let plan = ottrin_platform::restore_retained_copy_resume_plan(
+        entry.transaction_id.as_deref().unwrap(),
+    )
+    .unwrap();
+    entry.transaction_id = Some("0".repeat(32));
     let rejected = windows_retained_copy_activity(entry, None, Some(Ok(plan)));
     assert!(
         rejected.ownership.resume.is_none(),

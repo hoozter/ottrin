@@ -50,6 +50,16 @@ passes 27 tests. Evidence: `CLEANUP_ACTION_ACCEPTANCE.json`. Activity controls,
 coordinated independent/co-owned batch cleanup and the remaining gates are still
 unfinished; this does not enable public Windows Copy or update application packages.
 
+Catalog leases now release each peer's decoded graph after overlap checking,
+retaining compact native/security/version/digest proof. Peer metadata drift is
+included in confirmation binding. Case-variant, malformed and raw UTF-16 journal
+names remain visible for review and block cleanup without acquiring a false
+transaction identity; ordinary unrelated files stay allowed. All 28 scoped native
+cleanup tests and the native Activity status test pass. The latter checks normal
+row behavior and distinct, accurately titled unidentified-record rows with no
+recovery tokens. Evidence: `CATALOG_ACCEPTANCE.json`. Large-registry RSS acceptance,
+batch coordination, Activity cleanup controls and the broader gates remain open.
+
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session
 Undo uses the same persisted guards as restart Undo. Overwrite receipts reserve

@@ -725,6 +725,31 @@ package-specific optimization level zero; dependencies remain reused and no
 performance acceptance is inferred. Source/profile/binary proof:
 `CLEANUP_ACTION_ACCEPTANCE.json`. Public workflow cleanup remains unfinished:
 Activity confirmation/execution/retry and coordinated batch admission are required.
+
+Dependency admission now retains only a native control lease, version, private
+security/creator and record digest for each peer. The decoded graph is used for
+overlap validation and released at the end of that iteration; fingerprinting
+never retains or rehashes every peer's raw journal. The native epoch participates
+in the handle-free confirmation fingerprint, and held claims recheck bytes,
+version, binding, single-link state and private security. Identical-byte rewrites,
+clock changes and aliases after admission refuse without mutation.
+
+Journal namespace classification recognizes suspicious suffix case variants in
+raw UTF-16. Noncanonical names are preserved and shown as NeedsReview with no
+transaction ID; they block destructive dependency admission rather than being
+silently ignored. The observed native record path supplies their Activity row
+identity, encoded without lossy conversion. Unidentified rows have no Undo or
+forward recovery action and use the review title. Canonical IDs remain labels,
+never mutation authority. Ordinary unrelated files remain permitted in a
+registry that is also a destination.
+
+`CATALOG_ACCEPTANCE.json` records 28 passing native cleanup tests, five separate
+noncanonical-name cases (including an unpaired UTF-16 filename and a case-renamed
+real journal), three peer drift cases and a passing native Activity status test.
+That UI test covers 63 constructed rows, not rendered desktop acceptance. Both
+Windows and Linux strict UI checks pass. This establishes the compact data
+structure and functional guards; measured large-catalog RSS/resource acceptance
+and coordinated batch cleanup remain open.
 Co-owned batch references, interrupted staging reclamation and realistic registry/
 large-operation resource limits remain open. Process exits do not establish
 physical power-cut acceptance; specialized storage/security and current package/UI

@@ -2,6 +2,17 @@
 use super::cleanup_protocol::Manifest;
 use super::*;
 
+/// Retain only the claim's immutable digest and native control lease. The
+/// decoded payload graph is needed for overlap checking, not for the lifetime
+/// of every other peer in a potentially large catalog.
+struct Peer {
+    file: File,
+    version: EntryVersion,
+    security: security::PrivateSecurity,
+    creator: Vec<u8>,
+    digest: [u8; 32],
+}
+
 pub(super) struct Dependencies {
     central: WindowsStableIdentity,
     stamp: EntryVersion,
@@ -9,7 +20,7 @@ pub(super) struct Dependencies {
     creator: Vec<u8>,
     // Reading headers alone does not grant payload deletion authority. Keeping
     // the leases alive prevents a peer from changing those dependency claims.
-    peers: Vec<(OsString, discovery::RegisteredJournal)>,
+    peers: Vec<(OsString, Peer)>,
     names: Vec<OsString>,
 }
 
@@ -37,7 +48,16 @@ impl Dependencies {
         let mut peers = Vec::new();
         for name in &names {
             cancel(0)?;
-            if *name == header.central_name() || discovery::registry_id(name).is_none() {
+            if *name == header.central_name() {
+                continue;
+            }
+            if discovery::registry_id(name).is_none() {
+                if discovery::registry_candidate(name) {
+                    return Err(io(format!(
+                        "Copy cleanup needs review of unrecognized registry record {}",
+                        name.to_string_lossy()
+                    )));
+                }
                 continue;
             }
             let peer = discovery::RegisteredJournal::dependency(central, name)?;
@@ -78,7 +98,15 @@ impl Dependencies {
                     other.transaction
                 )));
             }
-            peers.push((name.clone(), peer));
+            let lease = Peer {
+                version: super::super::version(&peer.file)?,
+                security: other.central_security.clone(),
+                creator: other.creator.clone(),
+                digest: Sha256::digest(&peer.bytes).into(),
+                file: peer.file,
+            };
+            // The raw record and decoded graph drop at this iteration's end.
+            peers.push((name.clone(), lease));
         }
         if windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
             .map_err(io)?
@@ -118,13 +146,14 @@ impl Dependencies {
             .iter()
             .map(|name| name.encode_wide().collect())
             .collect();
-        let peers: Vec<(Vec<u16>, [u8; 32])> = self
+        let peers: Vec<_> = self
             .peers
             .iter()
             .map(|(name, peer)| {
                 (
-                    name.encode_wide().collect(),
-                    Sha256::digest(&peer.bytes).into(),
+                    name.encode_wide().collect::<Vec<_>>(),
+                    peer.digest,
+                    &peer.version,
                 )
             })
             .collect();
@@ -145,14 +174,15 @@ impl Dependencies {
 
     fn peer_bindings(&self, central: &File) -> Result<(), PlatformError> {
         for (name, peer) in &self.peers {
-            let header = peer.state.header.as_ref().unwrap();
-            bound(central, name, header.central_file)?;
-            if read(&peer.file)? != peer.bytes {
-                return Err(io("Copy cleanup dependency record changed"));
+            bound(central, name, peer.version.identity)?;
+            namespace::validate_single_link(&peer.file)?;
+            if super::super::version(&peer.file)? != peer.version
+                || <[u8; 32]>::from(Sha256::digest(read(&peer.file)?)) != peer.digest
+                || super::super::version(&peer.file)? != peer.version
+            {
+                return Err(io("Copy cleanup dependency record or native epoch changed"));
             }
-            header
-                .central_security
-                .validate(&peer.file, &header.creator)?;
+            peer.security.validate(&peer.file, &peer.creator)?;
         }
         Ok(())
     }

@@ -6796,7 +6796,7 @@ mod tests {
         );
         let linked = statuses
             .iter()
-            .find(|status| status.transaction_id == "1".repeat(32))
+            .find(|status| status.transaction_id == Some("1".repeat(32)))
             .unwrap();
         assert!(
             matches!(&linked.evidence, WindowsCopyRecoveryEvidence::NeedsReview { reason } if reason.contains("ordinary journal"))
