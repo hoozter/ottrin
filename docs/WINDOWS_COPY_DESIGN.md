@@ -888,9 +888,16 @@ hashes and login configuration are unchanged. Portable/NSIS/MSI payload identity
 covers all 57 files; all four Linux formats pass current content/source checks.
 
 Receipt: `.hermes/evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
-Candidates remain at `.hermes/packaging-tmp/{windows,linux}-activity-candidate/`;
-public downloads are unchanged. Windows cards still expose raw metadata/error
-text inline. Replace this with readable status and expandable details before
-promotion. Actual desktop Stop/retry, other theme/scale combinations and broader
-current-package lifecycle/workflow acceptance remain open. This checkpoint does
-not establish daily-driver readiness or enable public Windows Copy.
+That checkpoint is superseded for Activity presentation by clean source
+`693e515`: readable summaries, expandable selectable diagnostics, wrapping
+controls and consistently aligned status badges now have packaged native-window
+acceptance. All four Linux formats are delivered at `dist/packages/`. Linux
+Light/Dark at 100% and paired custom Light/Dark at 150% with text1.35 pass; the
+ordinary Windows default-renderer window passes Light100 refusal/disclosure and
+custom Dark text1.35 disclosure. Windows 150% DPI is not claimed. The portable,
+NSIS and MSI payloads each match all 57 files; Windows remains an internal
+candidate at `.hermes/packaging-tmp/windows-activity-candidate/`.
+Current receipt: `.hermes/evidence/windows-activity-presentation-current/ACCEPTANCE.json`.
+Actual desktop Stop/retry and broader current-package lifecycle/workflow gates
+remain open. These scoped checks do not establish daily-driver readiness or
+enable public Windows Copy.
