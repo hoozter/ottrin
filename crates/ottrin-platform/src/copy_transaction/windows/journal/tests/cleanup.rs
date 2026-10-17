@@ -1326,3 +1326,129 @@ fn windows_native_copy_cleanup_unverified_registry_peer_refuses_before_any_write
     );
     assert_eq!(namespace_contents(root.path()), before);
 }
+
+#[test]
+fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations() {
+    use super::super::super::registry::ConfiguredRegistry;
+    for same_root in [false, true] {
+        for directory in [false, true] {
+            for overwrite in [false, true] {
+                for undone in [false, true] {
+                    let root = tempfile::tempdir().unwrap();
+                    fixture(root.path());
+                    std::fs::remove_dir(root.path().join("central")).unwrap();
+                    let path = root.path().join("profile/Ottrin/State/copies");
+                    assert!(ConfiguredRegistry::open_at(&path, false).unwrap().is_none());
+                    assert!(!root.path().join("profile").exists());
+                    drop(ConfiguredRegistry::open_at(&path, true).unwrap().unwrap());
+                    let registry = ConfiguredRegistry::open_at(&path, false).unwrap().unwrap();
+                    let central = registry.writable_root().unwrap();
+                    central.sync_all().unwrap();
+                    // The manager pins its root without sharing DELETE. The
+                    // same-root parent needs only read/write directory rights.
+                    let parent = if same_root {
+                        central.try_clone().unwrap()
+                    } else {
+                        owner(&root.path().join("destination"))
+                    };
+                    let destination = windows_fs::location(&parent).unwrap();
+                    if overwrite {
+                        if directory {
+                            std::fs::create_dir(destination.join("copy")).unwrap();
+                            std::fs::write(destination.join("copy/old"), b"original user data")
+                                .unwrap();
+                        } else {
+                            std::fs::write(destination.join("copy"), b"original user data")
+                                .unwrap();
+                        }
+                    }
+                    let input = source(&root.path().join(if directory {
+                        "source"
+                    } else {
+                        "source/nested/file"
+                    }));
+                    let admission = if overwrite {
+                        DestinationAdmission::overwrite(
+                            &parent,
+                            OsStr::new("copy"),
+                            100,
+                            |_| Ok(()),
+                        )
+                        .unwrap()
+                    } else {
+                        DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+                    };
+                    let mut staged = DurableStage::create(
+                        &input,
+                        &parent,
+                        &central,
+                        &admission,
+                        OsStr::new("source"),
+                        100,
+                        |_| Ok(()),
+                    )
+                    .unwrap();
+                    drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+                    let name = staged.stage.name.clone();
+                    drop((staged, input));
+                    if overwrite {
+                        let snapshot =
+                            Snapshot::load(&parent, &central, &name, SnapshotAccess::Write)
+                                .unwrap();
+                        let mut journal =
+                            Journal::from_snapshot(&parent, &central, snapshot).unwrap();
+                        journal.prepare_original(100, |_| Ok(())).unwrap();
+                        journal
+                            .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                            .unwrap();
+                    }
+                    PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                        .unwrap()
+                        .apply(|_| Ok(()))
+                        .unwrap();
+                    if undone {
+                        undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+                    }
+                    remove_undo_fixture_source(root.path());
+                    let snapshot =
+                        Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+                    let header = snapshot.state.header.as_ref().unwrap().clone();
+                    drop(snapshot);
+                    let before = namespace_contents(root.path());
+                    let plan =
+                        super::super::cleanup_finalize::prepare(&parent, &central, &name, |_| {
+                            Ok(())
+                        })
+                        .unwrap();
+                    plan.finish(&parent, &central, |_| Ok(())).unwrap();
+                    registry.validate().unwrap();
+                    assert!(path.is_dir());
+                    assert!(!path.join(header.central_name()).exists());
+                    assert!(!destination.join(&name).exists());
+                    let marker = path.parent().unwrap().join(".ottrin-copy-recovery-root");
+                    let marker_key = marker.strip_prefix(root.path()).unwrap();
+                    assert_eq!(
+                        Some(&Some(std::fs::read(&marker).unwrap())),
+                        before.get(marker_key)
+                    );
+                    if !undone || overwrite {
+                        let public = destination.join("copy");
+                        let contents = if directory {
+                            public.join(if undone { "old" } else { "nested/file" })
+                        } else {
+                            public
+                        };
+                        assert_eq!(
+                            std::fs::read(contents).unwrap(),
+                            if undone {
+                                b"original user data".as_slice()
+                            } else {
+                                b"original data".as_slice()
+                            }
+                        );
+                    }
+                }
+            }
+        }
+    }
+}

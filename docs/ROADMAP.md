@@ -11,7 +11,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 ## Current Windows Copy implementation checkpoint
 
 The private cleanup backend now removes recorded retained payloads and finalizes
-local/stage/central metadata in guarded order. The current native platform suite
+local/stage/central metadata in guarded order. The latest full native platform run
 passes 294 tests with zero failures and 36 specialized exclusions. Its 21 cleanup
 tests cover 187 injected failures and 187 real process exits, readonly data,
 outside-hardlink preservation, source-free retries, unknown metadata/occupant
@@ -20,7 +20,11 @@ link preservation test passes against the same checksum-pinned executable.
 Evidence: `.hermes/evidence/windows-copy-cleanup-current/ACCEPTANCE.json`.
 Public cleanup admission/Activity, co-owned batch and interrupted-staging cleanup,
 resource/storage/security matrices and package gates remain open. Public Windows
-Copy stays gated.
+Copy stays gated. Existing-only writable registry admission now also passes 16
+native creation/overwrite/Undo file/directory cases, including the registry as
+the destination. The manager keeps its read-only anchor proof while cleanup gains
+flush rights; registry root, external anchor and public data remain unchanged.
+Receipt: `REGISTRY_WRITER_ACCEPTANCE.json` in the same evidence directory.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session

@@ -275,6 +275,27 @@ impl ConfiguredRegistry {
     pub(super) fn path(&self) -> &Path {
         &self.path
     }
+    /// Reopen only this already anchored root with directory-flush rights.
+    /// Discovery remains read-only; this never initializes or repairs state.
+    pub(super) fn writable_root(&self) -> Result<File, PlatformError> {
+        self.validate()?;
+        let root = child(
+            &self.parent,
+            self.path.file_name().unwrap(),
+            true,
+            FILE_GENERIC_READ | FILE_GENERIC_WRITE,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+        )
+        .map_err(io)?;
+        if stable_identity_from_handle(&root).map_err(io)? != self.record.root {
+            return Err(io(
+                "Copy registry changed while acquiring directory-flush rights",
+            ));
+        }
+        self.record.security.validate(&root, &self.record.creator)?;
+        self.validate()?;
+        Ok(root)
+    }
     pub(super) fn validate(&self) -> Result<(), PlatformError> {
         if !self.record.root.is_directory_without_reparse()
             || windows_fs::location(&self.parent).map_err(io)? != self.parent_location

@@ -664,9 +664,18 @@ Policy, link/label smoke and full-suite lanes use the same checksum-pinned
 executable; deterministic stripping preserves compiler dates and all non-debug
 sections. Strict Windows platform/UI all-target Clippy and formatting pass.
 
+Configured registry cleanup can now acquire an existing-only writable root from
+the same anchor/ownership validation used by discovery. It requests read/write
+rather than DELETE on the registry itself, so the manager's pinned root remains
+compatible when it is also the destination parent. Sixteen ordinary-user native
+cases pass for file/directory, creation/overwrite and completed/undone copies at
+both registry and separate destinations; public bytes, root and external anchor
+remain intact. `REGISTRY_WRITER_ACCEPTANCE.json` records this added capability's
+source/binary proof. This does not initialize missing state or enable public Copy.
+
 Public cleanup remains unfinished: it needs read-only action admission bound
-through the mutation handoff, existing-only writable registry capabilities for
-directory flush, partial-finalization discovery and Activity confirmation/retry.
+through the mutation handoff, partial-finalization discovery and Activity
+confirmation/retry.
 Co-owned batch references, interrupted staging reclamation and realistic registry/
 large-operation resource limits remain open. Process exits do not establish
 physical power-cut acceptance; specialized storage/security and current package/UI

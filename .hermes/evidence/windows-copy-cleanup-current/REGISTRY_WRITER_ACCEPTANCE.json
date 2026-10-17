@@ -1,0 +1,66 @@
+{
+  "scope": "Existing-only writable configured registry capability and cleanup integration; public cleanup admission/UI remains unfinished",
+  "parent_revision": "66ed3b81be8e970be2729d6e4ca62e3e961ccba2",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "2fe645436f972b7c1e7f23643119f51126cc01d6e669af2af5db3745f09cce4a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "6624d1167111908e6e60d35a5df3d412bf385a0c52f96a2dfe0da607e6c78eee",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "41c59a703cebba317214baa63cd0e1115499eb642ecad8b0deed559165dc8a78",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "ac5d6f20d952355825907824b3fc41ea9f79ed18972e3bc3b1263b6a8c026cfb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "be3419d95f6079f690686c228a03ce929fa967a6cb57ebe7f4e5937a9780cc60",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "eb3aa427cf74e2226a7e612a057db18c65752940d6e651e04cc59fb61484772a",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "14b084b36efa2a7be45b0630fa12634da6353312475574cccc8b466106f35643"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "7da9b21b82d4b29fbe72552880dbc9fcaf53eed69c775e296bfe226e2e8f6803",
+    "transferred_sha256": "c20e0f28d0fc46bf50273f3b5333cb2960e036ec692a6e070f84536a1522b91f",
+    "retained_sections": {
+      ".text": "4c2c0d30f1572cc0fbf38dd66afb28aa009d89a86851da0a08c9fb4222f3e9d8",
+      ".data": "53db3fb969a414f787f6aad44bc89f4a40fd5cb03c86e3208c6c476b01599968",
+      ".rdata": "08ac42feef3064326c22018a4b31a3e4195199302cd17c969331f644fd0f8b67",
+      ".pdata": "a2be506948e212d27a158f4911b9913ed3c681bb0187f6c9e6adc59c190aec90",
+      ".xdata": "60a17c31d1c8213b278d95a534b7a3b9982ecc1774bd68b86f3b39c33ec55c2e",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "ef3f5399084a294fe1da440523ee7c17766ebe785e3f4a1d61facef544f4cdbf",
+      ".CRT": "904f33e5b51dca2d8719705fc49913603758dde050f0823fa32e830c4cdee077",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "42a7864b78b445cf191a6176a70db090fe2c3f55a42df1bfbdefa41c67fab33b"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "c20e0f28d0fc46bf50273f3b5333cb2960e036ec692a6e070f84536a1522b91f",
+    "status": "pass"
+  },
+  "test": "windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations",
+  "cases": 16,
+  "seconds": 4.34,
+  "dimensions": [
+    "registry destination or separate directory",
+    "file or directory payload",
+    "creation or overwrite",
+    "completed or undone"
+  ],
+  "assertions": [
+    "Missing read-only lookup creates no profile/state directories",
+    "Read-only manager remains pinned while existing root gains flush rights",
+    "Cleanup reclaims retained data and removes metadata",
+    "Public/restored bytes, registry root and external anchor remain unchanged"
+  ],
+  "checks": [
+    "strict Windows platform/UI all-target Clippy (registry-writer-clippy.log)",
+    "cargo fmt --all",
+    "native ordinary-user test with zero temporary entries"
+  ],
+  "prior_full_regression": "66ed3b8: 294 passed/0 failed/36 specialized exclusions; existing manager read/provision behavior is unchanged by this added capability",
+  "limitations": [
+    "No public cleanup action, Activity workflow or current package acceptance",
+    "Public action admission/partial metadata discovery and co-owned batching remain open"
+  ]
+}
