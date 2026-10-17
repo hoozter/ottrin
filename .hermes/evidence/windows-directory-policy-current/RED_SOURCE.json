@@ -1,0 +1,10 @@
+{
+  "baseline_revision": "4294ff4",
+  "production_code_changed": false,
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "25aeb9486549b3379a920fac4dabc0c713e3b1358027224d35202f5e6c29083d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ac9b037ad79bdfeaed2df0425fda74389af37ca9f225648e1d292507674bc707",
+    "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+  }
+}

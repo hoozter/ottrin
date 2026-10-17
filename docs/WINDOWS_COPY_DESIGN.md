@@ -29,8 +29,8 @@ Before enabling the public path, implement and accept:
    their restrictive descriptor atomically. Revalidate bindings through held
    parents; remembered paths never authorize mutations.
 2. **Complete staging.** Preserve primary/named/extended/property data, directory
-   children and metadata, and supported links. Sparse/EFS, case-sensitive directory
-   policy and specialized storage/provider/property semantics remain required.
+   children and metadata, and supported links. Sparse/EFS and specialized
+   storage/provider/property semantics remain required.
    Final permissions follow the accepted Copy policy independently of staging.
 3. **Durable publication/recovery.** Record intent and ownership before mutation.
    Retain the exact displaced Overwrite target and both versions at interruption
@@ -372,6 +372,22 @@ NTFS compression is queried/applied through native handles, including clearing a
 inherited compression state for an uncompressed source. Broader filesystem support
 is not established by NTFS component tests.
 
+Native versions now include case sensitivity for ordinary NTFS directories;
+files and reparse links have no directory-policy value. The shared metadata path
+applies the captured source policy to a new, still-empty candidate before streams
+or children are staged. Each nested directory keeps its own policy independently
+of its parent. Staging/final/retained metadata validation rejects policy drift
+without repairing it. Source-version and final-version comparisons include the
+policy, and malformed directory/file/link policy shapes are rejected by the
+journal codec. Schema 15 records this evidence in both paired journals.
+
+The native workflow covers empty/populated trees across all four source/parent
+policy combinations, nested opposite policies, distinct case-variant file bytes,
+publication, Undo and byte-preserving refusal of retained-candidate policy drift.
+Exact source and verification scope are recorded in
+`.hermes/evidence/windows-directory-policy-current/`. This does not establish
+all specialized storage, interruption or public workflow gates.
+
 Streams/compression are verified before final timestamp application: native backup
 reads can update access times through internal handles. Strict staging metadata
 checks query the result without another payload reread. A later publication phase
@@ -449,7 +465,7 @@ changed parents must fail with exact bytes/ACLs retained.
 ## Paired staging journals
 
 `journal.rs::DurableStage` owns separate append-only local and central journals,
-bound to native parents/directories/file identities. Format v2 also records the
+bound to native parents/directories/file identities. The current format records the
 effective token's default owner SID, private transaction/journal security and each
 candidate's private security at acknowledged creation. Owner/group SIDs, a protected
 explicit OWNER RIGHTS full-access DACL and its inheritance flags are validated;
@@ -667,7 +683,7 @@ unchanged nor treats them as removal input.
 | Overwrite completed | Displaced original at its recorded private name | Published copy |
 | Undo completed | Withdrawn copy at its recorded candidate name | Restored original or reused public name |
 
-The current journal schema is `OTCPWJ14`. The immutable paired header also
+The current journal schema is `OTCPWJ15`. The immutable paired header also
 binds the destination parent's native case-sensitivity policy. Writer bindings
 and reopened snapshots reject a changed or unreadable policy before granting
 publication or recovery authority. Prior schemas remain review conditions.

@@ -1,0 +1,10 @@
+
+running 1 test
+test copy_transaction::windows::journal::tests::windows_native_copy_directory_case_policy_preserves_mixed_trees_and_rejects_drift ... FAILED
+
+failures:
+
+failures:
+    copy_transaction::windows::journal::tests::windows_native_copy_directory_case_policy_preserves_mixed_trees_and_rejects_drift
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 388 filtered out; finished in 0.77s

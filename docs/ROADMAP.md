@@ -4449,3 +4449,31 @@ Published application packages are unchanged by this Windows-only source fix.
 Durable cross-process target claims, remaining Copy staging/security/resource
 work, current public workflows and package/platform acceptance remain open.
 The full roadmap goal remains active; user testing is deferred.
+
+## Windows Copy directory case-policy preservation — 2026-10-18
+
+A native regression showed an empty copied folder inheriting its destination
+parent's case policy instead of preserving its source. Native entry versions now
+record ordinary-directory case sensitivity. The shared metadata path configures
+each newly owned empty directory before staging children, so nested folders keep
+their own policy. Later validation refuses drift without repairing retained data.
+File/link policy shapes are checked by schema 15; previous schemas remain for
+review without conversion or deletion.
+
+The ordinary-user native workflow passes eight empty/populated source/parent
+combinations, nested opposite policies, distinct case-variant bytes, publication,
+Undo and retained-policy drift refusal. The same executable accounts for all 182
+journal cases in three disjoint batches: core 98 passed/6 ignored in 275.34s,
+cleanup 44 passed/2 ignored in 477.13s, and group cleanup 31 passed/1 ignored in
+470.67s. Total: 173 passed, zero failures, nine explicitly ignored child/special
+fixtures with their exact reasons recorded. Strict Windows platform all-target
+Clippy and formatting/diff checks pass. All task-owned processes, uploaded test
+executable and temporary profiles are removed, the VM is shut off, and original
+profile/installation/login state is unchanged.
+
+Evidence: `.hermes/evidence/windows-directory-policy-current/ACCEPTANCE.json`.
+This accepts the ordinary NTFS metadata component, not public Windows Copy or
+GUI/package readiness. Durable target claims, sparse/EFS and broader storage,
+security, interruption/resource and platform workflow gates remain open. Published
+application packages are unchanged by this Windows-only source fix. The full
+roadmap goal remains active; user testing is deferred.

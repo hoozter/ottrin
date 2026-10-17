@@ -1,0 +1,15 @@
+{
+  "RED_RESULTS.json": "ca01ef96caa4898a055e0bfb4195f02bdfd2e6feec8f3d1ce04225d9cbbe3021",
+  "RED_observe.log": "e306fc99ee712c22df9ba971362da2243329c496696e5bb3852c646bf2f4fc88",
+  "JOURNAL_LIST.txt": "ec3a39de9dde29ac13c90af99e8cb8f0a908111059a89fc8b4a35d297296c03f",
+  "platform.stdout": "f92b42b319dfed9ab397ada0ab5b31e5732077d418ebf221b122d14a263b3b7a",
+  "teardown.log": "3e6db5249642e5763d99e4d2981e7b81f40f833e2a556a03fe1c67afacee246a",
+  "RED_platform.stdout": "0c15c3f47cff155ea0e59a73aae7f6c2678093a0dccd2a7eb59347a31cb7fa56",
+  "RESULTS.json": "4841b905d0678551bb4bc7650d13222466adc3a6badeb99fcfdd5f042b5b95a3",
+  "cleanup_group/platform.stdout": "02096d15e345c206e5082fecc14038fc7a3e6700fe166e978bf59a5c8577c9b6",
+  "cleanup_group/RESULTS.json": "4841b905d0678551bb4bc7650d13222466adc3a6badeb99fcfdd5f042b5b95a3",
+  "core/platform.stdout": "26d444e28789c3eb08774f8166a2bb323b30eb90b7d9f639a71e6e00f4ac7731",
+  "core/RESULTS.json": "4841b905d0678551bb4bc7650d13222466adc3a6badeb99fcfdd5f042b5b95a3",
+  "cleanup_non_group/platform.stdout": "3edb90647c8ca8a5c4ccc1e749a1150b2f6679f71c7047ab58a260882a4ba5e2",
+  "cleanup_non_group/RESULTS.json": "4841b905d0678551bb4bc7650d13222466adc3a6badeb99fcfdd5f042b5b95a3"
+}

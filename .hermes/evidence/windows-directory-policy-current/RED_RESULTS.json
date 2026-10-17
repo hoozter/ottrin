@@ -1,0 +1,7 @@
+{
+    "status":  "fail",
+    "error":  "Native cleanup observation failed",
+    "test_binary_hash":  "044ef33ea91269763a9f24ea4076b38be42e26c4868726bf9b9a9abb59555b7b",
+    "ordinary_user":  true,
+    "exit":  101
+}

@@ -1,0 +1,54 @@
+{
+  "status": "pass",
+  "scope": "Ordinary NTFS directory case-policy preservation in the private Windows Copy backend; not public Copy, GUI, package or whole-platform acceptance.",
+  "source": {
+    "baseline_revision": "4294ff4",
+    "schema": 15,
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "5d095ba3bcb46a931cb9369aee109d48205fccf00fe7958ee6847e0ff1775835",
+      "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "d2a099ae6b142c0d2fd847e0ab6c2e6914f166911273c0b03c8f3cdf66748d80",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ce0a08227675dfff1c7c31d5c38cc8e7a9aa851276efac9a9eaa285ce147d53e",
+      "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+    }
+  },
+  "compiler_test_binary_sha256": "61dd6f8e588ef836ef38f75eb257398aa542f03ba947ba9b3797d5f8b310a4e7",
+  "transferred_test_binary_sha256": "616056402a8256eaf5d6dec3dafd260abc9a171ef1b0bcb6b698394b702b7663",
+  "focused": {
+    "parent_tests_passed": 1,
+    "positive_policy_combinations": 8,
+    "retained_policy_drift_cases": 1,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 2.04
+  },
+  "full_journal": {
+    "enumerated": 182,
+    "passed": 173,
+    "failed": 0,
+    "ignored": 9,
+    "core_seconds": 275.34,
+    "cleanup_non_group_seconds": 477.13,
+    "cleanup_group_seconds": 470.67,
+    "coverage": ".hermes/evidence/windows-directory-policy-current/COVERAGE.json"
+  },
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "red_regression": "Prior production implementation inherited the destination parent policy instead of preserving an empty source directory policy: zero passed, one failed, zero ignored, 0.77 seconds.",
+  "red_source_reconstruction": "Decompressed RED_REGRESSION.patch.gz applied to 4294ff4 reproduced all four recorded RED source hashes exactly in a temporary repository that was removed afterward.",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "Native NTFS component fixtures only; sparse/EFS, broader storage/security/interruption/resource and actual public workflows remain open.",
+    "Seven parent-owned crash-child entry points, one Activity export fixture and one separate-secondary-volume fixture are ignored with exact reasons in COVERAGE.json.",
+    "Schema 15 rejects previous schemas without conversion or deletion.",
+    "No public Windows Copy enablement or application package refresh."
+  ]
+}

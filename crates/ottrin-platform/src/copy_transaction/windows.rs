@@ -75,6 +75,7 @@ struct EntryVersion {
     identity: WindowsStableIdentity,
     directory: bool,
     link: Option<links::Link>,
+    case_sensitive: Option<bool>,
     length: u64,
     created: i64,
     modified: i64,
@@ -156,6 +157,11 @@ fn version(file: &File) -> Result<EntryVersion, PlatformError> {
     Ok(EntryVersion {
         identity,
         directory,
+        case_sensitive: if directory && link.is_none() {
+            Some(crate::windows_fs::directory_case_sensitive(file).map_err(io)?)
+        } else {
+            None
+        },
         link,
         length: if directory {
             0

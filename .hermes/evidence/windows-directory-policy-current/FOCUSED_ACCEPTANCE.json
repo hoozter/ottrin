@@ -1,0 +1,38 @@
+{
+  "status": "pass",
+  "scope": "One native normal-user parent test covering eight policy combinations and retained drift; complete journal results are in ACCEPTANCE.json.",
+  "source": {
+    "baseline_revision": "4294ff4",
+    "schema": 15,
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "5d095ba3bcb46a931cb9369aee109d48205fccf00fe7958ee6847e0ff1775835",
+      "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "d2a099ae6b142c0d2fd847e0ab6c2e6914f166911273c0b03c8f3cdf66748d80",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ce0a08227675dfff1c7c31d5c38cc8e7a9aa851276efac9a9eaa285ce147d53e",
+      "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+    }
+  },
+  "transferred_test_binary_sha256": "616056402a8256eaf5d6dec3dafd260abc9a171ef1b0bcb6b698394b702b7663",
+  "compiler_test_binary_sha256": "61dd6f8e588ef836ef38f75eb257398aa542f03ba947ba9b3797d5f8b310a4e7",
+  "passed_parent_tests": 1,
+  "failed": 0,
+  "ignored": 0,
+  "seconds": 2.04,
+  "positive_policy_combinations": 8,
+  "adverse_retained_policy_cases": 1,
+  "checks": [
+    "Copied root and nested directory policies equal their sources across differing parent policies",
+    "Two case-variant files retain distinct expected bytes where sensitivity is enabled",
+    "Insensitive lookup remains insensitive where source policy is disabled",
+    "Destination parent and source folder policies remain unchanged",
+    "Undo retains copied directory policy while withdrawing the publication",
+    "Retained-candidate drift refuses publication without repairing policy or changing paired journal bytes"
+  ],
+  "red_regression": "Prior production implementation: zero pass, one failure; copied empty directory policy true did not match source false. RED source patch/hash and binary/result retained.",
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "limits": [
+    "Native NTFS fixtures only; public Windows Copy remains gated.",
+    "Source schema 15 rejects earlier schemas without conversion/deletion.",
+    "No application package refresh or full journal acceptance claimed yet."
+  ]
+}

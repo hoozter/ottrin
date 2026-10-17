@@ -1,0 +1,106 @@
+
+running 32 tests
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalog_handoffs ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pending ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_cancel_preserves_data_and_fresh_retry_completes ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_finishes_ordinary_shared_and_nested_entries ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_midway_cancel_resumes_acknowledged_progress ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_refuses_foreign_changes_during_execution ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_resumes_prepared_shared_owner ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_uncertain_ordinary_unlink_requires_fresh_retry ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_observation_admits_chains_and_retained_aliases_without_writes ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_freezes_peer_epochs ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_observation_preserves_unselected_claims_changes_and_cancellation ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_payload_handoff_preserves_remaining_members_and_completion ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_payload_preserves_shared_and_foreign_changes ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_payload_uncertainty_requires_fresh_group_admission ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_process_exit_child ... ignored, group abrupt-exit child; parent owns fixture, process and retry
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_process_exit_metadata_and_history_recovery ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_process_exit_payload_and_history_recovery ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_prepare_checks_all_members_before_entry_intent ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_prepare_is_bound_idempotent_and_never_unlinks ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_prepare_uncertain_owner_and_peer_require_bound_retry ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_unlink_ack_failures_preserve_or_replay_paired_records ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_unlink_acknowledges_registry_root_file_removal ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_unlink_coordinates_three_owners_and_local_aliases ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_unlink_native_failures_resume_without_double_counting ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_unlink_preserves_reoccupants_and_foreign_peer_changes ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_unlink_reclaims_one_alias_then_finishes_cohort ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_shared_unlink_retries_known_physical_change_after_peer_busy ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_proof ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_hands_off_only_its_own_control_changes ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_revalidates_every_member_before_first_begin ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id ... ok
+
+test result: ok. 31 passed; 0 failed; 1 ignored; 0 measured; 357 filtered out; finished in 470.67s

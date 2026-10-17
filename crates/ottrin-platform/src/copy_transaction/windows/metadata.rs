@@ -1,7 +1,11 @@
 //! File/directory payload metadata. Directory children are staged separately.
 //! Security remains private until publication.
 use super::{EntryVersion, PlatformError, StreamEvidence, io, stage_entry_streams, version};
+use crate::windows_fs;
 use std::{fs::File, mem::size_of, os::windows::io::AsRawHandle, ptr};
+use windows_sys::Wdk::Storage::FileSystem::{
+    FILE_CASE_SENSITIVE_INFORMATION, FileCaseSensitiveInformation, NtSetInformationFile,
+};
 use windows_sys::Win32::Storage::FileSystem::*;
 use windows_sys::Win32::System::IO::DeviceIoControl;
 use windows_sys::Win32::System::Ioctl::{FSCTL_GET_COMPRESSION, FSCTL_SET_COMPRESSION};
@@ -115,6 +119,40 @@ fn set_compression(file: &File, format: u16) -> Result<(), PlatformError> {
     Ok(())
 }
 
+// Apply source policy only to a newly owned, still-empty ordinary candidate.
+// Later validation never repairs a changed retained policy.
+fn set_case_policy(candidate: &File, expected: bool) -> Result<(), PlatformError> {
+    // This is the owned, still-empty candidate, before any child staging.
+    // The destination parent's inherited policy is not the source policy.
+    windows_fs::directory_children_limited(candidate, 0).map_err(io)?;
+    let value = FILE_CASE_SENSITIVE_INFORMATION {
+        Flags: if expected {
+            windows_sys::Win32::System::SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR
+        } else {
+            0
+        },
+    };
+    let mut status = windows_sys::Win32::System::IO::IO_STATUS_BLOCK::default();
+    let result = unsafe {
+        NtSetInformationFile(
+            candidate.as_raw_handle().cast(),
+            &mut status,
+            ptr::from_ref(&value).cast(),
+            size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
+            FileCaseSensitiveInformation,
+        )
+    };
+    if result < 0 {
+        return Err(io(std::io::Error::from_raw_os_error(unsafe {
+            windows_sys::Win32::Foundation::RtlNtStatusToDosError(result)
+        } as i32)));
+    }
+    if windows_fs::directory_case_sensitive(candidate).map_err(io)? != expected {
+        return Err(io("candidate directory case policy was not applied"));
+    }
+    Ok(())
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct StagedEntry {
@@ -126,6 +164,14 @@ pub(super) struct StagedEntry {
 }
 
 impl StagedEntry {
+    fn validate_case_policy(&self, candidate: &File) -> Result<(), PlatformError> {
+        if let Some(expected) = self.source.case_sensitive
+            && windows_fs::directory_case_sensitive(candidate).map_err(io)? != expected
+        {
+            return Err(io("candidate directory case policy changed"));
+        }
+        Ok(())
+    }
     /// Caller must verify the owned candidate's streams before this last write:
     /// native backup rereads may update access times. No namespace mutation.
     pub(super) fn apply_final_metadata(&self, candidate: &File) -> Result<(), PlatformError> {
@@ -136,6 +182,7 @@ impl StagedEntry {
                 "candidate identity/compression changed before final metadata",
             ));
         }
+        self.validate_case_policy(candidate)?;
         let attributes = self.source.attributes & ORDINARY_ATTRIBUTES;
         let info = FILE_BASIC_INFO {
             CreationTime: self.source.created,
@@ -167,6 +214,7 @@ impl StagedEntry {
     /// Child creation may change a directory's write/access times, but not its
     /// identity, creation time, attributes or compression policy.
     pub(super) fn validate_after_children(&self, candidate: &File) -> Result<(), PlatformError> {
+        self.validate_case_policy(candidate)?;
         let actual = basic(candidate)?;
         if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity
             || actual.CreationTime != self.source.created
@@ -270,6 +318,7 @@ impl StagedEntry {
         require_access_time: bool,
         readonly_reopen_pending: bool,
     ) -> Result<(), PlatformError> {
+        self.validate_case_policy(candidate)?;
         if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity {
             return Err(io("candidate identity changed"));
         }
@@ -333,6 +382,11 @@ pub(super) fn stage_entry_payload(
         return Err(io(
             "candidate aliases the source, has a different type, or is not empty",
         ));
+    }
+    if let Some(expected) = before.case_sensitive
+        && target.case_sensitive != Some(expected)
+    {
+        set_case_policy(candidate, expected)?;
     }
     let streams = stage_entry_streams(source, candidate, progress)?;
     if compression(candidate)? != format {

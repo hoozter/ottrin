@@ -1,0 +1,6 @@
+
+thread 'copy_transaction::windows::journal::tests::windows_native_copy_directory_case_policy_preserves_mixed_trees_and_rejects_drift' (8004) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:4287:21:
+assertion `left == right` failed
+  left: true
+ right: false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

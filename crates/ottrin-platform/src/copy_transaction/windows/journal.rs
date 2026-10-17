@@ -43,7 +43,7 @@ pub(crate) use discovery::{
 };
 use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ14";
+const MAGIC: &[u8; 8] = b"OTCPWJ15";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -203,7 +203,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 14
+            && self.schema == 15
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -391,6 +391,7 @@ fn valid_source(source: &EntryVersion) -> bool {
         || (source.attributes & FILE_ATTRIBUTE_DIRECTORY != 0) != source.directory
         || (source.attributes & FILE_ATTRIBUTE_REPARSE_POINT != 0) != source.link.is_some()
         || (source.directory && source.length != 0)
+        || source.case_sensitive.is_some() != (source.directory && source.link.is_none())
     {
         return false;
     }
@@ -1292,7 +1293,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 14,
+            schema: 15,
             transaction: name,
             parent: parent_id,
             parent_case_sensitive: destination.case_sensitive,
@@ -4232,6 +4233,135 @@ mod tests {
                 b"original data"
             );
         }
+    }
+
+    #[test]
+    fn windows_native_copy_directory_case_policy_preserves_mixed_trees_and_rejects_drift() {
+        fn fixture(source_sensitive: bool, parent_sensitive: bool) -> tempfile::TempDir {
+            let root = tempfile::tempdir().unwrap();
+            for name in ["source", "destination"] {
+                std::fs::create_dir(root.path().join(name)).unwrap();
+            }
+            set_case_policy(&owner(&root.path().join("source")), source_sensitive);
+            set_case_policy(&owner(&root.path().join("destination")), parent_sensitive);
+            drop(
+                windows_fs::create_private(
+                    &owner(root.path()),
+                    OsStr::new("central"),
+                    true,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                )
+                .unwrap(),
+            );
+            root
+        }
+        for populated in [false, true] {
+            for source_sensitive in [false, true] {
+                for parent_sensitive in [false, true] {
+                    let root = fixture(source_sensitive, parent_sensitive);
+                    let src = root.path().join("source");
+                    if populated {
+                        std::fs::create_dir(src.join("nested")).unwrap();
+                        set_case_policy(&owner(&src.join("nested")), !source_sensitive);
+                        for (path, sensitive) in [
+                            (&src, source_sensitive),
+                            (&src.join("nested"), !source_sensitive),
+                        ] {
+                            std::fs::write(path.join("Report.txt"), b"upper data").unwrap();
+                            if sensitive {
+                                std::fs::write(path.join("report.txt"), b"lower data").unwrap();
+                            }
+                        }
+                    }
+                    let destination = root.path().join("destination");
+                    let parent = owner(&destination);
+                    let central = owner(&root.path().join("central"));
+                    let staged = stage(&source(&src), &parent, &central).unwrap();
+                    let name = staged.stage.name.clone();
+                    let candidate = staged.stage.candidate_name.clone();
+                    drop(staged);
+                    let mut publication =
+                        PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+                    publication.apply(|_| Ok(())).unwrap();
+                    drop(publication);
+                    let copied = destination.join("copy");
+                    assert_eq!(
+                        windows_fs::directory_case_sensitive(&owner(&copied)).unwrap(),
+                        source_sensitive,
+                        "populated={populated}, source={source_sensitive}, parent={parent_sensitive}"
+                    );
+                    assert_eq!(
+                        windows_fs::directory_case_sensitive(&parent).unwrap(),
+                        parent_sensitive
+                    );
+                    if populated {
+                        assert_eq!(
+                            windows_fs::directory_case_sensitive(&owner(&copied.join("nested")))
+                                .unwrap(),
+                            !source_sensitive
+                        );
+                        for (original, copy, sensitive) in [
+                            (&src, &copied, source_sensitive),
+                            (
+                                &src.join("nested"),
+                                &copied.join("nested"),
+                                !source_sensitive,
+                            ),
+                        ] {
+                            for path in [original, copy] {
+                                assert_eq!(
+                                    std::fs::read(path.join("Report.txt")).unwrap(),
+                                    b"upper data"
+                                );
+                                assert_eq!(
+                                    std::fs::read(path.join("report.txt")).unwrap(),
+                                    if sensitive {
+                                        b"lower data"
+                                    } else {
+                                        b"upper data"
+                                    }
+                                );
+                            }
+                        }
+                    }
+                    undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+                    assert!(!copied.try_exists().unwrap());
+                    assert_eq!(
+                        windows_fs::directory_case_sensitive(&owner(&destination.join(candidate)))
+                            .unwrap(),
+                        source_sensitive
+                    );
+                    assert_eq!(
+                        windows_fs::directory_case_sensitive(&owner(&src)).unwrap(),
+                        source_sensitive
+                    );
+                }
+            }
+        }
+        // A changed retained candidate is refused, never silently repaired.
+        let root = fixture(true, false);
+        let directory = root.path().join("destination");
+        let parent = owner(&directory);
+        let central = owner(&root.path().join("central"));
+        let staged = stage(&source(&root.path().join("source")), &parent, &central).unwrap();
+        let name = staged.stage.name.clone();
+        let candidate = directory.join(&staged.stage.candidate_name);
+        let local = directory.join(&name).join(LOCAL);
+        let mirror = root
+            .path()
+            .join("central")
+            .join(staged.journal.header.central_name());
+        drop(staged);
+        assert!(windows_fs::directory_case_sensitive(&owner(&candidate)).unwrap());
+        set_case_policy(&owner(&candidate), false);
+        let before = std::fs::read(&local).unwrap();
+        assert_eq!(before, std::fs::read(&mirror).unwrap());
+        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert_eq!(std::fs::read(local).unwrap(), before);
+        assert_eq!(std::fs::read(mirror).unwrap(), before);
+        assert!(!windows_fs::directory_case_sensitive(&owner(&candidate)).unwrap());
+        assert!(!directory.join("copy").try_exists().unwrap());
+        assert!(windows_fs::directory_case_sensitive(&owner(&root.path().join("source"))).unwrap());
     }
 
     #[test]
