@@ -1004,11 +1004,24 @@ fn windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order
                 if index < 6 {
                     // A new process derives its authority from the remaining
                     // central intent even when the local journal is already gone.
-                    let resumed =
-                        super::super::cleanup_finalize::prepare(&parent, &central, &name, |_| {
-                            Ok(())
-                        })
-                        .unwrap();
+                    let before = namespace_contents(root.path());
+                    let read_parent = windows_fs::open_directory(
+                        &root.path().join("destination"),
+                        FILE_GENERIC_READ,
+                    )
+                    .unwrap();
+                    let read_central =
+                        windows_fs::open_directory(&root.path().join("central"), FILE_GENERIC_READ)
+                            .unwrap();
+                    let resumed = super::super::cleanup_finalize::Plan::observe(
+                        &read_parent,
+                        &read_central,
+                        &name,
+                        |_| Ok(()),
+                    )
+                    .unwrap();
+                    assert_eq!(namespace_contents(root.path()), before);
+                    drop((read_parent, read_central));
                     resumed.finish(&parent, &central, |_| Ok(())).unwrap();
                 } else {
                     // Once central removal occurs, only the already admitted
@@ -1105,6 +1118,12 @@ fn windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admis
         };
         std::fs::write(&unknown, b"new user content must survive").unwrap();
         let before = namespace_contents(root.path());
+        assert!(
+            super::super::cleanup_finalize::Plan::observe(&parent, &central, &name, |_| Ok(()))
+                .is_err(),
+            "inspection accepted unknown content in case {case}"
+        );
+        assert_eq!(namespace_contents(root.path()), before);
         assert!(
             plan.finish(&parent, &central, |_| Ok(())).is_err(),
             "case {case}"
@@ -1580,4 +1599,23 @@ fn windows_native_copy_cleanup_pending_absence_admission_never_adopts_a_later_pa
         super::super::super::version(&owner(&nested)).unwrap(),
         changed
     );
+}
+
+#[test]
+fn windows_native_copy_cleanup_metadata_inspection_never_authorizes_cleanup() {
+    for case in 0..6 {
+        let root = tempfile::tempdir().unwrap();
+        let (name, _readonly) = cleanup_fault_fixture(root.path(), case);
+        let parent =
+            windows_fs::open_directory(&root.path().join("destination"), FILE_GENERIC_READ)
+                .unwrap();
+        let central =
+            windows_fs::open_directory(&root.path().join("central"), FILE_GENERIC_READ).unwrap();
+        let before = namespace_contents(root.path());
+        assert!(
+            super::super::cleanup_finalize::Plan::observe(&parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+    }
 }

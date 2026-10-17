@@ -1,0 +1,80 @@
+{
+  "scope": "Read-only remaining-metadata inspection shared with guarded cleanup finalization; public action/Activity remains open",
+  "parent_revision": "d48200ebfa51973fb7411f3cb0288a04e2141640",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "9b9d9be1b5a5504a1d21dc529e30851755d9fced8826086705532064a6e5f8f1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "1e17ac80cb01ebbd3f07ee1199b4bf531f019f4692c975a5a273413ce38f1618",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "2fe71343b2be476c1355470d22245a255ed50c79886ca0d17104ed8cd273e016",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "ac5d6f20d952355825907824b3fc41ea9f79ed18972e3bc3b1263b6a8c026cfb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "8590680e35e320006b78f00432a3d2a1a8832187c36eb67333f51652a89e8549",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "eb3aa427cf74e2226a7e612a057db18c65752940d6e651e04cc59fb61484772a",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "14b084b36efa2a7be45b0630fa12634da6353312475574cccc8b466106f35643"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "8a8b4a51448a4f99bdbee004019a421109fb1bd60b16c58e3512a62d64ba1de2",
+    "transferred_sha256": "02470258f20b3ae755be33cd0b9d0738c48158ebd4e74933ab39ca0306692b1a",
+    "retained_sections": {
+      ".text": "42df96f1029aefd7d5dbab94f233ca9a1b45f82b857efbb91263ea016940c3f1",
+      ".data": "dce5b4afc2643dfd99ba4d020b1f76a42019b2f45a7a4334a47394dcf8ffa595",
+      ".rdata": "14b8c87958db12cbd8705faa42664a1acb3f8127d3ddea57856c103cf0432642",
+      ".pdata": "9f1d198af08f012da2950c8f9bd4d5ae6aec92b1f52d71255f581dd6fad5e9de",
+      ".xdata": "5026d99c92a9dbb886b87da69fc01f58b1a6b1fbcbaa1255df0f5192adb3f72c",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "76a33358e172bbf779211029e70cd9a56f4cbea28166be73744c02cac3114800",
+      ".CRT": "cfc00bece2443a6487b7b2708866a532cfc687c3970bb194f6959264c920c3d4",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "9f1614a901268d9c4513cf87fa6f3cf6d2eb33bc64f827b0b051df9e1a8271ab"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "02470258f20b3ae755be33cd0b9d0738c48158ebd4e74933ab39ca0306692b1a",
+    "status": "pass"
+  },
+  "suite": {
+    "passed": 26,
+    "failed": 0,
+    "child_harnesses_ignored": 2,
+    "unrelated_tests_filtered": 307,
+    "seconds": 171.08,
+    "injected_failures": 187,
+    "real_process_exits": 187
+  },
+  "inspection_cases": {
+    "read_only_directory_handle_recovery_after_injected_failure_or_process_exit": 72,
+    "unknown_content_refused_without_mutation": 7,
+    "inspection_before_metadata_authority_refused_without_mutation": 6
+  },
+  "properties": [
+    "Shared identity, private security, stream, membership, control epoch and dependency validators",
+    "Inspection does not flush, write journals, set dispositions or remove entries",
+    "READ-only parent/registry handles suffice for admitted local-present, local-removed and stage-removed layouts",
+    "No handles retained in returned proof; actual removal reacquires and validates",
+    "Inspection cannot initiate payload cleanup or create metadata intent"
+  ],
+  "checks": [
+    "Strict Windows platform/UI all-target Clippy passed (session36031,12.93s)",
+    "cargo fmt --all",
+    "git diff --check"
+  ],
+  "limitations": [
+    "Public configured cleanup wrapper, discovery of partial metadata and Activity integration remain unfinished",
+    "This checkpoint adds inspection; it does not claim confirmation-time metadata epoch binding or coordinated batch support",
+    "Catalog resource optimization, interrupted staging, broader storage/security and physical power cuts remain open",
+    "No new application package or public Windows Copy acceptance"
+  ],
+  "teardown": {
+    "task": "Ready",
+    "task_result": 0,
+    "native_processes": 0,
+    "temporary_namespace": false,
+    "owned_vm": "retained for immediate discovery/action integration"
+  }
+}

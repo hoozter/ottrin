@@ -649,6 +649,16 @@ removal. An already admitted opaque proof permits terminal replay after central
 removal; absence alone cannot construct that authority. Registry roots, external
 anchors, other transactions and public files are outside the removal set.
 
+Read-only metadata admission now uses that same validation sequence with read-only
+local/stage/control handles. It performs no flush, disposition or journal write,
+and returns a handle-free proof only after validating the remaining layout. The
+inspection accepts the authenticated local-removed and stage-removed prefixes,
+rejects unknown remaining content, and cannot initiate payload removal or create
+the paired metadata intent. The scoped native suite passes 26 tests, including
+72 read-only recovery-prefix inspections, seven unknown-content refusals and six
+pre-authorization refusals. Evidence: `METADATA_INSPECTION_ACCEPTANCE.json` in the
+cleanup evidence directory.
+
 Current native component evidence is
 `.hermes/evidence/windows-copy-cleanup-current/ACCEPTANCE.json`: 294 platform
 tests pass with zero failures and 36 specialized exclusions. All 21 regular

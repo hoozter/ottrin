@@ -30,6 +30,10 @@ writer binds confirmation-time journal/metadata/payload/catalog observations;
 changed pending epochs are refused instead of re-observed and adopted. Public
 name reuse stays allowed. Receipt: `ADMISSION_ACCEPTANCE.json`. Public wrapper,
 partial metadata discovery and Activity integration remain open.
+Read-only remaining-metadata inspection now shares the removal validators and
+passes 26 native cleanup tests. It validates local-present, local-removed and
+stage-removed layouts without writing or flushing; it cannot initiate cleanup.
+Receipt: `METADATA_INSPECTION_ACCEPTANCE.json` in the same evidence directory.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session

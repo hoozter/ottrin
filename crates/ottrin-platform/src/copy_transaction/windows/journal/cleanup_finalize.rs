@@ -144,7 +144,7 @@ pub(super) fn prepare(
         super::cleanup::reclaim_payload(parent, central, name, &mut cancel)?;
         authorize(parent, central, name, &mut cancel)?;
     }
-    Plan::admit(parent, central, name, cancel)
+    Plan::observe(parent, central, name, cancel)
 }
 
 fn authorize(
@@ -202,8 +202,29 @@ pub(super) struct Plan {
     parent_security: [u8; 32],
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Action {
+    Inspect,
+    Remove,
+}
+
+impl Action {
+    fn file_access(self) -> u32 {
+        FILE_GENERIC_READ | if self == Self::Remove { DELETE } else { 0 }
+    }
+
+    fn flush(self, file: &File) -> Result<(), PlatformError> {
+        if self == Self::Remove {
+            file.sync_all().map_err(io)?;
+        }
+        Ok(())
+    }
+}
+
 impl Plan {
-    fn admit(
+    /// Inspect existing paired removal authority without writing, flushing or
+    /// removing anything. All leases are released before returning this proof.
+    pub(super) fn observe(
         parent: &File,
         central: &File,
         name: &OsStr,
@@ -238,14 +259,17 @@ impl Plan {
             absent(parent, name)?;
         }
         cancel(0)?;
-        Ok(Self {
+        let plan = Self {
             header: header.clone(),
             digest: Sha256::digest(&control.bytes).into(),
             retained,
             parent_location: windows_fs::location(parent).map_err(io)?,
             central_location: windows_fs::location(central).map_err(io)?,
             parent_security: security::owner_group_dacl_digest(parent)?,
-        })
+        };
+        drop(control);
+        plan.run(parent, central, Action::Inspect, &mut cancel)?;
+        Ok(plan)
     }
 
     fn bindings(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
@@ -270,7 +294,7 @@ impl Plan {
         central: &File,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        self.finish_inner(parent, central, &mut cancel)
+        self.run(parent, central, Action::Remove, &mut cancel)
             .map_err(|error| PlatformError::CleanupPending {
                 transaction: self
                     .parent_location
@@ -281,22 +305,23 @@ impl Plan {
             })
     }
 
-    fn finish_inner(
+    fn run(
         &self,
         parent: &File,
         central: &File,
+        action: Action,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         cancel(0)?;
         self.bindings(parent, central)?;
         let central_name = self.header.central_name();
         let stage_name = self.header.stage_name();
-        let Some(file) = optional(central, &central_name, FILE_GENERIC_READ | DELETE)? else {
+        let Some(file) = optional(central, &central_name, action.file_access())? else {
             // Only a previously admitted intent may report this terminal replay.
             absent(parent, &stage_name)?;
             absent(central, &central_name)?;
-            parent.sync_all().map_err(io)?;
-            return central.sync_all().map_err(io);
+            action.flush(parent)?;
+            return action.flush(central);
         };
         let control = discovery::RegisteredJournal::from_file(central, &central_name, file)?;
         if control.state.header.as_ref() != Some(&self.header)
@@ -322,12 +347,16 @@ impl Plan {
             Some(&control.bytes),
             cancel,
         )?;
-        parent.sync_all().map_err(io)?;
-        central.sync_all().map_err(io)?;
+        action.flush(parent)?;
+        action.flush(central)?;
         if let Some(stage) = optional(
             parent,
             &stage_name,
-            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED | SYNCHRONIZE,
+            if action == Action::Remove {
+                windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED | SYNCHRONIZE
+            } else {
+                FILE_GENERIC_READ
+            },
         )? {
             let mut stage_version = metadata(
                 &stage,
@@ -341,8 +370,8 @@ impl Plan {
             if names != [OsString::from(LOCAL)] && !names.is_empty() {
                 return Err(io("Copy cleanup stage contains unknown entries"));
             }
-            stage.sync_all().map_err(io)?;
-            if let Some(local) = optional(&stage, OsStr::new(LOCAL), FILE_GENERIC_READ | DELETE)? {
+            action.flush(&stage)?;
+            if let Some(local) = optional(&stage, OsStr::new(LOCAL), action.file_access())? {
                 let local_version = metadata(
                     &local,
                     self.header.local_file,
@@ -361,6 +390,9 @@ impl Plan {
                     || super::super::version(&stage)? != stage_version
                 {
                     return Err(io("Copy cleanup local metadata epoch changed"));
+                }
+                if action == Action::Inspect {
+                    return Ok(());
                 }
                 dispose(&local)?;
                 metadata_boundary(
@@ -408,6 +440,9 @@ impl Plan {
             dependencies.validate(central)?;
             control_epoch(&control, central, &central_version)?;
             bound(parent, &stage_name, self.header.stage)?;
+            if action == Action::Inspect {
+                return Ok(());
+            }
             dispose(&stage)?;
             metadata_boundary(
                 sequence,
@@ -445,6 +480,9 @@ impl Plan {
         )? != central_version
         {
             return Err(io("Copy cleanup central metadata epoch changed"));
+        }
+        if action == Action::Inspect {
+            return Ok(());
         }
         dispose(&control.file)?;
         metadata_boundary(
