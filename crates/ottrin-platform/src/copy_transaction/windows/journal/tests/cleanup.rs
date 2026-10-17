@@ -1257,61 +1257,78 @@ fn windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_re
     }
 }
 
+fn anchored_cleanup_fixture(root: &Path) {
+    fixture(root);
+    std::fs::remove_dir(root.join("central")).unwrap();
+    drop(
+        super::super::super::registry::ConfiguredRegistry::open_at(&root.join("central"), true)
+            .unwrap()
+            .unwrap(),
+    );
+}
+
+fn cleanup_peer_fixture(root: &Path, shared: bool) -> [OsString; 2] {
+    anchored_cleanup_fixture(root);
+    let first = root.join("destination");
+    let second = root.join("second-destination");
+    std::fs::create_dir(&second).unwrap();
+    for destination in [&first, &second] {
+        std::fs::create_dir(destination.join("copy")).unwrap();
+    }
+    std::fs::write(first.join("copy/old"), b"old original data").unwrap();
+    if shared {
+        std::fs::hard_link(first.join("copy/old"), second.join("copy/old")).unwrap();
+    } else {
+        std::fs::write(second.join("copy/old"), b"old original data").unwrap();
+    }
+    // Both original graphs exist before either retention rename; native
+    // child epochs therefore remain exact in the shared-hardlink case.
+    let input = source(&root.join("source"));
+    let central = owner(&root.join("central"));
+    let mut names = Vec::new();
+    for destination in [&first, &second] {
+        let parent = owner(destination);
+        let admission =
+            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
+        let mut staged = DurableStage::create(
+            &input,
+            &parent,
+            &central,
+            &admission,
+            OsStr::new("source"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        drop(staged);
+        let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
+        let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
+        journal.prepare_original(100, |_| Ok(())).unwrap();
+        journal
+            .move_original(None, OriginalMove::Retain, |_| Ok(()))
+            .unwrap();
+        drop(journal);
+        PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+            .unwrap()
+            .apply(|_| Ok(()))
+            .unwrap();
+        names.push(name);
+    }
+    drop(input);
+    remove_undo_fixture_source(root);
+    names.try_into().unwrap()
+}
+
 #[test]
 fn windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_originals() {
     for (shared, drift) in [(false, 0), (false, 1), (false, 2), (false, 3), (true, 0)] {
         let root = tempfile::tempdir().unwrap();
-        fixture(root.path());
+        let names = cleanup_peer_fixture(root.path(), shared);
         let first = root.path().join("destination");
         let second = root.path().join("second-destination");
-        std::fs::create_dir(&second).unwrap();
-        for destination in [&first, &second] {
-            std::fs::create_dir(destination.join("copy")).unwrap();
-        }
-        std::fs::write(first.join("copy/old"), b"old original data").unwrap();
-        if shared {
-            std::fs::hard_link(first.join("copy/old"), second.join("copy/old")).unwrap();
-        } else {
-            std::fs::write(second.join("copy/old"), b"old original data").unwrap();
-        }
-        // Both original graphs exist before either retention rename; native
-        // child epochs therefore remain exact in the shared-hardlink case.
-        let input = source(&root.path().join("source"));
         let central = owner(&root.path().join("central"));
-        let mut names = Vec::new();
-        for destination in [&first, &second] {
-            let parent = owner(destination);
-            let admission =
-                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
-                    .unwrap();
-            let mut staged = DurableStage::create(
-                &input,
-                &parent,
-                &central,
-                &admission,
-                OsStr::new("source"),
-                100,
-                |_| Ok(()),
-            )
-            .unwrap();
-            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
-            let name = staged.stage.name.clone();
-            drop(staged);
-            let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
-            let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
-            journal.prepare_original(100, |_| Ok(())).unwrap();
-            journal
-                .move_original(None, OriginalMove::Retain, |_| Ok(()))
-                .unwrap();
-            drop(journal);
-            PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
-                .unwrap()
-                .apply(|_| Ok(()))
-                .unwrap();
-            names.push(name);
-        }
-        drop(input);
-        remove_undo_fixture_source(root.path());
         let peer_local = second.join(&names[1]).join(LOCAL);
         let peer_bytes = std::fs::read(&peer_local).unwrap();
         let peer_header = decode(&peer_bytes).unwrap().state.header.unwrap();
@@ -1941,7 +1958,7 @@ fn assert_only_journals_changed(
 }
 
 fn cleanup_chain_fixture(root: &Path, directory: bool, initial_overwrite: bool) -> [OsString; 2] {
-    fixture(root);
+    anchored_cleanup_fixture(root);
     let parent = owner(&root.join("destination"));
     let central = owner(&root.join("central"));
     if initial_overwrite {
@@ -2166,5 +2183,218 @@ fn windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim() {
             super::super::cleanup::Admission::observe(&parent, &central, &names[1], |_| Ok(()));
         assert_eq!(peer.is_ok(), step == Step::CentralFlushed);
         assert_eq!(namespace_contents(root.path()), after);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_observation_admits_chains_and_retained_aliases_without_writes()
+{
+    use super::super::cleanup_group::{Member, Observation};
+    for directory in [false, true] {
+        for overwrite in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let names = cleanup_chain_fixture(root.path(), directory, overwrite);
+            let ids = names
+                .iter()
+                .map(|name| {
+                    original_journal(root.path(), name)
+                        .header
+                        .transaction
+                        .clone()
+                })
+                .collect::<Vec<_>>();
+            let before = namespace_contents(root.path());
+            let group =
+                Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+            assert_eq!(namespace_contents(root.path()), before);
+            assert_eq!(
+                group.registry,
+                windows_fs::location(&owner(&root.path().join("central"))).unwrap()
+            );
+            assert_eq!(group.members.len(), 2);
+            assert!(group.references.contains(&(0, 1)));
+            assert!(group.shared.is_empty());
+            for (index, member) in group.members.iter().enumerate() {
+                assert_eq!(member.header().transaction, ids[index]);
+                assert!(matches!(member, Member::Payload(_)));
+            }
+            // The selection is not a destructive exclusion list. An ordinary
+            // member still refuses the unresolved peer's dependency.
+            let Member::Payload(blocked) = &group.members[1] else {
+                unreachable!()
+            };
+            assert!(
+                blocked
+                    .start(
+                        &owner(&root.path().join("destination")),
+                        &owner(&root.path().join("central")),
+                        |_| Ok(())
+                    )
+                    .is_err()
+            );
+            assert_eq!(namespace_contents(root.path()), before);
+            let central = owner(&root.path().join("central"));
+            let record = super::super::discovery::RegisteredJournal::open(
+                &central,
+                &OsString::from(format!("{}.copy-journal", ids[0])),
+            )
+            .unwrap();
+            assert!(group.selection.admits(&record).unwrap());
+        }
+    }
+    for shared in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_peer_fixture(root.path(), shared);
+        let ids = [
+            original_journal(root.path(), &names[0])
+                .header
+                .transaction
+                .clone(),
+            {
+                let snapshot = Snapshot::load(
+                    &owner(&root.path().join("second-destination")),
+                    &owner(&root.path().join("central")),
+                    &names[1],
+                    SnapshotAccess::Read,
+                )
+                .unwrap();
+                snapshot.state.header.as_ref().unwrap().transaction.clone()
+            },
+        ];
+        let before = namespace_contents(root.path());
+        let group =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        assert_eq!(namespace_contents(root.path()), before);
+        assert_eq!(group.shared.len(), usize::from(shared));
+        if shared {
+            let owners = group.shared.values().next().unwrap();
+            assert_eq!(owners.len(), 2);
+            assert!(group.references.contains(&(0, 1)) && group.references.contains(&(1, 0)));
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_observation_preserves_unselected_claims_changes_and_cancellation()
+ {
+    use super::super::cleanup_group::Observation;
+    for case in 0..6 {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_chain_fixture(root.path(), false, false);
+        let headers = names
+            .iter()
+            .map(|name| original_journal(root.path(), name).header.clone())
+            .collect::<Vec<_>>();
+        let mut ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        match case {
+            0 => {
+                ids.remove(0);
+            } // the selected original still belongs to an unselected publication
+            1 => ids.push(ids[0].clone()),
+            2 => {
+                ids[1] = "0".repeat(32);
+            }
+            3 => std::fs::write(
+                root.path()
+                    .join("destination")
+                    .join(headers[1].original_name()),
+                b"changed retained bytes",
+            )
+            .unwrap(),
+            4 => std::fs::write(
+                root.path().join("central/bad.COPY-JOURNAL"),
+                b"unknown record",
+            )
+            .unwrap(),
+            5 => {}
+            _ => unreachable!(),
+        }
+        let before = namespace_contents(root.path());
+        assert!(
+            Observation::observe_at(&root.path().join("central"), &ids, |_| {
+                if case == 5 {
+                    Err(io("owned group observation cancellation"))
+                } else {
+                    Ok(())
+                }
+            })
+            .is_err(),
+            "adopted case {case}"
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+    }
+    let root = tempfile::tempdir().unwrap();
+    let missing = root.path().join("missing/profile/copies");
+    assert!(Observation::observe_at(&missing, &["0".repeat(32)], |_| Ok(())).is_err());
+    assert!(!root.path().join("missing").exists());
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_freezes_peer_epochs()
+{
+    use super::super::cleanup_group::{Member, Observation};
+    for role in [CleanupMetadataRole::Local, CleanupMetadataRole::Stage] {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_chain_fixture(root.path(), false, true);
+        let parent = owner(&root.path().join("destination"));
+        let manager = super::super::super::registry::ConfiguredRegistry::open_at(
+            &root.path().join("central"),
+            false,
+        )
+        .unwrap()
+        .unwrap();
+        let central = manager.writable_root().unwrap();
+        let headers = names
+            .iter()
+            .map(|name| {
+                Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
+                    .unwrap()
+                    .state
+                    .header
+                    .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let plan =
+            super::super::cleanup_finalize::prepare(&parent, &central, &names[0], |_| Ok(()))
+                .unwrap();
+        let sequence = Snapshot::load(&parent, &central, &names[0], SnapshotAccess::Read)
+            .unwrap()
+            .sequence;
+        FAULT.with(|slot| {
+            slot.set(Some((
+                sequence,
+                Step::CleanupMetadata {
+                    role,
+                    point: CleanupMetadataPoint::Flushed,
+                },
+                false,
+            )))
+        });
+        let result = plan.finish(&parent, &central, |_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(result.is_err());
+        let before = namespace_contents(root.path());
+        let group =
+            Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
+        assert!(matches!(group.members[0], Member::Metadata(_)));
+        assert!(matches!(group.members[1], Member::Payload(_)));
+        assert_eq!(namespace_contents(root.path()), before);
+        let control_path = root.path().join("central").join(headers[1].central_name());
+        owner(&control_path)
+            .set_times(std::fs::FileTimes::new().set_modified(
+                std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_700_000_000),
+            ))
+            .unwrap();
+        let record =
+            super::super::discovery::RegisteredJournal::open(&central, &headers[1].central_name())
+                .unwrap();
+        assert!(group.selection.admits(&record).is_err());
     }
 }

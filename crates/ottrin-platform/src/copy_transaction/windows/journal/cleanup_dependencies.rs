@@ -31,6 +31,16 @@ impl Dependencies {
         manifest: &Manifest,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        Self::open_selected(central, header, manifest, None, &mut cancel)
+    }
+
+    pub(super) fn open_selected(
+        central: &File,
+        header: &Header,
+        manifest: &Manifest,
+        selection: Option<&super::cleanup_group::Selection>,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
         let creator = security::current_owner()?;
         let security = security::PrivateSecurity::capture(central, &creator)?;
         let stamp = super::super::version(central)?;
@@ -73,36 +83,15 @@ impl Dependencies {
                     other.transaction
                 )));
             }
-            let mut references = vec![
-                other.parent,
-                other.stage,
-                other.local_file,
-                other.central_file,
-            ];
-            if let Some(cleanup) = &peer.state.cleanup {
-                // Durable cleanup intent disables Undo/forward recovery. The
-                // peer still owns its remaining retained names and metadata,
-                // but no longer claims publications through stale source graphs.
-                references.extend(
-                    cleanup.manifest.order[cleanup.completed..]
-                        .iter()
-                        .map(|&index| cleanup.manifest.entries[index].version.identity),
-                );
-            } else {
-                references.extend(peer.state.nodes.iter().filter_map(|node| node.created));
-                if let Some(original) = &peer.state.original {
-                    references.extend(
-                        original
-                            .evidence
-                            .entries
-                            .iter()
-                            .map(|entry| entry.version.identity),
-                    );
-                }
-            }
-            if references
-                .iter()
-                .any(|id| protected.contains(&id.object_key()))
+            let references = references(&peer.state);
+            let selected = selection
+                .map(|scope| scope.admits(&peer))
+                .transpose()?
+                .unwrap_or(false);
+            if !selected
+                && references
+                    .iter()
+                    .any(|id| protected.contains(&id.object_key()))
             {
                 return Err(io(format!(
                     "Copy cleanup would affect dependent transaction {}",
@@ -233,4 +222,33 @@ impl Dependencies {
         self.stamp = actual;
         Ok(())
     }
+}
+
+pub(super) fn references(state: &State) -> Vec<WindowsStableIdentity> {
+    let header = state.header.as_ref().unwrap();
+    let mut references = vec![
+        header.parent,
+        header.stage,
+        header.local_file,
+        header.central_file,
+    ];
+    if let Some(cleanup) = &state.cleanup {
+        references.extend(
+            cleanup.manifest.order[cleanup.completed..]
+                .iter()
+                .map(|&index| cleanup.manifest.entries[index].version.identity),
+        );
+    } else {
+        references.extend(state.nodes.iter().filter_map(|node| node.created));
+        if let Some(original) = &state.original {
+            references.extend(
+                original
+                    .evidence
+                    .entries
+                    .iter()
+                    .map(|entry| entry.version.identity),
+            );
+        }
+    }
+    references
 }

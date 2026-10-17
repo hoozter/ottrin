@@ -282,7 +282,7 @@ impl Completion {
             parent_security: self.parent_security,
         };
         drop((journal, dependencies));
-        plan.run(parent, central, Action::Inspect, &mut cancel)?;
+        plan.run(parent, central, Action::Inspect, None, &mut cancel)?;
         Ok(plan)
     }
 }
@@ -331,6 +331,26 @@ impl Plan {
         name: &OsStr,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        Self::observe_selected(parent, central, name, None, &mut cancel)
+    }
+
+    pub(super) fn observe_in_group(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        selection: &super::cleanup_group::Selection,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::observe_selected(parent, central, name, Some(selection), cancel)
+    }
+
+    fn observe_selected(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        selection: Option<&super::cleanup_group::Selection>,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
         let id = name
             .to_str()
             .and_then(|text| text.strip_prefix(".ottrin-copy-"))
@@ -369,7 +389,7 @@ impl Plan {
             parent_security: security::owner_group_dacl_digest(parent)?,
         };
         drop(control);
-        plan.run(parent, central, Action::Inspect, &mut cancel)?;
+        plan.run(parent, central, Action::Inspect, selection, &mut cancel)?;
         Ok(plan)
     }
 
@@ -395,7 +415,7 @@ impl Plan {
         central: &File,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        self.run(parent, central, Action::Remove, &mut cancel)
+        self.run(parent, central, Action::Remove, None, &mut cancel)
             .map_err(|error| PlatformError::CleanupPending {
                 transaction: self
                     .parent_location
@@ -411,8 +431,14 @@ impl Plan {
         parent: &File,
         central: &File,
         action: Action,
+        selection: Option<&super::cleanup_group::Selection>,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if selection.is_some() && action != Action::Inspect {
+            return Err(io(
+                "Read-only group selection cannot authorize metadata removal",
+            ));
+        }
         cancel(0)?;
         self.bindings(parent, central)?;
         let central_name = self.header.central_name();
@@ -438,8 +464,13 @@ impl Plan {
         let decoded = decode(&control.bytes)?;
         let sequence = decoded.sequence;
         let progress = control.state.cleanup.as_ref().unwrap();
-        let mut dependencies =
-            Dependencies::open(central, &self.header, &progress.manifest, &mut *cancel)?;
+        let mut dependencies = Dependencies::open_selected(
+            central,
+            &self.header,
+            &progress.manifest,
+            selection,
+            &mut *cancel,
+        )?;
         let central_version = metadata(
             &control.file,
             self.header.central_file,

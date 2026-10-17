@@ -779,3 +779,37 @@ for a coordinated executor, not batch completion: an individual token still
 refuses another member's journal change. Known-own catalog handoff and shared
 retained-alias epoch/count coordination must precede complete batch admission
 and Activity execution. Resource/performance and package acceptance remain open.
+
+
+## Read-only cleanup group admission
+
+The group observer freezes the anchored registry's native epoch, names and compact
+control-record proofs before admitting selected transactions. Selected IDs must
+be canonical, unique and present. All unselected records retain their ordinary
+dependency protection. Unknown recovery filenames refuse admission; missing
+registries are never initialized by observation.
+
+Each selected member receives the existing retained-payload or partial-metadata
+inspection. The observer records cross-member references and shared retained
+native objects explicitly, then rechecks member metadata and the complete frozen
+catalog. Its result retains no file handles, decoded peer graphs or raw journals.
+The same reference interpretation serves individual and group inspection.
+
+Group selection only permits read-only inspection of otherwise overlapping
+selected members. Ordinary start/reclaim operations still enforce dependencies;
+metadata removal explicitly refuses a read-only selection. This component does
+not authorize deleting a selected group or silently refresh member proofs after
+another member changes the catalog.
+
+Three focused native tests pass under an ordinary Windows account: four
+creation/overwrite file/directory chains; independent and shared-original peers;
+unselected dependencies, duplicate/missing IDs, changed payloads, unknown records
+and cancellation; missing registry preservation; and two interrupted metadata
+phases with changed peer-epoch refusal. Namespace bytes remain unchanged during
+observation, and an individual destructive action still refuses unresolved peers.
+The partial-metadata fixture uses the configured manager's existing read/write
+root handle, respecting its deliberate denial of delete sharing.
+
+Known-own catalog handoff, shared retained-alias changes, coordinated execution
+and Activity confirmation/retry remain required. Packages and the public Windows
+Copy gate are unchanged.

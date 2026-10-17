@@ -27,6 +27,7 @@ mod cleanup_action;
 pub use cleanup_action::RetainedCopyCleanupPlan;
 mod cleanup_dependencies;
 mod cleanup_finalize;
+mod cleanup_group;
 mod cleanup_protocol;
 mod cleanup_tree;
 mod discovery;

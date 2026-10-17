@@ -53,6 +53,26 @@ impl Admission {
         name: &OsStr,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        Self::observe_selected(parent, central, name, None, &mut cancel)
+    }
+
+    pub(super) fn observe_in_group(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        selection: &super::cleanup_group::Selection,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::observe_selected(parent, central, name, Some(selection), cancel)
+    }
+
+    fn observe_selected(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        selection: Option<&super::cleanup_group::Selection>,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
         let location = windows_fs::location(parent).map_err(io)?;
         let transaction = location.join(name).display().to_string();
         let mut started = false;
@@ -65,10 +85,11 @@ impl Admission {
                 &snapshot.state.cleanup
             {
                 let remaining = Remaining::open(parent, &snapshot.state, progress, &mut cancel)?;
-                let dependencies = Dependencies::open(
+                let dependencies = Dependencies::open_selected(
                     central,
                     snapshot.state.header.as_ref().unwrap(),
                     &progress.manifest,
+                    selection,
                     &mut cancel,
                 )?;
                 let observed = super::super::evidence_digest(&remaining.observed)?;
@@ -81,10 +102,11 @@ impl Admission {
                 drop(snapshot);
                 let held = HeldCleanup::open(parent, central, name, &mut cancel)?;
                 let manifest = held.snapshot.state.cleanup_manifest()?;
-                let dependencies = Dependencies::open(
+                let dependencies = Dependencies::open_selected(
                     central,
                     held.snapshot.state.header.as_ref().unwrap(),
                     &manifest,
+                    selection,
                     &mut cancel,
                 )?;
                 held.revalidate(&mut cancel)?;
@@ -118,6 +140,32 @@ impl Admission {
             })
         })();
         result.map_err(|error| cleanup_error(error, started, transaction))
+    }
+
+    pub(super) fn validate_metadata(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let snapshot = Snapshot::load(
+            parent,
+            central,
+            &self.header.stage_name(),
+            SnapshotAccess::Read,
+        )?;
+        if snapshot.state.header.as_ref() != Some(&self.header)
+            || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
+            || super::super::evidence_digest(&super::cleanup_finalize::snapshot_metadata(
+                &snapshot,
+                &mut cancel,
+            )?)? != self.metadata
+            || windows_fs::location(parent).map_err(io)? != self.location
+            || security::owner_group_dacl_digest(parent)? != self.parent_security
+        {
+            return Err(io("Copy group member changed during read-only admission"));
+        }
+        snapshot.revalidate(parent, central)
     }
 
     /// Persist cleanup intent without removing payload or metadata. The

@@ -1,0 +1,112 @@
+{
+  "scope": "Read-only admission of selected Windows Copy cleanup groups; coordinated execution and Activity integration remain unfinished",
+  "parent_revision": "7b5e88fbf82483750b46b1e418e2a7e5117c7d2d",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "91c5a1c0dd9a6b1580d60667f525f633d443e4729ca6610d3387b062057e12b8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "8be8ceec56b90355d7c0624404ca6278d566122aafaddcc07d30130aaa563c28",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "4cb515e6ace66bd6fb5102d080810f06d4a81a2798678e350cfc9d9617e3e4c3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "29b86938cf732c8f0eedbbee37387e85080a76baeab1660fbf801ee7c2f7571c",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "98bdb027475bdf5a7b4ffd73ccc38617e503ec6e5b41494e276ad48140f4d1dc",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "895fbaa977da5fb24856a8d0fae36d18b2302251ce50fb69e677c00e2d135ad1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2"
+  },
+  "binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup --nocapture --test-threads=1",
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "bd42cf4e7ef0a32db8c6ab0e9d58e3391ed69faf104802b5162ac6de49a6f139",
+    "transferred_sha256": "732bcbde567db8648801cd9279b158eaf463b65937da0dca46074021753f96c7",
+    "retained_sections": {
+      ".text": "4c068c0490d459e7ccbe9a0655b3d620148df4d97d67172338b1ba863fab7626",
+      ".data": "451214023240786359ac749a76bfcef25173077df9e065a7f3fedfe523e6983a",
+      ".rdata": "3dc66f578b892992ab54551006302599c814cfc40d3f1ddd032d3494f4e55d25",
+      ".pdata": "efeb85522793b1dd457382522d369408d4e498b97f7e5921a5ca10b6d6bfb0e6",
+      ".xdata": "5cb69c37a43c912176f2ad3f0f5ea37fb03c5858153bc70dc8ca6d5f0cdbe9c9",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "6336c0d3853758e5757a36e5799694434c181c61892d49063a8689a5134d66d0",
+      ".CRT": "44a8adad628566946bfbfcb7169a548909b634e475379d54a4ed0d3b04508ee9",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "4d0e8f45bf5d19bbe80adf11265ae9c6448b1831e349d7c07b409b692723a616"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "732bcbde567db8648801cd9279b158eaf463b65937da0dca46074021753f96c7",
+    "status": "pass"
+  },
+  "suite": {
+    "passed": 34,
+    "failed": 0,
+    "ignored_child_harnesses": 2,
+    "unrelated_filtered": 307,
+    "seconds": 262.16
+  },
+  "focused": {
+    "passed": 3,
+    "failed": 0,
+    "seconds": 5.35,
+    "native_result": {
+      "exit": 0,
+      "temporary_entries": 0,
+      "ordinary_user": true,
+      "test_binary_hash": "732bcbde567db8648801cd9279b158eaf463b65937da0dca46074021753f96c7",
+      "status": "pass"
+    }
+  },
+  "cases": [
+    "Four file/directory creation-to-overwrite and overwrite-to-overwrite chains",
+    "Independent retained originals and shared retained hard-link aliases",
+    "Unselected dependency, duplicate/missing ID, changed payload, unknown record and cancellation refusals",
+    "Missing registry remains absent",
+    "Local/stage metadata-flush interruptions and changed peer native epoch refusal",
+    "Selected observation does not bypass ordinary destructive dependency checks"
+  ],
+  "properties": [
+    "Anchored existing-only admission freezes complete compact catalog proofs",
+    "Cross-member references and shared retained native objects are explicit",
+    "No file handles, decoded peer graphs or raw journals retained by observation",
+    "One reference interpretation for individual and group inspection",
+    "Read-only selection cannot authorize metadata removal",
+    "Observation preserves namespace bytes and public/source data"
+  ],
+  "fixture_correction": "Use the configured manager read/write root for partial-metadata setup; avoid the generic test helper that requests DELETE access against its deny-delete-sharing handle. Production sharing policy unchanged.",
+  "static_checks": [
+    "Windows platform/UI all-target strict Clippy passed",
+    "cargo fmt --all -- --check passed",
+    "git diff --check passed"
+  ],
+  "teardown": {
+    "task_state": "Ready",
+    "task_result": 0,
+    "process_count": 0,
+    "temporary_exists": false
+  },
+  "limitations": [
+    "No coordinated group mutation/executor yet",
+    "Known-own catalog handoff and shared alias epoch/link-count coordination remain required",
+    "Activity confirmation/execution/retry remains unfinished",
+    "No current application-package, rendered GUI, full-platform or performance acceptance inferred",
+    "Public Windows Copy remains gated; packages unchanged"
+  ],
+  "environment": "Owned offline Windows QA COW retained for the next batch-execution consumer; source VM/backing disk and user settings preserved"
+}
