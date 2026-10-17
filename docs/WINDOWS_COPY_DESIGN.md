@@ -1107,6 +1107,37 @@ recovery. The same exact binary passes all 68 enumerated cleanup cases:
 `GROUP_SHARED_UNLINK_ACCEPTANCE.json` binds source, profile, binary, arguments,
 and successful teardown with no owned process or temporary root remaining.
 Unrelated journal/core suites were not repeated; schema, codec and decoder are
-unchanged. Mixed-workflow execution, Activity, resource/storage/security/power-cut
+unchanged. Activity, resource/storage/security/power-cut
 and current package gates remain open. These correctness tests do not establish
 rendered UI, performance or packaged-app acceptance.
+
+
+## Mixed group execution
+
+`Observation::reclaim_all` resumes retained metadata/shared operations and derives
+its next action from each member's bound journal order. Pending peer intents select
+their recorded owner; pending owner entries take precedence over fresh work.
+Shared entries use the matched intent/unlink/peer-ack/owner-ack protocol. Ordinary
+entries use a current-entry dependency scope that protects their native object and
+private metadata without bypassing any selected or unselected peer claim.
+
+Both ordinary whole-member cleanup and group single-entry cleanup call the same
+native removal primitive. Each completed entry advances the coordinator only from
+the successful writer's control and registry-root proof. Uncertain changes stop
+execution and require fresh read-only admission. All payloads must complete before
+metadata removal, whose existing retained Plan continues to own uncertain retries.
+
+Six focused ordinary-account native tests pass in 51.23 seconds: a complete
+three-owner mixed tree, cancellation before any change, cancellation after an
+ordinary unlink, disposition/close/flush failures followed by fresh admission,
+resuming a prepared shared owner, and preserving foreign changes made during
+execution. The same exact executable passes all 74 enumerated cleanup cases:
+72 passed, two existing ignored entry points, zero failed, 633.69 seconds.
+`GROUP_MIXED_ACCEPTANCE.json` binds source, executable, profile, arguments and
+ordinary-account teardown; `GROUP_MIXED_COVERAGE.json` records every actual case.
+No owned native process or temporary root remains. Schema/codec are unchanged;
+unrelated journal suites were not repeated. These unoptimized backend checks do
+not establish UI, performance or package acceptance. Group-specific real
+process-exit/history recovery, Activity execution, resource/storage/security/power-cut
+and current package acceptance remain open. Public Windows Copy stays gated;
+application packages are unchanged.

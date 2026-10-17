@@ -1294,6 +1294,17 @@ fn cleanup_peer_fixture_at(
     directories: &[&str],
     root_file: bool,
 ) -> Vec<OsString> {
+    cleanup_peer_fixture_layout(root, shared, extra_aliases, directories, root_file, false)
+}
+
+fn cleanup_peer_fixture_layout(
+    root: &Path,
+    shared: bool,
+    extra_aliases: bool,
+    directories: &[&str],
+    root_file: bool,
+    mixed: bool,
+) -> Vec<OsString> {
     anchored_cleanup_fixture(root);
     let destinations = directories
         .iter()
@@ -1326,6 +1337,18 @@ fn cleanup_peer_fixture_at(
             .unwrap();
         }
         std::fs::hard_link(destinations[0].join(leaf), root.join("outside")).unwrap();
+    }
+    if mixed {
+        assert!(!root_file);
+        for destination in &destinations {
+            std::fs::create_dir_all(destination.join("copy/nested/deep")).unwrap();
+            std::fs::write(
+                destination.join("copy/nested/deep/ordinary"),
+                b"ordinary retained data",
+            )
+            .unwrap();
+            std::fs::write(destination.join("copy/sibling"), b"ordinary sibling").unwrap();
+        }
     }
     // Both original graphs exist before either retention rename; native
     // child epochs therefore remain exact in the shared-hardlink case.
@@ -4653,4 +4676,241 @@ fn windows_native_copy_cleanup_group_shared_unlink_preserves_reoccupants_and_for
             b"old original data"
         );
     }
+}
+
+fn mixed_cleanup_fixture(root: &Path) -> (super::super::cleanup_group::Observation, Vec<String>) {
+    let directories = ["destination", "second-destination", "third-destination"];
+    let names = cleanup_peer_fixture_layout(root, true, true, &directories, false, true);
+    let ids = directories
+        .iter()
+        .zip(&names)
+        .map(|(directory, name)| {
+            Snapshot::load(
+                &owner(&root.join(directory)),
+                &owner(&root.join("central")),
+                name,
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .state
+            .header
+            .unwrap()
+            .transaction
+        })
+        .collect::<Vec<_>>();
+    let group =
+        super::super::cleanup_group::Observation::observe_at(&root.join("central"), &ids, |_| {
+            Ok(())
+        })
+        .unwrap();
+    (group, ids)
+}
+
+fn assert_mixed_cleanup_complete(root: &Path, group: &super::super::cleanup_group::Observation) {
+    assert!(
+        group
+            .members
+            .iter()
+            .all(|member| matches!(member, super::super::cleanup_group::Member::Complete(_)))
+    );
+    assert_eq!(
+        std::fs::read(root.join("outside")).unwrap(),
+        b"old original data"
+    );
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.join("outside"))).unwrap(),
+        1
+    );
+    assert!(
+        std::fs::read_dir(root.join("central"))
+            .unwrap()
+            .next()
+            .is_none()
+    );
+    for directory in ["destination", "second-destination", "third-destination"] {
+        assert!(root.join(directory).join("copy/nested/file").is_file());
+        assert_eq!(std::fs::read_dir(root.join(directory)).unwrap().count(), 1);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_mixed_finishes_ordinary_shared_and_nested_entries() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, _) = mixed_cleanup_fixture(root.path());
+    group.start_all(|_| Ok(())).unwrap();
+    let super::super::cleanup_group::Member::Payload(admission) = &group.members[0] else {
+        panic!("missing payload")
+    };
+    {
+        let central = owner(&root.path().join("central"));
+        let parent = owner(&root.path().join("destination"));
+        let super::super::cleanup::Next::Entry { identity, .. } = admission
+            .next_in_group(&parent, &central, &mut |_| Ok(()))
+            .unwrap()
+        else {
+            panic!("missing next entry")
+        };
+        assert!(
+            !identity.same_object(
+                super::super::super::version(&owner(&root.path().join("outside")))
+                    .unwrap()
+                    .identity
+            )
+        );
+    }
+    group.reclaim_all(|_| Ok(())).unwrap();
+    assert_mixed_cleanup_complete(root.path(), &group);
+    group.reclaim_all(|_| Ok(())).unwrap();
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_mixed_cancel_preserves_data_and_fresh_retry_completes() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, ids) = mixed_cleanup_fixture(root.path());
+    let before = namespace_contents(root.path());
+    assert!(
+        group
+            .reclaim_all(|_| Err(io("cancel mixed cleanup")))
+            .is_err()
+    );
+    assert_eq!(namespace_contents(root.path()), before);
+    drop(group);
+    let mut fresh = super::super::cleanup_group::Observation::observe_at(
+        &root.path().join("central"),
+        &ids,
+        |_| Ok(()),
+    )
+    .unwrap();
+    fresh.reclaim_all(|_| Ok(())).unwrap();
+    assert_mixed_cleanup_complete(root.path(), &fresh);
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_mixed_resumes_prepared_shared_owner() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, headers) = shared_unlink_preparation_fixture(root.path());
+    group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+    drop(group);
+    let ids = headers
+        .iter()
+        .map(|header| header.transaction.clone())
+        .collect::<Vec<_>>();
+    let mut fresh = super::super::cleanup_group::Observation::observe_at(
+        &root.path().join("central"),
+        &ids,
+        |_| Ok(()),
+    )
+    .unwrap();
+    fresh.reclaim_all(|_| Ok(())).unwrap();
+    assert!(
+        fresh
+            .members
+            .iter()
+            .all(|member| matches!(member, super::super::cleanup_group::Member::Complete(_)))
+    );
+    assert_eq!(
+        super::super::super::namespace::link_count(&owner(&root.path().join("outside"))).unwrap(),
+        1
+    );
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_mixed_uncertain_ordinary_unlink_requires_fresh_retry() {
+    for step in [
+        Step::CleanupDispositionSet,
+        Step::CleanupHandleClosed,
+        Step::CleanupFlushed,
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, ids) = mixed_cleanup_fixture(root.path());
+        group.start_all(|_| Ok(())).unwrap();
+        let header = group.members[0].header().clone();
+        let sequence = decode(
+            &std::fs::read(root.path().join("central").join(header.central_name())).unwrap(),
+        )
+        .unwrap()
+        .sequence;
+        FAULT.with(|slot| slot.set(Some((sequence + 1, step, false))));
+        let result = group.reclaim_all(|_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(result.is_err(), "{step:?}");
+        let after = namespace_contents(root.path());
+        assert!(group.reclaim_all(|_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), after);
+        drop(group);
+        let mut fresh = super::super::cleanup_group::Observation::observe_at(
+            &root.path().join("central"),
+            &ids,
+            |_| Ok(()),
+        )
+        .unwrap();
+        fresh.reclaim_all(|_| Ok(())).unwrap();
+        assert_mixed_cleanup_complete(root.path(), &fresh);
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_mixed_midway_cancel_resumes_acknowledged_progress() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, ids) = mixed_cleanup_fixture(root.path());
+    let first = root
+        .path()
+        .join("destination")
+        .join(group.members[0].header().original_name())
+        .join("nested/deep/ordinary");
+    assert!(first.exists());
+    let mut cancelled = false;
+    let result = group.reclaim_all(|_| {
+        if !first.exists() {
+            cancelled = true;
+            return Err(io("cancel after ordinary unlink"));
+        }
+        Ok(())
+    });
+    assert!(cancelled && result.is_err());
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+    drop(group);
+    let mut fresh = super::super::cleanup_group::Observation::observe_at(
+        &root.path().join("central"),
+        &ids,
+        |_| Ok(()),
+    )
+    .unwrap();
+    fresh.reclaim_all(|_| Ok(())).unwrap();
+    assert_mixed_cleanup_complete(root.path(), &fresh);
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_mixed_refuses_foreign_changes_during_execution() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, _) = mixed_cleanup_fixture(root.path());
+    let first = root
+        .path()
+        .join("destination")
+        .join(group.members[0].header().original_name())
+        .join("nested/deep/ordinary");
+    let foreign = root
+        .path()
+        .join("second-destination")
+        .join(group.members[1].header().original_name())
+        .join("foreign");
+    let mut changed = false;
+    let result = group.reclaim_all(|_| {
+        if !changed && !first.exists() {
+            std::fs::write(&foreign, b"foreign data must survive").unwrap();
+            changed = true;
+        }
+        Ok(())
+    });
+    assert!(changed && result.is_err());
+    let after = namespace_contents(root.path());
+    assert!(group.reclaim_all(|_| Ok(())).is_err());
+    assert_eq!(namespace_contents(root.path()), after);
+    assert_eq!(
+        std::fs::read(&foreign).unwrap(),
+        b"foreign data must survive"
+    );
 }

@@ -26,6 +26,7 @@ pub(super) struct Dependencies {
 
 enum Scope<'a> {
     Ordinary,
+    Current(WindowsStableIdentity),
     Inspect(&'a super::cleanup_group::Selection),
     Entry(
         &'a super::cleanup_group::Selection,
@@ -47,6 +48,36 @@ impl Dependencies {
             state,
             manifest,
             selection.map(Scope::Inspect).unwrap_or(Scope::Ordinary),
+            cancel,
+        )
+    }
+
+    /// Only the journal's actual next entry is a payload target. No selected
+    /// peer reference is waived by this ordinary per-entry scope.
+    pub(super) fn current_entry(
+        central: &File,
+        journal: &Journal,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        journal.bindings()?;
+        let progress = journal
+            .state
+            .cleanup
+            .as_ref()
+            .ok_or_else(|| io("Missing current cleanup entry"))?;
+        if progress.peer_unlink.is_some() {
+            return Err(io("A pending peer unlink must be acknowledged first"));
+        }
+        let &index = progress
+            .manifest
+            .order
+            .get(progress.completed)
+            .ok_or_else(|| io("No current cleanup entry"))?;
+        Self::open_scope(
+            central,
+            &journal.state,
+            &progress.manifest,
+            Scope::Current(progress.expected(index).identity),
             cancel,
         )
     }
@@ -105,6 +136,7 @@ impl Dependencies {
         let stamp = super::super::version(central)?;
         let mut protected: BTreeSet<_> = match &scope {
             Scope::Entry(_, intent, _) => BTreeSet::from([intent.expected.identity.object_key()]),
+            Scope::Current(identity) => BTreeSet::from([identity.object_key()]),
             _ => {
                 if let Some(progress) = &state.cleanup {
                     progress.manifest.order[progress.completed..]
@@ -161,7 +193,7 @@ impl Dependencies {
             }
             let references = references(&peer.state);
             let selection = match &scope {
-                Scope::Ordinary => None,
+                Scope::Ordinary | Scope::Current(_) => None,
                 Scope::Inspect(selection) | Scope::Entry(selection, _, _) => Some(*selection),
             };
             let selected = selection
@@ -174,7 +206,7 @@ impl Dependencies {
                 .collect::<Vec<_>>();
             if !overlaps.is_empty() {
                 let allowed = match &scope {
-                    Scope::Ordinary => false,
+                    Scope::Ordinary | Scope::Current(_) => false,
                     Scope::Inspect(_) => selected,
                     Scope::Entry(_, intent, acknowledged) => {
                         let matching = if *acknowledged {

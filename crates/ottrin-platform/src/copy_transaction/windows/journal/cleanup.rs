@@ -40,6 +40,20 @@ pub(super) struct ControlChange {
     pub(super) central: EntryVersion,
 }
 
+pub(super) enum Next {
+    Finish,
+    Entry {
+        identity: WindowsStableIdentity,
+        pending: bool,
+    },
+    Peer(String),
+}
+
+pub(super) enum EntryChange {
+    Remaining(ControlChange, super::cleanup_finalize::PayloadChange),
+    Complete(super::cleanup_finalize::Reclaimed),
+}
+
 fn cleanup_error(error: PlatformError, started: bool, transaction: String) -> PlatformError {
     if started {
         PlatformError::CleanupPending {
@@ -712,6 +726,180 @@ impl Admission {
         .map_err(|error| self.pending_error(error))
     }
 
+    fn remove_current_entry(
+        journal: &mut Journal,
+        remaining: &mut Remaining,
+        dependencies: &mut Dependencies,
+        parent: &File,
+        central: &File,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let progress = journal.state.cleanup.as_ref().unwrap();
+        let index = progress.manifest.order[progress.completed];
+        remaining
+            .acquire(parent, &journal.state, progress, index, &mut *cancel)
+            .map_err(|error| io(format!("Copy cleanup entry {index} acquisition: {error}")))?;
+        if !progress.pending {
+            journal.persist(Record::Cleanup {
+                entry: CleanupRecord::EntryIntent { index },
+            })?;
+        }
+        let progress = journal.state.cleanup.as_ref().unwrap();
+        remaining.revalidate_path(parent, &journal.state, progress, index, &mut *cancel)?;
+        dependencies.validate(central)?;
+        journal.bindings()?;
+        let registry_root_unlink = progress.manifest.entries[index].parent.is_none()
+            && journal.header.parent.same_object(journal.header.central)
+            && !remaining.pending_absent;
+        let root_name = OsString::from_wide(&progress.manifest.entries[index].name);
+        // Any uncertain native result requires fresh admission. In
+        // particular, unwinding can close a pending POSIX delete handle.
+        journal.failed = true;
+        let acknowledgement = remaining
+            .remove(
+                parent,
+                &journal.state,
+                progress,
+                index,
+                journal.sequence,
+                &mut *cancel,
+            )
+            .map_err(|error| io(format!("Copy cleanup entry {index} removal: {error}")))?;
+        if registry_root_unlink {
+            dependencies.own_root_removed(central, &root_name)?;
+        }
+        dependencies.validate(central)?;
+        journal.failed = false;
+        journal.persist(Record::Cleanup {
+            entry: acknowledgement,
+        })?;
+        remaining.acknowledged();
+        Ok(())
+    }
+
+    pub(super) fn next_in_group(
+        &self,
+        parent: &File,
+        central: &File,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Next, PlatformError> {
+        self.validate_metadata(parent, central, &mut *cancel)?;
+        let snapshot = Snapshot::load(
+            parent,
+            central,
+            &self.header.stage_name(),
+            SnapshotAccess::Read,
+        )?;
+        if <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal {
+            return Err(io("Copy cleanup changed while choosing next entry"));
+        }
+        let progress = snapshot
+            .state
+            .cleanup
+            .as_ref()
+            .ok_or_else(|| io("Group cleanup has not started"))?;
+        if let Some(proof) = &progress.peer_unlink {
+            return Ok(Next::Peer(proof.transaction.clone()));
+        }
+        match progress.manifest.order.get(progress.completed) {
+            Some(&index) => Ok(Next::Entry {
+                identity: progress.expected(index).identity,
+                pending: progress.pending,
+            }),
+            None => Ok(Next::Finish),
+        }
+    }
+
+    pub(super) fn reclaim_next_in_group(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<EntryChange, PlatformError> {
+        (|| {
+            let snapshot = self.bound_snapshot(parent, central, &mut cancel)?;
+            let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+            let progress = journal
+                .state
+                .cleanup
+                .as_ref()
+                .ok_or_else(|| io("Group cleanup has not started"))?;
+            let mut remaining =
+                Self::read_remaining(parent, central, &journal.state, progress, &mut cancel)?;
+            if super::super::evidence_digest(&remaining.observed)? != self.observed
+                || remaining.pending_absent != self.pending_absent
+                || remaining.observes_peer_unlink() != self.peer_absent
+            {
+                return Err(io("Current cleanup entry changed after admission"));
+            }
+            let mut dependencies = if progress.completed < progress.manifest.entries.len() {
+                Dependencies::current_entry(central, &journal, &mut cancel)?
+            } else {
+                Dependencies::open_selected(
+                    central,
+                    &journal.state,
+                    &progress.manifest,
+                    None,
+                    &mut cancel,
+                )?
+            };
+            if dependencies.fingerprint()? != self.catalog {
+                return Err(io("Current cleanup catalog changed"));
+            }
+            journal.reserve_cleanup_tail()?;
+            if progress.completed < progress.manifest.entries.len() {
+                Self::remove_current_entry(
+                    &mut journal,
+                    &mut remaining,
+                    &mut dependencies,
+                    parent,
+                    central,
+                    &mut cancel,
+                )?;
+            }
+            let progress = journal.state.cleanup.as_ref().unwrap();
+            if progress.completed == progress.manifest.entries.len() {
+                if !progress.payload_removed {
+                    remaining.revalidate(parent, &journal.state, progress, &mut cancel)?;
+                    journal.persist(Record::Cleanup {
+                        entry: CleanupRecord::PayloadRemoved,
+                    })?;
+                }
+                return super::cleanup_finalize::Reclaimed::capture(
+                    &journal,
+                    self.journal,
+                    &dependencies,
+                    parent,
+                    central,
+                    &mut cancel,
+                )
+                .map(EntryChange::Complete);
+            }
+            let change = self.capture_change(
+                &journal,
+                &remaining,
+                &dependencies,
+                parent,
+                central,
+                &mut cancel,
+            )?;
+            let (registry_stamp, registry_names) = dependencies.namespace_proof();
+            let delta = super::cleanup_finalize::PayloadChange {
+                before_journal: self.journal,
+                control_version: change.central.clone(),
+                registry_stamp,
+                registry_names,
+                retained: progress
+                    .manifest
+                    .entries
+                    .first()
+                    .map(|entry| OsString::from_wide(&entry.name)),
+            };
+            Ok(EntryChange::Remaining(change, delta))
+        })()
+        .map_err(|error| self.pending_error(error))
+    }
+
     pub(super) fn reclaim(
         &self,
         parent: &File,
@@ -762,47 +950,14 @@ impl Admission {
                         &mut cancel,
                     );
                 }
-                let index = progress.manifest.order[progress.completed];
-                remaining
-                    .acquire(parent, &journal.state, progress, index, &mut cancel)
-                    .map_err(|error| {
-                        io(format!("Copy cleanup entry {index} acquisition: {error}"))
-                    })?;
-                if !progress.pending {
-                    journal.persist(Record::Cleanup {
-                        entry: CleanupRecord::EntryIntent { index },
-                    })?;
-                }
-                let progress = journal.state.cleanup.as_ref().unwrap();
-                remaining.revalidate_path(parent, &journal.state, progress, index, &mut cancel)?;
-                dependencies.validate(central)?;
-                journal.bindings()?;
-                let registry_root_unlink = progress.manifest.entries[index].parent.is_none()
-                    && journal.header.parent.same_object(journal.header.central)
-                    && !remaining.pending_absent;
-                let root_name = OsString::from_wide(&progress.manifest.entries[index].name);
-                // Any uncertain native result requires fresh admission. In
-                // particular, unwinding can close a pending POSIX delete handle.
-                journal.failed = true;
-                let acknowledgement = remaining
-                    .remove(
-                        parent,
-                        &journal.state,
-                        progress,
-                        index,
-                        journal.sequence,
-                        &mut cancel,
-                    )
-                    .map_err(|error| io(format!("Copy cleanup entry {index} removal: {error}")))?;
-                if registry_root_unlink {
-                    dependencies.own_root_removed(central, &root_name)?;
-                }
-                dependencies.validate(central)?;
-                journal.failed = false;
-                journal.persist(Record::Cleanup {
-                    entry: acknowledgement,
-                })?;
-                remaining.acknowledged();
+                Self::remove_current_entry(
+                    &mut journal,
+                    &mut remaining,
+                    &mut dependencies,
+                    parent,
+                    central,
+                    &mut cancel,
+                )?;
             }
         })();
         result.map_err(|error| cleanup_error(error, started, transaction))

@@ -684,6 +684,135 @@ impl Observation {
         }
     }
 
+    fn accept_entry_change(
+        &mut self,
+        index: usize,
+        change: cleanup::EntryChange,
+    ) -> Result<(), PlatformError> {
+        let mut selection = self.selection.clone();
+        let replacement = match change {
+            cleanup::EntryChange::Remaining(control, delta) => {
+                selection.accept_payload_change(
+                    control.admission.header(),
+                    control.after,
+                    &delta,
+                )?;
+                Member::Payload(control.admission)
+            }
+            cleanup::EntryChange::Complete(reclaimed) => {
+                selection.accept_payload(&reclaimed.completion, &reclaimed.change)?;
+                reclaimed.completion.validate_catalog(&selection)?;
+                Member::Completion(reclaimed.completion)
+            }
+        };
+        let mut members = self.members.clone();
+        for (other, member) in members.iter_mut().enumerate() {
+            if other != index {
+                member.advance_catalog(&self.selection, &selection)?;
+            }
+        }
+        // The writer already captured the post-change catalog for this member.
+        members[index] = replacement;
+        self.members = members;
+        self.selection = selection;
+        Ok(())
+    }
+
+    /// Finish a confirmed cohort in journal order, coordinating each shared
+    /// alias before resuming ordinary entries. Errors retain acknowledged work.
+    pub(super) fn reclaim_all(
+        &mut self,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if let Some(index) = self.pending_metadata {
+            self.finish_metadata(index, &mut cancel)?;
+        }
+        if let Some((owner, _)) = self.pending_unlink.as_ref() {
+            let owner = *owner;
+            self.unlink_shared_entry(owner, &mut cancel)?;
+        }
+        self.start_all(&mut cancel)?;
+        loop {
+            let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+                .ok_or_else(|| io("Configured Copy registry is missing"))?;
+            let central = manager.writable_root()?;
+            self.selection.validate(&central, &mut cancel)?;
+            let mut next = Vec::new();
+            for (index, member) in self.members.iter().enumerate() {
+                if let Member::Payload(admission) = member {
+                    let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+                    next.push((
+                        index,
+                        admission.next_in_group(&parent, &central, &mut cancel)?,
+                    ));
+                }
+            }
+            manager.validate()?;
+            let priority = next
+                .iter()
+                .find_map(|(_, step)| match step {
+                    cleanup::Next::Peer(transaction) => Some(
+                        self.members
+                            .iter()
+                            .position(|member| member.header().transaction == *transaction)
+                            .ok_or_else(|| {
+                                io("Pending shared owner is outside the confirmed group")
+                            }),
+                    ),
+                    _ => None,
+                })
+                .transpose()?;
+            let selected = priority
+                .or_else(|| {
+                    next.iter().find_map(|(index, step)| {
+                        matches!(step, cleanup::Next::Entry { pending: true, .. }).then_some(*index)
+                    })
+                })
+                .or_else(|| next.first().map(|(index, _)| *index));
+            let Some(index) = selected else {
+                break;
+            };
+            let step = next
+                .iter()
+                .find(|(member, _)| *member == index)
+                .map(|(_, step)| step)
+                .ok_or_else(|| io("Pending shared owner has no remaining payload"))?;
+            let shared = match step {
+                cleanup::Next::Entry { identity, .. } => self
+                    .shared
+                    .get(&identity.object_key())
+                    .is_some_and(|owners| owners.iter().any(|(owner, _)| *owner == index)),
+                cleanup::Next::Finish => false,
+                cleanup::Next::Peer(_) => {
+                    return Err(io("Pending shared owner cannot itself await a peer"));
+                }
+            };
+            // Release registry handles before the next guarded writer opens them.
+            drop(central);
+            drop(manager);
+            if shared {
+                self.unlink_shared_entry(index, &mut cancel)?;
+            } else {
+                let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+                    .ok_or_else(|| io("Configured Copy registry is missing"))?;
+                let central = manager.writable_root()?;
+                self.selection.validate(&central, &mut cancel)?;
+                let Member::Payload(admission) = &self.members[index] else {
+                    return Err(io("Selected cleanup member has no payload"));
+                };
+                let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+                let change = admission.reclaim_next_in_group(&parent, &central, &mut cancel)?;
+                self.accept_entry_change(index, change)?;
+                self.selection.validate(&central, &mut cancel)?;
+                manager.validate()?;
+            }
+        }
+        for index in 0..self.members.len() {
+            self.finish_metadata(index, &mut cancel)?;
+        }
+        Ok(())
+    }
+
     /// Reclaim one member through the ordinary physical writer. This retains
     /// its completion proof and advances peers only from that writer's exact
     /// control/registry acknowledgement. Shared aliases need a coordinated
@@ -732,30 +861,7 @@ impl Observation {
             )?
         };
         let reclaimed = admission.reclaim_with_ack(&parent, &central, &mut cancel)?;
-        let completion = reclaimed.completion;
-        let mut selection = self.selection.clone();
-        selection.accept_payload(&completion, &reclaimed.change)?;
-        let mut members = self.members.clone();
-        for (other, member) in members.iter_mut().enumerate() {
-            if other == index {
-                continue;
-            }
-            match member {
-                Member::Payload(admission) => {
-                    admission.advance_catalog(&self.selection, &selection)?
-                }
-                Member::Completion(completion) => {
-                    completion.advance_catalog(&self.selection, &selection)?
-                }
-                Member::Metadata(_) | Member::Complete(_) => {}
-            }
-        }
-        // The new completion already carries the post-unlink catalog; validate
-        // it against the acknowledged catalog rather than applying its delta twice.
-        completion.validate_catalog(&selection)?;
-        members[index] = Member::Completion(completion);
-        self.members = members;
-        self.selection = selection;
+        self.accept_entry_change(index, cleanup::EntryChange::Complete(reclaimed))?;
         self.selection.validate(&central, &mut cancel)?;
         manager.validate()
     }

@@ -1,0 +1,110 @@
+{
+  "scope": "Confirmed mixed group payload and metadata cleanup, ordinary/shared/nested entries, cancellation, uncertain ordinary unlink, foreign-change refusal and prepared shared-owner retry. Public Windows Copy remains gated.",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "dce5bb2a285289088336dcc11fea335330dbd43b79d9fad911bd93df15d8b198",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "df44f188fbcd7a5f7cd5c60101b1f84cbb79d5f38c6c8b09287904bc8a08f556",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "79bf6689afba6bc35cf81c555281ce7fd372fdccbf7d1ed3f7d6c2bf7d928f23",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "e70823c0517f4977b5c8cdbc3810abf7ef7301faff2952d3d49720edeebf5fe7",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "d03e43d67533626683c4214fd79e8c0c17a9feb537e872ed532d5e3763346e7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "dacd6fdb1b08d6a6a7096e2c17f2b07cc773193e99338d2f2f98eac39d190b7f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "d2c6d4cb22922efd2bcfe6c972c5e9dbe0932c404ef1c5ce0f746bd504ed9e79",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "efd10dcac66e4a2bc840992713ca5c71a7a4d3d4816c55c82693540ddda56537",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "3b39dcf34ea8341589244943060e10920d34f588397d226f550a5f549c5600e3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "67066d80f1cd5577e575b2eadd77ee0ad4943b4b2adc24ceaddefcfbb606d370",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "3457135847bef2269b974ddf6cd16a63b7011d6477a98eb0c827091ed60402fa",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c6b253429f26eb4134bd3c2bbc960f64f9a1263feeffd56154b5ad78bdbd12ab",
+    "crates/ottrin-platform/src/lib.rs": "17cf0b1a00af624e9db3d26376794e98273952681df9dcb7914049b9e8779b71",
+    "crates/ottrin-ui/src/copy_activity_resume.rs": "53968f56fafc93551f0eb511499c265e2739ce007fd328814b6848c6e42c8245",
+    "crates/ottrin-ui/src/lib.rs": "82ea1c29fda259bede7cf3f50b2256a9a624b8ed01f073ce0b1b21f65aa438f2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_peer.rs": "cf9d85029fdc00b8d7c8b8ef4db385336c0a063d01f2f8410224209d2b129b52"
+  },
+  "native_binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup --nocapture --test-threads=1",
+    "watchdog_ms": 900000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "7db7bc30d83b3c531986df601ddf4f9825b5d5dc76858c6e06febe17105671b2",
+    "transferred_sha256": "253ae4ff6e4f692c88ddc4dd4ad6876be09a863383abfe667ca4bc6040509c74",
+    "retained_sections": {
+      ".text": "539f3396e0c02c273f586bea18c8e1c6192966b04f9c91e3ea2f3a1aec3712eb",
+      ".data": "02cbace1882db795e3e7a388edb0c4e8622b7396df3fa96d1526cad66a2f00b0",
+      ".rdata": "baf1e9bb63269192e2a403624dd9813f37b21dbc404a882ac68a4d96a2e8eeb2",
+      ".pdata": "98e5909e8bcf826937c8652e3d9ae09b1e40a0fbb0bee72ae55f44ef41867231",
+      ".xdata": "b421986c0fc822b26d84d3f04b6d2dfef3687ad6125393ac3e260309a4e3436a",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "9849f1bbc133132a8c8138c7b398119162923d94090008d8c5ef6718dc962309",
+      ".CRT": "c2fe11519d1e51f8c4dcfd178f82ba0c554b8b28e23ffb3e4ace7afe206fb3b4",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "69e9db99e98f92e856a39fe7a357bd2ac296423e9cf957c7d2a17411a632732d"
+    }
+  },
+  "focused_binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup_group_mixed --nocapture --test-threads=1",
+    "watchdog_ms": 300000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-037e31dd7ae2114c.exe",
+    "compiler_sha256": "7db7bc30d83b3c531986df601ddf4f9825b5d5dc76858c6e06febe17105671b2",
+    "transferred_sha256": "253ae4ff6e4f692c88ddc4dd4ad6876be09a863383abfe667ca4bc6040509c74",
+    "retained_sections": {
+      ".text": "539f3396e0c02c273f586bea18c8e1c6192966b04f9c91e3ea2f3a1aec3712eb",
+      ".data": "02cbace1882db795e3e7a388edb0c4e8622b7396df3fa96d1526cad66a2f00b0",
+      ".rdata": "baf1e9bb63269192e2a403624dd9813f37b21dbc404a882ac68a4d96a2e8eeb2",
+      ".pdata": "98e5909e8bcf826937c8652e3d9ae09b1e40a0fbb0bee72ae55f44ef41867231",
+      ".xdata": "b421986c0fc822b26d84d3f04b6d2dfef3687ad6125393ac3e260309a4e3436a",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "9849f1bbc133132a8c8138c7b398119162923d94090008d8c5ef6718dc962309",
+      ".CRT": "c2fe11519d1e51f8c4dcfd178f82ba0c554b8b28e23ffb3e4ace7afe206fb3b4",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "69e9db99e98f92e856a39fe7a357bd2ac296423e9cf957c7d2a17411a632732d"
+    }
+  },
+  "focused_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "253ae4ff6e4f692c88ddc4dd4ad6876be09a863383abfe667ca4bc6040509c74",
+    "status": "pass"
+  },
+  "focused_stdout": "\nrunning 6 tests\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_cancel_preserves_data_and_fresh_retry_completes ... ok\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_finishes_ordinary_shared_and_nested_entries ... ok\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_midway_cancel_resumes_acknowledged_progress ... ok\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_refuses_foreign_changes_during_execution ... ok\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_resumes_prepared_shared_owner ... ok\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_uncertain_ordinary_unlink_requires_fresh_retry ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 375 filtered out; finished in 51.23s\n\n",
+  "cleanup_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "253ae4ff6e4f692c88ddc4dd4ad6876be09a863383abfe667ca4bc6040509c74",
+    "status": "pass"
+  },
+  "cleanup_tests": {
+    "passed": 72,
+    "failed": 0,
+    "ignored_existing": 2,
+    "seconds": 633.69
+  },
+  "teardown": {
+    "task_state": "Ready",
+    "temporary_root_exists": false,
+    "task_result": 0,
+    "owned_processes": 0
+  },
+  "limitations": [
+    "Unoptimized backend correctness tests only; no application performance, rendered UI or package acceptance.",
+    "Group-specific real process exits/history and Activity execution remain open.",
+    "Schema/codec unchanged; unrelated journal suites not repeated."
+  ]
+}

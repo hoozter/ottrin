@@ -48,11 +48,25 @@ known writer/root changes and retires that completed shared claim. Fresh read-on
 admission supports recorded pending-peer changes without inventing authority for
 missing names. Ordinary tail/metadata protection uses actual remaining claims.
 
-Seven focused native tests pass, including full fixture-cohort completion, three
+The shared-alias checkpoint passed seven focused native tests, including full fixture-cohort completion, three
 owners, multiple aliases, registry-root data, unselected-owner refusal, foreign
 changes and unlink/ack failure retries. The same exact binary passes all 68
 native cleanup cases: **66 passed**, two existing ignored entry points, zero
 failures, 434.29 seconds. Owned processes and temporary data are absent afterward.
+
+Mixed group execution now advances the actual next journal entry through one
+shared ordinary-entry deletion primitive. Shared aliases use the exact matched
+owner/peer protocol; ordinary entries receive no selected-peer exemption. The
+coordinator prioritizes pending owner/peer intents, retains known control/root
+changes, and removes metadata only after every payload completes. Six focused
+ordinary-account Windows tests pass in 51.23 seconds, covering three owners,
+ordinary/shared/nested entries, cancellation before and after deletion, uncertain
+ordinary unlink followed by fresh admission, prepared-owner retry, and foreign
+changes during execution. The same exact executable passes all 74 enumerated
+cleanup cases: **72 passed**, two existing ignored entry points, zero failures,
+633.69 seconds. The ordinary-account task exits successfully with no owned native
+process or temporary root remaining. `GROUP_MIXED_ACCEPTANCE.json` binds source,
+binary, profile and teardown; `GROUP_MIXED_COVERAGE.json` records the exact case set.
 
 The preceding peer-binding checkpoint accounts for all **153 Windows Copy journal
 cases** on one exact binary: **145 passed** and eight existing ignored entry
@@ -64,7 +78,9 @@ status test retains its earlier catalog-checkpoint scope.
 
 These unoptimized correctness checks do not establish application performance,
 rendered UI, full unrelated platform or release-package acceptance. Current
-shared-unlink proof is `GROUP_SHARED_UNLINK_ACCEPTANCE.json` and
+mixed-workflow proof is `GROUP_MIXED_ACCEPTANCE.json` and
+`GROUP_MIXED_COVERAGE.json`. Earlier shared-unlink proof is
+`GROUP_SHARED_UNLINK_ACCEPTANCE.json` and
 `GROUP_SHARED_UNLINK_COVERAGE.json`. Preparation proof remains in
 `GROUP_SHARED_PREPARE_ACCEPTANCE.json` and `GROUP_SHARED_PREPARE_COVERAGE.json`.
 Earlier acknowledgement proof remains in
@@ -74,8 +90,7 @@ peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 `.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
 
-**Still required:** complete mixed group execution, group-specific real
-process-exit/history recovery, and Activity
+**Still required:** group-specific real process-exit/history recovery, and Activity
 cleanup confirmation/execution/retry. Reserved-target protection, interrupted-
 staging reclamation, measured resource/storage/security and power-cut matrices,
 broader workflow acceptance and current package gates remain open. Public Windows
