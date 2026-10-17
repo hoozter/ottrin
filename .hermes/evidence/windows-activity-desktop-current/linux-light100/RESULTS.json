@@ -1,0 +1,17 @@
+{
+  "artifact_sha256": "797cf5be1ed680fdf806f46beeda19c23a7acf748fd5c6c8ba983f6f1c38f3f9",
+  "theme": "Light",
+  "scale": "1",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: b87228d1f2efc4908c9c8795d81682ccbd392680\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+  "visual_checks": [
+    "Available Undo uses explicit loss warning",
+    "Undo restores original before cleanup",
+    "Undone action and modal describe retained data",
+    "Modal uses current light theme",
+    "Cleanup preserves restored public file and original source"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

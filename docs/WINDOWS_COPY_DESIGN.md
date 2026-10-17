@@ -879,5 +879,18 @@ data; selections with available Undo retain the explicit Undo-loss warning.
 The Windows Activity integration passed on the corrected executable (13.87s,
 ordinary QA user, no temporary entries left); the two focused Linux cleanup
 tests also passed. `WORDING_ACCEPTANCE.json` records the exact source and native
-test hashes. Corrected package construction and native-window acceptance remain
-pending; this checkpoint does not replace the delivered packages.
+test hashes. Clean candidate packages from `b87228d` now have scoped native-window
+acceptance: Windows single cleanup/Cancel/changed-data refusal/two-operation
+cleanup, and Linux AppImage available-Undo warning/Undo/retained cleanup in Light
+at 100%. Sources and public files are preserved; test apps, daemons and the Linux
+private display/profile are removed. The original Windows profile/installation
+hashes and login configuration are unchanged. Portable/NSIS/MSI payload identity
+covers all 57 files; all four Linux formats pass current content/source checks.
+
+Receipt: `.hermes/evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
+Candidates remain at `.hermes/packaging-tmp/{windows,linux}-activity-candidate/`;
+public downloads are unchanged. Windows cards still expose raw metadata/error
+text inline. Replace this with readable status and expandable details before
+promotion. Actual desktop Stop/retry, other theme/scale combinations and broader
+current-package lifecycle/workflow acceptance remain open. This checkpoint does
+not establish daily-driver readiness or enable public Windows Copy.

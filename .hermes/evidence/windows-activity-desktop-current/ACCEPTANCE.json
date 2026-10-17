@@ -1,0 +1,49 @@
+{
+  "status": "partial",
+  "source_revision": "b87228d1f2efc4908c9c8795d81682ccbd392680",
+  "windows_artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "7ecdcb3c3b95bb50562e47b7959d836e46d9c168076a9678f2f534cace8df7cb",
+    "Ottrin-0.1.0-windows-x64.msi": "b5013161596024d629a4695cacdd5c34cac648959b224b4dcf5084f027e6f046",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "63348ee3195d263bc71b0e24ff6f710a441a6312d35a34dfd9227bce20d3cc61"
+  },
+  "linux_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "b7d0c14db68967a2c442a4e2407277a30a380307800220cdf10df9bffcc04d3e",
+    "Ottrin-0.1.0-x86_64.AppImage": "797cf5be1ed680fdf806f46beeda19c23a7acf748fd5c6c8ba983f6f1c38f3f9",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "da8226d85708d1a49089a0d4f69ff648a7e140b92f3886e73d89e880b9291a77",
+    "ottrin_0.1.0_amd64.deb": "863a3fcd620b2a8ce5c29ec816dfa735869253631573d5e15a2515154b5a68f5"
+  },
+  "accepted_scope": {
+    "windows": "Default-renderer native window under ordinary QA user; corrected action/modal, byte-preserving Cancel, successful single cleanup, changed retained-data refusal, two-operation cleanup; public data preserved. Portable/NSIS/MSI extracted payloads each match all 57 files.",
+    "linux": "Actual AppImage Light/100% window: available-Undo warning, Cancel, Undo restoring original, neutral retained-data cleanup, source/public preservation and clean process/display/profile teardown. All four package formats pass content/source/runtime identity checks; AppImage and RPM daemon namespace ownership checks pass."
+  },
+  "remaining": [
+    "Windows Activity still exposes raw metadata and error diagnostics inline; replace with readable status and expandable details before public promotion.",
+    "Actual desktop Stop/retry, dark/high-DPI and broader current-package workflow/installer lifecycle acceptance remain separate gates.",
+    "Broader roadmap Copy staging/recovery, reserved-target, storage/security/resource and integration work remains open."
+  ],
+  "published": false,
+  "candidate_directories": [
+    ".hermes/packaging-tmp/windows-activity-candidate",
+    ".hermes/packaging-tmp/linux-activity-candidate"
+  ],
+  "public_dist_replaced": false,
+  "test_processes_stopped": true,
+  "original_windows_profile_and_installation_preserved": true,
+  "evidence_sha256": {
+    "PAYLOAD.json": "cd9f153e4acf64c2b76d3aa795953af9067ee45241702a8e13b076d8e74f431d",
+    "DEPLOYMENT.json": "d11dba8375ffeca79597f5f0a0d6e15330bd2666936bb127a4f64ff209569ad7",
+    "MSI_PAYLOAD.json": "0e4f4054a745282b649f22c462f16a15cd00f82c641bf22ad3f3443a871cfdcd",
+    "NSIS_PAYLOAD.json": "8088dc123806ac77d56428ca2207c8ab0c716f21c224b494f172a7996ab7db92",
+    "success-unchanged.json": "ab74ed32735ff580b6c959d9d1957b96a5b3af8d797d8490b04872deb25ce5cd",
+    "success-cleared.json": "7786c8b4f44579f13ba4cef6d561bd4e41474ba9ecfa1fafeda4a31c61e2e538",
+    "changed-refused.json": "c38ca524665c10218fd1a6495b5907cfe4ea4d645640a17fcee84f3480dc4253",
+    "cohort-cleared.json": "58da56fa7b2c6039526727097ef56de4e917e794ad2e3f517db2a4098ee1cc35",
+    "TEARDOWN.json": "5ba9f890445138eeb8f9593cdda1f92d78ed0cd74b7910e60d14751b20d9a457",
+    "FINAL_PACKAGE_IDENTITIES.json": "8517efac5beac55e5175977cf47e38d69c5eac5f1f03c3b34b4d57d21466edcc",
+    "linux-light100/RESULTS.json": "26b630eeaead60d1fdb9ad57274795dcb706c6ccaf9ea5936c345d56c6a7d395",
+    "desktop.ps1": "1cfb2788676c7f88548de52d696c8a7a03f01989b921cb1ddeed57eff34480ec",
+    "verify.py": "3727da09632b32536ef23b1ed0e52c623637cf527d5b6e0846c0853c40222920",
+    "linux-gui-driver.py": "32044d88c389751dade112ce6e527378d3b8f38e8ce9c887c3696f75ff94b4d5",
+    "linux-package-check.py": "e45ff9315be60c1bb1a225393a23eeb3fe560162910dea5f62af2aa466b32926"
+  }
+}

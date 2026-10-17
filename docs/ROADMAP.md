@@ -100,6 +100,26 @@ and real filesystem-worker checks; native desktop/window and current-package
 acceptance remain open. The first UI attempt exposed a fixture with no retained
 payload; the corrected fixture uses completed Undo plus independent public data.
 
+The follow-up clean build `b87228d` now has native-window evidence. In the
+offline Windows QA clone, an ordinary user verified corrected cleanup wording,
+byte-preserving Cancel, successful single cleanup, refusal of changed retained
+data and two-operation cleanup. Public files remained intact. Portable, NSIS and
+MSI each contain the same 57 verified payload files. The actual Linux AppImage
+passes available-Undo warning, Cancel, Undo restoring the original, neutral
+retained-data cleanup and clean teardown in Light at 100%. All four Linux package
+formats pass content/source/runtime identity checks; AppImage and RPM daemon
+namespace ownership checks pass. Exact artifacts and limits are recorded in
+`.hermes/evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
+
+These are candidates, not replacement public downloads. Windows Activity still
+puts native metadata and raw error diagnostics directly in its cards; readable
+status with expandable technical details is the next UI correction. Desktop
+Stop/retry, other theme/scale combinations, broader workflows and current
+installer lifecycle acceptance retain their separate gates. Public `dist/`
+artifacts remain unchanged. Candidate packages are kept at the stable
+`.hermes/packaging-tmp/windows-activity-candidate/` and
+`.hermes/packaging-tmp/linux-activity-candidate/` paths.
+
 The preceding peer-binding checkpoint accounts for all **153 Windows Copy journal
 cases** on one exact binary: **145 passed** and eight existing ignored entry
 points. Both disjoint batches completed: cleanup 51 passed/two ignored in
@@ -125,7 +145,7 @@ peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 `.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
 
-**Still required:** native desktop Activity and current-package acceptance,
+**Still required:** remaining native desktop Activity and current-package acceptance,
 reserved-target protection, interrupted-staging reclamation, measured resource/storage/security and power-cut matrices,
 broader workflow acceptance and current package gates remain open. Public Windows
 Copy stays gated. Application packages are unchanged by these checkpoints.
