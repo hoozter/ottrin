@@ -22,6 +22,11 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
+mod cleanup;
+mod cleanup_dependencies;
+mod cleanup_finalize;
+mod cleanup_protocol;
+mod cleanup_tree;
 mod discovery;
 mod rename_creation;
 pub use discovery::{
@@ -34,7 +39,7 @@ pub(crate) use discovery::{
 };
 use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ11";
+const MAGIC: &[u8; 8] = b"OTCPWJ12";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -175,7 +180,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 11
+            && self.schema == 12
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -304,6 +309,9 @@ enum Record {
     Undone {
         root_version: Box<EntryVersion>,
     },
+    Cleanup {
+        entry: cleanup_protocol::CleanupRecord,
+    },
 }
 #[derive(Debug)]
 struct Node {
@@ -335,6 +343,7 @@ struct State {
     undone: Option<EntryVersion>,
     readonly_pending: Option<usize>,
     rename_creation: Option<RenameCreation>,
+    cleanup: Option<cleanup_protocol::Progress>,
     source_ids: BTreeSet<(u64, [u8; 16])>,
     candidate_ids: BTreeSet<(u64, [u8; 16])>,
     names: BTreeSet<(Option<usize>, Vec<u16>)>,
@@ -557,6 +566,9 @@ impl State {
     }
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
+        if self.check_cleanup_record(record)? {
+            return Ok(());
+        }
         if self.check_creation_record(record)? {
             return Ok(());
         }
@@ -907,6 +919,7 @@ impl State {
             | Record::SecurityPlanBegin { .. }
             | Record::SecurityPlanEntry { .. }
             | Record::SecurityPlanComplete { .. } => return Err(invalid()),
+            Record::Cleanup { .. } => return Err(invalid()),
             Record::TreeVerified { count } => {
                 if self.header.is_none()
                     || *count == 0
@@ -929,6 +942,7 @@ impl State {
             self.rename_creation = None;
         }
         match record {
+            Record::Cleanup { entry } => self.apply_cleanup_record(entry)?,
             Record::RenameCreationIntent { kind, before } => {
                 self.rename_creation = Some(RenameCreation {
                     kind,
@@ -1245,7 +1259,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 11,
+            schema: 12,
             transaction: name,
             parent: parent_id,
             stage: stage_id,
@@ -2023,6 +2037,8 @@ impl Journal {
         if security::current_owner()? != self.header.creator {
             return Err(io("Copy journal writer creator context changed"));
         }
+        namespace::validate_single_link(&self.local)?;
+        namespace::validate_single_link(&self.central)?;
         self.header
             .stage_security
             .validate(&self.stage_dir, &self.header.creator)?;
@@ -2933,6 +2949,8 @@ impl Snapshot {
     }
     fn revalidate(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
         let header = self.state.header.as_ref().unwrap();
+        namespace::validate_single_link(&self.local)?;
+        namespace::validate_single_link(&self.mirror)?;
         if self.requires_creator && security::current_owner()? != header.creator {
             return Err(io(
                 "retained Copy creator does not match the effective token owner",
@@ -3120,6 +3138,11 @@ impl<'a> RetainedStage<'a> {
         snapshot: Snapshot,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        if snapshot.state.cleanup.is_some() {
+            return Err(io(
+                "Copy cleanup has started; forward/receipt admission refused",
+            ));
+        }
         let root_name = snapshot.root_name(parent)?;
         let tree = HeldTree::open(parent, &snapshot.state, root_name, None, &mut progress)?;
         let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
@@ -3401,7 +3424,7 @@ fn read_undo_snapshot(
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Snapshot, PlatformError> {
     let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
-    if !snapshot.state.completion_verified {
+    if !snapshot.state.completion_verified || snapshot.state.cleanup.is_some() {
         return Err(io("Copy has no completed receipt; Undo refused"));
     }
     if snapshot.state.undone.is_some() && snapshot.state.original.is_some() {
@@ -3604,6 +3627,18 @@ impl<'a> CompletedCopy<'a> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CleanupMetadataRole {
+    Local,
+    Stage,
+    Central,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CleanupMetadataPoint {
+    DispositionSet,
+    HandleClosed,
+    Flushed,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Step {
     OriginalReadersReleased,
     OriginalRenamed,
@@ -3620,6 +3655,14 @@ enum Step {
     PublicationFlushed,
     CreationRestored,
     CreationFlushed,
+    CleanupDispositionSet,
+    CleanupReadersReleased,
+    CleanupHandleClosed,
+    CleanupFlushed,
+    CleanupMetadata {
+        role: CleanupMetadataRole,
+        point: CleanupMetadataPoint,
+    },
     PermissionsChanged,
     PermissionsFlushed,
 }
@@ -3645,6 +3688,17 @@ fn original_handoff(sequence: u64) -> Result<(), PlatformError> {
     Ok(())
 }
 
+#[cfg(test)]
+thread_local! {static CLEANUP_HANDOFF:std::cell::RefCell<Option<Box<dyn FnOnce()>>>=const {std::cell::RefCell::new(None)};}
+fn cleanup_handoff(sequence: u64) -> Result<(), PlatformError> {
+    boundary(sequence, Step::CleanupReadersReleased)?;
+    #[cfg(test)]
+    if let Some(hook) = CLEANUP_HANDOFF.with(|slot| slot.borrow_mut().take()) {
+        hook();
+    }
+    Ok(())
+}
+
 #[cfg(not(test))]
 fn boundary(_: u64, _: Step) -> Result<(), PlatformError> {
     Ok(())
@@ -3664,6 +3718,7 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 
 #[cfg(test)]
 mod tests {
+    mod cleanup;
     mod creation_times;
 
     use super::*;
@@ -3688,7 +3743,15 @@ mod tests {
         std::fs::create_dir(root.join("source/nested")).unwrap();
         std::fs::write(root.join("source/nested/file"), b"original data").unwrap();
         std::fs::create_dir(root.join("destination")).unwrap();
-        std::fs::create_dir(root.join("central")).unwrap();
+        drop(
+            windows_fs::create_private(
+                &owner(root),
+                OsStr::new("central"),
+                true,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            )
+            .unwrap(),
+        );
     }
     fn stage<'a>(
         src: &File,
@@ -6989,6 +7052,11 @@ mod tests {
                 Step::OriginalFlushed => "original-flushed",
                 Step::CreationRestored => "creation-restored",
                 Step::CreationFlushed => "creation-flushed",
+                Step::CleanupDispositionSet => "cleanup-disposition",
+                Step::CleanupReadersReleased => "cleanup-readers-released",
+                Step::CleanupHandleClosed => "cleanup-closed",
+                Step::CleanupFlushed => "cleanup-flushed",
+                Step::CleanupMetadata { .. } => "cleanup-metadata",
             };
             let status=std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])

@@ -10,7 +10,7 @@ use windows_sys::Win32::{
     Storage::FileSystem::*,
 };
 
-const MAX_REGISTRY_ENTRIES: usize = 10_000;
+pub(super) const MAX_REGISTRY_ENTRIES: usize = 10_000;
 const MAX_VOLUMES: usize = 512;
 
 /// Source-free forward admission. Presentation fields cannot construct a plan.
@@ -295,6 +295,7 @@ pub enum WindowsCopyPhase {
     Completed,
     UndoPending,
     Undone,
+    CleaningUp,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum WindowsCopyRecoveryEvidence {
@@ -321,7 +322,9 @@ pub struct WindowsRetainedCopyStatus {
     pub evidence: WindowsCopyRecoveryEvidence,
 }
 pub(super) fn phase(state: &State) -> WindowsCopyPhase {
-    if state.undo_complete() {
+    if state.cleanup.is_some() {
+        WindowsCopyPhase::CleaningUp
+    } else if state.undo_complete() {
         WindowsCopyPhase::Undone
     } else if state.undo_intent {
         WindowsCopyPhase::UndoPending
@@ -345,7 +348,7 @@ pub(super) fn phase(state: &State) -> WindowsCopyPhase {
         WindowsCopyPhase::Staging
     }
 }
-fn registry_id(name: &OsStr) -> Option<String> {
+pub(super) fn registry_id(name: &OsStr) -> Option<String> {
     let text = name.to_str()?.strip_suffix(".copy-journal")?;
     (text.len() == 32
         && text
@@ -354,27 +357,78 @@ fn registry_id(name: &OsStr) -> Option<String> {
     .then(|| text.to_owned())
 }
 fn registered_journal(central: &File, name: &OsStr) -> Result<(Vec<u8>, State), PlatformError> {
-    let id = registry_id(name).ok_or_else(|| io("invalid Copy transaction ID"))?;
-    let file = open(central, name, Some(false), FILE_GENERIC_READ)?;
-    let actual = stable_identity_from_handle(&file).map_err(io)?;
-    if !actual.is_regular_file_without_reparse() {
-        return Err(io("Copy registry entry is not an ordinary journal"));
+    let record = RegisteredJournal::open(central, name)?;
+    Ok((record.bytes, record.state))
+}
+
+/// A dependency observation keeps its read-only lease alive, so a peer cannot
+/// replace or append to the record while another transaction reclaims payloads.
+pub(super) struct RegisteredJournal {
+    pub(super) file: File,
+    pub(super) bytes: Vec<u8>,
+    pub(super) state: State,
+}
+impl RegisteredJournal {
+    pub(super) fn open(central: &File, name: &OsStr) -> Result<Self, PlatformError> {
+        Self::with_access(central, name, FILE_GENERIC_READ)
     }
-    namespace::validate_single_link(&file)?;
-    let bytes = read(&file)?;
-    let decoded = decode(&bytes)?;
-    let header = decoded.state.header.as_ref().unwrap();
-    if header.transaction != id
-        || header.central != stable_identity_from_handle(central).map_err(io)?
-        || header.central_file != actual
-        || header.creator != security::current_owner()?
-    {
-        return Err(io(
-            "Copy central journal identity or creator does not match",
-        ));
+    pub(super) fn dependency(central: &File, name: &OsStr) -> Result<Self, PlatformError> {
+        // DELETE participates in Windows' closed-handle writable-mapping exclusion.
+        // This control lease never calls a mutation API on the peer.
+        Self::with_access(
+            central,
+            name,
+            FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::DELETE,
+        )
     }
-    header.central_security.validate(&file, &header.creator)?;
-    Ok((bytes, decoded.state))
+    fn with_access(central: &File, name: &OsStr, access: u32) -> Result<Self, PlatformError> {
+        registry_id(name).ok_or_else(|| io("invalid Copy transaction ID"))?;
+        let file = unsafe {
+            windows_fs::open_relative(
+                central,
+                name,
+                RelativeOptions {
+                    directory: Some(false),
+                    create_new: false,
+                    access,
+                    sharing: FILE_SHARE_READ,
+                    security: ptr::null(),
+                },
+            )
+        }
+        .map_err(io)?;
+        Self::from_file(central, name, file)
+    }
+    pub(super) fn from_file(
+        central: &File,
+        name: &OsStr,
+        file: File,
+    ) -> Result<Self, PlatformError> {
+        let id = registry_id(name).ok_or_else(|| io("invalid Copy transaction ID"))?;
+        let actual = stable_identity_from_handle(&file).map_err(io)?;
+        if !actual.is_regular_file_without_reparse() {
+            return Err(io("Copy registry entry is not an ordinary journal"));
+        }
+        namespace::validate_single_link(&file)?;
+        let bytes = read(&file)?;
+        let decoded = decode(&bytes)?;
+        let header = decoded.state.header.as_ref().unwrap();
+        if header.transaction != id
+            || header.central != stable_identity_from_handle(central).map_err(io)?
+            || header.central_file != actual
+            || header.creator != security::current_owner()?
+        {
+            return Err(io(
+                "Copy central journal identity or creator does not match",
+            ));
+        }
+        header.central_security.validate(&file, &header.creator)?;
+        Ok(Self {
+            file,
+            bytes,
+            state: decoded.state,
+        })
+    }
 }
 struct VolumeCursor(HANDLE);
 impl Drop for VolumeCursor {
@@ -511,6 +565,9 @@ pub fn discover_at_with_progress(
             )?;
             if snapshot.bytes != bytes {
                 return Err(io("Copy mirror changed during discovery"));
+            }
+            if snapshot.state.cleanup.is_some() {
+                return Err(io("Copy cleanup is in progress; remaining data retained"));
             }
             if snapshot.state.undone.is_some() && snapshot.state.original.is_some() {
                 let original = HeldOriginal::open(&parent, &snapshot.state, &mut progress)?

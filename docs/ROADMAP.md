@@ -10,11 +10,23 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current Windows Copy implementation checkpoint
 
+The private cleanup backend now removes recorded retained payloads and finalizes
+local/stage/central metadata in guarded order. The current native platform suite
+passes 294 tests with zero failures and 36 specialized exclusions. Its 21 cleanup
+tests cover 187 injected failures and 187 real process exits, readonly data,
+outside-hardlink preservation, source-free retries, unknown metadata/occupant
+refusal, mapped writers and registry dependencies. The separate disabled-policy
+link preservation test passes against the same checksum-pinned executable.
+Evidence: `.hermes/evidence/windows-copy-cleanup-current/ACCEPTANCE.json`.
+Public cleanup admission/Activity, co-owned batch and interrupted-staging cleanup,
+resource/storage/security matrices and package gates remain open. Public Windows
+Copy stays gated.
+
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session
 Undo uses the same persisted guards as restart Undo. Overwrite receipts reserve
 both retained versions' paths while Activity tracks their single transaction ID.
-The public forward dispatcher, conflict/batch workflows and guarded cleanup are
+The public forward dispatcher, conflict/batch workflows and public cleanup are
 still unfinished; this component does not enable Copy in shipped Windows builds.
 
 The internal path dispatcher now pins source/destination directories, requires a
@@ -34,7 +46,7 @@ source ancestry before creating any profile/state directory. Actual setup
 power-cut acceptance and the broader public workflow/security/storage gates
 remain unfinished.
 
-The current schema-11 component checkpoint preserves creation times across NTFS
+The last accepted schema-11 component checkpoint preserves creation times across NTFS
 filename tunneling for publication, withdrawal, original retention and restoration.
 Repair requires a paired intent bound to the observed native version and changes
 only creation time. Journal reservations include optional repair frames. The
@@ -83,7 +95,7 @@ epoch's locks, compares the fresh paired journal bytes, then opens new typed
 The writer rechecks its creator context on every append and reserves the
 remaining publication/application tail before publication, including readonly
 reopen records. One codec supplies
-append sequence/hash state on reopen. The format is now `OTCPWJ11` / schema 11;
+append sequence/hash state on reopen. The format is now `OTCPWJ12` / schema 12;
 superseded schemas are refused, without a compatibility reader. Frame/total-log
 budgets remain 16 MiB / 64 MiB. Application ends with ordered immutable final-version records and a digest seal after a full
 content/metadata/security scan. Entry acknowledgements alone

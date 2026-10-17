@@ -1,0 +1,115 @@
+{
+  "scope": "Private native Windows Copy cleanup backend; public cleanup and Windows Copy release remain incomplete",
+  "source": {
+    "parent_revision": "5e01fa54ae1ee61d2612fcc600eca383f7f3ead7",
+    "sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "2fe645436f972b7c1e7f23643119f51126cc01d6e669af2af5db3745f09cce4a",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "6624d1167111908e6e60d35a5df3d412bf385a0c52f96a2dfe0da607e6c78eee",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "41c59a703cebba317214baa63cd0e1115499eb642ecad8b0deed559165dc8a78",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "ac5d6f20d952355825907824b3fc41ea9f79ed18972e3bc3b1263b6a8c026cfb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "d965e11727d5d0392e15d1f4cde799a5923093813cbd9b6349a75c0e8a8eb524",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "eb3aa427cf74e2226a7e612a057db18c65752940d6e651e04cc59fb61484772a"
+    },
+    "ui_phase_label_sha256": "0ba0ddff2b2d6f06d273c50a56e6b80b32db01ceeefa0cff5a73556284fc948b"
+  },
+  "native_binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "dab902b2047af4b47621e102b809d467bbcd7b3d806b69460d44af1b63b1de9c",
+    "transferred_sha256": "f5ed7a16784ca70c517a24dec5b93326cfff02e8117bf97c9fcd274fe61b678a",
+    "retained_sections": {
+      ".text": "b394910333b1e17c46ac5fda4df34ef75a32e22ab37598191f2a5d3a52a0fa7a",
+      ".data": "e9c7185640532d222c4b9da285dc772366b9866e555c5cfab7eb074acfef6c0e",
+      ".rdata": "af5662d1321a96b84df47b6426bc002ffc79660e6496f8b90c04c385767aee39",
+      ".pdata": "9a5d4fb4170c41e8507e3c99624a381c846f3bd4b2d812e0475e5adb5333cc17",
+      ".xdata": "afa3f6a7e647c0782c14679dc66a885976c3710baa52f8cf085f4464dc474e31",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "ad79bc4436e714a24292b1703369ae2aeb2888bd168ae346b0c0363881e1ee5b",
+      ".CRT": "6abaa448c19c4e632bf6f23793b90dcf6759acf9e21594aea4f08b9be2751c0e",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "5b75e6bd00c394fa82e9042d3bc0bffe7158be47036a45b0e07d12d581b6a4ba"
+    }
+  },
+  "full_platform": {
+    "passed": 294,
+    "failed": 0,
+    "specialized_exclusions": 36,
+    "seconds": 441.55,
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "stdout": "FULL_platform.stdout",
+    "stderr": "FULL_platform.stderr"
+  },
+  "cleanup_cases": {
+    "regular_tests": 21,
+    "child_harnesses_excluded_from_default_execution": 2,
+    "injected_failures": 187,
+    "real_process_exits": 187,
+    "coverage": [
+      "creation/overwrite and completed/undone retained roles",
+      "readonly file roots and descendants; outside hardlink preservation",
+      "paired intent, native disposition, last-handle close, flush and acknowledgement",
+      "source-free partial-payload and metadata retries; divergent mirrors retained/refused",
+      "local journal then empty stage then central record removal; admitted terminal replay",
+      "unknown entries/streams/control aliases and post-admission occupants preserved",
+      "control permission drift refused before any metadata unlink",
+      "closed-handle writable mappings block deletion; retry after unmap",
+      "independent registry peer preserved; shared retained originals and corrupt peers refuse before writes"
+    ]
+  },
+  "fixture": {
+    "domain": "ottrin-copy-cleanup-qa",
+    "scope": "Owned no-NIC disposable COW; source domains remain shut off",
+    "actor": "OttrinCopyQA; Limited/password-backed, non-administrator",
+    "temp_root": "Creator-only protected OWNER RIGHTS Full Access; transient directory removed",
+    "developer_mode": "Enabled only in owned COW for link fixtures; original value absent recorded in FIXTURE_ENVIRONMENT.json",
+    "initial_full_run": "275 passed/19 failed/36 excluded: 18 missing symlink privilege fixtures and one inherited-Modify temp-root WRITE_OWNER refusal; FULL_POLICY_OFF_* retains diagnosis"
+  },
+  "separate_policy_lanes": {
+    "disabled_symlink_policy": {
+      "passed": 1,
+      "failed": 0,
+      "same_binary": true,
+      "preserves": "private candidate, named streams and target",
+      "receipt": "POLICY_OFF_RESULTS.json"
+    },
+    "enabled_link_smoke": {
+      "passed": 1,
+      "failed": 0,
+      "same_binary": true,
+      "receipt": "LINK_FIXTURE_RESULTS.json"
+    },
+    "mandatory_label_smoke": {
+      "passed": 1,
+      "failed": 0,
+      "same_binary": true,
+      "receipt": "LABEL_FIXTURE_RESULTS.json"
+    }
+  },
+  "transport": "copy2 plus strip --preserve-dates --strip-debug; retained non-debug sections verified identical; repeatable hash demonstrated in TRANSPORT_REPRODUCIBILITY.json",
+  "static_checks": [
+    "cargo fmt --all",
+    "strict Windows platform/UI all-target Clippy, hardening-clippy.log",
+    "git diff --check"
+  ],
+  "owned_runtime": {
+    "developer_mode": 1,
+    "owned_test_processes": 0,
+    "actor_result": 0,
+    "temporary_namespace_absent": true,
+    "original_profile_and_installation": "unchanged",
+    "status": "pass",
+    "vm": "retained for active Windows public cleanup work",
+    "actor": "Ready"
+  },
+  "remaining": [
+    "Public read-only cleanup admission and Windows Activity discovery/confirmation/retry",
+    "Configured existing-only writable registry capability and destination==registry integration",
+    "Co-owned batch graph policy and interrupted staging reclamation",
+    "Registry catalog memory/large-operation resource profiling, broader storage/security and physical power cuts",
+    "Native UI/current package and user acceptance; public Windows Copy remains gated"
+  ]
+}

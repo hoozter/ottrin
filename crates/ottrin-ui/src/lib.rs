@@ -1186,6 +1186,7 @@ fn windows_retained_copy_activity(
         Some(Phase::Completed) => "Completed copy",
         Some(Phase::UndoPending) => "Undo interrupted",
         Some(Phase::Undone) => "Copy undone · retained data",
+        Some(Phase::CleaningUp) => "Cleanup interrupted",
         None => "Copy journal needs review",
     };
     let (evidence, mut undo) = match entry.evidence {

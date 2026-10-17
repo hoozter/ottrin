@@ -103,7 +103,7 @@ Staging takes a `DestinationAdmission`, replacing the raw target argument.
 Creation requires native absence; access errors never imply absence. Overwrite
 captures the existing graph before source staging and retains no open handles.
 Its root version allows cheap pre-staging validation, while its complete graph
-count/digest are written into both immutable schema-11 journal headers.
+count/digest are written into both immutable schema-12 journal headers.
 
 Original preparation revalidates the full graph against that initial approval
 before appending any original records. Changed child data cannot be silently
@@ -571,7 +571,7 @@ Completed metadata is strict; this does not authorize general metadata repair.
 Read-only action admission freezes observed pending epochs through writer handoff.
 Optional repair frames are included in forward/inverse journal reservations.
 
-The current component evidence is in
+The preceding schema-11 component evidence is in
 `.hermes/evidence/windows-copy-registry-current/`: `SCHEMA11_FULL_*` records
 271 passing ordinary-user native tests, zero failures and no temporary entries.
 This includes 72 injected failures and 72 real process exits across normal and
@@ -587,3 +587,87 @@ These are component
 receipts; they do not establish physical power-cut, broad storage/security,
 current package or public Copy acceptance. Full evidence and cleanup results are recorded in `ACCEPTANCE.json` in that
 directory.
+
+
+## Guarded cleanup backend
+
+Cleanup derives its authority from the existing paired transaction evidence.
+It requires a completed forward transaction or completed Undo, verified native
+bindings, creator/private security and journal-only stage membership. Published
+copies and restored originals remain user data; cleanup never requires their
+contents to remain unchanged and never treats them as removal input.
+
+| Terminal phase | Retained payload | Public user data |
+| --- | --- | --- |
+| New copy completed | None | Published copy |
+| Overwrite completed | Displaced original at the recorded private original name | Published copy |
+| Undo completed | Withdrawn copy at the recorded candidate name | Restored original or reused public name |
+
+Schema 12 records `Cleanup::Begin` with an immutable retained-role/count/digest
+binding, followed by ordered per-entry intents and acknowledgements. Reverse
+manifest order removes children before parents. Native contents, identity,
+metadata, permissions, compression and link counts remain strict. Only an
+acknowledged unlink may advance its immediate parent's modification/change times
+and surviving aliases' change time. Outside aliases grant no removal authority.
+Per-object alias groups avoid rescanning the complete deletion order for each
+record. The journal reserves the entire remaining cleanup tail before mutation.
+Starting cleanup revokes ordinary forward/Undo authority.
+
+`cleanup.rs` freezes read-only journal bytes and observed retained versions,
+releases its readers, then compares fresh writer admission with that observation.
+`cleanup_dependencies.rs` pins registry records and refuses unverified peers or
+references to selected native objects. An independent peer remains untouched;
+a peer sharing a retained original blocks single-transaction cleanup. New registry
+entries, changed bindings, unknown stage entries and changed retained data stop
+further mutation.
+
+`cleanup_tree.rs` opens only recorded names relative to verified parents. Deletion
+uses READ/DELETE capabilities, POSIX disposition with readonly-ignore and image
+section checks, explicit closure of all clones of the delete FileObject, real
+NotFound verification, parent flush and surviving metadata verification before
+acknowledgement. Access Denied is never evidence of absence. Readonly attributes
+are not cleared. Closed-handle writable mappings block these deletion capabilities.
+A pending own unlink can resume after actual absence without accepting unrelated
+payload/version changes. The ordinary/readonly three-hardlink probes in
+`UNLINK_PROBE.json` and `UNLINK_FORCE_PROBE.json` establish the close/flush/alias
+clock boundary; the compiled cleanup tests exercise the complete protocol.
+
+`cleanup_finalize.rs` records paired `MetadataRemovalIntent` only after
+`PayloadRemoved`. It verifies metadata has exactly the known journal data or
+empty directory streams, single native links, private ownership and expected
+bindings. Control permissions/version are checked immediately before each
+metadata unlink. Removal proceeds local journal, empty stage, then central
+record, closing each handle and flushing its parent before continuing. Unknown
+entries, streams, replacement occupants and control aliases are preserved.
+A surviving central intent can admit a fresh source-free retry after local/stage
+removal. An already admitted opaque proof permits terminal replay after central
+removal; absence alone cannot construct that authority. Registry roots, external
+anchors, other transactions and public files are outside the removal set.
+
+Current native component evidence is
+`.hermes/evidence/windows-copy-cleanup-current/ACCEPTANCE.json`: 294 platform
+tests pass with zero failures and 36 specialized exclusions. All 21 regular
+cleanup tests pass, including 187 injected failures and 187 real process exits.
+They cover readonly roots/descendants, outside hardlinks, source-free coherent
+prefix recovery, divergent-mirror refusal, ordered metadata teardown,
+post-admission unknown data/occupants, control permission drift, writable mappings
+and independent/shared/corrupt registry peers. Tests run as a non-administrator
+and leave zero temporary entries. Original profile/installation hashes remain
+unchanged in the disposable no-NIC VM; source domains remain shut off.
+
+The separate disabled-policy test confirms symlink installation refusal retains
+the private candidate, its named data and the target. Full-suite link fixtures
+use Developer Mode only in the owned COW. The actor's temporary root grants its
+creator Full Access, including the WRITE_OWNER capability needed by label
+fixtures. Earlier fixture failures and their causes are preserved in the receipt.
+Policy, link/label smoke and full-suite lanes use the same checksum-pinned
+executable; deterministic stripping preserves compiler dates and all non-debug
+sections. Strict Windows platform/UI all-target Clippy and formatting pass.
+
+Public cleanup remains unfinished: it needs read-only action admission bound
+through the mutation handoff, existing-only writable registry capabilities for
+directory flush, partial-finalization discovery and Activity confirmation/retry.
+Co-owned batch references, interrupted staging reclamation and realistic registry/
+large-operation resource limits remain open. Process exits do not establish
+physical power-cut acceptance; specialized storage/security and current package/UI
+gates retain their separate scopes. Public Windows Copy remains gated.
