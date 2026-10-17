@@ -279,6 +279,17 @@ it does not establish automatic event dispatch or expose macro execution in
 the production helper. Do not weaken these prerequisites or treat an ignored
 test as passed.
 
+The ignored `native_installed_office_preserves_representative_layout` test uses
+three owned embedded fixtures documented in
+`crates/ottrin-preview/tests/fixtures/OFFICE_FIDELITY.md`. Set
+`OTTRIN_NATIVE_OFFICE_FIDELITY_OUTPUT` to a nonexistent directory owned by the QA
+actor. It checks five pages through the production isolated provider and saves
+PDFs, page PNGs and text there for visual inspection. The actor must collect and
+remove those deliberate QA outputs as well as its private temporary directory.
+The Windows run and all five page reviews are recorded in
+`.hermes/evidence/windows-office-fidelity-current/ACCEPTANCE.json`; this is
+representative layout evidence, not arbitrary Office or packaged-UI acceptance.
+
 The Windows converter uses the packaged `ottrin-office-render.exe` helper with
 installed LibreOfficeKit rather than the CLI, whose global named pipe is denied
 by AppContainer. The helper reads provider version metadata without starting

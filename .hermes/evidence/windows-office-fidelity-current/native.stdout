@@ -1,0 +1,19 @@
+
+running 1 test
+test native_installed_office_preserves_representative_layout ... OTTRIN DOCUMENT FIDELITY: (PdfRect { bottom: PdfPoints { value: 701.03 }, left: PdfPoints { value: 162.01 }, top: PdfPoints { value: 715.81 }, right: PdfPoints { value: 450.93 } }, 20.0, PdfColor { r: 36, g: 95, b: 165, a: 255 }, "Arial-BoldMT")
+Bold sample: (PdfRect { bottom: PdfPoints { value: 671.094 }, left: PdfPoints { value: 72.903 }, top: PdfPoints { value: 681.126 }, right: PdfPoints { value: 137.022 } }, 11.0, PdfColor { r: 0, g: 0, b: 0, a: 255 }, "Arial-BoldMT")
+italic sample: (PdfRect { bottom: PdfPoints { value: 671.072 }, left: PdfPoints { value: 162.28 }, top: PdfPoints { value: 681.126 }, right: PdfPoints { value: 222.164 } }, 11.0, PdfColor { r: 0, g: 0, b: 0, a: 255 }, "Arial-ItalicMT")
+Feature: (PdfRect { bottom: PdfPoints { value: 564.27905 }, left: PdfPoints { value: 73.002 }, top: PdfPoints { value: 572.276 }, right: PdfPoints { value: 109.511 } }, 11.0, PdfColor { r: 0, g: 0, b: 0, a: 255 }, "ArialMT")
+Expected layout: (PdfRect { bottom: PdfPoints { value: 562.101 }, left: PdfPoints { value: 306.969 }, top: PdfPoints { value: 572.276 }, right: PdfPoints { value: 384.255 } }, 11.0, PdfColor { r: 0, g: 0, b: 0, a: 255 }, "ArialMT")
+SECOND PAGE RIGHT ALIGNED: (PdfRect { bottom: PdfPoints { value: 709.57904 }, left: PdfPoints { value: 371.345 }, top: PdfPoints { value: 717.719 }, right: PdfPoints { value: 539.425 } }, 11.0, PdfColor { r: 0, g: 0, b: 0, a: 255 }, "ArialMT")
+accepted representative layout office-fidelity.docx
+OTTRIN SHEET FIDELITY: (PdfRect { bottom: PdfPoints { value: 551.51416 }, left: PdfPoints { value: 77.61944 }, top: PdfPoints { value: 563.34454 }, right: PdfPoints { value: 269.44748 } }, 15.987, PdfColor { r: 255, g: 255, b: 255, a: 255 }, "Arial-BoldMT")
+Alpha: (PdfRect { bottom: PdfPoints { value: 518.4324 }, left: PdfPoints { value: 18.992 }, top: PdfPoints { value: 528.48456 }, right: PdfPoints { value: 46.640972 } }, 10.998, PdfColor { r: 0, g: 0, b: 0, a: 255 }, "ArialMT")
+Beta: (PdfRect { bottom: PdfPoints { value: 505.49402 }, left: PdfPoints { value: 19.794855 }, top: PdfPoints { value: 513.48956 }, right: PdfPoints { value: 41.130974 } }, 10.998, PdfColor { r: 0, g: 0, b: 0, a: 255 }, "ArialMT")
+accepted representative layout office-fidelity.xlsx
+OTTRIN SLIDE 1 FIDELITY: (PdfRect { bottom: PdfPoints { value: 355.6019 }, left: PdfPoints { value: 210.9944 }, top: PdfPoints { value: 373.36856 }, right: PdfPoints { value: 509.8104 } }, 24.009, PdfColor { r: 36, g: 95, b: 165, a: 255 }, "Arial-BoldMT")
+OTTRIN SLIDE 2 FIDELITY: (PdfRect { bottom: PdfPoints { value: 355.6019 }, left: PdfPoints { value: 210.9944 }, top: PdfPoints { value: 373.36856 }, right: PdfPoints { value: 509.8104 } }, 24.009, PdfColor { r: 36, g: 95, b: 165, a: 255 }, "Arial-BoldMT")
+accepted representative layout office-fidelity.pptx
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 13.67s

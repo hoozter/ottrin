@@ -1,0 +1,32 @@
+{
+  "status": "test-metric defect; not a product rendering defect",
+  "result": {
+    "exit": 101,
+    "temporary_root_removed": true,
+    "filtered_administrator_membership": false,
+    "error": "System.Management.Automation.RuntimeException: Native contained layout acceptance failed",
+    "effective_administrator": false,
+    "interactive": true,
+    "status": "fail",
+    "owned_processes": 0
+  },
+  "original_test": {
+    "sha256": {
+      "native.exe": "030a9719eb48b4998cbc7a6f8e760a5df58061869a9dc1fcc9f5ef47df0d5cea",
+      "ottrin-office-render.exe": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+      "pdfium.dll": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4"
+    },
+    "test_profile": {
+      "opt_level": "1",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "unstripped_sha256": "1f6eaed2d4f927c4e556fcf9df21ddbc389307b2d21cbfa68664009a28db735d",
+    "debug_sections_removed_for_transfer": true,
+    "source_sha256": "554d1b3ec295a3bf198d26f211a814bf097f2313a9b38823f1e7be70d4e3d4b4"
+  },
+  "diagnostic": "\nthread 'native_installed_office_preserves_representative_layout' (820) panicked at crates/ottrin-preview/tests/native_office_boundary_contract.rs:587:21:\nassertion failed: (left.bottom().value - right.bottom().value).abs() < 2.\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+  "reason": "Feature and Expected layout have equal cap tops (572.276 pt). Their glyph-box bottoms differ by 2.178 pt because only the latter has descenders. Compare cap tops to check this pair of same-size capitalized row labels; no tolerance was widened. The final test and all five visual reviews pass."
+}

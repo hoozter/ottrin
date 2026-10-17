@@ -1,0 +1,128 @@
+{
+  "status": "representative Windows Office layout acceptance passed",
+  "baseline_revision": "5084b92",
+  "production_behavior_changed": false,
+  "native_payload": {
+    "sha256": {
+      "native.exe": "d62bf118c90acd98a7acc8e00812e0b0bcaa912c01f264db17f469e38b8be16e",
+      "ottrin-office-render.exe": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+      "pdfium.dll": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4"
+    },
+    "test_profile": {
+      "opt_level": "1",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "unstripped_sha256": "294e94f67999f2b5289b6be071024810de7b6001e58299c3f76241aec5e3977a",
+    "debug_sections_removed_for_transfer": true,
+    "source_sha256": "6635eb05b3c93297ffed9d07a66147542f9a5b7e0869bdf691de244419aec668"
+  },
+  "fixtures": {
+    "office-fidelity.pptx": "421f4977f3837fb626b5b64ad1300c9496013762614f8e1b9be03cbc6cc45dfe",
+    "office-fidelity.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+    "office-fidelity.docx": "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471"
+  },
+  "source_sha256": {
+    "crates/ottrin-preview/tests/native_office_boundary_contract.rs": "6635eb05b3c93297ffed9d07a66147542f9a5b7e0869bdf691de244419aec668",
+    "crates/ottrin-preview/tests/fixtures/generate-office-fidelity.py": "bc838bccdd3920ce42092d1c4dfeda4436015f0f154bfed55281f32fcdfa6de3",
+    "crates/ottrin-preview/tests/fixtures/OFFICE_FIDELITY.md": "c0f92dab62baaf77726bc6ff339790d33d147fb02e23c9d5a63891a5bdfeacf7"
+  },
+  "fixture_regeneration": "Two runs with fixed metadata/ZIP ordering/timestamps produce identical SHA-256 hashes.",
+  "authoring_libraries": {
+    "python-docx": "1.2.0",
+    "openpyxl": "3.1.5",
+    "python-pptx": "1.0.2",
+    "Pillow": "12.3.0"
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_root_removed": true,
+    "filtered_administrator_membership": false,
+    "temporary_entries": 0,
+    "effective_administrator": false,
+    "interactive": true,
+    "status": "pass",
+    "owned_processes": 0
+  },
+  "checks": {
+    "native_parent_tests": 1,
+    "runtime_skips": 0,
+    "seconds": 13.67,
+    "formats": [
+      "DOCX",
+      "XLSX",
+      "PPTX"
+    ],
+    "pages": 5,
+    "all_source_bytes_preserved": true,
+    "private_state_cleanup": true,
+    "strict_windows_test_clippy": "pass",
+    "format": "pass",
+    "diff": "pass"
+  },
+  "visual_review": "VISUAL_REVIEW.json",
+  "limits": [
+    "Representative ordinary typography, layout, image, table, formula, chart and slide content; not arbitrary Office compatibility.",
+    "Advanced formulas, complex scripts, tracked changes, missing-font substitution, OLE and animation fidelity remain outside these fixtures.",
+    "The production AppContainer path uses a development-profile helper and test binary; current packages and Windows UI enablement are unchanged. UI fallback and exact-package acceptance remain open."
+  ],
+  "teardown": {
+    "owned_stage_removed": true,
+    "login_settings_unchanged": true,
+    "credentials_not_created": true,
+    "original_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "provider": {
+      "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+      "version": "26.8.1.1",
+      "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+    },
+    "owned_interactive_task_removed": true,
+    "status": "pass",
+    "original_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "owned_native_processes": 0,
+    "owned_vm_state": "shut off"
+  },
+  "native_text_normalization": {
+    "description": "UTF-8 LF text with trailing whitespace removed; binary PDF/PNG output retained verbatim",
+    "original_sha256": {
+      "native.stdout": "48a8f2dd3a9ba6e5b7fd48bcb8da98fed093577c7059e7e883f02cf8cc261004",
+      "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "NATIVE_RESULTS.json": "f001b6ba98660029cf1d2202b332dbcf727eeb8503a4517210d89a4d066b9088",
+      "artifacts/office-fidelity.pptx-2.txt": "4dd90de7044bbdef1175afa1055ada3abb21c8801cd02ff44f4ea7fe6503d8ca",
+      "artifacts/office-fidelity.docx-1.txt": "be04d6ae5c70d0e0cea4817ce5cd0da249258f905e0196ddc8e3fb4c3215c804",
+      "artifacts/office-fidelity.pptx-1.txt": "3b66fc56e4afb76f2d1beed7832577d27a589ec00ac913f96fe501ccdf28733c",
+      "artifacts/office-fidelity.docx-2.txt": "de8e3206226080e5c97c47833aca6e8244c12c9d978c5c80167d7844f6b71d82",
+      "artifacts/office-fidelity.xlsx-1.txt": "5b65700a28ea65ff5ed1bd8646d8fd7189c32b2f285a137021170fd0229ebba6"
+    }
+  },
+  "cleanup": "Owned VM staging/task/profiles removed and VM shut down; disposable host executables/archives and superseded first-run page copies removed. Current Cargo outputs/caches retained.",
+  "evidence_sha256": {
+    "FIRST_RUN.json": "7b61f94937a64857d6ace4e16113f739e4a3b1d88a34b897d38de8eb449e3301",
+    "FIXTURES.json": "a06adff657572d1ffe6ecbd98edb51d7fe960420394197588ec0e0e93f08871d",
+    "NATIVE_PAYLOAD.json": "2763a387ee8e48bd1af8ba131cca986840609498b608afcc08c034cb466742f5",
+    "NATIVE_RESULTS.json": "824cf0586314c4cafec6872b2a8101a06995c6ef4019dd4b405d3c1a07abcf68",
+    "TEARDOWN.json": "93b969d8e41de2899e43e7a1926354d1dca361ef95828df2f9b3b981f16f03ff",
+    "VISUAL_REVIEW.json": "565824bb7a604bfb68391e3562f0f3b0c51a8c938fe97c1dc672c65ef64f4cf2",
+    "artifacts/office-fidelity.docx-1.png": "2ccac323126be201c3cd5aa5b890412cca45b18eca862e68df5d234f7c781206",
+    "artifacts/office-fidelity.docx-1.txt": "48bc57b83c25a8cbffea20ce84ef235a816f9d6bc697e6fc87b031d8360fd985",
+    "artifacts/office-fidelity.docx-2.png": "7da6b1e8ded47cd1d9954b29c4a5e988dc1354606be06ade111df52ab55be2c3",
+    "artifacts/office-fidelity.docx-2.txt": "a2f9a223bf691c93dfd8d0c3af3cd73dfe3d1549e44acc85d33fd9e56c72e7bd",
+    "artifacts/office-fidelity.docx.pdf": "186f9eb39ebf5b04a9be7705f5b76008be1a23ed6ae8dd36a54e4168b98e5ee5",
+    "artifacts/office-fidelity.pptx-1.png": "123bdf5bb67d73c733c7dfe9281225680004703aa2779e1676d89acc1df2befb",
+    "artifacts/office-fidelity.pptx-1.txt": "851cb194372b4c9c26a25cb79cf11fe1bd7b8213bf0e4b31468b42306622c496",
+    "artifacts/office-fidelity.pptx-2.png": "c6b7dd1ecb7ee661ef1657c17bbad918c321e9dde638ce00ab3b7caabcba1d5d",
+    "artifacts/office-fidelity.pptx-2.txt": "d62aa73e32bb5b3b78700d64f94d93c067663eadd714e077527854adad048161",
+    "artifacts/office-fidelity.pptx.pdf": "6a38aab3799333090ee778c67b0896b1025b454358cd61aeb2bba15f4b335545",
+    "artifacts/office-fidelity.xlsx-1.png": "b83b718df4476bed8061c38cffe15fe52d43c3856e23ec6284207d74e18db327",
+    "artifacts/office-fidelity.xlsx-1.txt": "e70dcd1271a8d98ce0efc8723f271c18a19eef1505aba0ebdd0bbeb11f70450c",
+    "artifacts/office-fidelity.xlsx.pdf": "d0250c710e837d384638318c4501c6b97596094d158f0d9087afcf6afdce37d3",
+    "build.log": "15f1348e0fcc2b366a04c83ac6c9696f1a454eb2f4aa43aa2cfb957ec4f641c0",
+    "clippy.log": "a9e8f91a59916fdb307d467951628f6c3117fe78e371539541e109c325a5d9ed",
+    "native-interactive.ps1": "f5dafa22719372ccd407a96c63fb754450b8b4587c29253d20422374386fdf01",
+    "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native.stdout": "737118389cc429392e95e08780dbd9514cb577158be087f36cf94c93dd61f5f7",
+    "teardown.ps1": "823ced9a9625d5e320b7dfc0181c36f09320c07dc90308d6fd758f0078f39249"
+  }
+}

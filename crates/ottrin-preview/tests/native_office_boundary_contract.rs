@@ -470,3 +470,202 @@ fn native_installed_office_suppresses_document_macros() {
     assert_eq!(std::fs::read(&source).unwrap(), original);
     assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
 }
+
+#[test]
+#[ignore = "requires installed LibreOffice/PDFium and an owned OTTRIN_NATIVE_OFFICE_FIDELITY_OUTPUT"]
+fn native_installed_office_preserves_representative_layout() {
+    use ottrin_preview::{
+        InstalledLibreOfficeConverter, OfficeRenderPolicy, OfficeRenderRequest,
+        detect_installed_libreoffice, office_format_for_path, render_office_pdf,
+    };
+    use pdfium_render::prelude::*;
+    use std::sync::atomic::AtomicBool;
+    use std::time::Duration;
+
+    fn feature(page: &PdfPage<'_>, label: &str) -> (PdfRect, f32, PdfColor, String) {
+        let text = page.text().unwrap();
+        let search = text.search(label, &PdfSearchOptions::new()).unwrap();
+        let found = search
+            .find_next()
+            .unwrap_or_else(|| panic!("missing {label:?}"));
+        let segment = found.first().unwrap();
+        let chars = segment.chars().unwrap();
+        let first = chars.get(0).unwrap();
+        let result = (
+            segment.bounds(),
+            first.unscaled_font_size().value,
+            first.fill_color().unwrap(),
+            first.font_name(),
+        );
+        println!("{label}: {result:?}");
+        result
+    }
+
+    let artifacts = std::path::PathBuf::from(
+        std::env::var_os("OTTRIN_NATIVE_OFFICE_FIDELITY_OUTPUT").expect("owned fidelity output"),
+    );
+    std::fs::create_dir(&artifacts).expect("fidelity output must not already exist");
+    let root = tempfile::tempdir().unwrap();
+    let launcher = NativeOfficeIsolation;
+    let cancelled = AtomicBool::new(false);
+    let detected = detect_installed_libreoffice(&launcher, &cancelled).unwrap();
+    let converter = InstalledLibreOfficeConverter::new(detected.executable, &launcher);
+    let pdfium = Pdfium::default();
+    for (name, original, pages) in [
+        (
+            "office-fidelity.docx",
+            include_bytes!("fixtures/office-fidelity.docx").as_slice(),
+            2,
+        ),
+        (
+            "office-fidelity.xlsx",
+            include_bytes!("fixtures/office-fidelity.xlsx").as_slice(),
+            1,
+        ),
+        (
+            "office-fidelity.pptx",
+            include_bytes!("fixtures/office-fidelity.pptx").as_slice(),
+            2,
+        ),
+    ] {
+        let source = root.path().join(name);
+        std::fs::write(&source, original).unwrap();
+        let output = root.path().join(format!("output-{name}"));
+        std::fs::create_dir(&output).unwrap();
+        let request = OfficeRenderRequest {
+            source_path: source.clone(),
+            format: office_format_for_path(&source).unwrap(),
+            private_output_dir: output.clone(),
+            policy: OfficeRenderPolicy {
+                version: 1,
+                max_input_bytes: 1024 * 1024,
+                max_output_bytes: 8 * 1024 * 1024,
+                max_pages: 8,
+                timeout: Duration::from_secs(30),
+            },
+        };
+        let rendered = render_office_pdf(
+            std::slice::from_ref(&detected.capability),
+            &request,
+            &converter,
+            &cancelled,
+        )
+        .unwrap();
+        let pdf = pdfium.load_pdf_from_file(&rendered.pdf_path, None).unwrap();
+        assert_eq!(pdf.pages().len(), pages, "{name}: pagination");
+        std::fs::copy(&rendered.pdf_path, artifacts.join(format!("{name}.pdf"))).unwrap();
+        for (index, page) in pdf.pages().iter().enumerate() {
+            let png = ottrin_preview::render_pdf_page_png(&rendered.pdf_path, index, 1200).unwrap();
+            std::fs::write(artifacts.join(format!("{name}-{}.png", index + 1)), &png).unwrap();
+            let image = image::load_from_memory(&png).unwrap().to_rgb8();
+            let text = page.text().unwrap().all();
+            std::fs::write(artifacts.join(format!("{name}-{}.txt", index + 1)), &text).unwrap();
+            match name {
+                "office-fidelity.docx" if index == 0 => {
+                    assert!((page.width().value - 612.).abs() < 1.);
+                    assert!((page.height().value - 792.).abs() < 1.);
+                    let (bounds, size, color, font) = feature(&page, "OTTRIN DOCUMENT FIDELITY");
+                    assert!(((bounds.left().value + bounds.right().value) / 2. - 306.).abs() < 3.);
+                    assert!((size - 20.).abs() < 1.);
+                    assert!(color.blue() > 140 && color.red() < 60);
+                    assert!(font.to_lowercase().contains("bold"));
+                    assert!(
+                        feature(&page, "Bold sample")
+                            .3
+                            .to_lowercase()
+                            .contains("bold")
+                    );
+                    assert!(
+                        feature(&page, "italic sample")
+                            .3
+                            .to_lowercase()
+                            .contains("italic")
+                    );
+                    let left = feature(&page, "Feature").0;
+                    let right = feature(&page, "Expected layout").0;
+                    assert!(left.right().value < right.left().value);
+                    // Descenders change glyph-box bottoms despite a shared
+                    // baseline; these capitalized labels share their cap top.
+                    assert!((left.top().value - right.top().value).abs() < 2.);
+                }
+                "office-fidelity.docx" => {
+                    let (bounds, ..) = feature(&page, "SECOND PAGE RIGHT ALIGNED");
+                    assert!((bounds.right().value - 540.).abs() < 3.);
+                    assert!(!text.contains("OTTRIN DOCUMENT FIDELITY"));
+                }
+                "office-fidelity.xlsx" => {
+                    assert!(
+                        page.width().value > page.height().value,
+                        "landscape print layout"
+                    );
+                    assert!(
+                        text.contains("4,000.00"),
+                        "calculated, formatted sum: {text}"
+                    );
+                    assert!(text.contains("Amounts by item"), "chart title: {text}");
+                    let title = feature(&page, "OTTRIN SHEET FIDELITY");
+                    assert!(title.2.red() > 240 && title.2.green() > 240 && title.2.blue() > 240);
+                    let alpha = feature(&page, "Alpha").0;
+                    let beta = feature(&page, "Beta").0;
+                    assert!(alpha.bottom().value > beta.top().value, "table row order");
+                }
+                "office-fidelity.pptx" => {
+                    assert!((page.width().value - 720.).abs() < 1.);
+                    assert!((page.height().value - 405.).abs() < 1.);
+                    let (bounds, size, color, _) =
+                        feature(&page, &format!("OTTRIN SLIDE {} FIDELITY", index + 1));
+                    assert!(((bounds.left().value + bounds.right().value) / 2. - 360.).abs() < 3.);
+                    assert!((size - 24.).abs() < 1.);
+                    assert!(color.blue() > 140 && color.red() < 60);
+                    if index == 0 {
+                        assert!(text.contains("Green shape with text"));
+                    } else {
+                        assert!(text.contains("Second slide stays separate and ordered"));
+                    }
+                }
+                _ => unreachable!(),
+            }
+            if index == 0 && name != "office-fidelity.xlsx" {
+                assert!(
+                    image
+                        .pixels()
+                        .filter(|p| p[0] > 210 && p[1] > 80 && p[1] < 160 && p[2] < 70)
+                        .count()
+                        > 1000,
+                    "{name}: orange embedded image half"
+                );
+                assert!(
+                    image
+                        .pixels()
+                        .filter(|p| p[0] < 30 && p[1] > 150 && p[2] > 190)
+                        .count()
+                        > 1000,
+                    "{name}: cyan embedded image half"
+                );
+            }
+            if index == 0 && name != "office-fidelity.docx" {
+                assert!(
+                    image
+                        .pixels()
+                        .filter(|p| p[0] < 80 && p[1] > 120 && p[1] < 190 && p[2] < 130)
+                        .count()
+                        > 1000,
+                    "{name}: green chart bars or slide shape"
+                );
+            }
+        }
+        drop(pdf);
+        assert_eq!(
+            std::fs::read(&source).unwrap(),
+            original,
+            "{name}: changed source"
+        );
+        assert_eq!(
+            std::fs::read_dir(&output).unwrap().count(),
+            1,
+            "{name}: private state leak"
+        );
+        println!("accepted representative layout {name}");
+    }
+    root.close().unwrap();
+}

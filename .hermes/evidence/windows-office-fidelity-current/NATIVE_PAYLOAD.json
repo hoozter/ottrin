@@ -1,0 +1,17 @@
+{
+  "sha256": {
+    "native.exe": "d62bf118c90acd98a7acc8e00812e0b0bcaa912c01f264db17f469e38b8be16e",
+    "ottrin-office-render.exe": "147b607820f011eaff405959ca2b149e33697feac85cb937982e34eccf48ee40",
+    "pdfium.dll": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4"
+  },
+  "test_profile": {
+    "opt_level": "1",
+    "debuginfo": 2,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "unstripped_sha256": "294e94f67999f2b5289b6be071024810de7b6001e58299c3f76241aec5e3977a",
+  "debug_sections_removed_for_transfer": true,
+  "source_sha256": "6635eb05b3c93297ffed9d07a66147542f9a5b7e0869bdf691de244419aec668"
+}

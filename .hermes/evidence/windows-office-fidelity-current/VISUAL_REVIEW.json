@@ -1,0 +1,27 @@
+{
+  "review": "pass; all five final production-PDFium page images inspected",
+  "scope": "Compare against the authored source expectations documented in OFFICE_FIDELITY.md, not an unrelated Office application reference rendering.",
+  "pages": {
+    "office-fidelity.docx-1.png": {
+      "sha256": "2ccac323126be201c3cd5aa5b890412cca45b18eca862e68df5d234f7c781206",
+      "observations": "Centered blue heading, bold/italic runs, both image halves and complete table."
+    },
+    "office-fidelity.docx-2.png": {
+      "sha256": "7da6b1e8ded47cd1d9954b29c4a5e988dc1354606be06ade111df52ab55be2c3",
+      "observations": "Separate second page with right-aligned text."
+    },
+    "office-fidelity.pptx-1.png": {
+      "sha256": "123bdf5bb67d73c733c7dfe9281225680004703aa2779e1676d89acc1df2befb",
+      "observations": "Centered heading, green rounded shape with text and intact two-color image."
+    },
+    "office-fidelity.pptx-2.png": {
+      "sha256": "c6b7dd1ecb7ee661ef1657c17bbad918c321e9dde638ce00ab3b7caabcba1d5d",
+      "observations": "Separate second slide with its own heading and body text."
+    },
+    "office-fidelity.xlsx-1.png": {
+      "sha256": "b83b718df4476bed8061c38cffe15fe52d43c3856e23ec6284207d74e18db327",
+      "observations": "Landscape print layout, complete currency table with $4,000.00 total and two green chart bars."
+    }
+  },
+  "clipping_or_overlap_observed": false
+}
