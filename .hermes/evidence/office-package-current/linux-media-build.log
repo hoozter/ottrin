@@ -1,0 +1,16 @@
+   Compiling glib-sys v0.21.5
+   Compiling gobject-sys v0.21.5
+   Compiling gstreamer-sys v0.24.5
+   Compiling gio-sys v0.21.5
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling gstreamer-base-sys v0.24.5
+   Compiling glib v0.21.5
+   Compiling fontique v0.11.1
+   Compiling gstreamer v0.24.4
+   Compiling gstreamer-app-sys v0.24.5
+   Compiling gstreamer-base v0.24.5
+   Compiling parley v0.11.1
+   Compiling gstreamer-app v0.24.4
+   Compiling rwml v0.1.4
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 3m 17s

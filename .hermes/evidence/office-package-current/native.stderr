@@ -1,0 +1,5 @@
+Office child failed Cancelled:
+
+thread 'native_installed_office_cancels_after_provider_start_and_releases_files' (6860) panicked at crates/ottrin-preview/tests/native_office_boundary_contract.rs:360:5:
+provider must acquire its real profile lock before cancellation
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

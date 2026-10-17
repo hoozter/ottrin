@@ -4343,3 +4343,37 @@ acceptance. Complete security/Overwrite, durable publication/recovery/Undo,
 clipboard and exact-package requirements remain open. Public Windows Copy stays
 disabled and current packages are unchanged. User testing remains deferred;
 the full roadmap goal is active.
+
+## Current Office package checkpoint — 2026-10-18
+
+Linux portable, AppImage, DEB and RPM at `dist/packages/` now contain clean
+source `a6dc0905a61277b3fb896ea76ff0524d552a757c`. Exact payload/provenance
+checks pass for all four; AppImage and RPM private namespace daemon ownership
+checks pass. The actual AppImage also passes the Light-theme Activity workflow:
+Cancel preserves recovery bytes, Undo restores the original destination, and
+explicit Clear removes retained history while preserving visible files. Normal
+window close and complete private-process/profile cleanup pass.
+
+The same source has a coherent Windows portable/MSI/NSIS internal candidate.
+All 57 payload files match; MSI administrative and NSIS payload extraction
+checks pass. Actual packaged Office conversion covers all nine advertised
+formats, representative five-page DOCX/XLSX/PPTX layout, macro suppression
+with positive/denied controls, and metadata. Main and Quick Inspector rendering
+and injected provider-failure fallback were visually reviewed using OpenGL.
+Public Windows packages remain unchanged; default D3D12 and current installed
+upgrade/rollback lifecycle remain open. Physical Linux Wayland and distro
+installation acceptance remain separate gates.
+
+The initial Windows suite passed five checks but missed the cancellation
+probe's fixed ten-second readiness deadline. An unchanged warm recheck passed.
+The test now observes readiness within the actual child timeout minus one
+second, retaining the real profile-lock, cancellation, unchanged-input and
+cleanup requirements. A cold-after-reboot run passed with readiness at 4.47
+seconds. This is a test-only correction after product packaging; the runner
+source/binary hashes are recorded separately.
+
+Evidence: `.hermes/evidence/office-package-current/ACCEPTANCE.json` and
+`dist/packages/OFFICE_UI_ACCEPTANCE.json`. The disposable Windows task, compiler
+and payload extractions were removed; the owned VM is shut off and the original
+profile, installation, provider and login state were preserved. The roadmap
+goal remains active; user testing is deferred.

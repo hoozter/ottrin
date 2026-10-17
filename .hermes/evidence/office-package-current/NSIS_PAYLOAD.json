@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "entries_checked": 57,
+  "source_revision": "a6dc0905a61277b3fb896ea76ff0524d552a757c",
+  "nsis_sha256": "a46ff9ac8481a99811273bbeed86bf118352c81bf87e12c4099f0598f1c13d9c",
+  "generated_uninstaller": {
+    "sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+    "declared_in_authoring": true,
+    "gui_pe_header_verified": true
+  },
+  "controller_matches_indexd": true,
+  "transaction_script_matches_source": true,
+  "installer_authoring_sha256": "54118cc0168986a58117692e598111d7cd5a3e2c26c6969af014feb794e88aa0",
+  "extraction_removed": true
+}

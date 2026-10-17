@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": "f2a49b3a97364e8d734aadd4c172bd8c044dc20b71f102243b2fc8e1574d5d6d",
+  "theme": "Light",
+  "scale": "1",
+  "text_scale": 1.0,
+  "status": "incomplete",
+  "preset": "Ottrin",
+  "custom_theme": null,
+  "config_sha256": "3bf6780fd29607fb68759ac2ff07c7bcb4fe0801470090d12de0d17d41efd274",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: a6dc0905a61277b3fb896ea76ff0524d552a757c\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "retained_visual_workflow": "visual-only disclosure: canonical recovery bytes, retained backup, publication and source unchanged",
+  "normal_app_exit": false,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

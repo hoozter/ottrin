@@ -1,0 +1,5 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "verified_shutdown": "shut off",
+  "purpose": "First installed-provider conversion after guest restart; cancellation still requires profile readiness within configured request budget."
+}

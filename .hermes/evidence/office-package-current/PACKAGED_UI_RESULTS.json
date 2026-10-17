@@ -1,0 +1,51 @@
+{
+    "effective_administrator":  false,
+    "filtered_administrator_membership":  false,
+    "source_sha256":  {
+                          "01-office.docx":  "753F80C48A1B08B785DCCE98306FA76EC1016B19E1223C96A4D49865BE65F471",
+                          "02-office.xlsx":  "C20213E5A26D4F619A922339FA0801EF6715544D22A276DE928417C3D7A75978"
+                      },
+    "private_temp_removed":  true,
+    "original_profile_sha256":  "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "temporary_entries":  0,
+    "interactive":  true,
+    "private_profile_removed":  true,
+    "status":  "pass",
+    "owned_processes":  0,
+    "cases":  {
+                  "main":  {
+                               "title":  "Ottrin",
+                               "cyan":  144,
+                               "conversions":  [
+                                                   {
+                                                       "parent":  1632,
+                                                       "pid":  2500,
+                                                       "arguments":  "C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-1632-1792273893332854500\\.ottrin-1632-1792273893334915300\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/OttrinCopyCleanupQA/desktop/temp/ottrin-office-preview-1632-1792273893332854500/.ottrin-1632-1792273893334915300 C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-1632-1792273893332854500\\.ottrin-1632-1792273893334915300\\input\\01-office.docx C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-1632-1792273893332854500",
+                                                       "executable":  "C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-1632-1792273893332854500\\.ottrin-1632-1792273893334915300\\office-render.exe"
+                                                   }
+                                               ],
+                               "orange":  144
+                           },
+                  "main_fallback":  {
+                                        "review":  "Host must confirm worksheet and fallback notice before continuing",
+                                        "injection":  "Owned helper removed after successful main preview"
+                                    },
+                  "fallback":  {
+                                   "injection":  "Owned helper removed after successful provider detection/conversion",
+                                   "title":  "Ottrin Quick Inspector — 02-office.xlsx"
+                               },
+                  "inspector":  {
+                                    "title":  "Ottrin Quick Inspector — 01-office.docx",
+                                    "cyan":  3025,
+                                    "conversions":  [
+                                                        {
+                                                            "parent":  4384,
+                                                            "pid":  4284,
+                                                            "arguments":  "C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-4384-1792273994327509500\\.ottrin-4384-1792273994329091300\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/OttrinCopyCleanupQA/desktop/temp/ottrin-office-preview-4384-1792273994327509500/.ottrin-4384-1792273994329091300 C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-4384-1792273994327509500\\.ottrin-4384-1792273994329091300\\input\\01-office.docx C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-4384-1792273994327509500",
+                                                            "executable":  "C:\\OttrinCopyCleanupQA\\desktop\\temp\\ottrin-office-preview-4384-1792273994327509500\\.ottrin-4384-1792273994329091300\\office-render.exe"
+                                                        }
+                                                    ],
+                                    "orange":  3025
+                                }
+              }
+}

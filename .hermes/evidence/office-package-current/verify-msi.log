@@ -1,0 +1,8 @@
+native PID 6952
+{
+    "entries_checked":  57,
+    "status":  "pass",
+    "payload_files":  57,
+    "msi_sha256":  "3363b92cb5f8c87bfbf841dfa3854419a63924deb93c1c2a010cdd1e3e10cbc4",
+    "source_revision":  "a6dc0905a61277b3fb896ea76ff0524d552a757c"
+}

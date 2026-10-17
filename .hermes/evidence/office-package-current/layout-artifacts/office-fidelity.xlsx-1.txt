@@ -1,0 +1,16 @@
+OTTRIN SHEET FIDELITY
+Item Quantity Price Amount
+Alpha 1 $1,250.00 $1,250.00
+Beta 2 $1,375.00 $2,750.00
+Total $4,000.00
+Currency totals and calculated formulas
+Alpha Beta
+$0.00
+$500.00
+$1,000.00
+$1,500.00
+$2,000.00
+$2,500.00
+$3,000.00
+Amounts by item
+Amount

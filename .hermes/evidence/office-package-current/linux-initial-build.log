@@ -1,0 +1,64 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on shared package cache
+    Blocking waiting for file lock on artifact directory
+   Compiling x11-dl v2.21.0
+   Compiling glib-sys v0.20.10
+   Compiling gobject-sys v0.20.10
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling gio-sys v0.20.10
+   Compiling winit v0.30.12
+   Compiling fontique v0.11.1
+   Compiling glib v0.20.12
+   Compiling glutin_glx_sys v0.6.1
+   Compiling parley v0.11.1
+   Compiling glutin v0.32.3
+   Compiling gio v0.20.12
+   Compiling egui-wgpu v0.33.3
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling rwml v0.1.4
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling glutin-winit v0.5.0
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling eframe v0.33.3
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 13m 31s
+    Blocking waiting for file lock on artifact directory
+   Compiling glib-sys v0.21.5
+   Compiling gobject-sys v0.21.5
+   Compiling gstreamer-sys v0.24.5
+warning: gstreamer-sys@0.24.5:
+error: failed to run custom build command for `gstreamer-sys v0.24.5`
+
+Caused by:
+  process didn't exit successfully: `/home/campbell/Projects/Ottrin/target/release/build/gstreamer-sys-d46f9bf2a656e482/build-script-build` (exit status: 1)
+  --- stdout
+  cargo:rerun-if-changed=/home/campbell/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gstreamer-sys-0.24.5/Cargo.toml
+  cargo:rerun-if-env-changed=GSTREAMER_1.0_NO_PKG_CONFIG
+  cargo:rerun-if-env-changed=PKG_CONFIG_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG
+  cargo:rerun-if-env-changed=PKG_CONFIG
+  cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG_PATH
+  cargo:rerun-if-env-changed=PKG_CONFIG_PATH
+  cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG_LIBDIR
+  cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR
+  cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG_SYSROOT_DIR
+  cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR
+  cargo:warning=
+  pkg-config exited with status code 1
+  > PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1 pkg-config --libs --cflags gstreamer-1.0 'gstreamer-1.0 >= 1.14'
+
+  The system library `gstreamer-1.0` required by crate `gstreamer-sys` was not found.
+  The file `gstreamer-1.0.pc` needs to be installed and the PKG_CONFIG_PATH environment variable must contain its parent directory.
+  The PKG_CONFIG_PATH environment variable is not set.
+
+  HINT: if you have installed the library, try setting PKG_CONFIG_PATH to the directory containing `gstreamer-1.0.pc`.

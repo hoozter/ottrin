@@ -283,12 +283,23 @@ fn native_installed_office_cancels_after_provider_start_and_releases_files() {
             std::thread::scope(|scope| {
                 let worker = scope.spawn(|| NativeOfficeIsolation.run(request, cancelled));
                 let marker = request.private_profile_dir.join(".lock");
-                let deadline = Instant::now() + Duration::from_secs(10);
+                // A cold installed provider may need more than ten seconds to
+                // initialize. Use its actual child budget, retaining time to
+                // cancel before the launcher's own timeout can win the race.
+                let started = Instant::now();
+                let readiness_budget = request.timeout.saturating_sub(Duration::from_secs(1));
+                let deadline = started + readiness_budget;
                 while !marker.exists() && !worker.is_finished() && Instant::now() < deadline {
                     std::thread::sleep(Duration::from_millis(10));
                 }
                 self.observed_start
                     .store(marker.exists(), Ordering::Release);
+                eprintln!(
+                    "Provider profile readiness: {} after {:?} (budget {:?})",
+                    marker.exists(),
+                    started.elapsed(),
+                    readiness_budget
+                );
                 cancelled.store(true, Ordering::Release);
                 worker.join().unwrap()
             })

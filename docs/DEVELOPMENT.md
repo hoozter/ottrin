@@ -1350,3 +1350,13 @@ defines the identity pair, and [CreateFileW](https://learn.microsoft.com/en-us/w
 defines handle sharing and final reparse behavior. Native tests establish the
 verified scope; source/unit acceptance does not substitute for exact-package GUI
 and graphics acceptance.
+
+## Native Office cancellation readiness
+
+A provider-start cancellation test must observe the real private profile lock
+within the request's child timeout, retaining a cancellation margin. Do not
+replace that observation with an assumed startup delay. A cancellation result
+alone does not prove cancellation happened after provider startup. The current
+test records readiness duration and budget and still requires source preservation
+and private-process/profile cleanup. Package source and test-runner identities
+are separate when only acceptance code changes after packaging.

@@ -1,0 +1,5 @@
+OTTRIN DOCUMENT FIDELITY
+Bold sample and italic sample
+Feature Expected layout
+Image Orange and cyan halves
+Table Two bordered columns

@@ -1,0 +1,5 @@
+{
+  "test_source_sha256": "d7e6449b8d501a14c8b4989a0be83dcf05ff04e3a2c505523d2b50c302c814bd",
+  "binary_sha256": "bfa45dcb13ba6b6e114c37d53b07ea4b48452fba4719fa24c50f392f98ad04bd",
+  "change": "Readiness observation uses actual child timeout minus one second; still requires real profile lock, Cancelled result, unchanged input and cleanup."
+}

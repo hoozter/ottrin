@@ -1,0 +1,51 @@
+{
+  "status": "pass",
+  "source_revision": "a6dc0905a61277b3fb896ea76ff0524d552a757c",
+  "linux_published": {
+    "ottrin-0.1.0-1.x86_64.rpm": "14e4102c444f5bc99ede989e529cf80e05b9c6dd1c05b222a2f9f9ddda691130",
+    "Ottrin-0.1.0-x86_64.AppImage": "f2a49b3a97364e8d734aadd4c172bd8c044dc20b71f102243b2fc8e1574d5d6d",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "c223309c1b3e5a18de4d3f367f0e0843b8a8ef09101608cca37929fb564ed0d4",
+    "ottrin_0.1.0_amd64.deb": "20253fc0fd473ab6d80c636915677b686e363fc38551863e6f1c734dd0a9a3d2"
+  },
+  "linux_runtime": {
+    "artifact_sha256": "f2a49b3a97364e8d734aadd4c172bd8c044dc20b71f102243b2fc8e1574d5d6d",
+    "theme": "Light",
+    "scale": "1",
+    "text_scale": 1.0,
+    "status": "pass",
+    "preset": "Ottrin",
+    "custom_theme": null,
+    "config_sha256": "9b1989257f2b3223e714925b82be01f895c47d6c8cde61c78d48c22401ea1298",
+    "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: a6dc0905a61277b3fb896ea76ff0524d552a757c\nWorking tree: clean\nTracked diff SHA-256: none\n",
+    "retained_visual_workflow": "visual-only disclosure: canonical recovery bytes, retained backup, publication and source unchanged",
+    "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+    "visual_checks": [
+      "Activity and confirmation readable in Light theme",
+      "Cancel retains recovery bytes",
+      "Undo restores original destination",
+      "Explicit Clear removes retained stages and records while preserving source and publication"
+    ],
+    "normal_app_exit": true,
+    "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+  },
+  "windows_candidate_only": {
+    "portable_sha256": "2dd1fa1551995ca2a99c91c971818a2a135739b04b516a5ffe7d7181775bdda6",
+    "msi_sha256": "3363b92cb5f8c87bfbf841dfa3854419a63924deb93c1c2a010cdd1e3e10cbc4",
+    "nsis_sha256": "a46ff9ac8481a99811273bbeed86bf118352c81bf87e12c4099f0598f1c13d9c",
+    "payload_files": 57,
+    "native_boundary": "Initial sweep: five pass, cancellation readiness probe missed its fixed ten-second marker deadline. Unchanged warm recheck passed. Corrected observation budget cold-after-reboot cancellation passed; actual marker ready in 4.47 seconds.",
+    "ui": "Main and Quick Inspector render and injected provider failure fallback visually accepted from exact portable bundle; OpenGL compatibility renderer.",
+    "public_windows_unchanged": true
+  },
+  "test_runner": {
+    "test_source_sha256": "d7e6449b8d501a14c8b4989a0be83dcf05ff04e3a2c505523d2b50c302c814bd",
+    "binary_sha256": "bfa45dcb13ba6b6e114c37d53b07ea4b48452fba4719fa24c50f392f98ad04bd",
+    "change": "Readiness observation uses actual child timeout minus one second; still requires real profile lock, Cancelled result, unchanged input and cleanup."
+  },
+  "limits": [
+    "Default Windows D3D12 and current installed lifecycle not accepted",
+    "Linux physical Wayland and current distro installation lifecycle not accepted",
+    "Full roadmap remains active; user testing deferred"
+  ],
+  "evidence_directory": ".hermes/evidence/office-package-current"
+}

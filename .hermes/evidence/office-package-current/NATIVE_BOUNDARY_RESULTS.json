@@ -1,0 +1,10 @@
+{
+    "exit":  101,
+    "temporary_root_removed":  true,
+    "filtered_administrator_membership":  false,
+    "error":  "System.Management.Automation.RuntimeException: Native contained format sweep failed",
+    "effective_administrator":  false,
+    "interactive":  true,
+    "status":  "fail",
+    "owned_processes":  0
+}
