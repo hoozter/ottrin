@@ -591,553 +591,248 @@ directory.
 
 ## Guarded cleanup backend
 
-Cleanup derives its authority from the existing paired transaction evidence.
-It requires a completed forward transaction or completed Undo, verified native
-bindings, creator/private security and journal-only stage membership. Published
-copies and restored originals remain user data; cleanup never requires their
-contents to remain unchanged and never treats them as removal input.
+Cleanup derives authority from existing paired transaction evidence: a completed
+forward transaction or completed Undo, verified native bindings, creator/private
+security and journal-only stage membership. Published copies and restored
+originals remain user data. Cleanup neither requires their contents to remain
+unchanged nor treats them as removal input.
 
 | Terminal phase | Retained payload | Public user data |
 | --- | --- | --- |
 | New copy completed | None | Published copy |
-| Overwrite completed | Displaced original at the recorded private original name | Published copy |
-| Undo completed | Withdrawn copy at the recorded candidate name | Restored original or reused public name |
+| Overwrite completed | Displaced original at its recorded private name | Published copy |
+| Undo completed | Withdrawn copy at its recorded candidate name | Restored original or reused public name |
 
-Schema 12 records `Cleanup::Begin` with an immutable retained-role/count/digest
-binding, followed by ordered per-entry intents and acknowledgements. Reverse
-manifest order removes children before parents. Native contents, identity,
-metadata, permissions, compression and link counts remain strict. Only an
-acknowledged unlink may advance its immediate parent's modification/change times
-and surviving aliases' change time. Outside aliases grant no removal authority.
-Per-object alias groups avoid rescanning the complete deletion order for each
-record. The journal reserves the entire remaining cleanup tail before mutation.
-Starting cleanup revokes ordinary forward/Undo authority.
+The current journal schema is `OTCPWJ13`. Paired `Cleanup::Begin` binds the
+immutable retained role, count and manifest digest. Entry intents and
+acknowledgements follow reverse manifest order, removing children before parents.
+Starting cleanup revokes forward/Undo authority. A peer's claims then cover its
+remaining entries, pending unlink and transaction metadata, rather than historical
+publication/source graphs. A local-only Begin does not release the central
+record's earlier claims. Older schemas remain review conditions; they are neither
+converted nor silently deleted.
 
-`cleanup.rs::Admission` is the shared, handle-free read-only observation for
-immediate execution and future confirmation plans. It freezes the header,
-journal/private-metadata and observed-version digests, pending absence, registry
-catalog fingerprint, destination location and parent permissions. Native registry
-names are hashed as raw UTF-16. The writer reacquires and compares those exact
-observations; it never replaces a confirmation's pending epoch with a fresh one.
-Raw journal buffers and version graphs are released after observation.
-`cleanup_dependencies.rs` pins registry records and refuses unverified peers or
-references to selected native objects. An independent peer remains untouched;
-a peer sharing a retained original blocks single-transaction cleanup. New registry
-entries, changed bindings, unknown stage entries and changed retained data stop
-further mutation.
+### Admission and dependency catalog
 
-`cleanup_tree.rs` opens only recorded names relative to verified parents. Deletion
-uses READ/DELETE capabilities, POSIX disposition with readonly-ignore and image
-section checks, explicit closure of all clones of the delete FileObject, real
-NotFound verification, parent flush and surviving metadata verification before
-acknowledgement. Access Denied is never evidence of absence. Readonly attributes
-are not cleared. Closed-handle writable mappings block these deletion capabilities.
-A pending own unlink can resume after actual absence without accepting unrelated
-payload/version changes. The ordinary/readonly three-hardlink probes in
-`UNLINK_PROBE.json` and `UNLINK_FORCE_PROBE.json` establish the close/flush/alias
-clock boundary; the compiled cleanup tests exercise the complete protocol.
+`cleanup::Admission` is a shared, handle-free read-only observation. It freezes the
+header, journal/private-metadata and observed-version digests, pending own/peer
+absence, registry catalog, destination location and parent permissions. Raw
+journals and decoded graphs are released after observation. A writer reacquires
+and compares those exact observations; opening an ID again cannot refresh a
+confirmation's authority.
 
-`cleanup_finalize.rs` records paired `MetadataRemovalIntent` only after
-`PayloadRemoved`. It verifies metadata has exactly the known journal data or
-empty directory streams, single native links, private ownership and expected
-bindings. Control permissions/version are checked immediately before each
-metadata unlink. Removal proceeds local journal, empty stage, then central
-record, closing each handle and flushing its parent before continuing. Unknown
-entries, streams, replacement occupants and control aliases are preserved.
-A surviving central intent can admit a fresh source-free retry after local/stage
-removal. An already admitted opaque proof permits terminal replay after central
-removal; absence alone cannot construct that authority. Registry roots, external
-anchors, other transactions and public files are outside the removal set.
+The registry is existing-only and anchored to its native identity, owner and
+private security. Writable registry access requests read/write, not DELETE, so
+it remains compatible when the registry is also the destination parent. Missing
+registries are not initialized during observation or cleanup. Registry roots,
+external anchors, unrelated transactions and public files are never deletion
+inputs.
 
-Read-only metadata admission now uses that same validation sequence with read-only
-local/stage/control handles. It performs no flush, disposition or journal write,
-and returns a handle-free proof only after validating the remaining layout. The
-inspection accepts the authenticated local-removed and stage-removed prefixes,
-rejects unknown remaining content, and cannot initiate payload removal or create
-the paired metadata intent. The scoped native suite passes 26 tests, including
-72 read-only recovery-prefix inspections, seven unknown-content refusals and six
-pre-authorization refusals. Evidence: `METADATA_INSPECTION_ACCEPTANCE.json` in the
-cleanup evidence directory.
+Peer inspection retains compact control leases, native versions, creator/private
+security and record digests, releasing decoded graphs after checking references.
+Held claims recheck bytes, version, bindings and single-link state. Identical-byte
+rewrites, timestamp drift, aliases and unverified peers refuse mutation. Catalog
+fingerprints encode native names as raw UTF-16; suspicious suffix/case variants,
+including unpaired UTF-16, are preserved as NeedsReview without a transaction ID
+and block destructive admission. Ordinary unrelated registry files remain allowed.
+An independent peer stays untouched; a shared retained object blocks an ordinary
+single-transaction cleanup.
 
-Current native component evidence is
-`.hermes/evidence/windows-copy-cleanup-current/ACCEPTANCE.json`: 294 platform
-tests pass with zero failures and 36 specialized exclusions. All 21 regular
-cleanup tests pass, including 187 injected failures and 187 real process exits.
-They cover readonly roots/descendants, outside hardlinks, source-free coherent
-prefix recovery, divergent-mirror refusal, ordered metadata teardown,
-post-admission unknown data/occupants, control permission drift, writable mappings
-and independent/shared/corrupt registry peers. Tests run as a non-administrator
-and leave zero temporary entries. Original profile/installation hashes remain
-unchanged in the disposable no-NIC VM; source domains remain shut off.
+### Native deletion and ordinary action
 
-The separate disabled-policy test confirms symlink installation refusal retains
-the private candidate, its named data and the target. Full-suite link fixtures
-use Developer Mode only in the owned COW. The actor's temporary root grants its
-creator Full Access, including the WRITE_OWNER capability needed by label
-fixtures. Earlier fixture failures and their causes are preserved in the receipt.
-Policy, link/label smoke and full-suite lanes use the same checksum-pinned
-executable; deterministic stripping preserves compiler dates and all non-debug
-sections. Strict Windows platform/UI all-target Clippy and formatting pass.
+`cleanup_tree::Remaining` opens only recorded names relative to verified parents.
+Deletion uses READ/DELETE capabilities, POSIX disposition with readonly-ignore and
+image-section checks, explicit closure of all clones of the delete FileObject,
+real NotFound verification, parent flush and surviving-metadata verification
+before acknowledgement. Access Denied never means absence. Readonly attributes
+are not cleared; closed-handle writable mappings block deletion capabilities.
 
-Configured registry cleanup can now acquire an existing-only writable root from
-the same anchor/ownership validation used by discovery. It requests read/write
-rather than DELETE on the registry itself, so the manager's pinned root remains
-compatible when it is also the destination parent. Sixteen ordinary-user native
-cases pass for file/directory, creation/overwrite and completed/undone copies at
-both registry and separate destinations; public bytes, root and external anchor
-remain intact. `REGISTRY_WRITER_ACCEPTANCE.json` records this added capability's
-source/binary proof. This does not initialize missing state or enable public Copy.
+Contents, streams, identity, permissions, compression and link counts stay strict.
+Only an acknowledged unlink advances its immediate parent's modification/change
+times and surviving aliases' change time/count. Outside aliases grant no deletion
+authority. Per-object accounting avoids rescanning the full deletion order for
+each record. A pending own unlink can resume after actual absence only if every
+other recorded observation still agrees. Retained-root absence is rechecked on
+every tree revalidation; a later occupant invalidates that absence proof.
 
-The shared admission now passes 25 native cleanup tests, including the prior
-187 injected failures and 187 process exits. Twelve new cases verify read-only
-observation/handle release, public reuse and refusal of payload, metadata,
-catalog, progress and later pending-parent epoch changes. Exact source/binary
-proof: `ADMISSION_ACCEPTANCE.json` in the cleanup evidence directory.
+The writer reserves the complete remaining journal tail before mutation. Any
+uncertain append poisons the writer. Matching durable mirrors can be freshly
+admitted; a local-only append leaves divergent mirrors for review, without
+repair. Cancellation and foreign changes stop further work.
 
-Discovery now distinguishes `VerifiedCleanup` from complete-tree/original
-verification. It uses the shared payload or metadata inspection before requiring
-a complete Snapshot, then rechecks exact central bytes. Local/stage removal is
-therefore a valid authenticated cleanup prefix; unknown content still needs
-review. The current central journal is the displayed recovery location. The
-scoped native suite passes 26 tests, including 72 partial-metadata discovery
-prefixes, seven unknown-content cases and four started-payload cases. Evidence:
-`CLEANUP_DISCOVERY_ACCEPTANCE.json`. Activity's new status/action-separation
-handling is statically checked; native UI execution is not claimed here.
-
-`RetainedCopyCleanupPlan` now provides anchored, existing-only read-only admission
-and execution for one transaction. The opaque action carries no open files while
-awaiting execution. It resolves the parent by native identity, obtains an
-existing-only writable registry capability and requests no DELETE right on a
-registry that is also the destination. Its payload completion proof freezes the
+`RetainedCopyCleanupPlan` provides configured, existing-only admission and action
+for one transaction. Its separate start phase appends Begin without deleting
+anything; repeating an acknowledged start adds no record. Completion freezes the
 successful writer's header, journal, private metadata, catalog, location and
-parent security before metadata authorization. That proof is revalidated through
-the next writer handoff. Paired metadata intent produces authority from the
-successful held writer; it does not adopt a fresh transaction by name afterward.
-The same action retains its metadata proof across uncertain final-central unlink,
-so an in-session retry can finish without manufacturing authority from absent IDs.
-Uncertain payload/intent writes still require fresh read-only admission.
-
-The current native correctness suite passes 27 tests, including the original
-187 injected failures/187 process exits, 48 added configured-action metadata
-failures and eight payload-completion handoff cases. A separate native run also
-passes its 64-case configured action matrix. The top-level test crate uses a
-package-specific optimization level zero; dependencies remain reused and no
-performance acceptance is inferred. Source/profile/binary proof:
-`CLEANUP_ACTION_ACCEPTANCE.json`. Public workflow cleanup remains unfinished:
-Activity confirmation/execution/retry and coordinated batch admission are required.
-
-Dependency admission now retains only a native control lease, version, private
-security/creator and record digest for each peer. The decoded graph is used for
-overlap validation and released at the end of that iteration; fingerprinting
-never retains or rehashes every peer's raw journal. The native epoch participates
-in the handle-free confirmation fingerprint, and held claims recheck bytes,
-version, binding, single-link state and private security. Identical-byte rewrites,
-clock changes and aliases after admission refuse without mutation.
-
-Journal namespace classification recognizes suspicious suffix case variants in
-raw UTF-16. Noncanonical names are preserved and shown as NeedsReview with no
-transaction ID; they block destructive dependency admission rather than being
-silently ignored. The observed native record path supplies their Activity row
-identity, encoded without lossy conversion. Unidentified rows have no Undo or
-forward recovery action and use the review title. Canonical IDs remain labels,
-never mutation authority. Ordinary unrelated files remain permitted in a
-registry that is also a destination.
-
-`CATALOG_ACCEPTANCE.json` records 28 passing native cleanup tests, five separate
-noncanonical-name cases (including an unpaired UTF-16 filename and a case-renamed
-real journal), three peer drift cases and a passing native Activity status test.
-That UI test covers 63 constructed rows, not rendered desktop acceptance. Both
-Windows and Linux strict UI checks pass. This establishes the compact data
-structure and functional guards; measured large-catalog RSS/resource acceptance
-and coordinated batch cleanup remain open.
-Co-owned batch references, interrupted staging reclamation and realistic registry/
-large-operation resource limits remain open. Process exits do not establish
-physical power-cut acceptance; specialized storage/security and current package/UI
-gates retain their separate scopes. Public Windows Copy remains gated.
-
-
-The bound start phase reuses the same writer acquisition, observation checks,
-capacity reservation and paired Begin append as payload reclamation. It returns
-an updated handle-free admission from that successful writer without deleting
-payload or metadata. Repeating that start performs no append. The configured
-single action now retains a Started phase before physical removal; no second
-interpretation of the transaction is admitted by name between these phases.
-
-A peer with committed cleanup intent has no Undo/forward recovery authority.
-Its dependency claims therefore cover remaining manifest entries and transaction
-metadata, not historical publication/source graphs. A pending unacknowledged
-entry stays protected. A local-only begin leaves the central peer state unchanged
-and does not release a publication claim. Retained shared hard links remain
-protected even after a peer starts cleanup.
-
-`START_ACCEPTANCE.json` records 31 passing native cleanup tests. Six retention
-shapes verify cancellation, paired start, no data/name removal, stale-token
-refusal and idempotence. Four creation/overwrite file/directory chains verify both
-members' begin records before any payload deletion. Two write-failure cases
-verify the local-only and fully flushed boundaries. These are the primitives
-for a coordinated executor, not batch completion: an individual token still
-refuses another member's journal change. Known-own catalog handoff and shared
-retained-alias epoch/count coordination must precede complete batch admission
-and Activity execution. Resource/performance and package acceptance remain open.
-
-
-## Read-only cleanup group admission
-
-The group observer freezes the anchored registry's native epoch, names and compact
-control-record proofs before admitting selected transactions. Selected IDs must
-be canonical, unique and present. All unselected records retain their ordinary
-dependency protection. Unknown recovery filenames refuse admission; missing
-registries are never initialized by observation.
-
-Each selected member receives the existing retained-payload or partial-metadata
-inspection. The observer records cross-member references and shared retained
-native objects explicitly, then rechecks member metadata and the complete frozen
-catalog. Its result retains no file handles, decoded peer graphs or raw journals.
-The same reference interpretation serves individual and group inspection.
-
-Group selection permits inspection of otherwise overlapping selected members.
-Ordinary individual start/reclaim operations still enforce dependencies; metadata
-removal explicitly refuses a read-only selection. This component does
-not authorize deleting a selected group or silently refresh member proofs after
-another member changes the catalog.
-
-Three focused native tests pass under an ordinary Windows account: four
-creation/overwrite file/directory chains; independent and shared-original peers;
-unselected dependencies, duplicate/missing IDs, changed payloads, unknown records
-and cancellation; missing registry preservation; and two interrupted metadata
-phases with changed peer-epoch refusal. Namespace bytes remain unchanged during
-observation, and an individual destructive action still refuses unresolved peers.
-The partial-metadata fixture uses the configured manager's existing read/write
-root handle, respecting its deliberate denial of delete sharing.
-
-Known-own catalog handoff, shared retained-alias changes, coordinated execution
-and Activity confirmation/retry remain required. Packages and the public Windows
-Copy gate are unchanged.
-
-
-## Group cleanup start barrier
-
-The admitted group can now start every payload member without removing data or
-metadata. It first revalidates the entire frozen catalog and every member's
-confirmed payload or partial-metadata proof. A changed later member refuses
-before the first begin. Partial-metadata proofs compare all their bound fields,
-including the destination parent's permission digest, rather than just headers.
-
-Each start uses the same writer acquisition, reservation, paired Begin and native
-revalidation as an individual start. The successful held writer returns its new
-control digest and native epoch with the updated member admission. The group
-accepts only that exact record change and advances the other members' catalog
-fingerprints using one shared encoding. It never reopens IDs to adopt changed
-claims. Acknowledged state is retained before subsequent cancellation/revalidation
-can fail. Uncertain member writes leave their old proof stale and require fresh
-read-only admission; repeating a fully acknowledged barrier appends nothing.
-
-The scoped writer path is used only for start. Physical payload reclamation and
-metadata removal retain their existing dependency checks. Shared retained aliases
-therefore remain protected after the barrier. The initial relationship map is
-still evidence for the forthcoming executor, not an assertion that historical
-publication claims remain active after Begin. Physical known-own alias changes,
-remaining payload/metadata catalog handoffs, full execution/retry and Activity
-integration are still required. This barrier does not enable public Windows Copy.
-
-
-`GROUP_START_ACCEPTANCE.json` records 38 passing native cleanup tests and a
-separate four-test start-barrier run. Six chain/peer shapes cover acknowledged
-catalog handoff and repeat starts; four preflight refusal cases preserve all
-journals; two injected paired-write failures reject stale retries; and four
-partial-metadata cases isolate parent-permission drift across separate folders.
-The broader suite retains the existing crash/recovery matrices. This establishes
-the start barrier, not physical group cleanup or rendered Activity acceptance.
-
-An incomplete preliminary run produced no final result file and is not accepted.
-The local native runner now writes a result even when teardown raises, validates
-process termination, and detects a terminal scheduled task without a result file.
-A deliberately short watchdog run reports its expected failure and clears its
-processes/fixture; the subsequent focused and full runs pass. The complete cleanup
-suite has a bounded ten-minute watchdog; the test crate remains unoptimized for
-correctness testing. No application-performance or package acceptance is inferred.
-
-
-## Physical payload handoff within a cleanup group
-
-The group now retains a completed member's writer proof while reclaiming another
-member. Each successful physical writer returns a short-lived acknowledgement
-with its prior journal digest, new central-control epoch and the registry's
-verified post-unlink names/version. The group accepts only the expected retained
-root removal when the registry is also the destination; it refuses unrelated
-namespace or metadata changes. Both waiting payload admissions and already-held
-completion proofs advance through the same catalog handoff check.
-
-The unlink acknowledgement is separate from the retained completion proof and
-is released after handoff. Completed members therefore do not retain duplicate
-registry filename lists. Completion inspection and metadata authorization share
-one validation implementation. The existing single-member action uses the same
-physical writer and discards its unneeded group acknowledgement.
-
-Three focused native tests pass: eight file/directory, creation/overwrite and
-same/separate-registry shapes; changed-peer, changed-catalog, cancellation and
-shared-alias refusal; and two uncertain-unlink boundaries requiring fresh group
-admission. Completion proofs survive other members' own changes, repeat payload
-requests append nothing, and a retained completion can authorize its individual
-metadata finalization afterward. Source/public bytes remain preserved.
-
-This is a physical handoff primitive, not a complete group executor. The physical
-writer still enforces ordinary dependencies. Shared retained hard links require
-cross-member unlink/epoch/count acknowledgements, and group metadata transitions
-still need their own catalog handoffs before Activity integration. Public Windows
-Copy and application packages remain unchanged.
-
-
-`GROUP_PAYLOAD_ACCEPTANCE.json` binds the final source and test binary to 41
-passing native cleanup tests, including the existing real-process-exit matrices.
-The three focused handoff tests also pass separately. The full run took 300.52s
-under its bounded 600s correctness watchdog. Strict Windows platform/UI checks
-and owned-process/temporary-namespace teardown pass. Current application packages,
-rendered UI, group-specific process-exit matrices, metadata group handoff and
-shared-retained-alias execution retain their separate unfinished scopes.
-
-
-## Group metadata authorization, removal and retry
-
-After all selected payloads reach completion, the group can authorize and remove
-members' metadata in either order. Metadata authorization returns the successful
-held writer's plan, prior digest and new control epoch. The group advances the
-other member proofs from that exact control change before attempting removal.
-The ordinary single-member action uses the same authorization implementation.
-
-An in-flight metadata member retains its original bound Plan and freezes other
-group actions. Retry does not reconstruct authority from an absent transaction
-ID. Reconciliation accepts only disappearance of that plan's central journal and,
-when the registry is also the destination, its stage. Every surviving control,
-unrelated name, private permission binding and other root attributes remains
-frozen. Modified/changed root timestamps can advance only with that expected
-name removal. The existing Plan inspector verifies the authorized state before
-and after reconciliation. Unknown stage contents and changed peer records remain
-review conditions, not deletion inputs.
-
-The group retains acknowledged namespace changes and completion proofs even when
-an unlink reports failure. Once the same Plan successfully finishes its flush/
-absence checks, that member becomes Complete; later requests perform no further
-removal. A new factory still refuses missing IDs. Already-complete members do not
-need to reopen deleted control records when remaining members continue.
-
-Three focused native tests pass across 55 scenarios: sixteen complete cleanup
-shapes/orders; thirty-six local/stage/central disposition/close/flush failures
-with the peer pending or complete and both registry layouts; and three foreign
-change refusals while pending. The early metadata-phase guard preserves journals,
-and public publication bytes remain intact. This establishes in-session retry
-with retained authority. Group-specific real process-exit/history recovery,
-shared retained-hardlink coordination, Activity integration and release-package
-acceptance remain open. Public Windows Copy stays gated.
-
-
-`GROUP_METADATA_ACCEPTANCE.json` binds this source and exact native test binary
-to 44 passing cleanup tests. The separate focused run passes all three metadata
-tests in 83.02s; the full correctness run passes in 549.69s under its bounded
-600s watchdog. Strict Windows platform/UI checks and owned-process/temporary-root
-teardown pass. The test crate is unoptimized; these durations establish neither
-application performance nor current package/UI acceptance. No journal schema or
-public Windows Copy gate changed.
-
-
-## Durable peer-unlink accounting — schema 13
-
-`OTCPWJ13` adds peer-unlink intent and acknowledgement records. An intent names
-one remaining local original-file alias and binds a distinct peer transaction,
-control identity, native parent/name, entry index, pending sequence and intent
-digest. Same-entry names, directory payloads, unbound references and impossible
-link counts are refused. Pending peer intent blocks ordinary cleanup transitions
-until its acknowledgement is recorded.
-
-The acknowledgement changes only the shared file's expected change time and
-reduces its expected link count once. All remaining local aliases receive that
-same version/count through the existing object-key accounting. The deduplication
-key binds peer transaction/control/entry, independently of local representative
-index, claimed sequence or digest; a replay cannot count one physical unlink
-again. Journal replay retains the pending state and acknowledged keys.
-
-Intent preparation reserves its frame, a worst-case acknowledgement and the full
-remaining local cleanup tail before writing anything. The exact-budget boundary
-and repeat-without-append path are covered. Poisoned writers remain refused.
-Older schema records are not converted or deleted; they remain review conditions.
-
-Three focused ordinary-user native tests pass: native alias removal represented
-by test-only fixture code and replay across multiple retained aliases, duplicate/
-wrong-order/unbound/change-field refusal, and the acknowledgement budget boundary.
-An alias outside the retained tree remains unchanged. The test-only unlink is
-not the product's shared-unlink path. Live peer-record/prefix validation, native
-slot/alias checks, group per-entry coordination and interruption recovery must be
-connected before physical shared cleanup can be enabled. Existing physical
-shared-dependency protection remains in place.
-
-
-`PEER_UNLINK_CODEC_ACCEPTANCE.json` records three focused native codec tests
-passing in 6.12s. Broader schema verification enumerates 149 Copy journal cases.
-The initial all-in-one run timed out at its 900s watchdog after 122 cases passed
-and seven existing entry points were ignored. The unfinished overwrite matrix
-and remaining cases were dispatched as a separate batch on the same binary:
-19 passed, zero failed, one existing ignored entry, 184.08s. The exact union of
-successful/ignored case names is checked against the native list and committed
-in `PEER_UNLINK_CODEC_COVERAGE.json`: 141 successful and eight existing ignored,
-including 47 successful cleanup cases. This is complete per-case coverage across
-runs, not a one-shot pass; the timed-out run remains explicit evidence.
-
-Strict Windows platform/UI checks, formatting and owned process/temporary-root
-cleanup pass. No additional exclusions were introduced. The unoptimized test
-profile does not establish application performance, current package/UI acceptance,
-or runtime shared-unlink support.
-
-
-## Live peer-prefix observation
-
-`cleanup_peer::Observation` binds a recorded peer intent to the canonical held
-control, its exact authenticated journal prefix, paired mirrors and retained
-native tree. The prefix must end at the named pending entry intent; transaction,
-control, parent, raw name, object version and link count must agree. Historical
-prefixes remain verifiable after the peer acknowledges its removal. Missing or
-changed records are refused. This is a held read capability, not permission to
-unlink or acknowledge another member.
-
-Snapshot loading duplicates the already-held peer control rather than reopening
-it with incompatible Windows sharing flags. Identity, private security, single
-link, namespace bindings and mirror equality retain the common validation path.
-Retained-root absence is now checked on every tree revalidation, so a later
-occupant invalidates an earlier absence observation.
-
-Four ordinary-account native tests pass in 17.79 seconds on the exact binary
-recorded in `PEER_BINDING_ACCEPTANCE.json`. They cover present/absent/historical
-intents, mismatched control/prefix/slot fields, missing or changed evidence,
-cancellation, changed parent policy and later root reoccupation, with content
-preservation. Broader verification passes in two disjoint completed batches on
-that same binary: cleanup 51 passed/two existing ignored in 580.91 seconds, and
-other journal tests 94 passed/six existing ignored in 477.55 seconds. The exact
-union matches all 153 cases enumerated by the native binary; per-case outcomes
-are recorded in `PEER_BINDING_COVERAGE.json`. Owned processes and temporary data
-are absent afterward. These are unoptimized correctness tests, not package, UI
-or performance acceptance. Physical shared cleanup and its interruption recovery
-remain unfinished.
-
-## Validated peer-unlink acknowledgement
-
-`Journal::acknowledge_peer_unlink` updates the local paired journal only after
-its recorded peer prefix and native absence are validated. It uses the writer's
-held parent and registry, checks creator/bindings and failed-writer state, and
-reserves the complete remaining journal tail. The observation binds the exact
-pending proof to the local native control.
-
-The common remaining-tree validator supports a read-only peer-change observation.
-For the shared native object it accepts only the recorded version with changed
-time updated and exactly one fewer hard link. Every surviving local alias must
-still match content, streams, permissions, compression and all other metadata;
-other retained objects and namespace entries keep their normal checks. These
-read capabilities explicitly refuse `acquire` and `remove`. Local and peer
-capabilities remain held through final revalidation and paired acknowledgement.
-
-A failed append poisons that writer. Paired durable acknowledgement replays once;
-a local-only append retains divergent mirrors for review. This step deletes no
-payload. Group physical unlink coordination and its catalog handoff remain
-unfinished. Pending peer intents also contribute the owner's canonical control
-to dependency references, so metadata cleanup cannot discard the journal needed
-for replay before acknowledgement. A native regression isolates that control
-from payload overlap and checks release after acknowledgement. Five focused
-ordinary-account native tests pass in 20.90 seconds. The same exact binary passes
-the full cleanup batch: 56 passed, two existing ignored entry points, zero failed,
-636.11 seconds. Its 58 case names exactly match native enumeration, recorded in
-`PEER_ACK_COVERAGE.json`; source hashes, binary, profile and teardown are bound
-in `PEER_ACK_ACCEPTANCE.json`. No owned native process or temporary root remains.
-Unrelated journal/core suites were not repeated for this change; the schema and
-decoder are unchanged. Earlier test results retain their own source/binary scope.
-No package, rendered UI or performance acceptance is implied.
-
-
-## Group shared-unlink preparation
-
-The group now prepares one pending original-file entry and every selected
-co-owner's peer intent through the existing bound writer handoff. Each successful
-writer supplies the exact control change used to advance the confirmed catalog.
-The owner's prefix digest must match that acknowledged change. The group keeps
-the pending owner, refuses switching owners or invoking ordinary payload/metadata
-removal, and supports idempotent preparation retry. A fresh observer also refuses
-a different durable pending owner before writing another entry intent.
-
-Three focused ordinary-account native tests pass in 17.53 seconds. They cover
-co-owned aliases plus an outside alias, paired intent records accepted by the
-existing peer validator, unchanged file contents, retries, changed data/control
-and cancellation refusal, and failures after either owner's or peer's local and
-central flushes. Divergent mirrors remain refused; paired records permit fresh
-readmission and retry. This is fresh in-process observation, not complete group
-process-exit/history recovery. The same exact binary passes the full cleanup
-batch: 59 passed, two existing ignored entry points, zero failed, 494.48 seconds.
-The exact 61-case set matches native enumeration in
-`GROUP_SHARED_PREPARE_COVERAGE.json`; source, profile, binary and successful
-owned-process/temporary-root teardown are recorded in
-`GROUP_SHARED_PREPARE_ACCEPTANCE.json`. No physical shared unlink, rendered UI,
-performance or package acceptance is established by this preparation step.
-
-
-## Grouped shared-alias unlink
-
-The coordinator now executes one prepared shared-original alias: validate matching
-selected peer intents, remove the owner's recorded native name, acknowledge the
-link-count/version change in every affected peer, then acknowledge the owner's
-entry removal. Only the successful held writer's control or registry-root delta
-advances group proofs. Completed aliases leave the shared-claim map. Ordinary
-tail cleanup protects actual remaining entries, so removed aliases do not keep
-blocking unrelated retained payloads or metadata.
-
-The single-entry dependency scope permits only matching selected peer intents or
-acknowledgements for that entry/control. Unselected, mismatched and unrelated
-metadata claims remain protected. Peer acknowledgement releases incompatible
-owner-control leases before acquiring its validator, and binds the original
-confirmed local journal before accepting the exact one-link native change.
-Fresh read-only admission can validate this recorded pending-peer change; it
-does not grant deletion authority to a missing name.
-
-Seven focused ordinary-account native tests pass in 23.71 seconds. They exercise
-full payload/metadata completion, three owners and multiple local aliases, an
-outside alias, unselected-owner refusal, owner data directly inside the registry,
-ordinary registry-neighbor preservation, unknown occupants and foreign peer data,
-unlink disposition/close/flush failures, local/central owner and peer ack failures,
-fresh paired-record retry, and retry of a known successful physical change when
-the peer is busy. Divergent mirrors remain refused. Native failure injection and
-fresh in-process observation do not establish complete group process-exit/history
-recovery. The same exact binary passes all 68 enumerated cleanup cases:
-66 passed, two existing ignored entry points, zero failed, 434.29 seconds.
-`GROUP_SHARED_UNLINK_COVERAGE.json` records the exact case set;
-`GROUP_SHARED_UNLINK_ACCEPTANCE.json` binds source, profile, binary, arguments,
-and successful teardown with no owned process or temporary root remaining.
-Unrelated journal/core suites were not repeated; schema, codec and decoder are
-unchanged. Activity, resource/storage/security/power-cut
-and current package gates remain open. These correctness tests do not establish
-rendered UI, performance or packaged-app acceptance.
-
-
-## Mixed group execution
-
-`Observation::reclaim_all` resumes retained metadata/shared operations and derives
-its next action from each member's bound journal order. Pending peer intents select
-their recorded owner; pending owner entries take precedence over fresh work.
-Shared entries use the matched intent/unlink/peer-ack/owner-ack protocol. Ordinary
-entries use a current-entry dependency scope that protects their native object and
-private metadata without bypassing any selected or unselected peer claim.
-
-Both ordinary whole-member cleanup and group single-entry cleanup call the same
-native removal primitive. Each completed entry advances the coordinator only from
-the successful writer's control and registry-root proof. Uncertain changes stop
-execution and require fresh read-only admission. All payloads must complete before
-metadata removal, whose existing retained Plan continues to own uncertain retries.
-
-Six focused ordinary-account native tests pass in 51.23 seconds: a complete
-three-owner mixed tree, cancellation before any change, cancellation after an
-ordinary unlink, disposition/close/flush failures followed by fresh admission,
-resuming a prepared shared owner, and preserving foreign changes made during
-execution. The same exact executable passes all 74 enumerated cleanup cases:
-72 passed, two existing ignored entry points, zero failed, 633.69 seconds.
-`GROUP_MIXED_ACCEPTANCE.json` binds source, executable, profile, arguments and
-ordinary-account teardown; `GROUP_MIXED_COVERAGE.json` records every actual case.
-No owned native process or temporary root remains. Schema/codec are unchanged;
-unrelated journal suites were not repeated. These unoptimized backend checks do
-not establish UI, performance or package acceptance. Group-specific real
-process-exit/history recovery, Activity execution, resource/storage/security/power-cut
-and current package acceptance remain open. Public Windows Copy stays gated;
-application packages are unchanged.
+parent security for metadata authorization. An in-session action retains its
+metadata Plan across uncertain final-central unlink; uncertain payload/intent
+writes require fresh admission.
+
+### Group execution and known writer handoffs
+
+`cleanup_group::Observation` admits canonical, unique, present selected IDs while
+freezing selected and unselected control proofs, registry epoch/names and private
+security. It records cross-member references and shared retained objects, then
+rechecks every member and the full catalog. It retains no open files, raw journals
+or decoded peer graphs. Selected IDs permit inspection, never a blanket physical
+dependency bypass. Unselected claims and unrelated metadata remain protected.
+
+The start barrier validates every confirmed payload and partial-metadata proof,
+including parent permissions, before the first Begin. Each successful writer
+returns its exact prior/new control digest and native control epoch. The group
+advances compact member catalogs only from that acknowledgement; it publishes
+known progress before a later cancellation/revalidation can fail. Uncertain
+writes require fresh read-only admission. Repeating a completed barrier appends
+nothing.
+
+Physical writers also acknowledge the registry's verified post-unlink names and
+version. When the destination is the registry, only the expected retained-root
+name may disappear; all unrelated names and root attributes remain frozen.
+Completed payload proofs survive other members' known changes without retaining
+duplicate filename lists or adopting new claims by ID.
+
+`Observation::reclaim_all` prioritizes durable pending peer/owner intents, then
+advances the actual next entry in journal order. Shared aliases use the protocol
+below. Ordinary entries use a current-entry dependency scope that protects the
+actual native object and private metadata without exempting selected peers.
+Whole-member and single-entry cleanup call the same native deletion primitive.
+All payloads must finish before metadata removal.
+
+### Shared-original alias protocol
+
+A peer intent binds one remaining local original-file alias to a distinct owner
+transaction/control, native parent/raw name, entry index, pending sequence and
+intent-prefix digest. Same-entry names, directories, unbound references and
+impossible link counts are refused. Pending peer intent blocks ordinary cleanup
+transitions and protects the owner's canonical control until acknowledgement.
+Preparation reserves the intent, worst-case acknowledgement and full remaining
+tail before any write. It refuses switching to another pending owner and supports
+idempotent preparation retry.
+
+`cleanup_peer::Observation` pins the canonical control, authenticated prefix ending
+at the owner's exact pending entry intent, paired mirrors and native retained
+slot. Transaction, control, parent/name, object version and link count must agree.
+Historical prefixes remain verifiable after owner acknowledgement. Snapshot
+loading duplicates the held control instead of reopening with incompatible
+Windows sharing flags. Creator/private security, identity, single-link state,
+namespace bindings and mirror equality retain the common validation path.
+
+The physical step permits overlap only for selected co-owners with the exact
+matching pending intent. It unlinks one owner alias, publishes the known native
+and catalog change, validates and durably acknowledges each peer, then records
+the owner's EntryRemoved. Completed shared claims are retired; objects with fewer
+than two distinct selected owners return to ordinary handling. No other metadata
+or unselected claim receives this exemption.
+
+Peer acknowledgement permits only the recorded native version with updated change
+time and exactly one fewer hard link. All surviving local aliases must still
+match content, streams, permissions, compression and every other metadata field.
+Its read-only Remaining capability refuses acquire/remove. Local and peer proofs
+remain held through final revalidation and paired append. Incompatible owner
+control leases are released before opening that validator.
+
+All local aliases share the resulting expected version/count. The deduplication
+key binds owner transaction/control/entry, independently of local representative,
+sequence or digest, so replay cannot count one physical unlink twice. A fresh
+observer can validate the recorded pending-peer native change without inventing
+authority for a missing name. Acknowledged successful physical changes can be
+retained for an in-session peer-busy retry; uncertain native/write results require
+fresh admission or review.
+
+### Metadata removal and history after interruption
+
+Paired MetadataRemovalIntent is allowed only after PayloadRemoved. Metadata must
+contain exactly the verified journal data or empty directory streams, single
+native links, private ownership and expected bindings. Permissions/version are
+checked immediately before each unlink. Removal proceeds local journal, empty
+stage, central journal, closing and flushing each parent before proceeding.
+Unknown entries/streams, replacement occupants and control aliases are preserved.
+
+A group retains the original authorized Plan while metadata removal is pending,
+freezing other actions. Reconciliation permits only that Plan's expected central
+journal disappearance and, when applicable, stage removal inside the registry.
+All surviving controls, unrelated names, security and other root attributes remain
+frozen; root modified/changed times advance only with the expected removal. The
+Plan inspector verifies the authorized layout before and after reconciliation.
+Once its final absence/flush checks succeed, the member stays Complete without
+reopening a deleted control.
+
+Read-only metadata inspection accepts authenticated local-removed and stage-removed
+prefixes without flush, disposition or append. A surviving central intent can
+admit a fresh source-free retry. Absence of the final central journal alone cannot
+construct authority for an old ID; a retained opaque Plan can finish its own
+known removal. History lists surviving records, and a new selection must be
+freshly admitted from those records.
+
+Discovery uses the same payload/metadata inspections and rechecks central bytes.
+VerifiedCleanup describes observed remaining cleanup evidence, never a deletion
+token or complete-tree verification. The surviving central journal is the recovery
+location after local/stage removal. Unknown or divergent evidence remains
+NeedsReview. A shared dependency can require group admission even if an individual
+history inspection cannot authorize that member. Activity must keep observation
+and action authority separate; constructed-row tests are not rendered acceptance.
+
+### Verification and remaining gates
+
+All receipts are under `.hermes/evidence/windows-copy-cleanup-current/` and bind
+their own source, executable, profile and scope. Earlier component receipts are
+historical evidence, not claims about a newer executable.
+
+- `GROUP_EXIT_ACCEPTANCE.json` and `GROUP_EXIT_COVERAGE.json`: all 32 enumerated
+  grouped-cleanup cases on one executable, 31 passed/zero failed/one parent-owned
+  child entry ignored in 508.37s. Both that run and its separate focused run
+  execute all 35 actual child process exits. Only test source differs from the
+  preceding full cleanup checkpoint; production source is unchanged.
+- `GROUP_MIXED_ACCEPTANCE.json` and `GROUP_MIXED_COVERAGE.json`: six focused mixed
+  workflow tests in 51.23s; all 74 enumerated cleanup cases on that same executable,
+  72 passed/two existing ignored/zero failed in 633.69s. Three-owner mixed trees,
+  cancellation, uncertain ordinary unlink/fresh admission, prepared shared owner
+  and foreign changes are covered.
+- `GROUP_SHARED_UNLINK_ACCEPTANCE.json` and its coverage receipt: seven focused
+  cases, including multiple owners/local aliases, an outside alias, registry-root
+  data, unselected owners, foreign changes and native/paired-write failures.
+- `PEER_BINDING_ACCEPTANCE.json` and its coverage receipt: all 153 journal cases
+  accounted for across two disjoint completed batches on one executable: 145
+  passed/eight existing ignored. These include cleanup 51/two ignored and other
+  journal tests 94/six ignored; a separate four-test peer-binding focus passes.
+- `PEER_UNLINK_CODEC_ACCEPTANCE.json` and its coverage receipt retain the earlier
+  timed-out all-in-one run and the completed disjoint remainder. No timeout is
+  relabelled a complete one-shot pass.
+- Earlier invariants and fixture evidence remain in `ACCEPTANCE.json`,
+  `UNLINK_PROBE.json`, `UNLINK_FORCE_PROBE.json`, and the registry-writer,
+  admission, metadata-inspection, discovery, configured-action, catalog, start,
+  group-observation/start/payload/metadata, peer-ack and shared-preparation receipts.
+  These include the earlier 187 injected failures/187 process exits, partial
+  metadata prefix inspections, private-security/stream/mapping refusals and the
+  constructed native Activity status test.
+
+Native correctness runs use an ordinary account, a private temporary root and an
+owned offline COW. Developer Mode for link fixtures applies only to that owned
+image; source profiles/installations and backing images are preserved. The runner
+records exact executable hashes and retains non-debug PE sections when stripping.
+Its watchdog terminates the owned process tree and checks temporary-root cleanup;
+terminal tasks without a result are failures. Full Windows platform/UI strict
+checks and formatting remain required for affected code.
+
+The focused group crash/history matrix passes two parent tests in 238.62 seconds.
+They assert exit code 86 at all 35 child boundaries: Begin; ordinary intent,
+deletion and acknowledgement; owner/peer intents; shared unlink; peer/owner
+acknowledgements, including later peer and final owner with three co-owners;
+metadata intent and all local/stage/central native removal boundaries. Ten
+local-only appends preserve divergence; 25 paired/native prefixes fresh-admit and
+complete. Retained-copy discovery is read-only at every interrupted state and
+empty after completion; source trees are absent and public/outside bytes are
+preserved.
+The child entry is explicitly ignored in ordinary enumeration and invoked only
+by its owning parent. The full grouped-cleanup subset passes as recorded above.
+Exact native enumeration matches every reported outcome. The ordinary-account
+task finishes successfully with no owned native process or temporary root left.
+Unrelated cleanup/journal suites were not repeated for this test-only change;
+their earlier source/executable scopes remain explicit.
+
+Activity confirmation, execution and retry, reserved-target protection,
+interrupted-staging reclamation,
+measured resource/storage/security matrices, physical power-cut acceptance,
+broader workflows and exact current package/UI acceptance remain open. These
+unoptimized backend tests establish neither application performance nor rendered
+acceptance. Public Windows Copy stays gated; application packages are unchanged.

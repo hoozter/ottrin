@@ -68,6 +68,23 @@ cleanup cases: **72 passed**, two existing ignored entry points, zero failures,
 process or temporary root remaining. `GROUP_MIXED_ACCEPTANCE.json` binds source,
 binary, profile and teardown; `GROUP_MIXED_COVERAGE.json` records the exact case set.
 
+Grouped cleanup now has native evidence for **35 actual process exits** across
+Begin, ordinary entry intent/delete/acknowledgement, shared owner/peer intents,
+shared unlink, peer/owner acknowledgements and metadata authorization/removal.
+This includes a later peer and the final owner acknowledgement with three
+co-owners. Ten local-only appends preserve divergent mirrors for review; the
+other 25 prefixes complete after fresh admission. History inspection is read-only,
+public bytes/outside aliases remain preserved, and completed cleanup leaves no
+retained-copy discovery records. The focused run passes both parent tests in
+238.62 seconds;
+the explicitly ignored child entry is invoked 35 times by those parents. All
+32 grouped-cleanup cases are enumerated on that same executable: 31 passed,
+zero failed, one parent-owned child entry ignored, in 508.37 seconds. That batch
+also executes all 35 crash scenarios. Final task/process/temporary-root teardown
+passes. Production source is unchanged from the preceding full cleanup checkpoint;
+only test fixtures and docs changed. `GROUP_EXIT_ACCEPTANCE.json` and
+`GROUP_EXIT_COVERAGE.json` bind the exact source, executable, case set and scopes.
+
 The preceding peer-binding checkpoint accounts for all **153 Windows Copy journal
 cases** on one exact binary: **145 passed** and eight existing ignored entry
 points. Both disjoint batches completed: cleanup 51 passed/two ignored in
@@ -78,8 +95,10 @@ status test retains its earlier catalog-checkpoint scope.
 
 These unoptimized correctness checks do not establish application performance,
 rendered UI, full unrelated platform or release-package acceptance. Current
-mixed-workflow proof is `GROUP_MIXED_ACCEPTANCE.json` and
-`GROUP_MIXED_COVERAGE.json`. Earlier shared-unlink proof is
+group crash/history proof is `GROUP_EXIT_ACCEPTANCE.json` and
+`GROUP_EXIT_COVERAGE.json`. Earlier mixed-workflow proof is
+`GROUP_MIXED_ACCEPTANCE.json` and `GROUP_MIXED_COVERAGE.json`.
+Earlier shared-unlink proof is
 `GROUP_SHARED_UNLINK_ACCEPTANCE.json` and
 `GROUP_SHARED_UNLINK_COVERAGE.json`. Preparation proof remains in
 `GROUP_SHARED_PREPARE_ACCEPTANCE.json` and `GROUP_SHARED_PREPARE_COVERAGE.json`.
@@ -90,9 +109,8 @@ peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 `.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
 
-**Still required:** group-specific real process-exit/history recovery, and Activity
-cleanup confirmation/execution/retry. Reserved-target protection, interrupted-
-staging reclamation, measured resource/storage/security and power-cut matrices,
+**Still required:** Activity cleanup confirmation/execution/retry. Reserved-target
+protection, interrupted-staging reclamation, measured resource/storage/security and power-cut matrices,
 broader workflow acceptance and current package gates remain open. Public Windows
 Copy stays gated. Application packages are unchanged by these checkpoints.
 

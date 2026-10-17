@@ -4044,9 +4044,16 @@ fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ac
 fn shared_unlink_preparation_fixture(
     root: &Path,
 ) -> (super::super::cleanup_group::Observation, Vec<Header>) {
-    let names = cleanup_peer_fixture_with_aliases(root, true, true);
+    shared_unlink_group_fixture(root, &["destination", "second-destination"])
+}
+
+fn shared_unlink_group_fixture(
+    root: &Path,
+    directories: &[&str],
+) -> (super::super::cleanup_group::Observation, Vec<Header>) {
+    let names = cleanup_peer_fixture_at(root, true, true, directories, false);
     let central = owner(&root.join("central"));
-    let headers = ["destination", "second-destination"]
+    let headers = directories
         .iter()
         .zip(names.iter())
         .map(|(directory, name)| {
@@ -4913,4 +4920,230 @@ fn windows_native_copy_cleanup_group_mixed_refuses_foreign_changes_during_execut
         std::fs::read(&foreign).unwrap(),
         b"foreign data must survive"
     );
+}
+
+fn group_exit_boundary(mode: &str, index: usize, sequence: u64) -> (u64, Step) {
+    let append = |index| match index {
+        0 => Step::LocalFlushed,
+        1 => Step::CentralFlushed,
+        _ => panic!("invalid append boundary"),
+    };
+    let physical = |index| match index {
+        0 => Step::CleanupDispositionSet,
+        1 => Step::CleanupHandleClosed,
+        2 => Step::CleanupFlushed,
+        _ => panic!("invalid native boundary"),
+    };
+    match mode {
+        "ordinary" => match index {
+            0 | 1 => (sequence, append(index)),
+            2..=4 => (sequence + 1, physical(index - 2)),
+            5 | 6 => (sequence + 1, append(index - 5)),
+            _ => panic!("invalid ordinary boundary"),
+        },
+        "shared" => (sequence, physical(index)),
+        "metadata" if index >= 2 => metadata_faults(sequence + 1)[index - 2],
+        _ => (sequence, append(index)),
+    }
+}
+
+#[test]
+#[ignore = "group abrupt-exit child; parent owns fixture, process and retry"]
+fn windows_native_copy_cleanup_group_process_exit_child() {
+    let root = std::path::PathBuf::from(std::env::var_os("OTTRIN_GROUP_EXIT_ROOT").unwrap());
+    let ids: Vec<String> =
+        serde_json::from_str(&std::env::var("OTTRIN_GROUP_EXIT_IDS").unwrap()).unwrap();
+    let mode = std::env::var("OTTRIN_GROUP_EXIT_MODE").unwrap();
+    let index = std::env::var("OTTRIN_GROUP_EXIT_INDEX")
+        .unwrap()
+        .parse()
+        .unwrap();
+    let sequence = std::env::var("OTTRIN_GROUP_EXIT_SEQUENCE")
+        .unwrap()
+        .parse()
+        .unwrap();
+    let (sequence, step) = group_exit_boundary(&mode, index, sequence);
+    let mut group =
+        super::super::cleanup_group::Observation::observe_at(&root.join("central"), &ids, |_| {
+            Ok(())
+        })
+        .unwrap();
+    // Global test faults are keyed by sequence, so arm the second writer only
+    // after the first writer's canonical bytes actually change.
+    let monitor = match mode.as_str() {
+        "peer_intent" => Some(0),
+        "owner_ack" | "later_peer_ack" => Some(1),
+        "owner_ack_three" => Some(2),
+        _ => None,
+    }
+    .map(|member| {
+        root.join("central")
+            .join(group.members[member].header().central_name())
+    });
+    let before = monitor.as_ref().map(|path| std::fs::read(path).unwrap());
+    let mut armed = monitor.is_none();
+    if armed {
+        FAULT.with(|slot| slot.set(Some((sequence, step, true))));
+    }
+    let result = group.reclaim_all(|_| {
+        if let (false, Some(path), Some(before)) = (armed, &monitor, &before)
+            && std::fs::read(path).unwrap() != *before
+        {
+            FAULT.with(|slot| slot.set(Some((sequence, step, true))));
+            armed = true;
+        }
+        Ok(())
+    });
+    panic!("expected group process exit at {mode}/{index}, armed={armed}, result={result:?}");
+}
+
+fn run_group_exit_case(root: &Path, mode: &str, index: usize) {
+    let (mut group, ids) = if mode == "ordinary" {
+        mixed_cleanup_fixture(root)
+    } else {
+        let (group, headers) = if matches!(mode, "later_peer_ack" | "owner_ack_three") {
+            shared_unlink_group_fixture(
+                root,
+                &["destination", "second-destination", "third-destination"],
+            )
+        } else {
+            shared_unlink_preparation_fixture(root)
+        };
+        (
+            group,
+            headers
+                .iter()
+                .map(|header| header.transaction.clone())
+                .collect(),
+        )
+    };
+    if mode != "begin" {
+        group.start_all(|_| Ok(())).unwrap();
+    }
+    if matches!(
+        mode,
+        "shared" | "peer_ack" | "owner_ack" | "later_peer_ack" | "owner_ack_three" | "metadata"
+    ) {
+        group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+    }
+    if mode == "metadata" {
+        group.unlink_shared_entry(0, |_| Ok(())).unwrap();
+        for member in 0..group.members.len() {
+            group.reclaim_payload(member, |_| Ok(())).unwrap();
+        }
+    }
+    let target = if mode == "later_peer_ack" {
+        2
+    } else {
+        usize::from(matches!(mode, "peer_intent" | "peer_ack"))
+    };
+    let control = root
+        .join("central")
+        .join(group.members[target].header().central_name());
+    let sequence = decode(&std::fs::read(control).unwrap()).unwrap().sequence;
+    let (_, step) = group_exit_boundary(mode, index, sequence);
+    let before = namespace_contents(root);
+    drop(group);
+    let status = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_process_exit_child", "--ignored", "--nocapture"])
+        .env("OTTRIN_GROUP_EXIT_ROOT", root)
+        .env("OTTRIN_GROUP_EXIT_IDS", serde_json::to_string(&ids).unwrap())
+        .env("OTTRIN_GROUP_EXIT_MODE", mode)
+        .env("OTTRIN_GROUP_EXIT_INDEX", index.to_string())
+        .env("OTTRIN_GROUP_EXIT_SEQUENCE", sequence.to_string())
+        .status().unwrap();
+    assert_eq!(status.code(), Some(86), "{mode}/{index}: {step:?}");
+    let interrupted = namespace_contents(root);
+    let history = super::super::discovery::discover_at(&root.join("central")).unwrap();
+    assert_eq!(
+        namespace_contents(root),
+        interrupted,
+        "history must be read-only"
+    );
+    let surviving = history
+        .iter()
+        .map(|record| record.transaction_id.clone().unwrap())
+        .collect::<Vec<_>>();
+    assert!(surviving.iter().all(|id| ids.contains(id)));
+    let fresh = super::super::cleanup_group::Observation::observe_at(
+        &root.join("central"),
+        &surviving,
+        |_| Ok(()),
+    );
+    if step == Step::LocalFlushed {
+        assert!(fresh.is_err(), "divergent {mode}/{index}");
+        assert!(history.iter().any(|record| matches!(
+            record.evidence,
+            super::super::discovery::WindowsCopyRecoveryEvidence::NeedsReview { .. }
+        )));
+        assert_eq!(
+            namespace_contents(root),
+            interrupted,
+            "divergence must be preserved"
+        );
+    } else {
+        let mut fresh = fresh.unwrap();
+        fresh.reclaim_all(|_| Ok(())).unwrap();
+        assert!(
+            fresh
+                .members
+                .iter()
+                .all(|member| matches!(member, super::super::cleanup_group::Member::Complete(_)))
+        );
+        assert!(
+            super::super::discovery::discover_at(&root.join("central"))
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(
+            super::super::super::namespace::link_count(&owner(&root.join("outside"))).unwrap(),
+            1
+        );
+        for directory in ["destination", "second-destination", "third-destination"] {
+            if root.join(directory).exists() {
+                assert_eq!(std::fs::read_dir(root.join(directory)).unwrap().count(), 1);
+            }
+        }
+    }
+    for (path, contents) in before {
+        if path.starts_with("destination/copy")
+            || path.starts_with("second-destination/copy")
+            || path.starts_with("third-destination/copy")
+            || path == Path::new("outside")
+        {
+            match contents {
+                Some(bytes) => assert_eq!(std::fs::read(root.join(path)).unwrap(), bytes),
+                None => assert!(root.join(path).is_dir()),
+            }
+        }
+    }
+    assert!(!root.join("source").exists());
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_process_exit_payload_and_history_recovery() {
+    for (mode, count) in [
+        ("begin", 2),
+        ("ordinary", 7),
+        ("owner_intent", 2),
+        ("peer_intent", 2),
+        ("shared", 3),
+        ("peer_ack", 2),
+        ("owner_ack", 2),
+        ("later_peer_ack", 2),
+        ("owner_ack_three", 2),
+    ] {
+        for index in 0..count {
+            let root = tempfile::tempdir().unwrap();
+            run_group_exit_case(root.path(), mode, index);
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_process_exit_metadata_and_history_recovery() {
+    for index in 0..11 {
+        let root = tempfile::tempdir().unwrap();
+        run_group_exit_case(root.path(), "metadata", index);
+    }
 }
