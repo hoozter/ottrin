@@ -1,0 +1,13 @@
+DOCX BASELINE
+This heading is centered, blue, bold, and 20 pt in the source document.
+Bold text beside italic text and ordinary body text.
+Feature
+Expected source layout
+Table
+Two bordered columns
+Fallback
+Truthful extracted text only
+
+PAGE TWO — right aligned in the source.
+
+

@@ -1,0 +1,18 @@
+{
+  "status": "rejected",
+  "reason": "PDF text extraction revealed source XML rendered as text, so exit-zero conversions do not prove Office import or rendering. No production change was made.",
+  "pdf_evidence": {
+    "office-calc-default.pdf": {
+      "sha256": "460f76f41eda67a6ed1f690d4759fe001bdeba4289f7e37b35b27548d9c3e639",
+      "text_prefix": "<office:document xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\"\nxmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\"\nxmlns:text=\"urn:oasis:names:tc:opendo"
+    },
+    "office-calc-bitmap.pdf": {
+      "sha256": "203acaa8276fb0f3dc63ed9b12d2edf3d3c6899090f4034affc5a9a8869a8c2f",
+      "text_prefix": "<office:document xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\"\nxmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\"\nxmlns:text=\"urn:oasis:names:tc:opendo"
+    },
+    "office-writer-default.pdf": {
+      "sha256": "4f01cad77062a89cccbf188552d96bf0d58fbe7e8a574e720852fc39d9284b7f",
+      "text_prefix": "<office:document xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\"\nxmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\" office:version=\"1.3\"\noffice:mimetype=\"a"
+    }
+  }
+}

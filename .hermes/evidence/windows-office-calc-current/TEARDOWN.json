@@ -1,0 +1,10 @@
+{
+  "owned_temporary_roots_absent": true,
+  "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+  "owned_executable_processes": 0,
+  "temporary_login_credential_absent": true,
+  "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+  "status": "pass",
+  "winlogon_unchanged": true,
+  "owned_vm_state": "shut off"
+}

@@ -1,0 +1,107 @@
+{
+  "status": "diagnostic comparison complete; Office acceptance remains open",
+  "production_changed": false,
+  "packaged_helper": {
+    "sha256": "77ed9d9979e5a17d2114c232015a9c943a230a3a45762c65654d364dc5d34f0a",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-office-render.exe",
+    "source_revision": "711706771cd7e32d0e3f422282275f010c27b3e8",
+    "scope": "Uncontained ordinary-account diagnostic control, not production containment acceptance"
+  },
+  "provider": {
+    "ui_backends": [
+      "vclplug_winlo.dll"
+    ],
+    "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+    "version": "26.8.1.1",
+    "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+  },
+  "cases": [
+    {
+      "elapsed_ms": 2166,
+      "name": "writer-default",
+      "converted": true,
+      "input_sha256": "29D4044EFA1EABAD7046A8BC1A4210BD1C9F2469B3F6848CCA51C08462C7ECB6",
+      "exit": 0,
+      "timeout": false
+    },
+    {
+      "elapsed_ms": 30146,
+      "name": "calc-default",
+      "converted": false,
+      "input_sha256": "25C7F92E985C0C54CEF19C4CD5729D4D9178921700E2ACCC668E2EFF3E821B04",
+      "exit": 1,
+      "timeout": true
+    },
+    {
+      "elapsed_ms": 1237,
+      "name": "calc-bitmap",
+      "converted": false,
+      "input_sha256": "25C7F92E985C0C54CEF19C4CD5729D4D9178921700E2ACCC668E2EFF3E821B04",
+      "exit": 1,
+      "timeout": false
+    },
+    {
+      "elapsed_ms": 30096,
+      "name": "impress-default",
+      "converted": false,
+      "input_sha256": "B98DC138A8499E8D35D87249EA3FEBA885AD4E45067890EE2C6FEF70D616D9B2",
+      "exit": 1,
+      "timeout": true
+    },
+    {
+      "elapsed_ms": 1317,
+      "name": "impress-bitmap",
+      "converted": false,
+      "input_sha256": "B98DC138A8499E8D35D87249EA3FEBA885AD4E45067890EE2C6FEF70D616D9B2",
+      "exit": 1,
+      "timeout": false
+    }
+  ],
+  "render_validation": {
+    "writer_marker": "DOCX BASELINE",
+    "writer_text_verified": true,
+    "source_xml_not_rendered_as_text": true,
+    "calc_and_impress_accepted": false
+  },
+  "conclusions": [
+    "Real DOCX conversion succeeds outside AppContainer; real XLSX/PPTX repeat the 30-second deadline failure.",
+    "The svp bitmap-setting experiment returns loadComponentFromURL empty-reference failures for XLSX/PPTX; it is rejected, not a workaround.",
+    "The original flat-XML controls were invalid positive controls: PDF text contained the raw input XML. Their exit-zero results are explicitly rejected.",
+    "These controls exclude AppContainer as the sole cause; they do not prove the detailed upstream deadlock cause."
+  ],
+  "limits": [
+    "No production containment, macro-suppression, all-format or visual-fidelity acceptance is claimed.",
+    "Current Windows Office UI gate remains in place; published packages unchanged.",
+    "Upstream solar-mutex fix is related background evidence, not proof this installation has the same defect."
+  ],
+  "references": [
+    "https://github.com/LibreOffice/core/blob/master/vcl/source/app/salplug.cxx",
+    "https://github.com/LibreOffice/core/commit/23afeaedf4d4a03943338fc39ae41f5c423e5997"
+  ],
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "evidence_sha256": {
+    "probe.ps1": "1b4fbb73736efba2c52f2ebbda19e95dff59d00d31828af5c1460e8d2cfa70ba",
+    "FIXTURES.json": "76a2dcd31840f80a774df202af3392050ececf257194cda880b22a214214fc29",
+    "HELPER.json": "b444ea52759f3e92f30d9108c2590972ff241402505148b13e7417ce77cbf297",
+    "PROVIDER.json": "c92a7c6936c8016d646517f80ae8f6800ca7c8fa683e105597e29b85aff51b20",
+    "RESULTS.json": "b6cd95d21e031bddd775edd9b2330928d17c5d7040420a3b973e763e95e32b52",
+    "office-writer-default.pdf": "5a271f4059e6c9e7189b5516b041fe777858e1a46f043bcbba8713f9b0a8d932",
+    "office-writer-default.txt": "0f51acbf823733eaef662b0fdcbb356b6ed11c78699d98bde34bdcdc31a48f2d",
+    "office-calc-bitmap.stderr": "8eb9b24f1a8c36130c27a10e06ab7835aa2e1eb3f84a7f0f740a7421e7109b11",
+    "office-impress-bitmap.stderr": "8eb9b24f1a8c36130c27a10e06ab7835aa2e1eb3f84a7f0f740a7421e7109b11",
+    "initial-raw-xml-control/REJECTED.json": "9fd38ddecd2ee8efe810713cbdc9b6a980e5d183f22be57f385c0b2bd19b4a5f",
+    "TEARDOWN.json": "a23ce2e902bcfe68da3d7d7249a5e2b9550b3859364829f666228ee9011b7e4a",
+    "teardown.py": "6b22511bfcde11f2df2a8488d315f0e5f85de64a1dbed951b9cd3ccfb85f8cbb",
+    "teardown.log": "b796d991d0836181b39a6fa5b7d7472564d194152abf1851bfebf3b8806879d0"
+  },
+  "host_cleanup": "Disposable downloaded corpus copies, unused probe drivers/handles/logs and raw-XML PDFs removed; compact rejected-control receipt and current Writer proof retained."
+}

@@ -1,0 +1,6 @@
+{
+  "sha256": "77ed9d9979e5a17d2114c232015a9c943a230a3a45762c65654d364dc5d34f0a",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-office-render.exe",
+  "source_revision": "711706771cd7e32d0e3f422282275f010c27b3e8",
+  "scope": "Uncontained ordinary-account diagnostic control, not production containment acceptance"
+}
