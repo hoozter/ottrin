@@ -441,12 +441,12 @@ impl Drop for VolumeCursor {
         }
     }
 }
-struct Volumes {
+pub(super) struct Volumes {
     anchors: BTreeMap<u64, File>,
     enumerated: bool,
 }
 impl Volumes {
-    fn new(central: &File) -> Result<Self, PlatformError> {
+    pub(super) fn new(central: &File) -> Result<Self, PlatformError> {
         let mut anchors = BTreeMap::new();
         anchors.insert(
             stable_identity_from_handle(central)
@@ -459,7 +459,7 @@ impl Volumes {
             enumerated: false,
         })
     }
-    fn resolve(
+    pub(super) fn resolve(
         &mut self,
         expected: WindowsStableIdentity,
         access: u32,

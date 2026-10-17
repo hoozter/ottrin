@@ -66,11 +66,24 @@ pub(super) fn snapshot_metadata(
     snapshot: &Snapshot,
     cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<[EntryVersion; 3], PlatformError> {
-    validate_stage_entries(&snapshot.stage)?;
-    let header = snapshot.state.header.as_ref().unwrap();
+    metadata_files(
+        snapshot.state.header.as_ref().unwrap(),
+        [&snapshot.stage, &snapshot.local, &snapshot.mirror],
+        &snapshot.bytes,
+        cancel,
+    )
+}
+
+fn metadata_files(
+    header: &Header,
+    files: [&File; 3],
+    bytes: &[u8],
+    cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<[EntryVersion; 3], PlatformError> {
+    validate_stage_entries(files[0])?;
     Ok([
         metadata(
-            &snapshot.stage,
+            files[0],
             header.stage,
             &header.stage_security,
             &header.creator,
@@ -78,19 +91,19 @@ pub(super) fn snapshot_metadata(
             cancel,
         )?,
         metadata(
-            &snapshot.local,
+            files[1],
             header.local_file,
             &header.local_security,
             &header.creator,
-            Some(&snapshot.bytes),
+            Some(bytes),
             cancel,
         )?,
         metadata(
-            &snapshot.mirror,
+            files[2],
             header.central_file,
             &header.central_security,
             &header.creator,
-            Some(&snapshot.bytes),
+            Some(bytes),
             cancel,
         )?,
     ])
@@ -136,63 +149,147 @@ pub(super) fn prepare(
         return Err(io("Copy cleanup stage and registry disagree"));
     }
     drop(control);
-    if !authorized {
-        // Reject unknown metadata before reclaiming an otherwise valid payload.
-        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
-        snapshot_metadata(&snapshot, &mut cancel)?;
-        drop(snapshot);
-        super::cleanup::reclaim_payload(parent, central, name, &mut cancel)?;
-        authorize(parent, central, name, &mut cancel)?;
+    if authorized {
+        Plan::observe(parent, central, name, cancel)
+    } else {
+        super::cleanup::Admission::observe(parent, central, name, &mut cancel)?
+            .reclaim(parent, central, &mut cancel)?
+            .begin(parent, central, cancel)
     }
-    Plan::observe(parent, central, name, cancel)
 }
 
-fn authorize(
-    parent: &File,
-    central: &File,
-    name: &OsStr,
-    cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
-) -> Result<(), PlatformError> {
-    let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
-    let progress = snapshot
-        .state
-        .cleanup
-        .as_ref()
-        .filter(|p| p.payload_removed && !p.metadata_removal_intent)
-        .ok_or_else(|| io("Copy cleanup payload is not ready for metadata finalization"))?;
-    Remaining::open(parent, &snapshot.state, progress, &mut *cancel)?;
-    let versions = snapshot_metadata(&snapshot, cancel)?;
-    let dependencies = Dependencies::open(
-        central,
-        snapshot.state.header.as_ref().unwrap(),
-        &progress.manifest,
-        &mut *cancel,
-    )?;
-    snapshot.revalidate(parent, central)?;
-    let bytes = snapshot.bytes.clone();
-    let sequence = snapshot.sequence;
-    let location = windows_fs::location(parent).map_err(io)?;
-    let parent_security = security::owner_group_dacl_digest(parent)?;
-    drop(snapshot);
-    cleanup_handoff(sequence)?;
-    let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Write)?;
-    if snapshot.bytes != bytes
-        || snapshot_metadata(&snapshot, cancel)? != versions
-        || windows_fs::location(parent).map_err(io)? != location
-        || security::owner_group_dacl_digest(parent)? != parent_security
-    {
-        return Err(io("Copy cleanup metadata changed during writer handoff"));
+/// Proof of the exact successful payload writer's final state. No handles or
+/// raw journals survive the transition to metadata authorization.
+#[derive(Clone, Debug)]
+pub(super) struct Completion {
+    header: Header,
+    journal: [u8; 32],
+    metadata: [u8; 32],
+    catalog: [u8; 32],
+    parent_location: std::path::PathBuf,
+    central_location: std::path::PathBuf,
+    parent_security: [u8; 32],
+}
+
+impl Completion {
+    pub(super) fn capture(
+        journal: &Journal,
+        dependencies: &Dependencies,
+        parent: &File,
+        central: &File,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        if journal.failed
+            || !journal
+                .state
+                .cleanup
+                .as_ref()
+                .is_some_and(|p| p.payload_removed)
+        {
+            return Err(io("Copy cleanup has no successful payload completion"));
+        }
+        journal.bindings()?;
+        let bytes = read(&journal.local)?;
+        let metadata = metadata_files(
+            &journal.header,
+            [&journal.stage_dir, &journal.local, &journal.central],
+            &bytes,
+            cancel,
+        )?;
+        dependencies.revalidate_peers(central)?;
+        Ok(Self {
+            header: journal.header.clone(),
+            journal: Sha256::digest(&bytes).into(),
+            metadata: super::super::evidence_digest(&metadata)?,
+            catalog: dependencies.fingerprint()?,
+            parent_location: windows_fs::location(parent).map_err(io)?,
+            central_location: windows_fs::location(central).map_err(io)?,
+            parent_security: security::owner_group_dacl_digest(parent)?,
+        })
     }
-    dependencies.revalidate_peers(central)?;
-    let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
-    journal.reserve_cleanup_tail()?;
-    journal.persist(Record::Cleanup {
-        entry: CleanupRecord::MetadataRemovalIntent,
-    })
+
+    pub(super) fn begin(
+        &self,
+        parent: &File,
+        central: &File,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Plan, PlatformError> {
+        let name = self.header.stage_name();
+        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Read)?;
+        let versions = snapshot_metadata(&snapshot, &mut cancel)?;
+        if snapshot.state.header.as_ref() != Some(&self.header)
+            || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
+            || super::super::evidence_digest(&versions)? != self.metadata
+            || windows_fs::location(parent).map_err(io)? != self.parent_location
+            || windows_fs::location(central).map_err(io)? != self.central_location
+            || security::owner_group_dacl_digest(parent)? != self.parent_security
+        {
+            return Err(io(
+                "Copy cleanup completion changed before metadata authorization",
+            ));
+        }
+        let progress = snapshot
+            .state
+            .cleanup
+            .as_ref()
+            .filter(|p| p.payload_removed && !p.metadata_removal_intent)
+            .ok_or_else(|| io("Copy cleanup payload is not ready for metadata finalization"))?;
+        Remaining::open(parent, &snapshot.state, progress, &mut cancel)?;
+        let dependencies =
+            Dependencies::open(central, &self.header, &progress.manifest, &mut cancel)?;
+        if dependencies.fingerprint()? != self.catalog {
+            return Err(io(
+                "Copy cleanup dependencies changed before metadata authorization",
+            ));
+        }
+        snapshot.revalidate(parent, central)?;
+        let bytes = snapshot.bytes;
+        let sequence = snapshot.sequence;
+        // Release all read leases before acquiring the paired journal writer.
+        drop((snapshot.stage, snapshot.local, snapshot.mirror));
+        cleanup_handoff(sequence)?;
+        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+        if snapshot.bytes != bytes
+            || snapshot_metadata(&snapshot, &mut cancel)? != versions
+            || windows_fs::location(parent).map_err(io)? != self.parent_location
+            || windows_fs::location(central).map_err(io)? != self.central_location
+            || security::owner_group_dacl_digest(parent)? != self.parent_security
+        {
+            return Err(io("Copy cleanup metadata changed during writer handoff"));
+        }
+        dependencies.revalidate_peers(central)?;
+        let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
+        journal.reserve_cleanup_tail()?;
+        journal.persist(Record::Cleanup {
+            entry: CleanupRecord::MetadataRemovalIntent,
+        })?;
+        // Construct authority from our own successful writer, never from a new
+        // by-name admission after releasing it.
+        let plan = Plan {
+            header: journal.header.clone(),
+            digest: Sha256::digest(read(&journal.local)?).into(),
+            retained: journal
+                .state
+                .cleanup
+                .as_ref()
+                .unwrap()
+                .manifest
+                .entries
+                .first()
+                .map(|entry| OsString::from_wide(&entry.name)),
+            parent_location: self.parent_location.clone(),
+            central_location: self.central_location.clone(),
+            parent_security: self.parent_security,
+        };
+        drop((journal, dependencies));
+        plan.run(parent, central, Action::Inspect, &mut cancel)?;
+        Ok(plan)
+    }
 }
 
 /// A completed paired metadata intent grants only these exact native objects.
 /// Retaining this opaque proof permits an idempotent retry after central unlink.
+#[derive(Clone, Debug)]
 pub(super) struct Plan {
     header: Header,
     digest: [u8; 32],
@@ -222,6 +319,10 @@ impl Action {
 }
 
 impl Plan {
+    pub(super) fn header(&self) -> &Header {
+        &self.header
+    }
+
     /// Inspect existing paired removal authority without writing, flushing or
     /// removing anything. All leases are released before returning this proof.
     pub(super) fn observe(

@@ -704,8 +704,27 @@ prefixes, seven unknown-content cases and four started-payload cases. Evidence:
 `CLEANUP_DISCOVERY_ACCEPTANCE.json`. Activity's new status/action-separation
 handling is statically checked; native UI execution is not claimed here.
 
-Public cleanup remains unfinished: it needs the opaque configured action wrapper
-around this admission and Activity confirmation/execution/retry.
+`RetainedCopyCleanupPlan` now provides anchored, existing-only read-only admission
+and execution for one transaction. The opaque action carries no open files while
+awaiting execution. It resolves the parent by native identity, obtains an
+existing-only writable registry capability and requests no DELETE right on a
+registry that is also the destination. Its payload completion proof freezes the
+successful writer's header, journal, private metadata, catalog, location and
+parent security before metadata authorization. That proof is revalidated through
+the next writer handoff. Paired metadata intent produces authority from the
+successful held writer; it does not adopt a fresh transaction by name afterward.
+The same action retains its metadata proof across uncertain final-central unlink,
+so an in-session retry can finish without manufacturing authority from absent IDs.
+Uncertain payload/intent writes still require fresh read-only admission.
+
+The current native correctness suite passes 27 tests, including the original
+187 injected failures/187 process exits, 48 added configured-action metadata
+failures and eight payload-completion handoff cases. A separate native run also
+passes its 64-case configured action matrix. The top-level test crate uses a
+package-specific optimization level zero; dependencies remain reused and no
+performance acceptance is inferred. Source/profile/binary proof:
+`CLEANUP_ACTION_ACCEPTANCE.json`. Public workflow cleanup remains unfinished:
+Activity confirmation/execution/retry and coordinated batch admission are required.
 Co-owned batch references, interrupted staging reclamation and realistic registry/
 large-operation resource limits remain open. Process exits do not establish
 physical power-cut acceptance; specialized storage/security and current package/UI

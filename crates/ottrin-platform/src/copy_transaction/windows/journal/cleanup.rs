@@ -125,7 +125,7 @@ impl Admission {
         parent: &File,
         central: &File,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
-    ) -> Result<(), PlatformError> {
+    ) -> Result<super::cleanup_finalize::Completion, PlatformError> {
         let name = self.header.stage_name();
         let transaction = self.location.join(&name).display().to_string();
         let mut started = self.started;
@@ -187,7 +187,13 @@ impl Admission {
             loop {
                 let progress = journal.state.cleanup.as_ref().unwrap();
                 if progress.payload_removed {
-                    return Ok(());
+                    return super::cleanup_finalize::Completion::capture(
+                        &journal,
+                        &dependencies,
+                        parent,
+                        central,
+                        &mut cancel,
+                    );
                 }
                 dependencies.validate(central)?;
                 journal.reserve_cleanup_tail()?;
@@ -196,7 +202,13 @@ impl Admission {
                     journal.persist(Record::Cleanup {
                         entry: CleanupRecord::PayloadRemoved,
                     })?;
-                    return Ok(());
+                    return super::cleanup_finalize::Completion::capture(
+                        &journal,
+                        &dependencies,
+                        parent,
+                        central,
+                        &mut cancel,
+                    );
                 }
                 let index = progress.manifest.order[progress.completed];
                 remaining
@@ -253,7 +265,9 @@ pub(super) fn reclaim_payload(
     name: &OsStr,
     mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
-    Admission::observe(parent, central, name, &mut cancel)?.reclaim(parent, central, cancel)
+    Admission::observe(parent, central, name, &mut cancel)?
+        .reclaim(parent, central, cancel)
+        .map(|_| ())
 }
 
 /// Keep only transaction-owned retained payloads pinned. A successful public

@@ -18,7 +18,7 @@ outside-hardlink preservation, source-free retries, unknown metadata/occupant
 refusal, mapped writers and registry dependencies. The separate disabled-policy
 link preservation test passes against the same checksum-pinned executable.
 Evidence: `.hermes/evidence/windows-copy-cleanup-current/ACCEPTANCE.json`.
-Public cleanup admission/Activity, co-owned batch and interrupted-staging cleanup,
+Activity cleanup, co-owned batch and interrupted-staging cleanup,
 resource/storage/security matrices and package gates remain open. Public Windows
 Copy stays gated. Existing-only writable registry admission now also passes 16
 native creation/overwrite/Undo file/directory cases, including the registry as
@@ -28,8 +28,7 @@ Receipt: `REGISTRY_WRITER_ACCEPTANCE.json` in the same evidence directory.
 The shared handle-free admission now also passes 25 native cleanup tests. Its
 writer binds confirmation-time journal/metadata/payload/catalog observations;
 changed pending epochs are refused instead of re-observed and adopted. Public
-name reuse stays allowed. Receipt: `ADMISSION_ACCEPTANCE.json`. Public action
-wrapper and Activity cleanup execution remain open.
+name reuse stays allowed. Receipt: `ADMISSION_ACCEPTANCE.json`.
 Read-only remaining-metadata inspection now shares the removal validators and
 passes 26 native cleanup tests. It validates local-present, local-removed and
 stage-removed layouts without writing or flushing; it cannot initiate cleanup.
@@ -41,6 +40,15 @@ current recovery location. The 26-test native cleanup suite passes, including
 72 partial-metadata discovery cases. Activity status handling passes static
 Windows checks; its cleanup action remains unfinished. Evidence:
 `CLEANUP_DISCOVERY_ACCEPTANCE.json`.
+
+The configured single-transaction cleanup action now passes 64 native scenarios,
+including ordinary retries and failures after local, stage and central removal.
+It keeps anchored ownership checks and the same admitted metadata proof through
+retries. Payload completion is bound to its own successful writer before metadata
+authorization; changed metadata/catalog state is refused. The scoped suite now
+passes 27 tests. Evidence: `CLEANUP_ACTION_ACCEPTANCE.json`. Activity controls,
+coordinated independent/co-owned batch cleanup and the remaining gates are still
+unfinished; this does not enable public Windows Copy or update application packages.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session

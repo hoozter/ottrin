@@ -27,8 +27,8 @@ pub use copy_recovery::{
 
 #[cfg(target_os = "windows")]
 pub use copy_transaction::{
-    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
-    WindowsRetainedCopyStatus,
+    RetainedCopyCleanupPlan, RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase,
+    WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub fn discover_retained_copy_transactions_at(

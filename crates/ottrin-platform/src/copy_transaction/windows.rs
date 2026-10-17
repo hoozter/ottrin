@@ -13,8 +13,8 @@ mod dispatch;
 mod journal;
 mod registry;
 pub use journal::{
-    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
-    WindowsRetainedCopyStatus,
+    RetainedCopyCleanupPlan, RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase,
+    WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
 };
 pub(crate) use journal::{
     discover as discover_windows_copy_transactions,

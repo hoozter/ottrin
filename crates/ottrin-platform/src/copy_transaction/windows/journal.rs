@@ -23,6 +23,8 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 
 mod cleanup;
+mod cleanup_action;
+pub use cleanup_action::RetainedCopyCleanupPlan;
 mod cleanup_dependencies;
 mod cleanup_finalize;
 mod cleanup_protocol;
