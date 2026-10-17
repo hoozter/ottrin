@@ -1,0 +1,5 @@
+{
+  "cancelled_compiler_pid": 3020783,
+  "reason": "Default optimized opt-level 1 test profile selected instead of existing native backend correctness opt-level 0 profile; excessive compiler memory/paging observed. No test was run or labelled passed.",
+  "next_configuration": "CARGO_PROFILE_TEST_OPT_LEVEL=0; workspace target reused"
+}

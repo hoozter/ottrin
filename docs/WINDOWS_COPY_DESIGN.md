@@ -65,6 +65,13 @@ its existing whole-queue exclusion until its worker actually terminates.
 
 These are in-process scheduling guards, not native ownership or cross-process
 reservations. Lexical path checks do not establish native alias equivalence.
+The existing-target case-alias regression now proves ordinary native admission
+rejects creation at a differently cased occupied name and admits Overwrite without
+changing original bytes. All four destination-admission tests pass on the same
+ordinary-account Windows executable. This does not establish absent-name claims,
+explicitly case-sensitive directory behavior or cross-process exclusion. Exact
+scope and teardown are in
+`.hermes/evidence/windows-native-name-admission-current/ACCEPTANCE.json`.
 The native target-reservation gate remains required before public Windows Copy:
 
 - Bind claims to the actual destination-parent identity and native target name;

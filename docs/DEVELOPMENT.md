@@ -706,6 +706,13 @@ been reclaimed. Native Windows has journaled completion evidence and a private c
 implementation. Public Copy receipts and UI integration remain gated;
 cross-compilation does not establish Windows Copy acceptance.
 
+Native backend correctness tests use the workspace `target/` and the unoptimized
+test profile: `CARGO_PROFILE_TEST_OPT_LEVEL=0 cargo test -p ottrin-platform
+--target x86_64-pc-windows-gnu --no-run --message-format=json`. Keep the offline
+Windows QA VM stopped during compilation on memory-constrained hosts, then start
+it for native execution. Optimized resource measurements are a separate scope;
+do not spend an optimized backend test build on ordinary correctness fixtures.
+
 Windows Copy candidates use `windows_fs::PerObjectFile` for the documented
 `MAXIMUM_ALLOWED` per-object permission-update contract. Keep its constructor
 private and preserve the contract through cloning; do not add production

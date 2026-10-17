@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "scope": "Only object files from the cancelled optimized test invocation; inherited object suffixes, successful binaries and useful incremental caches preserved.",
+  "pattern": "ottrin_platform-982d879498803cbe.*.19qerqx.rcgu.o",
+  "open_or_mapped_consumers": [],
+  "removed_files": 1,
+  "removed_bytes": 1203
+}

@@ -1,0 +1,69 @@
+{
+  "status": "pass",
+  "baseline_revision": "5878987",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "4c40fe978ad65c250f167be30986bfe107f87c4273358a4c116da72be8459f73"
+  },
+  "production_code_unchanged": true,
+  "native_test_binary_sha256": "03fe0ca64765a2ff4e6a56c09fb7f870cff629e32bab9df09a8dc9d89745f2db",
+  "ordinary_account": true,
+  "destination_admission_tests": [
+    "copy_transaction::windows::journal::tests::windows_native_destination_admission_freezes_the_original_before_source_staging",
+    "copy_transaction::windows::journal::tests::windows_native_destination_admission_never_converts_creation_or_skips_an_approved_original",
+    "copy_transaction::windows::journal::tests::windows_native_destination_admission_rejects_stale_parent_target_and_creation_before_staging",
+    "copy_transaction::windows::journal::tests::windows_native_destination_admission_respects_existing_target_case_aliases"
+  ],
+  "passed": 4,
+  "failed": 0,
+  "ignored": 0,
+  "seconds": 0.58,
+  "case_alias_regression_seconds": 0.02,
+  "assertions": [
+    "Ordinary filesystem lookup proves the fixture resolves a differently cased target spelling",
+    "Creation rejects the occupied native case alias",
+    "Overwrite admits and revalidates the existing alias without changing original bytes",
+    "No destination additions or recovery records are created during admission",
+    "Existing stale-parent/occupied-creation/changed-original guards remain passing"
+  ],
+  "strict_windows_all_target_platform_clippy": "pass",
+  "format_and_diff": "pass",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "This verifies existing targets under the actual ordinary fixture directory policy, not explicitly case-sensitive directories, short-name aliases or all Unicode equivalences.",
+    "No cross-process target reservation is implemented or accepted by this test. Public Windows Copy remains gated.",
+    "Application production code and published packages are unchanged."
+  ],
+  "build_correction": "An initial default optimized build was cancelled after excessive memory/paging was observed. The native checks use the established unoptimized correctness profile; no cancelled run is counted as a test result.",
+  "evidence_sha256": {
+    "SOURCE.json": "eefab143a1d6987cd6eceba3ba1ddb715b3cb01332697388f3ed82322c9ee73f",
+    "TEST_BINARY.json": "a57691488d2c2305547c6b054d5d7b4c730780ccc64f8da3aff681d4a0e3afef",
+    "CASE_TEST_BINARY.json": "349665bb9682e09c5388335397a038dd9ddfc5b40ef9a6baea0efc7fcf18eb89",
+    "RESULTS.json": "0b521f3656a08830f3b63ed2f3a73b28d2bd5f3827705a9f856527efec407abf",
+    "CASE_RESULTS.json": "0b521f3656a08830f3b63ed2f3a73b28d2bd5f3827705a9f856527efec407abf",
+    "platform.stdout": "7099579ebd47a3281b8f109769f7fe1667c88406d25536c7486a8272cefb9944",
+    "platform.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "CASE_platform.stdout": "341be0764c6c609e8429e6c6869614880dcd19295eda3138db8dd83dde93ffff",
+    "CASE_platform.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "TEARDOWN.json": "a23ce2e902bcfe68da3d7d7249a5e2b9550b3859364829f666228ee9011b7e4a",
+    "BUILD_CORRECTION.json": "a3fe4fb5a6ac51414c0281a85b5b5b1368eb4cbcc41b0a20027479b13cd8c61d",
+    "build.log": "a133d2ef5b2b9177b79647e7a32cc49bc7b54b671d7fc6a2fd945640e43722a8",
+    "clippy.log": "daeb52c126df7b866efbb8de83e4c769ca7bb80a2e35769f8ac5eb10fdb2f37a",
+    "teardown.py": "d012fe26e098ad8cd9644fef0428f45ae3684708fde687fd8bca0f62315ae850",
+    "teardown.log": "66157aafcbe73f79cab5de2bd80fa2be9454ae284c601b368bfe26baacb0ecf9",
+    "DISPOSABLE_BUILD_CLEANUP.json": "8ff1a03ececaff9be33b55d21d29ea99f690f07265e58cfc5167476c515ba238"
+  },
+  "harness_sha256": {
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "0475ea28445979b503124e998a6946c614949c438e40fe4d400053b5e9fbfacd",
+    ".hermes/evidence/windows-copy-cleanup-current/transport.py": "e5200f9ed805f09ea635fb79491c795bffb9e0dffa424dcf0222887eb2d719df",
+    ".hermes/evidence/windows-copy-cleanup-current/observe.py": "1babbd50bae108b235fe56f8852ea852d6ed649d78df7505cb566edac7b04667"
+  }
+}

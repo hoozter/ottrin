@@ -3998,6 +3998,38 @@ mod tests {
         }
     }
     #[test]
+    fn windows_native_destination_admission_respects_existing_target_case_aliases() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let directory = root.path().join("destination");
+        let target = directory.join("Mixed.txt");
+        std::fs::write(&target, b"original must survive").unwrap();
+        // Prove the fixture's actual filesystem policy before asserting native
+        // admission: ordinary Win32 lookup resolves this different spelling.
+        assert_eq!(
+            std::fs::read(directory.join("mIXED.TXT")).unwrap(),
+            b"original must survive"
+        );
+        let parent = owner(&directory);
+        assert!(
+            DestinationAdmission::creation(&parent, OsStr::new("mIXED.TXT")).is_err(),
+            "Creation must not admit an occupied native case alias"
+        );
+        let overwrite =
+            DestinationAdmission::overwrite(&parent, OsStr::new("mIXED.TXT"), 100, |_| Ok(()))
+                .unwrap();
+        overwrite.validate(&parent).unwrap();
+        assert_eq!(std::fs::read(&target).unwrap(), b"original must survive");
+        assert_eq!(std::fs::read_dir(&directory).unwrap().count(), 1);
+        assert_eq!(
+            std::fs::read_dir(root.path().join("central"))
+                .unwrap()
+                .count(),
+            0
+        );
+    }
+
+    #[test]
     fn windows_native_destination_admission_never_converts_creation_or_skips_an_approved_original()
     {
         for overwrite in [false, true] {

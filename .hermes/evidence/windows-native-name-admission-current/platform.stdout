@@ -1,0 +1,8 @@
+
+running 4 tests
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_freezes_the_original_before_source_staging ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_never_converts_creation_or_skips_an_approved_original ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_rejects_stale_parent_target_and_creation_before_staging ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_respects_existing_target_case_aliases ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 382 filtered out; finished in 0.58s

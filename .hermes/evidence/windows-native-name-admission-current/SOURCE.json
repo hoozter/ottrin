@@ -1,0 +1,11 @@
+{
+  "baseline_revision": "5878987",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "4c40fe978ad65c250f167be30986bfe107f87c4273358a4c116da72be8459f73"
+  },
+  "scope": "Native admission case-alias regression; no reservation or publication authority is added by this test.",
+  "references": [
+    "https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile",
+    "https://devblogs.microsoft.com/commandline/per-directory-case-sensitivity-and-wsl/"
+  ]
+}
