@@ -694,9 +694,18 @@ observation/handle release, public reuse and refusal of payload, metadata,
 catalog, progress and later pending-parent epoch changes. Exact source/binary
 proof: `ADMISSION_ACCEPTANCE.json` in the cleanup evidence directory.
 
+Discovery now distinguishes `VerifiedCleanup` from complete-tree/original
+verification. It uses the shared payload or metadata inspection before requiring
+a complete Snapshot, then rechecks exact central bytes. Local/stage removal is
+therefore a valid authenticated cleanup prefix; unknown content still needs
+review. The current central journal is the displayed recovery location. The
+scoped native suite passes 26 tests, including 72 partial-metadata discovery
+prefixes, seven unknown-content cases and four started-payload cases. Evidence:
+`CLEANUP_DISCOVERY_ACCEPTANCE.json`. Activity's new status/action-separation
+handling is statically checked; native UI execution is not claimed here.
+
 Public cleanup remains unfinished: it needs the opaque configured action wrapper
-around this admission, partial-finalization discovery and Activity confirmation/
-retry.
+around this admission and Activity confirmation/execution/retry.
 Co-owned batch references, interrupted staging reclamation and realistic registry/
 large-operation resource limits remain open. Process exits do not establish
 physical power-cut acceptance; specialized storage/security and current package/UI

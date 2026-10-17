@@ -1208,6 +1208,12 @@ fn windows_retained_copy_activity(
                 reason: "This copy has no freshly admitted Undo receipt. Retained data is preserved; verification alone does not authorize Undo or cleanup.".into(),
             },
         ),
+        Evidence::VerifiedCleanup => (
+            "Remaining cleanup data verified",
+            PathMoveUndoState::Unavailable {
+                reason: "Cleanup has started. Undo and forward recovery are unavailable; remaining data is preserved until cleanup is explicitly resumed.".into(),
+            },
+        ),
         Evidence::UnverifiedStage => (
             "Staging incomplete · payload not verified",
             PathMoveUndoState::Unavailable {
@@ -1270,7 +1276,7 @@ fn windows_retained_copy_activity(
     if let Some(location) = location {
         detail.push_str(&format!(" · Data: {}", path_label(&location)));
     } else if let Some(location) = entry.transaction {
-        detail.push_str(&format!(" · Recovery folder: {}", path_label(&location)));
+        detail.push_str(&format!(" · Recovery location: {}", path_label(&location)));
     }
     detail.push_str(&format!(" · Transaction: {}", entry.transaction_id));
     RestoredCopyActivity {
@@ -25722,10 +25728,12 @@ mod tests {
             Phase::Completed,
             Phase::UndoPending,
             Phase::Undone,
+            Phase::CleaningUp,
         ] {
             for evidence in [
                 Evidence::VerifiedTree,
                 Evidence::VerifiedOriginal,
+                Evidence::VerifiedCleanup,
                 Evidence::UnverifiedStage,
                 Evidence::NeedsReview {
                     reason: "changed retained bytes".into(),

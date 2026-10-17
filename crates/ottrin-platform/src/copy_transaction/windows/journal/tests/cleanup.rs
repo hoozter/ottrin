@@ -238,10 +238,10 @@ fn windows_native_copy_cleanup_protocol_binds_terminal_evidence_and_ordered_prog
             assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err());
             let statuses = discover_at(&root.path().join("central")).unwrap();
             assert_eq!(statuses[0].phase, Some(WindowsCopyPhase::CleaningUp));
-            assert!(matches!(
+            assert_eq!(
                 statuses[0].evidence,
-                WindowsCopyRecoveryEvidence::NeedsReview { .. }
-            ));
+                WindowsCopyRecoveryEvidence::VerifiedCleanup
+            );
             state.apply(begin.clone()).unwrap();
             records.push(begin);
             assert!(state.check(records.last().unwrap()).is_err());
@@ -1021,6 +1021,23 @@ fn windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order
                     )
                     .unwrap();
                     assert_eq!(namespace_contents(root.path()), before);
+                    let statuses = discover_at(&root.path().join("central")).unwrap();
+                    assert_eq!(statuses.len(), 1);
+                    assert_eq!(statuses[0].phase, Some(WindowsCopyPhase::CleaningUp));
+                    assert_eq!(
+                        statuses[0].evidence,
+                        WindowsCopyRecoveryEvidence::VerifiedCleanup,
+                        "case {case}, {step:?}"
+                    );
+                    assert_eq!(
+                        statuses[0].transaction,
+                        Some(
+                            windows_fs::location(&read_central)
+                                .unwrap()
+                                .join(&central_name)
+                        )
+                    );
+                    assert_eq!(namespace_contents(root.path()), before);
                     drop((read_parent, read_central));
                     resumed.finish(&parent, &central, |_| Ok(())).unwrap();
                 } else {
@@ -1123,6 +1140,14 @@ fn windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admis
                 .is_err(),
             "inspection accepted unknown content in case {case}"
         );
+        assert_eq!(namespace_contents(root.path()), before);
+        let statuses = discover_at(&root.path().join("central")).unwrap();
+        assert_eq!(statuses.len(), 1);
+        assert_eq!(statuses[0].phase, Some(WindowsCopyPhase::CleaningUp));
+        assert!(matches!(
+            statuses[0].evidence,
+            WindowsCopyRecoveryEvidence::NeedsReview { .. }
+        ));
         assert_eq!(namespace_contents(root.path()), before);
         assert!(
             plan.finish(&parent, &central, |_| Ok(())).is_err(),

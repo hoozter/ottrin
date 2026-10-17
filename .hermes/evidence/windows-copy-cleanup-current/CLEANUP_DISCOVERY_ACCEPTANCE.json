@@ -1,0 +1,81 @@
+{
+  "scope": "Read-only discovery of remaining Windows Copy cleanup payload and partial metadata; Activity status presentation statically checked",
+  "parent_revision": "2de925bc3b979e3c8430545389d7dd14cc5a1cf7",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "9b9d9be1b5a5504a1d21dc529e30851755d9fced8826086705532064a6e5f8f1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "1e17ac80cb01ebbd3f07ee1199b4bf531f019f4692c975a5a273413ce38f1618",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "2fe71343b2be476c1355470d22245a255ed50c79886ca0d17104ed8cd273e016",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_protocol.rs": "b79b342ad5183d8a915a24373896ed2853f51cb189af63e9dd115c5749b5835d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "eaed8077dc7088bdd00eb4e02ff078a3fa280f88b3ab281bdb5aba8198103bf3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "fb725f2422daff684d78009b3a0cb6e0175fb23fc94511e9790841bbb5856090",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "c32d6c042f4de6a371e52b2d84426e636e1d85e716b00e878c653b90f8b5b943",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "6ab90f3243e3a4ffafa075cf812c1d0049d3e4bc8837d5908c3d57ccabb55d9f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "80530444721a802483975d7a862c9fff28670550b53f4667c73bb7a44e918ffe",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "eb3aa427cf74e2226a7e612a057db18c65752940d6e651e04cc59fb61484772a",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "14b084b36efa2a7be45b0630fa12634da6353312475574cccc8b466106f35643",
+    "crates/ottrin-ui/src/lib.rs": "0259ec00d3db3241df8b375a3d36862d05f5c314b1f3698fced474fb6cc4a311"
+  },
+  "binary": {
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-982d879498803cbe.exe",
+    "compiler_sha256": "849a60d091f8a7d2335dac507fc0d16bcf3f0e2b1c53b560554b8b2434b7b66e",
+    "transferred_sha256": "d45da22010f8e3784d3bd07395fb3f39725f8f3bf1d8961782234090edfe6b2c",
+    "retained_sections": {
+      ".text": "d9660891006d04eff166716caa386bfd843d849b01e95c77c902b319b472a0bd",
+      ".data": "c7b5c625d39523bada5e8e10251ea69561335e1bf282762be51b51b80fe4a668",
+      ".rdata": "ce4a895542c9372066f089588d01bc51824487455c8055b50a123bfa6695581f",
+      ".pdata": "b7c1a3529e47b76c7d51c9aaf87cdf4791fc81da6e7d346c57a12e88d46a81a5",
+      ".xdata": "f689acfde32bf7757ce25ea8cbece0ead4069345bc6f9cd10b29aca5ec6580b8",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "d4fa761304a3bfbb318e87b19a151d5d246ba176db885984d2f51439a21d6fa7",
+      ".CRT": "c035657db85ba381e9df2701ed4cc5dd4974eec4c34c406080b3effcc6d6713e",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "f731eb6b4539ed7f9a1d56f2ca5f05e371945f212f1291091e4eb8ae70a89e26"
+    }
+  },
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "d45da22010f8e3784d3bd07395fb3f39725f8f3bf1d8961782234090edfe6b2c",
+    "status": "pass"
+  },
+  "suite": {
+    "passed": 26,
+    "failed": 0,
+    "child_harnesses_ignored": 2,
+    "unrelated_tests_filtered": 307,
+    "seconds": 195.3,
+    "injected_failures": 187,
+    "real_process_exits": 187
+  },
+  "discovery_cases": {
+    "partial_metadata_prefixes_after_failure_or_process_exit": 72,
+    "unknown_remaining_content_needs_review_without_mutation": 7,
+    "started_payload_cleanup_verified_instead_of_blanket_needs_review": 4
+  },
+  "properties": [
+    "Cleanup inspection precedes Snapshot loading so removed local/stage metadata is not treated as corruption",
+    "Pending payload uses existing bound admission; metadata uses shared read-only finalizer inspection",
+    "Exact central record bytes rechecked after inspection",
+    "Surviving central journal is the current recovery location during cleanup",
+    "VerifiedCleanup is presentation evidence and grants no Undo, forward recovery or deletion authority"
+  ],
+  "checks": [
+    "Strict Windows platform/UI all-target Clippy passed (session55332,11.00s)",
+    "cargo fmt --all",
+    "git diff --check"
+  ],
+  "limitations": [
+    "Activity evidence/action separation matrix is statically checked, not executed as a native UI test in this checkpoint",
+    "Public configured cleanup action and Activity confirmation/execution remain unfinished",
+    "Co-owned batch, interrupted staging, catalog memory/case handling and broader storage/security remain open",
+    "No application package rebuilt; public Windows Copy remains gated"
+  ],
+  "teardown": {
+    "task": "Ready",
+    "task_result": 0,
+    "native_processes": 0,
+    "temporary_namespace": false,
+    "owned_vm": "retained for immediate configured action integration"
+  }
+}

@@ -28,12 +28,19 @@ Receipt: `REGISTRY_WRITER_ACCEPTANCE.json` in the same evidence directory.
 The shared handle-free admission now also passes 25 native cleanup tests. Its
 writer binds confirmation-time journal/metadata/payload/catalog observations;
 changed pending epochs are refused instead of re-observed and adopted. Public
-name reuse stays allowed. Receipt: `ADMISSION_ACCEPTANCE.json`. Public wrapper,
-partial metadata discovery and Activity integration remain open.
+name reuse stays allowed. Receipt: `ADMISSION_ACCEPTANCE.json`. Public action
+wrapper and Activity cleanup execution remain open.
 Read-only remaining-metadata inspection now shares the removal validators and
 passes 26 native cleanup tests. It validates local-present, local-removed and
 stage-removed layouts without writing or flushing; it cannot initiate cleanup.
 Receipt: `METADATA_INSPECTION_ACCEPTANCE.json` in the same evidence directory.
+Discovery now uses those read-only admissions before requiring a complete stage,
+so authenticated local/stage removal prefixes show verified interrupted cleanup.
+Unknown content still needs review; the surviving central record supplies the
+current recovery location. The 26-test native cleanup suite passes, including
+72 partial-metadata discovery cases. Activity status handling passes static
+Windows checks; its cleanup action remains unfinished. Evidence:
+`CLEANUP_DISCOVERY_ACCEPTANCE.json`.
 
 The admitted native staging/publication path now returns ordinary session Undo
 receipts through a fresh completion and native recovery-plan admission. Session

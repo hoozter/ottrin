@@ -303,6 +303,8 @@ pub enum WindowsCopyRecoveryEvidence {
     VerifiedTree,
     /// The replacement was durably withdrawn; only the original is verified.
     VerifiedOriginal,
+    /// Remaining cleanup payload or metadata is verified, not a mutation token.
+    VerifiedCleanup,
     NeedsReview {
         reason: String,
     },
@@ -317,6 +319,7 @@ pub struct WindowsRetainedCopyStatus {
     pub retained: Option<PathBuf>,
     /// Last identity-bound root location observed, not mutation authority.
     pub owned_location: Option<PathBuf>,
+    /// Recovery metadata location: stage, or central record during cleanup.
     pub transaction: Option<PathBuf>,
     pub source_label: Option<OsString>,
     pub evidence: WindowsCopyRecoveryEvidence,
@@ -557,6 +560,31 @@ pub fn discover_at_with_progress(
             status.publication = Some(location.join(OsString::from_wide(&header.target)));
             status.retained = Some(location.join(header.candidate_name()));
             status.transaction = Some(location.join(header.stage_name()));
+            if let Some(cleanup) = &state.cleanup {
+                if cleanup.metadata_removal_intent {
+                    super::cleanup_finalize::Plan::observe(
+                        &parent,
+                        &central,
+                        &header.stage_name(),
+                        &mut progress,
+                    )?;
+                } else {
+                    super::cleanup::Admission::observe(
+                        &parent,
+                        &central,
+                        &header.stage_name(),
+                        &mut progress,
+                    )?;
+                }
+                let (current, _) = registered_journal(&central, &name)?;
+                if current != bytes {
+                    return Err(io("Copy cleanup record changed during discovery"));
+                }
+                // The stage may already be gone. Its surviving authenticated
+                // central record is the recovery location, never a stale path.
+                status.transaction = Some(windows_fs::location(&central).map_err(io)?.join(&name));
+                return Ok(WindowsCopyRecoveryEvidence::VerifiedCleanup);
+            }
             let snapshot = Snapshot::load(
                 &parent,
                 &central,
@@ -565,9 +593,6 @@ pub fn discover_at_with_progress(
             )?;
             if snapshot.bytes != bytes {
                 return Err(io("Copy mirror changed during discovery"));
-            }
-            if snapshot.state.cleanup.is_some() {
-                return Err(io("Copy cleanup is in progress; remaining data retained"));
             }
             if snapshot.state.undone.is_some() && snapshot.state.original.is_some() {
                 let original = HeldOriginal::open(&parent, &snapshot.state, &mut progress)?
