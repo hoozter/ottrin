@@ -1,0 +1,80 @@
+{
+  "binary_sha256": "f229d1f488c6bd450b894ea1a128ce2baf19841d60f40b9dc67cdecfe9785359",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": false,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd (deleted)",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    }
+  ],
+  "status": "pass"
+}
+{
+  "binary_sha256": "fca366663ec0cba6fc06f901449153a9595bdd37857053765691f6774255f965",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": false,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd (deleted)",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    }
+  ],
+  "status": "pass"
+}
+{
+  "status": "pass",
+  "source_revision": "711706771cd7e32d0e3f422282275f010c27b3e8",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "3fb722437428e2f7e420e3ef8da5aa9860e67d4b51d7e5daf1379dae2e669e5e",
+    "Ottrin-0.1.0-x86_64.AppImage": "4aed720d885462796bc435394a193b627b84452d5dea827991b2237723cae18c",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "749a7d5adef7b5e3819b61110036481e6726d3b9046951b642b0e158be6a9e20",
+    "ottrin_0.1.0_amd64.deb": "b6091f792da77071c5feb76f46798920c2b9de20894dcd2d7e5bc9618284029d"
+  },
+  "checks": [
+    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
+    "portable six payload byte identities",
+    "all four formats contain exact current guide and release docs",
+    "clean embedded source revision",
+    "all package runtime identities checked against the actual rebuilt AppImage"
+  ],
+  "scope": "Linux package content verification; native runtime acceptance retains separately recorded exact artifact scopes",
+  "verifier_sha256": "97010690934666b802f0876e8db0b909ccc92fb927a7ff037e6bf660f86ac9c3",
+  "cleanup": "private extractions removed by TemporaryDirectory"
+}

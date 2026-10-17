@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "source_revision": "711706771cd7e32d0e3f422282275f010c27b3e8",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "13f34cc24d530277429d88369cc7851da4fb530a152544ebd739cfb5e10ff091",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f6a280b9fd710709f70c1210bd1d02d7e4569e49af04a115a1ecb6e11ad1ed94",
+    "Ottrin-0.1.0-windows-x64.msi": "870bcd4ac869c78b28e5736b6d2898cafc1b6b8f14cc5555937e55e6e7a90282"
+  },
+  "payload_entries_matched": 57,
+  "public_windows_replaced": false,
+  "installer_lifecycle_acceptance": false,
+  "scope": "Matched internal portable/NSIS/MSI content; MSI compiled and administratively extracted on native Windows. NSIS authored uninstaller and plugin payload verified separately."
+}

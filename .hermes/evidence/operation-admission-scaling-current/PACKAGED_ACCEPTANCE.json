@@ -1,0 +1,55 @@
+{
+  "status": "verified Linux delivery; matched internal Windows candidates",
+  "source_revision": "711706771cd7e32d0e3f422282275f010c27b3e8",
+  "linux_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "3fb722437428e2f7e420e3ef8da5aa9860e67d4b51d7e5daf1379dae2e669e5e",
+    "Ottrin-0.1.0-x86_64.AppImage": "4aed720d885462796bc435394a193b627b84452d5dea827991b2237723cae18c",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "749a7d5adef7b5e3819b61110036481e6726d3b9046951b642b0e158be6a9e20",
+    "ottrin_0.1.0_amd64.deb": "b6091f792da77071c5feb76f46798920c2b9de20894dcd2d7e5bc9618284029d"
+  },
+  "windows_artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "13f34cc24d530277429d88369cc7851da4fb530a152544ebd739cfb5e10ff091",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f6a280b9fd710709f70c1210bd1d02d7e4569e49af04a115a1ecb6e11ad1ed94",
+    "Ottrin-0.1.0-windows-x64.msi": "870bcd4ac869c78b28e5736b6d2898cafc1b6b8f14cc5555937e55e6e7a90282"
+  },
+  "source_checks": "385 Linux UI tests pass, one existing explicit mount-namespace exclusion; 10 focused ordinary-account Windows cases and 15 Activity scenarios pass. Strict Linux/Windows Clippy passes. See source ACCEPTANCE.json for original checks and measured scope.",
+  "linux_package_scope": "Four-format payload/helper/docs identities, AppImage/RPM namespace ownership, actual AppImage Light100 Cancel/Undo/cleanup workflow. Exact concurrent-input GUI and fresh distro lifecycle remain separate.",
+  "windows_package_scope": "Matched internal portable/NSIS/MSI content; MSI compiled and administratively extracted on native Windows. NSIS authored uninstaller and plugin payload verified separately.",
+  "published_linux": "/home/campbell/Projects/Ottrin/dist/packages",
+  "internal_windows_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "public_windows_replaced": false,
+  "limits": [
+    "Native alias/case-equivalence, cross-process target reservations, interrupted staging and broader Windows Copy/resource/storage gates remain open.",
+    "Earlier theme, preview and installer acceptance remains bound to its original artifact.",
+    "Exact concurrent-input GUI, fresh distro lifecycle and current Windows installation lifecycle are not proved by these checks."
+  ],
+  "cleanup": "Private Linux app/daemon/display/profile/extraction removed. Native compiler, payload and MSI extraction removed; original Windows profile/install and Winlogon unchanged; owned VM shut off.",
+  "evidence_sha256": {
+    "ACCEPTANCE.json": "42331b26a45e0d004df2d7860cf43563fe5999f682e905f84c60962a2765b111",
+    "SOURCE_BINDING.json": "bc1742f86e7173efc3760589e27da35a4a79fef5357abe128e8c76c4713802fa",
+    "FINAL_PACKAGE_IDENTITIES.json": "d632b2b19f1ac0a308b8ce2f4f52fc7f3af5914424babbe56231b1432d3d0934",
+    "PACKAGED_NAMESPACE_APPIMAGE.json": "9c26655012380b1884f03ef80314fe2fc0321ac83829fac9dcbe173f6a5428f0",
+    "PACKAGED_NAMESPACE_RPM.json": "f3e130a83c942398c80309443ee649a49172cc907a8e981ec83f9abcb8c68723",
+    "DELIVERY.json": "a41e6e7c24f3dc625a307dff3fc11e9cb0e6dd70db09e0b6bfe73012d79605bb",
+    "linux-light100/RESULTS.json": "0462e3e4405a54ed07835d9ad3b895df56aa143a667a47ec92ed313b8eb20d40",
+    "PAYLOAD.json": "1087058f04bdab331448bbc31b30d348bb73f2a98a002f3afb88c9ebf516ba41",
+    "DEPLOYMENT.json": "431022d4e7cfff8d1f14bd061fe7ca6cd204cb42a8a3cbeee9ca4fa86b4035e0",
+    "MSI_PAYLOAD.json": "4a6647d0e26a4ec959c862cd0bf35226281dd0470255cbd1ae3445ed052a8053",
+    "NSIS_PAYLOAD.json": "660166fce4a85b0bf2c8e9cedeabe692a1af9cd60e5f3ba66a43738dfd45c779",
+    "WINDOWS_PACKAGE_IDENTITIES.json": "88feabd3e4fe8e517d4ee4cf4f045aca59cd9019b7a904fb79fa63ce17c61746",
+    "PACKAGE_TEARDOWN.json": "c320c204717fa0e17ab42530142883f33502b92e3f6ddc0cf5e6df45ceccb159",
+    "linux-gui-driver.py": "7ae6b93a4d211292596caa03911230e0cbadbd89c7a64a429c506a991fab8b28",
+    "linux-package-check.py": "df39eb3869dd1c46c0d91eb24a5723159ff45763011da2de4616f6a6b75fb07a",
+    "verify-nsis.py": "afd314389dda6259e39dac7d61c71946cfafff697de38cab5ad9ea32b38accbe",
+    "verify-msi.py": "ef52e8f77366f050aa636e5362a690e824af47ec39924da438a216316a3dc0fa",
+    "teardown-packaging.py": "6ac5e7b6fdc8ca61c864220dc62967d8ec9b84e41b1e7b6645a301769086dbb4",
+    "deploy.py": "83c5ed5a3ef959a1a80fda91be809eb88bb948e8fe104136704540fc18ff70e1",
+    "msi-compiler.py": "66399ea327bec502886ec3bacff4070fc46f5e0bb9a979eadce0890dcbcd76d4",
+    "linux-light100/activity.png": "7b66177ef437df80ea6eaef24fc842fcd3c059818e774f188a9c0d20dd1b25d3",
+    "linux-light100/after-undo.png": "6057919be3075b406843cab340c6c392e53a19588fb5debf05b24c30bd243015",
+    "linux-light100/available-undo-confirmation.png": "6a22d519cfb5a993d9d16a992a9167b1813496bb6e47424b0752adb3a702f87c",
+    "linux-light100/cleared.png": "61434d167813f4179d1b60f1a920db862a86ee0a1d22033c635a0b6ee18aac5d",
+    "linux-light100/default.png": "1f24a21e0a8792cdf6ba1c638fa13765f5653834ad1e6c7e76b83e4730949bf6",
+    "linux-light100/undone-confirmation.png": "7b4e4d72065c659ff4068cb57a1b5d41b65391496cb2ae3f0cb926e99b38f6de"
+  }
+}

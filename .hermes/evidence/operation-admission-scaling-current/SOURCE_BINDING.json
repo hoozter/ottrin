@@ -1,0 +1,11 @@
+{
+  "source_revision": "711706771cd7e32d0e3f422282275f010c27b3e8",
+  "tested_source_matches_commit": true,
+  "changed_product_sources": [
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/operation_paths.rs"
+  ],
+  "native_test_binary_sha256": "ad6beeea62965fbabd753a3049b1a774d90a3fe9cfd6b22ef03ff78f17749fd6",
+  "package_build_session": 27991,
+  "package_log": "linux-package-build.log"
+}

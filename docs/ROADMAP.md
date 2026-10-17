@@ -27,9 +27,16 @@ scenarios. Strict Linux/Windows all-target Clippy passes. A sequential CPU contr
 also shows the 5,000-write probe spending 23.5 user-CPU seconds before versus
 32 ms after (including input setup), confirming actual CPU work was removed.
 Native alias/case-equivalence, cross-process reservation and broader
-resource/storage gates remain open; current downloads remain source `69ab186`
-until a rebuilt cohort is accepted. Exact source, executable, measurement scope
-and teardown are recorded in
+resource/storage gates remain open. Clean source `7117067` is now published in
+all four Linux formats at `dist/packages/`. The AppImage SHA-256 is
+`4aed720d885462796bc435394a193b627b84452d5dea827991b2237723cae18c`.
+The actual AppImage passes the Light100 Cancel/Undo/cleanup workflow, with
+all-four-format payload verification and AppImage/RPM namespace checks.
+Portable/NSIS/MSI Windows candidates match all 57 current payload files; native
+MSI administrative extraction verifies content, not installation lifecycle.
+Public Windows downloads remain unchanged. Exact package scopes are in
+`.hermes/evidence/operation-admission-scaling-current/PACKAGED_ACCEPTANCE.json`.
+Exact source, executable, measurement scope and source-test teardown are in
 `.hermes/evidence/operation-admission-scaling-current/ACCEPTANCE.json`.
 
 ## Operation-path ownership correction
@@ -56,10 +63,10 @@ Tests include byte preservation, retained unsaved text, refusal before elevation
 concurrent readers, unrelated work and release of completed queue ownership.
 Source/profile/install hashes and clean teardown are recorded in
 `.hermes/evidence/activity-path-ownership-current/ACCEPTANCE.json`.
-Clean source `69ab186` is now delivered in all four Linux formats at
+The preceding clean source `69ab186` delivery was verified in all four Linux formats at
 `dist/packages/`; the AppImage SHA-256 is
 `a2a2ce357cad233ff78c83afc86bc10ab5c43ccec41c74a4f7904069ef59e2b2`.
-All four formats match current code/docs/helper identities, with AppImage/RPM
+That cohort matched its code/docs/helper identities, with AppImage/RPM
 namespace ownership checks. The actual AppImage in Light100 passes warning,
 Cancel, Undo restoring the original and retained-data cleanup; private app,
 daemon, display and data teardown passes. Portable/NSIS/MSI Windows candidates

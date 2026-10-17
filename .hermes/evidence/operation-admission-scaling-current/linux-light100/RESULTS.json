@@ -1,0 +1,20 @@
+{
+  "artifact_sha256": "4aed720d885462796bc435394a193b627b84452d5dea827991b2237723cae18c",
+  "theme": "Light",
+  "scale": "1",
+  "text_scale": 1.0,
+  "status": "pass",
+  "preset": "Ottrin",
+  "custom_theme": null,
+  "config_sha256": "1b98a6315b1e7ffd50f98df60dd1365f64d360619a3e393a733be59ec2089f3d",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 711706771cd7e32d0e3f422282275f010c27b3e8\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "retained_visual_workflow": "visual-only disclosure: canonical recovery bytes, retained backup, publication and source unchanged",
+  "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+  "visual_checks": [
+    "Actual rebuilt AppImage Light100 Activity labels and confirmation hierarchy visually inspected",
+    "Cancel preserves canonical recovery bytes, retained backup, source and publication",
+    "Undo restores original before bytes; cleanup removes private stages and recovery records while preserving source"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

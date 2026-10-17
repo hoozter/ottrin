@@ -1,0 +1,9 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 2m 22s
+    Finished `release` profile [optimized] target(s) in 0.61s
+    Finished `release` profile [optimized] target(s) in 0.26s
+/tmp/tmp.AF1JlinU2S/pdfium.tgz: OK
+/tmp/tmp.Mry40elZYU/archive: OK
+/tmp/tmp.Mry40elZYU/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-activity-candidate/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
