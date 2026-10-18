@@ -4670,8 +4670,13 @@ leftover temporary entries (46.78s). Tests cover every release-byte prefix witho
 rewriting either journal, source-free replay, retained-data preservation, divergent
 and nonterminal pairs, unknown/corrupt tails, an unknown ADS and a later generation
 that old terminal journals cannot repair. Strict Windows all-target Clippy and
-formatting pass. Broader tests for the changed shared decoder run on the same
-recorded executable; no full-suite pass for this revision is inferred yet.
+formatting pass. The broader run on the same recorded executable is now complete:
+188 enumerated journal cases are covered by disjoint batches, with 179 passes,
+zero failures and nine intentional fixture-entry ignores. All seven registry tests
+also pass. Teardown preserved the original profile, installation and login state,
+removed owned temporary data and shut down the test VM. These results cover
+revision `a7904eb`; the subsequent finish-release API and Activity changes still
+need their own native acceptance.
 Evidence: `.hermes/evidence/windows-copy-claim-release-current/ACCEPTANCE.json`.
 
 Still required: a distinct non-destructive finish-release recovery admission and

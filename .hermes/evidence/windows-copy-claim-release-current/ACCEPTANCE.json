@@ -1,5 +1,5 @@
 {
-  "status": "focused native pass; broader decoder regressions running",
+  "status": "pass for recorded release-writer scope; full journal/registry batches and clean teardown complete",
   "scope": "Recognize and explicitly finish only the bound exact release prefix after independent paired terminal verification; shared canonical frame encoding",
   "source": {
     "baseline": "51e8ef8",
@@ -59,7 +59,7 @@
   "strict_windows_platform_all_target_clippy": "pass",
   "format_and_diff": "pass",
   "broader_regressions": {
-    "status": "running; no full-suite pass inferred",
+    "status": "pass",
     "host_session": 95843,
     "order": [
       "core",
@@ -68,7 +68,15 @@
       "registry",
       "journal-list"
     ],
-    "teardown": "Shared owned-VM teardown runs after all batches pass."
+    "teardown": "Shared owned-VM teardown runs after all batches pass.",
+    "journal_suite": {
+      "path": "JOURNAL_SUITE.json",
+      "enumerated": 188,
+      "passed": 179,
+      "failed": 0,
+      "ignored": 9,
+      "disjoint_cover": true
+    }
   },
   "limits": [
     "This is core writer recovery. Fresh RetainedCopyUndoPlan admission still rejects already-completed Undo; a distinct non-destructive finish-release admission and visible pending status after restart remain required. Cleanup can reach the writer but also authorizes retained-payload deletion.",
@@ -77,5 +85,15 @@
     "Complete integrated simultaneous initialization, Overwrite/Rename, alias/ancestor/resource and normal workflow/package gates remain required.",
     "No application package refresh; public Windows Copy remains disabled."
   ],
-  "native_text_export": "Result/log text normalized to LF and trailing harness whitespace removed; binary hashes and result fields unchanged."
+  "native_text_export": "Result/log text normalized to LF and trailing harness whitespace removed; binary hashes and result fields unchanged.",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  }
 }

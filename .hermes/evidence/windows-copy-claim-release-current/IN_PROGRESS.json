@@ -1,0 +1,6 @@
+{
+  "status": "release-writer checkpoint complete; see ACCEPTANCE/JOURNAL_SUITE",
+  "source_revision": "a7904eb",
+  "native_vm": "shut off; clean teardown passed",
+  "next": "Name-release API/Activity source in windows-copy-name-release-current is building, not natively accepted yet."
+}
