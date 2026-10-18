@@ -1,12 +1,12 @@
-//! Destination-local, append-only name ownership. A released generation remains
-//! verifiable while its Copy journals retain Undo/cleanup evidence.
+//! Destination-local name ownership. Each ledger holds one claim and release;
+//! paired terminal journals outlive the discharged reservation.
 use super::super::registry::AnchoredRoot;
 use super::*;
 use windows_sys::Win32::Storage::FileSystem::{
     DELETE, FILE_GENERIC_WRITE, FILE_READ_ATTRIBUTES, SYNCHRONIZE,
 };
 
-const CLAIM_MAGIC: &[u8; 8] = b"OTCWCL02";
+const CLAIM_MAGIC: &[u8; 8] = b"OTCWCL03";
 
 #[cfg(not(test))]
 fn claim_budget() -> u64 {
@@ -131,7 +131,7 @@ impl Binding {
             assert!(next.generation(self).unwrap().released);
             assert!(after.starts_with(before));
             assert_eq!(next.sequence, prior.sequence + 1);
-            assert_eq!(next.generations.len(), prior.generations.len());
+            assert_eq!(next.owner.is_some(), prior.owner.is_some());
         }
     }
     pub(super) fn identities(&self) -> [WindowsStableIdentity; 5] {
@@ -152,7 +152,7 @@ impl Binding {
         creator: &[u8],
     ) -> bool {
         self.claim.valid()
-            && self.sequence < MAX_LOG / FRAME_HEADER as u64
+            && self.sequence == 0
             && self.claim.parent == parent
             && self.claim.central == central
             && self.claim.target == target
@@ -264,7 +264,7 @@ struct Generation {
     released: bool,
 }
 struct Log {
-    generations: Vec<Generation>,
+    owner: Option<Generation>,
     sequence: u64,
     previous: [u8; 32],
     length: u64,
@@ -272,7 +272,7 @@ struct Log {
 impl Log {
     fn empty() -> Self {
         Self {
-            generations: Vec::new(),
+            owner: None,
             sequence: 0,
             previous: [0; 32],
             length: 0,
@@ -281,27 +281,14 @@ impl Log {
     fn check(&self, entry: &Entry) -> Result<(), PlatformError> {
         match entry {
             Entry::Claim { claim } => {
-                if !claim.valid()
-                    || self.generations.last().is_some_and(|g| !g.released)
-                    || self.generations.first().is_some_and(|g| {
-                        let first = &g.binding.claim;
-                        first.parent != claim.parent
-                            || first.root != claim.root
-                            || first.file != claim.file
-                            || first.anchor != claim.anchor
-                            || first.bucket != claim.bucket
-                            || first.bucket_anchor != claim.bucket_anchor
-                            || first.creator != claim.creator
-                            || first.security != claim.security
-                    })
-                {
+                if !claim.valid() || self.owner.is_some() {
                     return Err(io("Invalid Copy name-claim generation"));
                 }
             }
             Entry::Release { sequence, digest } => {
                 let generation = self
-                    .generations
-                    .last()
+                    .owner
+                    .as_ref()
                     .ok_or_else(|| io("Copy claim release has no owner"))?;
                 if generation.released
                     || generation.binding.sequence != *sequence
@@ -318,15 +305,17 @@ impl Log {
     fn apply(&mut self, entry: Entry, hash: [u8; 32]) -> Result<(), PlatformError> {
         self.check(&entry)?;
         match entry {
-            Entry::Claim { claim } => self.generations.push(Generation {
-                binding: Binding {
-                    claim: *claim,
-                    sequence: self.sequence,
-                    digest: hash,
-                },
-                released: false,
-            }),
-            Entry::Release { .. } => self.generations.last_mut().unwrap().released = true,
+            Entry::Claim { claim } => {
+                self.owner = Some(Generation {
+                    binding: Binding {
+                        claim: *claim,
+                        sequence: self.sequence,
+                        digest: hash,
+                    },
+                    released: false,
+                })
+            }
+            Entry::Release { .. } => self.owner.as_mut().unwrap().released = true,
         }
         self.sequence += 1;
         self.previous = hash;
@@ -368,7 +357,7 @@ impl Log {
             result.apply(serde_json::from_slice(payload).map_err(io)?, hash)?;
             at = end;
         }
-        if result.generations.is_empty() {
+        if result.owner.is_none() {
             return Err(io("Empty Copy name-claim log; retained for review"));
         }
         result.length = at as u64;
@@ -385,7 +374,7 @@ impl Log {
     /// recovery records before it may invoke the authorized writer.
     fn for_admission(bytes: &[u8]) -> Result<(Self, bool), PlatformError> {
         let log = Self::prefix(bytes)?;
-        let binding = log.generations.last().unwrap().binding.clone();
+        let binding = log.owner.as_ref().unwrap().binding.clone();
         log.checked_tail(bytes, &binding, true)
     }
     fn checked_tail(
@@ -399,8 +388,8 @@ impl Log {
             return Ok((log, false));
         }
         let own_active = log
-            .generations
-            .last()
+            .owner
+            .as_ref()
             .is_some_and(|generation| !generation.released && generation.binding == *binding);
         let expected = encode_frame(
             log.sequence,
@@ -461,7 +450,7 @@ impl Log {
         }
         self.apply(entry, hash)?;
         self.length += frame.len() as u64;
-        Ok(self.generations.last().unwrap().binding.clone())
+        Ok(self.owner.as_ref().unwrap().binding.clone())
     }
     /// The caller holds the exclusive writer and independently established
     /// either paired terminal state or absence of this generation's records.
@@ -486,9 +475,9 @@ impl Log {
         self.append(file, entry).map(|_| ())
     }
     fn generation(&self, expected: &Binding) -> Result<&Generation, PlatformError> {
-        self.generations
-            .iter()
-            .find(|g| g.binding.sequence == expected.sequence && g.binding == *expected)
+        self.owner
+            .as_ref()
+            .filter(|g| g.binding == *expected)
             .ok_or_else(|| io("Copy name-claim generation changed"))
     }
 }
@@ -530,6 +519,21 @@ fn ledger_key(target: &OsStr) -> (bool, OsString) {
     }
     (short, name)
 }
+fn observed_file(root: &File, name: &OsStr) -> std::io::Result<File> {
+    unsafe {
+        windows_fs::open_relative(
+            root,
+            name,
+            RelativeOptions {
+                directory: Some(false),
+                create_new: false,
+                access: FILE_GENERIC_READ,
+                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                security: ptr::null(),
+            },
+        )
+    }
+}
 fn validate_control(
     root: &AnchoredRoot,
     bucket: &AnchoredRoot,
@@ -540,8 +544,8 @@ fn validate_control(
     root.validate()?;
     bucket.validate()?;
     let first = &log
-        .generations
-        .first()
+        .owner
+        .as_ref()
         .ok_or_else(|| io("Copy claim log has no generation"))?
         .binding
         .claim;
@@ -597,7 +601,7 @@ fn busy_claim(
         let bytes = read(&file)?;
         let log = Log::decode(&bytes)?;
         validate_control(root, bucket, &file, &bytes, &log)?;
-        Ok::<bool, PlatformError>(log.generations.last().is_some_and(|g| !g.released))
+        Ok::<bool, PlatformError>(log.owner.as_ref().is_some_and(|g| !g.released))
     })();
     match observed {
         Ok(true) => PlatformError::DestinationExists(format!(
@@ -608,13 +612,9 @@ fn busy_claim(
         Err(error) => error,
     }
 }
-// Canonical recovery records pin a generation even after its release. Only an
-// exclusive ledger writer may use their absence to reclaim bookkeeping.
-fn references_absent(
-    parent: &File,
-    central: &File,
-    generations: &[Generation],
-) -> Result<bool, PlatformError> {
+// Only an exclusive writer with neither canonical recovery record may cancel
+// an abandoned active claim. Released claims need no historical record scan.
+fn records_absent(parent: &File, central: &File, claim: &Claim) -> Result<bool, PlatformError> {
     fn vacant(parent: &File, name: &OsStr) -> Result<bool, PlatformError> {
         match unsafe {
             windows_fs::open_relative(
@@ -634,42 +634,23 @@ fn references_absent(
             Err(error) => Err(io(error)),
         }
     }
-    let mut volumes = discovery::Volumes::new(central)?;
-    let mut registries = std::collections::BTreeMap::new();
-    for generation in generations {
-        let claim = &generation.binding.claim;
-        if !vacant(
-            parent,
-            OsStr::new(&format!(".ottrin-copy-{}", claim.transaction)),
-        )? {
-            return Ok(false);
-        }
-        let key = claim.central.object_key();
-        if !registries.contains_key(&key) {
-            // Unavailable old registries cannot authorize collection. Preserve
-            // their history; ordinary admission may still append within budget.
-            if registries.len() == 512 {
-                return Ok(false);
-            }
-            let Ok(registry) = volumes.resolve(claim.central, FILE_GENERIC_READ, &mut |_| Ok(()))
-            else {
-                return Ok(false);
-            };
-            registries.insert(key, registry);
-        }
-        if !vacant(
-            &registries[&key],
-            OsStr::new(&format!("{}.copy-journal", claim.transaction)),
-        )? {
-            return Ok(false);
-        }
+    if !vacant(
+        parent,
+        OsStr::new(&format!(".ottrin-copy-{}", claim.transaction)),
+    )? {
+        return Ok(false);
     }
-    Ok(true)
-}
-fn retirement_ready(parent: &File, central: &File, log: &Log) -> Result<bool, PlatformError> {
-    Ok(!log.generations.is_empty()
-        && log.generations.iter().all(|generation| generation.released)
-        && references_absent(parent, central, &log.generations)?)
+    let Ok(registry) = discovery::Volumes::new(central)?.resolve(
+        claim.central,
+        FILE_GENERIC_READ,
+        &mut |_| Ok(()),
+    ) else {
+        return Ok(false);
+    };
+    vacant(
+        &registry,
+        OsStr::new(&format!("{}.copy-journal", claim.transaction)),
+    )
 }
 impl Lease {
     pub(super) fn acquire(
@@ -719,21 +700,24 @@ impl Lease {
         {
             let mut bytes = read(&file)?;
             validate_control(&root, &bucket, &file, &bytes, &log)?;
-            let last = log.generations.last().unwrap();
-            if !last.released && references_absent(parent, central, std::slice::from_ref(last))? {
+            let last = log.owner.as_ref().unwrap();
+            if !last.released && records_absent(parent, central, &last.binding.claim)? {
                 // The prior kernel writer is gone and no transaction records
                 // exist to authorize any further payload work.
-                // Older generations may still have journals; release only this
-                // orphan through the canonical append protocol before admission.
+                // Release only this orphan before replacing its control.
                 let binding = last.binding.clone();
                 validate_control(&root, &bucket, &file, &bytes, &log)?;
                 log.finish_release(&mut file, &binding, pending_release)?;
                 bucket.writable_root()?.sync_all().map_err(io)?;
                 bytes = read(&file)?;
             }
-            if retirement_ready(parent, central, &log)? {
-                // Recheck the bound native controls immediately before unlink.
-                // No outstanding journal can refer to this fully released log.
+            if log
+                .owner
+                .as_ref()
+                .is_some_and(|generation| generation.released)
+            {
+                // Terminal journal recovery is independent of this discharged
+                // control. Retire it before publishing a fresh complete claim.
                 validate_control(&root, &bucket, &file, &bytes, &log)?;
                 cleanup_tree::dispose(&file)?;
                 drop(file);
@@ -741,22 +725,10 @@ impl Lease {
                 return Self::prepare_new(parent, central, target, transaction, root, bucket);
             }
         }
-        let claim = Claim::capture(parent, central, &root, &bucket, &file, target, transaction)?;
-        if log.generations.last().is_some_and(|g| !g.released) {
-            return Err(PlatformError::DestinationExists(format!(
-                "{} is reserved by retained Copy",
-                target.to_string_lossy()
-            )));
-        }
-        root.validate()?;
-        let binding = log.append(
-            &mut file,
-            Entry::Claim {
-                claim: Box::new(claim),
-            },
-        )?;
-        bucket.writable_root()?.sync_all().map_err(io)?;
-        Self::from_file(root, bucket, binding, file, true, false)
+        Err(PlatformError::DestinationExists(format!(
+            "{} is reserved by retained Copy",
+            target.to_string_lossy()
+        )))
     }
     fn prepare_new(
         parent: &File,
@@ -879,6 +851,44 @@ impl Lease {
             }),
         }
     }
+    /// Call only while independently verified paired terminal journals remain
+    /// held. A new owner is neither parsed nor mutated on the old one's behalf.
+    pub(super) fn observe_terminal(
+        parent: &File,
+        binding: &Binding,
+    ) -> Result<Option<Self>, PlatformError> {
+        let Some(root) = AnchoredRoot::claims(parent, false)? else {
+            return Ok(None);
+        };
+        if stable_identity_from_handle(root.root()).map_err(io)? != binding.claim.root
+            || root.anchor_identity() != binding.claim.anchor
+        {
+            return Ok(None);
+        }
+        let (short, name) = ledger_key(&OsString::from_wide(&binding.claim.target));
+        let Some(bucket) = AnchoredRoot::claim_bucket(root.root(), short, false)? else {
+            return Ok(None);
+        };
+        if stable_identity_from_handle(bucket.root()).map_err(io)? != binding.claim.bucket
+            || bucket.anchor_identity() != binding.claim.bucket_anchor
+        {
+            return Ok(None);
+        }
+        let file = match observed_file(bucket.root(), &name) {
+            Ok(file) => file,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(io(error)),
+        };
+        // Type/reparse changes on the same object are corruption to validate,
+        // not a different owner whose bytes may be ignored.
+        if !stable_identity_from_handle(&file)
+            .map_err(io)?
+            .same_object(binding.claim.file)
+        {
+            return Ok(None);
+        }
+        Self::from_file(root, bucket, binding.clone(), file, false, true).map(Some)
+    }
     pub(super) fn open(
         parent: &File,
         binding: &Binding,
@@ -910,20 +920,7 @@ impl Lease {
             )
             .map_err(io)?
         } else {
-            unsafe {
-                windows_fs::open_relative(
-                    bucket.root(),
-                    &name,
-                    RelativeOptions {
-                        directory: Some(false),
-                        create_new: false,
-                        access: FILE_GENERIC_READ,
-                        sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        security: ptr::null(),
-                    },
-                )
-            }
-            .map_err(io)?
+            observed_file(bucket.root(), &name).map_err(io)?
         };
         Self::from_file(root, bucket, binding, file, writer, terminal)
     }
@@ -1052,7 +1049,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn windows_native_claim_retirement_preserves_each_reference_and_unknown_content() {
+    fn windows_native_claim_retirement_preserves_retained_records_and_unknown_control_content() {
         let root = tempfile::tempdir().unwrap();
         let parent = windows_fs::open_directory(
             root.path(),
@@ -1068,14 +1065,15 @@ mod tests {
         first.release_after_terminal().unwrap();
         let ledger = root.path().join(binding.test_relative_path());
         let mirror = registry_path.join(format!("{first_id}.copy-journal"));
-        std::fs::write(&mirror, b"unknown registry record must pin history").unwrap();
+        std::fs::write(&mirror, b"preserve retained registry record").unwrap();
         let second =
             Lease::acquire(&parent, &registry, OsStr::new("copy"), &"2".repeat(32)).unwrap();
-        assert_eq!(second.binding.claim.file, binding.claim.file);
+        assert_ne!(second.binding.claim.file, binding.claim.file);
+        assert_eq!(second.binding.sequence, 0);
         second.release_after_terminal().unwrap();
         assert_eq!(
             std::fs::read(&mirror).unwrap(),
-            b"unknown registry record must pin history"
+            b"preserve retained registry record"
         );
         std::fs::remove_file(&mirror).unwrap();
         let stage = root.path().join(format!(".ottrin-copy-{first_id}"));
@@ -1083,7 +1081,7 @@ mod tests {
         std::fs::write(stage.join("unknown"), b"keep stage content").unwrap();
         let third =
             Lease::acquire(&parent, &registry, OsStr::new("copy"), &"3".repeat(32)).unwrap();
-        assert_eq!(third.binding.claim.file, binding.claim.file);
+        assert_ne!(third.binding.claim.file, binding.claim.file);
         third.release_after_terminal().unwrap();
         assert_eq!(
             std::fs::read(stage.join("unknown")).unwrap(),
@@ -1125,16 +1123,11 @@ mod tests {
         let central = windows_fs::open_directory(&central_path, FILE_GENERIC_READ).unwrap();
         let first = Lease::acquire(&parent, &central, OsStr::new("copy"), &"1".repeat(32)).unwrap();
         let binding = first.binding.clone();
-        first.release_after_terminal().unwrap();
-        std::fs::create_dir(root.path().join(format!(".ottrin-copy-{}", "1".repeat(32)))).unwrap();
-        let lease = Lease::open(&parent, &binding, true, true).unwrap();
-        let before = read(&lease.file).unwrap();
-        let mut next = binding.claim.clone();
-        next.transaction = "2".repeat(32);
+        let before = read(&first.file).unwrap();
         let entry = Entry::Claim {
-            claim: Box::new(next),
+            claim: Box::new(binding.claim.clone()),
         };
-        let claim_bytes = FRAME_HEADER + serde_json::to_vec(&entry).unwrap().len();
+        let release = binding.test_release_frame(&before);
         struct ResetBudget;
         impl Drop for ResetBudget {
             fn drop(&mut self) {
@@ -1142,33 +1135,20 @@ mod tests {
             }
         }
         let reset = ResetBudget;
-        // This permits the complete claim frame, but none of its release.
-        CLAIM_BUDGET.with(|limit| limit.set(before.len() as u64 + claim_bytes as u64));
-        let mut log = Log::decode(&before).unwrap();
-        let mut file = lease.file.try_clone().unwrap();
+        // A complete first frame alone is insufficient: reserve its release
+        // before admitting any owner, and leave bytes untouched on rejection.
+        CLAIM_BUDGET.with(|limit| limit.set(before.len() as u64));
+        let mut log = Log::empty();
+        let mut file = first.file.try_clone().unwrap();
         assert!(log.append(&mut file, entry).is_err());
         assert_eq!(read(&file).unwrap(), before);
-        assert_eq!(log.length, before.len() as u64);
-        assert_eq!(log.sequence, 2);
-        let mut next = binding.claim.clone();
-        next.transaction = "2".repeat(32);
-        let payload = serde_json::to_vec(&Entry::Claim {
-            claim: Box::new(next),
-        })
-        .unwrap();
-        let release = Entry::Release {
-            sequence: log.sequence,
-            digest: frame_hash(log.sequence, &log.previous, &payload),
-        };
-        let exact =
-            before.len() + claim_bytes + FRAME_HEADER + serde_json::to_vec(&release).unwrap().len();
+        assert_eq!(log.length, 0);
+        assert_eq!(log.sequence, 0);
+        let exact = before.len() + release.len();
         CLAIM_BUDGET.with(|limit| limit.set(exact as u64));
-        drop((file, lease));
-        let next = Lease::acquire(&parent, &central, OsStr::new("copy"), &"2".repeat(32)).unwrap();
-        assert_eq!(next.binding.sequence, 2);
-        let completed = next.binding.clone();
-        next.release_after_terminal().unwrap();
-        let observed = Lease::open(&parent, &completed, true, false).unwrap();
+        drop(file);
+        first.release_after_terminal().unwrap();
+        let observed = Lease::open(&parent, &binding, true, false).unwrap();
         assert_eq!(read(&observed.file).unwrap().len(), exact);
         drop(reset);
     }

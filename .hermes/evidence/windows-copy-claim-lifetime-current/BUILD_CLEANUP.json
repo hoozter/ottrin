@@ -1,0 +1,18 @@
+{
+  "reason": "Final identity-guard build replaces prior same-configuration session; no active rustc, preserve current executable and dependencies",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbh9xdi53-0oaoa2z-apwgko3iam42gmwj49jbuenlb",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbhd2l1l9-1cx9z6m-1vgs734b5yh25nj4vyafmznik",
+  "reclaimed_free_bytes": 539680768,
+  "previous_cleanup": {
+    "reason": "Successful final source/test build; consecutive owned same-configuration sessions, no rustc remains; preserve final executable and current incremental session",
+    "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbh7wm33v-0tvyqjc-bp7sulcyv26m6lhns7f85q4z6",
+    "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbh9xdi53-0oaoa2z-apwgko3iam42gmwj49jbuenlb",
+    "reclaimed_free_bytes": 545943552,
+    "previous_cleanup": {
+      "reason": "Final successful build replaces superseded same-configuration incremental state; preserve current session, binaries and shared dependency caches",
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbh2xchdl-1dlavdv-2l90h12z2gu8cqkvxgrshwfdj",
+      "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbh3z5wcb-0tk0fh2-8uwvc6hywcdgrbwlplvt80r6k",
+      "reclaimed_free_bytes": 565743616
+    }
+  }
+}

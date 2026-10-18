@@ -144,12 +144,14 @@ fn windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_t
         PlatformError::Io(_)
     ));
     let newer = std::fs::read(&claim).unwrap();
-    assert!(newer.starts_with(&full));
-    let release = full.len()
-        + FRAME_HEADER
-        + u32::from_le_bytes(newer[full.len() + 8..full.len() + 12].try_into().unwrap()) as usize;
+    assert!(!newer.starts_with(&full));
+    let release = FRAME_HEADER + u32::from_le_bytes(newer[8..12].try_into().unwrap()) as usize;
     replace_bytes(&claim, &newer[..release + 12]);
-    refused(&parent, &central, &name, &claim, &newer[..release + 12]);
+    let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+    assert!(snapshot.claim.is_none());
+    drop(snapshot);
+    undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+    assert_eq!(std::fs::read(&claim).unwrap(), &newer[..release + 12]);
     replace_bytes(&claim, &newer);
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     assert_eq!(std::fs::read(&claim).unwrap(), newer);

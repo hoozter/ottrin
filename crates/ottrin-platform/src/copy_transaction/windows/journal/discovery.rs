@@ -606,7 +606,11 @@ pub fn discover_at_with_progress(
                 if snapshot.bytes != bytes {
                     return Err(io("Copy journals changed during release discovery"));
                 }
-                if snapshot.claim.needs_release() {
+                if snapshot
+                    .claim
+                    .as_ref()
+                    .is_some_and(claims::Lease::needs_release)
+                {
                     snapshot.revalidate(&parent, &central)?;
                     return Ok(WindowsCopyRecoveryEvidence::PendingNameRelease);
                 }

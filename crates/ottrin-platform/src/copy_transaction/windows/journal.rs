@@ -47,7 +47,7 @@ pub(crate) use discovery::{
 };
 use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ16";
+const MAGIC: &[u8; 8] = b"OTCPWJ17";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -301,7 +301,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 16
+            && self.schema == 17
             && self.claim.matches(
                 self.parent,
                 self.central,
@@ -1403,7 +1403,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 16,
+            schema: 17,
             transaction: name,
             parent: parent_id,
             parent_case_sensitive: destination.case_sensitive,
@@ -1452,14 +1452,13 @@ impl Journal {
         let length = snapshot.bytes.len() as u64;
         let header = snapshot.state.header.as_ref().unwrap().clone();
         drop(snapshot.claim);
-        let claim = claims::Lease::open(
-            parent,
-            &header.claim,
-            snapshot.state.claim_terminal(),
-            !snapshot.state.claim_terminal(),
-        )?;
+        let claim = if snapshot.state.claim_terminal() {
+            claims::Lease::observe_terminal(parent, &header.claim)?
+        } else {
+            Some(claims::Lease::open(parent, &header.claim, false, true)?)
+        };
         let mut result = Self {
-            claim: Some(claim),
+            claim,
             local: snapshot.local,
             central: snapshot.mirror,
             stage_dir: snapshot.stage,
@@ -2997,7 +2996,7 @@ fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
 /// Held journal evidence. Read-only recovery refuses an active writer; explicit
 /// application opens fresh exclusive write handles after read-only validation.
 struct Snapshot {
-    claim: claims::Lease,
+    claim: Option<claims::Lease>,
     stage: File,
     local: File,
     mirror: File,
@@ -3146,8 +3145,12 @@ impl Snapshot {
         // A recognized partial release is only an observation here. The full
         // paired-journal/identity checks below must pass before this snapshot
         // can supply a writer with terminal release authority.
-        let claim = claims::Lease::open(parent, &header.claim, state.claim_terminal(), false)?;
-        let result = Self {
+        let claim = if state.claim_terminal() {
+            None
+        } else {
+            Some(claims::Lease::open(parent, &header.claim, false, false)?)
+        };
+        let mut result = Self {
             claim,
             stage,
             local,
@@ -3158,11 +3161,24 @@ impl Snapshot {
             sequence,
             previous,
         };
+        // Establish paired terminal authority before a missing/replaced name
+        // control can be treated as discharged. No public mutation follows.
         result.revalidate(parent, central)?;
+        if result.state.claim_terminal() {
+            result.claim = claims::Lease::observe_terminal(
+                parent,
+                &result.state.header.as_ref().unwrap().claim,
+            )?;
+            result.revalidate(parent, central)?;
+        }
         Ok(result)
     }
     fn revalidate(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
-        self.claim.validate(self.state.claim_terminal())?;
+        match &self.claim {
+            Some(claim) => claim.validate(self.state.claim_terminal())?,
+            None if self.state.claim_terminal() => {}
+            None => return Err(io("Active Copy snapshot lost its destination claim")),
+        }
         let header = self.state.header.as_ref().unwrap();
         header.validate_parent_policy(parent)?;
         namespace::validate_single_link(&self.local)?;
@@ -3700,7 +3716,9 @@ fn undo_bound_copy(
         // Keep both terminal journals and their stage leased until the release
         // is durable. Dropping them first would let another writer invalidate
         // the paired evidence that authorizes relinquishing this name.
-        claim.release_after_terminal()?;
+        if let Some(claim) = claim {
+            claim.release_after_terminal()?;
+        }
         drop((snapshot.stage, snapshot.local, snapshot.mirror));
         return Ok(());
     }
@@ -8360,7 +8378,7 @@ mod tests {
         }
     }
     #[test]
-    fn windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation() {
+    fn windows_native_copy_claim_survives_stage_drop_and_replaces_a_released_reservation() {
         let root = tempfile::tempdir().unwrap();
         fixture(root.path());
         let parent = owner(&root.path().join("destination"));
@@ -8425,9 +8443,9 @@ mod tests {
         assert!(!root.path().join("destination/copy").exists());
         let reused = stage(&src, &parent, &central).unwrap();
         assert_ne!(reused.journal.header.claim, binding);
-        assert_eq!(
-            reused.journal.header.claim.identities(),
-            binding.identities()
+        assert_ne!(
+            reused.journal.header.claim.identities()[4],
+            binding.identities()[4]
         );
         assert_eq!(
             std::fs::read(root.path().join("source/nested/file")).unwrap(),

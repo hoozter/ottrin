@@ -41,7 +41,10 @@ impl RetainedCopyNameReleasePlan {
         )?;
         if snapshot.bytes != record.bytes
             || !snapshot.state.claim_terminal()
-            || !snapshot.claim.needs_release()
+            || !snapshot
+                .claim
+                .as_ref()
+                .is_some_and(claims::Lease::needs_release)
         {
             return Err(io("Copy has no stable terminal name release to finish"));
         }
@@ -52,7 +55,7 @@ impl RetainedCopyNameReleasePlan {
             registry_anchor: registry.anchor_identity(),
             header: Box::new(header.clone()),
             journal: Sha256::digest(&snapshot.bytes).into(),
-            claim: snapshot.claim.observation(),
+            claim: snapshot.claim.as_ref().unwrap().observation(),
             parent_location: windows_fs::location(&parent).map_err(io)?,
             parent_security: security::owner_group_dacl_digest(&parent)?,
             phase: discovery::phase(&snapshot.state),
@@ -102,9 +105,12 @@ impl RetainedCopyNameReleasePlan {
         )?;
         if snapshot.state.header.as_ref() != Some(self.header.as_ref())
             || !snapshot.state.claim_terminal()
-            || !snapshot.claim.needs_release()
+            || !snapshot
+                .claim
+                .as_ref()
+                .is_some_and(claims::Lease::needs_release)
             || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
-            || snapshot.claim.observation() != self.claim
+            || snapshot.claim.as_ref().unwrap().observation() != self.claim
             || windows_fs::location(&parent).map_err(io)? != self.parent_location
             || security::owner_group_dacl_digest(&parent)? != self.parent_security
         {

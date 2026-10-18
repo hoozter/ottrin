@@ -1,0 +1,6 @@
+{
+  "reason": "Successful test-refinement build replaces superseded same-configuration state",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbgzvlqb6-09mau8r-3c3zc0pv7b944n6c0opdnbx7v",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbh2xchdl-1dlavdv-2l90h12z2gu8cqkvxgrshwfdj",
+  "reclaimed_free_bytes": 635154432
+}

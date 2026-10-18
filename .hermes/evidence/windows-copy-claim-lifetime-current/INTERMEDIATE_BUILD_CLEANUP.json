@@ -1,0 +1,6 @@
+{
+  "reason": "Successful intermediate compile replaces previous checkpoint incremental state; final tests updated before accepted build",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbgsmegb0-1yh0nv6-0f7g9mx85xrt0ltzxwoh1oc7p",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbgzvlqb6-09mau8r-3c3zc0pv7b944n6c0opdnbx7v",
+  "reclaimed_free_bytes": 997310464
+}

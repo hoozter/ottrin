@@ -101,51 +101,49 @@ remain open.
 
 ## Current Windows Copy implementation checkpoint
 
-The current native journal schema is 16. Durable destination claims, the explicit
-Activity release action, exact interrupted-release repair and abandoned complete
-reservation recovery are in source. Initial claims are now prepared outside key
-buckets, fully flushed/decoded and metadata-validated, then atomically published
-through the existing held-handle no-replace rename. Empty and partial first frames
-do not occupy canonical names. Retired-ledger replacement uses this same path;
-retained-history append still has its existing lifecycle.
+The current native journal schema is 17 and claim format is 3. Each destination
+reservation now holds one Claim and Release. Released controls can be retired
+while paired terminal recovery records remain; every new owner uses the existing
+complete private preparation and native held-handle no-replace publication.
+The historical generation-append path and released-history registry scan are
+removed, eliminating the later-generation partial-Claim construction path.
 
-The latest constructor executable passes 29 focused native checks (63.85s) and
-the core suite (117 passed, zero failed, six intentional fixture entry-point
-ignores, 434.13s). Selections overlap. Tests cover pre-publication error cleanup,
-five process-exit states, and concurrent prepared publishers under insensitive
-and sensitive native case policies. Sources and unrelated public files remain
-unchanged; competing publishers cannot overwrite the winner or leak a losing
-preparation. Existing prefix-repair and I/O/exit checks also pass. Strict Windows
-all-target Clippy and formatting pass. Teardown preserves profile, installation
-and login state, removes owned test data/processes and shuts down the VM.
-Exact scope: `.hermes/evidence/windows-copy-claim-publication-current/ACCEPTANCE.json`.
-An early stale observer result was discarded and the correct broader result was
-verified independently; its correction receipt is retained.
+Active operations still require their exact native claim. Terminal snapshots
+establish paired journal bytes, phase, security, identities and namespace before
+observing an optional old claim. A missing or replaced control grants no name
+capability, and recovery never parses or mutates a different owner's file.
+Same-object corruption remains a review error. Cleanup keeps the protected claim
+identity references and all independent payload/peer guards; those references do
+not require obsolete claim files to remain present. Completed-Undo retries keep
+both paired journals leased throughout any remaining release.
 
-Still required: later-generation append interruption, collection of private
-preparations left by abrupt exits, partial root/stage construction,
-retirement-specific interruption/concurrent recreation, physical-power, idle
-bookkeeping, remaining alias/ancestor/resource and public workflow/package gates.
-Native QA now binds each dispatch/result to a unique ID, exact selection,
-executable and raw-log hashes. Preparing, stale/mismatched, malformed, altered-log
-and zero-test success results are rejected before accepted evidence is replaced.
-One real native parent and seven rejection probes pass; raw records are archived
-in `.hermes/evidence/windows-native-dispatch-current/ACCEPTANCE.json`. This is QA
-routing validation, not additional application feature completion.
+The exact current executable passes 31 focused checks (74.54s), the core journal
+suite (119 passed, six ignored, 453.31s), individual cleanup (44 passed, two
+ignored, 402.97s) and grouped cleanup (31 passed, one ignored, 339.58s). No failures
+occurred in these final runs. The three broader selections are disjoint and
+account for the current 203-name journal catalog: 194 passes and nine explicit
+root exclusions. Those exclusions include child/fixture entry points, a secondary
+NTFS-volume case not provisioned in this VM, and the Activity fixture whose UI
+consumer was not rerun. The focused selection overlaps the broader suites.
+Strict Windows all-target Clippy and formatting pass. Profile, installation and
+login preservation plus clean VM teardown are recorded with exact source and
+executable identities in
+`.hermes/evidence/windows-copy-claim-lifetime-current/ACCEPTANCE.json`.
+One obsolete historical-append assertion was corrected after a 30-pass/1-fail
+native run; the superseded result and a pre-final-guard run remain separately
+scoped. Earlier acceptance retains its recorded source/artifact versions.
 
-The terminal-claim audit found and fixed a completed-Undo retry that dropped its
-paired journal handles before the name release became durable. Both journal
-leases now remain held through release. The native regression first reproduced
-successful competing write opens; after the fix, both journals reject write and
-delete access with sharing violations at the release writer boundary. All 30
-focused reservation/recovery checks pass (61.14s), with strict Windows all-target
-Clippy and formatting. Evidence and the baseline probe limitation are recorded in
-`.hermes/evidence/windows-copy-terminal-lease-current/ACCEPTANCE.json`.
-The audit also confirms that current snapshots and cleanup dependency graphs
-still require physical claim identities: removing historical append lifetime
-requires changing those contracts together. That redesign and the other gates
-listed above remain open. Public Windows Copy remains disabled and application
-packages are unchanged.
+Native QA binds dispatch/results to a unique ID, exact selection, executable and
+raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test
+success results are rejected before accepted evidence is replaced; the separate
+routing acceptance is in
+`.hermes/evidence/windows-native-dispatch-current/ACCEPTANCE.json`.
+
+Still required: retirement-specific interruption/concurrent recreation, collection
+of private preparations left by abrupt exits, partial root/stage construction,
+physical-power, idle bookkeeping, remaining alias/ancestor/resource and public
+workflow/package gates. Public Windows Copy remains disabled; older experimental
+journal formats are not migrated and application packages are unchanged.
 
 ### Earlier Windows Copy implementation evidence
 

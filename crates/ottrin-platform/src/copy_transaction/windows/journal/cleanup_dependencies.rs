@@ -356,6 +356,9 @@ pub(super) fn references(state: &State) -> Vec<WindowsStableIdentity> {
         header.local_file,
         header.central_file,
     ];
+    // These are protected native identities, not filesystem existence leases.
+    // Keep them after terminal release: a peer cannot delete claim controls as
+    // payload, while old recovery may outlive a replaced reservation file.
     references.extend(header.claim.identities());
     if let Some(cleanup) = &state.cleanup {
         // A pending peer acknowledgement needs the owner's canonical journal

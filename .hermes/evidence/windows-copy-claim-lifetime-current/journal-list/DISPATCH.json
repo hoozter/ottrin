@@ -1,0 +1,7 @@
+{
+  "id": "80012cbfda8be7d01f254e42ef7996ff",
+  "status": "dispatched",
+  "test_arguments": "copy_transaction::windows::journal:: --list",
+  "transferred_sha256": "684577103a6c009752a9edd94b24880a9509d3308726ae70352fd4be9642104a",
+  "watchdog_ms": 600000
+}

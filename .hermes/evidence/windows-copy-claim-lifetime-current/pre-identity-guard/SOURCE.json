@@ -1,0 +1,15 @@
+{
+  "baseline": "5da39dcb2230639c07a06c16dbbdccd9e0b4ebd8",
+  "scope": "Journal schema 17 and single-owner claim schema 3; terminal recovery independent of discharged name controls, protected dependency identities retained",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "a42e3b618b6ed7c2ca2c941e589bc261e5b0e7f82d5da26f37a9a42ced4a90be",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "a1ed48ae27850319529830f9f320a96f14e97411094e65357071e2b04fff4360",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "852df234896adc97483ceac9656540d1d84fb186f5df59e17f3f9e6f5adc33da",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "721bfc0c3d37a2ba4c6571de9e58634dbcbffebd0a065e26d4e6a45edb46a8c4",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "3fbf379326df079c08b1cabf090064238ea2c1d4107ec4de482aea32bd974282",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_orphans.rs": "32e9dee000527d811e0b302f0b180b4635d8d0997d271e473e06b75f4efb0eeb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "ff2edaa7ffd320f210be1edd253d6317095c32f5cca20065d3f3f7e2167bf79b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_repair.rs": "9091dde07e4879aa00833ba274dda38f7c2d85580628559cb580e8df0b70ed08",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "e4aad7b093bb64db4f6332673a129f3fea5aeaf9aa374362e3a2c22037373c73"
+  }
+}

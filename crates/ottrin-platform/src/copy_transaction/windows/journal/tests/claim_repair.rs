@@ -140,17 +140,22 @@ impl Drop for ClearFault {
 fn windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history() {
     let root = tempfile::tempdir().unwrap();
     let fixture = prepared(root.path(), true);
-    let expected = [fixture.prefix.as_slice(), fixture.release.as_slice()].concat();
-    for cut in 0..=fixture.release.len() {
+    let complete = [fixture.prefix.as_slice(), fixture.release.as_slice()].concat();
+    for cut in 0..fixture.release.len() {
         replace(
             &fixture.ledger,
             &[fixture.prefix.as_slice(), &fixture.release[..cut]].concat(),
         );
-        perform(root.path(), true).unwrap();
-        assert!(
-            std::fs::read(&fixture.ledger)
-                .unwrap()
-                .starts_with(&expected),
+        // Stop after the authorized repair is flushed, before retirement can
+        // replace this native identity. Each retry observes a fresh writer and
+        // exercises every prefix of the same exact bound release frame.
+        let reset = ClearFault;
+        claims::RELEASE_FAULT.with(|fault| fault.set(Some((claims::ReleasePoint::Flushed, false))));
+        assert!(perform(root.path(), true).is_err());
+        drop(reset);
+        assert_eq!(
+            std::fs::read(&fixture.ledger).unwrap(),
+            complete,
             "prefix {cut}"
         );
         preserved(root.path(), &fixture);
@@ -163,6 +168,14 @@ fn windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewrit
                 .undo_complete()
         );
     }
+    // A complete release needs no repair and is atomically replaced on reuse.
+    perform(root.path(), true).unwrap();
+    assert!(
+        !std::fs::read(&fixture.ledger)
+            .unwrap()
+            .starts_with(&fixture.prefix)
+    );
+    preserved(root.path(), &fixture);
 }
 
 #[test]
@@ -273,9 +286,9 @@ fn windows_native_copy_release_repair_errors_and_process_exits_preserve_payload(
                 if orphan {
                     perform(root.path(), true).unwrap();
                     assert!(
-                        std::fs::read(&fixture.ledger)
+                        !std::fs::read(&fixture.ledger)
                             .unwrap()
-                            .starts_with(&complete)
+                            .starts_with(&fixture.prefix)
                     );
                 } else {
                     let transaction = fixture

@@ -1,0 +1,99 @@
+{
+  "status": "pass for single-owner Windows Copy reservation lifetime; full roadmap and package gates remain open",
+  "source": {
+    "baseline": "5da39dcb2230639c07a06c16dbbdccd9e0b4ebd8",
+    "scope": "Journal schema 17 and single-owner claim schema 3; terminal recovery independent of discharged physical controls, active claim identity and cleanup protection preserved",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "a42e3b618b6ed7c2ca2c941e589bc261e5b0e7f82d5da26f37a9a42ced4a90be",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "80efd957e42974f28fcbf8d2e8b4d8073c5d0b0cb4550b26c4c371b5cdfd444d",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "852df234896adc97483ceac9656540d1d84fb186f5df59e17f3f9e6f5adc33da",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "721bfc0c3d37a2ba4c6571de9e58634dbcbffebd0a065e26d4e6a45edb46a8c4",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "3fbf379326df079c08b1cabf090064238ea2c1d4107ec4de482aea32bd974282",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_orphans.rs": "32e9dee000527d811e0b302f0b180b4635d8d0997d271e473e06b75f4efb0eeb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "ff2edaa7ffd320f210be1edd253d6317095c32f5cca20065d3f3f7e2167bf79b",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_repair.rs": "9091dde07e4879aa00833ba274dda38f7c2d85580628559cb580e8df0b70ed08",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "e4aad7b093bb64db4f6332673a129f3fea5aeaf9aa374362e3a2c22037373c73"
+    }
+  },
+  "formats": {
+    "copy_journal": 17,
+    "name_claim": 3,
+    "older_experimental_format_migration": false
+  },
+  "runs": {
+    "focused": {
+      "passed": 31,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 74.54,
+      "dispatch_id": "8faaa365f1eb31f5a386df153ff12e8b",
+      "test_binary_sha256": "684577103a6c009752a9edd94b24880a9509d3308726ae70352fd4be9642104a"
+    },
+    "core": {
+      "passed": 119,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 453.31,
+      "dispatch_id": "e2e32612b80a2b991ef885eb6dd33305",
+      "test_binary_sha256": "684577103a6c009752a9edd94b24880a9509d3308726ae70352fd4be9642104a"
+    },
+    "cleanup": {
+      "passed": 44,
+      "failed": 0,
+      "ignored": 2,
+      "seconds": 402.97,
+      "dispatch_id": "8e949cde5293fae5bc32c04d938fd2f7",
+      "test_binary_sha256": "684577103a6c009752a9edd94b24880a9509d3308726ae70352fd4be9642104a"
+    },
+    "group": {
+      "passed": 31,
+      "failed": 0,
+      "ignored": 1,
+      "seconds": 339.58,
+      "dispatch_id": "23ef7f14f6e2654f087965df8c3de23d",
+      "test_binary_sha256": "684577103a6c009752a9edd94b24880a9509d3308726ae70352fd4be9642104a"
+    }
+  },
+  "journal_coverage": {
+    "catalog_count": 203,
+    "unique_passed": 194,
+    "root_ignored": 9,
+    "disjoint_partitions": true,
+    "missing": [],
+    "extra": [],
+    "scope": "194 nonignored journal tests pass across three disjoint selections; 31 focused checks overlap them and include dispatch checks. See JOURNAL_COVERAGE.json for all names/reasons."
+  },
+  "verified_behavior": [
+    "Every new reservation uses complete private preparation and atomic no-replace publication; no historical generation append remains.",
+    "Old paired terminal Undo and cleanup preserve a live new owner and its bytes; active or mismatched paired state refuses absent/foreign controls.",
+    "Old terminal recovery does not repair a newer partial release; stale Activity name-release actions refuse new owners.",
+    "Exact interrupted release prefixes and I/O/process-exit cases preserve retained edits, paired journals and unrelated public files.",
+    "Cleanup dependency identities remain protected independently of the expired physical claim. Same-object corruption stays subject to validation."
+  ],
+  "checks": {
+    "windows_test_build": "pass",
+    "strict_windows_all_target_clippy": "pass",
+    "format_and_diff": "pass"
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "superseded_runs": {
+    "superseded-history-assertion": "30 passed, 1 failed: obsolete append-history assertion, corrected before final acceptance. Source/result/binary receipts retained.",
+    "pre-identity-guard": "31 passed before final same-object identity guard; separate executable/source scope, not final acceptance."
+  },
+  "limits": [
+    "Nine root exclusions retain exact reasons. They include child/fixture entry points, an unprovisioned secondary NTFS volume and an Activity fixture whose current UI consumer was not rerun. Parent tests invoke relevant process-exit children.",
+    "No native current Activity UI or separate-volume acceptance in this checkpoint.",
+    "Retirement-specific interruptions/concurrent recreation, partial root/stage construction, private preparation lifecycle, physical-power, idle bookkeeping, alias/ancestor/resource and full public workflow/package gates remain.",
+    "NEXT_CONSTRUCTION.md is research, not implemented or native-tested behavior.",
+    "Public Windows Copy remains disabled. Linux and Windows application packages unchanged."
+  ]
+}

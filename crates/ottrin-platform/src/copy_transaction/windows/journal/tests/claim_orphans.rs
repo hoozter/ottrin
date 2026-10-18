@@ -119,7 +119,11 @@ fn windows_native_copy_orphan_claim_release_keeps_older_recovery_history() {
     let journal = std::fs::read(&local).unwrap();
     let orphan =
         claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32)).unwrap();
-    assert_eq!(orphan.binding().identities(), header.claim.identities());
+    assert_ne!(
+        orphan.binding().identities()[4],
+        header.claim.identities()[4]
+    );
+    let orphan_identity = orphan.binding().identities()[4];
     drop(orphan);
     let ledger = root
         .path()
@@ -128,8 +132,8 @@ fn windows_native_copy_orphan_claim_release_keeps_older_recovery_history() {
     let before = std::fs::read(&ledger).unwrap();
     let next =
         claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).unwrap();
-    assert_eq!(next.binding().identities(), header.claim.identities());
-    assert!(std::fs::read(&ledger).unwrap().starts_with(&before));
+    assert_ne!(next.binding().identities()[4], orphan_identity);
+    assert_ne!(std::fs::read(&ledger).unwrap(), before);
     assert!(matches!(
         next.abort_unstarted(io("owned cancellation")),
         PlatformError::Io(_)
