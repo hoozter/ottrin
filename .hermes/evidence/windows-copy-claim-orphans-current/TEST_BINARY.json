@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_platform",
+  "test_arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit copy_transaction::windows::journal::tests::claim_releases:: copy_transaction::windows::journal::tests::name_release_action:: copy_transaction::windows::journal::tests::claim_retirement:: copy_transaction::windows::journal::tests::claim_orphans:: --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "compiler_sha256": "afa738e3f7ad3895cdc5041cd95c3c343fab8c04966dd205e70d3baec413c909",
+  "transferred_sha256": "b3f7c32ef80a75a8d7477382aa102bd52c7fbac4b344865b4174fe2195f32357",
+  "retained_sections": {
+    ".text": "44d7a074687773342dc0a49534bdf99eeec839e5b117acbd1a669b80c3ef6f5b",
+    ".data": "28bb61380d9cdd3df376a7b205276180cd7aef5f1692d46cbdb48e135ab2909a",
+    ".rdata": "2f817d4b4ed45a90fc624d30d833d30779a5f9416aeb0fe7713a55cef5c69812",
+    ".pdata": "f360a6531cec34e04b27e5508131c1dc9eed24ac270def1423531efbd45b8fbb",
+    ".xdata": "0eadc8ecb56e4108cd442de2a3bdea8bbd0e6b6c7b7340ff3b490367f28d28eb",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "e1f16e22a880925938b8b4f057769ded86ccd647619bd10ab5d8a4cdeb255474",
+    ".CRT": "e81acef22b6f7f90ba054f47314d61fbf236d2c81cb37888b2dcc80aa4b19dab",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "50d95ff5075da2ef400b40de582ac27b01de2b6e1eb3ca82b3925b23bf0095bb"
+  }
+}

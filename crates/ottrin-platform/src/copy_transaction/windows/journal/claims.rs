@@ -450,17 +450,13 @@ fn busy_claim(
         Err(error) => error,
     }
 }
-// A released generation still pins its ledger while either recovery record
-// exists. Hold the exclusive ledger writer across this proof and replacement.
-fn retirement_ready(parent: &File, central: &File, log: &Log) -> Result<bool, PlatformError> {
-    if log.generations.is_empty()
-        || log
-            .generations
-            .iter()
-            .any(|generation| !generation.released)
-    {
-        return Ok(false);
-    }
+// Canonical recovery records pin a generation even after its release. Only an
+// exclusive ledger writer may use their absence to reclaim bookkeeping.
+fn references_absent(
+    parent: &File,
+    central: &File,
+    generations: &[Generation],
+) -> Result<bool, PlatformError> {
     fn vacant(parent: &File, name: &OsStr) -> Result<bool, PlatformError> {
         match unsafe {
             windows_fs::open_relative(
@@ -482,7 +478,7 @@ fn retirement_ready(parent: &File, central: &File, log: &Log) -> Result<bool, Pl
     }
     let mut volumes = discovery::Volumes::new(central)?;
     let mut registries = std::collections::BTreeMap::new();
-    for generation in &log.generations {
+    for generation in generations {
         let claim = &generation.binding.claim;
         if !vacant(
             parent,
@@ -511,6 +507,11 @@ fn retirement_ready(parent: &File, central: &File, log: &Log) -> Result<bool, Pl
         }
     }
     Ok(true)
+}
+fn retirement_ready(parent: &File, central: &File, log: &Log) -> Result<bool, PlatformError> {
+    Ok(!log.generations.is_empty()
+        && log.generations.iter().all(|generation| generation.released)
+        && references_absent(parent, central, &log.generations)?)
 }
 impl Lease {
     pub(super) fn acquire(
@@ -565,8 +566,26 @@ impl Lease {
             Log::decode(&read(&file)?)?
         };
         if !created {
-            let bytes = read(&file)?;
+            let mut bytes = read(&file)?;
             validate_control(&root, &bucket, &file, &bytes, &log)?;
+            let last = log.generations.last().unwrap();
+            if !last.released && references_absent(parent, central, std::slice::from_ref(last))? {
+                // The prior kernel writer is gone and no transaction records
+                // exist to authorize any further payload work.
+                // Older generations may still have journals; release only this
+                // orphan through the canonical append protocol before admission.
+                let binding = last.binding.clone();
+                validate_control(&root, &bucket, &file, &bytes, &log)?;
+                log.append(
+                    &mut file,
+                    Entry::Release {
+                        sequence: binding.sequence,
+                        digest: binding.digest,
+                    },
+                )?;
+                bucket.writable_root()?.sync_all().map_err(io)?;
+                bytes = read(&file)?;
+            }
             if retirement_ready(parent, central, &log)? {
                 // Recheck the bound native controls immediately before unlink.
                 // No outstanding journal can refer to this fully released log.

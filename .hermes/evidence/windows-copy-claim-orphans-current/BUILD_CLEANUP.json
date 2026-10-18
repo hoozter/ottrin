@@ -1,0 +1,6 @@
+{
+  "reason": "Superseded incremental session from the preceding successful standalone test build. Preserve the replacement successful session, current executable, transferred guest tests and shared dependency caches. No compiler is active.",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbd994yev-16q1foo-5u6fqfky4y1ffdgr4cpj2gxwi",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbdqnigeb-1wr11d2-befm0vsf3o6w3scxug01qiy1r",
+  "reclaimed_free_bytes": 899489792
+}

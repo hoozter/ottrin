@@ -1,0 +1,61 @@
+{
+  "status": "pass for complete orphan-claim scope; focused/core native checks and clean teardown complete",
+  "source": {
+    "baseline": "8d575cbce435fd65cdae85b81a453275cae22568",
+    "scope": "Canonical release of a fully written unreferenced last claim after exclusive writer reacquisition; preserve older generations and all ambiguous construction",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "54ace6fde1186c8fcfd3b5daf11160f56a9a3378a8a50039350e84b30515e69f",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "dc2ea5c14d8e54b0395758f251060736f769611e0729cb99e0039389b2122309",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_orphans.rs": "489284dc071ba4a5e0f960e20e41dd7b7300eec2f1aea9d8284c1bdb75eefced",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_processes.rs": "98cf17c99b2bf219d86c25ecc19f327b9c0c93b0e1b2efb8ddf9ad9c3f04130f"
+    }
+  },
+  "runs": {
+    "focused": {
+      "passed": 23,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 47.94,
+      "transferred_sha256": "b3f7c32ef80a75a8d7477382aa102bd52c7fbac4b344865b4174fe2195f32357",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    },
+    "core": {
+      "passed": 111,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 427.06,
+      "transferred_sha256": "b3f7c32ef80a75a8d7477382aa102bd52c7fbac4b344865b4174fe2195f32357",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    }
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "proof": [
+    "Complete last active claims may be released only after exclusive kernel-writer reacquisition, strict decoding, bound control validation and absence of both canonical stage and registry record.",
+    "Recovery appends the canonical Release for that generation. Older retained generations and their journals remain intact; fully unreferenced released logs use the existing per-name collector.",
+    "A real child holds the native writer without journals. A competing admission is refused unchanged while it lives; TerminateProcess releases the writer without Rust cleanup, and fresh admission succeeds without touching source or public files.",
+    "Separate tests preserve older paired journals and their retained payload, leftover staging content, unknown registry records/streams, truncated claims and missing-registry uncertainty."
+  ],
+  "checks": {
+    "strict_windows_platform_all_target_clippy": "pass",
+    "format_and_diff": "pass",
+    "windows_native_test_build": "pass"
+  },
+  "limits": [
+    "A partial canonical Release from an interrupted orphan-recovery attempt still fails strict admission. Recognition and authorized repair are the next checkpoint, not accepted here.",
+    "Partial initial claim or leftover stage construction remains protected; this does not grant deletion authority for ambiguous data.",
+    "Retirement-specific interruption/concurrent recreation, physical-power, broader resources/aliases and workflow/package gates remain.",
+    "Focused and core selections overlap; counts are not additive unique coverage. Six ignores are fixture entry points, not accepted standalone scenarios.",
+    "Public Windows Copy remains disabled; application packages unchanged."
+  ]
+}

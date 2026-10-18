@@ -102,27 +102,36 @@ remain open.
 ## Current Windows Copy implementation checkpoint
 
 The current native journal schema is 16. Durable destination claims, guarded
-interrupted release and the non-destructive Activity release action are in source.
-Completed claim history is now reclaimed when that name is reused, only after
-every generation is released and its canonical staging folder and registry journal
-are absent. Bound controls are revalidated before exact-object unlink; create-new
-protects replacement from an intervening admission. Moved registries are resolved
-by native identity. Unavailable registries and unknown streams retain history.
+paired-terminal release repair and the non-destructive Activity release action
+are in source. A complete abandoned reservation can now be released after a
+fresh exclusive writer proves its staging folder and registry record are absent.
+It appends only that generation's canonical Release, preserving older journals
+and retained data. A native child-process test verifies refusal while the owner
+lives and recovery after hard kernel termination without Rust cleanup.
 
-The latest reclamation executable passes 20 focused native checks and the broader
-core suite (108 passed, zero failed, six intentional fixture entry-point ignores,
-423.52 seconds). These selections overlap. Teardown preserves the original
-profile, installation and login state and shuts down the owned VM. Strict Windows
+Fully released claim history is reclaimed on name reuse only when every old
+canonical stage and registry journal is absent. Moved registries are resolved by
+native identity; unavailable registries and unknown content preserve history.
+Bound controls are revalidated before unlink, and create-new protects replacement
+from an intervening admission. This is per-name collection, not a global sweep.
+
+The latest orphan-reservation executable passes 23 focused native checks and the
+core suite (111 passed, zero failed, six intentional fixture entry-point ignores,
+427.06 seconds). The selections overlap. Teardown preserves the original profile,
+installation and login state and shuts down the owned VM. Strict Windows
 all-target Clippy and formatting pass. Exact source, executable and scope are in
-`.hermes/evidence/windows-copy-claim-retirement-current/ACCEPTANCE.json`.
-The preceding Activity implementation and its 18-scenario interaction coverage
-remain recorded separately in `windows-copy-name-release-current/ACCEPTANCE.json`.
+`.hermes/evidence/windows-copy-claim-orphans-current/ACCEPTANCE.json`.
+Reclamation evidence remains in `windows-copy-claim-retirement-current`; the
+preceding Activity implementation and 18-scenario interaction coverage are in
+`windows-copy-name-release-current`.
 
-Still required: pre-journal active reservation and partial-construction recovery,
-retirement interruption/concurrent recreate and physical-power acceptance, a
-policy for idle bookkeeping that is not reused, remaining alias/ancestor/resource
-and public workflow/package gates. This is per-name collection on reuse, not a
-global sweep. Public Windows Copy remains disabled and packages are unchanged.
+Still required: authorized repair of an interrupted orphan-release append,
+partial initial claim/stage construction recovery, retirement-specific
+interruption/concurrent recreate and physical-power acceptance, idle bookkeeping
+that is not reused, remaining alias/ancestor/resource and public workflow/package
+gates. Current strict admission preserves partial orphan-release data rather
+than repairing it; that is the next checkpoint. Public Windows Copy remains
+disabled and application packages are unchanged.
 
 ### Earlier Windows Copy implementation evidence
 

@@ -1,0 +1,10 @@
+{
+  "baseline": "8d575cbce435fd65cdae85b81a453275cae22568",
+  "scope": "Canonical release of a fully written unreferenced last claim after exclusive writer reacquisition; preserve older generations and all ambiguous construction",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "54ace6fde1186c8fcfd3b5daf11160f56a9a3378a8a50039350e84b30515e69f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "dc2ea5c14d8e54b0395758f251060736f769611e0729cb99e0039389b2122309",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_orphans.rs": "489284dc071ba4a5e0f960e20e41dd7b7300eec2f1aea9d8284c1bdb75eefced",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_processes.rs": "98cf17c99b2bf219d86c25ecc19f327b9c0c93b0e1b2efb8ddf9ad9c3f04130f"
+  }
+}

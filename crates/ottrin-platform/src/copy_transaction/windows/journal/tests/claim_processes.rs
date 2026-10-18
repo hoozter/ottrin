@@ -10,7 +10,7 @@ const ACTOR: &str = "OTTRIN_TEST_STAGED_CLAIM_ACTOR";
 const TARGET: &str = "OTTRIN_TEST_STAGED_CLAIM_TARGET";
 const SELF: &str = "copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit";
 
-struct OwnedChild(Child);
+pub(super) struct OwnedChild(pub(super) Child);
 impl Drop for OwnedChild {
     fn drop(&mut self) {
         if self.0.try_wait().ok().flatten().is_none() {
