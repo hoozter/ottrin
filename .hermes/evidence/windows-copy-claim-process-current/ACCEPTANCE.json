@@ -56,7 +56,7 @@
   "strict_windows_platform_all_target_clippy": "pass",
   "format_and_diff": "pass",
   "broader_regressions": {
-    "status": "registry passed; journal core running",
+    "status": "registry, core and non-group cleanup passed; group/list/teardown pending",
     "host_session": 5681,
     "order": [
       "registry",
@@ -73,6 +73,58 @@
       "seconds": 1.25,
       "ordinary_user": true,
       "temporary_entries": 0
+    },
+    "core": {
+      "passed": 102,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 427.43,
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "ignored_cases": [
+        [
+          "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child",
+          "owned subprocess for creation-time interruption tests"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_copy_activity_fixture",
+          "exports an owned fixture to the native Activity integration consumer"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume",
+          "requires an owned secondary NTFS volume provisioned by the native QA controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child",
+          "child process selected by interrupted staging test"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child",
+          "abrupt-exit child; owned temporary root supplied by parent"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child",
+          "abrupt-exit child; owned empty root required"
+        ]
+      ]
+    },
+    "cleanup": {
+      "passed": 44,
+      "failed": 0,
+      "ignored": 2,
+      "seconds": 458.54,
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "ignored_cases": [
+        [
+          "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_exit_child",
+          "abrupt-exit child; owned empty root supplied by parent"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_exit_child",
+          "abrupt metadata exit; parent owns prepared fixture and admission"
+        ]
+      ]
     }
   },
   "limits": [
