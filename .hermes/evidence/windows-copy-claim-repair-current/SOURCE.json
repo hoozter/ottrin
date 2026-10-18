@@ -1,0 +1,9 @@
+{
+  "baseline": "73014778415d8ada048b683389b99e98e51ebe0d",
+  "scope": "Exact partial orphan release recognition with absence proof; one authorized release writer with error/exit boundaries",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "fc6a2168b72bf129823f375cca148e683cd8a90b2fe706fe2a13e2bdcf4b7529",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "b7da8c503f56052c8b9f4e3152ef9ee2e57ada058c1f7ca5f73eefe418f547f4",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_repair.rs": "3d038719c95cfca67bac2e043a81fbc6723ca8fcce67fe85a38897b605ac92db"
+  }
+}

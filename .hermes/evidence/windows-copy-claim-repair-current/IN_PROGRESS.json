@@ -1,0 +1,6 @@
+{
+  "status": "checkpoint complete; see ACCEPTANCE.json",
+  "next": "Prepare and flush initial claims outside canonical key buckets, then atomically publish with existing crate::move_transaction::rename_windows_handle_no_replace. Keep contention and preparation cleanup safe. Partial root/stage construction and retirement gates remain.",
+  "packages": "unchanged",
+  "native_vm": "shut off; clean teardown passed"
+}

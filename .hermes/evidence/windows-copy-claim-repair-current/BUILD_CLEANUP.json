@@ -1,0 +1,6 @@
+{
+  "reason": "Successful same-configuration test build supersedes the prior accepted incremental session; no compiler is active. Preserve the current session, executables and useful dependency caches.",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbdqnigeb-1wr11d2-befm0vsf3o6w3scxug01qiy1r",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbeaogtc3-1ngcojz-2src42w4il71poga1p2y945ye",
+  "reclaimed_free_bytes": 900902912
+}

@@ -101,37 +101,38 @@ remain open.
 
 ## Current Windows Copy implementation checkpoint
 
-The current native journal schema is 16. Durable destination claims, guarded
-paired-terminal release repair and the non-destructive Activity release action
-are in source. A complete abandoned reservation can now be released after a
-fresh exclusive writer proves its staging folder and registry record are absent.
-It appends only that generation's canonical Release, preserving older journals
-and retained data. A native child-process test verifies refusal while the owner
-lives and recovery after hard kernel termination without Rust cleanup.
+The current native journal schema is 16. Durable destination claims and the
+non-destructive Activity release action are in source. Paired-terminal and orphan
+release now share one authorized truncate/flush/append writer. Tail recognition
+is read-only and accepts only the exact canonical Release prefix of its own last
+active generation. Mutation still requires fresh exclusive control and independent
+paired-terminal or no-records proof. Unknown tails, initial partial claims,
+existing transaction records and unknown streams remain protected.
 
-Fully released claim history is reclaimed on name reuse only when every old
-canonical stage and registry journal is absent. Moved registries are resolved by
-native identity; unavailable registries and unknown content preserve history.
-Bound controls are revalidated before unlink, and create-new protects replacement
-from an intervening admission. This is per-name collection, not a global sweep.
+Complete abandoned reservations recover after owner termination while preserving
+older journals and retained data. Fully released history is reclaimed on name
+reuse only after every old canonical stage and registry journal is absent. Moved
+registries are resolved by native identity, unavailable ones preserve history,
+and create-new protects replacement from an intervening admission. This remains
+per-name collection, not a global sweep.
 
-The latest orphan-reservation executable passes 23 focused native checks and the
-core suite (111 passed, zero failed, six intentional fixture entry-point ignores,
-427.06 seconds). The selections overlap. Teardown preserves the original profile,
-installation and login state and shuts down the owned VM. Strict Windows
-all-target Clippy and formatting pass. Exact source, executable and scope are in
-`.hermes/evidence/windows-copy-claim-orphans-current/ACCEPTANCE.json`.
-Reclamation evidence remains in `windows-copy-claim-retirement-current`; the
-preceding Activity implementation and 18-scenario interaction coverage are in
-`windows-copy-name-release-current`.
+The latest shared-writer executable passes 26 focused native checks (73.24s) and
+the core suite (114 passed, zero failed, six intentional fixture entry-point
+ignores, 450.83s). The selections overlap. Tests cover every orphan Release byte
+prefix and 24 error/process-exit cases across six real I/O boundaries for both
+repair authorities. Both journals, edited retained content and an unrelated public
+file remain unchanged with the source removed. Strict Windows all-target Clippy
+and formatting pass. Teardown preserves the original profile, installation and
+login state and shuts down the owned VM. Exact evidence is in
+`.hermes/evidence/windows-copy-claim-repair-current/ACCEPTANCE.json`.
+Earlier orphan, reclamation and Activity scopes remain in their separate receipts.
 
-Still required: authorized repair of an interrupted orphan-release append,
-partial initial claim/stage construction recovery, retirement-specific
-interruption/concurrent recreate and physical-power acceptance, idle bookkeeping
-that is not reused, remaining alias/ancestor/resource and public workflow/package
-gates. Current strict admission preserves partial orphan-release data rather
-than repairing it; that is the next checkpoint. Public Windows Copy remains
-disabled and application packages are unchanged.
+Still required: partial initial claim/root/stage construction, retirement-specific
+interruption/concurrent recreation, physical-power acceptance, idle bookkeeping,
+remaining alias/ancestor/resource and public workflow/package gates. Initial
+claims are currently created at canonical names before their first record is
+complete; preparing and flushing them before atomic publication is next. Public
+Windows Copy remains disabled and application packages are unchanged.
 
 ### Earlier Windows Copy implementation evidence
 

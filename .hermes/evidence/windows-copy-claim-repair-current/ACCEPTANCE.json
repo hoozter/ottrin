@@ -1,0 +1,60 @@
+{
+  "status": "pass for exact release repair and recorded error/exit boundaries; clean owned-VM teardown complete",
+  "source": {
+    "baseline": "73014778415d8ada048b683389b99e98e51ebe0d",
+    "scope": "Exact partial orphan release recognition with absence proof; one authorized release writer with error/exit boundaries",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "fc6a2168b72bf129823f375cca148e683cd8a90b2fe706fe2a13e2bdcf4b7529",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "b7da8c503f56052c8b9f4e3152ef9ee2e57ada058c1f7ca5f73eefe418f547f4",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_repair.rs": "3d038719c95cfca67bac2e043a81fbc6723ca8fcce67fe85a38897b605ac92db"
+    }
+  },
+  "runs": {
+    "focused": {
+      "passed": 26,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 73.24,
+      "transferred_sha256": "79be52acaa2e1bb11a7529385f384ad07c088f47f51f639dc0d270c356d753a7",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    },
+    "core": {
+      "passed": 114,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 450.83,
+      "transferred_sha256": "79be52acaa2e1bb11a7529385f384ad07c088f47f51f639dc0d270c356d753a7",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    }
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "proof": [
+    "One read-only prefix/tail recognizer accepts only the canonical incomplete Release of its own last active generation. Initial partial claims and unknown tails remain refused.",
+    "Admission cannot mutate recognized orphan tails until exclusive writer reacquisition, bound metadata validation and independent absence of both canonical transaction records. Existing records and unknown streams prevent repair unchanged.",
+    "Paired-terminal and orphan recovery share one authorized truncate/flush/append method. Native errors consume their local writer; fresh proof is required before further mutation.",
+    "Every orphan Release byte prefix repairs without rewriting earlier frames or either journal; older terminal snapshots remain valid and edited retained/public files remain unchanged with original source removed.",
+    "24 error/process-exit scenarios cover six real I/O boundaries for paired-terminal and orphan repair. Observed file bytes are exactly the unchanged partial tail, valid prefix or completed Release; fresh recovery finishes or observes already completed release."
+  ],
+  "checks": {
+    "strict_windows_platform_all_target_clippy": "pass",
+    "format_and_diff": "pass",
+    "windows_test_build": "pass"
+  },
+  "limits": [
+    "These are injected API-boundary errors and process exits, not physical power-loss acceptance.",
+    "Focused and core selections overlap; counts are not additive unique coverage. Six ignored cases are fixture entry points.",
+    "Partial initial claim/root/stage construction, retirement-specific interruptions/concurrent recreation, idle bookkeeping and remaining alias/resource/workflow/package gates remain.",
+    "Public Windows Copy remains disabled; packages unchanged."
+  ]
+}

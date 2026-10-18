@@ -83,6 +83,17 @@ impl Binding {
     }
 
     #[cfg(test)]
+    pub(super) fn test_release_frame(&self, bytes: &[u8]) -> Vec<u8> {
+        let log = Log::decode(bytes).unwrap();
+        assert!(!log.generation(self).unwrap().released);
+        let entry = Entry::Release {
+            sequence: self.sequence,
+            digest: self.digest,
+        };
+        log.check(&entry).unwrap();
+        encode_frame(log.sequence, &log.previous, &entry).unwrap()
+    }
+    #[cfg(test)]
     pub(super) fn assert_only_release(&self, before: &[u8], after: &[u8]) {
         let prior = Log::decode(before).unwrap();
         let next = Log::decode(after).unwrap();
@@ -150,6 +161,32 @@ fn encode_frame(
     frame.extend_from_slice(&hash);
     frame.extend_from_slice(&payload);
     Ok(frame)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum ReleasePoint {
+    BeforeTruncate,
+    Truncated,
+    TruncateFlushed,
+    BeforeWrite,
+    Written,
+    Flushed,
+}
+#[cfg(not(test))]
+fn release_boundary(_: ReleasePoint) -> Result<(), PlatformError> {
+    Ok(())
+}
+#[cfg(test)]
+thread_local! { pub(super) static RELEASE_FAULT: std::cell::Cell<Option<(ReleasePoint, bool)>> = const { std::cell::Cell::new(None) }; }
+#[cfg(test)]
+fn release_boundary(point: ReleasePoint) -> Result<(), PlatformError> {
+    match RELEASE_FAULT.with(|fault| fault.get()) {
+        Some((selected, true)) if selected == point => std::process::exit(86),
+        Some((selected, false)) if selected == point => {
+            Err(io("injected Copy claim release I/O boundary failure"))
+        }
+        _ => Ok(()),
+    }
 }
 
 struct Generation {
@@ -270,9 +307,24 @@ impl Log {
     fn for_binding(
         bytes: &[u8],
         binding: &Binding,
-        terminal: bool,
+        recognize_release: bool,
     ) -> Result<(Self, bool), PlatformError> {
+        Self::prefix(bytes)?.checked_tail(bytes, binding, recognize_release)
+    }
+    /// Recognition is read-only. The admission caller must prove absence of
+    /// recovery records before it may invoke the authorized writer.
+    fn for_admission(bytes: &[u8]) -> Result<(Self, bool), PlatformError> {
         let log = Self::prefix(bytes)?;
+        let binding = log.generations.last().unwrap().binding.clone();
+        log.checked_tail(bytes, &binding, true)
+    }
+    fn checked_tail(
+        self,
+        bytes: &[u8],
+        binding: &Binding,
+        recognize_release: bool,
+    ) -> Result<(Self, bool), PlatformError> {
+        let log = self;
         if log.length == bytes.len() as u64 {
             return Ok((log, false));
         }
@@ -289,7 +341,11 @@ impl Log {
             },
         )?;
         let tail = &bytes[log.length as usize..];
-        if !terminal || !own_active || tail.len() >= expected.len() || !expected.starts_with(tail) {
+        if !recognize_release
+            || !own_active
+            || tail.len() >= expected.len()
+            || !expected.starts_with(tail)
+        {
             return Err(io(
                 "Unrecognized or unauthorized Copy claim tail; data retained",
             ));
@@ -320,12 +376,44 @@ impl Log {
             ));
         }
         // Never repair or retry an uncertain append in this owner.
+        let release = matches!(entry, Entry::Release { .. });
+        if release {
+            release_boundary(ReleasePoint::BeforeWrite)?;
+        }
         file.seek(SeekFrom::End(0)).map_err(io)?;
         file.write_all(&frame).map_err(io)?;
+        if release {
+            release_boundary(ReleasePoint::Written)?;
+        }
         file.sync_all().map_err(io)?;
+        if release {
+            release_boundary(ReleasePoint::Flushed)?;
+        }
         self.apply(entry, hash)?;
         self.length += frame.len() as u64;
         Ok(self.generations.last().unwrap().binding.clone())
+    }
+    /// The caller holds the exclusive writer and independently established
+    /// either paired terminal state or absence of this generation's records.
+    fn finish_release(
+        &mut self,
+        file: &mut File,
+        binding: &Binding,
+        pending: bool,
+    ) -> Result<(), PlatformError> {
+        let entry = Entry::Release {
+            sequence: binding.sequence,
+            digest: binding.digest,
+        };
+        self.check(&entry)?;
+        if pending {
+            release_boundary(ReleasePoint::BeforeTruncate)?;
+            file.set_len(self.length).map_err(io)?;
+            release_boundary(ReleasePoint::Truncated)?;
+            file.sync_all().map_err(io)?;
+            release_boundary(ReleasePoint::TruncateFlushed)?;
+        }
+        self.append(file, entry).map(|_| ())
     }
     fn generation(&self, expected: &Binding) -> Result<&Generation, PlatformError> {
         self.generations
@@ -560,10 +648,10 @@ impl Lease {
                 }
                 Err(error) => return Err(io(error)),
             };
-        let mut log = if created {
-            Log::empty()
+        let (mut log, pending_release) = if created {
+            (Log::empty(), false)
         } else {
-            Log::decode(&read(&file)?)?
+            Log::for_admission(&read(&file)?)?
         };
         if !created {
             let mut bytes = read(&file)?;
@@ -576,13 +664,7 @@ impl Lease {
                 // orphan through the canonical append protocol before admission.
                 let binding = last.binding.clone();
                 validate_control(&root, &bucket, &file, &bytes, &log)?;
-                log.append(
-                    &mut file,
-                    Entry::Release {
-                        sequence: binding.sequence,
-                        digest: binding.digest,
-                    },
-                )?;
+                log.finish_release(&mut file, &binding, pending_release)?;
                 bucket.writable_root()?.sync_all().map_err(io)?;
                 bytes = read(&file)?;
             }
@@ -789,20 +871,7 @@ impl Lease {
         if !log.generation(&binding)?.released {
             root.validate()?;
             bucket.validate()?;
-            if pending_release {
-                // The caller has independently verified both terminal journals.
-                // Only the exact partial encoding of this generation's release
-                // may be removed. Failure consumes this owner; no blind retry.
-                writer.set_len(log.length).map_err(io)?;
-                writer.sync_all().map_err(io)?;
-            }
-            log.append(
-                &mut writer,
-                Entry::Release {
-                    sequence: binding.sequence,
-                    digest: binding.digest,
-                },
-            )?;
+            log.finish_release(&mut writer, &binding, pending_release)?;
             bucket.writable_root()?.sync_all().map_err(io)?;
         }
         Ok(())
