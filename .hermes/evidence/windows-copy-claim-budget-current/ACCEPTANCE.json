@@ -1,0 +1,67 @@
+{
+  "status": "focused native pass; full current regression batches running",
+  "scope": "Claim/release capacity reservation and native claim-aware cleanup fixture corrections",
+  "source": {
+    "baseline": "ed094bd",
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "328f5745de4102d6f30a9e81f5927c33a34206ca582f0d338899d9ea894c3017",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "a41d6e2d0259399542c2dcca57f28ece82bdc474ca1da502bab23fcf889c2322"
+    },
+    "scope": "Claim/release capacity reservation and native claim-aware cleanup fixture corrections"
+  },
+  "compiler_test_binary_sha256": "8141278a3a5c17771550d582e47dbb32a8446c28e4f00bc252e8d87d328c091c",
+  "transferred_test_binary_sha256": "981b8706b5883b383d844e29095f3d733201326fc5e276e92d9d1d0718c3fd9d",
+  "native": {
+    "passed": 12,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 34.38,
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ --nocapture --test-threads=1",
+    "passed_cases": [
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite",
+      "copy_transaction::windows::journal::claims::tests::windows_native_claim_admission_reserves_release_without_changing_rejected_log",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation"
+    ]
+  },
+  "budget_acceptance": [
+    "Complete claim frame without release capacity is rejected before any file/sequence change.",
+    "Exact combined claim/release capacity admits a new generation and its successful release."
+  ],
+  "fixture_corrections": [
+    "Exact publication/shared-root/shared-anchor names replace obsolete count-only expectations; anchor identity/security is validated.",
+    "Cleanup-start changes may append exactly one valid release for the bound claim; every other non-journal byte and namespace entry stays unchanged.",
+    "Dependency-chain fixtures use distinct claimed names plus external publication moves, preserving object-dependency and paired/unpaired barrier assertions."
+  ],
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "baseline_regressions": "ed094bd core100 pass/6ignore; cleanup40 pass/4fail/2ignore. Failing records preserved in windows-copy-claim-binding-current/final-cleanup. All four failed cases pass in the current focused set.",
+  "broader_regressions": {
+    "status": "running; no pass inferred",
+    "host_session": 30412,
+    "order": [
+      "group",
+      "core",
+      "cleanup",
+      "registry",
+      "journal-list"
+    ],
+    "teardown": "Driver invokes shared owned-VM teardown only after all batches pass."
+  },
+  "limits": [
+    "No current full-suite acceptance until broader batches finish.",
+    "Released-log retirement/vacuum and orphan/partial construction discovery/reclamation remain required.",
+    "Interrupted-release recovery and the complete integrated concurrency/alias/ancestor/resource matrix remain required.",
+    "Public Windows Copy remains disabled; application packages unchanged."
+  ]
+}

@@ -6,6 +6,17 @@ use windows_sys::Win32::Storage::FileSystem::{DELETE, FILE_GENERIC_WRITE};
 
 const CLAIM_MAGIC: &[u8; 8] = b"OTCWCL02";
 
+#[cfg(not(test))]
+fn claim_budget() -> u64 {
+    MAX_LOG
+}
+#[cfg(test)]
+thread_local! {static CLAIM_BUDGET: std::cell::Cell<u64> = const { std::cell::Cell::new(MAX_LOG) };}
+#[cfg(test)]
+fn claim_budget() -> u64 {
+    CLAIM_BUDGET.with(|limit| limit.get())
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Claim {
@@ -57,6 +68,35 @@ pub(super) struct Binding {
     digest: [u8; 32],
 }
 impl Binding {
+    #[cfg(test)]
+    pub(super) fn test_relative_path(&self) -> std::path::PathBuf {
+        let (short, key) = ledger_key(&OsString::from_wide(&self.claim.target));
+        std::path::PathBuf::from(".ottrin-copy-target-claims")
+            .join(if short {
+                "short-names.ottrin-claims"
+            } else {
+                "long-names.ottrin-claims"
+            })
+            .join(key)
+    }
+
+    #[cfg(test)]
+    pub(super) fn assert_only_release(&self, before: &[u8], after: &[u8]) {
+        let prior = Log::decode(before).unwrap();
+        let next = Log::decode(after).unwrap();
+        if before == after {
+            assert_eq!(
+                prior.generation(self).unwrap().released,
+                next.generation(self).unwrap().released
+            );
+        } else {
+            assert!(!prior.generation(self).unwrap().released);
+            assert!(next.generation(self).unwrap().released);
+            assert!(after.starts_with(before));
+            assert_eq!(next.sequence, prior.sequence + 1);
+            assert_eq!(next.generations.len(), prior.generations.len());
+        }
+    }
     pub(super) fn identities(&self) -> [WindowsStableIdentity; 5] {
         [
             self.claim.root,
@@ -201,14 +241,28 @@ impl Log {
     fn append(&mut self, file: &mut File, entry: Entry) -> Result<Binding, PlatformError> {
         self.check(&entry)?;
         let payload = serde_json::to_vec(&entry).map_err(io)?;
+        let hash = frame_hash(self.sequence, &self.previous, &payload);
+        // Admission must leave space for its eventual release. Do not issue a
+        // new owner that the bounded ledger cannot durably relinquish.
+        let release_bytes = if matches!(entry, Entry::Claim { .. }) {
+            FRAME_HEADER as u64
+                + serde_json::to_vec(&Entry::Release {
+                    sequence: self.sequence,
+                    digest: hash,
+                })
+                .map_err(io)?
+                .len() as u64
+        } else {
+            0
+        };
         if payload.len() > MAX_FRAME
-            || self.length + FRAME_HEADER as u64 + payload.len() as u64 > MAX_LOG
+            || self.length + FRAME_HEADER as u64 + payload.len() as u64 + release_bytes
+                > claim_budget()
         {
             return Err(io(
-                "Copy name-claim log exceeds its bound; retained for review",
+                "Copy name-claim log lacks space for claim and release; retained for review",
             ));
         }
-        let hash = frame_hash(self.sequence, &self.previous, &payload);
         let mut frame = Vec::with_capacity(FRAME_HEADER + payload.len());
         frame.extend_from_slice(CLAIM_MAGIC);
         frame.extend_from_slice(&(payload.len() as u32).to_le_bytes());
@@ -587,5 +641,70 @@ impl Lease {
             bucket.writable_root()?.sync_all().map_err(io)?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn windows_native_claim_admission_reserves_release_without_changing_rejected_log() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = windows_fs::open_directory(
+            root.path(),
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
+        )
+        .unwrap();
+        let central_path = root.path().join("registry");
+        std::fs::create_dir(&central_path).unwrap();
+        let central = windows_fs::open_directory(&central_path, FILE_GENERIC_READ).unwrap();
+        let first = Lease::acquire(&parent, &central, OsStr::new("copy"), &"1".repeat(32)).unwrap();
+        let binding = first.binding.clone();
+        first.release_after_terminal().unwrap();
+        let lease = Lease::open(&parent, &binding, true, true).unwrap();
+        let before = read(&lease.file).unwrap();
+        let mut next = binding.claim.clone();
+        next.transaction = "2".repeat(32);
+        let entry = Entry::Claim {
+            claim: Box::new(next),
+        };
+        let claim_bytes = FRAME_HEADER + serde_json::to_vec(&entry).unwrap().len();
+        struct ResetBudget;
+        impl Drop for ResetBudget {
+            fn drop(&mut self) {
+                CLAIM_BUDGET.with(|limit| limit.set(MAX_LOG));
+            }
+        }
+        let reset = ResetBudget;
+        // This permits the complete claim frame, but none of its release.
+        CLAIM_BUDGET.with(|limit| limit.set(before.len() as u64 + claim_bytes as u64));
+        let mut log = Log::decode(&before).unwrap();
+        let mut file = lease.file.try_clone().unwrap();
+        assert!(log.append(&mut file, entry).is_err());
+        assert_eq!(read(&file).unwrap(), before);
+        assert_eq!(log.length, before.len() as u64);
+        assert_eq!(log.sequence, 2);
+        let mut next = binding.claim.clone();
+        next.transaction = "2".repeat(32);
+        let payload = serde_json::to_vec(&Entry::Claim {
+            claim: Box::new(next),
+        })
+        .unwrap();
+        let release = Entry::Release {
+            sequence: log.sequence,
+            digest: frame_hash(log.sequence, &log.previous, &payload),
+        };
+        let exact =
+            before.len() + claim_bytes + FRAME_HEADER + serde_json::to_vec(&release).unwrap().len();
+        CLAIM_BUDGET.with(|limit| limit.set(exact as u64));
+        drop((file, lease));
+        let next = Lease::acquire(&parent, &central, OsStr::new("copy"), &"2".repeat(32)).unwrap();
+        assert_eq!(next.binding.sequence, 2);
+        let completed = next.binding.clone();
+        next.release_after_terminal().unwrap();
+        let observed = Lease::open(&parent, &completed, true, false).unwrap();
+        assert_eq!(read(&observed.file).unwrap().len(), exact);
+        drop(reset);
     }
 }

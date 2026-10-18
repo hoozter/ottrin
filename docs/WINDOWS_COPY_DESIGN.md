@@ -1089,6 +1089,12 @@ owner appends a distinct generation to the same native ledger. A restored public
 original ceases to be a retained-object dependency once restoration is durable;
 retained candidates and control objects remain protected.
 
+Claim admission also reserves the exact serialized release frame against the
+ledger's size bound before writing the new generation. A full claim frame alone
+is insufficient capacity: rejection must leave both file bytes and in-memory
+sequence unchanged. No later claim can consume the active generation's reserved
+space because the ledger admits only one active owner.
+
 This is a source checkpoint, not completion of the reservation/recovery gate.
 Released-log retirement, orphan/partial construction discovery, interrupted release
 recovery and the complete separate-process integrated Copy/alias/ancestor matrix

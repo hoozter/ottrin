@@ -4584,3 +4584,28 @@ partial claims, interrupted-release recovery, integrated separate-process Copy
 and Overwrite/Rename, remaining alias/ancestor/resource tests, normal workflow and
 package acceptance. This does not enable public Windows Copy or replace current
 application packages. Continue those gates independently of user testing.
+
+
+## Windows Copy claim release capacity and cleanup regression — 2026-10-18
+
+Claim admission now reserves space for its exact serialized release record before
+issuing the owner. A ledger that can fit a claim but not its release is refused
+without changing bytes or sequence; exact combined capacity admits both writes.
+This prevents a bounded ledger from stranding an otherwise completed operation.
+It does not replace released-log retirement or orphan recovery.
+
+The first broader claim-binding run passed 100 core journal cases, then found
+four cleanup fixture failures. The fixtures now validate the exact shared anchored
+namespace, verify only the bound release record may change outside the paired
+journals, and build object-dependency chains through distinct claimed names plus
+external publication moves. They retain the original data-preservation and paired
+versus unpaired cleanup-start assertions; overlapping active name claims are no
+longer used to construct the fixture.
+
+All 12 focused ordinary-user Windows checks pass, including all four earlier
+failures and the quota boundary, with no ignored cases or leftover temporary
+entries (34.38s). Strict Windows all-target Clippy and formatting pass. Full current
+journal/cleanup/registry batches are running on the same recorded executable;
+no broader pass is inferred before their results arrive. Exact source/binary
+identity and scope: `.hermes/evidence/windows-copy-claim-budget-current/ACCEPTANCE.json`.
+Public Windows Copy remains gated and application packages are unchanged.

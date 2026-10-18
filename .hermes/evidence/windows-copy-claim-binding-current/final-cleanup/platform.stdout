@@ -1,0 +1,433 @@
+
+running 46 tests
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_admission_is_readonly_handle_free_and_keeps_public_reuse ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_admission_refuses_payload_metadata_catalog_and_progress_drift ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_removal ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort ... FAILED
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_exit_child ... ignored, abrupt-exit child; owned empty root supplied by parent
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_finalizes_metadata_and_replays_its_admitted_proof ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_handoff_drift_refuses_before_recording_intent ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_injected_failures_resume_coherent_prefixes_only ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_authority_requires_matching_intent_mirrors ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_exit_child ... ignored, abrupt metadata exit; parent owns prepared fixture and admission
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_inspection_never_authorizes_cleanup ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_rechecks_control_before_any_unlink ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_refuses_unknown_content_and_aliases ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_cancellation_during_validation_is_retryable ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_preserves_changed_payloads_and_unexpected_stage_data ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_refuses_unfinished_work_and_cancellation ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_observation_uses_only_retained_payloads ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_payload_completion_binds_metadata_authorization ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ack ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_acknowledgement_preserves_changed_or_missing_evidence ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_acknowledgement_read_handles_never_grant_delete ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_acknowledgement_uncertain_mirrors_preserve_data ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_acknowledgement_validates_replays_and_counts_once ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_checks_present_absent_and_historical_intent ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_preserves_missing_mirrors_changes_and_cancellation ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_rejects_unmatched_control_prefix_and_slot ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_binding_revalidates_parent_policy_without_writes ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_unlink_codec_rejects_unbound_and_out_of_order_records ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_unlink_codec_replays_one_external_alias_acknowledgement ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_peer_unlink_codec_reserves_acknowledgement_before_intent ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_pending_absence_admission_never_adopts_a_later_parent_epoch ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_protocol_binds_terminal_evidence_and_ordered_progress ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_protocol_tracks_retained_hardlinks_without_claiming_outside_names ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_real_process_exits_resume_without_sources ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_reclaims_only_retained_payloads_and_replays_without_sources ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_reclaims_readonly_candidates_without_changing_public_data ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_originals ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims ... FAILED
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload ... FAILED
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unlinks_retained_hardlinks_and_preserves_the_outside_alias ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim ... FAILED
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unrecognized_registry_names_stay_visible_and_block_mutation ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unverified_registry_peer_refuses_before_any_write ... ok
+
+failures:
+
+failures:
+    copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort
+    copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims
+    copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload
+    copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim
+
+test result: FAILED. 40 passed; 4 failed; 2 ignored; 0 measured; 349 filtered out; finished in 455.75s
+

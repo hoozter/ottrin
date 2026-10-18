@@ -1,5 +1,5 @@
 {
-  "status": "focused-native-pass; broader regression checks running",
+  "status": "focused/core pass; baseline cleanup failures preserved for correction",
   "scope": "Durable destination-local Copy target claims bound to paired journals; incomplete Windows Copy gate",
   "source": {
     "baseline": "4c45128894a70c8a10898052654b54831226a13c",
@@ -46,7 +46,7 @@
   "strict_windows_platform_all_target_clippy": "pass",
   "format_and_diff": "pass",
   "broader_regressions": {
-    "status": "running; no acceptance inferred",
+    "status": "terminal; cleanup failed and driver correctly stopped before group/registry",
     "driver_session": 61111,
     "core_observer_guest_pid": 6168,
     "sequence": [
@@ -55,13 +55,73 @@
       "final-group",
       "final-registry"
     ],
-    "next": "Observe the same driver/session; do not restart on observation timeout."
+    "next": "Observe the same driver/session; do not restart on observation timeout.",
+    "core": {
+      "passed": 100,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 451.78,
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "ignored_cases": [
+        [
+          "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child",
+          "owned subprocess for creation-time interruption tests"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_copy_activity_fixture",
+          "exports an owned fixture to the native Activity integration consumer"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume",
+          "requires an owned secondary NTFS volume provisioned by the native QA controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child",
+          "child process selected by interrupted staging test"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child",
+          "abrupt-exit child; owned temporary root supplied by parent"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child",
+          "abrupt-exit child; owned empty root required"
+        ]
+      ]
+    },
+    "first_cleanup_failure": {
+      "case": "windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+      "location": "journal/tests/cleanup.rs:5197",
+      "actual_entries": 3,
+      "expected_entries": 1,
+      "cause": "Per-parent shared anchored claim root and marker now accompany the published copy. Old count-only fixture predates these controls.",
+      "correction_in_progress": "Assert exact names of publication, shared root and marker; validate the anchored namespace; continue rejecting all leftover transaction entries."
+    },
+    "cleanup": {
+      "passed": 40,
+      "failed": 4,
+      "ignored": 2,
+      "seconds": 455.75,
+      "failed_cases": [
+        "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+        "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims",
+        "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload",
+        "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim"
+      ],
+      "binary_sha256": "0a25067a214f15e54d2a4793dea92d7400b947a76abfc91c7b237a6b1d345260"
+    },
+    "failure_analysis": [
+      "Shared namespace root and anchor invalidate count-only cleanup expectation.",
+      "Cleanup start intentionally appends a bound release record to its claim ledger.",
+      "Old dependency-chain fixture tries to claim the same target twice while Undo is retained; use distinct native leaves plus external publication rename to retain dependency coverage."
+    ]
   },
   "limits": [
     "Released-log retirement/vacuum not implemented.",
     "Orphan and partial pre-journal construction discovery/reclamation and interrupted-release repair remain required.",
     "Integrated separate-process creation/Overwrite/Rename, parent/short-name alias and ancestor/resource matrices remain required.",
-    "No full journal/cleanup-suite acceptance until current native batches finish.",
+    "Baseline cleanup failed; this is not full journal/cleanup acceptance. See windows-copy-claim-budget-current for corrections and new evidence.",
     "No package refresh or public Windows Copy enablement; exact user-platform acceptance remains separate."
   ]
 }

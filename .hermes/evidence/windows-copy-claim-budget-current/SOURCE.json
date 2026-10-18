@@ -1,0 +1,8 @@
+{
+  "baseline": "ed094bd",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "328f5745de4102d6f30a9e81f5927c33a34206ca582f0d338899d9ea894c3017",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "a41d6e2d0259399542c2dcca57f28ece82bdc474ca1da502bab23fcf889c2322"
+  },
+  "scope": "Claim/release capacity reservation and native claim-aware cleanup fixture corrections"
+}

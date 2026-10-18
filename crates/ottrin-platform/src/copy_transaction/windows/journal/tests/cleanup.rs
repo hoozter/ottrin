@@ -2067,8 +2067,24 @@ fn assert_only_journals_changed(
             ]
         })
         .collect();
+    let claims = headers
+        .iter()
+        .map(|header| {
+            let parent = header.parent_location.decode().unwrap();
+            (
+                std::path::PathBuf::from(parent.file_name().unwrap())
+                    .join(header.claim.test_relative_path()),
+                &header.claim,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
     for (path, bytes) in before {
-        if !journals.contains(path) {
+        if let Some(claim) = claims.get(path) {
+            claim.assert_only_release(
+                bytes.as_ref().unwrap(),
+                after.get(path).unwrap().as_ref().unwrap(),
+            );
+        } else if !journals.contains(path) {
             assert_eq!(after.get(path), Some(bytes), "{}", path.display());
         }
     }
@@ -2119,11 +2135,24 @@ fn cleanup_chain_at(
             second.clone()
         };
         let input = source(&input_path);
+        // Model an external rename of the first publication. Its native object
+        // remains protected by the first transaction, while the second claims a
+        // distinct leaf. Two live transactions must never share one name claim.
+        let target = if index == 1 {
+            std::fs::rename(
+                destination.join("copy"),
+                destination.join("next-publication"),
+            )
+            .unwrap();
+            OsStr::new("next-publication")
+        } else {
+            OsStr::new("copy")
+        };
         let overwrite = initial_overwrite || index == 1;
         let admission = if overwrite {
-            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap()
+            DestinationAdmission::overwrite(&parent, target, 100, |_| Ok(())).unwrap()
         } else {
-            DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+            DestinationAdmission::creation(&parent, target).unwrap()
         };
         let mut staged = DurableStage::create(
             &input,
@@ -2150,6 +2179,11 @@ fn cleanup_chain_at(
             .unwrap()
             .apply(|_| Ok(()))
             .unwrap();
+        if index == 1 {
+            // Cleanup must also survive an external move/reuse of a completed
+            // public name; its deletion authority covers retained objects only.
+            std::fs::rename(destination.join(target), destination.join("copy")).unwrap();
+        }
         names.push(name);
     }
     remove_undo_fixture_source(root);
@@ -4727,6 +4761,31 @@ fn mixed_cleanup_fixture(root: &Path) -> (super::super::cleanup_group::Observati
     (group, ids)
 }
 
+// Cleanup removes per-transaction stages and journals. The shared anchored
+// admission namespace remains available to subsequent Copy transactions.
+fn assert_public_copy_and_claim_namespace(parent_path: &Path) {
+    let names = std::fs::read_dir(parent_path)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        names,
+        [
+            "copy",
+            ".ottrin-copy-target-claims",
+            ".ottrin-copy-target-claims-root"
+        ]
+        .into_iter()
+        .map(OsString::from)
+        .collect()
+    );
+    super::super::super::registry::AnchoredRoot::claims(&owner(parent_path), false)
+        .unwrap()
+        .unwrap()
+        .validate()
+        .unwrap();
+}
+
 fn assert_mixed_cleanup_complete(root: &Path, group: &super::super::cleanup_group::Observation) {
     assert!(
         group
@@ -4750,7 +4809,7 @@ fn assert_mixed_cleanup_complete(root: &Path, group: &super::super::cleanup_grou
     );
     for directory in ["destination", "second-destination", "third-destination"] {
         assert!(root.join(directory).join("copy/nested/file").is_file());
-        assert_eq!(std::fs::read_dir(root.join(directory)).unwrap().count(), 1);
+        assert_public_copy_and_claim_namespace(&root.join(directory));
     }
 }
 
@@ -5115,7 +5174,7 @@ fn run_group_exit_case(root: &Path, mode: &str, index: usize) {
         );
         for directory in ["destination", "second-destination", "third-destination"] {
             if root.join(directory).exists() {
-                assert_eq!(std::fs::read_dir(root.join(directory)).unwrap().count(), 1);
+                assert_public_copy_and_claim_namespace(&root.join(directory));
             }
         }
     }
@@ -5194,12 +5253,7 @@ fn windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort() {
                 .join("copy/nested/file")
                 .is_file()
         );
-        assert_eq!(
-            std::fs::read_dir(root.path().join(directory))
-                .unwrap()
-                .count(),
-            1
-        );
+        assert_public_copy_and_claim_namespace(&root.path().join(directory));
     }
     plan.reclaim(|_| Ok(())).unwrap();
 }
