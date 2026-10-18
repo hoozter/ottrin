@@ -35,6 +35,30 @@ struct Claim {
     security: security::PrivateSecurity,
 }
 impl Claim {
+    fn capture(
+        parent: &File,
+        central: &File,
+        root: &AnchoredRoot,
+        bucket: &AnchoredRoot,
+        file: &File,
+        target: &OsStr,
+        transaction: &str,
+    ) -> Result<Self, PlatformError> {
+        let creator = security::current_owner()?;
+        Ok(Self {
+            parent: stable_identity_from_handle(parent).map_err(io)?,
+            root: stable_identity_from_handle(root.root()).map_err(io)?,
+            anchor: root.anchor_identity(),
+            bucket: stable_identity_from_handle(bucket.root()).map_err(io)?,
+            bucket_anchor: bucket.anchor_identity(),
+            file: stable_identity_from_handle(file).map_err(io)?,
+            central: stable_identity_from_handle(central).map_err(io)?,
+            target: target.encode_wide().collect(),
+            transaction: transaction.to_owned(),
+            security: security::PrivateSecurity::capture(file, &creator)?,
+            creator,
+        })
+    }
     fn valid(&self) -> bool {
         self.parent.is_directory_without_reparse()
             && self.root.is_directory_without_reparse()
@@ -161,6 +185,44 @@ fn encode_frame(
     frame.extend_from_slice(&hash);
     frame.extend_from_slice(&payload);
     Ok(frame)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum PreparationPoint {
+    Created,
+    Prepared,
+    Published,
+    Flushed,
+}
+#[cfg(not(test))]
+fn preparation_boundary(_: PreparationPoint, _: &mut File) -> Result<(), PlatformError> {
+    Ok(())
+}
+#[cfg(test)]
+thread_local! { pub(super) static PREPARATION_FAULT: std::cell::Cell<Option<(PreparationPoint, u8)>> = const { std::cell::Cell::new(None) }; }
+#[cfg(test)]
+thread_local! { pub(super) static PREPARATION_HANDOFF: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const { std::cell::RefCell::new(None) }; }
+#[cfg(test)]
+fn preparation_boundary(point: PreparationPoint, file: &mut File) -> Result<(), PlatformError> {
+    if point == PreparationPoint::Prepared {
+        let handoff = PREPARATION_HANDOFF.with(|hook| hook.borrow_mut().take());
+        if let Some(handoff) = handoff {
+            handoff();
+        }
+    }
+    match PREPARATION_FAULT.with(|fault| fault.get()) {
+        Some((selected, 1)) if selected == point => std::process::exit(86),
+        Some((selected, 2)) if selected == point => {
+            // Model process death with only a first-frame prefix persisted.
+            file.write_all(&CLAIM_MAGIC[..3]).map_err(io)?;
+            file.sync_all().map_err(io)?;
+            std::process::exit(86)
+        }
+        Some((selected, _)) if selected == point => {
+            Err(io("injected Copy claim preparation failure"))
+        }
+        _ => Ok(()),
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -634,26 +696,19 @@ impl Lease {
         let (short, key) = ledger_key(target);
         let bucket = AnchoredRoot::claim_bucket(root.root(), short, true)?
             .ok_or_else(|| io("Copy claim bucket is missing"))?;
-        let (mut file, created) =
-            match windows_fs::create_private(bucket.root(), &key, false, FILE_SHARE_READ) {
-                Ok(file) => (file, true),
-                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
-                    let existing = open_file(
-                        bucket.root(),
-                        &key,
-                        FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
-                    )
-                    .map_err(|error| busy_claim(&root, &bucket, target, error))?;
-                    (existing, false)
-                }
-                Err(error) => return Err(io(error)),
-            };
-        let (mut log, pending_release) = if created {
-            (Log::empty(), false)
-        } else {
-            Log::for_admission(&read(&file)?)?
+        let mut file = match open_file(
+            bucket.root(),
+            &key,
+            FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
+        ) {
+            Ok(file) => file,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return Self::prepare_new(parent, central, target, transaction, root, bucket);
+            }
+            Err(error) => return Err(busy_claim(&root, &bucket, target, error)),
         };
-        if !created {
+        let (mut log, pending_release) = Log::for_admission(&read(&file)?)?;
+        {
             let mut bytes = read(&file)?;
             validate_control(&root, &bucket, &file, &bytes, &log)?;
             let last = log.generations.last().unwrap();
@@ -675,25 +730,10 @@ impl Lease {
                 cleanup_tree::dispose(&file)?;
                 drop(file);
                 bucket.writable_root()?.sync_all().map_err(io)?;
-                file = windows_fs::create_private(bucket.root(), &key, false, FILE_SHARE_READ)
-                    .map_err(io)?;
-                log = Log::empty();
+                return Self::prepare_new(parent, central, target, transaction, root, bucket);
             }
         }
-        let creator = security::current_owner()?;
-        let claim = Claim {
-            parent: stable_identity_from_handle(parent).map_err(io)?,
-            root: stable_identity_from_handle(root.root()).map_err(io)?,
-            anchor: root.anchor_identity(),
-            bucket: stable_identity_from_handle(bucket.root()).map_err(io)?,
-            bucket_anchor: bucket.anchor_identity(),
-            file: stable_identity_from_handle(&file).map_err(io)?,
-            central: stable_identity_from_handle(central).map_err(io)?,
-            target: target.encode_wide().collect(),
-            transaction: transaction.to_owned(),
-            security: security::PrivateSecurity::capture(&file, &creator)?,
-            creator,
-        };
+        let claim = Claim::capture(parent, central, &root, &bucket, &file, target, transaction)?;
         if log.generations.last().is_some_and(|g| !g.released) {
             return Err(PlatformError::DestinationExists(format!(
                 "{} is reserved by retained Copy",
@@ -709,6 +749,127 @@ impl Lease {
         )?;
         bucket.writable_root()?.sync_all().map_err(io)?;
         Self::from_file(root, bucket, binding, file, true, false)
+    }
+    fn prepare_new(
+        parent: &File,
+        central: &File,
+        target: &OsStr,
+        transaction: &str,
+        root: AnchoredRoot,
+        bucket: AnchoredRoot,
+    ) -> Result<Self, PlatformError> {
+        // Root-level preparations cannot collide with keys in either key bucket.
+        // The canonical name is never occupied by an empty or partial first frame.
+        let name = OsString::from(format!(".preparing-{transaction}"));
+        let mut file =
+            windows_fs::create_private(root.root(), &name, false, FILE_SHARE_READ).map_err(io)?;
+        let pending = |error: PlatformError| PlatformError::CleanupPending {
+            transaction: windows_fs::location(&file)
+                .unwrap_or_else(|_| root.path().join(&name))
+                .display()
+                .to_string(),
+            message: format!(
+                "{error}; unpublished claim preparation retained, no payload authority issued"
+            ),
+        };
+        let claim = Claim::capture(parent, central, &root, &bucket, &file, target, transaction)
+            .map_err(pending)?;
+        let key = ledger_key(target).1;
+        let mut published = false;
+        let result = (|| {
+            preparation_boundary(PreparationPoint::Created, &mut file)?;
+            let binding = Log::empty().append(
+                &mut file,
+                Entry::Claim {
+                    claim: Box::new(claim.clone()),
+                },
+            )?;
+            let bytes = read(&file)?;
+            let decoded = Log::decode(&bytes)?;
+            if decoded.sequence != 1 || decoded.generation(&binding)?.released {
+                return Err(io("Prepared Copy claim is not its complete first frame"));
+            }
+            root.validate()?;
+            bucket.validate()?;
+            namespace::validate_binding(root.root(), &name, claim.file)?;
+            cleanup_finalize::metadata(
+                &file,
+                claim.file,
+                &claim.security,
+                &claim.creator,
+                Some(&bytes),
+                &mut |_| Ok(()),
+            )?;
+            root.writable_root()?.sync_all().map_err(io)?;
+            preparation_boundary(PreparationPoint::Prepared, &mut file)?;
+            crate::move_transaction::rename_windows_handle_no_replace(
+                &file,
+                &bucket.writable_root()?,
+                &key,
+            )
+            .map_err(|error| match error {
+                PlatformError::DestinationExists(_) => PlatformError::DestinationExists(format!(
+                    "{} is reserved by an active Copy",
+                    target.to_string_lossy()
+                )),
+                error => error,
+            })?;
+            published = true;
+            preparation_boundary(PreparationPoint::Published, &mut file)?;
+            root.writable_root()?.sync_all().map_err(io)?;
+            bucket.writable_root()?.sync_all().map_err(io)?;
+            preparation_boundary(PreparationPoint::Flushed, &mut file)?;
+            Ok(binding)
+        })();
+        match result {
+            Ok(binding) => {
+                let location = bucket.path().join(&key);
+                Self::from_file(root, bucket, binding, file, true, false).map_err(|error| {
+                    PlatformError::CleanupPending {
+                        transaction: location.display().to_string(),
+                        message: format!("{error}; complete unstarted claim retained"),
+                    }
+                })
+            }
+            Err(error) if !published => {
+                let cleanup = (|| {
+                    root.validate()?;
+                    bucket.validate()?;
+                    namespace::validate_binding(root.root(), &name, claim.file)?;
+                    let bytes = if file.metadata().map_err(io)?.len() == 0 {
+                        Vec::new()
+                    } else {
+                        read(&file)?
+                    };
+                    cleanup_finalize::metadata(
+                        &file,
+                        claim.file,
+                        &claim.security,
+                        &claim.creator,
+                        Some(&bytes),
+                        &mut |_| Ok(()),
+                    )?;
+                    root.validate()?;
+                    namespace::validate_binding(root.root(), &name, claim.file)?;
+                    cleanup_tree::dispose(&file)?;
+                    root.writable_root()?.sync_all().map_err(io)
+                })();
+                match cleanup {
+                    Ok(()) => Err(error),
+                    Err(cleanup) => Err(PlatformError::CleanupPending {
+                        transaction: windows_fs::location(&file)
+                            .unwrap_or_else(|_| root.path().join(&name))
+                            .display()
+                            .to_string(),
+                        message: format!("{error}; preparation cleanup failed: {cleanup}"),
+                    }),
+                }
+            }
+            Err(error) => Err(PlatformError::CleanupPending {
+                transaction: bucket.path().join(&key).display().to_string(),
+                message: format!("{error}; complete unstarted claim retained after publication"),
+            }),
+        }
     }
     pub(super) fn open(
         parent: &File,

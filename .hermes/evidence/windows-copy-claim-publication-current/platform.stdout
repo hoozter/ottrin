@@ -1,0 +1,33 @@
+
+running 29 tests
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite ... ok
+test copy_transaction::windows::journal::claims::tests::windows_native_claim_admission_reserves_release_without_changing_rejected_log ... ok
+test copy_transaction::windows::journal::claims::tests::windows_native_claim_retirement_preserves_each_reference_and_unknown_content ... ok
+test copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_preserves_ambiguous_or_partial_construction ... ok
+test copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_recovers_after_kernel_owner_exit ... ok
+test copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_release_keeps_older_recovery_history ... ok
+test copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit ... ok
+test copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_errors_clean_owned_preparations_or_retain_complete_keys ... ok
+test copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_complete ... ok
+test copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite ... ok
+test copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_terminal_journals ... ok
+test copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_recovers_every_exact_prefix_without_rewriting_journals ... ok
+test copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history ... ok
+test copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged ... ok
+test copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_release_repair_errors_and_process_exits_preserve_payload ... ok
+test copy_transaction::windows::journal::tests::claim_retirement::windows_native_copy_claim_retirement_reuses_only_fully_cleaned_history ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim ... ok
+test copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_finishes_without_touching_retained_payload ... ok
+test copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 383 filtered out; finished in 63.85s

@@ -1,0 +1,9 @@
+{
+  "baseline": "b51c6e95d690ea07b452acd3289b1b90a3335465",
+  "scope": "Prepare and flush complete initial claims outside key buckets, then publish by held-handle no-replace rename; reuse the path after old ledger retirement",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "e89e5946c093740c093a98be6266733c24140fbf2150b162c61f51037346115c",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "94878cc436b59c0d42c382e5751926a4c45d8ce52e507ca398fced7e81db9a87",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "08fe99d87fec3eb2b33c9148334d7ce934042c08e7cc6d5cc960af4eb98a723c"
+  }
+}

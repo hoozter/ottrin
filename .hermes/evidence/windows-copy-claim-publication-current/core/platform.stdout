@@ -1,0 +1,807 @@
+
+running 123 tests
+test copy_transaction::windows::journal::claims::tests::windows_native_claim_admission_reserves_release_without_changing_rejected_log ... ok
+test copy_transaction::windows::journal::claims::tests::windows_native_claim_retirement_preserves_each_reference_and_unknown_content ... ok
+test copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_preserves_ambiguous_or_partial_construction ... ok
+test copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_recovers_after_kernel_owner_exit ... ok
+test copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_release_keeps_older_recovery_history ... ok
+test copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit ... ok
+test copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_errors_clean_owned_preparations_or_retain_complete_keys ... ok
+test copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_complete ... ok
+test copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite ... ok
+test copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_terminal_journals ... ok
+test copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_recovers_every_exact_prefix_without_rewriting_journals ... ok
+test copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history ... ok
+test copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged ... ok
+test copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_release_repair_errors_and_process_exits_preserve_payload ... ok
+test copy_transaction::windows::journal::tests::claim_retirement::windows_native_copy_claim_retirement_reuses_only_fully_cleaned_history ... ok
+test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_admission_refuses_external_timestamp_drift_without_mutation ... ok
+test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_codec_rejects_unowned_or_incomplete_repairs ... ok
+test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child ... ignored, owned subprocess for creation-time interruption tests
+test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_fault_and_exit_prefixes_recover_or_preserve_divergence ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_finishes_without_touching_retained_payload ... ok
+test copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes ... ok
+test copy_transaction::windows::journal::tests::windows_copy_activity_fixture ... ignored, exports an owned fixture to the native Activity integration consumer
+test copy_transaction::windows::journal::tests::windows_native_copy_application_cancellation_resumes_between_entries ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_application_flush_and_native_failures_recover_or_retain ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_application_process_exits_recover_without_sources ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_copy_application_records_require_publication_and_ordered_acknowledgements ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_application_refuses_permission_drift_outside_pending_entry ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_application_refuses_unrecorded_candidate_hard_links ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_completion_prefix_resumes_after_failure_or_cancellation_without_source ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_directory_case_policy_preserves_mixed_trees_and_rejects_drift ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_cancels_payload_read_without_any_journal_mutation ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_distinguishes_staged_completed_pending_and_undone ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_missing_registry_is_readonly_and_root_junction_is_refused ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_preserves_mismatched_mirrors_and_unverified_staging ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_refuses_drifted_staged_permission_plan_without_repair ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume ... ignored, requires an owned secondary NTFS volume provisioned by the native QA controller
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_uses_native_parent_identity_after_rename_and_ignores_path_hints ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_final_versions_refuse_same_bytes_and_restored_write_time ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_acknowledges_planned_link_type_transition ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child ... ignored, child process selected by interrupted staging test
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_flush_failures_retain_and_never_publish ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_pairs_tree_records_and_reopens_without_writer ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_process_exit_retains_unpublished_staging ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_rejects_overlap_and_budget_before_destination_mutation ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_rejects_rebound_and_damaged_mirror_without_repair ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_rejects_torn_modified_and_reordered_frames ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_journal_uncertain_owner_cannot_retry_or_repair ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_pending_readonly_reopen_refuses_changed_payload_without_restoring_it ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_plan_prefix_reopens_without_source_or_original_writer ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_plan_recovery_flush_failures_and_process_exits_keep_evidence ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_copy_private_security_drift_during_validation_is_retained ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_private_security_records_and_rejects_permission_drift ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_private_security_rejects_foreign_creator_and_malformed_records ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_private_security_staging_drift_never_records_success ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_publication_and_permissions_are_source_free_and_idempotent ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_publication_collision_keeps_both_entries_and_retries ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_publication_refuses_changed_parent_policy_before_rename ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_published_link_roots_leave_populated_targets_unchanged ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_readonly_reopening_failures_and_exits_resume_without_source ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_copy_readonly_root_and_child_publish_and_reopen_with_attributes_intact ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_readonly_stream_revalidation_cancels_and_resumes_under_its_intent ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_cancellation_releases_without_mutation ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_hashes_streams_even_with_restored_metadata ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_needs_no_source_and_holds_read_only_handles ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_never_follows_a_dangling_link ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_refuses_active_writer_and_unverified_journal ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_retained_validation_refuses_membership_rebinding_and_extra_records ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_executes_admitted_creation_and_overwrite_then_public_undo ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_failure_preserves_committed_classification_and_data ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_rejects_missing_authority_and_changed_publications ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_cancelled_prefix_resumes_without_duplicate_records ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_requires_ordered_complete_seal ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_tree_security_cached_acl_is_not_native_authority_even_with_valid_hashes ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_tree_security_live_and_retained_plans_agree_without_sources ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_tree_security_plan_flush_faults_keep_private_data_and_both_versions ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_tree_security_plan_is_durable_idempotent_and_refuses_reinterpretation ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_tree_security_plans_dangling_file_and_directory_link_leaves ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_undo_cancellation_after_retraction_keeps_a_resumable_intent ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_undo_directory_handoff_drift_retains_changed_data_without_completion ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_undo_flush_failures_and_process_exits_recover_or_retain ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_copy_undo_preserves_occupied_retention_and_new_publication_names ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_undo_refuses_an_active_writer_without_journal_mutation_then_retries ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_undo_refuses_changed_data_and_unrecorded_aliases_before_intent ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_undo_retains_files_trees_and_readonly_data_without_source ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_case_policy_is_bound_through_publication_and_undo ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_freezes_the_original_before_source_staging ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_never_converts_creation_or_skips_an_approved_original ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_rejects_stale_parent_target_and_creation_before_staging ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_respects_case_sensitive_directory_policy ... ok
+test copy_transaction::windows::journal::tests::windows_native_destination_admission_respects_existing_target_case_aliases ... ok
+test copy_transaction::windows::journal::tests::windows_native_original_move_exit_child ... ignored, abrupt-exit child; owned temporary root supplied by parent
+test copy_transaction::windows::journal::tests::windows_native_original_move_fault_prefixes_keep_both_versions_and_never_repair_mirrors ... ok
+test copy_transaction::windows::journal::tests::windows_native_original_move_real_exits_recover_without_source_and_preserve_mismatches ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_original_move_refuses_occupants_handoff_changes_and_cancellation ... ok
+test copy_transaction::windows::journal::tests::windows_native_original_move_restore_preserves_changed_private_copy ... ok
+test copy_transaction::windows::journal::tests::windows_native_original_move_retains_and_restores_without_source_or_new_publication ... ok
+test copy_transaction::windows::journal::tests::windows_native_original_plan_binds_unwritten_children_and_refuses_source_alias_and_budget ... ok
+test copy_transaction::windows::journal::tests::windows_native_original_plan_is_paired_source_free_and_blocks_creation_publication ... ok
+test copy_transaction::windows::journal::tests::windows_native_original_plan_resumes_every_paired_prefix_and_refuses_local_only_tail ... ok
+test copy_transaction::windows::journal::tests::windows_native_overwrite_all_mutation_prefixes_recover_or_preserve_divergent_mirrors ... ok
+test copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child ... ignored, abrupt-exit child; owned empty root required
+test copy_transaction::windows::journal::tests::windows_native_overwrite_real_process_exits_recover_original_and_replacement ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_overwrite_refuses_drift_and_occupants_without_deleting_either_version ... ok
+test copy_transaction::windows::journal::tests::windows_native_overwrite_reserves_the_inverse_before_retention_and_spends_it_through_undo ... ok
+test copy_transaction::windows::journal::tests::windows_native_overwrite_restore_after_withdrawal_preserves_changed_private_replacement ... ok
+test copy_transaction::windows::journal::tests::windows_native_overwrite_resume_and_undo_restore_original_and_replay_without_sources ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_cancellation_preserves_stage_and_unverified_staging_is_not_admitted ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_finishes_partial_finalization_without_payload_writers ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_is_source_free_and_completed_replay_is_readonly ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_refuses_coherent_rewritten_frozen_evidence ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_refuses_stale_policy_paths_registry_and_payload_before_writes ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_resume_retries_publication_and_permission_outcomes_with_original_binding ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_admission_is_readonly_and_source_free ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_cancellation_and_interrupted_retry_keep_binding ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_refuses_replaced_registry_and_changed_payload ... ok
+test copy_transaction::windows::journal::tests::windows_native_registered_copy_undo_rejects_moved_display_path_then_fresh_admission_works ... ok
+test copy_transaction::windows::journal::tests::windows_native_retention_resume_cancellation_retries_the_same_admission ... ok
+test copy_transaction::windows::journal::tests::windows_native_retention_resume_recovers_injected_and_real_exit_prefixes_without_source ...
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test copy_transaction::windows::journal::tests::windows_native_retention_resume_refuses_observation_only_drift_and_restoration ... ok
+
+test result: ok. 117 passed; 0 failed; 6 ignored; 0 measured; 289 filtered out; finished in 434.13s

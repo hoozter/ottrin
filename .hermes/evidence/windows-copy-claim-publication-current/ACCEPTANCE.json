@@ -1,0 +1,62 @@
+{
+  "status": "pass for initial claim publication scope; native focused/core and clean teardown complete",
+  "source": {
+    "baseline": "b51c6e95d690ea07b452acd3289b1b90a3335465",
+    "scope": "Prepare and flush complete initial claims outside key buckets, then publish by held-handle no-replace rename; reuse the path after old ledger retirement",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "e89e5946c093740c093a98be6266733c24140fbf2150b162c61f51037346115c",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "94878cc436b59c0d42c382e5751926a4c45d8ce52e507ca398fced7e81db9a87",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "08fe99d87fec3eb2b33c9148334d7ce934042c08e7cc6d5cc960af4eb98a723c"
+    }
+  },
+  "runs": {
+    "focused": {
+      "passed": 29,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 63.85,
+      "transferred_sha256": "951208f6a7f8e198916f929b7537be300185a9e4df1294101a983077d285627f",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    },
+    "core": {
+      "passed": 117,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 434.13,
+      "transferred_sha256": "951208f6a7f8e198916f929b7537be300185a9e4df1294101a983077d285627f",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    }
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "proof": [
+    "Initial claims are created in private root-level preparation files outside both canonical key buckets. The complete first frame is flushed, decoded and bound-metadata checked before held-handle no-replace publication.",
+    "Retired-log replacement uses the same constructor. Existing retained history still uses its prior append path.",
+    "Ordinary pre-publication errors discard only the known created preparation after native binding, security, single-link and stream checks. Post-publication errors retain a complete unstarted claim for existing orphan recovery.",
+    "Five process-exit cases cover empty/partial/full private preparations and complete published states; a fresh different transaction can acquire the final name in all cases without changing source/public files.",
+    "Two simultaneous prepared publishers both become ready before either publishes. Case-insensitive names select one owner and clean the loser; case-sensitive names admit both. Existing shared repair, release and recovery checks still pass."
+  ],
+  "checks": {
+    "strict_windows_platform_all_target_clippy": "pass",
+    "format_and_diff": "pass",
+    "windows_test_build": "pass"
+  },
+  "observation_correction": "A pre-dispatch observer collected the preceding focused result. Exact duplicates were discarded; the fresh post-dispatch observer produced 117/0/6, with matching binary and core-only test scope. See core/OBSERVER_CORRECTION.json.",
+  "limits": [
+    "This prevents partial first records at canonical names; later-generation append interruption remains open.",
+    "Abruptly abandoned private preparations are preserved; their managed collection plus partial root/stage construction remain.",
+    "Retirement-specific interruption/concurrent recreation, physical-power, remaining alias/resource/workflow/package gates remain.",
+    "Focused and core selections overlap; counts are not additive unique coverage. Six ignored cases are fixture entry points.",
+    "Public Windows Copy remains disabled; packages unchanged."
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "reason": "Superseded same-configuration incremental session after successful replacement; no active compiler. Preserve the current session, binaries and shared dependency caches.",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbeaogtc3-1ngcojz-2src42w4il71poga1p2y945ye",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbf6geh4j-1tbmz12-35xx5j892nusr4v02zjouqmuj",
+  "reclaimed_free_bytes": 810127360
+}

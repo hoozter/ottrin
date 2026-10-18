@@ -1,0 +1,19 @@
+{
+  "reason": "An observer started before the dispatch controller completed and saw the preceding focused result. No test restart. Exact duplicate local files removed; fresh observer started after confirmed dispatch completion.",
+  "discarded": [
+    {
+      "name": "RESULTS.json",
+      "sha256": "c5a69c45147cd6e02701b90a9f06a3b6736f5663ca6c82489b2ebe77db5df5fc"
+    },
+    {
+      "name": "platform.stdout",
+      "sha256": "326fb376a8e5951187f2f9d5efadb2fc63abb3ac21c1945fc0a7fd6cab4f8c35"
+    },
+    {
+      "name": "platform.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "fresh_guest_observer_pid": 2208,
+  "fresh_host_session": 3361
+}

@@ -3939,6 +3939,7 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 mod tests {
     mod claim_orphans;
     mod claim_processes;
+    mod claim_publication;
     mod claim_releases;
     mod claim_repair;
     mod claim_retirement;

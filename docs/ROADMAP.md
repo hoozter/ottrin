@@ -101,38 +101,34 @@ remain open.
 
 ## Current Windows Copy implementation checkpoint
 
-The current native journal schema is 16. Durable destination claims and the
-non-destructive Activity release action are in source. Paired-terminal and orphan
-release now share one authorized truncate/flush/append writer. Tail recognition
-is read-only and accepts only the exact canonical Release prefix of its own last
-active generation. Mutation still requires fresh exclusive control and independent
-paired-terminal or no-records proof. Unknown tails, initial partial claims,
-existing transaction records and unknown streams remain protected.
+The current native journal schema is 16. Durable destination claims, the explicit
+Activity release action, exact interrupted-release repair and abandoned complete
+reservation recovery are in source. Initial claims are now prepared outside key
+buckets, fully flushed/decoded and metadata-validated, then atomically published
+through the existing held-handle no-replace rename. Empty and partial first frames
+do not occupy canonical names. Retired-ledger replacement uses this same path;
+retained-history append still has its existing lifecycle.
 
-Complete abandoned reservations recover after owner termination while preserving
-older journals and retained data. Fully released history is reclaimed on name
-reuse only after every old canonical stage and registry journal is absent. Moved
-registries are resolved by native identity, unavailable ones preserve history,
-and create-new protects replacement from an intervening admission. This remains
-per-name collection, not a global sweep.
+The latest constructor executable passes 29 focused native checks (63.85s) and
+the core suite (117 passed, zero failed, six intentional fixture entry-point
+ignores, 434.13s). Selections overlap. Tests cover pre-publication error cleanup,
+five process-exit states, and concurrent prepared publishers under insensitive
+and sensitive native case policies. Sources and unrelated public files remain
+unchanged; competing publishers cannot overwrite the winner or leak a losing
+preparation. Existing prefix-repair and I/O/exit checks also pass. Strict Windows
+all-target Clippy and formatting pass. Teardown preserves profile, installation
+and login state, removes owned test data/processes and shuts down the VM.
+Exact scope: `.hermes/evidence/windows-copy-claim-publication-current/ACCEPTANCE.json`.
+An early stale observer result was discarded and the correct broader result was
+verified independently; its correction receipt is retained.
 
-The latest shared-writer executable passes 26 focused native checks (73.24s) and
-the core suite (114 passed, zero failed, six intentional fixture entry-point
-ignores, 450.83s). The selections overlap. Tests cover every orphan Release byte
-prefix and 24 error/process-exit cases across six real I/O boundaries for both
-repair authorities. Both journals, edited retained content and an unrelated public
-file remain unchanged with the source removed. Strict Windows all-target Clippy
-and formatting pass. Teardown preserves the original profile, installation and
-login state and shuts down the owned VM. Exact evidence is in
-`.hermes/evidence/windows-copy-claim-repair-current/ACCEPTANCE.json`.
-Earlier orphan, reclamation and Activity scopes remain in their separate receipts.
-
-Still required: partial initial claim/root/stage construction, retirement-specific
-interruption/concurrent recreation, physical-power acceptance, idle bookkeeping,
-remaining alias/ancestor/resource and public workflow/package gates. Initial
-claims are currently created at canonical names before their first record is
-complete; preparing and flushing them before atomic publication is next. Public
-Windows Copy remains disabled and application packages are unchanged.
+Still required: later-generation append interruption, collection of private
+preparations left by abrupt exits, partial root/stage construction,
+retirement-specific interruption/concurrent recreation, physical-power, idle
+bookkeeping, remaining alias/ancestor/resource and public workflow/package gates.
+Native result/observer dispatch binding will be strengthened next, followed by an
+audit of terminal-journal dependence on expired name claims. Public Windows Copy
+remains disabled and application packages are unchanged.
 
 ### Earlier Windows Copy implementation evidence
 
