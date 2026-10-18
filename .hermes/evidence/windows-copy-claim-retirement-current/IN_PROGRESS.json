@@ -1,0 +1,6 @@
+{
+  "status": "checkpoint complete; see ACCEPTANCE.json",
+  "next": "Recover fully written orphan reservations before staging, then partial construction and retirement interruption/concurrent recreate gates",
+  "packages": "unchanged",
+  "native_vm": "shut off; clean teardown passed"
+}

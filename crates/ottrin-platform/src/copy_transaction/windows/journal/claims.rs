@@ -2,7 +2,9 @@
 //! verifiable while its Copy journals retain Undo/cleanup evidence.
 use super::super::registry::AnchoredRoot;
 use super::*;
-use windows_sys::Win32::Storage::FileSystem::{DELETE, FILE_GENERIC_WRITE};
+use windows_sys::Win32::Storage::FileSystem::{
+    DELETE, FILE_GENERIC_WRITE, FILE_READ_ATTRIBUTES, SYNCHRONIZE,
+};
 
 const CLAIM_MAGIC: &[u8; 8] = b"OTCWCL02";
 
@@ -448,6 +450,68 @@ fn busy_claim(
         Err(error) => error,
     }
 }
+// A released generation still pins its ledger while either recovery record
+// exists. Hold the exclusive ledger writer across this proof and replacement.
+fn retirement_ready(parent: &File, central: &File, log: &Log) -> Result<bool, PlatformError> {
+    if log.generations.is_empty()
+        || log
+            .generations
+            .iter()
+            .any(|generation| !generation.released)
+    {
+        return Ok(false);
+    }
+    fn vacant(parent: &File, name: &OsStr) -> Result<bool, PlatformError> {
+        match unsafe {
+            windows_fs::open_relative(
+                parent,
+                name,
+                RelativeOptions {
+                    directory: None,
+                    create_new: false,
+                    access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    security: ptr::null(),
+                },
+            )
+        } {
+            Ok(_) => Ok(false),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(true),
+            Err(error) => Err(io(error)),
+        }
+    }
+    let mut volumes = discovery::Volumes::new(central)?;
+    let mut registries = std::collections::BTreeMap::new();
+    for generation in &log.generations {
+        let claim = &generation.binding.claim;
+        if !vacant(
+            parent,
+            OsStr::new(&format!(".ottrin-copy-{}", claim.transaction)),
+        )? {
+            return Ok(false);
+        }
+        let key = claim.central.object_key();
+        if !registries.contains_key(&key) {
+            // Unavailable old registries cannot authorize collection. Preserve
+            // their history; ordinary admission may still append within budget.
+            if registries.len() == 512 {
+                return Ok(false);
+            }
+            let Ok(registry) = volumes.resolve(claim.central, FILE_GENERIC_READ, &mut |_| Ok(()))
+            else {
+                return Ok(false);
+            };
+            registries.insert(key, registry);
+        }
+        if !vacant(
+            &registries[&key],
+            OsStr::new(&format!("{}.copy-journal", claim.transaction)),
+        )? {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
 impl Lease {
     pub(super) fn acquire(
         parent: &File,
@@ -500,6 +564,21 @@ impl Lease {
         } else {
             Log::decode(&read(&file)?)?
         };
+        if !created {
+            let bytes = read(&file)?;
+            validate_control(&root, &bucket, &file, &bytes, &log)?;
+            if retirement_ready(parent, central, &log)? {
+                // Recheck the bound native controls immediately before unlink.
+                // No outstanding journal can refer to this fully released log.
+                validate_control(&root, &bucket, &file, &bytes, &log)?;
+                cleanup_tree::dispose(&file)?;
+                drop(file);
+                bucket.writable_root()?.sync_all().map_err(io)?;
+                file = windows_fs::create_private(bucket.root(), &key, false, FILE_SHARE_READ)
+                    .map_err(io)?;
+                log = Log::empty();
+            }
+        }
         let creator = security::current_owner()?;
         let claim = Claim {
             parent: stable_identity_from_handle(parent).map_err(io)?,
@@ -514,9 +593,6 @@ impl Lease {
             security: security::PrivateSecurity::capture(&file, &creator)?,
             creator,
         };
-        if !created {
-            validate_control(&root, &bucket, &file, &read(&file)?, &log)?;
-        }
         if log.generations.last().is_some_and(|g| !g.released) {
             return Err(PlatformError::DestinationExists(format!(
                 "{} is reserved by retained Copy",
@@ -719,6 +795,67 @@ mod tests {
     use super::*;
 
     #[test]
+    fn windows_native_claim_retirement_preserves_each_reference_and_unknown_content() {
+        let root = tempfile::tempdir().unwrap();
+        let parent = windows_fs::open_directory(
+            root.path(),
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
+        )
+        .unwrap();
+        let registry_path = root.path().join("registry");
+        std::fs::create_dir(&registry_path).unwrap();
+        let registry = windows_fs::open_directory(&registry_path, FILE_GENERIC_READ).unwrap();
+        let first_id = "1".repeat(32);
+        let first = Lease::acquire(&parent, &registry, OsStr::new("copy"), &first_id).unwrap();
+        let binding = first.binding.clone();
+        first.release_after_terminal().unwrap();
+        let ledger = root.path().join(binding.test_relative_path());
+        let mirror = registry_path.join(format!("{first_id}.copy-journal"));
+        std::fs::write(&mirror, b"unknown registry record must pin history").unwrap();
+        let second =
+            Lease::acquire(&parent, &registry, OsStr::new("copy"), &"2".repeat(32)).unwrap();
+        assert_eq!(second.binding.claim.file, binding.claim.file);
+        second.release_after_terminal().unwrap();
+        assert_eq!(
+            std::fs::read(&mirror).unwrap(),
+            b"unknown registry record must pin history"
+        );
+        std::fs::remove_file(&mirror).unwrap();
+        let stage = root.path().join(format!(".ottrin-copy-{first_id}"));
+        std::fs::create_dir(&stage).unwrap();
+        std::fs::write(stage.join("unknown"), b"keep stage content").unwrap();
+        let third =
+            Lease::acquire(&parent, &registry, OsStr::new("copy"), &"3".repeat(32)).unwrap();
+        assert_eq!(third.binding.claim.file, binding.claim.file);
+        third.release_after_terminal().unwrap();
+        assert_eq!(
+            std::fs::read(stage.join("unknown")).unwrap(),
+            b"keep stage content"
+        );
+        std::fs::remove_dir_all(&stage).unwrap();
+        let before = std::fs::read(&ledger).unwrap();
+        let stream = ledger.with_file_name(format!(
+            "{}:foreign",
+            ledger.file_name().unwrap().to_string_lossy()
+        ));
+        std::fs::write(&stream, b"keep unknown stream").unwrap();
+        assert!(Lease::acquire(&parent, &registry, OsStr::new("copy"), &"4".repeat(32)).is_err());
+        assert_eq!(std::fs::read(&ledger).unwrap(), before);
+        assert_eq!(std::fs::read(&stream).unwrap(), b"keep unknown stream");
+        std::fs::remove_file(&stream).unwrap();
+        // Resolve the old registry by native ID, not its original pathname.
+        drop(registry);
+        std::fs::rename(&registry_path, root.path().join("moved-registry")).unwrap();
+        std::fs::create_dir(&registry_path).unwrap();
+        let registry = windows_fs::open_directory(&registry_path, FILE_GENERIC_READ).unwrap();
+        let fresh =
+            Lease::acquire(&parent, &registry, OsStr::new("copy"), &"5".repeat(32)).unwrap();
+        assert_ne!(fresh.binding.claim.file, binding.claim.file);
+        assert_eq!(fresh.binding.sequence, 0);
+        fresh.release_after_terminal().unwrap();
+    }
+
+    #[test]
     fn windows_native_claim_admission_reserves_release_without_changing_rejected_log() {
         let root = tempfile::tempdir().unwrap();
         let parent = windows_fs::open_directory(
@@ -732,6 +869,7 @@ mod tests {
         let first = Lease::acquire(&parent, &central, OsStr::new("copy"), &"1".repeat(32)).unwrap();
         let binding = first.binding.clone();
         first.release_after_terminal().unwrap();
+        std::fs::create_dir(root.path().join(format!(".ottrin-copy-{}", "1".repeat(32)))).unwrap();
         let lease = Lease::open(&parent, &binding, true, true).unwrap();
         let before = read(&lease.file).unwrap();
         let mut next = binding.claim.clone();

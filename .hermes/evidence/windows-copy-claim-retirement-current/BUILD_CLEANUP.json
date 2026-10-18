@@ -1,0 +1,30 @@
+{
+  "reason": "Remove only the known failed-build host macro opt=1 artifacts; successful current manifests use host opt=0. No compiler is active. Preserve current binaries, incremental state and shared useful caches.",
+  "removed": [
+    {
+      "path": "target/debug/deps/libproc_macro2-abc3179a24b6e856.rlib",
+      "bytes": 3825184
+    },
+    {
+      "path": "target/debug/deps/proc_macro2-abc3179a24b6e856.d",
+      "bytes": 4930
+    },
+    {
+      "path": "target/debug/deps/libproc_macro2-abc3179a24b6e856.rmeta",
+      "bytes": 342365
+    },
+    {
+      "path": "target/debug/deps/libsyn-34f829e6b2910d81.rlib",
+      "bytes": 45659074
+    },
+    {
+      "path": "target/debug/deps/syn-34f829e6b2910d81.d",
+      "bytes": 20741
+    },
+    {
+      "path": "target/debug/deps/libsyn-34f829e6b2910d81.rmeta",
+      "bytes": 5103007
+    }
+  ],
+  "bytes": 54955301
+}

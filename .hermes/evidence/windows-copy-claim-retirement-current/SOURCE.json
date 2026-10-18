@@ -1,0 +1,9 @@
+{
+  "baseline": "08cdbb8f1708f4732baa2bbae16dfd59a76169c6",
+  "scope": "Reclaim fully released name ledger on reuse only after every stage and registry journal is absent",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "9522e723c86c35bc11fd15248251bf1405b4addc30c186cafad947c0ced9bae9",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "4a28ff8d98c5c06616215192e644ad607111d38183e302f0f1d859534703aebb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "3edd7eebf0d5ac356926ef8c3a431096406c49b7e8f80a4d11722379fc2b8d5d"
+  }
+}

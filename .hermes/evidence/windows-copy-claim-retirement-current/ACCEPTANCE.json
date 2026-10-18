@@ -1,0 +1,62 @@
+{
+  "status": "pass for recorded per-name reclamation scope; clean owned-VM teardown complete",
+  "source": {
+    "baseline": "08cdbb8f1708f4732baa2bbae16dfd59a76169c6",
+    "scope": "Reclaim fully released name ledger on reuse only after every stage and registry journal is absent",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "9522e723c86c35bc11fd15248251bf1405b4addc30c186cafad947c0ced9bae9",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "4a28ff8d98c5c06616215192e644ad607111d38183e302f0f1d859534703aebb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "3edd7eebf0d5ac356926ef8c3a431096406c49b7e8f80a4d11722379fc2b8d5d"
+    }
+  },
+  "scope": "Per-name reclamation during admission; every generation must be released and all canonical staging and registry records absent",
+  "runs": {
+    "focused": {
+      "passed": 20,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 45.96,
+      "transferred_sha256": "7faa18eea6e0a6209ea7a1b8c717b200e60d2e6f144699d4cfdf0532fe922433",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    },
+    "core": {
+      "passed": 108,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 423.52,
+      "transferred_sha256": "7faa18eea6e0a6209ea7a1b8c717b200e60d2e6f144699d4cfdf0532fe922433",
+      "ordinary_user": true,
+      "temporary_entries": 0
+    }
+  },
+  "proof": [
+    "The exclusive ledger writer protects observation and exact-object unlink. Create-new arbitrates replacement without opening or overwriting another admission.",
+    "Every old registry is resolved by native identity, including moved registries. Unavailable roots preserve history rather than authorize deletion.",
+    "Bound control identity, security, single-link status and exact unnamed content are revalidated immediately before deletion.",
+    "Replacement uses create-new, flushes the containing directory and starts a new native ledger identity.",
+    "Tests preserve old journals, leftover stages, unknown streams and public user files; real completed cleanup allows shorter history on reuse."
+  ],
+  "checks": {
+    "strict_windows_platform_all_target_clippy": "pass",
+    "format_and_diff": "pass",
+    "windows_test_build": "pass"
+  },
+  "limits": [
+    "This is per-name collection on reuse, not a global idle sweep. Empty roots and unrelated controls remain.",
+    "Pre-journal active reservations and partial first claims remain to be recovered; this checkpoint never reclaims an active generation.",
+    "Retirement-specific process-kill, concurrent recreate and physical-power acceptance remain.",
+    "The core suite and focused selection overlap; their counts must not be added as unique coverage. Six ignores are fixture entry points; no full cleanup/group-suite claim is made for this source.",
+    "Packages unchanged and public Windows Copy disabled."
+  ],
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  }
+}

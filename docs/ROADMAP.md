@@ -101,6 +101,31 @@ remain open.
 
 ## Current Windows Copy implementation checkpoint
 
+The current native journal schema is 16. Durable destination claims, guarded
+interrupted release and the non-destructive Activity release action are in source.
+Completed claim history is now reclaimed when that name is reused, only after
+every generation is released and its canonical staging folder and registry journal
+are absent. Bound controls are revalidated before exact-object unlink; create-new
+protects replacement from an intervening admission. Moved registries are resolved
+by native identity. Unavailable registries and unknown streams retain history.
+
+The latest reclamation executable passes 20 focused native checks and the broader
+core suite (108 passed, zero failed, six intentional fixture entry-point ignores,
+423.52 seconds). These selections overlap. Teardown preserves the original
+profile, installation and login state and shuts down the owned VM. Strict Windows
+all-target Clippy and formatting pass. Exact source, executable and scope are in
+`.hermes/evidence/windows-copy-claim-retirement-current/ACCEPTANCE.json`.
+The preceding Activity implementation and its 18-scenario interaction coverage
+remain recorded separately in `windows-copy-name-release-current/ACCEPTANCE.json`.
+
+Still required: pre-journal active reservation and partial-construction recovery,
+retirement interruption/concurrent recreate and physical-power acceptance, a
+policy for idle bookkeeping that is not reused, remaining alias/ancestor/resource
+and public workflow/package gates. This is per-name collection on reuse, not a
+global sweep. Public Windows Copy remains disabled and packages are unchanged.
+
+### Earlier Windows Copy implementation evidence
+
 Windows cleanup has bound read-only admission, an anchored single-transaction
 action, source-free recovery and guarded payload/local/stage/central removal.
 The action retains proof across uncertain final-central removal. Discovery shows
