@@ -1113,3 +1113,34 @@ initial claim construction and the complete Overwrite/Rename matrix remain open.
 A recovered paired cleanup Start may append its pending bound release, while the
 paired journals and all unrelated bytes remain unchanged. Scoped evidence:
 `.hermes/evidence/windows-copy-claim-process-current/ACCEPTANCE.json`.
+
+
+### Guarded completion of an interrupted claim release
+
+Read-only snapshots may recognize an incomplete claim tail only when it is the
+exact canonical release prefix for that binding's own last active generation
+and the local journal state is terminal. Recognition grants no mutation authority:
+both journal bytes, native identities, private security and namespace bindings
+must independently revalidate before writer construction. Ordinary admission
+continues to reject incomplete claim logs.
+
+The explicit terminal writer reacquires the claim with write/delete exclusion,
+rechecks its complete contents and native controls, truncates only that exact
+known release prefix to the valid preceding boundary, then appends and flushes
+the canonical release. An error consumes the writer; it does not retry an uncertain
+append. Frame encoding has one implementation shared by append and recognition.
+Unknown tails, checksum damage, incomplete initial claims, extra streams and a
+later generation's partial release are never adopted or truncated.
+
+The native focused set passes all 16 parents. A real release is cut at every byte
+boundary, observed without mutation and completed by source-free internal Undo
+replay while both journals remain byte-identical and retained data stays intact.
+The negative matrix verifies divergent/nonterminal pairs, unknown/corrupt records,
+ADS and later-generation ownership refusal. Exact source/binary scope:
+`.hermes/evidence/windows-copy-claim-release-current/ACCEPTANCE.json`.
+
+This is core writer recovery. Fresh completed-Undo admission still rejects an
+already-undone operation. A distinct non-destructive finish-release admission and
+visible pending-release status after restart remain necessary; cleanup reaches
+the writer but also authorizes deletion of retained payload. Repair-I/O interruption,
+physical-power and the remaining claim reclamation/workflow gates stay open.

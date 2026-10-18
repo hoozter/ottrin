@@ -1,0 +1,11 @@
+{
+  "baseline": "51e8ef8",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "63e16b0404460824d613b83449f9ddfa321a9af519949398f0422eef85a8df7a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "ad347cf90f1a30efde37c61b10dcd3115247c4115f8a377c35bf3180d4cbab89",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "6f0462054b58eba46b3345b1a934008cbf11c629c44cf5b4ae232a7e5d56d57f"
+  },
+  "journal_schema": 16,
+  "claim_magic": "OTCWCL02",
+  "scope": "Recognize and explicitly finish only the bound exact release prefix after independent paired terminal verification; shared canonical frame encoding"
+}

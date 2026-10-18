@@ -14,7 +14,7 @@ if options.copy_claim_binding:
  arguments='copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ --nocapture --test-threads=1'
 
 if options.claim_ledger:
- arguments='copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit --nocapture --test-threads=1'
+ arguments='copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit copy_transaction::windows::journal::tests::claim_releases:: --nocapture --test-threads=1'
 
 if options.copy_registry:
  arguments='copy_transaction::windows::registry:: --nocapture --test-threads=1'

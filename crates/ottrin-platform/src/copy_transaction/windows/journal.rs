@@ -3140,6 +3140,9 @@ impl Snapshot {
         } else {
             entry(central, &header.central_name(), false)?
         };
+        // A recognized partial release is only an observation here. The full
+        // paired-journal/identity checks below must pass before this snapshot
+        // can supply a writer with terminal release authority.
         let claim = claims::Lease::open(parent, &header.claim, state.claim_terminal(), false)?;
         let result = Self {
             claim,
@@ -3932,6 +3935,7 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 #[cfg(test)]
 mod tests {
     mod claim_processes;
+    mod claim_releases;
     mod cleanup;
     mod creation_times;
 

@@ -1,5 +1,5 @@
 {
-  "status": "focused native pass; current full regressions running",
+  "status": "pass for recorded baseline scope; full journal/registry batches and clean teardown complete",
   "scope": "Separate staged Copy processes and strict recovery-release assertion; production code unchanged from baseline",
   "source": {
     "baseline": "8b2311c",
@@ -56,7 +56,7 @@
   "strict_windows_platform_all_target_clippy": "pass",
   "format_and_diff": "pass",
   "broader_regressions": {
-    "status": "registry, core and non-group cleanup passed; group/list/teardown pending",
+    "status": "pass",
     "host_session": 5681,
     "order": [
       "registry",
@@ -125,6 +125,23 @@
           "abrupt metadata exit; parent owns prepared fixture and admission"
         ]
       ]
+    },
+    "journal_suite": {
+      "path": "JOURNAL_SUITE.json",
+      "enumerated": 186,
+      "passed": 177,
+      "failed": 0,
+      "ignored": 9,
+      "disjoint_cover": true
+    },
+    "group": {
+      "passed": 31,
+      "failed": 0,
+      "ignored": 1,
+      "seconds": 485.86,
+      "ignored_cases": {
+        "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_process_exit_child": "group abrupt-exit child; parent owns fixture, process and retry"
+      }
     }
   },
   "limits": [
@@ -134,5 +151,15 @@
     "Process exit is not a physical power-cut test.",
     "No public Windows Copy enablement or application package refresh."
   ],
-  "native_text_export": "Windows text exports normalized to LF with trailing harness whitespace removed; result fields and test binary hashes unchanged. Compressed failure stderr retains exact raw bytes."
+  "native_text_export": "Windows text exports normalized to LF with trailing harness whitespace removed; result fields and test binary hashes unchanged. Compressed failure stderr retains exact raw bytes.",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  }
 }

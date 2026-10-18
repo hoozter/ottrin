@@ -130,6 +130,26 @@ enum Entry {
     Claim { claim: Box<Claim> },
     Release { sequence: u64, digest: [u8; 32] },
 }
+fn encode_frame(
+    sequence: u64,
+    previous: &[u8; 32],
+    entry: &Entry,
+) -> Result<Vec<u8>, PlatformError> {
+    let payload = serde_json::to_vec(entry).map_err(io)?;
+    if payload.len() > MAX_FRAME {
+        return Err(io("Copy name-claim frame exceeds its bound"));
+    }
+    let hash = frame_hash(sequence, previous, &payload);
+    let mut frame = Vec::with_capacity(FRAME_HEADER + payload.len());
+    frame.extend_from_slice(CLAIM_MAGIC);
+    frame.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+    frame.extend_from_slice(&sequence.to_le_bytes());
+    frame.extend_from_slice(previous);
+    frame.extend_from_slice(&hash);
+    frame.extend_from_slice(&payload);
+    Ok(frame)
+}
+
 struct Generation {
     binding: Binding,
     released: bool,
@@ -204,12 +224,19 @@ impl Log {
         Ok(())
     }
     fn decode(bytes: &[u8]) -> Result<Self, PlatformError> {
+        let result = Self::prefix(bytes)?;
+        if result.length != bytes.len() as u64 {
+            return Err(io("Torn Copy name-claim frame; data retained"));
+        }
+        Ok(result)
+    }
+    fn prefix(bytes: &[u8]) -> Result<Self, PlatformError> {
         let mut result = Self::empty();
         let mut at = 0usize;
         while at < bytes.len() {
-            let header = bytes
-                .get(at..at + FRAME_HEADER)
-                .ok_or_else(|| io("Torn Copy name-claim frame; data retained"))?;
+            let Some(header) = bytes.get(at..at + FRAME_HEADER) else {
+                break;
+            };
             let size = u32::from_le_bytes(header[8..12].try_into().unwrap()) as usize;
             if &header[..8] != CLAIM_MAGIC
                 || size == 0
@@ -222,9 +249,9 @@ impl Log {
             let end = at
                 .checked_add(FRAME_HEADER + size)
                 .ok_or_else(|| io("Copy claim size overflow"))?;
-            let payload = bytes
-                .get(at + FRAME_HEADER..end)
-                .ok_or_else(|| io("Torn Copy name-claim payload; data retained"))?;
+            let Some(payload) = bytes.get(at + FRAME_HEADER..end) else {
+                break;
+            };
             let hash = frame_hash(result.sequence, &result.previous, payload);
             if header[52..84] != hash {
                 return Err(io("Copy name-claim digest changed"));
@@ -235,41 +262,61 @@ impl Log {
         if result.generations.is_empty() {
             return Err(io("Empty Copy name-claim log; retained for review"));
         }
-        result.length = bytes.len() as u64;
+        result.length = at as u64;
         Ok(result)
+    }
+    fn for_binding(
+        bytes: &[u8],
+        binding: &Binding,
+        terminal: bool,
+    ) -> Result<(Self, bool), PlatformError> {
+        let log = Self::prefix(bytes)?;
+        if log.length == bytes.len() as u64 {
+            return Ok((log, false));
+        }
+        let own_active = log
+            .generations
+            .last()
+            .is_some_and(|generation| !generation.released && generation.binding == *binding);
+        let expected = encode_frame(
+            log.sequence,
+            &log.previous,
+            &Entry::Release {
+                sequence: binding.sequence,
+                digest: binding.digest,
+            },
+        )?;
+        let tail = &bytes[log.length as usize..];
+        if !terminal || !own_active || tail.len() >= expected.len() || !expected.starts_with(tail) {
+            return Err(io(
+                "Unrecognized or unauthorized Copy claim tail; data retained",
+            ));
+        }
+        Ok((log, true))
     }
     fn append(&mut self, file: &mut File, entry: Entry) -> Result<Binding, PlatformError> {
         self.check(&entry)?;
-        let payload = serde_json::to_vec(&entry).map_err(io)?;
-        let hash = frame_hash(self.sequence, &self.previous, &payload);
-        // Admission must leave space for its eventual release. Do not issue a
-        // new owner that the bounded ledger cannot durably relinquish.
+        let frame = encode_frame(self.sequence, &self.previous, &entry)?;
+        let hash: [u8; 32] = frame[52..84].try_into().unwrap();
+        // Admission reserves its exact release before issuing the new owner.
         let release_bytes = if matches!(entry, Entry::Claim { .. }) {
-            FRAME_HEADER as u64
-                + serde_json::to_vec(&Entry::Release {
+            encode_frame(
+                self.sequence + 1,
+                &hash,
+                &Entry::Release {
                     sequence: self.sequence,
                     digest: hash,
-                })
-                .map_err(io)?
-                .len() as u64
+                },
+            )?
+            .len() as u64
         } else {
             0
         };
-        if payload.len() > MAX_FRAME
-            || self.length + FRAME_HEADER as u64 + payload.len() as u64 + release_bytes
-                > claim_budget()
-        {
+        if self.length + frame.len() as u64 + release_bytes > claim_budget() {
             return Err(io(
                 "Copy name-claim log lacks space for claim and release; retained for review",
             ));
         }
-        let mut frame = Vec::with_capacity(FRAME_HEADER + payload.len());
-        frame.extend_from_slice(CLAIM_MAGIC);
-        frame.extend_from_slice(&(payload.len() as u32).to_le_bytes());
-        frame.extend_from_slice(&self.sequence.to_le_bytes());
-        frame.extend_from_slice(&self.previous);
-        frame.extend_from_slice(&hash);
-        frame.extend_from_slice(&payload);
         // Never repair or retry an uncertain append in this owner.
         file.seek(SeekFrom::End(0)).map_err(io)?;
         file.write_all(&frame).map_err(io)?;
@@ -293,6 +340,7 @@ pub(super) struct Lease {
     binding: Binding,
     stamp: EntryVersion,
     released: bool,
+    pending_release: bool,
     writer: bool,
 }
 fn open_file(root: &File, name: &OsStr, access: u32) -> std::io::Result<File> {
@@ -482,23 +530,28 @@ impl Lease {
             },
         )?;
         bucket.writable_root()?.sync_all().map_err(io)?;
-        Self::from_file(root, bucket, binding, file, true)
+        Self::from_file(root, bucket, binding, file, true, false)
     }
     pub(super) fn open(
         parent: &File,
         binding: &Binding,
-        allow_released: bool,
+        terminal: bool,
         strong: bool,
     ) -> Result<Self, PlatformError> {
         let root = AnchoredRoot::claims(parent, false)?
             .ok_or_else(|| io("Copy claim root disappeared"))?;
-        let lease = Self::load(root, binding.clone(), strong)?;
-        if lease.released && !allow_released {
+        let lease = Self::load(root, binding.clone(), strong, terminal)?;
+        if lease.released && !terminal {
             return Err(io("Copy target claim was released before terminal state"));
         }
         Ok(lease)
     }
-    fn load(root: AnchoredRoot, binding: Binding, writer: bool) -> Result<Self, PlatformError> {
+    fn load(
+        root: AnchoredRoot,
+        binding: Binding,
+        writer: bool,
+        terminal: bool,
+    ) -> Result<Self, PlatformError> {
         let (short, name) = ledger_key(&OsString::from_wide(&binding.claim.target));
         let bucket = AnchoredRoot::claim_bucket(root.root(), short, false)?
             .ok_or_else(|| io("Copy claim bucket disappeared"))?;
@@ -525,7 +578,7 @@ impl Lease {
             }
             .map_err(io)?
         };
-        Self::from_file(root, bucket, binding, file, writer)
+        Self::from_file(root, bucket, binding, file, writer, terminal)
     }
     fn from_file(
         root: AnchoredRoot,
@@ -533,9 +586,10 @@ impl Lease {
         binding: Binding,
         file: File,
         writer: bool,
+        terminal: bool,
     ) -> Result<Self, PlatformError> {
         let bytes = read(&file)?;
-        let log = Log::decode(&bytes)?;
+        let (log, pending_release) = Log::for_binding(&bytes, &binding, terminal)?;
         let generation = log.generation(&binding)?;
         let stamp = validate_control(&root, &bucket, &file, &bytes, &log)?;
         Ok(Self {
@@ -545,16 +599,17 @@ impl Lease {
             binding,
             stamp,
             released: generation.released,
+            pending_release,
             writer,
         })
     }
     pub(super) fn binding(&self) -> &Binding {
         &self.binding
     }
-    pub(super) fn validate(&self, allow_released: bool) -> Result<(), PlatformError> {
+    pub(super) fn validate(&self, terminal: bool) -> Result<(), PlatformError> {
         self.root.validate()?;
         self.bucket.validate()?;
-        if self.released && !allow_released {
+        if (self.released || self.pending_release) && !terminal {
             return Err(io("Copy target claim no longer belongs to this operation"));
         }
         if super::super::version(&self.file)? != self.stamp {
@@ -619,7 +674,7 @@ impl Lease {
             .map_err(io)?
         };
         let bytes = read(&writer)?;
-        let mut log = Log::decode(&bytes)?;
+        let (mut log, pending_release) = Log::for_binding(&bytes, &binding, true)?;
         cleanup_finalize::metadata(
             &writer,
             binding.claim.file,
@@ -631,6 +686,13 @@ impl Lease {
         if !log.generation(&binding)?.released {
             root.validate()?;
             bucket.validate()?;
+            if pending_release {
+                // The caller has independently verified both terminal journals.
+                // Only the exact partial encoding of this generation's release
+                // may be removed. Failure consumes this owner; no blind retry.
+                writer.set_len(log.length).map_err(io)?;
+                writer.sync_all().map_err(io)?;
+            }
             log.append(
                 &mut writer,
                 Entry::Release {

@@ -4635,3 +4635,47 @@ This ordered held-owner matrix does not close simultaneous initial ledger
 construction, integrated Overwrite/Rename, alias/ancestor/resource, log retirement,
 orphan/partial admission or interrupted-release recovery gates. Public Windows
 Copy stays disabled, and application packages remain unchanged.
+
+
+## Windows Copy staged-claim baseline regression complete — 2026-10-18
+
+The executable for source checkpoint `51e8ef8` now accounts for all 186 enumerated
+journal cases in three disjoint native batches: 177 pass, zero fail and nine are
+intentionally ignored. Seven ignores are subprocess entry points exercised by
+their owning crash tests; the other two require separate Activity/export and
+secondary-volume fixtures and are not counted as passes. The same executable
+passes all seven registry tests and the 14 focused claim/process checks.
+
+Teardown verifies no owned processes or temporary roots, unchanged original
+profile/installation hashes and login state, and the owned VM shut off. The
+frozen compiler copy used to isolate this completed run from later source work
+has been removed. Exact case coverage and scope are in
+`.hermes/evidence/windows-copy-claim-process-current/JOURNAL_SUITE.json` and its
+`ACCEPTANCE.json`. These results do not cover the subsequent release-prefix repair
+implementation, which has its own source/binary/native verification in progress.
+Public Windows Copy and the remaining roadmap gates are unchanged.
+
+
+## Windows Copy interrupted release writer recovery — 2026-10-18
+
+Core recovery now recognizes only the exact partial encoding of its own active
+claim release, after independent paired terminal-journal validation. Read-only
+observation changes nothing. A fresh exclusive writer rechecks the native controls,
+removes only that recognized partial frame and durably appends its release.
+Normal admission still refuses incomplete logs and unknown data remains intact.
+The canonical encoder is shared, with no second log format or repair fallback.
+
+All 16 focused ordinary-user native checks pass, zero failures/ignores and no
+leftover temporary entries (46.78s). Tests cover every release-byte prefix without
+rewriting either journal, source-free replay, retained-data preservation, divergent
+and nonterminal pairs, unknown/corrupt tails, an unknown ADS and a later generation
+that old terminal journals cannot repair. Strict Windows all-target Clippy and
+formatting pass. Broader tests for the changed shared decoder run on the same
+recorded executable; no full-suite pass for this revision is inferred yet.
+Evidence: `.hermes/evidence/windows-copy-claim-release-current/ACCEPTANCE.json`.
+
+Still required: a distinct non-destructive finish-release recovery admission and
+pending status after restart (fresh completed-Undo admission currently refuses),
+repair-I/O interruption acceptance, orphan/partial construction recovery, released
+log retirement, remaining concurrency/alias/resource and normal workflow/package
+gates. Public Windows Copy remains disabled and application packages unchanged.

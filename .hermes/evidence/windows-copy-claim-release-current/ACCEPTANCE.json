@@ -1,0 +1,81 @@
+{
+  "status": "focused native pass; broader decoder regressions running",
+  "scope": "Recognize and explicitly finish only the bound exact release prefix after independent paired terminal verification; shared canonical frame encoding",
+  "source": {
+    "baseline": "51e8ef8",
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "63e16b0404460824d613b83449f9ddfa321a9af519949398f0422eef85a8df7a",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "ad347cf90f1a30efde37c61b10dcd3115247c4115f8a377c35bf3180d4cbab89",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "6f0462054b58eba46b3345b1a934008cbf11c629c44cf5b4ae232a7e5d56d57f"
+    },
+    "journal_schema": 16,
+    "claim_magic": "OTCWCL02",
+    "scope": "Recognize and explicitly finish only the bound exact release prefix after independent paired terminal verification; shared canonical frame encoding"
+  },
+  "compiler_test_binary_sha256": "9feb405b884a6dc17b788727ba95b00ebefb6585884f0f801c3fd80fbb419cb3",
+  "transferred_test_binary_sha256": "e5a278191ec7efd304b7020202194c2e5eb35a5d0ed54908464a0dadac60526b",
+  "native": {
+    "passed": 16,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 46.78,
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit copy_transaction::windows::journal::tests::claim_releases:: --nocapture --test-threads=1",
+    "passed_cases": [
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite",
+      "copy_transaction::windows::journal::claims::tests::windows_native_claim_admission_reserves_release_without_changing_rejected_log",
+      "copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit",
+      "copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_terminal_journals",
+      "copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_recovers_every_exact_prefix_without_rewriting_journals",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation"
+    ]
+  },
+  "repair_authority": [
+    "Strict admission still refuses incomplete claim logs.",
+    "Read-only snapshots may recognize only the canonical incomplete release prefix of their own last active generation when local state is terminal; they do not change bytes.",
+    "Both journal bytes, IDs, security and bindings are independently revalidated before any explicit writer release. Divergent/nonterminal evidence cannot authorize repair.",
+    "Fresh exclusive claim writer rechecks complete bytes, native IDs/security and bindings; only exact known partial release is truncated to valid prefix, then canonical release appended and flushed. Errors consume the owner rather than retrying an uncertain append."
+  ],
+  "native_repair_matrix": [
+    "Every byte prefix of a real release frame, including zero/full frame, is observed without mutation and completed by explicit source-free Undo replay.",
+    "Both paired journals stay byte-identical and the retained tree stays intact through every prefix repair.",
+    "Divergent and matching nonterminal journal pairs refuse repair without changing claims or journals.",
+    "Truncated first claim, changed release header/checksum and extra unknown tail remain untouched.",
+    "Unknown named stream remains intact and prevents mutation.",
+    "Old terminal journals refuse a later generation partial release; complete later history remains unchanged on old replay."
+  ],
+  "baseline_full_suite": "51e8ef8 baseline completed186 enumerated cases:177 pass/9 intentional ignores; registry7 pass and preserved-profile/installation/login-state teardown. See windows-copy-claim-process-current/JOURNAL_SUITE.json. This baseline is not acceptance of the changed decoder.",
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "broader_regressions": {
+    "status": "running; no full-suite pass inferred",
+    "host_session": 95843,
+    "order": [
+      "core",
+      "cleanup",
+      "group",
+      "registry",
+      "journal-list"
+    ],
+    "teardown": "Shared owned-VM teardown runs after all batches pass."
+  },
+  "limits": [
+    "This is core writer recovery. Fresh RetainedCopyUndoPlan admission still rejects already-completed Undo; a distinct non-destructive finish-release admission and visible pending status after restart remain required. Cleanup can reach the writer but also authorizes retained-payload deletion.",
+    "Repair byte-prefix testing is not physical power-cut or every repair-I/O interruption/mapping acceptance.",
+    "Orphan/pre-journal and partial claim construction discovery/reclamation and released-log retirement/vacuum remain required.",
+    "Complete integrated simultaneous initialization, Overwrite/Rename, alias/ancestor/resource and normal workflow/package gates remain required.",
+    "No application package refresh; public Windows Copy remains disabled."
+  ],
+  "native_text_export": "Result/log text normalized to LF and trailing harness whitespace removed; binary hashes and result fields unchanged."
+}
