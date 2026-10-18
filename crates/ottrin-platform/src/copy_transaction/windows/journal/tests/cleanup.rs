@@ -1261,7 +1261,7 @@ fn anchored_cleanup_fixture(root: &Path) {
     fixture(root);
     std::fs::remove_dir(root.join("central")).unwrap();
     drop(
-        super::super::super::registry::ConfiguredRegistry::open_at(&root.join("central"), true)
+        super::super::super::registry::AnchoredRoot::open_at(&root.join("central"), true)
             .unwrap()
             .unwrap(),
     );
@@ -1540,7 +1540,7 @@ fn windows_native_copy_cleanup_unverified_registry_peer_refuses_before_any_write
 
 #[test]
 fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations() {
-    use super::super::super::registry::ConfiguredRegistry;
+    use super::super::super::registry::AnchoredRoot;
     for fault_role in [
         None,
         Some(CleanupMetadataRole::Local),
@@ -1555,10 +1555,10 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                         fixture(root.path());
                         std::fs::remove_dir(root.path().join("central")).unwrap();
                         let path = root.path().join("profile/Ottrin/State/copies");
-                        assert!(ConfiguredRegistry::open_at(&path, false).unwrap().is_none());
+                        assert!(AnchoredRoot::open_at(&path, false).unwrap().is_none());
                         assert!(!root.path().join("profile").exists());
-                        drop(ConfiguredRegistry::open_at(&path, true).unwrap().unwrap());
-                        let registry = ConfiguredRegistry::open_at(&path, false).unwrap().unwrap();
+                        drop(AnchoredRoot::open_at(&path, true).unwrap().unwrap());
+                        let registry = AnchoredRoot::open_at(&path, false).unwrap().unwrap();
                         let central = registry.writable_root().unwrap();
                         central.sync_all().unwrap();
                         // The manager pins its root without sharing DELETE. The
@@ -2471,7 +2471,7 @@ fn windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_fr
         let root = tempfile::tempdir().unwrap();
         let names = cleanup_chain_fixture(root.path(), false, true);
         let parent = owner(&root.path().join("destination"));
-        let manager = super::super::super::registry::ConfiguredRegistry::open_at(
+        let manager = super::super::super::registry::AnchoredRoot::open_at(
             &root.path().join("central"),
             false,
         )
@@ -2737,7 +2737,7 @@ fn windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_pro
         for drift in [false, true] {
             let root = tempfile::tempdir().unwrap();
             let names = cleanup_peer_fixture(root.path(), false);
-            let manager = super::super::super::registry::ConfiguredRegistry::open_at(
+            let manager = super::super::super::registry::AnchoredRoot::open_at(
                 &root.path().join("central"),
                 false,
             )

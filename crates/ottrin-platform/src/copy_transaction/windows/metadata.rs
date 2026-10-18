@@ -3,9 +3,6 @@
 use super::{EntryVersion, PlatformError, StreamEvidence, io, stage_entry_streams, version};
 use crate::windows_fs;
 use std::{fs::File, mem::size_of, os::windows::io::AsRawHandle, ptr};
-use windows_sys::Wdk::Storage::FileSystem::{
-    FILE_CASE_SENSITIVE_INFORMATION, FileCaseSensitiveInformation, NtSetInformationFile,
-};
 use windows_sys::Win32::Storage::FileSystem::*;
 use windows_sys::Win32::System::IO::DeviceIoControl;
 use windows_sys::Win32::System::Ioctl::{FSCTL_GET_COMPRESSION, FSCTL_SET_COMPRESSION};
@@ -115,40 +112,6 @@ fn set_compression(file: &File, format: u16) -> Result<(), PlatformError> {
     }
     if compression(file)? != format {
         return Err(io("candidate compression did not match"));
-    }
-    Ok(())
-}
-
-// Apply source policy only to a newly owned, still-empty ordinary candidate.
-// Later validation never repairs a changed retained policy.
-fn set_case_policy(candidate: &File, expected: bool) -> Result<(), PlatformError> {
-    // This is the owned, still-empty candidate, before any child staging.
-    // The destination parent's inherited policy is not the source policy.
-    windows_fs::directory_children_limited(candidate, 0).map_err(io)?;
-    let value = FILE_CASE_SENSITIVE_INFORMATION {
-        Flags: if expected {
-            windows_sys::Win32::System::SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR
-        } else {
-            0
-        },
-    };
-    let mut status = windows_sys::Win32::System::IO::IO_STATUS_BLOCK::default();
-    let result = unsafe {
-        NtSetInformationFile(
-            candidate.as_raw_handle().cast(),
-            &mut status,
-            ptr::from_ref(&value).cast(),
-            size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
-            FileCaseSensitiveInformation,
-        )
-    };
-    if result < 0 {
-        return Err(io(std::io::Error::from_raw_os_error(unsafe {
-            windows_sys::Win32::Foundation::RtlNtStatusToDosError(result)
-        } as i32)));
-    }
-    if windows_fs::directory_case_sensitive(candidate).map_err(io)? != expected {
-        return Err(io("candidate directory case policy was not applied"));
     }
     Ok(())
 }
@@ -386,7 +349,7 @@ pub(super) fn stage_entry_payload(
     if let Some(expected) = before.case_sensitive
         && target.case_sensitive != Some(expected)
     {
-        set_case_policy(candidate, expected)?;
+        windows_fs::set_empty_directory_case_policy(candidate, expected).map_err(io)?;
     }
     let streams = stage_entry_streams(source, candidate, progress)?;
     if compression(candidate)? != format {

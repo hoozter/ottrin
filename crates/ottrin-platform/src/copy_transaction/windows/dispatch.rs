@@ -94,7 +94,7 @@ pub(super) fn copy_configured(
     // Provisioning is itself a namespace mutation. Refuse source overlap before
     // creating even the first missing profile/state directory or marker.
     source.reject_overlap(&registry_path, true, &mut progress)?;
-    let registry = super::registry::ConfiguredRegistry::open_at(&registry_path, true)?
+    let registry = super::registry::AnchoredRoot::open_at(&registry_path, true)?
         .ok_or_else(|| io("Copy registry initialization returned no registry"))?;
     copy_admitted_source(
         source,

@@ -1,0 +1,84 @@
+{
+  "status": "pass",
+  "scope": "Shared anchored-directory implementation and filesystem-native target-claim namespace foundation; not integrated Copy target reservations.",
+  "source": {
+    "baseline_revision": "be89336b0675d54c15dc7ca5118d9a8c4b9b88ee",
+    "journal_schema": 15,
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f31f18f3bc75283e0d9f000ed55ae22227c452d70be9c050668a2778256ecf13",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "75e9d7d319fd1f9d3b133121282dcc3e5136eb0a69a3d4bc724e5bd873559371",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "765d17d1314c8f04d8237d2e91d2119d82c9ee9e93696abe8a5ef7f427350225",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "893329a1847d5be0420ff3d62b32e75d902f5ebf3c332dd63976b81776bbff54",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "1eaea0b030c19e62c3c21ef2b055281621f8f348013eb4b6796eeb4b053e502b",
+      "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "75c25e5bbb0126439ea1073bbe286d26337046f7127383fce17a809a5de8f341",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "58e4bdf44e7199a445f0eeb56108f1a9a58926ea117e44d09d622c585a217e47",
+      "crates/ottrin-platform/src/windows_fs.rs": "e0d8238aec6a6b32a75b39ff90741660c2b7dd2c07d4dfe5b52c74b9e1bae401"
+    }
+  },
+  "compiler_test_binary_sha256": "0457a461c2f2509bf772dca80d85c74cfa40fac412a4f4133a92b652d406850a",
+  "transferred_test_binary_sha256": "480e7683bf73c434aa8d4992858d2a8941c219b9cd0771a568d577a17fd5dff3",
+  "registry_native": {
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 1.1,
+    "arguments": "copy_transaction::windows::registry:: --nocapture --test-threads=1",
+    "ordinary_user": true
+  },
+  "name_policy_matrix": {
+    "directory_case_modes": 2,
+    "pairs_per_mode": 4,
+    "pairs": [
+      "ASCII case variants",
+      "Non-ASCII case variants",
+      "Distinct NFC and NFD names",
+      "Raw UTF-16 containing an unpaired surrogate plus a case-variant ASCII unit"
+    ]
+  },
+  "separate_process_matrix": {
+    "cohorts": 3,
+    "children": 6,
+    "cases": [
+      "Case-insensitive colliding names: one owner, one collision",
+      "Case-sensitive case variants: two independent owners",
+      "Case-insensitive unrelated names: two independent owners"
+    ],
+    "barrier": "Both children acknowledge readiness before the parent releases either create-new attempt.",
+    "exit_codes": "Five owners exit 86 with their synced entry handle alive; one collision exits 87. Parent guards kill and reap any unfinished child on unwinding.",
+    "retention": "Each resulting file remains occupied with exact actor bytes after child exit."
+  },
+  "directory_copy_regression": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 2.67,
+    "source_parent_policy_combinations": 8,
+    "retained_policy_drift_refusal": true
+  },
+  "initial_fixture_failure": {
+    "passed": 6,
+    "failed": 1,
+    "seconds": 0.99,
+    "cause": "Child attempted directory sync_all through its read-only observation handle; Windows returned Access Denied after file creation and sync.",
+    "correction": "Use AnchoredRoot::writable_root to validate and acquire directory-flush rights before sync. The durability assertion remains required.",
+    "source_reconstruction": "Decompressed INITIAL_CONCURRENCY_SOURCE.patch.gz reproduces all eight recorded initial source hashes from the recorded baseline; temporary reconstruction removed."
+  },
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "Claim namespace method is not yet routed from Copy dispatch. Durable claim records, paired-journal binding and guarded release/recovery remain required.",
+    "Filesystem-native arbitration of these control entries does not establish Copy name reservation, short-name canonicalization, parent-alias workflows, or every interruption boundary.",
+    "No full journal suite, physical power cut, resource, GUI, package or public Copy acceptance inferred.",
+    "Application packages unchanged; public Windows Copy remains gated."
+  ]
+}

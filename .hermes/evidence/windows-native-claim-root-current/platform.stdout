@@ -1,0 +1,11 @@
+
+running 7 tests
+test copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes ... ok
+test copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_refuses_policy_drift_and_unanchored_data ... ok
+test copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_uses_native_volume_name_rules ... ok
+test copy_transaction::windows::registry::tests::windows_native_copy_registry_configured_dispatch_discovery_and_source_free_undo ... ok
+test copy_transaction::windows::registry::tests::windows_native_copy_registry_provisions_once_and_readers_hold_the_binding ... ok
+test copy_transaction::windows::registry::tests::windows_native_copy_registry_refuses_unanchored_partial_and_foreign_state_without_repair ... ok
+test copy_transaction::windows::registry::tests::windows_native_copy_registry_rejects_replaced_root_marker_and_parent ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 386 filtered out; finished in 1.10s

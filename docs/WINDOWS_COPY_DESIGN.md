@@ -1027,3 +1027,32 @@ It is not durable absent-name reservation, a simultaneous-admission barrier or
 cross-registry exclusion. Interrupted metadata cleanup with missing local controls
 must be resolved before Overwrite; the check does not infer release from a lone
 central record. Public Copy and the complete target-reservation gate remain open.
+
+### Native claim-namespace foundation
+
+`AnchoredRoot` now provides the single external-anchor implementation for the
+configured recovery registry and a destination-local target-claim namespace.
+The latter is created through the held ordinary destination parent, with its
+actual volume and directory case policy. Only a newly owned empty root has its
+policy configured. Existing mismatched policy, unanchored contents, foreign or
+partial anchors are retained and refused; observation never initializes them.
+Both root roles keep the existing native identity/creator/private-security checks.
+The owned-empty-directory case setter is shared with ordinary Copy metadata.
+
+The target namespace uses filesystem create-new behavior, rather than a
+user-space case-folding or Unicode-normalization algorithm. This is the namespace
+foundation only. Target claim records, journal binding, safe release/recovery,
+short-name canonicalization and normal Copy routing must still be implemented;
+public Windows Copy remains gated. Existing-object Overwrite dependency protection
+continues to apply in the current dispatcher.
+
+Native verification passes all seven registry/namespace parent tests (1.10s,
+zero failures/ignores), including three barrier-controlled two-process cohorts.
+Colliding names produce one owner; distinct names produce two. Flushed entries
+survive hard child exit and remain occupied. Both native directory case modes
+cover ASCII/non-ASCII variants, distinct normalization forms and raw UTF-16.
+The existing mixed-tree directory-policy regression passes separately on the
+same executable (2.67s). Strict Windows platform all-target Clippy and formatting
+pass. The owned VM is shut off after temporary data/executable removal and
+profile/installation/login-state verification. Receipt:
+`.hermes/evidence/windows-native-claim-root-current/ACCEPTANCE.json`.

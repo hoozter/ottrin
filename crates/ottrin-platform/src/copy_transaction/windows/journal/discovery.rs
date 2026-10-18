@@ -670,7 +670,7 @@ pub fn discover_at_with_progress(
     Ok(output)
 }
 pub fn discover() -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
-    let Some(registry) = super::super::registry::ConfiguredRegistry::open_at(
+    let Some(registry) = super::super::registry::AnchoredRoot::open_at(
         &super::super::registry::configured_path()?,
         false,
     )?
@@ -688,7 +688,7 @@ pub(crate) fn restore_undo_at(
     RetainedCopyUndoPlan::admit(root, id, |_| Ok(()))
 }
 pub(crate) fn restore_undo(id: &str) -> Result<RetainedCopyUndoPlan, PlatformError> {
-    let registry = super::super::registry::ConfiguredRegistry::open_at(
+    let registry = super::super::registry::AnchoredRoot::open_at(
         &super::super::registry::configured_path()?,
         false,
     )?
@@ -705,7 +705,7 @@ pub(crate) fn restore_resume_at(
     RetainedCopyResumePlan::admit(root, id, |_| Ok(()))
 }
 pub(crate) fn restore_resume(id: &str) -> Result<RetainedCopyResumePlan, PlatformError> {
-    let registry = super::super::registry::ConfiguredRegistry::open_at(
+    let registry = super::super::registry::AnchoredRoot::open_at(
         &super::super::registry::configured_path()?,
         false,
     )?

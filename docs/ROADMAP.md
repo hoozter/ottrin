@@ -4529,3 +4529,31 @@ simultaneous admission, cross-registry ownership and the broader interruption,
 storage/resource and public workflow gates remain required. Partial metadata
 cleanup must be resolved before Overwrite; a lone central record does not imply
 release. Public Windows Copy remains gated and application packages are unchanged.
+
+## Windows Copy native claim-namespace foundation — 2026-10-18
+
+The native root anchor now has one implementation shared by the configured
+recovery registry and a destination-local claim namespace. The claim root is
+created through the pinned ordinary parent on the destination volume and uses
+that parent's actual case policy. Creation changes only a newly owned empty
+root. Read-only observation creates nothing; changed policy and unanchored data
+are refused without repair. The native empty-directory policy setter is shared
+with the existing directory-copy metadata implementation.
+
+This prepares filesystem-native name arbitration. It does not connect claims to
+Copy transactions yet. Durable claim records, paired-journal binding, guarded
+release/recovery, short-name and parent-alias cases, normal workflow integration
+and the remaining platform gates are still required. Public Windows Copy remains
+gated and application packages are unchanged. Scoped verification is recorded in
+`.hermes/evidence/windows-native-claim-root-current/ACCEPTANCE.json`.
+
+All seven native registry/namespace tests pass (zero failures/ignores, 1.10s).
+Three controlled two-process cohorts prove one owner for colliding names and two
+owners for distinct names; synced entries remain after hard child exit. Native
+name cases include ASCII/non-ASCII case variants, distinct normalization forms
+and raw UTF-16. The existing directory-copy policy regression also passes (eight
+combinations plus drift refusal, 2.67s). Strict Windows platform all-target Clippy
+and formatting/diff checks pass. The initial child fixture's read-only directory
+flush failure and its correction through the validated writable-root API are
+retained. Owned test data/executables are removed, the VM is shut off, and original
+profile/installation/login state is unchanged.

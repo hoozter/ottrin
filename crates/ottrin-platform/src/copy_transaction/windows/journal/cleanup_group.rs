@@ -1,6 +1,6 @@
 //! Bound admission and start barrier for selected cleanup cohorts. Physical
 //! removal is separate; selected IDs alone never grant mutation authority.
-use super::super::registry::ConfiguredRegistry;
+use super::super::registry::AnchoredRoot;
 use super::*;
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -407,7 +407,7 @@ impl Observation {
             ));
         }
         cancel(0)?;
-        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+        let manager = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Configured Copy group registry is missing"))?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
@@ -484,7 +484,7 @@ impl Observation {
             return Err(io("Invalid or different pending shared unlink owner"));
         }
         self.start_all(&mut cancel)?;
-        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+        let manager = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Configured Copy group registry is missing"))?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
@@ -590,7 +590,7 @@ impl Observation {
             }
             _ => self.prepare_shared_unlink(owner, &mut cancel)?,
         };
-        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+        let manager = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Configured Copy group registry is missing"))?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
@@ -746,7 +746,7 @@ impl Observation {
         }
         self.start_all(&mut cancel)?;
         loop {
-            let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+            let manager = AnchoredRoot::open_at(&self.registry, false)?
                 .ok_or_else(|| io("Configured Copy registry is missing"))?;
             let central = manager.writable_root()?;
             self.selection.validate(&central, &mut cancel)?;
@@ -806,7 +806,7 @@ impl Observation {
             if shared {
                 self.unlink_shared_entry(index, &mut cancel)?;
             } else {
-                let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+                let manager = AnchoredRoot::open_at(&self.registry, false)?
                     .ok_or_else(|| io("Configured Copy registry is missing"))?;
                 let central = manager.writable_root()?;
                 self.selection.validate(&central, &mut cancel)?;
@@ -856,7 +856,7 @@ impl Observation {
         let Member::Payload(admission) = &self.members[index] else {
             return Ok(());
         };
-        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+        let manager = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Configured Copy registry is missing"))?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
@@ -911,7 +911,7 @@ impl Observation {
             return Err(io("Complete all group payloads before metadata removal"));
         }
         cancel(0)?;
-        let manager = ConfiguredRegistry::open_at(&self.registry, false)?
+        let manager = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Configured Copy registry is missing"))?;
         let central = manager.writable_root()?;
         let header = self.members[index].header().clone();
@@ -1013,7 +1013,7 @@ impl Observation {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         cancel(0)?;
-        let manager = ConfiguredRegistry::open_at(path, false)?
+        let manager = AnchoredRoot::open_at(path, false)?
             .ok_or_else(|| io("Configured Copy registry is missing"))?;
         let central = manager.root();
         let selection = Selection::capture(central, ids, &mut cancel)?;

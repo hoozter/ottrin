@@ -6239,7 +6239,7 @@ mod tests {
         let central = if let Some(registry) = registry {
             std::fs::remove_dir(path.join("central")).unwrap();
             drop(
-                super::super::registry::ConfiguredRegistry::open_at(registry, true)
+                super::super::registry::AnchoredRoot::open_at(registry, true)
                     .unwrap()
                     .unwrap(),
             );

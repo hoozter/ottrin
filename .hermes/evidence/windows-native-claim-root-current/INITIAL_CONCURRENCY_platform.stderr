@@ -1,0 +1,10 @@
+
+thread 'copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes' (7856) panicked at crates/ottrin-platform/src/copy_transaction/windows/registry.rs:524:50:
+called `Result::unwrap()` on an `Err` value: Os { code: 5, kind: PermissionDenied, message: "Access is denied." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes' (2088) panicked at crates/ottrin-platform/src/copy_transaction/windows/registry.rs:600:13:
+assertion `left == right` failed
+  left: [87, 101]
+ right: [86, 87]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

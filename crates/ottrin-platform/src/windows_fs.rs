@@ -90,6 +90,47 @@ pub(crate) fn directory_case_sensitive(parent: &File) -> io::Result<bool> {
     Ok(value.Flags & FILE_CS_FLAG_CASE_SENSITIVE_DIR != 0)
 }
 
+/// Set naming policy only on an owned, empty, ordinary directory. Callers must
+/// establish create-new ownership before using this setter. Retained namespaces
+/// are validated through `directory_case_sensitive`, never repaired here.
+pub(crate) fn set_empty_directory_case_policy(directory: &File, expected: bool) -> io::Result<()> {
+    if !crate::move_recovery::stable_identity_from_handle(directory)
+        .map_err(io::Error::other)?
+        .is_directory_without_reparse()
+    {
+        return Err(io::Error::other(
+            "case policy requires an ordinary directory",
+        ));
+    }
+    directory_children_limited(directory, 0)?;
+    let value = FILE_CASE_SENSITIVE_INFORMATION {
+        Flags: if expected {
+            windows_sys::Win32::System::SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR
+        } else {
+            0
+        },
+    };
+    let mut status = IO_STATUS_BLOCK::default();
+    let result = unsafe {
+        NtSetInformationFile(
+            directory.as_raw_handle().cast(),
+            &mut status,
+            ptr::from_ref(&value).cast(),
+            size_of::<FILE_CASE_SENSITIVE_INFORMATION>() as u32,
+            FileCaseSensitiveInformation,
+        )
+    };
+    if result < 0 {
+        return Err(io::Error::from_raw_os_error(
+            unsafe { RtlNtStatusToDosError(result) } as i32,
+        ));
+    }
+    if directory_case_sensitive(directory)? != expected {
+        return Err(io::Error::other("directory case policy was not applied"));
+    }
+    Ok(())
+}
+
 /// Open exactly one leaf under an already opened directory. Creation never
 /// replaces an entry; opening a reparse entry never follows its target.
 ///

@@ -1,0 +1,14 @@
+{
+  "baseline_revision": "be89336b0675d54c15dc7ca5118d9a8c4b9b88ee",
+  "journal_schema": 15,
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f31f18f3bc75283e0d9f000ed55ae22227c452d70be9c050668a2778256ecf13",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "75e9d7d319fd1f9d3b133121282dcc3e5136eb0a69a3d4bc724e5bd873559371",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "765d17d1314c8f04d8237d2e91d2119d82c9ee9e93696abe8a5ef7f427350225",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "893329a1847d5be0420ff3d62b32e75d902f5ebf3c332dd63976b81776bbff54",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "1eaea0b030c19e62c3c21ef2b055281621f8f348013eb4b6796eeb4b053e502b",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "75c25e5bbb0126439ea1073bbe286d26337046f7127383fce17a809a5de8f341",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "58e4bdf44e7199a445f0eeb56108f1a9a58926ea117e44d09d622c585a217e47",
+    "crates/ottrin-platform/src/windows_fs.rs": "e0d8238aec6a6b32a75b39ff90741660c2b7dd2c07d4dfe5b52c74b9e1bae401"
+  }
+}

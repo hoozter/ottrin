@@ -1,9 +1,9 @@
-//! Configured Copy registry provisioning and external native-identity anchor.
+//! Private Copy directories provisioned through an external native-identity anchor.
 use super::{WindowsStableIdentity, io, namespace, security, stable_identity_from_handle};
 use crate::{PlatformError, windows_fs};
 use serde::{Deserialize, Serialize};
 use std::{
-    ffi::OsStr,
+    ffi::{OsStr, OsString},
     fs::File,
     io::Read,
     os::windows::ffi::OsStrExt,
@@ -13,6 +13,8 @@ use std::{
 use windows_sys::Win32::Storage::FileSystem::*;
 
 const ANCHOR: &str = ".ottrin-copy-recovery-root";
+const CLAIMS_ROOT: &str = ".ottrin-copy-target-claims";
+const CLAIMS_ANCHOR: &str = ".ottrin-copy-target-claims-root";
 const MAX_ANCHOR: u64 = 65_536;
 
 #[derive(Serialize, Deserialize)]
@@ -27,8 +29,10 @@ struct Anchor {
     security: security::PrivateSecurity,
 }
 
-pub(super) struct ConfiguredRegistry {
+pub(super) struct AnchoredRoot {
     root: File,
+    anchor_name: OsString,
+    expected_case: Option<bool>,
     marker: File,
     marker_security: security::PrivateSecurity,
     parent: File,
@@ -115,7 +119,7 @@ fn parent_directory(path: &Path, initialize: bool) -> Result<Option<File>, Platf
     }
 }
 
-impl ConfiguredRegistry {
+impl AnchoredRoot {
     /// Read-only admission never initializes directories, anchors or journals.
     /// Existing unanchored/partial/foreign state is retained and refused.
     pub(super) fn open_at(path: &Path, initialize: bool) -> Result<Option<Self>, PlatformError> {
@@ -127,23 +131,60 @@ impl ConfiguredRegistry {
                 )
             })
         {
-            return Err(io("Copy registry requires an unambiguous absolute path"));
+            return Err(io(
+                "Copy private root requires an unambiguous absolute path",
+            ));
         }
         let name = path
             .file_name()
-            .ok_or_else(|| io("Copy registry has no native leaf"))?;
+            .ok_or_else(|| io("Copy private root has no native leaf"))?;
         windows_fs::valid_component(name).map_err(io)?;
         let parent_path = path
             .parent()
-            .ok_or_else(|| io("Copy registry has no parent"))?;
+            .ok_or_else(|| io("Copy private root has no parent"))?;
         let Some(parent) = parent_directory(parent_path, initialize)? else {
             return Ok(None);
         };
+        Self::open_under(parent, name, OsStr::new(ANCHOR), None, initialize)
+    }
+
+    /// A destination-local namespace lets the filesystem arbitrate target names
+    /// using this volume's own name rules, independently of recovery registries.
+    /// Missing roots are not created by read-only observation.
+    pub(super) fn claims(parent: &File, initialize: bool) -> Result<Option<Self>, PlatformError> {
+        let expected = windows_fs::directory_case_sensitive(parent).map_err(io)?;
+        Self::open_under(
+            parent.try_clone().map_err(io)?,
+            OsStr::new(CLAIMS_ROOT),
+            OsStr::new(CLAIMS_ANCHOR),
+            Some(expected),
+            initialize,
+        )
+    }
+
+    fn open_under(
+        parent: File,
+        name: &OsStr,
+        anchor_name: &OsStr,
+        expected_case: Option<bool>,
+        initialize: bool,
+    ) -> Result<Option<Self>, PlatformError> {
+        if !stable_identity_from_handle(&parent)
+            .map_err(io)?
+            .is_directory_without_reparse()
+        {
+            return Err(io("Copy anchored root requires an ordinary parent"));
+        }
+        windows_fs::valid_component(name).map_err(io)?;
+        windows_fs::valid_component(anchor_name).map_err(io)?;
+        if name == anchor_name {
+            return Err(io("Copy root and anchor names must differ"));
+        }
         let parent_location = windows_fs::location(&parent).map_err(io)?;
         let creator = security::current_owner()?;
         let marker = match child(
             &parent,
-            OsStr::new(ANCHOR),
+            anchor_name,
             false,
             FILE_GENERIC_READ,
             FILE_SHARE_READ,
@@ -165,7 +206,7 @@ impl ConfiguredRegistry {
                 } {
                     Ok(_) => {
                         return Err(io(
-                            "Copy registry exists without its identity anchor; retained for review",
+                            "Copy private root exists without its identity anchor; retained for review",
                         ));
                     }
                     Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -177,7 +218,7 @@ impl ConfiguredRegistry {
                 // Reserve the external anchor before creating the registry. A
                 // partial setup never authorizes adoption or automatic deletion.
                 let mut marker =
-                    windows_fs::create_private(&parent, OsStr::new(ANCHOR), false, FILE_SHARE_READ)
+                    windows_fs::create_private(&parent, anchor_name, false, FILE_SHARE_READ)
                         .map_err(io)?;
                 let result = (|| {
                     parent.sync_all().map_err(io)?;
@@ -188,6 +229,9 @@ impl ConfiguredRegistry {
                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     )
                     .map_err(io)?;
+                    if let Some(expected) = expected_case {
+                        windows_fs::set_empty_directory_case_policy(&root, expected).map_err(io)?;
+                    }
                     let record = Anchor {
                         protocol: "OTCRW01".into(),
                         parent: stable_identity_from_handle(&parent).map_err(io)?,
@@ -202,11 +246,11 @@ impl ConfiguredRegistry {
                     root.sync_all().map_err(io)?;
                     parent.sync_all().map_err(io)
                 })();
-                result.map_err(|error| PlatformError::CleanupPending {transaction:parent_location.display().to_string(),message:format!("Copy registry setup needs review: {error}; anchor and any directory retained")})?;
+                result.map_err(|error| PlatformError::CleanupPending {transaction:parent_location.display().to_string(),message:format!("Copy private root setup needs review: {error}; anchor and any directory retained")})?;
                 drop(marker);
                 child(
                     &parent,
-                    OsStr::new(ANCHOR),
+                    anchor_name,
                     false,
                     FILE_GENERIC_READ,
                     FILE_SHARE_READ,
@@ -217,7 +261,7 @@ impl ConfiguredRegistry {
         };
         let marker_id = stable_identity_from_handle(&marker).map_err(io)?;
         if !marker_id.is_regular_file_without_reparse() {
-            return Err(io("Copy registry anchor is not an ordinary file"));
+            return Err(io("Copy private root anchor is not an ordinary file"));
         }
         namespace::validate_single_link(&marker)?;
         let marker_security = security::PrivateSecurity::capture(&marker, &creator)?;
@@ -227,11 +271,11 @@ impl ConfiguredRegistry {
             .read_to_end(&mut bytes)
             .map_err(io)?;
         if bytes.len() as u64 > MAX_ANCHOR {
-            return Err(io("Copy registry anchor exceeds its bound"));
+            return Err(io("Copy private root anchor exceeds its bound"));
         }
         let record: Anchor = serde_json::from_slice(&bytes).map_err(|error| {
             io(format!(
-                "Copy registry anchor is incomplete or invalid; retained for review: {error}"
+                "Copy private root anchor is incomplete or invalid; retained for review: {error}"
             ))
         })?;
         if record.protocol != "OTCRW01"
@@ -241,7 +285,7 @@ impl ConfiguredRegistry {
             || record.creator != creator
         {
             return Err(io(
-                "Copy registry anchor identity or creator changed; retained for review",
+                "Copy private root anchor identity or creator changed; retained for review",
             ));
         }
         let access = if initialize {
@@ -259,6 +303,8 @@ impl ConfiguredRegistry {
         .map_err(io)?;
         let result = Self {
             root,
+            anchor_name: anchor_name.to_os_string(),
+            expected_case,
             marker,
             marker_security,
             parent,
@@ -289,7 +335,7 @@ impl ConfiguredRegistry {
         .map_err(io)?;
         if stable_identity_from_handle(&root).map_err(io)? != self.record.root {
             return Err(io(
-                "Copy registry changed while acquiring directory-flush rights",
+                "Copy private root changed while acquiring directory-flush rights",
             ));
         }
         self.record.security.validate(&root, &self.record.creator)?;
@@ -304,14 +350,22 @@ impl ConfiguredRegistry {
             || stable_identity_from_handle(&self.marker).map_err(io)? != self.record.marker
             || security::current_owner()? != self.record.creator
         {
-            return Err(io("Configured Copy registry binding changed"));
+            return Err(io("Copy anchored root binding changed"));
         }
         self.record
             .security
             .validate(&self.root, &self.record.creator)?;
         self.marker_security
             .validate(&self.marker, &self.record.creator)?;
-        namespace::validate_binding(&self.parent, OsStr::new(ANCHOR), self.record.marker)?;
+        if let Some(expected) = self.expected_case
+            && (windows_fs::directory_case_sensitive(&self.parent).map_err(io)? != expected
+                || windows_fs::directory_case_sensitive(&self.root).map_err(io)? != expected)
+        {
+            return Err(io(
+                "Copy claim namespace case policy changed; root retained without repair",
+            ));
+        }
+        namespace::validate_binding(&self.parent, &self.anchor_name, self.record.marker)?;
         namespace::validate_binding(
             &self.parent,
             self.path.file_name().unwrap(),
@@ -326,21 +380,254 @@ mod tests {
     use std::io::Write;
 
     #[test]
+    fn windows_native_copy_claim_namespace_uses_native_volume_name_rules() {
+        use std::os::windows::ffi::OsStringExt;
+        for sensitive in [false, true] {
+            let temp = tempfile::tempdir().unwrap();
+            let parent =
+                windows_fs::open_directory(temp.path(), FILE_GENERIC_READ | FILE_GENERIC_WRITE)
+                    .unwrap();
+            windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
+            assert!(AnchoredRoot::claims(&parent, false).unwrap().is_none());
+            assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), 0);
+            let claims = AnchoredRoot::claims(&parent, true).unwrap().unwrap();
+            assert_eq!(
+                windows_fs::directory_case_sensitive(claims.root()).unwrap(),
+                sensitive
+            );
+            let id = stable_identity_from_handle(claims.root()).unwrap();
+            let pairs = [
+                (
+                    OsString::from("Report.txt"),
+                    OsString::from("report.txt"),
+                    !sensitive,
+                ),
+                (
+                    OsString::from("Äpfel.txt"),
+                    OsString::from("äpfel.txt"),
+                    !sensitive,
+                ),
+                (
+                    OsString::from("é.txt"),
+                    OsString::from("e\u{301}.txt"),
+                    false,
+                ),
+                (
+                    OsString::from_wide(&[0xd800, 65]),
+                    OsString::from_wide(&[0xd800, 97]),
+                    !sensitive,
+                ),
+            ];
+            for (first, second, collision) in pairs {
+                let mut file =
+                    windows_fs::create_private(claims.root(), &first, false, FILE_SHARE_READ)
+                        .unwrap();
+                file.write_all(b"owned name").unwrap();
+                file.sync_all().unwrap();
+                claims.root().sync_all().unwrap();
+                drop(file);
+                let next =
+                    windows_fs::create_private(claims.root(), &second, false, FILE_SHARE_READ);
+                if collision {
+                    assert_eq!(next.unwrap_err().kind(), std::io::ErrorKind::AlreadyExists);
+                } else {
+                    drop(next.unwrap());
+                }
+                claims.validate().unwrap();
+            }
+            drop(claims);
+            let reopened = AnchoredRoot::claims(&parent, false).unwrap().unwrap();
+            assert_eq!(stable_identity_from_handle(reopened.root()).unwrap(), id);
+            assert_eq!(
+                windows_fs::directory_case_sensitive(reopened.root()).unwrap(),
+                sensitive
+            );
+            assert_eq!(
+                std::fs::read(reopened.path().join("Report.txt")).unwrap(),
+                b"owned name"
+            );
+        }
+    }
+
+    #[test]
+    fn windows_native_copy_claim_namespace_refuses_policy_drift_and_unanchored_data() {
+        for unanchored in [false, true] {
+            let temp = tempfile::tempdir().unwrap();
+            let parent =
+                windows_fs::open_directory(temp.path(), FILE_GENERIC_READ | FILE_GENERIC_WRITE)
+                    .unwrap();
+            windows_fs::set_empty_directory_case_policy(&parent, false).unwrap();
+            if unanchored {
+                std::fs::create_dir(temp.path().join(CLAIMS_ROOT)).unwrap();
+                std::fs::write(
+                    temp.path().join(CLAIMS_ROOT).join("user-data"),
+                    b"preserve me",
+                )
+                .unwrap();
+            } else {
+                let claims = AnchoredRoot::claims(&parent, true).unwrap().unwrap();
+                windows_fs::set_empty_directory_case_policy(claims.root(), true).unwrap();
+                assert!(claims.validate().is_err());
+            }
+            let anchor = std::fs::read(temp.path().join(CLAIMS_ANCHOR)).ok();
+            let count = std::fs::read_dir(temp.path()).unwrap().count();
+            for initialize in [false, true] {
+                assert!(AnchoredRoot::claims(&parent, initialize).is_err());
+            }
+            assert_eq!(std::fs::read(temp.path().join(CLAIMS_ANCHOR)).ok(), anchor);
+            assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), count);
+            if unanchored {
+                assert_eq!(
+                    std::fs::read(temp.path().join(CLAIMS_ROOT).join("user-data")).unwrap(),
+                    b"preserve me"
+                );
+            } else {
+                let root =
+                    windows_fs::open_directory(&temp.path().join(CLAIMS_ROOT), FILE_GENERIC_READ)
+                        .unwrap();
+                assert!(windows_fs::directory_case_sensitive(&root).unwrap());
+            }
+        }
+    }
+
+    #[test]
+    fn windows_native_copy_claim_namespace_arbitrates_separate_processes() {
+        use std::{
+            process::Command,
+            time::{Duration, Instant},
+        };
+        const ROOT: &str = "OTTRIN_TEST_CLAIM_NAMESPACE_ROOT";
+        const SELF: &str = "copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes";
+        if let Some(path) = std::env::var_os(ROOT) {
+            let path = PathBuf::from(path);
+            let id = std::env::var("OTTRIN_TEST_CLAIM_ACTOR").unwrap();
+            assert!(matches!(id.as_str(), "one" | "two"));
+            let target = std::env::var_os("OTTRIN_TEST_CLAIM_TARGET").unwrap();
+            let parent =
+                windows_fs::open_directory(&path, FILE_GENERIC_READ | FILE_GENERIC_WRITE).unwrap();
+            let claims = AnchoredRoot::claims(&parent, false).unwrap().unwrap();
+            std::fs::write(path.join(format!("{id}.ready")), b"ready").unwrap();
+            let deadline = Instant::now() + Duration::from_secs(30);
+            while !path.join("go").try_exists().unwrap() {
+                assert!(
+                    Instant::now() < deadline,
+                    "parent did not release native claim actors"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            claims.validate().unwrap();
+            let (code, _claim) =
+                match windows_fs::create_private(claims.root(), &target, false, FILE_SHARE_READ) {
+                    Ok(mut file) => {
+                        file.write_all(id.as_bytes()).unwrap();
+                        file.sync_all().unwrap();
+                        claims.writable_root().unwrap().sync_all().unwrap();
+                        (86, Some(file))
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => (87, None),
+                    Err(error) => panic!("native claim create failed: {error}"),
+                };
+            // Exercise kernel handle teardown without Rust destructors.
+            std::process::exit(code);
+        }
+        struct OwnedChild(std::process::Child);
+        impl Drop for OwnedChild {
+            fn drop(&mut self) {
+                if self.0.try_wait().ok().flatten().is_none() {
+                    let _ = self.0.kill();
+                }
+                let _ = self.0.wait();
+            }
+        }
+        for (sensitive, second, expected) in [
+            (false, "report.txt", vec![86, 87]),
+            (true, "report.txt", vec![86, 86]),
+            (false, "Independent.txt", vec![86, 86]),
+        ] {
+            let temp = tempfile::tempdir().unwrap();
+            let parent =
+                windows_fs::open_directory(temp.path(), FILE_GENERIC_READ | FILE_GENERIC_WRITE)
+                    .unwrap();
+            windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
+            let claims = AnchoredRoot::claims(&parent, true).unwrap().unwrap();
+            let mut children: Vec<_> = [("one", "Report.txt"), ("two", second)]
+                .into_iter()
+                .map(|(id, target)| {
+                    OwnedChild(
+                        Command::new(std::env::current_exe().unwrap())
+                            .args(["--exact", SELF, "--nocapture"])
+                            .env(ROOT, temp.path())
+                            .env("OTTRIN_TEST_CLAIM_ACTOR", id)
+                            .env("OTTRIN_TEST_CLAIM_TARGET", target)
+                            .stdout(std::process::Stdio::null())
+                            .spawn()
+                            .unwrap(),
+                    )
+                })
+                .collect();
+            let deadline = Instant::now() + Duration::from_secs(30);
+            while !temp.path().join("one.ready").try_exists().unwrap()
+                || !temp.path().join("two.ready").try_exists().unwrap()
+            {
+                assert!(
+                    Instant::now() < deadline,
+                    "native claim actors did not become ready"
+                );
+                for child in &mut children {
+                    assert!(
+                        child.0.try_wait().unwrap().is_none(),
+                        "claim actor exited before barrier"
+                    );
+                }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            std::fs::write(temp.path().join("go"), b"go").unwrap();
+            let mut codes = Vec::new();
+            for child in &mut children {
+                loop {
+                    if let Some(status) = child.0.try_wait().unwrap() {
+                        codes.push(status.code().unwrap());
+                        break;
+                    }
+                    assert!(
+                        Instant::now() < deadline,
+                        "native claim actor did not finish"
+                    );
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+            }
+            codes.sort();
+            assert_eq!(codes, expected);
+            claims.validate().unwrap();
+            let names = windows_fs::directory_children(claims.root()).unwrap();
+            assert_eq!(names.len(), if expected == [86, 87] { 1 } else { 2 });
+            for name in names {
+                let bytes = std::fs::read(claims.path().join(&name)).unwrap();
+                assert!(bytes == b"one" || bytes == b"two");
+                let error =
+                    windows_fs::create_private(claims.root(), &name, false, FILE_SHARE_READ)
+                        .unwrap_err();
+                assert_eq!(error.kind(), std::io::ErrorKind::AlreadyExists);
+            }
+        }
+    }
+
+    #[test]
     fn windows_native_copy_registry_provisions_once_and_readers_hold_the_binding() {
         let root = tempfile::tempdir().unwrap();
         let path = root.path().join("profile/Ottrin/State/copies");
-        assert!(ConfiguredRegistry::open_at(&path, false).unwrap().is_none());
+        assert!(AnchoredRoot::open_at(&path, false).unwrap().is_none());
         assert!(!root.path().join("profile").exists());
-        let writer = ConfiguredRegistry::open_at(&path, true).unwrap().unwrap();
+        let writer = AnchoredRoot::open_at(&path, true).unwrap().unwrap();
         let id = stable_identity_from_handle(writer.root()).unwrap();
         let marker = std::fs::read(path.parent().unwrap().join(ANCHOR)).unwrap();
-        let reader = ConfiguredRegistry::open_at(&path, false).unwrap().unwrap();
+        let reader = AnchoredRoot::open_at(&path, false).unwrap().unwrap();
         assert_eq!(stable_identity_from_handle(reader.root()).unwrap(), id);
         reader.validate().unwrap();
         assert!(std::fs::rename(&path, path.with_file_name("moved")).is_err());
         assert!(!path.with_file_name("moved").exists());
         drop((reader, writer));
-        let next = ConfiguredRegistry::open_at(&path, true).unwrap().unwrap();
+        let next = AnchoredRoot::open_at(&path, true).unwrap().unwrap();
         assert_eq!(stable_identity_from_handle(next.root()).unwrap(), id);
         assert_eq!(
             std::fs::read(path.parent().unwrap().join(ANCHOR)).unwrap(),
@@ -355,7 +642,7 @@ mod tests {
             let root = tempfile::tempdir().unwrap();
             let parent = root.path().join("state");
             let path = parent.join("copies");
-            drop(ConfiguredRegistry::open_at(&path, true).unwrap().unwrap());
+            drop(AnchoredRoot::open_at(&path, true).unwrap().unwrap());
             std::fs::write(path.join("user-data"), b"preserved").unwrap();
             let marker = std::fs::read(parent.join(ANCHOR)).unwrap();
             match case {
@@ -402,10 +689,7 @@ mod tests {
                 _ => unreachable!(),
             }
             for initialize in [false, true] {
-                assert!(
-                    ConfiguredRegistry::open_at(&path, initialize).is_err(),
-                    "{case}"
-                );
+                assert!(AnchoredRoot::open_at(&path, initialize).is_err(), "{case}");
             }
             assert_eq!(std::fs::read(parent.join(ANCHOR)).unwrap(), marker);
             let saved = if case == "root" {
@@ -435,7 +719,7 @@ mod tests {
                 marker.write_all(b"{\"protocol\":").unwrap();
                 marker.sync_all().unwrap();
             } else {
-                drop(ConfiguredRegistry::open_at(&path, true).unwrap().unwrap());
+                drop(AnchoredRoot::open_at(&path, true).unwrap().unwrap());
                 if case == "missing-root" {
                     std::fs::rename(&path, root.path().join("saved")).unwrap();
                 } else {
@@ -445,10 +729,7 @@ mod tests {
             let marker = std::fs::read(root.path().join(ANCHOR)).ok();
             let entries = std::fs::read_dir(root.path()).unwrap().count();
             for initialize in [false, true] {
-                assert!(
-                    ConfiguredRegistry::open_at(&path, initialize).is_err(),
-                    "{case}"
-                );
+                assert!(AnchoredRoot::open_at(&path, initialize).is_err(), "{case}");
             }
             assert_eq!(std::fs::read(root.path().join(ANCHOR)).ok(), marker);
             assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), entries);
