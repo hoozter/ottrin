@@ -1004,3 +1004,26 @@ The owned image is detached/deleted after testing; original disks, profile,
 installation and login settings are unchanged and the VM is shut off.
 Receipt: `.hermes/evidence/windows-secondary-discovery-current/ACCEPTANCE.json`.
 This establishes neither physical/removable/network acceptance nor public Copy.
+
+### Existing-object Overwrite dependency admission
+
+Path dispatch now captures the native identities of the complete admitted
+Overwrite tree and compares them with the authoritative retained-object references
+already used by cleanup. This prevents displacement of another retained Copy's
+publication, descendants, transaction directory or control objects. Native
+identity matching also covers a case-variant spelling of an occupied target.
+The check runs before creating a new stage or journal. Unrecognized recovery
+filenames, incomplete evidence, changed registry catalogs and disagreeing paired
+journals refuse admission without modifying recovery data.
+
+Only read-only native leases remain after each peer is decoded; its bytes and
+graph are dropped. Parent, stage and both control bindings remain held through
+the admitted Overwrite. An unrelated existing file remains usable against a
+complete, unchanged catalog. The original-tree identities come from the existing
+admission scan rather than a second traversal.
+
+This is existing-object dependency protection within the supplied registry.
+It is not durable absent-name reservation, a simultaneous-admission barrier or
+cross-registry exclusion. Interrupted metadata cleanup with missing local controls
+must be resolved before Overwrite; the check does not infer release from a lone
+central record. Public Copy and the complete target-reservation gate remain open.

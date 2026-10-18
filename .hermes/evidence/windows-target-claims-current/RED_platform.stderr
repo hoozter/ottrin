@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim' (6408) panicked at crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs:301:9:
+second Overwrite was admitted while Undo owns the destination; published bytes: [115, 101, 99, 111, 110, 100, 32, 115, 111, 117, 114, 99, 101]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

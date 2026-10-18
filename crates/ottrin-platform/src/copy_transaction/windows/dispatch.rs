@@ -224,6 +224,8 @@ fn copy_admitted_source(
         }
         (None, _) => journal::DestinationAdmission::creation(&parent, name)?,
     };
+    let _dependencies =
+        admission.guard_overwrite_dependencies(&parent, central, &mut guarded_progress)?;
     journal::DurableStage::execute_with_receipt(
         &source.file,
         &parent,
@@ -250,6 +252,141 @@ mod tests {
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         )
         .unwrap()
+    }
+
+    #[test]
+    fn windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim() {
+        for target_name in ["item.txt", "ITEM.TXT"] {
+            let root = tempfile::tempdir().unwrap();
+            let central = registry(root.path());
+            let first = root.path().join("first");
+            let second = root.path().join("second");
+            let destination = root.path().join("destination");
+            for directory in [&first, &second, &destination] {
+                std::fs::create_dir(directory).unwrap();
+            }
+            let first_source = first.join("item.txt");
+            let second_source = second.join(target_name);
+            std::fs::write(&first_source, b"first publication").unwrap();
+            std::fs::write(&second_source, b"second source").unwrap();
+            let receipt = copy_at(
+                &first_source,
+                &destination,
+                ConflictAction::Overwrite,
+                &central,
+                100,
+                |_| Ok(()),
+            )
+            .unwrap()
+            .unwrap();
+            let journal_bytes = || {
+                let mut records: Vec<_> = std::fs::read_dir(root.path().join("registry"))
+                    .unwrap()
+                    .map(|entry| {
+                        let entry = entry.unwrap();
+                        (entry.file_name(), std::fs::read(entry.path()).unwrap())
+                    })
+                    .collect();
+                records.sort();
+                records
+            };
+            let before = journal_bytes();
+            // No live transaction handle protects this completed Copy. Its retained
+            // journals must own the publication until Undo is durably relinquished.
+            let attempt = copy_at(
+                &second_source,
+                &destination,
+                ConflictAction::Overwrite,
+                &central,
+                100,
+                |_| Ok(()),
+            );
+            assert!(
+                attempt.is_err(),
+                "second Overwrite was admitted while Undo owns the destination; published bytes: {:?}",
+                std::fs::read(destination.join("item.txt")).unwrap()
+            );
+            assert!(
+                attempt
+                    .unwrap_err()
+                    .to_string()
+                    .contains("retained Copy transaction")
+            );
+            assert_eq!(journal_bytes(), before);
+            assert_eq!(
+                std::fs::read(destination.join("item.txt")).unwrap(),
+                b"first publication"
+            );
+            assert_eq!(std::fs::read(&first_source).unwrap(), b"first publication");
+            assert_eq!(std::fs::read(&second_source).unwrap(), b"second source");
+            let unrelated = second.join("unrelated.txt");
+            std::fs::write(&unrelated, b"independent data").unwrap();
+            std::fs::write(destination.join("unrelated.txt"), b"unrelated original").unwrap();
+            let transaction = before[0]
+                .0
+                .to_str()
+                .unwrap()
+                .strip_suffix(".copy-journal")
+                .unwrap();
+            let local = destination
+                .join(format!(".ottrin-copy-{transaction}"))
+                .join("journal");
+            let saved = std::fs::read(&local).unwrap();
+            let mut divergent = saved.clone();
+            divergent.push(0);
+            std::fs::write(&local, &divergent).unwrap();
+            assert!(
+                copy_at(
+                    &unrelated,
+                    &destination,
+                    ConflictAction::Overwrite,
+                    &central,
+                    100,
+                    |_| Ok(()),
+                )
+                .is_err()
+            );
+            assert_eq!(std::fs::read(&local).unwrap(), divergent);
+            assert_eq!(journal_bytes(), before);
+            assert_eq!(
+                std::fs::read(destination.join("unrelated.txt")).unwrap(),
+                b"unrelated original"
+            );
+            std::fs::write(&local, saved).unwrap();
+            let unrelated_receipt = copy_at(
+                &unrelated,
+                &destination,
+                ConflictAction::Overwrite,
+                &central,
+                100,
+                |_| Ok(()),
+            )
+            .unwrap()
+            .unwrap();
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt)
+                .unwrap();
+            let reused = copy_at(
+                &second_source,
+                &destination,
+                ConflictAction::Overwrite,
+                &central,
+                100,
+                |_| Ok(()),
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(
+                std::fs::read(destination.join("item.txt")).unwrap(),
+                b"second source"
+            );
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&reused)
+                .unwrap();
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&unrelated_receipt)
+                .unwrap();
+        }
     }
 
     #[test]

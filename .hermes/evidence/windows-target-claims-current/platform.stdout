@@ -1,0 +1,9 @@
+
+running 5 tests
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 385 filtered out; finished in 4.30s

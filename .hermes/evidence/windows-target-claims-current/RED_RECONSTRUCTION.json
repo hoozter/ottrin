@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "source_files": 3,
+  "base": "971a67cca22b0f5058e483e2ec6eac80fba234f2",
+  "patch_sha256": "f64fa074a357b27f4160a766823614aa8073fcf51e2db335591c631eb5b6a5ce",
+  "temporary_reconstruction_removed": true,
+  "patch": "RED_REGRESSION.patch.gz (decompressed)",
+  "compressed_sha256": "a0cac30d97e1be82ebaacc7948a0e8026b5b4c253838fd91087077c849952734"
+}

@@ -1,0 +1,12 @@
+{
+  "baseline_revision": "971a67cca22b0f5058e483e2ec6eac80fba234f2",
+  "journal_schema": 15,
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f300ad91f85a2daf679266b683be20e0d9cab9e238878e181bb9b7a0dabeace8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "98db7a053ff25ae41d1bf32caf1ead3352e29e18673b0ee8b0da91eb60774fb5",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "dacd6fdb1b08d6a6a7096e2c17f2b07cc773193e99338d2f2f98eac39d190b7f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "c21c9e08b7f3e07e0869192a383f1ed79139e5f44d87920a1c537dee83848202",
+    "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+  }
+}

@@ -74,6 +74,7 @@ pub(super) struct DestinationAdmission {
     location: std::path::PathBuf,
     target: OsString,
     original: Option<(EntryVersion, OriginalAdmission)>,
+    original_objects: BTreeSet<(u64, [u8; 16])>,
 }
 impl DestinationAdmission {
     fn at_parent(parent: &File, target: &OsStr) -> Result<Self, PlatformError> {
@@ -88,6 +89,7 @@ impl DestinationAdmission {
             location: windows_fs::location(parent).map_err(io)?,
             target: target.to_os_string(),
             original: None,
+            original_objects: BTreeSet::new(),
         })
     }
     pub(super) fn creation(parent: &File, target: &OsStr) -> Result<Self, PlatformError> {
@@ -106,6 +108,11 @@ impl DestinationAdmission {
         let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
         let evidence = tree.freeze_existing(&mut progress)?;
         namespace::validate_binding(parent, target, tree.root().identity)?;
+        result.original_objects = evidence
+            .entries
+            .iter()
+            .map(|entry| entry.version.identity.object_key())
+            .collect();
         result.original = Some((
             tree.root().clone(),
             OriginalAdmission {
@@ -115,6 +122,87 @@ impl DestinationAdmission {
         ));
         result.validate(parent)?;
         Ok(result)
+    }
+    /// Keep existing retained-object claims stable through an Overwrite. This
+    /// uses native identities, including descendants and aliases, rather than
+    /// comparing presentation paths. It is not an absent-name reservation or a
+    /// simultaneous-admission barrier.
+    pub(super) fn guard_overwrite_dependencies(
+        &self,
+        parent: &File,
+        central: &File,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Vec<File>, PlatformError> {
+        if self.original_objects.is_empty() {
+            return Ok(Vec::new());
+        }
+        let creator = security::current_owner()?;
+        let security = security::PrivateSecurity::capture(central, &creator)?;
+        let stamp = super::version(central)?;
+        let names =
+            windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
+                .map_err(io)?;
+        let mut leases = Vec::new();
+        let mut volumes = discovery::Volumes::new(central)?;
+        for name in &names {
+            progress(0)?;
+            if discovery::registry_id(name).is_none() {
+                if discovery::registry_candidate(name) {
+                    return Err(io(
+                        "Overwrite needs review of an unrecognized Copy recovery record",
+                    ));
+                }
+                continue;
+            }
+            let peer = discovery::RegisteredJournal::dependency(central, name)?;
+            let header = peer.state.header.as_ref().unwrap();
+            if !peer.state.verified
+                || header.original_admission.is_some()
+                    && !peer.state.original.as_ref().is_some_and(|plan| plan.sealed)
+            {
+                return Err(io("Overwrite needs completed Copy dependency evidence"));
+            }
+            let peer_parent = if header.parent == self.parent {
+                parent.try_clone().map_err(io)?
+            } else {
+                volumes.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?
+            };
+            let snapshot = Snapshot::read_with_control(
+                &peer_parent,
+                central,
+                &header.stage_name(),
+                &peer.file,
+            )?;
+            if snapshot.bytes != peer.bytes {
+                return Err(io("Copy dependency journals disagree; Overwrite refused"));
+            }
+            if cleanup_dependencies::references(&peer.state)
+                .iter()
+                .any(|identity| self.original_objects.contains(&identity.object_key()))
+            {
+                return Err(io(format!(
+                    "Overwrite would affect retained Copy transaction {}; resolve its recovery or retained data first",
+                    header.transaction
+                )));
+            }
+            // Drop the decoded graph and bytes at this iteration. Only the
+            // read-only native control/binding leases survive; appends,
+            // replacement and writable mappings remain excluded for the
+            // operation's lifetime.
+            leases.extend([peer.file, snapshot.local, snapshot.stage, peer_parent]);
+        }
+        if windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
+            .map_err(io)?
+            != names
+            || super::version(central)? != stamp
+        {
+            return Err(io(
+                "Copy registry changed during Overwrite dependency admission",
+            ));
+        }
+        security.validate(central, &creator)?;
+        progress(0)?;
+        Ok(leases)
     }
     fn validate_parent(&self, parent: &File) -> Result<(), PlatformError> {
         if stable_identity_from_handle(parent).map_err(io)? != self.parent

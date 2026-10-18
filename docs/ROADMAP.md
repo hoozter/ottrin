@@ -4503,3 +4503,29 @@ This accepts the scoped cross-volume recovery-discovery case, not removable or
 network storage, physical power loss, public Windows Copy or package readiness.
 Durable native target claims and the remaining staging/security/resource and
 platform gates remain open. Published application packages are unchanged.
+
+## Windows Copy existing-object Overwrite dependency protection — 2026-10-18
+
+A native regression reproduced a second Overwrite replacing a completed Copy's
+publication while its Undo remained retained. Path dispatch now compares the
+complete admitted original tree's native identities with the existing retained
+Copy dependency authority before creating a stage. Read-only native parent,
+stage and paired-journal leases remain held through the new operation; decoded
+peer graphs are discarded after inspection. This protects occupied objects and
+aliases without relying on presentation paths or an Activity cache.
+
+The regression covers ordinary and case-variant target names, unchanged source,
+publication and journal bytes on refusal, an unrelated existing-file Overwrite,
+refusal of a damaged journal mirror without repair, and reuse after undoing the
+first creation. All five native dispatch tests pass (zero failures/ignores,
+4.30s), and strict Windows platform all-target Clippy and formatting/diff checks
+pass. The uploaded executable and owned temporary data are removed; the VM is
+shut off and original profile/installation/login state is unchanged. Native
+results and exact source/binary provenance are recorded in
+`.hermes/evidence/windows-target-claims-current/ACCEPTANCE.json`.
+
+This is one part of the native reservation work. Absent-name durable claims,
+simultaneous admission, cross-registry ownership and the broader interruption,
+storage/resource and public workflow gates remain required. Partial metadata
+cleanup must be resolved before Overwrite; a lone central record does not imply
+release. Public Windows Copy remains gated and application packages are unchanged.

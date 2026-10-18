@@ -1,0 +1,63 @@
+{
+  "status": "pass",
+  "scope": "Native existing-object Overwrite dependency protection in Windows Copy dispatch; not complete durable target reservation or public Copy.",
+  "source": {
+    "baseline_revision": "971a67cca22b0f5058e483e2ec6eac80fba234f2",
+    "journal_schema": 15,
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f300ad91f85a2daf679266b683be20e0d9cab9e238878e181bb9b7a0dabeace8",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "98db7a053ff25ae41d1bf32caf1ead3352e29e18673b0ee8b0da91eb60774fb5",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "dacd6fdb1b08d6a6a7096e2c17f2b07cc773193e99338d2f2f98eac39d190b7f",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "eb5993adcb1046de9444ee0ffc4aa93f1f174e638d890a3a4235b0344b9bc139",
+      "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "c21c9e08b7f3e07e0869192a383f1ed79139e5f44d87920a1c537dee83848202",
+      "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+    }
+  },
+  "compiler_test_binary_sha256": "2f3513408cbb08142b3ef613cfa1898dd6a5a9d58af22433713e0cf594fcc267",
+  "transferred_test_binary_sha256": "f580cea7e624e8dbbdf10696fe979eff175ae2fa9e748b7a066dce03e9e351d7",
+  "native": {
+    "passed": 5,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 4.3,
+    "arguments": "copy_transaction::windows::dispatch:: --nocapture --test-threads=1",
+    "ordinary_user": true,
+    "temporary_entries": 0
+  },
+  "regression_cases": [
+    "Refuse displacement while completed Copy Undo owns an occupied target",
+    "Match ordinary and case-variant target names through native identity",
+    "Preserve source/publication/central journal bytes on refusal",
+    "Admit unrelated existing-file Overwrite against complete unchanged records",
+    "Refuse damaged paired journal without repairing it or changing the unrelated original",
+    "Permit creation target reuse after Undo completes"
+  ],
+  "red": {
+    "passed": 0,
+    "failed": 1,
+    "ignored": 0,
+    "seconds": 0.41,
+    "compiler_test_binary_sha256": "bd6458674564d7b77dfd9c9b2c6201a598bec83aba61c1ef8fa9204f06ad264f",
+    "transferred_test_binary_sha256": "0f1afcd9f3225ca95f78a60f5f4a6c54c336c0da16fc245435ca6254f6a2fc8e",
+    "actual": "Second Overwrite succeeded and published second source bytes while first Undo remained retained.",
+    "source_reconstruction": "Decompressed RED_REGRESSION.patch.gz on recorded baseline reproduces all three RED source hashes; temporary reconstruction removed."
+  },
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "Only existing-object dependency admission within the supplied registry; absent-name reservation, simultaneous-admission barrier and cross-registry exclusion remain open.",
+    "Incomplete, locked, divergent or partially removed peer evidence may refuse Overwrite until resolved; concurrent independent writers are not accepted by this checkpoint.",
+    "No whole-journal/resource/physical-power-loss/GUI/package acceptance inferred from five dispatch parent tests.",
+    "Published application packages unchanged; public Windows Copy remains gated."
+  ]
+}
