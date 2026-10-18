@@ -1,0 +1,5 @@
+{
+  "status": "pass",
+  "malformed_dispatch_rejected_before_guest_observer": true,
+  "reason": "RuntimeError: Invalid dispatch receipt"
+}

@@ -1,0 +1,6 @@
+{
+  "dispatch_id": "c1ea9cc0fefdaab1ee705f69dab61c3f",
+  "guest_pid": 4300,
+  "status": "rejected",
+  "error": "Native dispatch executed no passing tests"
+}

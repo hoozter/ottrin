@@ -1,0 +1,38 @@
+{
+  "status": "pass",
+  "probes": [
+    {
+      "case": "preparing",
+      "rejected": true,
+      "exit": 1,
+      "reason": "RuntimeError: Dispatch controller has not completed; wait for it before observing",
+      "accepted_evidence_unchanged": true
+    },
+    {
+      "case": "different-id",
+      "rejected": true,
+      "exit": 1,
+      "reason": "RuntimeError: Native result does not belong to this dispatch",
+      "accepted_evidence_unchanged": true
+    },
+    {
+      "case": "different-arguments",
+      "rejected": true,
+      "exit": 1,
+      "reason": "RuntimeError: Native result does not belong to this dispatch",
+      "accepted_evidence_unchanged": true
+    },
+    {
+      "case": "different-executable",
+      "rejected": true,
+      "exit": 1,
+      "reason": "RuntimeError: Native result executable does not match dispatch",
+      "accepted_evidence_unchanged": true
+    }
+  ],
+  "accepted_sha256": {
+    "RESULTS.json": "492813e8a91318fde9bfced81ea395009a4596dbb70597ae28070cddf4a7d60b",
+    "platform.stdout": "2330881795d72775b936ab6feb54b22f74bbeb8c2fdfaafeda8f0d63671dc5ae",
+    "platform.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

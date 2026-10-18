@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "actor_result": "A real older test executable ran the requested exact filter with zero matching tests and exited successfully; this is deliberately unaccepted workload evidence.",
+  "zero_tests": {
+    "rejected": true,
+    "reason": "RuntimeError: Native dispatch executed no passing tests",
+    "invalid_evidence_published": false
+  },
+  "changed_log": {
+    "rejected": true,
+    "reason": "RuntimeError: Native log does not match dispatch result: platform.stdout",
+    "invalid_evidence_published": false
+  }
+}

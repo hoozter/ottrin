@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "stdout_sha256": "2330881795d72775b936ab6feb54b22f74bbeb8c2fdfaafeda8f0d63671dc5ae",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "951208f6a7f8e198916f929b7537be300185a9e4df1294101a983077d285627f",
+  "dispatch_id": "82d57fa856d4fe710709ef7836489489"
+}

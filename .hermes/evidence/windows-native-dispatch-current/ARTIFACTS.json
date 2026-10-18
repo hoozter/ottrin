@@ -1,0 +1,41 @@
+{
+  "native_raw_archives": [
+    {
+      "archive": "RESULTS.json.gz",
+      "uncompressed_name": "RESULTS.json",
+      "raw_sha256": "492813e8a91318fde9bfced81ea395009a4596dbb70597ae28070cddf4a7d60b",
+      "bytes": 633
+    },
+    {
+      "archive": "platform.stdout.gz",
+      "uncompressed_name": "platform.stdout",
+      "raw_sha256": "2330881795d72775b936ab6feb54b22f74bbeb8c2fdfaafeda8f0d63671dc5ae",
+      "bytes": 257
+    },
+    {
+      "archive": "platform.stderr.gz",
+      "uncompressed_name": "platform.stderr",
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "archive": "zero-tests/REJECTED_RESULT.json.gz",
+      "uncompressed_name": "REJECTED_RESULT.json",
+      "raw_sha256": "ad9438e50aaa29a073d7ae9175443a4e272be7642b41b7bf671f828b49ec0e61",
+      "bytes": 633
+    },
+    {
+      "archive": "zero-tests/rejected.stdout.raw.gz",
+      "uncompressed_name": "rejected.stdout.raw",
+      "raw_sha256": "f914ab863792a4d958d87b2ee3b36be423f73a45890eee8182e7682debfaa09d",
+      "bytes": 115
+    },
+    {
+      "archive": "zero-tests/rejected.stderr.raw.gz",
+      "uncompressed_name": "rejected.stderr.raw",
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "note": "Native log hashes and pre-probe file hashes bind raw archive bytes. Readable JSON views are normalized separately."
+}

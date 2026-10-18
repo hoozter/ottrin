@@ -1,0 +1,48 @@
+{
+  "status": "pass for scoped native dispatch/evidence protocol",
+  "application_source": "9abeb48 (no application changes in this checkpoint)",
+  "helper_source_sha256": {
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "84f5c36b87256669a928e268b623132770b3db76a5683d51ddfedb2bdf70b577",
+    ".hermes/evidence/windows-copy-cleanup-current/observe.py": "ef55c8fe375a80d5e645e7fe82af2ad9e4b15d165e6dbf3054c580c40cc03a75"
+  },
+  "native": {
+    "selected_parent_tests_passed": 1,
+    "scenario": "Simultaneous prepared publishers under insensitive and sensitive native case policies",
+    "dispatch_id": "82d57fa856d4fe710709ef7836489489",
+    "test_arguments": "--exact copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite --nocapture --test-threads=1",
+    "transferred_sha256": "951208f6a7f8e198916f929b7537be300185a9e4df1294101a983077d285627f",
+    "ordinary_user": true,
+    "temporary_entries": 0
+  },
+  "rejected_probes": [
+    "preparing dispatch",
+    "different dispatch ID",
+    "different selected arguments",
+    "different executable hash",
+    "altered log bytes",
+    "real successful process with zero executed tests",
+    "malformed dispatch identity before guest command"
+  ],
+  "proof": [
+    "Dispatch completion is explicit; observers cannot start against preparing receipts or resume a different dispatch.",
+    "Actor results bind a unique ID, exact arguments, actual executable hash and raw stdout/stderr hashes; result publication is atomic.",
+    "Receiver verifies staged evidence before copying it into accepted files; rejection leaves accepted evidence intact and records rejected status.",
+    "A real native parent passed. Four mismatch probes preserved accepted file hashes. An older real executable returned zero selected tests; the result and intentionally altered log were rejected, not counted as application acceptance."
+  ],
+  "storage": "Raw native records/logs retained as deterministic gzip archives; readable JSON normalized. Artifact hashes are mapped in ARTIFACTS.json.",
+  "validation_note": "The final lexical receipt guard was checked with a malformed receipt before any guest command. The accepted native receipt fields satisfy that guard; full receiver native re-observation is recorded in RECHECK.json before that format-only guard was added.",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "This validates QA evidence routing and rejection, not additional application feature completion.",
+    "Packages unchanged; public Windows Copy and the full roadmap gates remain open."
+  ]
+}

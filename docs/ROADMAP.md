@@ -126,7 +126,12 @@ Still required: later-generation append interruption, collection of private
 preparations left by abrupt exits, partial root/stage construction,
 retirement-specific interruption/concurrent recreation, physical-power, idle
 bookkeeping, remaining alias/ancestor/resource and public workflow/package gates.
-Native result/observer dispatch binding will be strengthened next, followed by an
+Native QA now binds each dispatch/result to a unique ID, exact selection,
+executable and raw-log hashes. Preparing, stale/mismatched, malformed, altered-log
+and zero-test success results are rejected before accepted evidence is replaced.
+One real native parent and seven rejection probes pass; raw records are archived
+in `.hermes/evidence/windows-native-dispatch-current/ACCEPTANCE.json`. This is QA
+routing validation, not additional application feature completion. Next is an
 audit of terminal-journal dependence on expired name claims. Public Windows Copy
 remains disabled and application packages are unchanged.
 
