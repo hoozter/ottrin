@@ -33,6 +33,9 @@ mod cleanup_peer;
 mod cleanup_protocol;
 mod cleanup_tree;
 mod discovery;
+mod name_release;
+pub use name_release::RetainedCopyNameReleasePlan;
+pub(crate) use name_release::{restore_name_release, restore_name_release_at};
 mod rename_creation;
 pub use discovery::{
     RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
@@ -3938,6 +3941,7 @@ mod tests {
     mod claim_releases;
     mod cleanup;
     mod creation_times;
+    mod name_release_action;
 
     use super::*;
     use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt, path::Path};
@@ -6758,6 +6762,34 @@ mod tests {
             FAULT.with(|f| f.set(None));
             assert!(result.is_err());
             assert!(destination.join(candidate).exists());
+        }
+        if case.starts_with("name-release") {
+            let parent = owner(&destination);
+            let central = owner(&registry);
+            undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+            let header = decode(&std::fs::read(destination.join(&name).join(LOCAL)).unwrap())
+                .unwrap()
+                .state
+                .header
+                .unwrap();
+            let claim = destination.join(header.claim.test_relative_path());
+            let full = std::fs::read(&claim).unwrap();
+            let end = FRAME_HEADER + u32::from_le_bytes(full[8..12].try_into().unwrap()) as usize;
+            let mut file = OpenOptions::new()
+                .write(true)
+                .truncate(true)
+                .open(&claim)
+                .unwrap();
+            file.write_all(&full[..end + 12]).unwrap();
+            file.sync_all().unwrap();
+            std::fs::write(
+                root.join("name-release.json"),
+                serde_json::to_vec(&serde_json::json!({
+                    "claim": claim.as_os_str().encode_wide().collect::<Vec<_>>(), "full": full,
+                }))
+                .unwrap(),
+            )
+            .unwrap();
         }
         let retain_for_cleanup = |destination: &Path, name: &OsStr| {
             undo_completed_copy(&owner(destination), &owner(&registry), name, |_| Ok(())).unwrap();

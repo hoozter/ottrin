@@ -4684,3 +4684,29 @@ pending status after restart (fresh completed-Undo admission currently refuses),
 repair-I/O interruption acceptance, orphan/partial construction recovery, released
 log retirement, remaining concurrency/alias/resource and normal workflow/package
 gates. Public Windows Copy remains disabled and application packages unchanged.
+
+
+## Windows Copy non-destructive name-release Activity recovery — 2026-10-18
+
+A terminal transaction with an unreleased destination claim now has a dedicated
+“Finish releasing name” action after restart. Its opaque admission freezes the
+registry anchor, paired journals, native destination identity/security and claim
+epoch. The shared off-thread recovery worker rechecks those bindings before
+finishing the release. It does not delete or validate retained payload content,
+and pending release cannot be mistaken for an invitation to clear retained data.
+
+All 18 focused native platform checks pass (47.51s), including cancellation, stale
+admission, registry replacement, later-generation refusal and preservation of
+edited/unknown retained files. The native Activity integration passes all 18
+scenarios through actual rendered action clicks (20.06s), including the three new
+release cases plus existing Undo, forward recovery and cleanup. The Activity
+evidence/action mapping check also passes. Strict Windows UI all-target Clippy,
+formatting and the native test build pass. Owned test processes, executables and
+temporary data are removed; the VM is shut off and original profile, installation
+and login state are preserved.
+
+Evidence: `.hermes/evidence/windows-copy-name-release-current/ACCEPTANCE.json`.
+These are focused source/API/egui interaction results, not physical desktop or
+package acceptance. Orphan/partial claim construction, released-log retirement,
+repair-I/O interruption and remaining concurrency/alias/resource/workflow/package
+gates remain. Public Windows Copy is still disabled; packages are unchanged.

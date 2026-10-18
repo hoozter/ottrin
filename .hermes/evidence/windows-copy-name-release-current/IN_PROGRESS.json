@@ -1,0 +1,6 @@
+{
+  "status": "checkpoint complete",
+  "next": "Continue orphan/partial claim construction recovery and released-log retirement; public Windows Copy remains gated",
+  "packages": "unchanged",
+  "native_vm": "shut off; clean teardown passed"
+}

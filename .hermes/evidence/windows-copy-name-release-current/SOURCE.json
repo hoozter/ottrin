@@ -1,0 +1,18 @@
+{
+  "baseline": "a7904eb08ccda9c750af35d7797c103fdb95a3bf",
+  "scope": "Non-destructive terminal Copy name-release admission and Activity action; public Windows Copy remains disabled",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "e0d05127c514357b9a98c209f70ff4e10422c71674d14fc86bd5da23ef0cae28",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "c014c908073fee6e064091d348d6e64bfcec81739cf84acbc5e494d46841218d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "2f735c10e77b4814caf8d8e0b1a0974fd9fb69456a32cf57faecc06e1613f9c0",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "dea11aece2ac887e5c079607ed06036b9d59071399ac90bba63a118e011416c4",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "814d8df9c929fe45b45bc93c127eab3847b5f5182708e0382351509bd7f245a1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "b8790586c1efcd0d9cc3ae0bd524e4930fc6339632e93f579481f5e67fc09b56",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "455748e6e9edee02b172c9c2f236d7ef9f35fdb0faaddf2da665f51634003c6d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/name_release_action.rs": "9d2c6d7b0f15aa81a069f3fbb93424205dce01475d322e6b5c929633a1313e28",
+    "crates/ottrin-platform/src/lib.rs": "8723d92041f1825a76cd0bfc06285b6bd9cab20bc64f750a60a6a1d94e4e6643",
+    "crates/ottrin-ui/src/copy_activity_cleanup.rs": "4fbf036e6f867a69a13e43bdd80bec822a68ea147ab9fc779a99d88d136cfb95",
+    "crates/ottrin-ui/src/copy_activity_recovery.rs": "30fab1c984e49a91c7d17d9a85a6e90bd739cad0c1096153fc55eba4e9ebe275",
+    "crates/ottrin-ui/src/lib.rs": "26db7237f2b96ba8f2ab7e5fe4c2fb6aa9c2945b627026b7d1b4a13fd3c96d33"
+  }
+}

@@ -684,7 +684,7 @@ fn cleanup_faults(root: &Path, name: &OsStr) -> Vec<(u64, Step)> {
     faults
 }
 
-fn namespace_contents(root: &Path) -> BTreeMap<std::path::PathBuf, Option<Vec<u8>>> {
+pub(super) fn namespace_contents(root: &Path) -> BTreeMap<std::path::PathBuf, Option<Vec<u8>>> {
     fn visit(
         root: &Path,
         path: &Path,

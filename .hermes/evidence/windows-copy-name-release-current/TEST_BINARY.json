@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_platform",
+  "test_arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit copy_transaction::windows::journal::tests::claim_releases:: copy_transaction::windows::journal::tests::name_release_action:: --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-c9267d91f99e0d98.exe",
+  "compiler_sha256": "4cf58f8db5094c8134a589e5fe89a67e8b3917c65feb3ee50088afb95568e401",
+  "transferred_sha256": "433db4ef57e04c4e2937aa06c4263a47013e761da29941f3c58b81ca633efcf4",
+  "retained_sections": {
+    ".text": "2a654244ea96a9be50c01560adbb625a6815574423edee4ca25915c5090a198d",
+    ".data": "e9d7f6816bd25bf8c6121b86ff24a5708eb31ed80fb2c89af324fc07b5bd2951",
+    ".rdata": "16fab2dfa96aa1add518f71d51d099f2513691bdfc4bee806c682f8f9dad7351",
+    ".pdata": "4fcb0c47299198524a678023511a08196e7d3b75814e03aa2a1b9fbfc7fb4e66",
+    ".xdata": "03c29c4f508dedbd2192932174c5ddccb00d2baa6be6a757bfcc06559088ff96",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "a3a3bbd34dd355084799afcc9d8a22d1d37f19d589602ddba85fb0816100df34",
+    ".CRT": "8ea790098e5a72ef97ec644a47eae55a22f6e79a77a7bdd4af7be61924487f44",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "94982bca5240aae74400e40d6d935887a1f568c0cbe96729eb1fc0888bcde967"
+  }
+}

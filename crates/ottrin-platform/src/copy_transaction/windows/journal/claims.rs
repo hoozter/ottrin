@@ -339,6 +339,7 @@ pub(super) struct Lease {
     file: File,
     binding: Binding,
     stamp: EntryVersion,
+    digest: [u8; 32],
     released: bool,
     pending_release: bool,
     writer: bool,
@@ -598,10 +599,17 @@ impl Lease {
             file,
             binding,
             stamp,
+            digest: Sha256::digest(&bytes).into(),
             released: generation.released,
             pending_release,
             writer,
         })
+    }
+    pub(super) fn needs_release(&self) -> bool {
+        !self.released
+    }
+    pub(super) fn observation(&self) -> (EntryVersion, [u8; 32]) {
+        (self.stamp.clone(), self.digest)
     }
     pub(super) fn binding(&self) -> &Binding {
         &self.binding

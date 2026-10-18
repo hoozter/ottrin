@@ -27,8 +27,8 @@ pub use copy_recovery::{
 
 #[cfg(target_os = "windows")]
 pub use copy_transaction::{
-    RetainedCopyCleanupPlan, RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase,
-    WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan, RetainedCopyResumePlan,
+    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub fn discover_retained_copy_transactions_at(
@@ -64,6 +64,21 @@ pub fn restore_retained_copy_undo_plan(
     transaction_id: &str,
 ) -> Result<RetainedCopyUndoPlan, PlatformError> {
     copy_transaction::restore_windows_copy_undo(transaction_id)
+}
+
+/// Read-only admission of non-destructive Windows name-release recovery.
+#[cfg(target_os = "windows")]
+pub fn restore_retained_copy_name_release_plan_at(
+    root: &Path,
+    id: &str,
+) -> Result<RetainedCopyNameReleasePlan, PlatformError> {
+    copy_transaction::restore_windows_copy_name_release_at(root, id)
+}
+#[cfg(target_os = "windows")]
+pub fn restore_retained_copy_name_release_plan(
+    id: &str,
+) -> Result<RetainedCopyNameReleasePlan, PlatformError> {
+    copy_transaction::restore_windows_copy_name_release(id)
 }
 
 /// Fresh read-only admission of one verified unfinished Windows creation Copy.

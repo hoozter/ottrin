@@ -134,6 +134,8 @@ pub(super) fn can_cleanup(record: &OperationRecord) -> bool {
     );
     #[cfg(not(target_os = "windows"))]
     let supported = cfg!(target_os = "linux");
+    #[cfg(target_os = "windows")]
+    let supported = supported && !copy_activity_recovery::name_release_pending(record);
     supported
         && record.undo_kind == Some(PathMoveUndoKind::Copy)
         && record.status != OperationStatus::Queued
@@ -537,7 +539,7 @@ impl OttrinApp {
                     blocked_by: Vec::new(),
                     restored: true,
                     finalization: None,
-                    resume: None,
+                    recovery: None,
                     cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
                 });
             }
@@ -564,7 +566,7 @@ impl OttrinApp {
                             restored: true,
                             finalization: None,
                             #[cfg(target_os = "windows")]
-                            resume: None,
+                            recovery: None,
                             #[cfg(target_os = "windows")]
                             cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
                         });
@@ -573,7 +575,7 @@ impl OttrinApp {
                         owner.restored = true;
                         #[cfg(target_os = "windows")]
                         {
-                            owner.resume = None;
+                            owner.recovery = None;
                             record.path_move_undo_token = None;
                         }
                         if let Some((id, members)) = &outcome.finalization

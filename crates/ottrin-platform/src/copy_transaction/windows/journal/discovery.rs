@@ -299,6 +299,8 @@ pub enum WindowsCopyPhase {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum WindowsCopyRecoveryEvidence {
+    /// Paired terminal state is verified; only private name release remains.
+    PendingNameRelease,
     UnverifiedStage,
     VerifiedTree,
     /// The replacement was durably withdrawn; only the original is verified.
@@ -589,6 +591,26 @@ pub fn discover_at_with_progress(
             status.publication = Some(location.join(OsString::from_wide(&header.target)));
             status.retained = Some(location.join(header.candidate_name()));
             status.transaction = Some(location.join(header.stage_name()));
+            if state.claim_terminal()
+                && !state
+                    .cleanup
+                    .as_ref()
+                    .is_some_and(|cleanup| cleanup.metadata_removal_intent)
+            {
+                let snapshot = Snapshot::load(
+                    &parent,
+                    &central,
+                    &header.stage_name(),
+                    SnapshotAccess::Read,
+                )?;
+                if snapshot.bytes != bytes {
+                    return Err(io("Copy journals changed during release discovery"));
+                }
+                if snapshot.claim.needs_release() {
+                    snapshot.revalidate(&parent, &central)?;
+                    return Ok(WindowsCopyRecoveryEvidence::PendingNameRelease);
+                }
+            }
             if let Some(cleanup) = &state.cleanup {
                 if cleanup.metadata_removal_intent {
                     super::cleanup_finalize::Plan::observe(

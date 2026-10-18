@@ -1,10 +1,15 @@
-//! Explicit Windows forward recovery. Only an opaque, freshly admitted platform
-//! plan can start work; payload verification and publication run off-thread.
+//! Explicit Windows forward and name-release recovery. Only a freshly admitted
+//! typed plan can start the shared off-thread worker.
 use super::*;
 
+struct Completion {
+    message: &'static str,
+    released_phase: Option<ottrin_platform::WindowsCopyPhase>,
+}
+
 #[derive(Default)]
-pub(super) struct CopyResumeUi {
-    receiver: Option<Receiver<Result<(), String>>>,
+pub(super) struct CopyRecoveryUi {
+    receiver: Option<Receiver<Result<Completion, String>>>,
     operation: Option<u64>,
     cancellation: Option<Arc<AtomicBool>>,
     errors: HashMap<u64, String>,
@@ -14,7 +19,7 @@ pub(super) struct CopyResumeUi {
     start_gate: Option<Receiver<()>>,
 }
 
-impl CopyResumeUi {
+impl CopyRecoveryUi {
     pub(super) fn running(&self) -> bool {
         self.receiver.is_some()
     }
@@ -35,29 +40,39 @@ impl CopyResumeUi {
     }
 }
 
-impl Drop for CopyResumeUi {
+impl Drop for CopyRecoveryUi {
     fn drop(&mut self) {
         self.stop();
     }
 }
 
-pub(super) fn can_resume(record: &OperationRecord) -> bool {
+pub(super) fn name_release_pending(record: &OperationRecord) -> bool {
+    record
+        .retained_copy
+        .as_ref()
+        .and_then(|owner| owner.recovery.as_ref())
+        .is_some_and(CopyRecoveryAction::is_name_release)
+}
+
+pub(super) fn can_recover(record: &OperationRecord) -> bool {
     record.retained_copy.as_ref().is_some_and(|owner| {
-        owner
-            .resume
-            .as_ref()
-            .is_some_and(|plan| !plan.complete() && owner.transactions == [plan.transaction_id()])
+        owner.recovery.as_ref().is_some_and(|plan| {
+            !plan.complete()
+                && plan
+                    .transaction_id()
+                    .is_some_and(|id| owner.transactions == [id])
+        })
     })
 }
 
 impl OttrinApp {
-    pub(super) fn run_copy_resume(&mut self, id: u64) {
-        if self.copy_resume.running() || self.copy_cleanup.running() {
+    pub(super) fn run_copy_recovery(&mut self, id: u64) {
+        if self.copy_recovery.running() || self.copy_cleanup.running() {
             return;
         }
         let Some(record) = self.operation_history.iter().find(|record| {
             record.id == id
-                && can_resume(record)
+                && can_recover(record)
                 && record.status != OperationStatus::Queued
                 && !matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
         }) else {
@@ -67,7 +82,7 @@ impl OttrinApp {
             .retained_copy
             .as_ref()
             .unwrap()
-            .resume
+            .recovery
             .as_ref()
             .unwrap()
             .clone();
@@ -94,16 +109,20 @@ impl OttrinApp {
         record.finished_at = None;
         record.message = None;
         record.operation_paths = paths;
-        self.copy_resume.errors.remove(&id);
+        self.copy_recovery.errors.remove(&id);
         let cancellation = Arc::new(AtomicBool::new(false));
         let worker_cancel = cancellation.clone();
         let (tx, rx) = mpsc::channel();
-        self.copy_resume.receiver = Some(rx);
-        self.copy_resume.operation = Some(id);
-        self.copy_resume.cancellation = Some(cancellation);
+        self.copy_recovery.receiver = Some(rx);
+        self.copy_recovery.operation = Some(id);
+        self.copy_recovery.cancellation = Some(cancellation);
         let repaint = self.result_repaint.clone();
+        let success = Completion {
+            message: plan.success_message(),
+            released_phase: plan.released_phase(),
+        };
         #[cfg(test)]
-        let start_gate = self.copy_resume.start_gate.take();
+        let start_gate = self.copy_recovery.start_gate.take();
         std::thread::spawn(move || {
             #[cfg(test)]
             if let Some(gate) = start_gate
@@ -112,7 +131,7 @@ impl OttrinApp {
                 return;
             }
             let result = plan
-                .resume(|_| {
+                .run(|_| {
                     if worker_cancel.load(Ordering::Acquire) {
                         Err(PlatformError::Io(
                             "Copy recovery stopped; retained data is preserved for retry.".into(),
@@ -121,13 +140,14 @@ impl OttrinApp {
                         Ok(())
                     }
                 })
+                .map(|()| success)
                 .map_err(|error| error.to_string());
             repaint.send(&tx, result);
         });
     }
 
-    pub(super) fn poll_copy_resume(&mut self) {
-        let Some(receiver) = &self.copy_resume.receiver else {
+    pub(super) fn poll_copy_recovery(&mut self) {
+        let Some(receiver) = &self.copy_recovery.receiver else {
             return;
         };
         let result = match receiver.try_recv() {
@@ -137,9 +157,9 @@ impl OttrinApp {
                 Err("Copy recovery worker stopped; retained data needs review.".into())
             }
         };
-        self.copy_resume.receiver = None;
-        self.copy_resume.cancellation = None;
-        let id = self.copy_resume.operation.take().unwrap();
+        self.copy_recovery.receiver = None;
+        self.copy_recovery.cancellation = None;
+        let id = self.copy_recovery.operation.take().unwrap();
         if let Some(record) = self
             .operation_history
             .iter_mut()
@@ -152,28 +172,44 @@ impl OttrinApp {
             } else {
                 OperationStatus::NeedsReview
             };
+            if let Ok(Completion {
+                released_phase: Some(phase),
+                ..
+            }) = &result
+            {
+                // Terminal state comes from the executed opaque platform plan,
+                // not the row's presentation fields. Keep ownership separately.
+                record.path_move_undo_token = None;
+                record.path_move_undo = Some(
+                    if *phase == ottrin_platform::WindowsCopyPhase::Undone {
+                        PathMoveUndoState::Undone
+                    } else {
+                        PathMoveUndoState::Unavailable { reason: "Cleanup has already revoked Undo. Retained data is kept until cleanup is resumed.".into() }
+                    },
+                );
+            }
             // Fresh discovery must admit the next action, including Undo after
             // successful completion or a retry after a stopped/failed attempt.
             if let Some(owner) = &mut record.retained_copy {
-                owner.resume = None;
+                owner.recovery = None;
             }
             if let Err(error) = &result {
-                self.copy_resume.errors.insert(id, error.clone());
+                self.copy_recovery.errors.insert(id, error.clone());
             }
         }
-        if result.is_ok() {
-            self.set_status_message("Copy recovery completed.", true, 6);
+        if let Ok(completion) = result {
+            self.set_status_message(completion.message, true, 6);
         } else {
             self.set_status_message("Copy recovery needs review in Activity.", false, 10);
         }
         self.refresh_active_tab();
         self.refresh_retained_copy_activity();
-        self.restore_copy_resume_errors();
+        self.restore_copy_recovery_errors();
     }
 
-    pub(super) fn restore_copy_resume_errors(&mut self) {
+    pub(super) fn restore_copy_recovery_errors(&mut self) {
         for record in &mut self.operation_history {
-            if let Some(error) = self.copy_resume.errors.get(&record.id) {
+            if let Some(error) = self.copy_recovery.errors.get(&record.id) {
                 record.message = Some(error.clone());
             }
         }
@@ -185,10 +221,10 @@ pub(super) fn test_case(root: &Path) {
     fn wait(app: &mut OttrinApp) {
         let deadline = Instant::now() + Duration::from_secs(15);
         loop {
-            app.poll_copy_resume();
+            app.poll_copy_recovery();
             app.poll_path_move_undo_results();
             app.poll_retained_copy_activity();
-            if !app.copy_resume.running()
+            if !app.copy_recovery.running()
                 && !app.retained_copy_activity_loader.pending
                 && !app.operation_history.iter().any(|record| {
                     matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
@@ -221,9 +257,10 @@ pub(super) fn test_case(root: &Path) {
     )
     .unwrap();
     entry.transaction_id = Some("0".repeat(32));
-    let rejected = windows_retained_copy_activity(entry, None, Some(Ok(plan)));
+    let rejected =
+        windows_retained_copy_activity(entry, None, Some(Ok(CopyRecoveryAction::Forward(plan))));
     assert!(
-        rejected.ownership.resume.is_none(),
+        rejected.ownership.recovery.is_none(),
         "A forward plan cannot attach to a different transaction row"
     );
     let mut app = OttrinApp::default();
@@ -234,7 +271,7 @@ pub(super) fn test_case(root: &Path) {
     wait(&mut app);
     assert_eq!(app.operation_history.len(), 1);
     let id = app.operation_history[0].id;
-    assert!(can_resume(&app.operation_history[0]));
+    assert!(can_recover(&app.operation_history[0]));
     assert!(
         !copy_activity_cleanup::can_cleanup(&app.operation_history[0]),
         "Forward recovery has no supported cleanup action yet"
@@ -261,21 +298,21 @@ pub(super) fn test_case(root: &Path) {
     let ctx = Context::default();
     let start_gate = if case == "resume-stopped" {
         let (tx, rx) = mpsc::channel();
-        app.copy_resume.start_gate = Some(rx);
+        app.copy_recovery.start_gate = Some(rx);
         Some(tx)
     } else {
         None
     };
     crate::tests::click_activity_action(&mut app, &ctx, "Resume copy");
-    assert!(app.copy_resume.running());
+    assert!(app.copy_recovery.running());
     assert_eq!(app.operation_history[0].status, OperationStatus::Queued);
     if let Some(gate) = start_gate {
         crate::tests::click_activity_action(&mut app, &ctx, "Stop recovery");
-        assert!(app.copy_resume.stopping());
+        assert!(app.copy_recovery.stopping());
         gate.send(()).unwrap();
         wait(&mut app);
-        assert!(can_resume(&app.operation_history[0]));
-        assert!(!app.copy_resume.stopping());
+        assert!(can_recover(&app.operation_history[0]));
+        assert!(!app.copy_recovery.stopping());
         assert!(
             app.operation_history[0]
                 .message
@@ -295,7 +332,7 @@ pub(super) fn test_case(root: &Path) {
     wait(&mut app);
     assert_eq!(app.operation_history[0].id, id);
     if case == "resume-changed" {
-        assert!(!can_resume(&app.operation_history[0]));
+        assert!(!can_recover(&app.operation_history[0]));
         assert!(app.operation_history[0].path_move_undo_token.is_none());
         assert_eq!(std::fs::read(data).unwrap(), b"external data");
         assert_eq!(std::fs::read(journal).unwrap(), before);
@@ -307,7 +344,7 @@ pub(super) fn test_case(root: &Path) {
     }
     if case == "resume-moved" {
         assert!(
-            can_resume(&app.operation_history[0]),
+            can_recover(&app.operation_history[0]),
             "Fresh admission follows the actual parent location"
         );
         assert_eq!(
@@ -323,7 +360,7 @@ pub(super) fn test_case(root: &Path) {
         wait(&mut app);
     }
     assert_eq!(app.operation_history[0].status, OperationStatus::Completed);
-    assert!(!can_resume(&app.operation_history[0]));
+    assert!(!can_recover(&app.operation_history[0]));
     assert!(app.operation_history[0].message.is_none());
     assert_eq!(
         app.operation_history[0].path_move_undo,
@@ -351,4 +388,126 @@ pub(super) fn test_case(root: &Path) {
         std::fs::read(retained.join("nested/file")).unwrap(),
         b"original data"
     );
+}
+
+#[cfg(test)]
+pub(super) fn name_release_test_case(root: &Path) {
+    use std::os::windows::ffi::OsStringExt;
+    fn wait(app: &mut OttrinApp) {
+        let deadline = Instant::now() + Duration::from_secs(15);
+        loop {
+            app.poll_copy_recovery();
+            app.poll_retained_copy_activity();
+            if !app.copy_recovery.running() && !app.retained_copy_activity_loader.pending {
+                break;
+            }
+            assert!(Instant::now() < deadline, "Name-release worker timed out");
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        assert!(app.retained_copy_activity_error.is_none());
+    }
+    let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
+    let fixture: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("name-release.json")).unwrap()).unwrap();
+    let units: Vec<u16> = serde_json::from_value(fixture["claim"].clone()).unwrap();
+    let claim = PathBuf::from(std::ffi::OsString::from_wide(&units));
+    let full: Vec<u8> = serde_json::from_value(fixture["full"].clone()).unwrap();
+    let prefix = std::fs::read(&claim).unwrap();
+    let entry = ottrin_platform::discover_retained_copy_transactions()
+        .unwrap()
+        .remove(0);
+    assert_eq!(
+        entry.evidence,
+        ottrin_platform::WindowsCopyRecoveryEvidence::PendingNameRelease
+    );
+    let retained = entry.retained.as_ref().unwrap().clone();
+    let local = entry.transaction.as_ref().unwrap().join("journal");
+    let mirror = root.join("profile/Ottrin/State/copies").join(format!(
+        "{}.copy-journal",
+        entry.transaction_id.as_ref().unwrap()
+    ));
+    let journal = std::fs::read(&local).unwrap();
+    assert_eq!(std::fs::read(&mirror).unwrap(), journal);
+    let plan = ottrin_platform::restore_retained_copy_name_release_plan(
+        entry.transaction_id.as_deref().unwrap(),
+    )
+    .unwrap();
+    let mut wrong = entry;
+    wrong.transaction_id = Some("0".repeat(32));
+    let blocked = windows_retained_copy_activity(
+        wrong,
+        None,
+        Some(Ok(CopyRecoveryAction::NameRelease(plan))),
+    );
+    assert!(matches!(
+        blocked.ownership.recovery,
+        Some(CopyRecoveryAction::NameReleaseBlocked)
+    ));
+    assert!(blocked.receipt.is_none());
+    let mut app = OttrinApp::default();
+    app.operation_history.clear();
+    app.retained_copy_activity_loader =
+        RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+    app.refresh_retained_copy_activity();
+    wait(&mut app);
+    assert_eq!(app.operation_history.len(), 1);
+    let id = app.operation_history[0].id;
+    assert!(can_recover(&app.operation_history[0]));
+    assert!(name_release_pending(&app.operation_history[0]));
+    assert!(!copy_activity_cleanup::can_cleanup(
+        &app.operation_history[0]
+    ));
+    let ctx = Context::default();
+    let text = crate::tests::activity_text(&mut app, &ctx);
+    assert!(text.iter().any(|text| text == "Finish releasing name"));
+    assert!(!text.iter().any(|text| text == "Clear retained Copy data…"));
+    if case == "name-release-stopped" {
+        let (gate, receiver) = mpsc::channel();
+        app.copy_recovery.start_gate = Some(receiver);
+        crate::tests::click_activity_action(&mut app, &ctx, "Finish releasing name");
+        assert!(app.copy_recovery.running());
+        crate::tests::click_activity_action(&mut app, &ctx, "Stop recovery");
+        gate.send(()).unwrap();
+        wait(&mut app);
+        assert_eq!(std::fs::read(&claim).unwrap(), prefix);
+        assert_eq!(std::fs::read(&local).unwrap(), journal);
+        assert_eq!(std::fs::read(&mirror).unwrap(), journal);
+        assert!(can_recover(&app.operation_history[0]));
+    }
+    if case == "name-release-changed" {
+        // Keep a recognizable tail but invalidate the frozen admission epoch.
+        let mut changed = prefix.clone();
+        changed.push(full[prefix.len()]);
+        std::fs::write(&claim, &changed).unwrap();
+        crate::tests::click_activity_action(&mut app, &ctx, "Finish releasing name");
+        wait(&mut app);
+        assert_eq!(std::fs::read(&claim).unwrap(), changed);
+        assert_eq!(std::fs::read(&local).unwrap(), journal);
+        assert_eq!(std::fs::read(&mirror).unwrap(), journal);
+        assert!(app.operation_history[0].message.is_some());
+        assert!(
+            can_recover(&app.operation_history[0]),
+            "Retry must use a fresh admission"
+        );
+    }
+    crate::tests::click_activity_action(&mut app, &ctx, "Finish releasing name");
+    wait(&mut app);
+    assert_eq!(app.operation_history[0].id, id);
+    assert_eq!(std::fs::read(&claim).unwrap(), full);
+    assert_eq!(std::fs::read(&local).unwrap(), journal);
+    assert_eq!(std::fs::read(&mirror).unwrap(), journal);
+    assert_eq!(
+        std::fs::read(retained.join("nested/file")).unwrap(),
+        b"original data"
+    );
+    assert_eq!(
+        app.operation_history[0].path_move_undo,
+        Some(PathMoveUndoState::Undone)
+    );
+    assert!(app.operation_history[0].path_move_undo_token.is_none());
+    assert!(!can_recover(&app.operation_history[0]));
+    assert!(!app.operation_history[0].can_clear_history());
+    assert!(copy_activity_cleanup::can_cleanup(
+        &app.operation_history[0]
+    ));
 }

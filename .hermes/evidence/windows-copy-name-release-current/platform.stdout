@@ -1,0 +1,22 @@
+
+running 18 tests
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry ... ok
+test copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite ... ok
+test copy_transaction::windows::journal::claims::tests::windows_native_claim_admission_reserves_release_without_changing_rejected_log ... ok
+test copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit ... ok
+test copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_terminal_journals ... ok
+test copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_recovers_every_exact_prefix_without_rewriting_journals ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim ... ok
+test copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_finishes_without_touching_retained_payload ... ok
+test copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 383 filtered out; finished in 47.51s
