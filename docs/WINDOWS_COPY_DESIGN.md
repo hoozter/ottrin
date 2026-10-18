@@ -985,3 +985,22 @@ Current receipt: `.hermes/evidence/windows-activity-presentation-current/ACCEPTA
 Actual desktop Stop/retry and broader current-package lifecycle/workflow gates
 remain open. These scoped checks do not establish daily-driver readiness or
 enable public Windows Copy.
+
+### Recovery discovery on a separate NTFS volume
+
+The specialized secondary-volume fixture now has ordinary-user native execution
+on the current schema-15 test binary. It places the central journal on C: and the
+copied directory on a separate owned NTFS VHDX, asserts different native volume
+serials, publishes and discovers one verified completed transaction, and checks
+the nested file's exact bytes. The separately selected ignored-by-default test
+passes (1/1, 0.20s); earlier suite counts retain their original scope.
+
+The controller guards the image-to-disk association, original disk identities,
+volume identity, actor SID and ownership marker. Its disposable backing VHDX must
+grant the actor Full Control before attachment: inherited Modify-only access
+allowed file creation but blocked DACL changes inside the attached drive. That
+fixture-only correction and the initial failure/control probe are retained.
+The owned image is detached/deleted after testing; original disks, profile,
+installation and login settings are unchanged and the VM is shut off.
+Receipt: `.hermes/evidence/windows-secondary-discovery-current/ACCEPTANCE.json`.
+This establishes neither physical/removable/network acceptance nor public Copy.

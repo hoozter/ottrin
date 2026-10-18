@@ -4477,3 +4477,29 @@ GUI/package readiness. Durable target claims, sparse/EFS and broader storage,
 security, interruption/resource and platform workflow gates remain open. Published
 application packages are unchanged by this Windows-only source fix. The full
 roadmap goal remains active; user testing is deferred.
+
+## Windows Copy recovery across separate NTFS volumes — 2026-10-18
+
+The existing specialized recovery test now runs on an owned secondary NTFS VHDX
+under the ordinary Windows QA account. Its journal registry is on C:, its copied
+folder is on the second volume, and the test asserts distinct native volume
+serials, successful publication, read-only discovery of one verified completed
+transaction and exact nested-file bytes. The current schema-15 executable passes
+this separately selected case: one passed, zero failed or ignored, 0.20 seconds.
+This adds evidence for a fixture excluded from the earlier default 182-case run;
+it does not change that run's recorded counts.
+
+The initial run exposed the owned VHDX's inherited Modify-only backing-file
+permission: a control probe could create a folder but could not protect its DACL
+on that drive, while the same ordinary-user operation passed on C:. Granting the
+QA account Full Control on that disposable image and reattaching it resolved the
+fixture limitation; the unchanged native executable then passed. Production
+permissions and code were unchanged. The secondary image and test data are
+removed, the VM is shut off, and original disks/profile/installation/login state
+are verified unchanged. Evidence:
+`.hermes/evidence/windows-secondary-discovery-current/ACCEPTANCE.json`.
+
+This accepts the scoped cross-volume recovery-discovery case, not removable or
+network storage, physical power loss, public Windows Copy or package readiness.
+Durable native target claims and the remaining staging/security/resource and
+platform gates remain open. Published application packages are unchanged.

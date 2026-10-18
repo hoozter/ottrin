@@ -1,0 +1,8 @@
+{
+    "actor_permission":  "FullControl",
+    "owned_image":  "C:\\OttrinCopyCleanupQA\\secondary-volume\\owned.vhdx",
+    "production_code_changed":  false,
+    "same_volume":  true,
+    "image_acl":  "O:BAG:SYD:AI(A;;FA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;ID;0x1301bf;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;ID;FA;;;BA)(A;ID;FA;;;SY)(A;ID;0x1200a9;;;BU)(A;ID;0x1301bf;;;AU)",
+    "status":  "pass"
+}

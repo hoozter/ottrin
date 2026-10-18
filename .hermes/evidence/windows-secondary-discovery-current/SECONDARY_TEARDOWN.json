@@ -1,0 +1,8 @@
+{
+    "secondary_test_entries_absent":  true,
+    "owned_disk_detached":  true,
+    "owned_image_removed":  true,
+    "original_disk_count":  1,
+    "original_disks_unchanged":  true,
+    "status":  "pass"
+}

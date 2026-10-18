@@ -1,0 +1,17 @@
+{
+    "disk_unique_id":  "600224804D23A68F2E24F94657C59554",
+    "filesystem":  "NTFS",
+    "actor_sid":  "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "volume_unique_id":  "\\\\?\\Volume{0b7cefec-38ac-4c00-8418-995a603ff35d}\\",
+    "original_disk_numbers":  [
+                                  0
+                              ],
+    "token":  "0d9e35b5338945179935f7f0ff643676",
+    "drive_letter":  "D",
+    "status":  "ready",
+    "label":  "OttrinCopyQA",
+    "disk_size":  268435456,
+    "root":  "D:\\OttrinCopyQA",
+    "image":  "C:\\OttrinCopyCleanupQA\\secondary-volume\\owned.vhdx",
+    "disk_number":  1
+}

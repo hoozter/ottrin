@@ -1,0 +1,14 @@
+{
+    "number":  1,
+    "before":  [
+                   {
+                       "Number":  0,
+                       "UniqueId":  "0000000500000000",
+                       "Size":  68719476736,
+                       "IsBoot":  true,
+                       "IsSystem":  true
+                   }
+               ],
+    "unique_id":  "600224804D23A68F2E24F94657C59554",
+    "image":  "C:\\OttrinCopyCleanupQA\\secondary-volume\\owned.vhdx"
+}

@@ -1,0 +1,5 @@
+{
+  "status": "not_executed",
+  "reason": "Guest policy rejects loading .ps1 files. The fixture body did not execute.",
+  "retry": "Use the existing QGA encoded-command transport for the reviewed script contents; no execution-policy changes."
+}

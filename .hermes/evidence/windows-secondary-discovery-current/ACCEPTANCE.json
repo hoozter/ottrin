@@ -1,0 +1,56 @@
+{
+  "status": "pass",
+  "scope": "Separate-NTFS-volume Windows Copy recovery discovery under the ordinary QA user; component evidence only.",
+  "source_revision": "255ea5dc24e4e5f05302d08ca86a9a0279a93ad3",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "5d095ba3bcb46a931cb9369aee109d48205fccf00fe7958ee6847e0ff1775835",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "d2a099ae6b142c0d2fd847e0ab6c2e6914f166911273c0b03c8f3cdf66748d80",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ce0a08227675dfff1c7c31d5c38cc8e7a9aa851276efac9a9eaa285ce147d53e",
+    "crates/ottrin-platform/src/windows_fs.rs": "8936a882de26a5235de4b1d5eb883ea7a5c749313a6579611864a6a0677a20b7"
+  },
+  "compiler_test_binary_sha256": "61dd6f8e588ef836ef38f75eb257398aa542f03ba947ba9b3797d5f8b310a4e7",
+  "transferred_test_binary_sha256": "616056402a8256eaf5d6dec3dafd260abc9a171ef1b0bcb6b698394b702b7663",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume --nocapture --test-threads=1 --ignored",
+  "native_result": {
+    "exit": 0,
+    "temporary_entries": 0,
+    "ordinary_user": true,
+    "test_binary_hash": "616056402a8256eaf5d6dec3dafd260abc9a171ef1b0bcb6b698394b702b7663",
+    "status": "pass"
+  },
+  "passed": 1,
+  "failed": 0,
+  "ignored": 0,
+  "seconds": 0.2,
+  "assertions": [
+    "Central journal and destination native volume serial numbers differ",
+    "Directory publication succeeds",
+    "Read-only recovery discovery returns one VerifiedTree / Completed transaction",
+    "Published nested file bytes equal original data"
+  ],
+  "initial_failure": "Same native executable failed with Windows Access Denied during stream staging. Ordinary-user control probe could protect a DACL on C: but not the owned secondary volume despite Full Control on the destination folder.",
+  "fixture_correction": "Grant QA actor Full Control on the disposable backing VHDX and detach/reattach. No production code or permissions changed.",
+  "secondary_teardown": {
+    "secondary_test_entries_absent": true,
+    "owned_disk_detached": true,
+    "owned_image_removed": true,
+    "original_disk_count": 1,
+    "original_disks_unchanged": true,
+    "status": "pass"
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "One separately selected specialized fixture; does not rewrite earlier full-suite counts.",
+    "Not native durable target reservation, removable/network media, physical power loss, public Windows Copy, UI or package acceptance.",
+    "Application packages unchanged."
+  ]
+}

@@ -1,0 +1,4 @@
+
+thread 'copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume' (5828) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:7383:53:
+called `Result::unwrap()` on an `Err` value: Io("Windows Copy stream staging: Access is denied. (os error 5)")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

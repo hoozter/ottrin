@@ -1,0 +1,5 @@
+
+running 1 test
+test copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 388 filtered out; finished in 0.20s
