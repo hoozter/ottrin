@@ -27,7 +27,7 @@ fn optional(parent: &File, name: &OsStr, access: u32) -> Result<Option<File>, Pl
 
 /// Metadata has no disposable extra content: directory streams must be empty;
 /// a journal must contain exactly its verified unnamed record stream.
-fn metadata(
+pub(super) fn metadata(
     file: &File,
     identity: WindowsStableIdentity,
     security: &security::PrivateSecurity,
@@ -352,7 +352,12 @@ impl Completion {
         let bytes = snapshot.bytes;
         let sequence = snapshot.sequence;
         // Release all read leases before acquiring the paired journal writer.
-        drop((snapshot.stage, snapshot.local, snapshot.mirror));
+        drop((
+            snapshot.stage,
+            snapshot.local,
+            snapshot.mirror,
+            snapshot.claim,
+        ));
         cleanup_handoff(sequence)?;
         let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
         if snapshot.bytes != bytes

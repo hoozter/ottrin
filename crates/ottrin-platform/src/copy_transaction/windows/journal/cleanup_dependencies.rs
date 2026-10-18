@@ -356,6 +356,7 @@ pub(super) fn references(state: &State) -> Vec<WindowsStableIdentity> {
         header.local_file,
         header.central_file,
     ];
+    references.extend(header.claim.identities());
     if let Some(cleanup) = &state.cleanup {
         // A pending peer acknowledgement needs the owner's canonical journal
         // and paired metadata for native replay, even after its payload is gone.
@@ -367,7 +368,9 @@ pub(super) fn references(state: &State) -> Vec<WindowsStableIdentity> {
         );
     } else {
         references.extend(state.nodes.iter().filter_map(|node| node.created));
-        if let Some(original) = &state.original {
+        if state.original_restored.is_none()
+            && let Some(original) = &state.original
+        {
             references.extend(
                 original
                     .evidence

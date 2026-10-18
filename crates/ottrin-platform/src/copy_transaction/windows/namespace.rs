@@ -78,17 +78,25 @@ pub(super) fn link_count(file: &File) -> Result<u32, PlatformError> {
 }
 
 impl<'a> PrivateStage<'a> {
+    #[cfg(test)]
     pub(super) fn create(parent: &'a File) -> Result<Self, PlatformError> {
+        Self::for_transaction(parent, &super::super::random_transaction_id()?)
+    }
+    pub(super) fn for_transaction(
+        parent: &'a File,
+        transaction: &str,
+    ) -> Result<Self, PlatformError> {
+        if transaction.len() != 32
+            || !transaction
+                .bytes()
+                .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+        {
+            return Err(io("Invalid Copy transaction identifier"));
+        }
         let parent_identity = directory_identity(parent)?;
-        let (name, directory) = loop {
-            let id = super::super::random_transaction_id()?;
-            let name = OsString::from(format!(".ottrin-copy-{id}"));
-            match windows_fs::create_private(parent, &name, true, FILE_SHARE_READ) {
-                Ok(file) => break (name, file),
-                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-                Err(error) => return Err(io(error)),
-            }
-        };
+        let name = OsString::from(format!(".ottrin-copy-{transaction}"));
+        let directory =
+            windows_fs::create_private(parent, &name, true, FILE_SHARE_READ).map_err(io)?;
         let identity =
             directory_identity(&directory).map_err(|error| retained(&directory, &name, error))?;
         let mut candidate_name = name.clone();

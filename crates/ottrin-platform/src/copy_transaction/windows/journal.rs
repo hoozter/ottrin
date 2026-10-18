@@ -22,6 +22,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
+mod claims;
 mod cleanup;
 mod cleanup_action;
 pub use cleanup_action::RetainedCopyCleanupPlan;
@@ -43,7 +44,7 @@ pub(crate) use discovery::{
 };
 use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ15";
+const MAGIC: &[u8; 8] = b"OTCPWJ16";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -107,7 +108,12 @@ impl DestinationAdmission {
         let root = namespace::open_source(parent, target, None)?;
         let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
         let evidence = tree.freeze_existing(&mut progress)?;
-        namespace::validate_binding(parent, target, tree.root().identity)?;
+        let canonical = windows_fs::location(&root).map_err(io)?;
+        result.target = canonical
+            .file_name()
+            .ok_or_else(|| io("Overwrite target has no native leaf"))?
+            .to_os_string();
+        namespace::validate_binding(parent, &result.target, tree.root().identity)?;
         result.original_objects = evidence
             .entries
             .iter()
@@ -263,6 +269,7 @@ struct Header {
     target: Vec<u16>,
     original_admission: Option<OriginalAdmission>,
     source_label: Vec<u16>,
+    claim: claims::Binding,
     creator: Vec<u8>,
     stage_security: security::PrivateSecurity,
     local_security: security::PrivateSecurity,
@@ -291,7 +298,14 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 15
+            && self.schema == 16
+            && self.claim.matches(
+                self.parent,
+                self.central,
+                &self.target,
+                &self.transaction,
+                &self.creator,
+            )
             && self.stage_security.valid_for(&self.creator)
             && self.local_security.valid_for(&self.creator)
             && self.central_security.valid_for(&self.creator)
@@ -570,6 +584,9 @@ fn valid_streams(
             .all(|p| (p[0].kind, &p[0].name) < (p[1].kind, &p[1].name))
 }
 impl State {
+    fn claim_terminal(&self) -> bool {
+        self.undo_complete() || self.cleanup.is_some()
+    }
     fn undo_complete(&self) -> bool {
         self.undone.is_some() && (self.original.is_none() || self.original_restored.is_some())
     }
@@ -1313,6 +1330,7 @@ fn identity_at(
     }
 }
 struct Journal {
+    claim: Option<claims::Lease>,
     local: File,
     central: File,
     stage_dir: File,
@@ -1353,6 +1371,7 @@ impl Journal {
         central: &File,
         destination: &DestinationAdmission,
         source_label: &OsStr,
+        claim: claims::Lease,
     ) -> Result<Self, PlatformError> {
         stage.validate()?;
         destination.validate(stage.parent())?;
@@ -1381,7 +1400,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 15,
+            schema: 16,
             transaction: name,
             parent: parent_id,
             parent_case_sensitive: destination.case_sensitive,
@@ -1393,11 +1412,13 @@ impl Journal {
             target: destination.target.encode_wide().collect(),
             original_admission: destination.original.as_ref().map(|(_, seal)| seal.clone()),
             source_label: source_label.encode_wide().collect(),
+            claim: claim.binding().clone(),
         };
         if !header.valid() {
             return Err(io("invalid Copy journal header"));
         }
         let mut result = Self {
+            claim: Some(claim),
             local,
             central: central_file,
             stage_dir: stage.directory.try_clone().map_err(io)?,
@@ -1427,7 +1448,15 @@ impl Journal {
         snapshot.revalidate(parent, central)?;
         let length = snapshot.bytes.len() as u64;
         let header = snapshot.state.header.as_ref().unwrap().clone();
-        Ok(Self {
+        drop(snapshot.claim);
+        let claim = claims::Lease::open(
+            parent,
+            &header.claim,
+            snapshot.state.claim_terminal(),
+            !snapshot.state.claim_terminal(),
+        )?;
+        let mut result = Self {
+            claim: Some(claim),
             local: snapshot.local,
             central: snapshot.mirror,
             stage_dir: snapshot.stage,
@@ -1440,7 +1469,9 @@ impl Journal {
             length,
             failed: false,
             candidates: Vec::new(),
-        })
+        };
+        result.release_claim_if_terminal()?;
+        Ok(result)
     }
     fn original_restore_tail(&self) -> Result<Vec<Record>, PlatformError> {
         let Some(plan) = &self.state.original else {
@@ -2156,7 +2187,22 @@ impl Journal {
             .ok_or_else(|| io("missing held Copy candidate"))?;
         security.validate(candidate, &self.header.creator)
     }
+    fn release_claim_if_terminal(&mut self) -> Result<(), PlatformError> {
+        if self.state.claim_terminal()
+            && let Some(claim) = self.claim.take()
+        {
+            self.failed = true;
+            claim.release_after_terminal()?;
+            self.failed = false;
+        }
+        Ok(())
+    }
     fn bindings(&self) -> Result<(), PlatformError> {
+        match &self.claim {
+            Some(claim) => claim.validate(self.state.claim_terminal())?,
+            None if self.state.claim_terminal() => {}
+            None => return Err(io("Copy writer lost its destination claim")),
+        }
         self.header.validate_parent_policy(&self.parent_dir)?;
         if security::current_owner()? != self.header.creator {
             return Err(io("Copy journal writer creator context changed"));
@@ -2233,6 +2279,7 @@ impl Journal {
         self.sequence += 1;
         self.previous = hash;
         self.failed = false;
+        self.release_claim_if_terminal()?;
         Ok(())
     }
 }
@@ -2339,10 +2386,18 @@ impl<'a> DurableStage<'a> {
         source.reject_destination_parent(parent)?;
         source.reject_destination_parent(central)?;
         destination.validate(parent)?;
-        let stage = namespace::PrivateStage::create(parent)?;
+        let transaction = super::super::random_transaction_id()?;
+        let claim = claims::Lease::acquire(parent, central, &destination.target, &transaction)?;
+        if let Err(error) = destination.validate(parent) {
+            return Err(claim.abort_unstarted(error));
+        }
+        let stage = match namespace::PrivateStage::for_transaction(parent, &transaction) {
+            Ok(stage) => stage,
+            Err(error) => return Err(claim.abort_unstarted(error)),
+        };
         let retained = |error| stage_error(&stage, error);
         let mut journal =
-            Journal::create(&stage, central, destination, source_label).map_err(retained)?;
+            Journal::create(&stage, central, destination, source_label, claim).map_err(retained)?;
         tree::StagingJournal::intent(&mut journal, 0, None, &stage.candidate_name, source.root())
             .map_err(retained)?;
         let candidate = stage
@@ -2939,6 +2994,7 @@ fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
 /// Held journal evidence. Read-only recovery refuses an active writer; explicit
 /// application opens fresh exclusive write handles after read-only validation.
 struct Snapshot {
+    claim: claims::Lease,
     stage: File,
     local: File,
     mirror: File,
@@ -3084,7 +3140,9 @@ impl Snapshot {
         } else {
             entry(central, &header.central_name(), false)?
         };
+        let claim = claims::Lease::open(parent, &header.claim, state.claim_terminal(), false)?;
         let result = Self {
+            claim,
             stage,
             local,
             mirror,
@@ -3098,6 +3156,7 @@ impl Snapshot {
         Ok(result)
     }
     fn revalidate(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
+        self.claim.validate(self.state.claim_terminal())?;
         let header = self.state.header.as_ref().unwrap();
         header.validate_parent_policy(parent)?;
         namespace::validate_single_link(&self.local)?;
@@ -3631,6 +3690,9 @@ fn undo_bound_copy(
         return Err(io("Copy Undo admission changed; refresh recovery status"));
     }
     if snapshot.state.undo_complete() {
+        let claim = snapshot.claim;
+        drop((snapshot.stage, snapshot.local, snapshot.mirror));
+        claim.release_after_terminal()?;
         return Ok(());
     }
     let expected = snapshot.bytes.clone();
@@ -8254,17 +8316,149 @@ mod tests {
         }
     }
     #[test]
+    fn windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let src = source(&root.path().join("source"));
+        let mut first = stage(&src, &parent, &central).unwrap();
+        let name = first.stage.name.clone();
+        let binding = first.journal.header.claim.clone();
+        drop(first.prepare_destination_security(|| Ok(())).unwrap());
+        let before =
+            std::fs::read(root.path().join("destination").join(&name).join(LOCAL)).unwrap();
+        assert!(!root.path().join("destination/copy").exists());
+        assert!(matches!(
+            stage(&src, &parent, &central),
+            Err(PlatformError::DestinationExists(_))
+        ));
+        assert_eq!(
+            std::fs::read(root.path().join("destination").join(&name).join(LOCAL)).unwrap(),
+            before
+        );
+        let incoming = root.path().join("incoming/copy");
+        std::fs::create_dir_all(&incoming).unwrap();
+        std::fs::write(incoming.join("file"), b"other copy").unwrap();
+        let destination = root.path().join("destination");
+        assert!(
+            super::super::dispatch::copy_at(
+                &incoming,
+                &destination,
+                crate::ConflictAction::Skip,
+                &central,
+                100,
+                |_| Ok(())
+            )
+            .unwrap()
+            .is_none()
+        );
+        let renamed = super::super::dispatch::copy_at(
+            &incoming,
+            &destination,
+            crate::ConflictAction::Rename,
+            &central,
+            100,
+            |_| Ok(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            std::fs::read(destination.join("copy (1)/file")).unwrap(),
+            b"other copy"
+        );
+        crate::PlatformOps::undo_copy_with_receipt(&crate::DefaultPlatform, &renamed).unwrap();
+        drop(first);
+        assert!(matches!(
+            stage(&src, &parent, &central),
+            Err(PlatformError::DestinationExists(_))
+        ));
+        let mut publication =
+            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        publication.apply(|_| Ok(())).unwrap();
+        drop(publication);
+        undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+        assert!(!root.path().join("destination/copy").exists());
+        let reused = stage(&src, &parent, &central).unwrap();
+        assert_ne!(reused.journal.header.claim, binding);
+        assert_eq!(
+            reused.journal.header.claim.identities(),
+            binding.identities()
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
+    }
+
+    #[test]
+    fn windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions() {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        // The first two would collide if encoded short keys shared a directory
+        // with unchanged long names. Exercise both sides of the 12-unit boundary
+        // and the NTFS component limit without truncating or hashing names.
+        let names = [
+            "copy".to_owned(),
+            "copy.ottrin-claim".to_owned(),
+            "a".repeat(12),
+            "a".repeat(13),
+            "z".repeat(255),
+            "Long native reservation record.txt".to_owned(),
+            "LONGNA~1.TXT".to_owned(),
+        ];
+        let mut claims = Vec::new();
+        for name in &names {
+            let transaction = super::super::super::random_transaction_id().unwrap();
+            let claim =
+                claims::Lease::acquire(&parent, &central, OsStr::new(name), &transaction).unwrap();
+            claim.validate(false).unwrap();
+            claims.push(claim);
+        }
+        for name in &names {
+            let transaction = super::super::super::random_transaction_id().unwrap();
+            assert!(matches!(
+                claims::Lease::acquire(
+                    &parent,
+                    &central,
+                    OsStr::new(&name.to_uppercase()),
+                    &transaction
+                ),
+                Err(PlatformError::DestinationExists(_))
+            ));
+        }
+        for claim in claims {
+            let error = claim.abort_unstarted(PlatformError::Io("cancelled before staging".into()));
+            assert!(matches!(error, PlatformError::Io(_)));
+        }
+        for name in names {
+            let transaction = super::super::super::random_transaction_id().unwrap();
+            let claim =
+                claims::Lease::acquire(&parent, &central, OsStr::new(&name), &transaction).unwrap();
+            claim.validate(false).unwrap();
+            let error = claim.abort_unstarted(PlatformError::Io("cancelled before staging".into()));
+            assert!(matches!(error, PlatformError::Io(_)));
+        }
+    }
+
+    #[test]
     fn windows_native_copy_journal_uncertain_owner_cannot_retry_or_repair() {
         let root = tempfile::tempdir().unwrap();
         fixture(root.path());
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        let stage = namespace::PrivateStage::create(&parent).unwrap();
+        let transaction = super::super::super::random_transaction_id().unwrap();
+        let claim =
+            claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &transaction).unwrap();
+        let stage = namespace::PrivateStage::for_transaction(&parent, &transaction).unwrap();
         let mut journal = Journal::create(
             &stage,
             &central,
             &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
             OsStr::new("source"),
+            claim,
         )
         .unwrap();
         let src = source(&root.path().join("source"));

@@ -1056,3 +1056,42 @@ same executable (2.67s). Strict Windows platform all-target Clippy and formattin
 pass. The owned VM is shut off after temporary data/executable removal and
 profile/installation/login-state verification. Receipt:
 `.hermes/evidence/windows-native-claim-root-current/ACCEPTANCE.json`.
+
+
+### Durable name claims bound to Copy journals
+
+The dispatcher now acquires a destination-local name claim before private staging.
+The claim records the destination parent, anchored root and bucket, ledger file,
+central registry, native target name, transaction and creator/security identities.
+Schema 16 binds that generation and its frame digest into both Copy journals.
+An append-only, checksummed ledger retains reservations across owner exit. A
+writer capability remains held from admission through staging/publication; a
+busy owner's complete verified active generation reports a name conflict.
+Unknown, empty, torn, changed or unanchored controls are retained and refused.
+Skip and Rename use this same admission, including an absent but reserved name.
+Overwrite resolves an existing native leaf and validates that leaf's identity
+before claiming it. Existing-object dependency protection still applies.
+
+Two anchored buckets preserve native case matching without exposing claim lookup
+to DOS 8.3 aliases. Targets of at most 12 UTF-16 units receive a fixed suffix in
+the short-name bucket; longer targets retain their complete name in the long-name
+bucket. Every lookup exceeds the maximum 8.3 alias length. Separate buckets prevent
+an encoded short name from colliding with a literal longer user name. No case
+folding, normalization, truncation or name hashing supplies namespace authority.
+The ordinary-user NTFS probe confirms that native control creation generates an
+8.3 alias and that opening it resolves the long-name object; this is a measured
+constraint, not an assumed filesystem property.
+
+Only verified paired terminal Undo or cleanup-start state releases a generation.
+Before journal construction is attempted, cancellation can release the claim
+without payload authority. A completed generation remains verifiable and a new
+owner appends a distinct generation to the same native ledger. A restored public
+original ceases to be a retained-object dependency once restoration is durable;
+retained candidates and control objects remain protected.
+
+This is a source checkpoint, not completion of the reservation/recovery gate.
+Released-log retirement, orphan/partial construction discovery, interrupted release
+recovery and the complete separate-process integrated Copy/alias/ancestor matrix
+remain required. Public Windows Copy stays disabled and packages are unchanged.
+Current scoped source and native evidence are recorded in
+`.hermes/evidence/windows-copy-claim-binding-current/ACCEPTANCE.json`.

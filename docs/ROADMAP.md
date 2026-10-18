@@ -4557,3 +4557,30 @@ and formatting/diff checks pass. The initial child fixture's read-only directory
 flush failure and its correction through the validated writable-root API are
 retained. Owned test data/executables are removed, the VM is shut off, and original
 profile/installation/login state is unchanged.
+
+
+## Windows Copy durable target-claim binding — 2026-10-18
+
+Destination-local claims now precede Copy staging and survive loss of the staging
+owner. Paired schema-16 journals bind the exact native claim generation. The same
+admission handles ordinary Copy, Skip and Rename; a reserved absent name cannot
+be silently reused. Successful terminal Undo/cleanup-start relinquishes the name
+only after both journal records are durable. Released generations remain evidence
+while later operations can append a new generation.
+
+Native probing verified that these control files acquire NTFS DOS aliases.
+Separate anchored short/long-name buckets ensure claim lookups cannot resolve an
+8.3 alias and cannot confuse encoded short names with literal longer targets.
+Root anchors persist naming policy; mismatched or unknown controls are refused.
+
+The focused native checks cover live and dropped owners, Skip/Rename, Undo and
+name reuse, restored-original dependency release, encoded-name collisions, native
+case variants, the 12/13-unit boundary and 255-unit names. Exact source/binary
+identity, completed check counts and remaining verification are in
+`.hermes/evidence/windows-copy-claim-binding-current/ACCEPTANCE.json`.
+
+Still required: released-log retirement, discovery/reclamation of pre-journal and
+partial claims, interrupted-release recovery, integrated separate-process Copy
+and Overwrite/Rename, remaining alias/ancestor/resource tests, normal workflow and
+package acceptance. This does not enable public Windows Copy or replace current
+application packages. Continue those gates independently of user testing.

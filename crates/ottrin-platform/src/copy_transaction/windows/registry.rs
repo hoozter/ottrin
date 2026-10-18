@@ -21,6 +21,7 @@ const MAX_ANCHOR: u64 = 65_536;
 #[serde(deny_unknown_fields)]
 struct Anchor {
     protocol: String,
+    case_policy: Option<bool>,
     parent: WindowsStableIdentity,
     marker: WindowsStableIdentity,
     root: WindowsStableIdentity,
@@ -162,6 +163,27 @@ impl AnchoredRoot {
         )
     }
 
+    pub(super) fn claim_bucket(
+        parent: &File,
+        short: bool,
+        initialize: bool,
+    ) -> Result<Option<Self>, PlatformError> {
+        let name = if short {
+            "short-names.ottrin-claims"
+        } else {
+            "long-names.ottrin-claims"
+        };
+        let marker = format!("{name}.root");
+        let expected = windows_fs::directory_case_sensitive(parent).map_err(io)?;
+        Self::open_under(
+            parent.try_clone().map_err(io)?,
+            OsStr::new(name),
+            OsStr::new(&marker),
+            Some(expected),
+            initialize,
+        )
+    }
+
     fn open_under(
         parent: File,
         name: &OsStr,
@@ -233,7 +255,8 @@ impl AnchoredRoot {
                         windows_fs::set_empty_directory_case_policy(&root, expected).map_err(io)?;
                     }
                     let record = Anchor {
-                        protocol: "OTCRW01".into(),
+                        protocol: "OTCRW02".into(),
+                        case_policy: expected_case,
                         parent: stable_identity_from_handle(&parent).map_err(io)?,
                         marker: stable_identity_from_handle(&marker).map_err(io)?,
                         root: stable_identity_from_handle(&root).map_err(io)?,
@@ -278,7 +301,7 @@ impl AnchoredRoot {
                 "Copy private root anchor is incomplete or invalid; retained for review: {error}"
             ))
         })?;
-        if record.protocol != "OTCRW01"
+        if record.protocol != "OTCRW02"
             || record.parent != stable_identity_from_handle(&parent).map_err(io)?
             || record.marker != marker_id
             || record.name != name.encode_wide().collect::<Vec<_>>()
@@ -286,6 +309,11 @@ impl AnchoredRoot {
         {
             return Err(io(
                 "Copy private root anchor identity or creator changed; retained for review",
+            ));
+        }
+        if record.case_policy != expected_case {
+            return Err(io(
+                "Copy private root naming policy differs from its anchor; data retained",
             ));
         }
         let access = if initialize {
@@ -314,6 +342,12 @@ impl AnchoredRoot {
         };
         result.validate()?;
         Ok(Some(result))
+    }
+    pub(super) fn parent_identity(&self) -> WindowsStableIdentity {
+        self.record.parent
+    }
+    pub(super) fn anchor_identity(&self) -> WindowsStableIdentity {
+        self.record.marker
     }
     pub(super) fn root(&self) -> &File {
         &self.root

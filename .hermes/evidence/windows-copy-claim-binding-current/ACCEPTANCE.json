@@ -1,0 +1,67 @@
+{
+  "status": "focused-native-pass; broader regression checks running",
+  "scope": "Durable destination-local Copy target claims bound to paired journals; incomplete Windows Copy gate",
+  "source": {
+    "baseline": "4c45128894a70c8a10898052654b54831226a13c",
+    "schema": 16,
+    "claim_magic": "OTCWCL02",
+    "sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f915461d8d8ed2299b4b22d0e43dbd9463b67e944b0a958b982cd8f21523f016",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "2a1a7acf41978da26ec24004c467f55601f0c7da1b8a45f3c1f01ed56e0e4a62",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "ba711855eeb0607f448f7867f4c885b703e33f8c940e3cfdde7376167a30db80",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "d14c0f0877da91d4fa47acb9045d2a1aaee6c68ceace8adfbff5de580dcd41bd",
+      "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "1be841a32587cefa4ab267e186a8771b631d1e8e8ba3484c20fe8b23ab5148da",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "6f533a47bbc996201b25eb42c1398f7253d37f9e28f924cc8d18f3afd0017068",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "82efa7ac43d2da1b4d21dae6cec08a915d3c8d75322c4a1a3904e28bcad78eae"
+    }
+  },
+  "compiler_test_binary_sha256": "e25c5f8770c40419f5db45728c4992ea877b63fdb096ad404febcd4c40cf5169",
+  "transferred_test_binary_sha256": "0a25067a214f15e54d2a4793dea92d7400b947a76abfc91c7b237a6b1d345260",
+  "focused_native": {
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 17.34,
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ --nocapture --test-threads=1",
+    "passed_cases": [
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation"
+    ]
+  },
+  "native_short_name_probe": {
+    "normalized_through_native_alias": "\\\\?\\C:\\OttrinCopyCleanupQA\\short-name-probe\\Long native reservation record.txt",
+    "win32_short_path": "C:\\OTTRIN~3\\SHORT-~1\\LONGWI~1.TXT",
+    "native_alternate": "LONGNA~1.TXT",
+    "ordinary_user": true,
+    "native_normalized": "\\\\?\\C:\\OttrinCopyCleanupQA\\short-name-probe\\Long native reservation record.txt",
+    "status": "pass"
+  },
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "broader_regressions": {
+    "status": "running; no acceptance inferred",
+    "driver_session": 61111,
+    "core_observer_guest_pid": 6168,
+    "sequence": [
+      "final-core",
+      "final-cleanup",
+      "final-group",
+      "final-registry"
+    ],
+    "next": "Observe the same driver/session; do not restart on observation timeout."
+  },
+  "limits": [
+    "Released-log retirement/vacuum not implemented.",
+    "Orphan and partial pre-journal construction discovery/reclamation and interrupted-release repair remain required.",
+    "Integrated separate-process creation/Overwrite/Rename, parent/short-name alias and ancestor/resource matrices remain required.",
+    "No full journal/cleanup-suite acceptance until current native batches finish.",
+    "No package refresh or public Windows Copy enablement; exact user-platform acceptance remains separate."
+  ]
+}

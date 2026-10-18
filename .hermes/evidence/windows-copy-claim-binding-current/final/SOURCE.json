@@ -1,0 +1,14 @@
+{
+  "baseline": "4c45128894a70c8a10898052654b54831226a13c",
+  "schema": 16,
+  "claim_magic": "OTCWCL02",
+  "sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f915461d8d8ed2299b4b22d0e43dbd9463b67e944b0a958b982cd8f21523f016",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "2a1a7acf41978da26ec24004c467f55601f0c7da1b8a45f3c1f01ed56e0e4a62",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "ba711855eeb0607f448f7867f4c885b703e33f8c940e3cfdde7376167a30db80",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "d14c0f0877da91d4fa47acb9045d2a1aaee6c68ceace8adfbff5de580dcd41bd",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "1be841a32587cefa4ab267e186a8771b631d1e8e8ba3484c20fe8b23ab5148da",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "6f533a47bbc996201b25eb42c1398f7253d37f9e28f924cc8d18f3afd0017068",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "82efa7ac43d2da1b4d21dae6cec08a915d3c8d75322c4a1a3904e28bcad78eae"
+  }
+}

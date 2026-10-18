@@ -195,47 +195,57 @@ fn copy_admitted_source(
             "Cannot copy an entry onto itself or its hard-link alias",
         ));
     }
-    let admission = match (existing, conflict) {
-        (Some(_), ConflictAction::Skip) => return Ok(None),
-        (Some(_), ConflictAction::Overwrite) => journal::DestinationAdmission::overwrite(
+    let mut number = 0usize;
+    loop {
+        guarded_progress(0)?;
+        let mut target = name.to_os_string();
+        if number != 0 {
+            if number > MAX_RENAME_CANDIDATES {
+                return Err(io("Copy rename candidate limit reached"));
+            }
+            target = Path::new(name).file_stem().unwrap_or(name).to_os_string();
+            target.push(format!(" ({number})"));
+            if let Some(extension) = Path::new(name).extension() {
+                target.push(".");
+                target.push(extension);
+            }
+        }
+        let occupied = entry(&parent, &target)?;
+        let admission = match (occupied, conflict) {
+            (Some(_), ConflictAction::Skip) => return Ok(None),
+            (Some(_), ConflictAction::Rename) => {
+                number += 1;
+                continue;
+            }
+            (Some(_), ConflictAction::Overwrite) => journal::DestinationAdmission::overwrite(
+                &parent,
+                &target,
+                max_entries,
+                &mut guarded_progress,
+            )?,
+            (None, _) => journal::DestinationAdmission::creation(&parent, &target)?,
+        };
+        let _dependencies =
+            admission.guard_overwrite_dependencies(&parent, central, &mut guarded_progress)?;
+        let result = journal::DurableStage::execute_with_receipt(
+            &source.file,
             &parent,
+            central,
+            &admission,
             name,
             max_entries,
             &mut guarded_progress,
-        )?,
-        (Some(_), ConflictAction::Rename) => {
-            let mut chosen = None;
-            for number in 1..=MAX_RENAME_CANDIDATES {
-                guarded_progress(0)?;
-                let mut candidate = Path::new(name).file_stem().unwrap_or(name).to_os_string();
-                candidate.push(format!(" ({number})"));
-                if let Some(extension) = Path::new(name).extension() {
-                    candidate.push(".");
-                    candidate.push(extension);
-                }
-                if entry(&parent, &candidate)?.is_none() {
-                    chosen = Some(journal::DestinationAdmission::creation(
-                        &parent, &candidate,
-                    )?);
-                    break;
-                }
+        );
+        match result {
+            Err(PlatformError::DestinationExists(_)) if conflict == ConflictAction::Rename => {
+                number += 1;
             }
-            chosen.ok_or_else(|| io("Copy rename candidate limit reached"))?
+            Err(PlatformError::DestinationExists(_)) if conflict == ConflictAction::Skip => {
+                return Ok(None);
+            }
+            other => return other.map(Some),
         }
-        (None, _) => journal::DestinationAdmission::creation(&parent, name)?,
-    };
-    let _dependencies =
-        admission.guard_overwrite_dependencies(&parent, central, &mut guarded_progress)?;
-    journal::DurableStage::execute_with_receipt(
-        &source.file,
-        &parent,
-        central,
-        &admission,
-        name,
-        max_entries,
-        guarded_progress,
-    )
-    .map(Some)
+    }
 }
 
 #[cfg(test)]
@@ -256,7 +266,12 @@ mod tests {
 
     #[test]
     fn windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim() {
-        for target_name in ["item.txt", "ITEM.TXT"] {
+        for (target_name, restored_original) in [
+            ("item.txt", false),
+            ("ITEM.TXT", false),
+            ("item.txt", true),
+            ("ITEM.TXT", true),
+        ] {
             let root = tempfile::tempdir().unwrap();
             let central = registry(root.path());
             let first = root.path().join("first");
@@ -269,6 +284,9 @@ mod tests {
             let second_source = second.join(target_name);
             std::fs::write(&first_source, b"first publication").unwrap();
             std::fs::write(&second_source, b"second source").unwrap();
+            if restored_original {
+                std::fs::write(destination.join("item.txt"), b"restored original").unwrap();
+            }
             let receipt = copy_at(
                 &first_source,
                 &destination,
