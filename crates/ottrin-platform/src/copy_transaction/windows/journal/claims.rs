@@ -241,7 +241,15 @@ fn release_boundary(_: ReleasePoint) -> Result<(), PlatformError> {
 #[cfg(test)]
 thread_local! { pub(super) static RELEASE_FAULT: std::cell::Cell<Option<(ReleasePoint, bool)>> = const { std::cell::Cell::new(None) }; }
 #[cfg(test)]
+thread_local! { pub(super) static RELEASE_HANDOFF: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const { std::cell::RefCell::new(None) }; }
+#[cfg(test)]
 fn release_boundary(point: ReleasePoint) -> Result<(), PlatformError> {
+    if point == ReleasePoint::BeforeWrite {
+        let handoff = RELEASE_HANDOFF.with(|hook| hook.borrow_mut().take());
+        if let Some(handoff) = handoff {
+            handoff();
+        }
+    }
     match RELEASE_FAULT.with(|fault| fault.get()) {
         Some((selected, true)) if selected == point => std::process::exit(86),
         Some((selected, false)) if selected == point => {

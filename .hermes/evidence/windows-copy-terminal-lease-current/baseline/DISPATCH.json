@@ -1,0 +1,7 @@
+{
+  "id": "97a49ed7e100d63979b45f87f92aa4bc",
+  "status": "dispatched",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_keeps_terminal_journals_leased_during_undo_retry --nocapture --test-threads=1",
+  "transferred_sha256": "39de35b9bca3503fff2079a08a696b0e99e3914502b6e7e6966a1e7f2b1a4cc9",
+  "watchdog_ms": 300000
+}

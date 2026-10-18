@@ -156,3 +156,81 @@ fn windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_t
     assert_eq!(std::fs::read(&local).unwrap(), terminal);
     assert_eq!(std::fs::read(&mirror).unwrap(), terminal);
 }
+
+/// Test the authority at the release writer boundary, rather than only checking
+/// the final bytes after a sequential retry.
+#[test]
+fn windows_native_copy_claim_release_keeps_terminal_journals_leased_during_undo_retry() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+    use windows_sys::Win32::Storage::FileSystem::{DELETE, FILE_GENERIC_WRITE, SYNCHRONIZE};
+
+    let root = tempfile::tempdir().unwrap();
+    let (name, _, _cleanup) = completed_undo_fixture(root.path(), false, false);
+    let parent = owner(&root.path().join("destination"));
+    let central = owner(&root.path().join("central"));
+    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
+        .unwrap()
+        .state
+        .header
+        .unwrap();
+    undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+    remove_undo_fixture_source(root.path());
+    let stage = root.path().join("destination").join(&name);
+    let local = stage.join(LOCAL);
+    let mirror = root.path().join("central").join(header.central_name());
+    let journal = std::fs::read(&local).unwrap();
+    let ledger = root
+        .path()
+        .join("destination")
+        .join(header.claim.test_relative_path());
+    let released = std::fs::read(&ledger).unwrap();
+    let prefix = FRAME_HEADER + u32::from_le_bytes(released[8..12].try_into().unwrap()) as usize;
+    replace_bytes(&ledger, &released[..prefix + 12]);
+
+    let observations = Rc::new(RefCell::new(Vec::new()));
+    let observed = observations.clone();
+    claims::RELEASE_HANDOFF.with(|hook| {
+        *hook.borrow_mut() = Some(Box::new(move || {
+            for path in [&local, &mirror] {
+                for access in [FILE_GENERIC_WRITE, DELETE | SYNCHRONIZE] {
+                    let directory =
+                        windows_fs::open_directory(path.parent().unwrap(), FILE_GENERIC_READ)
+                            .unwrap();
+                    let attempt = unsafe {
+                        windows_fs::open_relative(
+                            &directory,
+                            path.file_name().unwrap(),
+                            RelativeOptions {
+                                directory: Some(false),
+                                create_new: false,
+                                access,
+                                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                security: ptr::null(),
+                            },
+                        )
+                    };
+                    observed
+                        .borrow_mut()
+                        .push(attempt.err().and_then(|error| error.raw_os_error()));
+                }
+            }
+        }))
+    });
+    let result = undo_completed_copy(&parent, &central, &name, |_| Ok(()));
+    // Clear the one-shot hook even if the operation failed before the boundary.
+    claims::RELEASE_HANDOFF.with(|hook| hook.borrow_mut().take());
+    result.unwrap();
+    assert_eq!(
+        *observations.borrow(),
+        vec![Some(32); 4],
+        "both terminal journals must exclude write and delete handles until release is durable"
+    );
+    assert_eq!(std::fs::read(&ledger).unwrap(), released);
+    assert_eq!(std::fs::read(stage.join(LOCAL)).unwrap(), journal);
+    assert_eq!(
+        std::fs::read(root.path().join("central").join(header.central_name())).unwrap(),
+        journal
+    );
+    assert!(!root.path().join("destination/copy").exists());
+}

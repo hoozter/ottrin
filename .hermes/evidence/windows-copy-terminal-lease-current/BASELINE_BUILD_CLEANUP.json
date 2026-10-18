@@ -1,0 +1,6 @@
+{
+  "reason": "Successful baseline build replaces prior same-configuration incremental state; no rustc process",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbf6geh4j-1tbmz12-35xx5j892nusr4v02zjouqmuj",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbgpa7vh0-0hkdlp6-6wza0ar1xyy9g4tuxhoyfc2gf",
+  "reclaimed_free_bytes": 895803392
+}

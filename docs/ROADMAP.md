@@ -131,9 +131,21 @@ executable and raw-log hashes. Preparing, stale/mismatched, malformed, altered-l
 and zero-test success results are rejected before accepted evidence is replaced.
 One real native parent and seven rejection probes pass; raw records are archived
 in `.hermes/evidence/windows-native-dispatch-current/ACCEPTANCE.json`. This is QA
-routing validation, not additional application feature completion. Next is an
-audit of terminal-journal dependence on expired name claims. Public Windows Copy
-remains disabled and application packages are unchanged.
+routing validation, not additional application feature completion.
+
+The terminal-claim audit found and fixed a completed-Undo retry that dropped its
+paired journal handles before the name release became durable. Both journal
+leases now remain held through release. The native regression first reproduced
+successful competing write opens; after the fix, both journals reject write and
+delete access with sharing violations at the release writer boundary. All 30
+focused reservation/recovery checks pass (61.14s), with strict Windows all-target
+Clippy and formatting. Evidence and the baseline probe limitation are recorded in
+`.hermes/evidence/windows-copy-terminal-lease-current/ACCEPTANCE.json`.
+The audit also confirms that current snapshots and cleanup dependency graphs
+still require physical claim identities: removing historical append lifetime
+requires changing those contracts together. That redesign and the other gates
+listed above remain open. Public Windows Copy remains disabled and application
+packages are unchanged.
 
 ### Earlier Windows Copy implementation evidence
 

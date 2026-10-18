@@ -1,0 +1,6 @@
+{
+  "reason": "Successful fixed build replaces baseline same-configuration incremental state; preserve current binaries and shared dependencies",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbgpa7vh0-0hkdlp6-6wza0ar1xyy9g4tuxhoyfc2gf",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbgsmegb0-1yh0nv6-0f7g9mx85xrt0ltzxwoh1oc7p",
+  "reclaimed_free_bytes": 585916416
+}

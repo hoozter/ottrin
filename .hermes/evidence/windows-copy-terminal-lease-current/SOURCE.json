@@ -1,0 +1,9 @@
+{
+  "baseline": "680ec9c25478df9ccdac795d9a7684b916cb061e",
+  "scope": "Keep paired terminal journals leased until completed-Undo name release is durable; native access regression",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "fc8c490a2d47d1a31616f93c9515b036b9cfbf3261d38604d4c7a340fb151741",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "691880fee0880b8a574486f7ea849cdbf89cf86450216ac8005fd78138bbe959",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "4367f5f154f8b1aaf6c9dbdb05d37765532d6fd0ee9853449641ab2daf806eb8"
+  }
+}

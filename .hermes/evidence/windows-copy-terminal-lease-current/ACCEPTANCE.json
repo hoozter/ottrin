@@ -1,0 +1,52 @@
+{
+  "status": "pass for terminal-Undo journal lease lifetime; not full roadmap or package acceptance",
+  "source": {
+    "baseline": "680ec9c25478df9ccdac795d9a7684b916cb061e",
+    "scope": "Keep paired terminal journals leased until completed-Undo name release is durable; native access regression",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "fc8c490a2d47d1a31616f93c9515b036b9cfbf3261d38604d4c7a340fb151741",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "691880fee0880b8a574486f7ea849cdbf89cf86450216ac8005fd78138bbe959",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "4367f5f154f8b1aaf6c9dbdb05d37765532d6fd0ee9853449641ab2daf806eb8"
+    }
+  },
+  "baseline": {
+    "expected_failed_regression": true,
+    "write_opens": [
+      true,
+      true
+    ],
+    "delete_probe_limitation": "Both baseline delete probes returned invalid-parameter 87 because SYNCHRONIZE was omitted; final probe corrects this. No baseline delete-access claim.",
+    "test_binary_sha256": "39de35b9bca3503fff2079a08a696b0e99e3914502b6e7e6966a1e7f2b1a4cc9"
+  },
+  "fixed_native": {
+    "passed": 30,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 61.14,
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "test_binary_sha256": "a3eedc8cb618c76313b816f7029885e2564db1c5a36b48354cef469fd7d50e7a",
+    "dispatch_id": "9eba10f6f8d525f6d7762cd0aa723670",
+    "probe": "Both paired journals reject write and delete opens with native sharing violation 32 at BeforeWrite; release bytes and paired journals unchanged except authorized release. Source absent, destination withdrawn."
+  },
+  "checks": {
+    "windows_test_build": "pass",
+    "strict_windows_platform_all_target_clippy": "pass",
+    "format_and_diff": "pass"
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "No full core/cleanup/group/UI suite rerun for this small lifetime correction; focused selection includes existing claim release/orphan/repair/process and cleanup start checks.",
+    "Historical ledger lifetime, interrupted later append, partial construction, private preparation collection and remaining roadmap gates still open.",
+    "Public Windows Copy remains disabled. Linux and Windows application packages unchanged."
+  ]
+}

@@ -3697,8 +3697,11 @@ fn undo_bound_copy(
     }
     if snapshot.state.undo_complete() {
         let claim = snapshot.claim;
-        drop((snapshot.stage, snapshot.local, snapshot.mirror));
+        // Keep both terminal journals and their stage leased until the release
+        // is durable. Dropping them first would let another writer invalidate
+        // the paired evidence that authorizes relinquishing this name.
         claim.release_after_terminal()?;
+        drop((snapshot.stage, snapshot.local, snapshot.mirror));
         return Ok(());
     }
     let expected = snapshot.bytes.clone();

@@ -1,0 +1,9 @@
+{
+  "head": "680ec9c25478df9ccdac795d9a7684b916cb061e",
+  "scope": "Regression test and one-shot observation hook only; completed-Undo release still drops paired handles",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "e89e5946c093740c093a98be6266733c24140fbf2150b162c61f51037346115c",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "691880fee0880b8a574486f7ea849cdbf89cf86450216ac8005fd78138bbe959",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "a4a8aa0935c22b8bf116d932f77452ef202a90b2606611beda43d200d7bb42a1"
+  }
+}
