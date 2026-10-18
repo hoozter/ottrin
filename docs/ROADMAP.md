@@ -4609,3 +4609,29 @@ journal/cleanup/registry batches are running on the same recorded executable;
 no broader pass is inferred before their results arrive. Exact source/binary
 identity and scope: `.hermes/evidence/windows-copy-claim-budget-current/ACCEPTANCE.json`.
 Public Windows Copy remains gated and application packages are unchanged.
+
+
+## Windows Copy staged-process ownership and hard-exit recovery — 2026-10-18
+
+A native process test now exercises actual staged Copy owners with held journal
+and claim capabilities. Three ordered cohorts cover a case-insensitive collision,
+case-sensitive distinct spellings and unrelated names. Independent owners both
+become ready while the first remains live. Five staged owners and one refused
+contender exit through kernel teardown without Rust destructors. Absent names
+remain reserved afterward; all five staged copies then publish without their
+sources, Undo and admit name reuse. Source identity and bytes are checked before
+the fixture deliberately removes its owned sources.
+
+The earlier grouped run passed 30 cases and found one remaining fixture assertion.
+Saved before/after bytes prove its only change was a valid bound release append.
+The corrected recovery assertion permits that release while requiring both paired
+journals and all unrelated names/bytes to remain unchanged. All 14 focused native
+checks now pass, zero failures/ignores and no temporary entries (37.50s). Strict
+Windows all-target Clippy and formatting pass. Full current journal/cleanup/registry
+batches run on the same recorded executable; completion is pending their results.
+Evidence: `.hermes/evidence/windows-copy-claim-process-current/ACCEPTANCE.json`.
+
+This ordered held-owner matrix does not close simultaneous initial ledger
+construction, integrated Overwrite/Rename, alias/ancestor/resource, log retirement,
+orphan/partial admission or interrupted-release recovery gates. Public Windows
+Copy stays disabled, and application packages remain unchanged.

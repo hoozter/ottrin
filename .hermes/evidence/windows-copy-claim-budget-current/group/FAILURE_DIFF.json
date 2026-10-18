@@ -1,0 +1,56 @@
+{
+  "same_names": true,
+  "changed_entries": [
+    {
+      "path": "destination\\.ottrin-copy-target-claims\\long-names.ottrin-claims\\next-publication",
+      "left_bytes": 1867,
+      "right_bytes": 1626,
+      "one_is_exact_prefix": true,
+      "appended_magic": "OTCWCL02",
+      "appended_frame_bytes": 241,
+      "appended_payload": {
+        "event": "release",
+        "sequence": 0,
+        "digest": [
+          142,
+          75,
+          0,
+          136,
+          50,
+          71,
+          31,
+          241,
+          203,
+          108,
+          25,
+          195,
+          51,
+          111,
+          154,
+          67,
+          123,
+          232,
+          29,
+          155,
+          249,
+          165,
+          110,
+          120,
+          237,
+          53,
+          35,
+          138,
+          252,
+          58,
+          38,
+          182
+        ]
+      }
+    }
+  ],
+  "all_other_entries_unchanged": true,
+  "frame_checksums_valid": true,
+  "release_matches_claim": true,
+  "before_sha256": "3b5628b31c877f2318f6092ba97771a258992b3c6fe473a2ea5dfcc253030fc1",
+  "after_sha256": "5a71b2e1f624ad71f98707d0c5f777caab1e5bf64720453fd9c3d6c46dbf1531"
+}

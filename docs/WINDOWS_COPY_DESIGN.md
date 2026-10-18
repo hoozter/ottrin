@@ -1101,3 +1101,15 @@ recovery and the complete separate-process integrated Copy/alias/ancestor matrix
 remain required. Public Windows Copy stays disabled and packages are unchanged.
 Current scoped source and native evidence are recorded in
 `.hermes/evidence/windows-copy-claim-binding-current/ACCEPTANCE.json`.
+
+
+The staged-process acceptance checkpoint adds three ordered native cohorts with
+six child processes: one case-insensitive contender is refused and five owners
+stage while live, then exit without destructors. Their absent public names remain
+claimed. After source removal, all five retained stages publish, Undo and permit
+name reuse. Independent owners reach readiness before either is allowed to exit.
+This verifies cross-process held staging and post-exit recovery; simultaneous
+initial claim construction and the complete Overwrite/Rename matrix remain open.
+A recovered paired cleanup Start may append its pending bound release, while the
+paired journals and all unrelated bytes remain unchanged. Scoped evidence:
+`.hermes/evidence/windows-copy-claim-process-current/ACCEPTANCE.json`.

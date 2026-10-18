@@ -3931,6 +3931,7 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 
 #[cfg(test)]
 mod tests {
+    mod claim_processes;
     mod cleanup;
     mod creation_times;
 

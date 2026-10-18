@@ -2045,6 +2045,15 @@ fn assert_only_journals_changed(
     after: &BTreeMap<std::path::PathBuf, Option<Vec<u8>>>,
     headers: &[Header],
 ) {
+    assert_cleanup_control_changes(before, after, headers, true);
+}
+
+fn assert_cleanup_control_changes(
+    before: &BTreeMap<std::path::PathBuf, Option<Vec<u8>>>,
+    after: &BTreeMap<std::path::PathBuf, Option<Vec<u8>>>,
+    headers: &[Header],
+    allow_journals: bool,
+) {
     assert_eq!(
         before.keys().collect::<Vec<_>>(),
         after.keys().collect::<Vec<_>>()
@@ -2084,7 +2093,7 @@ fn assert_only_journals_changed(
                 bytes.as_ref().unwrap(),
                 after.get(path).unwrap().as_ref().unwrap(),
             );
-        } else if !journals.contains(path) {
+        } else if !allow_journals || !journals.contains(path) {
             assert_eq!(after.get(path), Some(bytes), "{}", path.display());
         }
     }
@@ -2759,7 +2768,14 @@ fn windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_i
             let mut recovered =
                 Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(())).unwrap();
             recovered.start_all(|_| Ok(())).unwrap();
-            assert_eq!(namespace_contents(root.path()), after);
+            // Both Start frames were already durable. Recovery may finish the
+            // pending bound claim release, but must not rewrite either journal.
+            assert_cleanup_control_changes(
+                &after,
+                &namespace_contents(root.path()),
+                &headers,
+                false,
+            );
         }
     }
 }

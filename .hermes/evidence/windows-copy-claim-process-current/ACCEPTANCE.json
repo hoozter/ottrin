@@ -1,0 +1,86 @@
+{
+  "status": "focused native pass; current full regressions running",
+  "scope": "Separate staged Copy processes and strict recovery-release assertion; production code unchanged from baseline",
+  "source": {
+    "baseline": "8b2311c",
+    "source_sha256": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "7a54ce9d82267cef6808cb5923c3f5cc383fec046c6f6186a1a722573d70e495",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_processes.rs": "34e143fd0b127117c888ec32b02fdc2b6534f2043265f784d780b5ea2d3555e9",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "5e327837dcd24e270d56862206eb51d570ef185a9a402527228602a9dd06d311"
+    },
+    "scope": "Separate staged Copy processes and strict recovery-release assertion; production code unchanged from baseline"
+  },
+  "compiler_test_binary_sha256": "a718ec8bbccc6c03729dc68a87fc9d0f5c634c3f4801da98a4369b175a4e8a23",
+  "transferred_test_binary_sha256": "16d63b35788947851b9ed2b710a62fd33db157e1b90f49d2dfcdfc88d9d3b381",
+  "native": {
+    "passed": 14,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 37.5,
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit --nocapture --test-threads=1",
+    "passed_cases": [
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry",
+      "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite",
+      "copy_transaction::windows::journal::claims::tests::windows_native_claim_admission_reserves_release_without_changing_rejected_log",
+      "copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publication_claims",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload",
+      "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unpaired_start_never_releases_a_peer_claim",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_name_keys_separate_short_long_and_case_collisions",
+      "copy_transaction::windows::journal::tests::windows_native_copy_claim_survives_stage_drop_and_reuses_a_released_generation"
+    ]
+  },
+  "process_matrix": {
+    "cohorts": 3,
+    "children": 6,
+    "owned_stages": 5,
+    "refused_contenders": 1,
+    "cases": [
+      "Case-insensitive case variant refused while first staged owner remains live.",
+      "Case-sensitive case variants both stage while first owner remains live.",
+      "Independent names both stage while first owner remains live."
+    ],
+    "barrier": "First owner has a complete staged/permission-prepared record before contender starts; both acknowledge readiness and remain alive until parent releases the exit barrier.",
+    "hard_exit": "Five owners exit86 and one refused contender exits87 without Rust destructor teardown. Parent guards kill/reap unfinished children on unwinding.",
+    "recovery": "After all child exits, absent public names remain reserved. Sources are then removed. All five stages publish from retained evidence and Undo successfully, and each released name admits an unstarted reuse generation.",
+    "source_preservation": "Before deliberate owned source removal, source-root native identity and original nested bytes are unchanged."
+  },
+  "recovery_assertion": "Already paired Start may finish only its pending checksummed bound release; both paired journals and all unrelated names/bytes must remain unchanged.",
+  "strict_windows_platform_all_target_clippy": "pass",
+  "format_and_diff": "pass",
+  "broader_regressions": {
+    "status": "registry passed; journal core running",
+    "host_session": 5681,
+    "order": [
+      "registry",
+      "core",
+      "cleanup",
+      "group",
+      "journal-list"
+    ],
+    "teardown": "Shared owned-VM teardown runs only after all batches pass.",
+    "registry": {
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 1.25,
+      "ordinary_user": true,
+      "temporary_entries": 0
+    }
+  },
+  "limits": [
+    "Ordered held-owner/contender barriers do not establish simultaneous initial ledger construction.",
+    "Creation claims only in the new process matrix; full integrated Overwrite/Rename, alias/ancestor and resource checks remain required.",
+    "Released-log retirement/vacuum and orphan/partial claim and interrupted-release recovery remain required.",
+    "Process exit is not a physical power-cut test.",
+    "No public Windows Copy enablement or application package refresh."
+  ],
+  "native_text_export": "Windows text exports normalized to LF with trailing harness whitespace removed; result fields and test binary hashes unchanged. Compressed failure stderr retains exact raw bytes."
+}

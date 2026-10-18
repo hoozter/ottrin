@@ -1,5 +1,5 @@
 {
-  "status": "focused native pass; full current regression batches running",
+  "status": "focused12 pass; grouped regression found one remaining fixture assertion",
   "scope": "Claim/release capacity reservation and native claim-aware cleanup fixture corrections",
   "source": {
     "baseline": "ed094bd",
@@ -47,21 +47,26 @@
   "format_and_diff": "pass",
   "baseline_regressions": "ed094bd core100 pass/6ignore; cleanup40 pass/4fail/2ignore. Failing records preserved in windows-copy-claim-binding-current/final-cleanup. All four failed cases pass in the current focused set.",
   "broader_regressions": {
-    "status": "running; no pass inferred",
-    "host_session": 30412,
-    "order": [
-      "group",
-      "core",
-      "cleanup",
-      "registry",
-      "journal-list"
-    ],
-    "teardown": "Driver invokes shared owned-VM teardown only after all batches pass."
+    "status": "terminal; driver stopped after group failure; later batches and teardown not run",
+    "group": {
+      "passed": 30,
+      "failed": 1,
+      "ignored": 1,
+      "seconds": 462.3,
+      "binary_sha256": "981b8706b5883b383d844e29095f3d733201326fc5e276e92d9d1d0718c3fd9d",
+      "failed_case": "windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id",
+      "cause": "Successful recovery of an already paired Start finishes its pending claim release; old assertion required entire namespace byte equality.",
+      "correction": "Validate only bound release append; require both journals and all unrelated bytes/names unchanged.",
+      "stderr_gzip": "group/platform.stderr.gz",
+      "stderr_sha256": "91611546d74111786256c94de1bec6213edb8bd17067c1e3bd2e8126f00f0b9a",
+      "verified_failure_diff": "group/FAILURE_DIFF.json: exactly one checksummed release bound to its claim; all other names/bytes unchanged"
+    }
   },
   "limits": [
     "No current full-suite acceptance until broader batches finish.",
     "Released-log retirement/vacuum and orphan/partial construction discovery/reclamation remain required.",
     "Interrupted-release recovery and the complete integrated concurrency/alias/ancestor/resource matrix remain required.",
     "Public Windows Copy remains disabled; application packages unchanged."
-  ]
+  ],
+  "native_text_export": "Windows text exports normalized to LF with trailing harness whitespace removed; result fields and test binary hashes unchanged. Compressed failure stderr retains exact raw bytes."
 }

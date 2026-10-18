@@ -1,0 +1,9 @@
+{
+  "baseline": "8b2311c",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "7a54ce9d82267cef6808cb5923c3f5cc383fec046c6f6186a1a722573d70e495",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_processes.rs": "34e143fd0b127117c888ec32b02fdc2b6534f2043265f784d780b5ea2d3555e9",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "5e327837dcd24e270d56862206eb51d570ef185a9a402527228602a9dd06d311"
+  },
+  "scope": "Separate staged Copy processes and strict recovery-release assertion; production code unchanged from baseline"
+}
