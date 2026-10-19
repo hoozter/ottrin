@@ -1,0 +1,19 @@
+{
+  "command": [
+    "x86_64-w64-mingw32-gcc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-municode",
+    "-s",
+    ".hermes/evidence/windows-preparation-disposition-current/probe.c",
+    "-o",
+    ".hermes/packaging-tmp/preparation-disposition/probe.exe"
+  ],
+  "compiler": "x86_64-w64-mingw32-gcc (GCC) 13-win32",
+  "source_sha256": "706a4218cf3ec965961b69d5987ca663896bb7612829a3b8f0bc75684ac41a1f",
+  "binary_sha256": "b0b54d536c1529364cc0470309cba20538e5e3aa4c672c9d3b44a3a4ebf1a147",
+  "scope": "Native API observation only, before production implementation"
+}

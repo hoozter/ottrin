@@ -10,11 +10,12 @@ const ROOT: &str = "OTTRIN_TEST_CLAIM_PUBLICATION_ROOT";
 const CASE: &str = "OTTRIN_TEST_CLAIM_PUBLICATION_CASE";
 const RACE: &str = "copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite";
 const EXITS: &str = "copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_complete";
-const POINTS: [claims::PreparationPoint; 4] = [
+const POINTS: [claims::PreparationPoint; 5] = [
     claims::PreparationPoint::Created,
     claims::PreparationPoint::Prepared,
     claims::PreparationPoint::Published,
     claims::PreparationPoint::Flushed,
+    claims::PreparationPoint::Persisted,
 ];
 
 fn initialized(root: &Path, sensitive: bool) {
@@ -30,6 +31,12 @@ fn initialized(root: &Path, sensitive: bool) {
             .unwrap(),
     );
     std::fs::write(root.join("destination/user-data"), b"keep public file").unwrap();
+    std::fs::write(
+        root.join("destination/.ottrin-copy-target-claims")
+            .join(format!(".preparing-{}", "f".repeat(32))),
+        b"keep foreign preparation",
+    )
+    .unwrap();
 }
 fn canonical(root: &Path) -> PathBuf {
     root.join("destination/.ottrin-copy-target-claims/short-names.ottrin-claims/copy.ottrin-claim")
@@ -39,6 +46,14 @@ fn preparation(root: &Path) -> PathBuf {
         .join(format!(".preparing-{}", "d".repeat(32)))
 }
 fn preserved(root: &Path) {
+    assert_eq!(
+        std::fs::read(
+            root.join("destination/.ottrin-copy-target-claims")
+                .join(format!(".preparing-{}", "f".repeat(32)))
+        )
+        .unwrap(),
+        b"keep foreign preparation"
+    );
     assert_eq!(
         std::fs::read(root.join("destination/user-data")).unwrap(),
         b"keep public file"
@@ -85,10 +100,7 @@ fn windows_native_copy_prepared_claim_errors_clean_owned_preparations_or_retain_
         );
         assert_eq!(
             canonical(root.path()).exists(),
-            matches!(
-                point,
-                claims::PreparationPoint::Published | claims::PreparationPoint::Flushed
-            )
+            point == claims::PreparationPoint::Persisted
         );
         let next =
             claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).unwrap();
@@ -106,7 +118,7 @@ fn windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_com
     if let Some(root) = std::env::var_os(ROOT) {
         let root = Path::new(&root);
         let index = std::env::var(CASE).unwrap().parse::<usize>().unwrap();
-        let (point, mode) = if index == 4 {
+        let (point, mode) = if index == POINTS.len() {
             (claims::PreparationPoint::Created, 2)
         } else {
             (POINTS[index], 1)
@@ -117,7 +129,7 @@ fn windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_com
         let result = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32));
         panic!("Preparation exit was not reached: {:?}", result.err());
     }
-    for index in 0..5 {
+    for index in 0..=POINTS.len() {
         let root = tempfile::tempdir().unwrap();
         initialized(root.path(), false);
         let mut child = OwnedChild(
@@ -130,18 +142,12 @@ fn windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_com
                 .unwrap(),
         );
         reap(&mut child, 86);
-        let published = matches!(index, 2 | 3);
-        assert_eq!(canonical(root.path()).exists(), published);
-        assert_eq!(preparation(root.path()).exists(), !published);
-        if index == 0 {
-            assert_eq!(
-                std::fs::metadata(preparation(root.path())).unwrap().len(),
-                0
-            );
-        }
-        if index == 4 {
-            assert_eq!(std::fs::read(preparation(root.path())).unwrap(), b"OTC");
-        }
+        let persisted = index == 4;
+        assert_eq!(canonical(root.path()).exists(), persisted);
+        assert!(
+            !preparation(root.path()).exists(),
+            "Abandoned preparation at boundary {index}"
+        );
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
         let next =
@@ -251,7 +257,8 @@ fn windows_native_copy_prepared_claim_publishers_race_without_overwrite() {
         assert!(
             !names
                 .iter()
-                .any(|name| name.to_string_lossy().starts_with(".preparing-")),
+                .any(|name| name.to_string_lossy().starts_with(".preparing-")
+                    && *name != OsString::from(format!(".preparing-{}", "f".repeat(32)))),
             "Losing preparation leaked"
         );
         std::fs::write(root.path().join("exit"), b"exit").unwrap();
@@ -260,4 +267,70 @@ fn windows_native_copy_prepared_claim_publishers_race_without_overwrite() {
         }
         preserved(root.path());
     }
+}
+
+#[test]
+fn windows_native_copy_temporary_claim_hard_kill_removes_only_its_preparation() {
+    const SELF: &str = "copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_temporary_claim_hard_kill_removes_only_its_preparation";
+    if let Some(path) = std::env::var_os(ROOT) {
+        let root = PathBuf::from(path);
+        let gate = root.clone();
+        claims::PREPARATION_HANDOFF.with(|hook| {
+            *hook.borrow_mut() = Some(Box::new(move || {
+                std::fs::write(gate.join("ready"), b"prepared").unwrap();
+                let deadline = Instant::now() + Duration::from_secs(90);
+                while Instant::now() < deadline {
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+                panic!("Parent did not kill the owned preparation writer");
+            }))
+        });
+        let parent = owner(&root.join("destination"));
+        let central = owner(&root.join("central"));
+        let result = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32));
+        panic!("Preparation gate returned: {:?}", result.err());
+    }
+    let root = tempfile::tempdir().unwrap();
+    initialized(root.path(), false);
+    let mut child = OwnedChild(
+        Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", SELF, "--nocapture"])
+            .env(ROOT, root.path())
+            .stdout(Stdio::null())
+            .spawn()
+            .unwrap(),
+    );
+    let deadline = Instant::now() + Duration::from_secs(30);
+    while !root.path().join("ready").exists() {
+        assert!(Instant::now() < deadline && child.0.try_wait().unwrap().is_none());
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    assert!(preparation(root.path()).exists());
+    assert!(!canonical(root.path()).exists());
+    child.0.kill().unwrap();
+    assert!(!child.0.wait().unwrap().success());
+    assert!(!preparation(root.path()).exists());
+    let parent = owner(&root.path().join("destination"));
+    let central = owner(&root.path().join("central"));
+    let next =
+        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).unwrap();
+    next.validate(false).unwrap();
+    assert!(matches!(
+        next.abort_unstarted(io("owned cancellation")),
+        PlatformError::Io(_)
+    ));
+    preserved(root.path());
+}
+
+#[test]
+fn windows_native_copy_temporary_claim_collision_preserves_foreign_preparation() {
+    let root = tempfile::tempdir().unwrap();
+    initialized(root.path(), false);
+    let parent = owner(&root.path().join("destination"));
+    let central = owner(&root.path().join("central"));
+    assert!(
+        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"f".repeat(32)).is_err()
+    );
+    assert!(!canonical(root.path()).exists());
+    preserved(root.path());
 }

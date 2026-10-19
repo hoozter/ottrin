@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-18
+Last updated: 2026-10-19
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -117,21 +117,35 @@ identity references and all independent payload/peer guards; those references do
 not require obsolete claim files to remain present. Completed-Undo retries keep
 both paired journals leased throughout any remaining release.
 
-The exact current executable passes 31 focused checks (74.54s), the core journal
-suite (119 passed, six ignored, 453.31s), individual cleanup (44 passed, two
-ignored, 402.97s) and grouped cleanup (31 passed, one ignored, 339.58s). No failures
-occurred in these final runs. The three broader selections are disjoint and
-account for the current 203-name journal catalog: 194 passes and nine explicit
-root exclusions. Those exclusions include child/fixture entry points, a secondary
-NTFS-volume case not provisioned in this VM, and the Activity fixture whose UI
-consumer was not rerun. The focused selection overlaps the broader suites.
-Strict Windows all-target Clippy and formatting pass. Profile, installation and
-login preservation plus clean VM teardown are recorded with exact source and
-executable identities in
+New claim preparations now receive kernel delete-on-close at the same operation
+that creates their private file. The same writer remains held while the complete
+claim is validated, published without replacement and both directories flushed.
+Only then does the verified extended disposition API clear temporary deletion.
+No journal or payload authority is issued before promotion. Errors and owner exit
+before promotion remove only that newly created file; persisted failures retain a
+complete unstarted claim for existing recovery. No legacy/foreign-file scanner is
+introduced. The old manual pre-publication disposal path is removed.
+
+Five ordinary-account native API observations established that the legacy clear
+call reports success but still deletes the file, whereas the extended operation
+preserves it and keeps competing writers blocked. The production executable
+passes 33 focused native checks (56.12s) and the core journal suite (121 passed,
+six explicit exclusions, 716.52s). These overlap. Tests cover five ordinary error
+boundaries, six process-exit states including a three-byte first frame, a real
+hard kill, foreign-preparation collision/preservation and both case-policy races.
+Strict Windows all-target Clippy and formatting pass. Original profile,
+installation and login state are preserved; owned test data/processes are gone
+and the VM is shut down. Exact source, binary and native scopes are recorded in
+`.hermes/evidence/windows-preparation-disposition-current/ACCEPTANCE.json`.
+
+The preceding `e9d9687` reservation-lifetime checkpoint passed 194 journal tests
+across a disjoint 203-name catalog, with nine root exclusions; its individual and
+grouped cleanup counts were 44 and 31. Those broader cleanup selections were not
+rerun for the temporary-creation change. The six current core exclusions include
+child/fixture entry points, the unprovisioned secondary NTFS volume and the
+Activity fixture whose UI consumer was not rerun. Earlier acceptance, including
+superseded assertions, keeps its recorded source/artifact scope in
 `.hermes/evidence/windows-copy-claim-lifetime-current/ACCEPTANCE.json`.
-One obsolete historical-append assertion was corrected after a 30-pass/1-fail
-native run; the superseded result and a pre-final-guard run remain separately
-scoped. Earlier acceptance retains its recorded source/artifact versions.
 
 Native QA binds dispatch/results to a unique ID, exact selection, executable and
 raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test
@@ -139,10 +153,11 @@ success results are rejected before accepted evidence is replaced; the separate
 routing acceptance is in
 `.hermes/evidence/windows-native-dispatch-current/ACCEPTANCE.json`.
 
-Still required: retirement-specific interruption/concurrent recreation, collection
-of private preparations left by abrupt exits, partial root/stage construction,
-physical-power, idle bookkeeping, remaining alias/ancestor/resource and public
-workflow/package gates. Public Windows Copy remains disabled; older experimental
+Still required: retirement-specific interruption/concurrent recreation, partial
+root/stage construction, sudden VM/physical-power behavior (including any private
+preparations it leaves), idle bookkeeping, remaining alias/ancestor/resource and
+public workflow/package gates. Existing unknown preparations remain preserved;
+this process-lifetime fix does not infer cleanup authority over them. Public Windows Copy remains disabled; older experimental
 journal formats are not migrated and application packages are unchanged.
 
 ### Earlier Windows Copy implementation evidence

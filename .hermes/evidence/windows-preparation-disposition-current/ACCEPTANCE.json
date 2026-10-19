@@ -1,0 +1,148 @@
+{
+  "status": "pass for process-lifetime claim preparation cleanup and promotion; full roadmap remains open",
+  "source": {
+    "baseline": "e9d9687d71c657395c638c11598197d8013676e7",
+    "scope": "Atomic private delete-on-close preparation, same held-handle promotion after durable publication, no scanner of old/foreign files",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "c8849acc988e799531ac318e0cd67e962bbe138e216cac59c720faa02ab6dfc0",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "bb1da2d255386c4406fde3e9c75db2fa02c176bbdb7a4237103abf23d948d180",
+      "crates/ottrin-platform/src/windows_fs.rs": "b0c1daf80cd572181191e08d6da0d01fe55f678fc6c73e2d7f648fb0c2082db9"
+    }
+  },
+  "native_api_probe": {
+    "status": "five observations verified",
+    "binary_sha256": "b0b54d536c1529364cc0470309cba20538e5e3aa4c672c9d3b44a3a4ebf1a147",
+    "source_sha256": "706a4218cf3ec965961b69d5987ca663896bb7612829a3b8f0bc75684ac41a1f",
+    "ordinary_user": true,
+    "observations": [
+      {
+        "mode": 0,
+        "clear_ok": true,
+        "clear_error": 0,
+        "renamed": true,
+        "rename_error": 0,
+        "contender_error": 32,
+        "closed": true,
+        "source_exists": false,
+        "target_exists": true
+      },
+      {
+        "mode": 1,
+        "clear_ok": true,
+        "clear_error": 0,
+        "renamed": true,
+        "rename_error": 0,
+        "contender_error": 32,
+        "closed": true,
+        "source_exists": false,
+        "target_exists": false
+      },
+      {
+        "mode": 2,
+        "clear_ok": true,
+        "clear_error": 0,
+        "renamed": true,
+        "rename_error": 0,
+        "contender_error": 32,
+        "closed": true,
+        "source_exists": false,
+        "target_exists": false
+      },
+      {
+        "mode": 3,
+        "clear_ok": true,
+        "clear_error": 0,
+        "renamed": true,
+        "rename_error": 0,
+        "contender_error": 32,
+        "closed": true,
+        "source_exists": false,
+        "target_exists": true
+      },
+      {
+        "mode": 4,
+        "clear_ok": true,
+        "clear_error": 0,
+        "renamed": true,
+        "rename_error": 0,
+        "contender_error": 32,
+        "closed": true,
+        "source_exists": false,
+        "target_exists": true
+      }
+    ],
+    "interpretation": "Normal control survives close; create-time delete-on-close and legacy false-clear disappear; extended ON_CLOSE clear before/after rename survives. All competing writers blocked with error 32. Controls 0/1 do not attempt a clear call."
+  },
+  "runs": {
+    "focused": {
+      "passed": 33,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 56.12,
+      "test_binary_sha256": "e16243d5ac64878b81d15b6becb2605a0cd29593628df46aca3c5fedb16bfd8b",
+      "dispatch_id": "ac48a964b5a8e2e28cc77c076caa3a2b",
+      "ignored_reasons": []
+    },
+    "core": {
+      "passed": 121,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 716.52,
+      "test_binary_sha256": "e16243d5ac64878b81d15b6becb2605a0cd29593628df46aca3c5fedb16bfd8b",
+      "dispatch_id": "91264bb3fd31ca5fcf2a06e748cc9a76",
+      "ignored_reasons": [
+        [
+          "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child",
+          "owned subprocess for creation-time interruption tests"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_copy_activity_fixture",
+          "exports an owned fixture to the native Activity integration consumer"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume",
+          "requires an owned secondary NTFS volume provisioned by the native QA controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child",
+          "child process selected by interrupted staging test"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child",
+          "abrupt-exit child; owned temporary root supplied by parent"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child",
+          "abrupt-exit child; owned empty root required"
+        ]
+      ]
+    }
+  },
+  "checks": {
+    "windows_test_build": "pass",
+    "strict_windows_all_target_clippy": "pass",
+    "format_and_diff": "pass"
+  },
+  "verified_behavior": [
+    "Private temporary deletion and DACL are assigned atomically at creation. Promotion retains the same exclusive writer through complete native publication and directory flushing.",
+    "Five ordinary failure boundaries and six process-exit states leave no new private preparation; only persisted states retain a complete canonical claim.",
+    "A real hard-killed preparation owner is cleaned by the kernel. A subsequent name admission works.",
+    "Foreign preparation bytes survive ordinary errors, abrupt exit, both case-policy races and an exact private-name collision. Existing unknown preparations are never scanned or adopted."
+  ],
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "Process exit/TerminateProcess coverage does not establish sudden VM/physical-power behavior. Partial root/stage construction and retirement interruption/race gates remain.",
+    "Focused/core selections overlap; the six core exclusions retain their exact reasons, including the unprovisioned secondary NTFS volume and Activity fixture whose UI consumer was not rerun.",
+    "Broader individual/grouped cleanup suites were not rerun for this constructor-only lifetime change; previous full coverage remains scoped to e9d9687.",
+    "Public Windows Copy remains gated. Current application packages are unchanged."
+  ]
+}

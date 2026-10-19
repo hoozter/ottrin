@@ -1,0 +1,9 @@
+{
+  "baseline": "e9d9687d71c657395c638c11598197d8013676e7",
+  "scope": "Atomic private delete-on-close preparation, same held-handle promotion after durable publication, no scanner of old/foreign files",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "c8849acc988e799531ac318e0cd67e962bbe138e216cac59c720faa02ab6dfc0",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "bb1da2d255386c4406fde3e9c75db2fa02c176bbdb7a4237103abf23d948d180",
+    "crates/ottrin-platform/src/windows_fs.rs": "b0c1daf80cd572181191e08d6da0d01fe55f678fc6c73e2d7f648fb0c2082db9"
+  }
+}

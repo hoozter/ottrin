@@ -1,0 +1,68 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "observations": [
+    {
+      "mode": 0,
+      "clear_ok": true,
+      "clear_error": 0,
+      "renamed": true,
+      "rename_error": 0,
+      "contender_error": 32,
+      "closed": true,
+      "source_exists": false,
+      "target_exists": true
+    },
+    {
+      "mode": 1,
+      "clear_ok": true,
+      "clear_error": 0,
+      "renamed": true,
+      "rename_error": 0,
+      "contender_error": 32,
+      "closed": true,
+      "source_exists": false,
+      "target_exists": false
+    },
+    {
+      "mode": 2,
+      "clear_ok": true,
+      "clear_error": 0,
+      "renamed": true,
+      "rename_error": 0,
+      "contender_error": 32,
+      "closed": true,
+      "source_exists": false,
+      "target_exists": false
+    },
+    {
+      "mode": 3,
+      "clear_ok": true,
+      "clear_error": 0,
+      "renamed": true,
+      "rename_error": 0,
+      "contender_error": 32,
+      "closed": true,
+      "source_exists": false,
+      "target_exists": true
+    },
+    {
+      "mode": 4,
+      "clear_ok": true,
+      "clear_error": 0,
+      "renamed": true,
+      "rename_error": 0,
+      "contender_error": 32,
+      "closed": true,
+      "source_exists": false,
+      "target_exists": true
+    }
+  ],
+  "binary_sha256": "b0b54d536c1529364cc0470309cba20538e5e3aa4c672c9d3b44a3a4ebf1a147",
+  "stdout_sha256": "6296c1b42c31b1fe6015483c9179fd14f96d3dcd00ff6fd8ff1df940d321013c",
+  "source_sha256": "706a4218cf3ec965961b69d5987ca663896bb7612829a3b8f0bc75684ac41a1f",
+  "status": "observed",
+  "owned_temp_absent": true,
+  "ordinary_user": true,
+  "dispatch_id": "2a4f9afcf96771ece5fa62ed8f81cb49"
+}

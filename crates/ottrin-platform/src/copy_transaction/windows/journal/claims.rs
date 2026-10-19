@@ -193,6 +193,7 @@ pub(super) enum PreparationPoint {
     Prepared,
     Published,
     Flushed,
+    Persisted,
 }
 #[cfg(not(test))]
 fn preparation_boundary(_: PreparationPoint, _: &mut File) -> Result<(), PlatformError> {
@@ -742,20 +743,12 @@ impl Lease {
         // The canonical name is never occupied by an empty or partial first frame.
         let name = OsString::from(format!(".preparing-{transaction}"));
         let mut file =
-            windows_fs::create_private(root.root(), &name, false, FILE_SHARE_READ).map_err(io)?;
-        let pending = |error: PlatformError| PlatformError::CleanupPending {
-            transaction: windows_fs::location(&file)
-                .unwrap_or_else(|_| root.path().join(&name))
-                .display()
-                .to_string(),
-            message: format!(
-                "{error}; unpublished claim preparation retained, no payload authority issued"
-            ),
-        };
-        let claim = Claim::capture(parent, central, &root, &bucket, &file, target, transaction)
-            .map_err(pending)?;
+            windows_fs::create_private_temporary_file(root.root(), &name, FILE_SHARE_READ)
+                .map_err(io)?;
+        let claim = Claim::capture(parent, central, &root, &bucket, &file, target, transaction)?;
         let key = ledger_key(target).1;
         let mut published = false;
+        let mut persisted = false;
         let result = (|| {
             preparation_boundary(PreparationPoint::Created, &mut file)?;
             let binding = Log::empty().append(
@@ -799,6 +792,9 @@ impl Lease {
             root.writable_root()?.sync_all().map_err(io)?;
             bucket.writable_root()?.sync_all().map_err(io)?;
             preparation_boundary(PreparationPoint::Flushed, &mut file)?;
+            windows_fs::persist_temporary_file(&file).map_err(io)?;
+            persisted = true;
+            preparation_boundary(PreparationPoint::Persisted, &mut file)?;
             Ok(binding)
         })();
         match result {
@@ -811,37 +807,34 @@ impl Lease {
                     }
                 })
             }
-            Err(error) if !published => {
+            Err(error) if !persisted => {
+                // Close only the file created by this admission. Kernel cleanup
+                // also covers abrupt exit before the first byte was written.
+                drop(file);
                 let cleanup = (|| {
                     root.validate()?;
                     bucket.validate()?;
-                    namespace::validate_binding(root.root(), &name, claim.file)?;
-                    let bytes = if file.metadata().map_err(io)?.len() == 0 {
-                        Vec::new()
-                    } else {
-                        read(&file)?
-                    };
-                    cleanup_finalize::metadata(
-                        &file,
-                        claim.file,
-                        &claim.security,
-                        &claim.creator,
-                        Some(&bytes),
-                        &mut |_| Ok(()),
-                    )?;
-                    root.validate()?;
-                    namespace::validate_binding(root.root(), &name, claim.file)?;
-                    cleanup_tree::dispose(&file)?;
-                    root.writable_root()?.sync_all().map_err(io)
+                    if identity_at(root.root(), &name, claim.file)?
+                        || published && identity_at(bucket.root(), &key, claim.file)?
+                    {
+                        return Err(io("Temporary claim remains after owner close"));
+                    }
+                    root.writable_root()?.sync_all().map_err(io)?;
+                    bucket.writable_root()?.sync_all().map_err(io)
                 })();
                 match cleanup {
                     Ok(()) => Err(error),
                     Err(cleanup) => Err(PlatformError::CleanupPending {
-                        transaction: windows_fs::location(&file)
-                            .unwrap_or_else(|_| root.path().join(&name))
-                            .display()
-                            .to_string(),
-                        message: format!("{error}; preparation cleanup failed: {cleanup}"),
+                        transaction: if published {
+                            bucket.path().join(&key)
+                        } else {
+                            root.path().join(&name)
+                        }
+                        .display()
+                        .to_string(),
+                        message: format!(
+                            "{error}; temporary claim close/cleanup requires review: {cleanup}"
+                        ),
                     }),
                 }
             }

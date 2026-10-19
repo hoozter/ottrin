@@ -1,0 +1,6 @@
+{
+  "reason": "Successful current build replaces previous checkpoint incremental session; retain current executable and shared dependencies",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbhd2l1l9-1cx9z6m-1vgs734b5yh25nj4vyafmznik",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbigz5qr6-1rtck1n-1y5de7a3dyx31eoqamdwecvdf",
+  "reclaimed_free_bytes": 807231488
+}

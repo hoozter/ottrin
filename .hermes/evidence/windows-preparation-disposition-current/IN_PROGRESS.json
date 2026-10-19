@@ -1,0 +1,6 @@
+{
+  "status": "checkpoint complete; see ACCEPTANCE.json",
+  "next": "Continue retirement interruption/concurrent recreation and sudden VM-power/partial-construction cases; keep remaining full roadmap gates explicit.",
+  "native_vm": "shut off; original profile/install/login state preserved and owned test data/processes absent",
+  "packages": "unchanged"
+}
