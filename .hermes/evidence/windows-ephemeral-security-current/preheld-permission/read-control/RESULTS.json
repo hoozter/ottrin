@@ -1,27 +1,27 @@
 {
-    "exit":  0,
-    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "observations":  [
-                         {
-                             "mode":  0,
-                             "permission_handle_acquired_before_freeze":  true,
-                             "permission_open_error":  0,
-                             "freeze_error":  0,
-                             "empty_base_observed":  true,
-                             "held_handle_restore_error":  0,
-                             "stream_open_error":  0,
-                             "foreign_stream_written":  true,
-                             "deletion_activated":  true,
-                             "activation_error":  0,
-                             "base_exists_after_close":  false,
-                             "foreign_stream_exists_after_close":  false
-                         }
-                     ],
-    "binary_sha256":  "f119b78430bc1113b3a0b3b31e762e9522b41809f7a9400bb8f9e0f5b8ababb4",
-    "stdout_sha256":  "8d927313dd6fb15c21ba93f7ed2200664d755b199e6c9e3fb91941f91bba15a2",
-    "source_sha256":  "e7088a5cef7b93331444ccf9cc3ebec2460a66554218b97c8eb09d5f0b5fe405",
-    "status":  "observed",
-    "owned_temp_absent":  true,
-    "ordinary_user":  true,
-    "dispatch_id":  "6998b0f683718cecd6fcad0e71386aae"
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "observations": [
+    {
+      "mode": 0,
+      "permission_handle_acquired_before_freeze": true,
+      "permission_open_error": 0,
+      "freeze_error": 0,
+      "empty_base_observed": true,
+      "held_handle_restore_error": 0,
+      "stream_open_error": 0,
+      "foreign_stream_written": true,
+      "deletion_activated": true,
+      "activation_error": 0,
+      "base_exists_after_close": false,
+      "foreign_stream_exists_after_close": false
+    }
+  ],
+  "binary_sha256": "f119b78430bc1113b3a0b3b31e762e9522b41809f7a9400bb8f9e0f5b8ababb4",
+  "stdout_sha256": "8d927313dd6fb15c21ba93f7ed2200664d755b199e6c9e3fb91941f91bba15a2",
+  "source_sha256": "e7088a5cef7b93331444ccf9cc3ebec2460a66554218b97c8eb09d5f0b5fe405",
+  "status": "observed",
+  "owned_temp_absent": true,
+  "ordinary_user": true,
+  "dispatch_id": "6998b0f683718cecd6fcad0e71386aae"
 }

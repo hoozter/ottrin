@@ -1,26 +1,26 @@
 {
-    "exit":  0,
-    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "observations":  [
-                         {
-                             "permission_handle_acquired_before_freeze":  true,
-                             "permission_open_error":  0,
-                             "freeze_error":  0,
-                             "empty_base_observed":  true,
-                             "held_handle_restore_error":  5,
-                             "stream_open_error":  5,
-                             "foreign_stream_written":  false,
-                             "deletion_activated":  true,
-                             "activation_error":  0,
-                             "base_exists_after_close":  false,
-                             "foreign_stream_exists_after_close":  false
-                         }
-                     ],
-    "binary_sha256":  "a5a05955ba3d104d4a9ea5984419e513e04a4b2cd25d132ad54f09226ea4627e",
-    "stdout_sha256":  "1d068ece55dbbd49bb1c2d2880da2298f8e5149226e5491d8b9be803dd15fc10",
-    "source_sha256":  "662066f45d00253d78cebc5af1549d5adf16f687e4ee24a5346b568ff9971959",
-    "status":  "observed",
-    "owned_temp_absent":  true,
-    "ordinary_user":  true,
-    "dispatch_id":  "a1b9ac7e35e5d973a9b65cfa01bf59ee"
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "observations": [
+    {
+      "permission_handle_acquired_before_freeze": true,
+      "permission_open_error": 0,
+      "freeze_error": 0,
+      "empty_base_observed": true,
+      "held_handle_restore_error": 5,
+      "stream_open_error": 5,
+      "foreign_stream_written": false,
+      "deletion_activated": true,
+      "activation_error": 0,
+      "base_exists_after_close": false,
+      "foreign_stream_exists_after_close": false
+    }
+  ],
+  "binary_sha256": "a5a05955ba3d104d4a9ea5984419e513e04a4b2cd25d132ad54f09226ea4627e",
+  "stdout_sha256": "1d068ece55dbbd49bb1c2d2880da2298f8e5149226e5491d8b9be803dd15fc10",
+  "source_sha256": "662066f45d00253d78cebc5af1549d5adf16f687e4ee24a5346b568ff9971959",
+  "status": "observed",
+  "owned_temp_absent": true,
+  "ordinary_user": true,
+  "dispatch_id": "a1b9ac7e35e5d973a9b65cfa01bf59ee"
 }
