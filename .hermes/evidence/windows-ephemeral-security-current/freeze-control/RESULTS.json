@@ -1,0 +1,39 @@
+{
+    "exit":  0,
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "observations":  [
+                         {
+                             "mode":  0,
+                             "created":  true,
+                             "query_status":  0,
+                             "granted_access":  1507743,
+                             "owner_write":  true,
+                             "stream_before":  0,
+                             "stream_before_error":  5,
+                             "cleared":  true,
+                             "win_error":  0,
+                             "native_status":  0,
+                             "restored":  true,
+                             "stream_after":  1,
+                             "saved":  true,
+                             "file_after":  1,
+                             "stream_intact":  1,
+                             "rejected_fixture_cleanup":  -1,
+                             "ea_writer_error":  5,
+                             "attribute_writer_error":  5,
+                             "owner_writer_error":  5,
+                             "dacl_writer_error":  5,
+                             "freeze_error":  0,
+                             "freeze_query":  0,
+                             "granted_after_freeze":  1507743,
+                             "automatic_delete_enabled":  false
+                         }
+                     ],
+    "binary_sha256":  "92c9f28fc68e82e312935a928ba1156e56c037e86497cd0b4df1b83cb4dbb92d",
+    "stdout_sha256":  "7c6b973e8c3b92a97b8546cd31e84c845d9b4c9095370582ade7c66e90df4c14",
+    "source_sha256":  "acb3ed07fdd6a8af9940383bac81f7539654c045eafa23a0ddd07fb9775e7fb6",
+    "status":  "observed",
+    "owned_temp_absent":  true,
+    "ordinary_user":  true,
+    "dispatch_id":  "67270da8b81538baf5a70297ddef7388"
+}

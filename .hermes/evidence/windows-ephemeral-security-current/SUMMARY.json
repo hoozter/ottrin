@@ -1,0 +1,23 @@
+{
+  "baseline_application_commit": "9f01fd04",
+  "source": "Native C controls; not a Rust or whole-Copy acceptance",
+  "selected_candidate": null,
+  "key_result": "Rejected pending-control after a pre-held WRITE_DAC plus READ_CONTROL handle restored full access after freeze, inserted a foreign stream, and automatic deletion removed it.",
+  "rejected": [
+    "Read-only descriptor at creation strips WRITE_DAC (0x13019f granted versus 0x17019f requested), so restoration cannot succeed.",
+    "MAXIMUM_ALLOWED/full-access requests do not fix missing WRITE_DAC in those controls.",
+    "Read-plus-WRITE_DAC alone allows a second permission writer.",
+    "Setting extended ON_CLOSE|DELETE on a non-on-close creation returns ERROR_NOT_SUPPORTED (50).",
+    "Freeze-after-creation retains permission capabilities acquired before freeze. A permission-only handle without READ_CONTROL failed restoration; adding READ_CONTROL demonstrated the data-loss interleave."
+  ],
+  "scopes": [
+    ".",
+    "access-modes",
+    "guard-control",
+    "freeze-control",
+    "delete-right-control",
+    "pending-control",
+    "preheld-permission",
+    "preheld-permission/read-control"
+  ]
+}

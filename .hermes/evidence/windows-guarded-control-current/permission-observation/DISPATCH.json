@@ -1,0 +1,7 @@
+{
+  "id": "f16aba53bc31582a741bca8ec9bffb56",
+  "status": "dispatched",
+  "test_arguments": "windows_fs::temporary::tests:: copy_transaction::windows::journal::tests::initialization:: --nocapture --test-threads=1",
+  "transferred_sha256": "af0c5ce55fa6f2e4338ffb65c408e7d7634f275a582c205c0bceb60e7fba7334",
+  "watchdog_ms": 600000
+}

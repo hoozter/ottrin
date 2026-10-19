@@ -1,0 +1,43 @@
+{
+    "exit":  0,
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "observations":  [
+                         {
+                             "mode":  0,
+                             "created":  true,
+                             "query_status":  0,
+                             "granted_access":  1507743,
+                             "owner_write":  true,
+                             "stream_before":  0,
+                             "stream_before_error":  5,
+                             "cleared":  true,
+                             "win_error":  0,
+                             "native_status":  0,
+                             "restored":  true,
+                             "stream_after":  1,
+                             "saved":  true,
+                             "file_after":  1,
+                             "stream_intact":  1,
+                             "rejected_fixture_cleanup":  -1,
+                             "ea_writer_error":  5,
+                             "attribute_writer_error":  5,
+                             "owner_writer_error":  5,
+                             "dacl_writer_error":  5,
+                             "freeze_error":  0,
+                             "freeze_query":  0,
+                             "granted_after_freeze":  1507743,
+                             "automatic_delete_enabled":  true,
+                             "activate_error":  0,
+                             "pending_query":  true,
+                             "delete_pending":  true,
+                             "reader_error":  5
+                         }
+                     ],
+    "binary_sha256":  "300e9c1936da9ef8360b2b2c42bba0274d12b41156948a56d0d0001b596836e9",
+    "stdout_sha256":  "3f5389cc362e1d038079d93e49ddf763bf2214e5ab507bc986f0039479d38eee",
+    "source_sha256":  "640107f6c88ca2f591e4e50bf08793578442f5a7037aee7cbad06d85c9e02aaf",
+    "status":  "observed",
+    "owned_temp_absent":  true,
+    "ordinary_user":  true,
+    "dispatch_id":  "c7130dc72ed823f64a8486bb95511fca"
+}

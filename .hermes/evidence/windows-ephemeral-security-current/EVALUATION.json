@@ -1,0 +1,74 @@
+{
+  "outcome": "Rejected freeze-after-create temporary control candidate",
+  "application_baseline": "9f01fd0430149c3bbba74077912f1b44cb0af232",
+  "application_source_restored": true,
+  "packages_changed": false,
+  "public_windows_copy_enabled": false,
+  "primitive_scopes": [
+    {
+      "scope": ".",
+      "dispatch_id": "b38c4e8412817d1eaa43b6ad53fdebd4",
+      "observations": 4,
+      "scope_limit": "Native primitive controls, not full application acceptance"
+    },
+    {
+      "scope": "access-modes",
+      "dispatch_id": "984ceb5ba9a05fad6356176612c55f6c",
+      "observations": 7,
+      "scope_limit": "Native primitive controls, not full application acceptance"
+    },
+    {
+      "scope": "guard-control",
+      "dispatch_id": "8beaa9295d1cf25ae84fbfd405fe4f76",
+      "observations": 1,
+      "scope_limit": "Native primitive controls, not full application acceptance"
+    },
+    {
+      "scope": "freeze-control",
+      "dispatch_id": "67270da8b81538baf5a70297ddef7388",
+      "observations": 1,
+      "scope_limit": "Native primitive controls, not full application acceptance"
+    },
+    {
+      "scope": "delete-right-control",
+      "dispatch_id": "05d54b5c6761e5cbb9cbbf660be9d6bc",
+      "observations": 1,
+      "scope_limit": "Native primitive controls, not full application acceptance"
+    },
+    {
+      "scope": "pending-control",
+      "dispatch_id": "c7130dc72ed823f64a8486bb95511fca",
+      "observations": 1,
+      "scope_limit": "Native primitive controls, not full application acceptance"
+    },
+    {
+      "scope": "preheld-permission",
+      "dispatch_id": "a1b9ac7e35e5d973a9b65cfa01bf59ee",
+      "observations": 1,
+      "scope_limit": "Shared observer rejected missing mode field"
+    },
+    {
+      "scope": "preheld-permission/read-control",
+      "dispatch_id": "6998b0f683718cecd6fcad0e71386aae",
+      "observations": 1,
+      "scope_limit": "Native primitive controls, not full application acceptance"
+    }
+  ],
+  "decisive_scope": "preheld-permission/read-control",
+  "rejected_rust_source": "../windows-guarded-control-current/REJECTED_SOURCE.json",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limitations": [
+    "Native C interleave models the security/disposition sequence, not the full Rust constructor.",
+    "Rust native tests are partial/failed; corrected promotion only compiled.",
+    "No whole-Copy, package, power-loss or user acceptance is claimed."
+  ]
+}

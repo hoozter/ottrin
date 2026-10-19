@@ -1,0 +1,17 @@
+
+running 5 tests
+test copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_central_collision_preserves_foreign_record_and_retries ... FAILED
+test copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_cleanup_preserves_unexpected_stage_content_and_claim ... FAILED
+test copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_errors_remove_empty_setup_and_release_name ... FAILED
+test windows_fs::temporary::tests::windows_native_guarded_temporary_control_close_removes_only_its_pending_creation ... ok
+test windows_fs::temporary::tests::windows_native_guarded_temporary_control_excludes_other_stream_metadata_and_permission_handles ... ok
+
+failures:
+
+failures:
+    copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_central_collision_preserves_foreign_record_and_retries
+    copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_cleanup_preserves_unexpected_stage_content_and_claim
+    copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_errors_remove_empty_setup_and_release_name
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 422 filtered out; finished in 0.55s
+

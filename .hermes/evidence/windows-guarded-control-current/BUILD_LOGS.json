@@ -1,0 +1,25 @@
+{
+  "status": "Rejected investigation; compressed compiler manifests retain hashes; no native promotion acceptance",
+  "manifests": [
+    {
+      "path": ".hermes/evidence/windows-guarded-control-current/build.jsonl.gz",
+      "uncompressed_sha256": "90ae2577f4cc9115df6e0930cfa5f05550ca0874987a2266253a75aefd1cd991",
+      "uncompressed_bytes": 63123
+    },
+    {
+      "path": ".hermes/evidence/windows-guarded-control-current/corrected-promotion/build.jsonl.gz",
+      "uncompressed_sha256": "64388d5cf1fea00c921d86c74a56260fdccbca63375a83b56c855ae169b96236",
+      "uncompressed_bytes": 63123
+    },
+    {
+      "path": ".hermes/evidence/windows-guarded-control-current/permission-observation/build.jsonl.gz",
+      "uncompressed_sha256": "2a243a304b0b08dd5b43c3aa918faef8a95d41609933d944e55092e69c06cb74",
+      "uncompressed_bytes": 63123
+    },
+    {
+      "path": ".hermes/evidence/windows-guarded-control-current/retry/build.jsonl.gz",
+      "uncompressed_sha256": "6cae216d622b77acce3260caa8403e84ce8069e49fe9bf84ccd4c444c3c38d8f",
+      "uncompressed_bytes": 63123
+    }
+  ]
+}

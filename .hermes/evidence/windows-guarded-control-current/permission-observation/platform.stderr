@@ -1,0 +1,14 @@
+
+thread 'copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_central_collision_preserves_foreign_record_and_retries' (3564) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs:100:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_cleanup_preserves_unexpected_stage_content_and_claim' (6420) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs:134:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_errors_remove_empty_setup_and_release_name' (2452) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs:55:9:
+LocalCreated: CleanupPending { transaction: "\\\\?\\C:\\OttrinCopyCleanupQA\\temp\\.tmpvXX7aR\\destination\\.ottrin-copy-target-claims\\.preparing-2eea3685812913f5878d64bfaff3b80c", message: "filesystem operation failed: Windows Copy stream staging: private Copy owner/group/DACL changed; data retained (owner matches: true, group matches: true, control: 0x1400/0x1400, DACL: Some([2, 0, 28, 0, 1, 0, 0, 0, 0, 0, 20, 0, 255, 1, 31, 0, 1, 1, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0])/Some([2, 0, 28, 0, 1, 0, 0, 0, 0, 3, 20, 0, 255, 1, 31, 0, 1, 1, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0])); complete unstarted claim retained after temporary promotion" }

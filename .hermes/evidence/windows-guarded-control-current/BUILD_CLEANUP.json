@@ -1,0 +1,6 @@
+{
+  "reason": "Successful guarded-control native build and strict Clippy; prior test consumers stopped; retain current incremental cache",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncl5pje08-0ginppg-32bn4apfe0w0l6cb2ueptrucw",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncniu7vky-0i85w3z-eyldobb8c6ukb6ffav3vvral1",
+  "reclaimed_free_bytes": 860053504
+}

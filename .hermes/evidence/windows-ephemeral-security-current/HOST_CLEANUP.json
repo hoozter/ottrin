@@ -1,0 +1,45 @@
+{
+  "reason": "All native consumers stopped; isolated guest shut off; task-owned consumed probes matched dispatch hashes",
+  "removed": [
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/probe.exe",
+      "sha256": "8e44edd656aefd5e223a3dee1d7b86675c432850500b7b49142deaf5546ba91e",
+      "bytes": 306556
+    },
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/access.exe",
+      "sha256": "102d9904e400ea8e8be3c1a632dc2752f47c56a775c0444e0a1f6f8e5ab022a8",
+      "bytes": 306584
+    },
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/guard.exe",
+      "sha256": "8a1c9db9aef8862bf16c49eb11f042204a6c1eb466f17420940827c5b2078917",
+      "bytes": 306860
+    },
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/freeze.exe",
+      "sha256": "92c9f28fc68e82e312935a928ba1156e56c037e86497cd0b4df1b83cb4dbb92d",
+      "bytes": 307884
+    },
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/delete.exe",
+      "sha256": "5421046291e813281b0470fa5292071247e2938d4abb68ff21c72134185e949f",
+      "bytes": 307884
+    },
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/pending.exe",
+      "sha256": "300e9c1936da9ef8360b2b2c42bba0274d12b41156948a56d0d0001b596836e9",
+      "bytes": 308110
+    },
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/preheld.exe",
+      "sha256": "a5a05955ba3d104d4a9ea5984419e513e04a4b2cd25d132ad54f09226ea4627e",
+      "bytes": 304577
+    },
+    {
+      "path": ".hermes/packaging-tmp/ephemeral-security/preheld-read-control.exe",
+      "sha256": "f119b78430bc1113b3a0b3b31e762e9522b41809f7a9400bb8f9e0f5b8ababb4",
+      "bytes": 304577
+    }
+  ]
+}

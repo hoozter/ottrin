@@ -16,14 +16,23 @@ also leaves an empty directory for directory-first close and a hard kill, and
 can remove an added directory stream. It must not be used to close the stage
 construction gap.
 
-The current gated temporary-file primitive needs a guarded ephemeral state that
-prevents unrelated stream/metadata writes and clears automatic deletion before
-restoring other writer access. A reduced data-write mask passes one native
-control, but the stronger read-only descriptor fails permission restoration;
-neither is yet an accepted Rust replacement. Private-security evidence must
-represent the actual phase without weakening cleanup validation. Keep public
-Copy disabled until the actual factory and affected claim/journal callers pass
-native adversarial-stream and lifetime acceptance. Details and exact scopes:
+A proposed freeze-then-pending-delete replacement is rejected too. Later-open
+writer checks pass, but a WRITE_DAC plus READ_CONTROL handle acquired before the
+freeze can restore full access afterward. A native ordinary-account interleave
+then adds a named stream and observes automatic deletion remove it. Neither a
+fresh descriptor check nor a stream check revokes that pre-held capability.
+Read-only security at creation excludes that permission writer but strips the
+creator's WRITE_DAC right, preventing the tested in-place promotion.
+
+The replacement must avoid automatic deletion while unrelated data/permission
+capabilities can exist. Preserve uncertain empty or partial preparations rather
+than deleting from their name or incomplete bytes. Canonical publication must
+still require a complete verified frame and allow subsequent restart admission.
+Actual factory, affected claim/journal callers and interruption cases need native
+acceptance; public Copy stays disabled. The rejected Rust candidate is archived,
+not installed. Exact controls and limits:
+`.hermes/evidence/windows-ephemeral-security-current/FINDINGS.md`.
+Earlier lifetime controls:
 `.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.
 
 ## Current claim preparation lifecycle

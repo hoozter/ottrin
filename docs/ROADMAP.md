@@ -110,14 +110,18 @@ leave an empty directory, while an added directory stream can be lost. This
 finding supersedes any inference that the earlier process-cleanup checks proved
 preservation of concurrently added streams. The passing earlier receipts retain
 their narrower scopes.
-A restricted data-write mask blocks the stream writer in a native control; a
-stricter read-only descriptor fails normal permission restoration and is not
-accepted. Implement and verify a guarded ephemeral-file state with proper
-stream/metadata exclusion before enabling public Copy. Its security evidence,
-promotion order and recovery must stay authoritative. Exact probes, rejected
-controls and cleanup are in
+A guarded-file candidate was also rejected. Freezing permissions after creation
+blocks later opens, but a permission-changing handle obtained beforehand can
+restore write access, add a stream and have automatic deletion destroy it.
+The ordinary-account native interleave proves that gap; a later-open test alone
+cannot establish safety. The candidate source was archived and removed, and its
+partial/failed Rust runs are not acceptance. The next replacement must preserve
+uncertain preparations and keep canonical records complete without relying on
+revoking already-granted handles. Exact controls, rejected source and teardown:
+`.hermes/evidence/windows-ephemeral-security-current/FINDINGS.md`.
+Earlier directory-lifetime findings remain in
 `.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.
-No application behavior or package changes at this investigation checkpoint.
+No application behavior or package changes at these investigation checkpoints.
 
 The current native journal schema is 17 and claim format is 3. Each destination
 reservation now holds one Claim and Release. Released controls can be retired

@@ -1,0 +1,16 @@
+
+thread 'copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_central_collision_preserves_foreign_record_and_retries' (3100) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs:100:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_cleanup_preserves_unexpected_stage_content_and_claim' (2172) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs:128:5:
+assertion failed: matches!(create(root.path(), &parent, &central),
+    Err(PlatformError::CleanupPending { .. }))
+
+thread 'copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_errors_remove_empty_setup_and_release_name' (7516) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs:67:59:
+called `Result::unwrap()` on an `Err` value: Io("Windows Copy stream staging: Copy candidate is aliased by another hard-link name")
+
+thread 'windows_fs::temporary::tests::windows_native_guarded_temporary_control_excludes_other_stream_metadata_and_permission_handles' (5688) panicked at crates/ottrin-platform/src/windows_fs/temporary.rs:270:9:
+Unexpected refusal for "C:\\OttrinCopyCleanupQA\\temp\\.tmpGqSZRf\\control:foreign": None

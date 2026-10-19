@@ -1,0 +1,14 @@
+{
+  "baseline_commit": "9f01fd0430149c3bbba74077912f1b44cb0af232",
+  "application_files": {
+    "crates/ottrin-platform/src/windows_fs.rs": "93a844a27f3d2c248f1aaa71f8b415d5f76295d2eda7a6b4c0ab6b6ef5a4ffa1",
+    "crates/ottrin-platform/src/windows_fs/temporary.rs": "83873087e9b509d25a3f6a8bd5eb6c84ba7b54d503006c7a1b6360e1f6833fc0",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "32397d7ede9574faefcea3beb904bb50c2757e7a8c0028ea4b6a478aca5110f5",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "b66b4c578fe3f2595720db79da8c0803be0ac9df91d11d30a77696ec331c878e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "7d805584718f06f21fec2512026b4151f0a7435a858a0e638f04a74c2533dc88",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "d58840aa7c5d1f72475bd03ce3afb3c4e1e1e4fbf738f79463d11c2ee832347c",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "4a51bb68180062df1b1e2df9d18f969920647b26ed52603a31dbb280400f29fb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "b30e8885587fbbd082eac624e04009364013038522bf86982c7849a607afede1"
+  },
+  "scope": "Typed pending-delete temporary controls; freeze new stream/metadata/permission writers before deletion becomes active; cancel deletion before normal private ACL promotion"
+}
