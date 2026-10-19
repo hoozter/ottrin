@@ -1,0 +1,66 @@
+{
+  "status": "scoped preservation/admission checks pass; surviving power-loss preparation is an unresolved lifecycle finding",
+  "source_commit": "e7cec9d4324ad27734636c06072b5be98ed4c4af",
+  "application_code_changed": false,
+  "binary": {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+    "sha256": "5df963d265f8f4b06736976f961a0572b11e8f01bba944b90a74eafa364a565e",
+    "transfer": "Exact raw compiler bytes; no stripping/transformation"
+  },
+  "case": {
+    "phase": "Prepared, complete flushed first frame before publication",
+    "ordinary_user": true,
+    "dispatch_id": "20892ddcdf6eb488bc19efac347465cb",
+    "live_child_verified_before_cut": true,
+    "cut_method": "virsh destroy on isolated COW guest; no guest shutdown or handle cleanup",
+    "os_version": "10.0.26100",
+    "os_build": "26100",
+    "host_and_physical_storage_remained_running": true
+  },
+  "observations": {
+    "status": "one Prepared guest-power case observed",
+    "dispatch_id": "20892ddcdf6eb488bc19efac347465cb",
+    "bytes_preserved": [
+      "source",
+      "public sibling",
+      "foreign preparation",
+      "unpublished app preparation"
+    ],
+    "canonical_before_and_after_cut": false,
+    "preparation_survives": true,
+    "preparation_bytes": 1589,
+    "first_claim_frame_complete": true,
+    "fresh_admission": true,
+    "fresh_native_file_identity_differs": true,
+    "finding": "Kernel delete-on-close handles process exit, but did not remove this flushed preparation after ungraceful guest power loss. New admission leaves it and the foreign entry untouched."
+  },
+  "preservation_hashes": {
+    "source_sha256": "988841927a7a71a5334419bd893c8dd594a1354029ccdf4cfda3e28600b363c7",
+    "public_sha256": "2030359493c725cf528a24131f4f415a62773c2dabb6715706fb3d1b1e250029",
+    "foreign_sha256": "15c1e5d5c018d7728f5be57e1f1bce5e23f2cce302cbffe63afec60e996748b2",
+    "preparation_sha256": "6c38af831d34d001dc955ec049ad6b67811bac22f5ebe8dc98f5e7952e3b3259"
+  },
+  "fresh_admission": {
+    "success": true,
+    "owner_exit": 86,
+    "canonical_sha256": "009e0efdc93c0b93a83f7f1257026184633cd98e25a4e8d0e6ad067f4d6e77dd",
+    "native_file_identity_differs_from_old_preparation": true
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "expired_attempt": "Live-age guard refused an earlier stale barrier. Terminal task/absent child verified; owned root cleaned; no power cut performed. Archived separately.",
+  "limits": [
+    "Only one complete Prepared boundary was cut. Earlier/partial creation, published/persisted, retirement and payload-journal power boundaries remain untested here.",
+    "An ungraceful guest stop with a powered host is not physical-host power-loss acceptance.",
+    "The surviving app preparation is not collected or adopted by the application. The harness removed only its own token-guarded fixture after export.",
+    "No new app feature, signing, UI, installer or daily-driver acceptance; packages unchanged and public Windows Copy remains gated."
+  ]
+}

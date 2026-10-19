@@ -1,0 +1,13 @@
+{
+  "id": "5d659c3043dbc71105546618652f9b04",
+  "status": "dispatched",
+  "case": "Prepared guest abrupt power stop",
+  "root": "C:\\OttrinCopyCleanupQA\\power-5d659c3043dbc71105546618652f9b04",
+  "binary_sha256": "5df963d265f8f4b06736976f961a0572b11e8f01bba944b90a74eafa364a565e",
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "source_commit": "e7cec9d4324ad27734636c06072b5be98ed4c4af",
+  "phase": "Prepared",
+  "expected_fixture": "copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_temporary_claim_hard_kill_removes_only_its_preparation",
+  "actor_sha256": "4079f5a20d98cbc687437064b31428096e0b6dac0415ad2fe73409f37a893d4c",
+  "sync_sha256": "337f10485168212491a02dfffb8d9399b4e20ef6a7e8612e7307d27bef58ca4f"
+}

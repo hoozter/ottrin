@@ -1,0 +1,7 @@
+{
+  "status": "Prepared guest-power observation complete; see ACCEPTANCE.json",
+  "finding": "A complete unpublished preparation survives this guest-power cut, but source/public/foreign data are preserved and fresh same-name admission works without touching it.",
+  "next": "Test earlier/partial and published/persisted/retirement guest-power boundaries; use observed ownership evidence before selecting any leftover lifecycle change. Continue the full roadmap.",
+  "native_vm": "shut off; guarded fixture and binaries removed; original profile/install/login state preserved",
+  "packages": "unchanged"
+}

@@ -1,0 +1,4 @@
+{
+  "reason": "Barrier expired during controller preparation; terminal actor and absent child verified; no virsh destroy executed",
+  "cleanup": "Owned fixture removed by ordinary account after guard-token validation"
+}

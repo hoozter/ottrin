@@ -1,0 +1,17 @@
+{
+  "status": "one Prepared guest-power case observed",
+  "dispatch_id": "20892ddcdf6eb488bc19efac347465cb",
+  "bytes_preserved": [
+    "source",
+    "public sibling",
+    "foreign preparation",
+    "unpublished app preparation"
+  ],
+  "canonical_before_and_after_cut": false,
+  "preparation_survives": true,
+  "preparation_bytes": 1589,
+  "first_claim_frame_complete": true,
+  "fresh_admission": true,
+  "fresh_native_file_identity_differs": true,
+  "finding": "Kernel delete-on-close handles process exit, but did not remove this flushed preparation after ungraceful guest power loss. New admission leaves it and the foreign entry untouched."
+}

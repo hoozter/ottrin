@@ -1,0 +1,16 @@
+{
+  "source_sha256": "988841927a7a71a5334419bd893c8dd594a1354029ccdf4cfda3e28600b363c7",
+  "preparation_length": 1587,
+  "preparation_sha256": "9aa731eb0ab1ec0444763e01e30ad81d66c66a03d42b3fdce4354d00289032d0",
+  "ordinary_user": true,
+  "canonical_exists": false,
+  "foreign_sha256": "15c1e5d5c018d7728f5be57e1f1bce5e23f2cce302cbffe63afec60e996748b2",
+  "phase": "Prepared",
+  "root": "C:\\OttrinCopyCleanupQA\\power-5d659c3043dbc71105546618652f9b04",
+  "public_sha256": "2030359493c725cf528a24131f4f415a62773c2dabb6715706fb3d1b1e250029",
+  "error": "Preparation exited without the planned VM cut",
+  "child_pid": 5432,
+  "status": "fail",
+  "dispatch_id": "5d659c3043dbc71105546618652f9b04",
+  "binary_sha256": "5df963d265f8f4b06736976f961a0572b11e8f01bba944b90a74eafa364a565e"
+}

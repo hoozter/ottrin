@@ -161,6 +161,21 @@ boundaries are no-ops. Exact source/executable and clean teardown evidence is in
 `.hermes/evidence/windows-claim-retirement-interruptions-current/ACCEPTANCE.json`.
 No broader journal/UI/package rerun is claimed for this coverage checkpoint.
 
+One sudden-guest-power case now covers the live, flushed Prepared boundary on
+an isolated COW Windows VM. The host verified the ordinary actor, live child,
+exact executable and original profile/install hashes before `virsh destroy`.
+After one boot, source/public/foreign bytes were unchanged and no canonical
+claim existed. The unpublished app preparation survived as the same complete
+1,589-byte first frame. Fresh native admission to the same name succeeded with a
+different control identity without changing either leftover. This is a concrete
+storage-lifecycle finding: delete-on-close did not collect that preparation after
+guest power loss. It is not physical-host-power or all-phase crash acceptance.
+The fixture/binaries were removed, original profile/install/login checks passed
+and the VM was shut down. An earlier expired-barrier attempt was refused without
+any cut and cleaned before replay. Exact receipts are in
+`.hermes/evidence/windows-claim-power-current/ACCEPTANCE.json`.
+No application code or package changed in this experiment.
+
 Native QA binds dispatch/results to a unique ID, exact selection, executable and
 raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test
 success results are rejected before accepted evidence is replaced; the separate
