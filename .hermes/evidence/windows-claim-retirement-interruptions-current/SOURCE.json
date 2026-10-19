@@ -1,0 +1,8 @@
+{
+  "baseline": "45e7111d5e13b69631838d399e09871bce987729",
+  "scope": "Retirement boundary fault/exit and four-phase independent publisher verification; production algorithm unchanged",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "3907c11120cf3e86dc25d75594f28a14b4cb737308f3f88ec6a5a0364c91dd8b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "8df02ba7dacffd0c102be153c30eba21a41f7d4bda61d74a55b719dc15151ac6"
+  }
+}

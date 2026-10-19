@@ -227,6 +227,49 @@ fn preparation_boundary(point: PreparationPoint, file: &mut File) -> Result<(), 
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum RetirementPoint {
+    BeforeUnlink,
+    Marked,
+    Unlinked,
+    Flushed,
+}
+#[cfg(not(test))]
+fn retirement_boundary(_: RetirementPoint) -> Result<(), PlatformError> {
+    Ok(())
+}
+#[cfg(test)]
+type RetirementHandoff = (RetirementPoint, Box<dyn FnOnce()>);
+#[cfg(test)]
+thread_local! {
+    pub(super) static RETIREMENT_FAULT: std::cell::Cell<Option<(RetirementPoint, bool)>> = const { std::cell::Cell::new(None) };
+    pub(super) static RETIREMENT_HANDOFF: std::cell::RefCell<Option<RetirementHandoff>> = const { std::cell::RefCell::new(None) };
+}
+#[cfg(test)]
+fn retirement_boundary(point: RetirementPoint) -> Result<(), PlatformError> {
+    let handoff = RETIREMENT_HANDOFF.with(|hook| {
+        let mut hook = hook.borrow_mut();
+        if hook
+            .as_ref()
+            .is_some_and(|(selected, _)| *selected == point)
+        {
+            hook.take()
+        } else {
+            None
+        }
+    });
+    if let Some((_, handoff)) = handoff {
+        handoff();
+    }
+    match RETIREMENT_FAULT.with(|fault| fault.get()) {
+        Some((selected, true)) if selected == point => std::process::exit(86),
+        Some((selected, false)) if selected == point => {
+            Err(io("injected Copy claim retirement failure"))
+        }
+        _ => Ok(()),
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum ReleasePoint {
     BeforeTruncate,
     Truncated,
@@ -720,9 +763,13 @@ impl Lease {
                 // Terminal journal recovery is independent of this discharged
                 // control. Retire it before publishing a fresh complete claim.
                 validate_control(&root, &bucket, &file, &bytes, &log)?;
+                retirement_boundary(RetirementPoint::BeforeUnlink)?;
                 cleanup_tree::dispose(&file)?;
+                retirement_boundary(RetirementPoint::Marked)?;
                 drop(file);
+                retirement_boundary(RetirementPoint::Unlinked)?;
                 bucket.writable_root()?.sync_all().map_err(io)?;
+                retirement_boundary(RetirementPoint::Flushed)?;
                 return Self::prepare_new(parent, central, target, transaction, root, bucket);
             }
         }

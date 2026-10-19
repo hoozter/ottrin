@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_platform",
+  "test_arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit copy_transaction::windows::journal::tests::claim_releases:: copy_transaction::windows::journal::tests::name_release_action:: copy_transaction::windows::journal::tests::claim_retirement:: copy_transaction::windows::journal::tests::claim_orphans:: copy_transaction::windows::journal::tests::claim_repair:: copy_transaction::windows::journal::tests::claim_publication:: --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "compiler_sha256": "dc83e18798d90e6482807fe3c4ca5da7d7873b71b29349f8cdc4e057ca85584f",
+  "transferred_sha256": "3f6fa5b169e018688c1c96544a6e76008422a6749292ba8d7a948e86f7513a5d",
+  "retained_sections": {
+    ".text": "61d3bc3909b4c19408543fd693624340ed931b32c5307a0b9775cb84feffef8d",
+    ".data": "ae984c0717510e3ba86c0a98fe4a0bbee883a69adbc6f0f8e4618d196873fffb",
+    ".rdata": "a3024b9811b066b6bc59f0241175f0fd5b8a3231fb53dcb47d47df4a4ad01541",
+    ".pdata": "c5e05024bf6dfd181c8ecfa35dff2bb7af066d9b98dae0b9fa0a09113f9b18b3",
+    ".xdata": "54949bd6ef18b4f3c4e93c5c9d1d7af6d5745e4d5335a068977a8229ff955249",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "2a2ffd136d41e72b2c23c064b96a2cfd85d66f2b7781001af23801b478240bdd",
+    ".CRT": "d18ebdca33cec1b0c8d9d014da3e4a7b8b71f76d3f4528d0a65e418001adbd0d",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "996f421da20fe1b6800abb0bac9ece461946ff4bb4802367ae52c3b82e427cb4"
+  }
+}

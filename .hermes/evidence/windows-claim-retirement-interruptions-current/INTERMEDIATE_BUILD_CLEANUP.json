@@ -1,0 +1,6 @@
+{
+  "reason": "Successful same-configuration test build supersedes prior checkpoint incremental session; preserve current binaries/dependencies",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnbigz5qr6-1rtck1n-1y5de7a3dyx31eoqamdwecvdf",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncit3z8tg-0sfck7o-9mp4hy7igpoej6co2sm9lvmm2",
+  "reclaimed_free_bytes": 912084992
+}

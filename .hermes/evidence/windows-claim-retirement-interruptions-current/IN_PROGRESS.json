@@ -1,0 +1,6 @@
+{
+  "status": "checkpoint complete; see ACCEPTANCE.json",
+  "next": "Run a bounded sudden-VM-power cohort and inspect actual claim/preparation leftovers before selecting any further construction design. Continue remaining roadmap gates independently.",
+  "native_vm": "shut off; original profile/install/login state preserved, owned test data and processes absent",
+  "packages": "unchanged"
+}

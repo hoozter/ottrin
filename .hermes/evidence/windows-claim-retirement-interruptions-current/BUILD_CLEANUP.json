@@ -1,0 +1,6 @@
+{
+  "reason": "Final successful owned same-configuration test build and completed native consumers; retain current binary/incremental state and shared dependencies",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncj17y6au-1hugmk9-0d2jj3z5p09mhsn2r5lg4godx",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncj2ibkgr-1mfbw6a-byndpq19kh2z1qshdxr13se30",
+  "reclaimed_free_bytes": 541491200
+}

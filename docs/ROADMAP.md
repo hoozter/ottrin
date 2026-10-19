@@ -128,8 +128,8 @@ introduced. The old manual pre-publication disposal path is removed.
 
 Five ordinary-account native API observations established that the legacy clear
 call reports success but still deletes the file, whereas the extended operation
-preserves it and keeps competing writers blocked. The production executable
-passes 33 focused native checks (56.12s) and the core journal suite (121 passed,
+preserves it and keeps competing writers blocked. The `45e7111` executable
+passed 33 focused native checks (56.12s) and the core journal suite (121 passed,
 six explicit exclusions, 716.52s). These overlap. Tests cover five ordinary error
 boundaries, six process-exit states including a three-byte first frame, a real
 hard kill, foreign-preparation collision/preservation and both case-policy races.
@@ -141,11 +141,25 @@ and the VM is shut down. Exact source, binary and native scopes are recorded in
 The preceding `e9d9687` reservation-lifetime checkpoint passed 194 journal tests
 across a disjoint 203-name catalog, with nine root exclusions; its individual and
 grouped cleanup counts were 44 and 31. Those broader cleanup selections were not
-rerun for the temporary-creation change. The six current core exclusions include
+rerun for the temporary-creation change. The six core exclusions in that checkpoint include
 child/fixture entry points, the unprovisioned secondary NTFS volume and the
 Activity fixture whose UI consumer was not rerun. Earlier acceptance, including
 superseded assertions, keeps its recorded source/artifact scope in
 `.hermes/evidence/windows-copy-claim-lifetime-current/ACCEPTANCE.json`.
+
+Released-claim retirement now has explicit native process-interruption and
+publisher-handoff coverage. Four removal boundaries each pass ordinary-error and
+process-exit cases (eight scenarios). A separate publisher is coordinated at each
+boundary (four handoffs), proving exactly one winner and preserving its native
+binding/bytes. Paired journals, edited retained files, unrelated public files and
+foreign preparations stay unchanged with the original source removed. Windows
+access-denied on the delete-marked control is accepted only at that tagged phase;
+the first 34-pass/1-fail expectation and its correction remain separately scoped.
+All 35 focused checks pass (85.26s), along with strict Windows all-target Clippy
+and formatting. The algorithm and formats are unchanged; added production
+boundaries are no-ops. Exact source/executable and clean teardown evidence is in
+`.hermes/evidence/windows-claim-retirement-interruptions-current/ACCEPTANCE.json`.
+No broader journal/UI/package rerun is claimed for this coverage checkpoint.
 
 Native QA binds dispatch/results to a unique ID, exact selection, executable and
 raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test
@@ -153,12 +167,11 @@ success results are rejected before accepted evidence is replaced; the separate
 routing acceptance is in
 `.hermes/evidence/windows-native-dispatch-current/ACCEPTANCE.json`.
 
-Still required: retirement-specific interruption/concurrent recreation, partial
-root/stage construction, sudden VM/physical-power behavior (including any private
-preparations it leaves), idle bookkeeping, remaining alias/ancestor/resource and
+Still required: partial root/stage construction, sudden VM/physical-power behavior
+(including claim retirement and any private preparations it leaves), idle bookkeeping, remaining alias/ancestor/resource and
 public workflow/package gates. Existing unknown preparations remain preserved;
-this process-lifetime fix does not infer cleanup authority over them. Public Windows Copy remains disabled; older experimental
-journal formats are not migrated and application packages are unchanged.
+these process-lifetime checks do not infer cleanup authority over them. Public
+Windows Copy remains disabled; older experimental journal formats are not migrated and application packages are unchanged.
 
 ### Earlier Windows Copy implementation evidence
 

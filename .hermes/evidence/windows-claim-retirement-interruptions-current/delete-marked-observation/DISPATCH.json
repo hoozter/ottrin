@@ -1,0 +1,7 @@
+{
+  "id": "61d4513eb13e9d00b1b61e6cc1fcaae8",
+  "status": "dispatched",
+  "test_arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit copy_transaction::windows::journal::tests::claim_releases:: copy_transaction::windows::journal::tests::name_release_action:: copy_transaction::windows::journal::tests::claim_retirement:: copy_transaction::windows::journal::tests::claim_orphans:: copy_transaction::windows::journal::tests::claim_repair:: copy_transaction::windows::journal::tests::claim_publication:: --nocapture --test-threads=1",
+  "transferred_sha256": "3f6fa5b169e018688c1c96544a6e76008422a6749292ba8d7a948e86f7513a5d",
+  "watchdog_ms": 600000
+}

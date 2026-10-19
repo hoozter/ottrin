@@ -1,0 +1,56 @@
+{
+  "status": "pass for process-level retirement interruption and independent publisher coverage; full roadmap remains open",
+  "source": {
+    "baseline": "45e7111d5e13b69631838d399e09871bce987729",
+    "scope": "Retirement boundary fault/exit and four-phase independent publisher verification; production algorithm unchanged",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "3907c11120cf3e86dc25d75594f28a14b4cb737308f3f88ec6a5a0364c91dd8b",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "8df02ba7dacffd0c102be153c30eba21a41f7d4bda61d74a55b719dc15151ac6"
+    }
+  },
+  "run": {
+    "passed": 35,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 85.26,
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "dispatch_id": "a56c9b7ee505adc6a66592be46773f51",
+    "test_binary_sha256": "dbef36120f0de0127c71d5db0d43f53d566fe23b7a10a05ea61b61ebbffcfac5"
+  },
+  "matrix": {
+    "ordinary_errors": 4,
+    "process_exits": 4,
+    "independent_process_handoffs": 4,
+    "boundaries": [
+      "BeforeUnlink",
+      "Marked",
+      "Unlinked",
+      "Flushed"
+    ],
+    "preservation": "Paired journals, edited retained bytes, public siblings and foreign preparations unchanged; original source absent",
+    "ownership": "Old writer excludes child before unlink; child must win after unlink/flush; Marked allows either safe winner, never both/neither. Winning child native binding and bytes validated while its writer remains live."
+  },
+  "superseded_observation": "Initial 34-pass/1-fail result captured Windows access-denied while delete-marked. Final test permits exact error 5 only at the tagged Marked phase; other ownership/preservation assertions unchanged. Raw failure/source/binary receipts retained separately.",
+  "checks": {
+    "windows_test_build": "pass",
+    "strict_windows_all_target_clippy": "pass",
+    "format_and_diff": "pass"
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "Only no-op production fault boundaries and tests added; retirement algorithm and on-disk formats unchanged.",
+    "No broader journal/cleanup/UI/installer rerun for this coverage-only checkpoint; earlier results retain their original source/executable scopes.",
+    "VM/physical-power retirement and private preparation cases, partial root/stage construction, idle/resource/alias/ancestor and public workflow/package gates remain.",
+    "Application packages unchanged; public Windows Copy remains gated."
+  ]
+}

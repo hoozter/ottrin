@@ -1,0 +1,8 @@
+{
+  "baseline": "45e7111d5e13b69631838d399e09871bce987729",
+  "scope": "No-op production retirement boundaries with native interruption and cross-process tests; algorithm unchanged",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "3907c11120cf3e86dc25d75594f28a14b4cb737308f3f88ec6a5a0364c91dd8b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "af637d9c7b7574c76ee1ba882b5b150d20e54987b799e05677e2056b0ca2f13d"
+  }
+}

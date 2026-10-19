@@ -1,0 +1,26 @@
+{
+  "RESULTS.json.gz": {
+    "raw_sha256": "86290e27f2cc05211ba70d25ced29a8950274ba8daf9d481b5ca6386caf65098",
+    "archive_sha256": "7d8a47ea68cc3937b46f717424c02de3301b0a8dcd0bb84130da8e33be5ed982"
+  },
+  "platform.stdout.gz": {
+    "raw_sha256": "ba88df1e94a5e6cd1f131d9fe8159e0dab83f6defe645371c2bf4893ae1a9e10",
+    "archive_sha256": "e052b3ac0480479e85ed7f2aef4b6329fe991376f4509390c42582ace935b0fd"
+  },
+  "platform.stderr.gz": {
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archive_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec"
+  },
+  "delete-marked-observation/RESULTS.json.gz": {
+    "raw_sha256": "4f46c73fcc09e8321c362abad760dce531508cb09b58b22bde007d61bb0321be",
+    "archive_sha256": "dad8b63a7f815383695d7a0876b7a1697b59372a6be477623ee1d6245af6a073"
+  },
+  "delete-marked-observation/platform.stdout.gz": {
+    "raw_sha256": "bbc46470b9f0be8bfe8e016730cb87b5eba8a45646efe3fc4280d43584b4a5d0",
+    "archive_sha256": "d3cce44dbf56857bd08888e64c1d9d23ed77f69642dd4d669ee1a779ff034e5f"
+  },
+  "delete-marked-observation/platform.stderr.gz": {
+    "raw_sha256": "6c0f5b1336e47ae6d6ce9abba69c813a90e52f2d14e100636e795af9e4b05614",
+    "archive_sha256": "537d3c0ed478f823011cc54eee62795463c0daa313e6aeb26386b018128be891"
+  }
+}
