@@ -176,6 +176,19 @@ any cut and cleaned before replay. Exact receipts are in
 `.hermes/evidence/windows-claim-power-current/ACCEPTANCE.json`.
 No application code or package changed in this experiment.
 
+A second sudden-guest-power case covers a fully persisted reservation held by a
+live ordinary process. After reboot its canonical Claim is byte-identical and
+its frame digest is valid. A fresh process reclaims the case-equivalent name
+through existing orphan recovery, with a different native file identity and the
+same namespace anchors, creator and security. Source/public/foreign bytes remain
+unchanged. No unpublished app preparation remains in this case. The token-owned
+fixture and binaries are removed, original profile/install/login checks pass and
+the VM is shut down. Exact receipts and an offline evidence verifier are in
+`.hermes/evidence/windows-claim-power-current/persisted/ACCEPTANCE.json`.
+This reservation-only scenario creates no payload transaction journals. It does
+not resolve the Prepared-case leftover or establish physical-host, intermediate
+publication, retirement or payload power-loss acceptance. Packages are unchanged.
+
 Native QA binds dispatch/results to a unique ID, exact selection, executable and
 raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test
 success results are rejected before accepted evidence is replaced; the separate

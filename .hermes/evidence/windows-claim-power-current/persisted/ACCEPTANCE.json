@@ -1,0 +1,52 @@
+{
+  "status": "pass for one fully persisted reservation guest-power recovery case",
+  "application_code_changed": false,
+  "binary": {
+    "source_commit": "e7cec9d4324ad27734636c06072b5be98ed4c4af",
+    "sha256": "5df963d265f8f4b06736976f961a0572b11e8f01bba944b90a74eafa364a565e",
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+    "transfer": "exact raw compiler bytes; same executable as Prepared experiment"
+  },
+  "case": {
+    "dispatch_id": "06ca254a67ab4635f7632d28b676cdd3",
+    "phase": "Lease returned after persisted Claim; no Copy payload journals created",
+    "ordinary_user": true,
+    "cut": {
+      "dispatch_id": "06ca254a67ab4635f7632d28b676cdd3",
+      "method": "virsh destroy on isolated COW guest; no guest shutdown or handle cleanup",
+      "guest_state": "shut off",
+      "host_unix_time": 1792389054.2269497,
+      "scope": "Ungraceful guest power simulation; host and storage remained running"
+    },
+    "os_build": "26100"
+  },
+  "observations": {
+    "canonical_survives_byte_identical": true,
+    "old_and_new_frames_complete_with_valid_digest": true,
+    "fresh_case_equivalent_admission": true,
+    "old_transaction": "11111111111111111111111111111111",
+    "new_transaction": "22222222222222222222222222222222",
+    "native_file_identity_changes": true,
+    "same_namespace_anchors_creator_security": true,
+    "source_public_foreign_bytes_preserved": true,
+    "no_app_private_preparation_after_reboot": true,
+    "fresh_owner_exit": 86
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "One persisted reservation boundary only; host and physical storage remained powered.",
+    "Does not resolve the surviving unpublished preparation observed in the preceding Prepared experiment.",
+    "No paired transaction, Copy payload, retirement, secondary-volume or physical-host-power acceptance.",
+    "No application code, package or public feature gate changed; Windows Copy remains disabled.",
+    "The fixture process intentionally exits 86 after successful ownership; this is a controller-verified native scenario, not a completed Rust test-run count."
+  ]
+}

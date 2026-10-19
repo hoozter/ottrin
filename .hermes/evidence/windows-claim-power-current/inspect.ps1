@@ -10,6 +10,7 @@ try {
  if($result.preparation_exists){$result.preparation_sha256=Read-SharedHash $prep;$result.preparation_length=(Get-Item $prep).Length}
  $result.source_sha256=Read-SharedHash "$root\source\nested\file";$result.public_sha256=Read-SharedHash "$root\destination\user-data";$result.foreign_sha256=Read-SharedHash $foreign
  $result.canonical_exists=Test-Path "$claims\short-names.ottrin-claims\copy.ottrin-claim"
+ if('PHASE'-eq'Persisted'){$key="$claims\short-names.ottrin-claims\copy.ottrin-claim";$result.canonical_sha256=Read-SharedHash $key;[IO.File]::WriteAllBytes('C:\OttrinCopyCleanupQA\results\POWER_OLD_CANONICAL.bin',[IO.File]::ReadAllBytes($key))}
  $result.claim_root_names=@(Get-ChildItem $claims -Force|Select-Object -ExpandProperty Name)
  $result.status='observed-after-cut'
 } catch {$result.status='fail';$result.error=$_.Exception.Message}

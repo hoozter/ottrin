@@ -11,3 +11,7 @@ This observes non-blocking recovery and preserved fixture data for one completed
 The first attempt was not cut: the controller was prepared too late and its live-barrier age guard refused. The child subsequently ended normally, the task was verified terminal and the owned fixture was cleaned. Preparation and cut are now chained. The refusal is archived separately, not counted as power evidence.
 
 Next work must address the observed preparation lifecycle and test earlier/partial, published/persisted and retirement power boundaries before broadening acceptance. Do not assume every leftover is a complete, independently bound record, and do not collect foreign entries from their name or age. Other filesystems, physical-host power, UI/installed-package and the full roadmap remain outside this experiment.
+
+## Persisted reservation follow-up
+
+The same controllers also support `OTTRIN_POWER_PHASE=Persisted` at preparation. Set `OTTRIN_NATIVE_EVIDENCE_DIR` to a fresh case directory for every controller; templates stay in this directory. `persisted/` retains the accepted fully persisted reservation case, including the exact executed actors and offline `verify.py`. The initial Prepared receipts above remain unchanged. Boot only the owned VM before preparation and once after its cut; run inspect, recover, cleanup and the shared teardown in order. Never rerun preparation over a dispatch.

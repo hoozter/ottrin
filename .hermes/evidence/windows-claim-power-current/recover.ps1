@@ -4,14 +4,14 @@ try {
  $root='ROOT';if((Get-Content "$root\guard" -Raw)-ne'TOKEN'){throw 'Fixture ownership changed'}
  if((Get-FileHash C:\OttrinCopyCleanupQA\power-platform.exe).Hash.ToLowerInvariant()-ne'BINARY'){throw 'Recovery binary changed'}
  $env:TEMP="$root\compiler";$env:TMP=$env:TEMP;. C:\OttrinCopyCleanupQA\power-sync.ps1
- $env:OTTRIN_TEST_CLAIM_PUBLICATION_ROOT=$root;$env:OTTRIN_TEST_CLAIM_PUBLICATION_CASE='1'
- Write-Durable "$root\publish" ([Text.Encoding]::ASCII.GetBytes('go'))
+ $env:OTTRIN_TEST_CLAIM_PUBLICATION_ROOT=$root;$case=if('PHASE'-eq'Persisted'){'2'}else{'1'};$env:OTTRIN_TEST_CLAIM_PUBLICATION_CASE=$case
+ if(-not(Test-Path "$root\publish")){Write-Durable "$root\publish" ([Text.Encoding]::ASCII.GetBytes('go'))}
  $process=Start-Process C:\OttrinCopyCleanupQA\power-platform.exe -ArgumentList '--exact copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite --nocapture --test-threads=1' -WorkingDirectory C:\Windows\System32 -PassThru -RedirectStandardOutput C:\OttrinCopyCleanupQA\results\power-recover.stdout -RedirectStandardError C:\OttrinCopyCleanupQA\results\power-recover.stderr
  $null=$process.Handle;$deadline=(Get-Date).AddSeconds(30)
- while(-not(Test-Path "$root\result-1")){if($process.HasExited-or(Get-Date)-gt$deadline){throw 'Fresh admission did not complete'};Start-Sleep -Milliseconds 50}
- if((Get-Content "$root\result-1" -Raw)-ne'owner'-or$process.HasExited){throw 'Fresh actor did not retain ownership'}
+ while(-not(Test-Path "$root\result-$case")){if($process.HasExited-or(Get-Date)-gt$deadline){throw 'Fresh admission did not complete'};Start-Sleep -Milliseconds 50}
+ if((Get-Content "$root\result-$case" -Raw)-ne'owner'-or$process.HasExited){throw 'Fresh actor did not retain ownership'}
  $claims="$root\destination\.ottrin-copy-target-claims";$prep=Join-Path $claims ('.preparing-'+('d'*32));$foreign=Join-Path $claims ('.preparing-'+('f'*32));$key="$claims\short-names.ottrin-claims\copy.ottrin-claim"
- $result.fresh_admission=$true;$result.canonical_sha256=Read-SharedHash $key;$result.preparation_sha256=Read-SharedHash $prep;$result.foreign_sha256=Read-SharedHash $foreign
+ $result.fresh_admission=$true;$result.canonical_sha256=Read-SharedHash $key;if('PHASE'-eq'Prepared'){$result.preparation_sha256=Read-SharedHash $prep};$result.foreign_sha256=Read-SharedHash $foreign
  $result.source_sha256=Read-SharedHash "$root\source\nested\file";$result.public_sha256=Read-SharedHash "$root\destination\user-data";$result.ordinary_user=$true
  Write-Durable "$root\exit" ([Text.Encoding]::ASCII.GetBytes('exit'))
  if(-not$process.WaitForExit(10000)-or$process.ExitCode-ne86){throw 'Fresh owner did not exit as expected'}
