@@ -1,0 +1,39 @@
+[
+  {
+    "selection": "pre-header rollback",
+    "passed": 3,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 1.68,
+    "dispatch_id": "0f53c09d6738f3788c025838c526160d",
+    "binary_sha256": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+    "ignored_root_cases": []
+  },
+  {
+    "selection": "core journal",
+    "passed": 130,
+    "failed": 0,
+    "ignored": 6,
+    "seconds": 548.91,
+    "dispatch_id": "8955f817693cbe182ed18d835a09d73a",
+    "binary_sha256": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+    "ignored_root_cases": [
+      "test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child ... ignored, owned subprocess for creation-time interruption tests",
+      "test copy_transaction::windows::journal::tests::windows_copy_activity_fixture ... ignored, exports an owned fixture to the native Activity integration consumer",
+      "test copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume ... ignored, requires an owned secondary NTFS volume provisioned by the native QA controller",
+      "test copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child ... ignored, child process selected by interrupted staging test",
+      "test copy_transaction::windows::journal::tests::windows_native_original_move_exit_child ... ignored, abrupt-exit child; owned temporary root supplied by parent",
+      "test copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child ... ignored, abrupt-exit child; owned empty root required"
+    ]
+  },
+  {
+    "selection": "dispatch routing",
+    "passed": 5,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 13.68,
+    "dispatch_id": "1386283bd0fbb7c93d3d8e8fef6eb829",
+    "binary_sha256": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+    "ignored_root_cases": []
+  }
+]

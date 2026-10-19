@@ -1,0 +1,9 @@
+{
+  "reason": "Successful final native build, strict Clippy and focused native acceptance; no compiler remains; retain the final current cache",
+  "removed_sessions": [
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnckctks6j-0ni4y8v-34xehhqvtpt5h01qgk42gjp56",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncl2t8d0w-0mxsb4w-4cjv20tnrni11d38qohtvhb1n"
+  ],
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncl5pje08-0ginppg-32bn4apfe0w0l6cb2ueptrucw",
+  "reclaimed_free_bytes": 1521602560
+}

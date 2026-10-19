@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "copy_transaction::windows::journal::tests::initialization:: --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "stdout_sha256": "b3f2912815646edd8974c855201467988c6e3e8511cd8d48dc8b92445a2d328f",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+  "dispatch_id": "0f53c09d6738f3788c025838c526160d"
+}

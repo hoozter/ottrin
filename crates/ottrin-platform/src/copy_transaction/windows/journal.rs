@@ -25,6 +25,7 @@ use windows_sys::Win32::Storage::FileSystem::{
 mod claims;
 mod cleanup;
 mod cleanup_action;
+mod initialization;
 pub use cleanup_action::RetainedCopyCleanupPlan;
 mod cleanup_dependencies;
 mod cleanup_finalize;
@@ -1374,7 +1375,7 @@ impl Journal {
         central: &File,
         destination: &DestinationAdmission,
         source_label: &OsStr,
-        claim: claims::Lease,
+        claim: &mut Option<claims::Lease>,
     ) -> Result<Self, PlatformError> {
         stage.validate()?;
         destination.validate(stage.parent())?;
@@ -1390,12 +1391,17 @@ impl Journal {
             .ok_or_else(|| io("invalid Copy transaction name"))?
             .to_owned();
         let central_name = OsString::from(format!("{name}.copy-journal"));
-        let local =
-            windows_fs::create_private(&stage.directory, OsStr::new(LOCAL), false, FILE_SHARE_READ)
-                .map_err(io)?;
+        let local = windows_fs::create_private_temporary_file(
+            &stage.directory,
+            OsStr::new(LOCAL),
+            FILE_SHARE_READ,
+        )
+        .map_err(io)?;
+        initialization::boundary(initialization::Point::LocalCreated, stage, central)?;
         let central_file =
-            windows_fs::create_private(central, &central_name, false, FILE_SHARE_READ)
+            windows_fs::create_private_temporary_file(central, &central_name, FILE_SHARE_READ)
                 .map_err(io)?;
+        initialization::boundary(initialization::Point::ControlsCreated, stage, central)?;
         let creator = security::current_owner()?;
         let header = Header {
             stage_security: security::PrivateSecurity::capture(&stage.directory, &creator)?,
@@ -1415,18 +1421,31 @@ impl Journal {
             target: destination.target.encode_wide().collect(),
             original_admission: destination.original.as_ref().map(|(_, seal)| seal.clone()),
             source_label: source_label.encode_wide().collect(),
-            claim: claim.binding().clone(),
+            claim: claim
+                .as_ref()
+                .ok_or_else(|| io("Missing initial Copy claim"))?
+                .binding()
+                .clone(),
         };
         if !header.valid() {
             return Err(io("invalid Copy journal header"));
         }
+        let stage_dir = stage.directory.try_clone().map_err(io)?;
+        let parent_dir = stage.parent().try_clone().map_err(io)?;
+        let central_dir = central.try_clone().map_err(io)?;
+        stage_dir.sync_all().map_err(io)?;
+        central_dir.sync_all().map_err(io)?;
+        parent_dir.sync_all().map_err(io)?;
+        initialization::boundary(initialization::Point::DirectoriesFlushed, stage, central)?;
+        // From this point onward a failed durability transition retains recovery
+        // state. Before it, the caller still owns the unstarted reservation.
         let mut result = Self {
-            claim: Some(claim),
+            claim: claim.take(),
             local,
             central: central_file,
-            stage_dir: stage.directory.try_clone().map_err(io)?,
-            parent_dir: stage.parent().try_clone().map_err(io)?,
-            central_dir: central.try_clone().map_err(io)?,
+            stage_dir,
+            parent_dir,
+            central_dir,
             header: header.clone(),
             state: State::default(),
             sequence: 0,
@@ -1435,9 +1454,8 @@ impl Journal {
             failed: false,
             candidates: Vec::new(),
         };
-        result.stage_dir.sync_all().map_err(io)?;
-        result.central_dir.sync_all().map_err(io)?;
-        stage.parent().sync_all().map_err(io)?;
+        windows_fs::persist_temporary_file(&result.local).map_err(io)?;
+        windows_fs::persist_temporary_file(&result.central).map_err(io)?;
         result.persist(Record::Begin {
             header: Box::new(header),
         })?;
@@ -2397,9 +2415,31 @@ impl<'a> DurableStage<'a> {
             Ok(stage) => stage,
             Err(error) => return Err(claim.abort_unstarted(error)),
         };
-        let retained = |error| stage_error(&stage, error);
+        let mut claim = Some(claim);
         let mut journal =
-            Journal::create(&stage, central, destination, source_label, claim).map_err(retained)?;
+            match Journal::create(&stage, central, destination, source_label, &mut claim) {
+                Ok(journal) => journal,
+                Err(error) => {
+                    if let Some(claim) = claim {
+                        // Temporary empty controls have closed before cleanup. Only
+                        // this live owner's validated empty stage may be discarded.
+                        let location = windows_fs::location(&stage.directory)
+                            .map(|p| p.display().to_string())
+                            .unwrap_or_else(|_| format!("native Copy stage {:?}", stage.name));
+                        return Err(match initialization::discard_empty(stage, central) {
+                            Ok(()) => claim.abort_unstarted(error),
+                            Err(cleanup) => PlatformError::CleanupPending {
+                                transaction: location,
+                                message: format!(
+                                    "{error}; unstarted Copy cleanup needs review: {cleanup}"
+                                ),
+                            },
+                        });
+                    }
+                    return Err(stage_error(&stage, error));
+                }
+            };
+        let retained = |error| stage_error(&stage, error);
         tree::StagingJournal::intent(&mut journal, 0, None, &stage.candidate_name, source.root())
             .map_err(retained)?;
         let candidate = stage
@@ -3966,6 +4006,7 @@ mod tests {
     mod claim_retirement;
     mod cleanup;
     mod creation_times;
+    mod initialization;
     mod name_release_action;
 
     use super::*;
@@ -8520,7 +8561,7 @@ mod tests {
             &central,
             &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
             OsStr::new("source"),
-            claim,
+            &mut Some(claim),
         )
         .unwrap();
         let src = source(&root.path().join("source"));

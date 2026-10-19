@@ -33,6 +33,25 @@ Focused ordinary-user native regression passes 39 checks, including four new
 preparation cleanup tests. The broader journal and post-change guest-power scopes
 are recorded separately in the roadmap and acceptance receipts.
 
+## Live-owner pre-header rollback
+
+Local and central journal files begin as private delete-on-close creations. The
+caller keeps its unstarted destination claim until both controls and their native
+metadata are prepared and the containing directories have flushed. A failure
+before that boundary closes the empty temporary controls. The live constructor
+may discard only its own identity-bound empty stage: private metadata/streams and
+an empty native child listing must validate first. Both containing namespaces
+are flushed before releasing the unstarted claim. A colliding central record is
+never adopted or removed, and unexpected stage content prevents cleanup and
+keeps the reservation with an explicit review error.
+
+At the durable-setup boundary, ownership transfers into the journal. Temporary
+deletion is cleared before Begin is appended; failures from that transition
+onward retain uncertain recovery state. No candidate or payload creation occurs
+before successful journal construction. This rollback grants no authority over
+unregistered stages found after a crash, nor does it collect partial anchors or
+unknown setup fragments on restart.
+
 ## Complete outcome
 
 Copy must leave the original namespace and bytes untouched. It must not simulate

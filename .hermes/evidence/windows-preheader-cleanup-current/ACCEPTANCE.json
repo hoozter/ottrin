@@ -1,0 +1,112 @@
+{
+  "status": "pass for live-owner pre-header journal setup rollback; full roadmap remains open",
+  "source": {
+    "baseline_commit": "91afa83c9c0932b242644f8811bb57c7aac3dcc9",
+    "application_files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "34217058c63262fa475315e77b58ce0390fa04f9b5b6d321d0d4319d854675d1",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "78fdac0ecce079193608e78d28f4486d689df635543791fe80c1c7718bdf02b8",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/initialization.rs": "b9442c279340756f2697f63b822744566a5d553e5e2a243293edfb1a19623bb6",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs": "2645fe50f857455d20e1ba22b96077abdde880754000f7d2a35903be117d72b3"
+    },
+    "scope": "Live-owner pre-header Copy setup rollback; no restart authority or schema change"
+  },
+  "binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "copy_transaction::windows::journal::tests::initialization:: --nocapture --test-threads=1",
+    "watchdog_ms": 600000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 0,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+    "compiler_sha256": "b142c46f600666cc0b85641c7b3ec9614c1d62d887597d2bffcb7321b2bd212a",
+    "transferred_sha256": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+    "retained_sections": {
+      ".text": "bac78f9e4b6819cdb7a12364bb90f24b801bf7fe1be1755a7466838675ef8711",
+      ".data": "3e76a81d1e5e15ce65198999057dceee17f95f1b47471881d0d272c3f1bff7c6",
+      ".rdata": "3eba626c1285deba34d8a51bb561f06dbd5cbfacecf68e28d08a9ee44b6fd387",
+      ".pdata": "e7ccfcec133866636f33ec3733480fae094f7522599ef56731a79228cffd7955",
+      ".xdata": "37a67427f5eef61446786bd463d2e6b2598c5e16b168ede6f11e73ae3aba6d8b",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "5ffa034bc73c122d4138fdf14c8ddd24a3741714a0a2e49c61c917a3e8e1c015",
+      ".CRT": "d302be6b226dcc937d8ab161f0f9310f8e4a6ff560059bf74352528bb3899446",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "d590add405ac37f12ffa983e342caa5cc2328e2a19ffd8b2712edf1215d2cd05"
+    }
+  },
+  "native_scopes": [
+    {
+      "selection": "pre-header rollback",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 1.68,
+      "dispatch_id": "0f53c09d6738f3788c025838c526160d",
+      "binary_sha256": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+      "ignored_root_cases": []
+    },
+    {
+      "selection": "core journal",
+      "passed": 130,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 548.91,
+      "dispatch_id": "8955f817693cbe182ed18d835a09d73a",
+      "binary_sha256": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+      "ignored_root_cases": [
+        "test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child ... ignored, owned subprocess for creation-time interruption tests",
+        "test copy_transaction::windows::journal::tests::windows_copy_activity_fixture ... ignored, exports an owned fixture to the native Activity integration consumer",
+        "test copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume ... ignored, requires an owned secondary NTFS volume provisioned by the native QA controller",
+        "test copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child ... ignored, child process selected by interrupted staging test",
+        "test copy_transaction::windows::journal::tests::windows_native_original_move_exit_child ... ignored, abrupt-exit child; owned temporary root supplied by parent",
+        "test copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child ... ignored, abrupt-exit child; owned empty root required"
+      ]
+    },
+    {
+      "selection": "dispatch routing",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 13.68,
+      "dispatch_id": "1386283bd0fbb7c93d3d8e8fef6eb829",
+      "binary_sha256": "e2f557484d9a57729f72f49707eaf3d9acfe3770c4238b2193edf2d4eca75465",
+      "ignored_root_cases": []
+    }
+  ],
+  "fault_points": [
+    "LocalCreated",
+    "ControlsCreated",
+    "DirectoriesFlushed"
+  ],
+  "preservation_cases": [
+    "Foreign central journal collision keeps exact bytes and allows a new transaction to retry",
+    "Unexpected stage content remains intact and its destination stays reserved",
+    "Early ordinary errors leave no stage or owned central record; source bytes stay unchanged and the same destination admits new work"
+  ],
+  "checks": {
+    "strict_windows_all_target_clippy": "pass",
+    "rustfmt_and_diff": "pass"
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "formats_changed": false,
+  "packages_changed": false,
+  "public_windows_copy_enabled": false,
+  "limits": [
+    "Focused three-parent selection overlaps the 130-pass core suite. Dispatch is separately selected; counts are not combined into a broader acceptance claim.",
+    "Live-owner pre-header rollback only. Crash/power-loss construction, unregistered stages and partial anchors remain open.",
+    "Durable-setup transitions and later Begin/record failures retain uncertain recovery state.",
+    "No new UI, broad individual/group cleanup, secondary-volume, installer, package or physical-device acceptance."
+  ]
+}

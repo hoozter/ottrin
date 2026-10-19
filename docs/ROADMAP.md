@@ -210,6 +210,26 @@ Exact source, executable, native selections and power receipts are in
 `.hermes/evidence/windows-preparation-cleanup-current/ACCEPTANCE.json`.
 No public Copy feature gate or package changes at this source checkpoint.
 
+Initial journal setup now rolls back ordinary failures before the durable-setup
+boundary. Empty local/central controls have native delete-on-close; the live
+constructor retains its unstarted claim until metadata and directory flushes
+succeed. Early failure closes those temporary files, validates and discards only
+its own empty stage, flushes both namespaces and releases the claim for retry.
+A foreign central record stays unchanged; unexpected stage content prevents
+cleanup and keeps the reservation with an explicit review error. No payload can
+be created before journal construction succeeds. Failures after ownership moves
+into durable setup still retain uncertain recovery state.
+Three focused native parents pass (1.68s), covering three injected boundaries,
+a real central-name collision and unexpected stage content. The same executable
+passes 130 core journal tests with six explicit exclusions (548.91s), and all five
+dispatch-routing checks (13.68s). The focused parents overlap the core suite.
+Strict Windows all-target Clippy and formatting pass. Exact source, executable,
+scopes and teardown are in
+`.hermes/evidence/windows-preheader-cleanup-current/ACCEPTANCE.json`.
+This is live-owner rollback, not crash-time adoption of unregistered stages or
+partial root anchors. Those interruption/power cases remain open; journal formats,
+public Windows Copy gating and packages are unchanged.
+
 Native QA binds dispatch/results to a unique ID, exact selection, executable and
 raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test
 success results are rejected before accepted evidence is replaced; the separate

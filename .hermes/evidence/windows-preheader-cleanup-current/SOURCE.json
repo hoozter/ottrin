@@ -1,0 +1,10 @@
+{
+  "baseline_commit": "91afa83c9c0932b242644f8811bb57c7aac3dcc9",
+  "application_files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "34217058c63262fa475315e77b58ce0390fa04f9b5b6d321d0d4319d854675d1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "78fdac0ecce079193608e78d28f4486d689df635543791fe80c1c7718bdf02b8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/initialization.rs": "b9442c279340756f2697f63b822744566a5d553e5e2a243293edfb1a19623bb6",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs": "2645fe50f857455d20e1ba22b96077abdde880754000f7d2a35903be117d72b3"
+  },
+  "scope": "Live-owner pre-header Copy setup rollback; no restart authority or schema change"
+}

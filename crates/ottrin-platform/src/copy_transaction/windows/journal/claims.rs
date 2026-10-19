@@ -1024,8 +1024,8 @@ impl Lease {
     pub(super) fn release_after_terminal(self) -> Result<(), PlatformError> {
         self.release_authorized()
     }
-    /// Construction has not attempted Journal::create, so no payload/publication
-    /// authority was ever issued. Retain the original error if cancellation of
+    /// Construction has not entered durable journal setup, so no payload or
+    /// publication authority was ever issued. Retain the original error if cancellation of
     /// this owned admission succeeds; otherwise report both failures.
     pub(super) fn abort_unstarted(self, original: PlatformError) -> PlatformError {
         let path = self
