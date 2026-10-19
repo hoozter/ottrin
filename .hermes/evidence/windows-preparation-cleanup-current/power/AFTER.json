@@ -1,0 +1,20 @@
+{
+  "source_sha256": "988841927a7a71a5334419bd893c8dd594a1354029ccdf4cfda3e28600b363c7",
+  "preparation_length": 1584,
+  "preparation_sha256": "97065ead7937cdd7ced370f0eead9483eb67338fe1b81628864f9ddab9662620",
+  "ordinary_user": true,
+  "foreign_sha256": "15c1e5d5c018d7728f5be57e1f1bce5e23f2cce302cbffe63afec60e996748b2",
+  "claim_root_names": [
+    "short-names.ottrin-claims",
+    ".preparing-dddddddddddddddddddddddddddddddd",
+    ".preparing-ffffffffffffffffffffffffffffffff",
+    "short-names.ottrin-claims.root"
+  ],
+  "canonical_exists": false,
+  "root": "C:\\OttrinCopyCleanupQA\\power-86fcf6c760a9cc4b522c797395cd2f9f",
+  "public_sha256": "2030359493c725cf528a24131f4f415a62773c2dabb6715706fb3d1b1e250029",
+  "preparation_exists": true,
+  "status": "observed-after-cut",
+  "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f",
+  "binary_sha256": "78c8ae7bf6192ed242cffa40e44a3723d3546b1ff29fd4183e09120c3b2db090"
+}

@@ -15,3 +15,5 @@ Next work must address the observed preparation lifecycle and test earlier/parti
 ## Persisted reservation follow-up
 
 The same controllers also support `OTTRIN_POWER_PHASE=Persisted` at preparation. Set `OTTRIN_NATIVE_EVIDENCE_DIR` to a fresh case directory for every controller; templates stay in this directory. `persisted/` retains the accepted fully persisted reservation case, including the exact executed actors and offline `verify.py`. The initial Prepared receipts above remain unchanged. Boot only the owned VM before preparation and once after its cut; run inspect, recover, cleanup and the shared teardown in order. Never rerun preparation over a dispatch.
+
+The current controller loads the verified build manifest, exact compiler identity and application-source hashes from `OTTRIN_POWER_BINARY_EVIDENCE_DIR` (default `windows-preparation-cleanup-current`). Prepared-case inspection exports the surviving original bytes before recovery. Fresh admission must reclaim that complete preparation while preserving source/public/foreign bytes; historical pre-cleanup receipts above retain their original behavior and source scope.

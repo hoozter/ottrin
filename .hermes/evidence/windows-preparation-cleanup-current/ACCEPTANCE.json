@@ -1,0 +1,130 @@
+{
+  "status": "pass for complete abandoned preparation reclamation; full roadmap remains open",
+  "source": {
+    "baseline_commit": "34de43153c96bf4874f7610433c813230b2157f2",
+    "application_files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "e546db7566bdcd778071e5351df0170214b8288c4dac070a59e69104563b0cb7",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "cfa5e56150b3ad5b7622adc3fda938afc7821e10d792406d7fb8a3281b8d0337"
+    },
+    "scope": "Reclaim complete native-bound unstarted root-level claim preparations; unknown/partial preparations preserved",
+    "formats_changed": false
+  },
+  "binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::windows_native_copy_claim_ copy_transaction::windows::journal::claims:: windows_native_copy_cleanup_start_ windows_native_copy_cleanup_unpaired_start_ windows_native_copy_cleanup_configured_group_action_ windows_native_copy_cleanup_group_start_uncertain_member_never_refreshes_by_id copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit copy_transaction::windows::journal::tests::claim_releases:: copy_transaction::windows::journal::tests::name_release_action:: copy_transaction::windows::journal::tests::claim_retirement:: copy_transaction::windows::journal::tests::claim_orphans:: copy_transaction::windows::journal::tests::claim_repair:: copy_transaction::windows::journal::tests::claim_publication:: --nocapture --test-threads=1",
+    "watchdog_ms": 600000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 0,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+    "compiler_sha256": "78c8ae7bf6192ed242cffa40e44a3723d3546b1ff29fd4183e09120c3b2db090",
+    "transferred_sha256": "2e1038c0df70573d3439a95aeaa43b62f83c16bb01a5bfaa23bcea57a4bb0235",
+    "retained_sections": {
+      ".text": "f07e187e6cd47b66fd45a8c31c5cbd00b4b1c1331ce72858e0367682821b2524",
+      ".data": "d4fb55061a3cf04608c8fb4a18fd86517ac02acf44031e97d72f5e50745c5a21",
+      ".rdata": "bf8d73c0de6c7baa6972811a05005fa0613f71f678183b3d298522108188c240",
+      ".pdata": "2117cb88da1e44c1a1d63073ca41601e1563da09b74f5a0669e7671af611eab9",
+      ".xdata": "09dd2aed232389f6087cc118a00f03fdeaac834265af778b6fd374869035e45b",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "7156b55b54610bcdb16ab89179f18fc77284c695ecab283efa57842876a3c592",
+      ".CRT": "672a02cdde58fbe6ce71bcf426875cc633e86b112b743dd3eacb103824c0097f",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "042ce8e46cf590e183ecc6df588f79f3d2a99302bd7a538fed94291ab21a9e6c"
+    }
+  },
+  "native_scopes": [
+    {
+      "selection": "claim ledger and dispatch",
+      "passed": 39,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 118.02,
+      "dispatch_id": "54da602cccb551409eb85b1bc8691ca9",
+      "transferred_sha256": "2e1038c0df70573d3439a95aeaa43b62f83c16bb01a5bfaa23bcea57a4bb0235",
+      "excluded_root_names": []
+    },
+    {
+      "selection": "core journal",
+      "passed": 127,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 633.58,
+      "dispatch_id": "50f5cdf93b3fbd2ed89bf78e664fd94b",
+      "transferred_sha256": "2e1038c0df70573d3439a95aeaa43b62f83c16bb01a5bfaa23bcea57a4bb0235",
+      "excluded_root_names": [
+        "test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child ... ignored, owned subprocess for creation-time interruption tests",
+        "test copy_transaction::windows::journal::tests::windows_copy_activity_fixture ... ignored, exports an owned fixture to the native Activity integration consumer",
+        "test copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume ... ignored, requires an owned secondary NTFS volume provisioned by the native QA controller",
+        "test copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child ... ignored, child process selected by interrupted staging test",
+        "test copy_transaction::windows::journal::tests::windows_native_original_move_exit_child ... ignored, abrupt-exit child; owned temporary root supplied by parent",
+        "test copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child ... ignored, abrupt-exit child; owned empty root required"
+      ]
+    }
+  ],
+  "checks": {
+    "strict_windows_all_target_clippy": "pass",
+    "rustfmt_and_diff": "pass"
+  },
+  "guest_power": {
+    "status": "pass for complete Prepared-boundary guest-power orphan reclamation",
+    "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f",
+    "binary_sha256": "78c8ae7bf6192ed242cffa40e44a3723d3546b1ff29fd4183e09120c3b2db090",
+    "source": {
+      "baseline_commit": "34de43153c96bf4874f7610433c813230b2157f2",
+      "application_files": {
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "e546db7566bdcd778071e5351df0170214b8288c4dac070a59e69104563b0cb7",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "cfa5e56150b3ad5b7622adc3fda938afc7821e10d792406d7fb8a3281b8d0337"
+      },
+      "scope": "Reclaim complete native-bound unstarted root-level claim preparations; unknown/partial preparations preserved",
+      "formats_changed": false
+    },
+    "ordinary_user": true,
+    "live_child_before_cut": true,
+    "os_build": "26100",
+    "cut": {
+      "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f",
+      "method": "virsh destroy on isolated COW guest; no guest shutdown or handle cleanup",
+      "guest_state": "shut off",
+      "host_unix_time": 1792390551.4668097,
+      "scope": "Ungraceful guest power simulation; host and storage remained running"
+    },
+    "preparation_survives_reboot_byte_identical": true,
+    "preparation_bytes": 1584,
+    "both_frames_have_valid_digest": true,
+    "fresh_admission_reclaims_preparation": true,
+    "new_claim_file_identity_differs": true,
+    "same_namespace_creator_and_security": true,
+    "source_public_foreign_hashes_unchanged": true,
+    "cleanup": {
+      "root_absent": true,
+      "status": "pass",
+      "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f"
+    },
+    "limits": [
+      "One complete pre-publication preparation on Windows build 26100; host and physical storage remained running.",
+      "No partial first-frame, intermediate publication, retirement or payload power-loss acceptance.",
+      "Reservation fixture creates no paired transaction journals; owner intentionally exits 86 after positive admission."
+    ]
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "packages_changed": false,
+  "public_windows_copy_enabled": false,
+  "limits": [
+    "Only complete first-frame preparations with matching native identity/security and absent records are reclaimed. Partial/foreign/replaced/misnamed remnants stay preserved.",
+    "Added streams or hard links on an otherwise recognized preparation cause refusal.",
+    "No broader individual/group cleanup, Activity UI, installer, package, secondary-volume or physical-host-power acceptance is claimed here."
+  ]
+}

@@ -7,7 +7,7 @@ try {
  . C:\OttrinCopyCleanupQA\power-sync.ps1
  $claims="$root\destination\.ottrin-copy-target-claims";$prep=Join-Path $claims ('.preparing-'+('d'*32));$foreign=Join-Path $claims ('.preparing-'+('f'*32))
  $result.preparation_exists=Test-Path $prep
- if($result.preparation_exists){$result.preparation_sha256=Read-SharedHash $prep;$result.preparation_length=(Get-Item $prep).Length}
+ if($result.preparation_exists){$result.preparation_sha256=Read-SharedHash $prep;$result.preparation_length=(Get-Item $prep).Length;[IO.File]::WriteAllBytes('C:\OttrinCopyCleanupQA\results\POWER_PREPARATION.bin',[IO.File]::ReadAllBytes($prep))}
  $result.source_sha256=Read-SharedHash "$root\source\nested\file";$result.public_sha256=Read-SharedHash "$root\destination\user-data";$result.foreign_sha256=Read-SharedHash $foreign
  $result.canonical_exists=Test-Path "$claims\short-names.ottrin-claims\copy.ottrin-claim"
  if('PHASE'-eq'Persisted'){$key="$claims\short-names.ottrin-claims\copy.ottrin-claim";$result.canonical_sha256=Read-SharedHash $key;[IO.File]::WriteAllBytes('C:\OttrinCopyCleanupQA\results\POWER_OLD_CANONICAL.bin',[IO.File]::ReadAllBytes($key))}

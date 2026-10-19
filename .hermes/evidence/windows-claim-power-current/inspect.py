@@ -19,3 +19,7 @@ if x['phase']=='Persisted':
  assert set(r['claim_root_names'])=={'short-names.ottrin-claims','short-names.ottrin-claims.root','.preparing-'+('f'*32)}
  before=json.loads((p/'BEFORE.json').read_text(encoding='utf-8-sig'));assert before['canonical_sha256']==r['canonical_sha256']
  n.download(r'results\POWER_OLD_CANONICAL.bin',p/'old-canonical.bin');assert hashlib.sha256((p/'old-canonical.bin').read_bytes()).hexdigest()==r['canonical_sha256']
+
+if x['phase']=='Prepared':
+ assert r['preparation_exists']
+ n.download(r'results\POWER_PREPARATION.bin',p/'preparation.bin');assert hashlib.sha256((p/'preparation.bin').read_bytes()).hexdigest()==r['preparation_sha256']

@@ -12,7 +12,8 @@ n.upload(a,'actor.ps1');pid=n.start("if((Get-ScheduledTask 'Ottrin Copy Cleanup 
 pid=n.start(r"$deadline=(Get-Date).AddSeconds(60);while($true){if((Get-Date)-gt$deadline){throw 'Recovery observer deadline; inspect same actor'};if(Test-Path C:\OttrinCopyCleanupQA\results\POWER_RECOVERY.json){$r=Get-Content C:\OttrinCopyCleanupQA\results\POWER_RECOVERY.json -Raw|ConvertFrom-Json;if($r.dispatch_id-eq'TOKEN'-and(Get-ScheduledTask 'Ottrin Copy Cleanup QA').State.ToString()-notin@('Running','Queued')){break}};Start-Sleep -Milliseconds 100};if($r.status-ne'recovered-name'){throw $r.error}".replace('PHASE',x['phase']).replace('TOKEN',x['id']))
 (p/'recover-observer.pid').write_text(str(pid));n.wait(pid,45)
 n.download(r'results\POWER_RECOVERY.json',p/'RECOVERY.json');r=json.loads((p/'RECOVERY.json').read_text(encoding='utf-8-sig'));assert r['dispatch_id']==x['id'] and r['ordinary_user'] and r['fresh_admission'] and r['owner_exit']==86
-for key in (['source_sha256','public_sha256','foreign_sha256']+(['preparation_sha256'] if x['phase']=='Prepared' else [])):assert before[key]==r[key]
+for key in ['source_sha256','public_sha256','foreign_sha256']:assert before[key]==r[key]
+if x['phase']=='Prepared':assert not r['preparation_exists']
 for name in ['stdout','stderr']:n.download('results\\power-recover.'+name,p/('recover.'+name))
 print(json.dumps(r,indent=2))
 

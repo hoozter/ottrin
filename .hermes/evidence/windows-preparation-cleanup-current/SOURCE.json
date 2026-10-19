@@ -1,0 +1,9 @@
+{
+  "baseline_commit": "34de43153c96bf4874f7610433c813230b2157f2",
+  "application_files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "e546db7566bdcd778071e5351df0170214b8288c4dac070a59e69104563b0cb7",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "cfa5e56150b3ad5b7622adc3fda938afc7821e10d792406d7fb8a3281b8d0337"
+  },
+  "scope": "Reclaim complete native-bound unstarted root-level claim preparations; unknown/partial preparations preserved",
+  "formats_changed": false
+}

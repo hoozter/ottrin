@@ -11,7 +11,6 @@ pid=n.start(r"$deadline=(Get-Date).AddSeconds(60);while($true){if((Get-Date)-gt$
 (p/'cleanup-observer.pid').write_text(str(pid));n.wait(pid,45)
 n.download(r'results\POWER_CLEANUP.json',p/'CLEANUP.json');c=json.loads((p/'CLEANUP.json').read_text(encoding='utf-8-sig'));assert c['dispatch_id']==x['id'] and c['status']=='pass' and c['root_absent']
 exports=[('POWER_CANONICAL.bin','canonical.bin',r['canonical_sha256'])]
-if x['phase']=='Prepared':exports.append(('POWER_PREPARATION.bin','preparation.bin',r['preparation_sha256']))
 for remote,local,expected in exports:
  n.download('results\\'+remote,p/local);assert hashlib.sha256((p/local).read_bytes()).hexdigest()==expected
 pid=n.start(r"if(@(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-like'C:\OttrinCopyCleanupQA\*'}).Count){throw 'Owned process remains'};if((Get-FileHash C:\OttrinCopyCleanupQA\power-platform.exe).Hash.ToLowerInvariant()-ne'BINARY'-or(Get-FileHash C:\OttrinCopyCleanupQA\power-sync.ps1).Hash.ToLowerInvariant()-ne'SYNC'){throw 'Fixture cleanup identity mismatch'};Remove-Item C:\OttrinCopyCleanupQA\power-platform.exe,C:\OttrinCopyCleanupQA\power-sync.ps1 -Force".replace('BINARY',x['binary_sha256']).replace('SYNC',x['sync_sha256']))

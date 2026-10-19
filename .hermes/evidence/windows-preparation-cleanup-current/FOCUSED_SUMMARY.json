@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "passed": 39,
+  "failed": 0,
+  "ignored": 0,
+  "seconds": 118.02,
+  "ordinary_user": true,
+  "temporary_entries": 0,
+  "dispatch_id": "54da602cccb551409eb85b1bc8691ca9",
+  "binary_sha256": "2e1038c0df70573d3439a95aeaa43b62f83c16bb01a5bfaa23bcea57a4bb0235",
+  "new_cleanup_tests": [
+    "copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_preserves_foreign_partial_replaced_and_misnamed_files",
+    "copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_preserves_retained_stage_and_registry_records",
+    "copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_refuses_added_streams_and_hard_links",
+    "copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_waits_for_writer_and_reclaims_complete_orphan"
+  ],
+  "limits": [
+    "Overlaps the separately recorded 127-pass core selection; counts are not additive."
+  ]
+}

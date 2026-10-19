@@ -6,6 +6,8 @@ use windows_sys::Win32::Storage::FileSystem::{
     DELETE, FILE_GENERIC_WRITE, FILE_READ_ATTRIBUTES, SYNCHRONIZE,
 };
 
+mod preparations;
+
 const CLAIM_MAGIC: &[u8; 8] = b"OTCWCL03";
 
 #[cfg(not(test))]
@@ -729,6 +731,7 @@ impl Lease {
         let (short, key) = ledger_key(target);
         let bucket = AnchoredRoot::claim_bucket(root.root(), short, true)?
             .ok_or_else(|| io("Copy claim bucket is missing"))?;
+        preparations::collect(parent, &root, central)?;
         let mut file = match open_file(
             bucket.root(),
             &key,

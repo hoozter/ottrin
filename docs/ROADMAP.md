@@ -123,8 +123,11 @@ claim is validated, published without replacement and both directories flushed.
 Only then does the verified extended disposition API clear temporary deletion.
 No journal or payload authority is issued before promotion. Errors and owner exit
 before promotion remove only that newly created file; persisted failures retain a
-complete unstarted claim for existing recovery. No legacy/foreign-file scanner is
-introduced. The old manual pre-publication disposal path is removed.
+complete unstarted claim for existing recovery. Admission now reclaims only
+complete, native-bound unstarted preparations after obtaining their exclusive
+handle and verifying the original namespace, private metadata and absence of
+transaction records. Partial, foreign, renamed and replaced preparations remain
+preserved. The old manual pre-publication disposal path is removed.
 
 Five ordinary-account native API observations established that the legacy clear
 call reports success but still deletes the file, whereas the extended operation
@@ -188,6 +191,24 @@ the VM is shut down. Exact receipts and an offline evidence verifier are in
 This reservation-only scenario creates no payload transaction journals. It does
 not resolve the Prepared-case leftover or establish physical-host, intermediate
 publication, retirement or payload power-loss acceptance. Packages are unchanged.
+
+Copy admission now reclaims a complete abandoned root-level preparation only
+after exclusive native opening and verification of its one-frame record, exact
+file/namespace identities, creator/private metadata and absent transaction
+records. Partial/foreign/replaced/misnamed files remain untouched, live writers
+exclude cleanup, and retained local/central records block disposal. Added streams
+or hard links cause refusal. All 39 focused ordinary-account checks pass (118.02s)
+and the core journal suite passes 127 with six explicit exclusions (633.58s).
+These suites overlap. Strict Windows all-target Clippy and formatting pass.
+A real post-change abrupt guest stop at Prepared also passes: the complete
+1,584-byte preparation survives reboot unchanged, then fresh admission reclaims
+it and publishes a different native claim without changing source/public/foreign
+bytes. Fixture/binary cleanup, original profile/install/login checks and VM
+shutdown pass. This closes the complete-frame preparation lifecycle finding
+above; partial/unrecognizable remnants and other power boundaries remain open.
+Exact source, executable, native selections and power receipts are in
+`.hermes/evidence/windows-preparation-cleanup-current/ACCEPTANCE.json`.
+No public Copy feature gate or package changes at this source checkpoint.
 
 Native QA binds dispatch/results to a unique ID, exact selection, executable and
 raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test

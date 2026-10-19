@@ -1,0 +1,41 @@
+{
+  "status": "pass for complete Prepared-boundary guest-power orphan reclamation",
+  "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f",
+  "binary_sha256": "78c8ae7bf6192ed242cffa40e44a3723d3546b1ff29fd4183e09120c3b2db090",
+  "source": {
+    "baseline_commit": "34de43153c96bf4874f7610433c813230b2157f2",
+    "application_files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "e546db7566bdcd778071e5351df0170214b8288c4dac070a59e69104563b0cb7",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "cfa5e56150b3ad5b7622adc3fda938afc7821e10d792406d7fb8a3281b8d0337"
+    },
+    "scope": "Reclaim complete native-bound unstarted root-level claim preparations; unknown/partial preparations preserved",
+    "formats_changed": false
+  },
+  "ordinary_user": true,
+  "live_child_before_cut": true,
+  "os_build": "26100",
+  "cut": {
+    "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f",
+    "method": "virsh destroy on isolated COW guest; no guest shutdown or handle cleanup",
+    "guest_state": "shut off",
+    "host_unix_time": 1792390551.4668097,
+    "scope": "Ungraceful guest power simulation; host and storage remained running"
+  },
+  "preparation_survives_reboot_byte_identical": true,
+  "preparation_bytes": 1584,
+  "both_frames_have_valid_digest": true,
+  "fresh_admission_reclaims_preparation": true,
+  "new_claim_file_identity_differs": true,
+  "same_namespace_creator_and_security": true,
+  "source_public_foreign_hashes_unchanged": true,
+  "cleanup": {
+    "root_absent": true,
+    "status": "pass",
+    "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f"
+  },
+  "limits": [
+    "One complete pre-publication preparation on Windows build 26100; host and physical storage remained running.",
+    "No partial first-frame, intermediate publication, retirement or payload power-loss acceptance.",
+    "Reservation fixture creates no paired transaction journals; owner intentionally exits 86 after positive admission."
+  ]
+}

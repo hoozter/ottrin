@@ -1,0 +1,22 @@
+{
+  "id": "86fcf6c760a9cc4b522c797395cd2f9f",
+  "status": "inspected-recovered-cleaned",
+  "case": "Prepared guest abrupt power stop",
+  "root": "C:\\OttrinCopyCleanupQA\\power-86fcf6c760a9cc4b522c797395cd2f9f",
+  "binary_sha256": "78c8ae7bf6192ed242cffa40e44a3723d3546b1ff29fd4183e09120c3b2db090",
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "binary_source": {
+    "baseline_commit": "34de43153c96bf4874f7610433c813230b2157f2",
+    "application_files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "e546db7566bdcd778071e5351df0170214b8288c4dac070a59e69104563b0cb7",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "cfa5e56150b3ad5b7622adc3fda938afc7821e10d792406d7fb8a3281b8d0337"
+    },
+    "scope": "Reclaim complete native-bound unstarted root-level claim preparations; unknown/partial preparations preserved",
+    "formats_changed": false
+  },
+  "source_commit": "34de43153c96bf4874f7610433c813230b2157f2",
+  "phase": "Prepared",
+  "expected_fixture": "copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_temporary_claim_hard_kill_removes_only_its_preparation",
+  "actor_sha256": "9b574d90a0f50417fc53d10d0cec90523ef950928cae6a20654a17aef6ae7e71",
+  "sync_sha256": "337f10485168212491a02dfffb8d9399b4e20ef6a7e8612e7307d27bef58ca4f"
+}

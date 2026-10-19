@@ -1,0 +1,6 @@
+{
+  "reason": "Replacement test build and strict Clippy complete; no cargo/rustc process remains; native consumers use the transferred executable",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hncj2ibkgr-1mfbw6a-byndpq19kh2z1qshdxr13se30",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnckctks6j-0ni4y8v-34xehhqvtpt5h01qgk42gjp56",
+  "reclaimed_free_bytes": 807464960
+}

@@ -7,6 +7,32 @@ permission planning have native component acceptance. Public Windows Copy remain
 and normal workflows are implemented and accepted. Current counts and scope are
 in the acceptance section below and the roadmap checkpoint.
 
+## Current claim preparation lifecycle
+
+The current journal schema is 17 and the claim format is `OTCWCL03`. A private
+root-level preparation gets delete-on-close in the same native create call as its
+private descriptor. Only its complete flushed first Claim is renamed without
+replacement into a target bucket; directory flushes precede clearing temporary
+deletion. Process exit removes unfinished temporary files, but a real abrupt
+Windows guest stop left one complete unpublished preparation behind.
+
+Explicit Copy admission now examines root-level preparation candidates through
+held native directories, with a 4,096-entry work budget. A name only selects a
+candidate. Cleanup requires an exclusive write/delete handle, one complete valid
+first frame, matching transaction name, exact native file identity, current owner,
+parent/root/bucket/anchor identities, the same central registry and no retained
+local or central transaction record. Private descriptor, single-link count and
+complete unnamed-stream bytes must independently revalidate before held-handle
+disposal and a root directory flush. Added streams or hard links surface an error.
+
+Live writers, partial/foreign frames, native replacements, misnamed records and
+other registries never grant cleanup authority. Read-only recovery does not
+collect preparations. Unknown or partial power-loss remnants stay preserved;
+this rule adds neither a filename/age-based sweeper nor payload deletion rights.
+Focused ordinary-user native regression passes 39 checks, including four new
+preparation cleanup tests. The broader journal and post-change guest-power scopes
+are recorded separately in the roadmap and acceptance receipts.
+
 ## Complete outcome
 
 Copy must leave the original namespace and bytes untouched. It must not simulate

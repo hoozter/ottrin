@@ -1,0 +1,7 @@
+{
+  "dispatch_id": "86fcf6c760a9cc4b522c797395cd2f9f",
+  "method": "virsh destroy on isolated COW guest; no guest shutdown or handle cleanup",
+  "guest_state": "shut off",
+  "host_unix_time": 1792390551.4668097,
+  "scope": "Ungraceful guest power simulation; host and storage remained running"
+}
