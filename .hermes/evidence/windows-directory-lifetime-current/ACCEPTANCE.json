@@ -1,0 +1,340 @@
+{
+  "status": "native observations verified; directory lifetime strategy rejected; regular-file stream-isolation blocker confirmed; restrictive-descriptor Rust replacement not yet accepted",
+  "application_behavior_changed": false,
+  "packages_changed": false,
+  "public_windows_copy_enabled": false,
+  "compiler": "x86_64-w64-mingw32-gcc (GCC) 13-win32",
+  "compile_command_template": "x86_64-w64-mingw32-gcc -municode -O2 -Wall -Wextra -Werror -static-libgcc SOURCE -o OUTPUT -lntdll -ladvapi32",
+  "latest_sweep_access": "GENERIC_READ | GENERIC_WRITE | DELETE | WRITE_DAC | SYNCHRONIZE; FILE_SHARE_READ; private D:P(A;OICI;FA;;;OW); native create-new; reparse/synchronous/type/delete-on-close options",
+  "records": [
+    {
+      "path": ".",
+      "dispatch_id": "69a4498adc36ddb7e2f5ffc7bf12a4ac",
+      "binary_sha256": "2057a74a29e1f7e644af3ba162a119a58a099400fa105385a3725c3542e319e5",
+      "source_sha256": "cf98504e05158c29cce68dcef221026ca76065494680cc7e23ca80597e4d43bd",
+      "status": "observed",
+      "observations": [
+        {
+          "mode": 0,
+          "child_created": 0,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 1,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 2,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 3,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 1,
+          "child_content_intact": 1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 4,
+          "child_created": 1,
+          "clear_ok": 1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 5,
+          "child_created": 0,
+          "clear_ok": -1,
+          "stream_created": 1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": 0
+        },
+        {
+          "mode": 6,
+          "hard_kill_exit": 86,
+          "directory_after": 1,
+          "child_after": 0
+        },
+        {
+          "mode": 7,
+          "stream_created": 1,
+          "file_after": 0,
+          "stream_content_intact": 0
+        }
+      ],
+      "raw_log_hashes": {
+        "stdout": "ef3042be8c15370a54dc2230f0f3df2516c7cc3218e93005136bdedea20e814f",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_hash_binding": "matches actor-reported hashes"
+    },
+    {
+      "path": "initial-seven",
+      "dispatch_id": "caa69f7e0f88b23e876acf2acbfc230b",
+      "binary_sha256": "bda618ad8d983cda92c909fd846ce973f6c7361a5d7e091b234aa6aee7b81157",
+      "source_sha256": "dc37237f5a105609bca697caba4cf4931a87228d1fad9ee581f73ed2174de5aa",
+      "status": "observed",
+      "observations": [
+        {
+          "mode": 0,
+          "child_created": 0,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 1,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 2,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 3,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 1,
+          "child_content_intact": 1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 4,
+          "child_created": 1,
+          "clear_ok": 1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 5,
+          "child_created": 0,
+          "clear_ok": -1,
+          "stream_created": 1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": 0
+        },
+        {
+          "mode": 6,
+          "hard_kill_exit": 86,
+          "directory_after": 1,
+          "child_after": 0
+        }
+      ],
+      "raw_log_hashes": {
+        "stdout": "5f2646ebf8d8f8bf205709bd647b2b7a4d415fbbdfca9d262096d18221679bdc",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_hash_binding": "matches actor-reported hashes"
+    },
+    {
+      "path": "generic-access",
+      "dispatch_id": "4dc90399d4f2eb9309bf4eb847d8eefc",
+      "binary_sha256": "29661b625c73631e7db17c6232373a190f0fbf74287522708620654b4cebfcaa",
+      "source_sha256": "7589ea1aabfc1d40b65a72c12a0705bf4b78c99efb344f04512a5a2fb84bd100",
+      "status": "observed",
+      "observations": [
+        {
+          "mode": 0,
+          "child_created": 0,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 1,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 2,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 3,
+          "child_created": 1,
+          "clear_ok": -1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 1,
+          "child_content_intact": 1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 4,
+          "child_created": 1,
+          "clear_ok": 1,
+          "stream_created": -1,
+          "directory_after": 1,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": -1
+        },
+        {
+          "mode": 5,
+          "child_created": 0,
+          "clear_ok": -1,
+          "stream_created": 1,
+          "directory_after": 0,
+          "child_after": 0,
+          "child_content_intact": -1,
+          "stream_content_intact": 0
+        },
+        {
+          "mode": 6,
+          "hard_kill_exit": 86,
+          "directory_after": 1,
+          "child_after": 0
+        },
+        {
+          "mode": 7,
+          "stream_created": 1,
+          "file_after": 0,
+          "stream_content_intact": 0
+        }
+      ],
+      "raw_log_hashes": {
+        "stdout": "ef3042be8c15370a54dc2230f0f3df2516c7cc3218e93005136bdedea20e814f",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_hash_binding": "matches actor-reported hashes"
+    },
+    {
+      "path": "restricted/mask-control",
+      "dispatch_id": "cc68ea2eece20669de60a2cc90f1a80e",
+      "binary_sha256": "0031afa44f53459e5622c3ae8eee977ae72dcd6f5524e205dd5148dfe7d2b0c9",
+      "source_sha256": "38cc403cc5db9c46031ad725e8dd2e57ee00fe83e2e34bba35daf1db5ab3af2c",
+      "status": "observed",
+      "observations": [
+        {
+          "mode": 0,
+          "created": true,
+          "owner_write": true,
+          "stream_before": 0,
+          "stream_before_error": 5,
+          "cleared": true,
+          "restore_error": 0,
+          "stream_after": 1,
+          "saved": true,
+          "file_after": 1,
+          "stream_intact": true
+        }
+      ],
+      "raw_log_hashes": {
+        "stdout": "2a81531c3f22f6ddf7f01929e6109c4ae6f1125fe9e5365f162248142b557a99",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_hash_binding": "matches actor-reported hashes"
+    },
+    {
+      "path": "restricted",
+      "dispatch_id": "0a1c31bb7b2ed5740b11db0b68d394e5",
+      "binary_sha256": "ff37690d714bd77b271e0ea448cd28602b3822d5c90cd2481607b7698c6df90e",
+      "source_sha256": "66e4e76c9b654b05c5d9bb495f198261823fdebe2965bfe876db0ed8aa15473b",
+      "status": "fail",
+      "observations": [
+        {
+          "mode": 0,
+          "created": true,
+          "owner_write": true,
+          "stream_before": 0,
+          "stream_before_error": 5,
+          "cleared": true,
+          "restore_error": 5,
+          "stream_after": 0,
+          "saved": false,
+          "file_after": 1,
+          "stream_intact": false
+        }
+      ],
+      "raw_log_hashes": {
+        "stdout": "132f77f4db6c4d7c6b395385e883a56dcc3885b034ba26d46b80c62e0ede91e9",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_hash_binding": "controller-computed diagnostic hashes; actor omitted hashes after teardown failure"
+    }
+  ],
+  "restricted_fixture_cleanup": {
+    "status": "pass",
+    "owned_temp_absent": true,
+    "dispatch_id": "0a1c31bb7b2ed5740b11db0b68d394e5"
+  },
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "limits": [
+    "One owned Windows guest; primitive probes do not execute the actual Rust wrapper or public Copy workflow.",
+    "Latest eight-mode sweep repeats earlier results with WRITE_DAC present; overlapping sweeps are not additional independent coverage.",
+    "No physical/VM power cut, UI, package, installer, Linux or release acceptance.",
+    "All lost stream content belonged to disposable fixtures; original profile/install/login preserved.",
+    "The reduced data mask only demonstrates ordinary stream-write exclusion and ordered promotion. Other metadata/permission rights remain; it is not accepted application security.",
+    "Read-only descriptor restoration cause remains unresolved; its failed control, diagnostically hashed logs and separate successful owned cleanup are retained."
+  ]
+}

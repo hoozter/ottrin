@@ -101,6 +101,24 @@ remain open.
 
 ## Current Windows Copy implementation checkpoint
 
+**Current safety blocker:** native temporary-lifetime probes show that read-only
+sharing does not exclude a second named-stream writer. With the current private
+descriptor and temporary-file access mask, that writer can add a stream that
+kernel delete-on-close subsequently removes. Directory delete-on-close is also
+unsuitable for unfinished-stage recovery: directory-first close and a hard kill
+leave an empty directory, while an added directory stream can be lost. This
+finding supersedes any inference that the earlier process-cleanup checks proved
+preservation of concurrently added streams. The passing earlier receipts retain
+their narrower scopes.
+A restricted data-write mask blocks the stream writer in a native control; a
+stricter read-only descriptor fails normal permission restoration and is not
+accepted. Implement and verify a guarded ephemeral-file state with proper
+stream/metadata exclusion before enabling public Copy. Its security evidence,
+promotion order and recovery must stay authoritative. Exact probes, rejected
+controls and cleanup are in
+`.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.
+No application behavior or package changes at this investigation checkpoint.
+
 The current native journal schema is 17 and claim format is 3. Each destination
 reservation now holds one Claim and Release. Released controls can be retired
 while paired terminal recovery records remain; every new owner uses the existing

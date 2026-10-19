@@ -1,0 +1,79 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "observations": [
+    {
+      "mode": 0,
+      "child_created": 0,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 0,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 1,
+      "child_created": 1,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 0,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 2,
+      "child_created": 1,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 1,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 3,
+      "child_created": 1,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 1,
+      "child_after": 1,
+      "child_content_intact": 1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 4,
+      "child_created": 1,
+      "clear_ok": 1,
+      "stream_created": -1,
+      "directory_after": 1,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 5,
+      "child_created": 0,
+      "clear_ok": -1,
+      "stream_created": 1,
+      "directory_after": 0,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": 0
+    },
+    {
+      "mode": 6,
+      "hard_kill_exit": 86,
+      "directory_after": 1,
+      "child_after": 0
+    }
+  ],
+  "binary_sha256": "bda618ad8d983cda92c909fd846ce973f6c7361a5d7e091b234aa6aee7b81157",
+  "stdout_sha256": "5f2646ebf8d8f8bf205709bd647b2b7a4d415fbbdfca9d262096d18221679bdc",
+  "source_sha256": "dc37237f5a105609bca697caba4cf4931a87228d1fad9ee581f73ed2174de5aa",
+  "status": "observed",
+  "owned_temp_absent": true,
+  "ordinary_user": true,
+  "dispatch_id": "caa69f7e0f88b23e876acf2acbfc230b"
+}

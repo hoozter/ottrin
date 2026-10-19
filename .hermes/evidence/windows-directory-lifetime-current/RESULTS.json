@@ -1,0 +1,85 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "observations": [
+    {
+      "mode": 0,
+      "child_created": 0,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 0,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 1,
+      "child_created": 1,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 0,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 2,
+      "child_created": 1,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 1,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 3,
+      "child_created": 1,
+      "clear_ok": -1,
+      "stream_created": -1,
+      "directory_after": 1,
+      "child_after": 1,
+      "child_content_intact": 1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 4,
+      "child_created": 1,
+      "clear_ok": 1,
+      "stream_created": -1,
+      "directory_after": 1,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": -1
+    },
+    {
+      "mode": 5,
+      "child_created": 0,
+      "clear_ok": -1,
+      "stream_created": 1,
+      "directory_after": 0,
+      "child_after": 0,
+      "child_content_intact": -1,
+      "stream_content_intact": 0
+    },
+    {
+      "mode": 6,
+      "hard_kill_exit": 86,
+      "directory_after": 1,
+      "child_after": 0
+    },
+    {
+      "mode": 7,
+      "stream_created": 1,
+      "file_after": 0,
+      "stream_content_intact": 0
+    }
+  ],
+  "binary_sha256": "2057a74a29e1f7e644af3ba162a119a58a099400fa105385a3725c3542e319e5",
+  "stdout_sha256": "ef3042be8c15370a54dc2230f0f3df2516c7cc3218e93005136bdedea20e814f",
+  "source_sha256": "cf98504e05158c29cce68dcef221026ca76065494680cc7e23ca80597e4d43bd",
+  "status": "observed",
+  "owned_temp_absent": true,
+  "ordinary_user": true,
+  "dispatch_id": "69a4498adc36ddb7e2f5ffc7bf12a4ac"
+}

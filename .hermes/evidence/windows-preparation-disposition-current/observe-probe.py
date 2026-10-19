@@ -1,8 +1,8 @@
 from pathlib import Path
-import hashlib,json,sys
+import hashlib,json,sys,os
 sys.path.insert(0,str(Path('.hermes/evidence/windows-copy-cleanup-current').resolve()))
 import transport as n
-p=Path(__file__).resolve().parent;x=json.loads((p/'DISPATCH.json').read_text());assert x['status']=='dispatched'
+p=Path(os.environ.get('OTTRIN_NATIVE_EVIDENCE_DIR',str(Path(__file__).resolve().parent))).resolve();x=json.loads((p/'DISPATCH.json').read_text());assert x['status']=='dispatched'
 if len(sys.argv)>1:
  o=json.loads((p/'OBSERVER.json').read_text());assert o['dispatch_id']==x['id'];pid=o['guest_pid']
 else:
@@ -14,6 +14,7 @@ n.download(r'results\DISPOSITION.json',p/'RESULTS.json')
 r=json.loads((p/'RESULTS.json').read_text(encoding='utf-8-sig'));assert r['dispatch_id']==x['id'] and r['binary_sha256']==x['binary_sha256'] and r['source_sha256']==x['source_sha256'];assert r['status']=='observed' and r['ordinary_user'] and r['owned_temp_absent']
 for name in ['stdout','stderr']:
  f=p/('probe.'+name);n.download('results\\disposition.'+name,f);assert hashlib.sha256(f.read_bytes()).hexdigest()==r[name+'_sha256']
-assert len(r['observations'])==5
+assert len(r['observations'])==x['expected_observations']
+assert sorted(v['mode'] for v in r['observations'])==list(range(x['expected_observations']))
 print(json.dumps(r['observations'],indent=2))
 o['status']='complete';(p/'OBSERVER.json').write_text(json.dumps(o,indent=2)+'\n')

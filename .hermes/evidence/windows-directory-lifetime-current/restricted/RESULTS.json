@@ -1,0 +1,24 @@
+{
+  "exit": 0,
+  "observations": [
+    {
+      "mode": 0,
+      "created": true,
+      "owner_write": true,
+      "stream_before": 0,
+      "stream_before_error": 5,
+      "cleared": true,
+      "restore_error": 5,
+      "stream_after": 0,
+      "saved": false,
+      "file_after": 1,
+      "stream_intact": false
+    }
+  ],
+  "binary_sha256": "ff37690d714bd77b271e0ea448cd28602b3822d5c90cd2481607b7698c6df90e",
+  "teardown_error": "Cannot remove item C:\\OttrinCopyCleanupQA\\temp\\restricted: Access to the path is denied.",
+  "source_sha256": "66e4e76c9b654b05c5d9bb495f198261823fdebe2965bfe876db0ed8aa15473b",
+  "status": "fail",
+  "ordinary_user": true,
+  "dispatch_id": "0a1c31bb7b2ed5740b11db0b68d394e5"
+}

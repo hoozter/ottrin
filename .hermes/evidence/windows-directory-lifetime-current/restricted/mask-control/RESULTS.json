@@ -1,0 +1,26 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "observations": [
+    {
+      "mode": 0,
+      "created": true,
+      "owner_write": true,
+      "stream_before": 0,
+      "stream_before_error": 5,
+      "cleared": true,
+      "restore_error": 0,
+      "stream_after": 1,
+      "saved": true,
+      "file_after": 1,
+      "stream_intact": true
+    }
+  ],
+  "binary_sha256": "0031afa44f53459e5622c3ae8eee977ae72dcd6f5524e205dd5148dfe7d2b0c9",
+  "stdout_sha256": "2a81531c3f22f6ddf7f01929e6109c4ae6f1125fe9e5365f162248142b557a99",
+  "source_sha256": "38cc403cc5db9c46031ad725e8dd2e57ee00fe83e2e34bba35daf1db5ab3af2c",
+  "status": "observed",
+  "owned_temp_absent": true,
+  "ordinary_user": true,
+  "dispatch_id": "cc68ea2eece20669de60a2cc90f1a80e"
+}

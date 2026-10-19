@@ -1,0 +1,6 @@
+{
+  "dispatch_id": "0a1c31bb7b2ed5740b11db0b68d394e5",
+  "guest_pid": 7316,
+  "status": "failed",
+  "error": "Probe exited 0; native permission restoration returned 5 and the actor could not remove the read-only fixture. Hash-checked ordinary DeleteFile cleanup subsequently passed."
+}

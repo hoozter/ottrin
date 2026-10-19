@@ -1,0 +1,9 @@
+{
+  "id": "cc68ea2eece20669de60a2cc90f1a80e",
+  "status": "dispatched",
+  "binary_sha256": "0031afa44f53459e5622c3ae8eee977ae72dcd6f5524e205dd5148dfe7d2b0c9",
+  "source_sha256": "38cc403cc5db9c46031ad725e8dd2e57ee00fe83e2e34bba35daf1db5ab3af2c",
+  "actor_sha256": "bf9b42785bf746c9dfd4968ae01b60a8a063781a4594ef499ee5d9303bd72386",
+  "expected_observations": 1,
+  "scope": "Ordinary-account native lifetime observations; not production acceptance"
+}

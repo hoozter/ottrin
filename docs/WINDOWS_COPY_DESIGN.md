@@ -7,6 +7,25 @@ permission planning have native component acceptance. Public Windows Copy remain
 and normal workflows are implemented and accepted. Current counts and scope are
 in the acceptance section below and the roadmap checkpoint.
 
+## Confirmed temporary-stream isolation gap
+
+Native probes with the current temporary-file access mask/private descriptor
+confirm that FILE_SHARE_READ does not exclude a second named-stream writer.
+Kernel delete-on-close then removes that added data. Automatic directory lifetime
+also leaves an empty directory for directory-first close and a hard kill, and
+can remove an added directory stream. It must not be used to close the stage
+construction gap.
+
+The current gated temporary-file primitive needs a guarded ephemeral state that
+prevents unrelated stream/metadata writes and clears automatic deletion before
+restoring other writer access. A reduced data-write mask passes one native
+control, but the stronger read-only descriptor fails permission restoration;
+neither is yet an accepted Rust replacement. Private-security evidence must
+represent the actual phase without weakening cleanup validation. Keep public
+Copy disabled until the actual factory and affected claim/journal callers pass
+native adversarial-stream and lifetime acceptance. Details and exact scopes:
+`.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.
+
 ## Current claim preparation lifecycle
 
 The current journal schema is 17 and the claim format is `OTCWCL03`. A private
