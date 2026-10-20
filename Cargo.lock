@@ -3273,6 +3273,7 @@ dependencies = [
  "libc",
  "opener",
  "ottrin-core",
+ "percent-encoding",
  "rustix 0.38.44",
  "same-file",
  "serde",

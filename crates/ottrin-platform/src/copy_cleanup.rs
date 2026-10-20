@@ -1684,7 +1684,9 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         let _registry = Registry::new(root.path());
         let receipt = copy(root.path(), "new");
-        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
         std::fs::write(root.path().join("destination/item"), "later work").unwrap();
         let plan = plan_cleanup(&statuses(root.path())).unwrap();
         plan.revalidate().unwrap();
@@ -1926,7 +1928,11 @@ mod tests {
             std::fs::read(destination.join("item")).unwrap(),
             b"later visible edit"
         );
-        assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+        assert!(
+            DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .is_err()
+        );
         let observed = statuses(root.path());
         assert_eq!(observed[0].phase, Some(CopyPhase::CleanupComplete));
         assert_eq!(observed[0].evidence, CopyRecoveryEvidence::CleanupComplete);

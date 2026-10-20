@@ -13,33 +13,51 @@ use windows_sys::Win32::Foundation::WAIT_OBJECT_0;
 enum Recovery {
     Forward(discovery::RetainedCopyResumePlan),
     Cleanup(Box<RetainedCopyCleanupPlan>),
+    SessionUndo {
+        receipt: Box<crate::PathMoveUndoReceipt>,
+        complete: bool,
+    },
 }
 impl Recovery {
     fn run(
         &mut self,
-        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         match self {
             Self::Forward(plan) => plan.resume(progress),
             Self::Cleanup(plan) => plan.reclaim(progress),
+            Self::SessionUndo { receipt, complete } => {
+                crate::PlatformOps::undo_copy_with_receipt(
+                    &crate::DefaultPlatform,
+                    receipt,
+                    &mut progress,
+                )?;
+                *complete = true;
+                Ok(())
+            }
         }
     }
     fn complete(&self) -> bool {
         match self {
             Self::Forward(plan) => plan.complete(),
             Self::Cleanup(plan) => plan.complete(),
+            Self::SessionUndo { complete, .. } => *complete,
         }
     }
 }
 #[test]
 fn windows_native_copy_oplock_cancellation_keeps_recovery_bytes_and_retries_source_free() {
-    blocked_cases(false);
+    blocked_cases("forward");
 }
 #[test]
 fn windows_native_copy_oplock_cancellation_keeps_cleanup_bytes_and_retries_source_free() {
-    blocked_cases(true);
+    blocked_cases("cleanup");
 }
-fn blocked_cases(cleanup: bool) {
+#[test]
+fn windows_native_copy_oplock_cancellation_keeps_session_undo_bytes_and_retries_source_free() {
+    blocked_cases("session-undo");
+}
+fn blocked_cases(operation: &str) {
     for blocked in ["central", "local", "payload"] {
         let root = tempfile::tempdir().unwrap();
         let registry = root.path().join("central");
@@ -54,25 +72,38 @@ fn blocked_cases(cleanup: bool) {
             .header
             .unwrap();
         let central = registry.join(header.central_name());
-        let payload = destination.join(&candidate).join("nested/file");
+        let payload = if operation == "session-undo" {
+            destination.join("copy/nested/file")
+        } else {
+            destination.join(&candidate).join("nested/file")
+        };
         std::fs::write(destination.join("foreign"), b"keep unrelated data").unwrap();
-        let mut plan = if cleanup {
+        let mut plan = if operation != "forward" {
             let parent = owner(&destination);
             let central = owner(&registry);
             let mut publication =
                 PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
             publication.apply(|_| Ok(())).unwrap();
             drop(publication);
-            undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
-            drop((parent, central));
-            Recovery::Cleanup(Box::new(
-                RetainedCopyCleanupPlan::observe_at(
-                    &registry,
-                    std::slice::from_ref(&header.transaction),
-                    |_| Ok(()),
-                )
-                .unwrap(),
-            ))
+            if operation == "cleanup" {
+                undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
+                drop((parent, central));
+                Recovery::Cleanup(Box::new(
+                    RetainedCopyCleanupPlan::observe_at(
+                        &registry,
+                        std::slice::from_ref(&header.transaction),
+                        |_| Ok(()),
+                    )
+                    .unwrap(),
+                ))
+            } else {
+                Recovery::SessionUndo {
+                    receipt: Box::new(
+                        discovery::session_receipt(&parent, &central, &name, |_| Ok(())).unwrap(),
+                    ),
+                    complete: false,
+                }
+            }
         } else {
             Recovery::Forward(
                 discovery::RetainedCopyResumePlan::admit(
@@ -133,13 +164,16 @@ fn blocked_cases(cleanup: bool) {
             "{blocked}: expected native operation-aborted, got {error}"
         );
         println!(
-            "oplock cancellation: cleanup={cleanup} target={blocked} elapsed_ms={}",
+            "oplock cancellation: operation={operation} target={blocked} elapsed_ms={}",
             elapsed.as_millis()
         );
         assert_eq!(std::fs::read(&local).unwrap(), before_local);
         assert_eq!(std::fs::read(&central).unwrap(), before_central);
         assert_eq!(std::fs::read(&payload).unwrap(), before_payload);
-        assert!(!destination.join("copy").exists());
+        assert_eq!(
+            destination.join("copy").exists(),
+            operation == "session-undo"
+        );
         let plan = std::thread::spawn(move || {
             let guard =
                 crate::NativeIoCancellation::start(Arc::new(AtomicBool::new(false))).unwrap();
@@ -151,10 +185,16 @@ fn blocked_cases(cleanup: bool) {
         .join()
         .unwrap();
         assert!(plan.complete());
-        if cleanup {
+        if operation == "cleanup" {
             assert!(!payload.exists());
             assert!(!local.exists());
             assert!(discover_at(&registry).unwrap().is_empty());
+        } else if operation == "session-undo" {
+            assert!(!destination.join("copy").exists());
+            assert_eq!(
+                std::fs::read(destination.join(&candidate).join("nested/file")).unwrap(),
+                before_payload
+            );
         } else {
             assert_eq!(
                 std::fs::read(destination.join("copy/nested/file")).unwrap(),

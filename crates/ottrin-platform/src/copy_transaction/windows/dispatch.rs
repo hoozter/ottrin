@@ -382,7 +382,7 @@ mod tests {
             .unwrap()
             .unwrap();
             crate::DefaultPlatform
-                .undo_copy_with_receipt(&receipt)
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
                 .unwrap();
             let reused = copy_at(
                 &second_source,
@@ -399,10 +399,10 @@ mod tests {
                 b"second source"
             );
             crate::DefaultPlatform
-                .undo_copy_with_receipt(&reused)
+                .undo_copy_with_receipt(&reused, &mut |_| Ok(()))
                 .unwrap();
             crate::DefaultPlatform
-                .undo_copy_with_receipt(&unrelated_receipt)
+                .undo_copy_with_receipt(&unrelated_receipt, &mut |_| Ok(()))
                 .unwrap();
         }
     }
@@ -471,7 +471,7 @@ mod tests {
             assert_eq!(std::fs::read(&target).unwrap(), b"copy");
             drop((published, parent));
             crate::DefaultPlatform
-                .undo_copy_with_receipt(&receipt)
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
                 .unwrap();
             if overwrite {
                 let parent = windows_fs::open_directory(&destination, FILE_GENERIC_READ).unwrap();
@@ -555,7 +555,7 @@ mod tests {
                         std::fs::remove_file(&source).unwrap();
                     }
                     crate::DefaultPlatform
-                        .undo_copy_with_receipt(&receipt)
+                        .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
                         .unwrap();
                     if occupied && conflict == ConflictAction::Overwrite {
                         assert_eq!(std::fs::read(&target).unwrap(), b"original data");

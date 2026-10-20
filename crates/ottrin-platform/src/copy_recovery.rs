@@ -1875,7 +1875,9 @@ mod tests {
                     CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
                 );
                 let receipt = crate::restore_retained_copy_undo_receipt(&ids[index]).unwrap();
-                DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+                DefaultPlatform
+                    .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                    .unwrap();
             }
             assert!(!destination.join("item").exists());
             for (version, source) in sources.iter().enumerate() {
@@ -2046,7 +2048,9 @@ mod tests {
             let receipt =
                 super::super::restore_retained_copy_undo_receipt(&entry.transaction_id).unwrap();
             assert_eq!(before, std::fs::read(&central).unwrap());
-            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .unwrap();
             journal_bytes.push((central, local, operation.clone()));
         }
         for (central, local, expected) in journal_bytes {
@@ -2153,7 +2157,9 @@ mod tests {
             let root = tempfile::tempdir().unwrap();
             let _registry = PrivateRoot::new(root.path());
             let receipt = copy_fixture(root.path(), overwrite, false);
-            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .unwrap();
             let entry = discover_at(&root.path().join("copies")).unwrap().remove(0);
             let central = root
                 .path()
@@ -2172,7 +2178,9 @@ mod tests {
             );
             // An already completed active receipt is idempotent and cannot
             // remove or replace unrelated work now using the released name.
-            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .unwrap();
             assert_eq!(
                 std::fs::read(receipt.after_path()).unwrap(),
                 b"later-user-work"
@@ -2184,7 +2192,11 @@ mod tests {
                 discover_at(&root.path().join("copies")).unwrap()[0].evidence,
                 CopyRecoveryEvidence::NeedsReview { .. }
             ));
-            assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+            assert!(
+                DefaultPlatform
+                    .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                    .is_err()
+            );
             assert_eq!(
                 std::fs::read(receipt.after_path()).unwrap(),
                 b"later-user-work"
@@ -2224,7 +2236,11 @@ mod tests {
             CopyRecoveryEvidence::NeedsReview { .. }
         ));
         assert!(super::super::restore_retained_copy_undo_receipt(&entry.transaction_id).is_err());
-        assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+        assert!(
+            DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .is_err()
+        );
         assert_eq!(
             std::fs::read(receipt.after_path()).unwrap(),
             b"new-user-work"
@@ -2356,7 +2372,9 @@ mod tests {
                         );
                     }
                 }
-                DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+                DefaultPlatform
+                    .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                    .unwrap();
                 assert_eq!(
                     discover_at(&root.path().join("copies")).unwrap()[0].evidence,
                     CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
@@ -2439,8 +2457,12 @@ mod tests {
                         }
                     });
                 assert!(result.is_err());
-                DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
-                DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+                DefaultPlatform
+                    .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                    .unwrap();
+                DefaultPlatform
+                    .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                    .unwrap();
                 let statuses = discover_at(&root.path().join("copies")).unwrap();
                 assert_eq!(statuses[0].phase, Some(CopyPhase::Undone));
                 assert_eq!(
@@ -2532,7 +2554,7 @@ mod tests {
             let candidate = std::fs::read(receipt.before_path()).unwrap();
             let published = std::fs::read(receipt.after_path()).unwrap();
             let error = DefaultPlatform
-                .undo_copy_with_receipt(&receipt)
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
                 .unwrap_err();
             if damage == "competing-worker" {
                 assert!(error.to_string().contains("exclusive recovery lock"));
@@ -2611,14 +2633,16 @@ mod tests {
                 if damage == "edit-after" {
                     std::fs::write(&publication, "user-edit").unwrap();
                     assert!(matches!(
-                        DefaultPlatform.undo_copy_with_receipt(&restored),
+                        DefaultPlatform.undo_copy_with_receipt(&restored, &mut |_| Ok(())),
                         Err(PlatformError::UndoContentChanged(_))
                     ));
                     assert_eq!(std::fs::read_to_string(&publication).unwrap(), "user-edit");
                     assert_eq!(std::fs::read(&central).unwrap(), journals.0);
                     assert_eq!(std::fs::read(&local_path).unwrap(), journals.1);
                 } else {
-                    DefaultPlatform.undo_copy_with_receipt(&restored).unwrap();
+                    DefaultPlatform
+                        .undo_copy_with_receipt(&restored, &mut |_| Ok(()))
+                        .unwrap();
                     assert_eq!(std::fs::read_to_string(&publication).unwrap(), "old-data");
                 }
             } else {
@@ -2768,8 +2792,12 @@ mod tests {
                         assert!(matches!(restored, Err(PlatformError::NotAvailable(_))));
                     } else {
                         let restored = restored.unwrap();
-                        DefaultPlatform.undo_copy_with_receipt(&restored).unwrap();
-                        DefaultPlatform.undo_copy_with_receipt(&restored).unwrap();
+                        DefaultPlatform
+                            .undo_copy_with_receipt(&restored, &mut |_| Ok(()))
+                            .unwrap();
+                        DefaultPlatform
+                            .undo_copy_with_receipt(&restored, &mut |_| Ok(()))
+                            .unwrap();
                     }
                     assert_eq!(
                         discover_at(&root.path().join("copies")).unwrap()[0].evidence,

@@ -76,6 +76,8 @@ use operation_paths::{OperationPath, OperationPathIndex};
 mod copy_activity_cleanup;
 #[cfg(target_os = "windows")]
 mod copy_activity_recovery;
+#[cfg(target_os = "windows")]
+mod copy_activity_undo;
 mod file_details;
 mod icons;
 mod image_ops;
@@ -851,18 +853,25 @@ impl CopyBatchUndoReceipt {
             Self::Retained(plan) => plan.path_pairs(),
         }
     }
-    fn undo_next(&mut self, platform: &dyn PlatformOps) -> Result<(), PlatformError> {
+    fn undo_next(
+        &mut self,
+        platform: &dyn PlatformOps,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress(0)?;
         match self {
             Self::Session {
                 receipts,
                 remaining,
             } => {
-                platform.undo_copy_with_receipt(&receipts[*remaining - 1])?;
+                platform.undo_copy_with_receipt(&receipts[*remaining - 1], progress)?;
                 *remaining -= 1;
                 Ok(())
             }
-            #[cfg(any(target_os = "linux", target_os = "windows"))]
+            #[cfg(target_os = "linux")]
             Self::Retained(plan) => plan.undo_next(),
+            #[cfg(target_os = "windows")]
+            Self::Retained(plan) => plan.undo_next_with_progress(progress),
         }
     }
 }
@@ -3431,6 +3440,8 @@ pub struct OttrinApp {
     copy_cleanup: copy_activity_cleanup::CopyCleanupUi,
     #[cfg(target_os = "windows")]
     copy_recovery: copy_activity_recovery::CopyRecoveryUi,
+    #[cfg(target_os = "windows")]
+    copy_undo: copy_activity_undo::CopyUndoUi,
     /// Last discovery snapshot. Roots are deliberately independent even when a
     /// backend reports the same identity at multiple mount points.
     known_storage_locations: Vec<StorageLocation>,
@@ -4375,6 +4386,8 @@ impl OttrinApp {
             copy_cleanup: Default::default(),
             #[cfg(target_os = "windows")]
             copy_recovery: Default::default(),
+            #[cfg(target_os = "windows")]
+            copy_undo: Default::default(),
             known_storage_locations: Vec::new(),
             unavailable_locations: HashMap::new(),
             unavailable_root_tombstones: Vec::new(),
@@ -6933,95 +6946,170 @@ impl OttrinApp {
         {
             record.path_move_undo = Some(PathMoveUndoState::UndoQueued);
         }
+        #[cfg(target_os = "windows")]
+        let cancellation = (kind == PathMoveUndoKind::Copy).then(|| self.copy_undo.start(op_id));
         let platform = Arc::clone(&self.platform);
         let tx = self.path_move_undo_tx.clone();
         let result_repaint = self.result_repaint.clone();
-        std::thread::spawn(move || {
-            let mut copy_batch_progress = None;
-            let (result, retryable) = match validate_operation_storage_bindings(
-                &token.storage_bindings,
-                &discover_storage_locations(),
-            ) {
-                Err(error) => (Err(error.to_string()), false),
-                Ok(())
-                    if kind == PathMoveUndoKind::Copy
-                        && matches!(&token.receipt, OperationUndoReceipt::CopyBatch(_)) =>
-                {
-                    let OperationUndoReceipt::CopyBatch(mut batch) = token.receipt.clone() else {
-                        unreachable!()
-                    };
-                    let total = batch.remaining();
-                    let mut result = Ok(());
-                    while batch.remaining() > 0 {
-                        if let Err(error) = batch.undo_next(platform.as_ref()) {
-                            result = Err(format!(
-                                "Batch Copy Undo stopped after {} of {total} entries: {error}",
-                                total - batch.remaining()
-                            ));
-                            break;
-                        }
-                    }
-                    let retryable = result.is_err();
-                    copy_batch_progress = Some(batch);
-                    (result, retryable)
+        let spawn = std::thread::Builder::new()
+            .name(
+                if kind == PathMoveUndoKind::Copy {
+                    "ottrin-copy-undo"
+                } else {
+                    "ottrin-undo"
                 }
-                Ok(()) => match match (&kind, &token.receipt) {
-                    (PathMoveUndoKind::CreateFile, OperationUndoReceipt::PathMove(receipt)) => {
-                        platform.undo_create_file_with_receipt(receipt)
-                    }
-                    (PathMoveUndoKind::CreateFolder, OperationUndoReceipt::PathMove(receipt)) => {
-                        platform.undo_create_folder_with_receipt(receipt)
-                    }
-                    (PathMoveUndoKind::Symlink, OperationUndoReceipt::PathMove(receipt)) => {
-                        platform.undo_symlink_with_receipt(receipt)
-                    }
-                    (PathMoveUndoKind::Chmod, OperationUndoReceipt::Chmod(receipt)) => {
-                        platform.undo_chmod_with_receipt(receipt)
-                    }
-                    (PathMoveUndoKind::Trash, OperationUndoReceipt::Trash(receipt)) => {
-                        platform.undo_trash_with_receipt(receipt)
-                    }
-                    (PathMoveUndoKind::TextEdit, OperationUndoReceipt::TextEdit(receipt)) => {
-                        receipt
-                            .session
-                            .save(&receipt.original)
-                            .map_err(|error| PlatformError::Io(error.to_string()))
-                    }
-                    (PathMoveUndoKind::Rename, OperationUndoReceipt::PathMove(receipt)) => {
-                        platform.undo_rename_with_receipt(receipt)
-                    }
-                    (PathMoveUndoKind::Copy, OperationUndoReceipt::PathMove(receipt)) => {
-                        platform.undo_copy_with_receipt(receipt)
-                    }
-                    (PathMoveUndoKind::Move, OperationUndoReceipt::PathMove(receipt)) => {
-                        platform.undo_move_with_receipt(receipt)
-                    }
-                    _ => Err(PlatformError::Io(
-                        "operation undo receipt does not match its operation".to_string(),
-                    )),
-                } {
-                    Ok(()) => (Ok(()), false),
+                .into(),
+            )
+            .spawn(move || {
+                #[cfg(target_os = "windows")]
+                let io_cancellation = match cancellation
+                    .as_ref()
+                    .map(|flag| ottrin_platform::NativeIoCancellation::start(flag.clone()))
+                    .transpose()
+                {
+                    Ok(guard) => guard,
                     Err(error) => {
-                        let retryable =
-                            matches!(error, PlatformError::CommittedUndoCleanupPending { .. });
-                        (Err(error.to_string()), retryable)
+                        result_repaint.send(
+                            &tx,
+                            PathMoveUndoResult {
+                                op_id,
+                                result: Err(error.to_string()),
+                                retryable: true,
+                                copy_batch_progress: None,
+                            },
+                        );
+                        return;
                     }
-                },
-            };
-            result_repaint.send(
-                &tx,
-                PathMoveUndoResult {
-                    op_id,
-                    result,
-                    retryable,
-                    copy_batch_progress,
-                },
-            );
-        });
+                };
+                let stopped = || {
+                    #[cfg(target_os = "windows")]
+                    {
+                        cancellation
+                            .as_ref()
+                            .is_some_and(|flag| flag.load(Ordering::Acquire))
+                    }
+                    #[cfg(not(target_os = "windows"))]
+                    {
+                        false
+                    }
+                };
+                let mut progress = |_| {
+                    if stopped() {
+                        return Err(PlatformError::Io(
+                            "Copy Undo stopped; retained data is preserved for retry.".into(),
+                        ));
+                    }
+                    Ok(())
+                };
+                let mut copy_batch_progress = None;
+                let (result, retryable) = match progress(0)
+                    .map_err(|error: PlatformError| error.to_string())
+                    .and_then(|()| {
+                        validate_operation_storage_bindings(
+                            &token.storage_bindings,
+                            &discover_storage_locations(),
+                        )
+                    }) {
+                    Err(error) => (Err(error.to_string()), stopped()),
+                    Ok(())
+                        if kind == PathMoveUndoKind::Copy
+                            && matches!(&token.receipt, OperationUndoReceipt::CopyBatch(_)) =>
+                    {
+                        let OperationUndoReceipt::CopyBatch(mut batch) = token.receipt.clone()
+                        else {
+                            unreachable!()
+                        };
+                        let total = batch.remaining();
+                        let mut result = Ok(());
+                        while batch.remaining() > 0 {
+                            if let Err(error) = batch.undo_next(platform.as_ref(), &mut progress) {
+                                result = Err(format!(
+                                    "Batch Copy Undo stopped after {} of {total} entries: {error}",
+                                    total - batch.remaining()
+                                ));
+                                break;
+                            }
+                        }
+                        let retryable = result.is_err();
+                        copy_batch_progress = Some(batch);
+                        (result, retryable)
+                    }
+                    Ok(()) => match match (&kind, &token.receipt) {
+                        (PathMoveUndoKind::CreateFile, OperationUndoReceipt::PathMove(receipt)) => {
+                            platform.undo_create_file_with_receipt(receipt)
+                        }
+                        (
+                            PathMoveUndoKind::CreateFolder,
+                            OperationUndoReceipt::PathMove(receipt),
+                        ) => platform.undo_create_folder_with_receipt(receipt),
+                        (PathMoveUndoKind::Symlink, OperationUndoReceipt::PathMove(receipt)) => {
+                            platform.undo_symlink_with_receipt(receipt)
+                        }
+                        (PathMoveUndoKind::Chmod, OperationUndoReceipt::Chmod(receipt)) => {
+                            platform.undo_chmod_with_receipt(receipt)
+                        }
+                        (PathMoveUndoKind::Trash, OperationUndoReceipt::Trash(receipt)) => {
+                            platform.undo_trash_with_receipt(receipt)
+                        }
+                        (PathMoveUndoKind::TextEdit, OperationUndoReceipt::TextEdit(receipt)) => {
+                            receipt
+                                .session
+                                .save(&receipt.original)
+                                .map_err(|error| PlatformError::Io(error.to_string()))
+                        }
+                        (PathMoveUndoKind::Rename, OperationUndoReceipt::PathMove(receipt)) => {
+                            platform.undo_rename_with_receipt(receipt)
+                        }
+                        (PathMoveUndoKind::Copy, OperationUndoReceipt::PathMove(receipt)) => {
+                            platform.undo_copy_with_receipt(receipt, &mut progress)
+                        }
+                        (PathMoveUndoKind::Move, OperationUndoReceipt::PathMove(receipt)) => {
+                            platform.undo_move_with_receipt(receipt)
+                        }
+                        _ => Err(PlatformError::Io(
+                            "operation undo receipt does not match its operation".to_string(),
+                        )),
+                    } {
+                        Ok(()) => (Ok(()), false),
+                        Err(error) => {
+                            let retryable = stopped()
+                                || matches!(
+                                    error,
+                                    PlatformError::CommittedUndoCleanupPending { .. }
+                                );
+                            (Err(error.to_string()), retryable)
+                        }
+                    },
+                };
+                #[cfg(target_os = "windows")]
+                let result = match io_cancellation.map(|guard| guard.finish()).transpose() {
+                    Ok(_) => result,
+                    Err(error) => Err(match result {
+                        Ok(()) => error.to_string(),
+                        Err(operation) => format!("{operation}; {error}"),
+                    }),
+                };
+                result_repaint.send(
+                    &tx,
+                    PathMoveUndoResult {
+                        op_id,
+                        result,
+                        retryable,
+                        copy_batch_progress,
+                    },
+                );
+            });
+        if let Err(error) = spawn {
+            #[cfg(target_os = "windows")]
+            self.copy_undo.finish(op_id);
+            self.finish_path_move_undo(op_id, Err(format!("Could not start Undo: {error}")), true);
+        }
     }
 
     fn poll_path_move_undo_results(&mut self) {
         while let Ok(result) = self.path_move_undo_rx.try_recv() {
+            #[cfg(target_os = "windows")]
+            self.copy_undo.finish(result.op_id);
             let stopped_copy = result.copy_batch_progress.is_some() && result.result.is_err();
             let failure = result.result.as_ref().err().cloned();
             if let Some(progress) = result.copy_batch_progress
@@ -14399,7 +14487,7 @@ impl OttrinApp {
             let queued = self
                 .operation_history
                 .iter()
-                .filter(|op| op.status == OperationStatus::Queued)
+                .filter(|op| op.status == OperationStatus::Queued || matches!(op.path_move_undo, Some(PathMoveUndoState::UndoQueued)))
                 .count();
             let failed = self
                 .operation_history
@@ -14784,7 +14872,11 @@ impl OttrinApp {
                                     ("Undoing rename…", c.accent_dim)
                                 }
                                 (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Copy) => {
-                                    ("Undoing copy…", c.accent_dim)
+                                    #[cfg(target_os = "windows")]
+                                    let label = if self.copy_undo.stopping(record.id) { "Stopping Copy Undo…" } else { "Undoing copy…" };
+                                    #[cfg(not(target_os = "windows"))]
+                                    let label = "Undoing copy…";
+                                    (label, c.accent_dim)
                                 }
                                 (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Move) => {
                                     ("Undoing move…", c.accent_dim)
@@ -14840,6 +14932,12 @@ impl OttrinApp {
                             .finished_at
                             .unwrap_or_else(Instant::now)
                             .saturating_duration_since(record.queued_at);
+                        #[cfg(target_os = "windows")]
+                        if matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
+                            && record.undo_kind() == PathMoveUndoKind::Copy
+                            && self.copy_undo.running(record.id)
+                            && ui.add_enabled(!self.copy_undo.stopping(record.id), egui::Button::new(if self.copy_undo.stopping(record.id) { "Stopping…" } else { "Stop Undo" }).themed(&c)).clicked()
+                        { self.copy_undo.stop(record.id); }
                         if copy_activity_cleanup::can_cleanup(record)
                             && ui.add_enabled(!self.copy_cleanup.running(), egui::Button::new(
                                 self.copy_cleanup.action_label(record)
@@ -24090,36 +24188,7 @@ fn format_duration_short(duration: Duration) -> String {
 /// Compare lexical storage roots without resolving links or changing the operation path.
 /// Windows uses both ordinary and verbatim drive/UNC prefixes for the same root.
 fn storage_path_starts_with(path: &Path, root: &Path) -> bool {
-    #[cfg(not(target_os = "windows"))]
-    return path.starts_with(root);
-    #[cfg(target_os = "windows")]
-    {
-        use std::path::{Component, Prefix};
-        let mut path = path.components();
-        root.components().all(|root_component| {
-            let Some(path_component) = path.next() else {
-                return false;
-            };
-            match (path_component, root_component) {
-                (Component::Prefix(path), Component::Prefix(root)) => {
-                    match (path.kind(), root.kind()) {
-                        (
-                            Prefix::Disk(path) | Prefix::VerbatimDisk(path),
-                            Prefix::Disk(root) | Prefix::VerbatimDisk(root),
-                        ) => path.eq_ignore_ascii_case(&root),
-                        (
-                            Prefix::UNC(path_server, path_share)
-                            | Prefix::VerbatimUNC(path_server, path_share),
-                            Prefix::UNC(root_server, root_share)
-                            | Prefix::VerbatimUNC(root_server, root_share),
-                        ) => path_server == root_server && path_share == root_share,
-                        (path, root) => path == root,
-                    }
-                }
-                (path, root) => path == root,
-            }
-        })
-    }
+    operation_paths::lexical_path(path).starts_with(operation_paths::lexical_path(root))
 }
 
 fn longest_storage_root_for_path<'a>(
@@ -25982,7 +26051,66 @@ mod tests {
                 }
                 destination.clone()
             };
+            let registry = root.join("profile/Ottrin/State/copies");
+            let central = std::fs::read_dir(&registry)
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .find(|path| {
+                    path.extension()
+                        .is_some_and(|extension| extension == "copy-journal")
+                })
+                .unwrap();
+            let central_before = std::fs::read(&central).unwrap();
+            let data = actual.join("copy/nested/file");
+            let mut blocked = case.strip_prefix("undo-blocked-").map(|target| {
+                let payload_before = std::fs::read(&data).unwrap();
+                let lock = crate::test_oplock::Oplock::request(match target {
+                    "central" => &central,
+                    "local" => &journal,
+                    "payload" => &data,
+                    _ => panic!("Unknown owned oplock target"),
+                })
+                .unwrap();
+                (lock, payload_before)
+            });
             click_undo(&mut app, &ctx, case == "pending");
+            if let Some((lock, payload_before)) = &mut blocked {
+                let broken = lock.wait_break();
+                std::thread::sleep(Duration::from_millis(100));
+                app.poll_path_move_undo_results();
+                let pending = matches!(
+                    app.operation_history[0].path_move_undo,
+                    Some(PathMoveUndoState::UndoQueued)
+                );
+                let owns_paths = app
+                    .activity_operation_conflict(u64::MAX, &[OperationPath::write(data.clone())]);
+                if pending {
+                    click_activity_action(&mut app, &ctx, "Stop Undo");
+                }
+                let deadline = Instant::now() + Duration::from_secs(3);
+                while app.copy_undo.running(id) && Instant::now() < deadline {
+                    app.poll_path_move_undo_results();
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+                let stopped = !app.copy_undo.running(id);
+                let close = lock.close();
+                wait(&mut app);
+                close.unwrap();
+                assert_eq!(broken, windows_sys::Win32::Foundation::WAIT_OBJECT_0);
+                assert!(
+                    pending && owns_paths,
+                    "Blocked Copy Undo must own its paths: pending={pending}, conflict={owns_paths}"
+                );
+                assert!(stopped, "Rendered Stop did not interrupt blocked Copy Undo");
+                assert_eq!(std::fs::read(&journal).unwrap(), before);
+                assert_eq!(std::fs::read(&central).unwrap(), central_before);
+                assert_eq!(&std::fs::read(&data).unwrap(), payload_before);
+                assert!(matches!(
+                    app.operation_history[0].path_move_undo,
+                    Some(PathMoveUndoState::Available)
+                ));
+                click_undo(&mut app, &ctx, false);
+            }
             wait(&mut app);
             assert_eq!(app.operation_history[0].id, id);
             if case == "changed" {
@@ -26053,6 +26181,9 @@ mod tests {
             "changed",
             "moved",
             "pending",
+            "undo-blocked-central",
+            "undo-blocked-local",
+            "undo-blocked-payload",
             "name-release",
             "name-release-stopped",
             "name-release-changed",
@@ -31449,7 +31580,7 @@ mod tests {
         assert!(rejected[0].receipt.is_none());
         // Simulate an inverse interrupted after the final item completed.
         DefaultPlatform
-            .undo_copy_with_receipt(batch.undo_receipts.last().unwrap())
+            .undo_copy_with_receipt(batch.undo_receipts.last().unwrap(), &mut |_| Ok(()))
             .unwrap();
         let groups = group_retained_copy_activity(discover());
         assert_eq!(groups[0].receipt.as_ref().unwrap().remaining(), 1);

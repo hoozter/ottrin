@@ -12,14 +12,46 @@ pub(super) struct OperationPath {
 }
 impl OperationPath {
     pub(super) fn write(path: PathBuf) -> Self {
-        Self { path, writes: true }
+        Self::new(path, true)
     }
     pub(super) fn read(path: PathBuf) -> Self {
-        Self {
-            path,
-            writes: false,
+        Self::new(path, false)
+    }
+    fn new(path: PathBuf, writes: bool) -> Self {
+        let path = match lexical_path(&path) {
+            std::borrow::Cow::Owned(normalized) => normalized,
+            std::borrow::Cow::Borrowed(_) => path,
+        };
+        Self { path, writes }
+    }
+}
+
+/// Use one spelling for ordinary/verbatim DOS and UNC scheduling roots.
+/// This neither resolves filesystem aliases nor grants native mutation authority.
+pub(super) fn lexical_path(path: &Path) -> std::borrow::Cow<'_, Path> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::ffi::{OsStrExt, OsStringExt};
+        use std::path::{Component, Prefix};
+        if let Some(Component::Prefix(prefix)) = path.components().next() {
+            let ordinary = match prefix.kind() {
+                Prefix::VerbatimDisk(_) => {
+                    Some(path.as_os_str().encode_wide().skip(4).collect::<Vec<_>>())
+                }
+                Prefix::VerbatimUNC(_, _) => Some(
+                    [b'\\' as u16, b'\\' as u16]
+                        .into_iter()
+                        .chain(path.as_os_str().encode_wide().skip(8))
+                        .collect(),
+                ),
+                _ => None,
+            };
+            if let Some(ordinary) = ordinary {
+                return std::borrow::Cow::Owned(std::ffi::OsString::from_wide(&ordinary).into());
+            }
         }
     }
+    std::borrow::Cow::Borrowed(path)
 }
 
 /// Borrowed only for one admission check; no cached ownership or filesystem state.
@@ -68,6 +100,27 @@ fn has_overlap(paths: &BTreeSet<&Path>, path: &Path) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn ordinary_and_verbatim_roots_share_operation_claims() {
+        for (ordinary, verbatim) in [
+            (r"C:\destination", r"\\?\C:\destination"),
+            (
+                r"\\server\share\destination",
+                r"\\?\UNC\server\share\destination",
+            ),
+        ] {
+            for (held, requested) in [(ordinary, verbatim), (verbatim, ordinary)] {
+                let independent = [OperationPath::write(
+                    Path::new(held).with_file_name("independent"),
+                )];
+                let held = [OperationPath::write(PathBuf::from(held))];
+                let requested = [OperationPath::write(Path::new(requested).join("copy/file"))];
+                assert!(OperationPathIndex::new(&requested).conflicts(&held));
+                assert!(!OperationPathIndex::new(&independent).conflicts(&held));
+            }
+        }
+    }
     fn reference(held: &[OperationPath], requested: &[OperationPath]) -> bool {
         held.iter().any(|a| {
             requested.iter().any(|b| {

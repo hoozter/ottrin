@@ -28,6 +28,8 @@ pub use copy_transaction::RetainedCopyTransaction;
 #[cfg(target_os = "linux")]
 mod copy_recovery;
 #[cfg(target_os = "linux")]
+mod home_trash_receipt;
+#[cfg(target_os = "linux")]
 pub use copy_recovery::{
     CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyCleanupPlan,
     RetainedCopyFinalization, RetainedCopyStatus, RetainedCopyUndoPlan,
@@ -1117,10 +1119,16 @@ pub trait PlatformOps: Send + Sync {
             self.execute_copy_with_undo_receipt(source, destination, conflict)
         })
     }
-    fn undo_copy_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+    /// Check cancellation before an inverse; Windows also checks stream chunks.
+    fn undo_copy_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress(0)?;
         let _ = receipt;
         Err(PlatformError::NotAvailable(
-            "session-only copy undo is supported only on Linux",
+            "Copy Undo is not available on this platform",
         ))
     }
     fn execute_move_with_undo_receipt(
@@ -1387,7 +1395,7 @@ impl PlatformOps for DefaultPlatform {
             Ok(exact_trash_undo_receipt(
                 &original_path,
                 &before_identity,
-                list_trash_items(),
+                home_trash_receipt::candidates(&original_path, &before_identity),
             ))
         }
         #[cfg(not(target_os = "linux"))]
@@ -1764,7 +1772,13 @@ impl PlatformOps for DefaultPlatform {
             self.execute_copy_with_undo_receipt(source, destination, conflict)
         })
     }
-    fn undo_copy_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+    /// Check cancellation before an inverse; Windows also checks stream chunks.
+    fn undo_copy_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress(0)?;
         #[cfg(target_os = "linux")]
         {
             if receipt.retained_copy_directory.is_none() {
@@ -1797,13 +1811,13 @@ impl PlatformOps for DefaultPlatform {
                     "Windows Copy receipt has no native completion binding".into(),
                 )
             })?;
-            plan.undo_next()
+            plan.undo_next_with_progress(progress)
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             let _ = receipt;
             Err(PlatformError::NotAvailable(
-                "session-only copy undo is supported only on Linux",
+                "Copy Undo is not available on this platform",
             ))
         }
     }
@@ -5106,7 +5120,9 @@ mod tests {
         );
         assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
 
-        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
 
         assert!(!destination.exists());
         assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
@@ -5157,7 +5173,7 @@ mod tests {
                 std::fs::write(data_path(&destination), "later user edit").unwrap();
                 assert_eq!(rename_identity(&destination).unwrap(), published_identity);
                 assert!(matches!(
-                    DefaultPlatform.undo_copy_with_receipt(&receipt),
+                    DefaultPlatform.undo_copy_with_receipt(&receipt, &mut |_| Ok(())),
                     Err(PlatformError::UndoContentChanged(_))
                 ));
                 assert_eq!(
@@ -5230,7 +5246,7 @@ mod tests {
                 original_identity
             );
             assert!(matches!(
-                DefaultPlatform.undo_copy_with_receipt(&receipt),
+                DefaultPlatform.undo_copy_with_receipt(&receipt, &mut |_| Ok(())),
                 Err(PlatformError::UndoContentChanged(_))
             ));
             assert_eq!(
@@ -5269,7 +5285,9 @@ mod tests {
         assert_eq!(receipt.after_path(), renamed);
         assert_eq!(std::fs::read_to_string(&renamed).unwrap(), "copied bytes");
 
-        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
 
         assert!(!renamed.exists());
         assert_eq!(
@@ -5302,7 +5320,9 @@ mod tests {
             "copied bytes"
         );
 
-        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
 
         assert_eq!(
             std::fs::read_to_string(&destination).unwrap(),
@@ -5331,7 +5351,7 @@ mod tests {
         std::fs::remove_file(receipt.before_path()).unwrap();
         std::fs::write(receipt.before_path(), "replacement displaced bytes").unwrap();
 
-        let result = DefaultPlatform.undo_copy_with_receipt(&receipt);
+        let result = DefaultPlatform.undo_copy_with_receipt(&receipt, &mut |_| Ok(()));
 
         assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
         assert_eq!(
@@ -5590,7 +5610,7 @@ mod tests {
             }
             std::fs::write(stage.join("candidate"), "unrelated replacement data").unwrap();
             assert!(matches!(
-                DefaultPlatform.undo_copy_with_receipt(&receipt),
+                DefaultPlatform.undo_copy_with_receipt(&receipt, &mut |_| Ok(())),
                 Err(PlatformError::StalePathMoveUndo(_))
             ));
             assert_eq!(
@@ -5608,7 +5628,9 @@ mod tests {
                 std::fs::rename(&stage, root.path().join("preserved-replacement")).unwrap();
                 std::fs::rename(saved, &stage).unwrap();
             }
-            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .unwrap();
             assert!(!destination.join("source").exists());
             assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
             assert_eq!(
@@ -5639,7 +5661,7 @@ mod tests {
         std::fs::remove_file(&alias).unwrap();
         symlink(&other, &alias).unwrap();
         assert!(matches!(
-            DefaultPlatform.undo_copy_with_receipt(&receipt),
+            DefaultPlatform.undo_copy_with_receipt(&receipt, &mut |_| Ok(())),
             Err(PlatformError::StalePathMoveUndo(_))
         ));
         for parent in [&actual, &other] {
@@ -5650,7 +5672,9 @@ mod tests {
         }
         std::fs::remove_file(&alias).unwrap();
         symlink(&actual, &alias).unwrap();
-        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
         assert!(!actual.join("source").exists());
         assert_eq!(
             std::fs::read_to_string(other.join("source")).unwrap(),
@@ -5678,7 +5702,9 @@ mod tests {
             .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip)
             .unwrap()
             .unwrap();
-        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
         assert!(!other.path().join("source").exists());
         assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
         assert_eq!(
@@ -5796,7 +5822,11 @@ mod tests {
         attach();
         let replacement = mount_path.join("source");
         std::fs::write(&replacement, "replacement data").unwrap();
-        assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+        assert!(
+            DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .is_err()
+        );
         assert_eq!(std::fs::read(&replacement).unwrap(), b"replacement data");
         assert_eq!(std::fs::read(&source).unwrap(), b"original source");
         assert!(
@@ -5840,7 +5870,7 @@ mod tests {
         );
         assert!(
             DefaultPlatform
-                .undo_copy_with_receipt(&bind_receipt)
+                .undo_copy_with_receipt(&bind_receipt, &mut |_| Ok(()))
                 .is_err()
         );
         assert_eq!(
@@ -5908,7 +5938,7 @@ mod tests {
         std::fs::remove_file(&destination).unwrap();
         std::fs::write(&destination, "replacement bytes").unwrap();
 
-        let result = DefaultPlatform.undo_copy_with_receipt(&receipt);
+        let result = DefaultPlatform.undo_copy_with_receipt(&receipt, &mut |_| Ok(()));
 
         assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
         assert_eq!(

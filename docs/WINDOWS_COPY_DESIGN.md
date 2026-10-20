@@ -514,6 +514,23 @@ This is native egui action/layout evidence, not physical desktop or package
 acceptance. Exact executable/fixture scopes and cleanup:
 `.hermes/evidence/windows-copy-blocked-activity-current/ACCEPTANCE.json`.
 
+Copy Undo now registers its own Stop flag with the existing worker, forwards it
+through session receipts and retained/batch inverses, and binds the same native
+cancellation guard. Activity exposes **Stop Undo** until the worker result arrives;
+Stop neither releases scheduling ownership early nor discards the completed batch
+cursor. Registration ends on result delivery or failed worker creation; closing
+requests Stop for each remaining operation independently.
+
+The expanded Activity integration passes all 27 scenarios, including blocked Undo
+central/local/payload opens, actual rendered Stop, byte preservation and normal
+source-free retry. These checks exposed ordinary/verbatim DOS-path scheduling
+mismatch. Operation claims and storage-root comparisons now share lexical drive/UNC
+prefix normalization; it resolves no filesystem aliases and grants no native
+authority. Focused native controls verify both prefix directions, independent
+paths, per-operation flags and the existing admission/editing behavior. Exact
+scopes and remaining gates:
+`.hermes/evidence/windows-copy-undo-stop-current/ACCEPTANCE.json`.
+
 The native fixture follows [Microsoft's level-1 oplock contract](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_request_oplock_level_1)
 and [acknowledgment/close semantics](https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/acknowledging-oplock-breaks).
 

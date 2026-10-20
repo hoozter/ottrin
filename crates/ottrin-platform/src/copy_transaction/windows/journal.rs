@@ -4776,10 +4776,10 @@ mod tests {
             );
             remove_undo_fixture_source(root.path());
             crate::DefaultPlatform
-                .undo_copy_with_receipt(&receipt)
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
                 .unwrap();
             crate::DefaultPlatform
-                .undo_copy_with_receipt(&receipt.clone())
+                .undo_copy_with_receipt(&receipt.clone(), &mut |_| Ok(()))
                 .unwrap();
             assert_eq!(
                 std::fs::read(receipt.before_path().join("nested/file")).unwrap(),
@@ -4820,14 +4820,14 @@ mod tests {
         let mut malformed = receipt.clone();
         malformed.windows_copy = None;
         assert!(matches!(
-            crate::DefaultPlatform.undo_copy_with_receipt(&malformed),
+            crate::DefaultPlatform.undo_copy_with_receipt(&malformed, &mut |_| Ok(())),
             Err(PlatformError::InvalidPathMoveUndoReceipt(_))
         ));
         let published = receipt.after_path().join("nested/file");
         std::fs::write(&published, b"external data").unwrap();
         assert!(
             crate::DefaultPlatform
-                .undo_copy_with_receipt(&receipt)
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
                 .is_err()
         );
         assert_eq!(std::fs::read(published).unwrap(), b"external data");
@@ -8555,7 +8555,10 @@ mod tests {
             std::fs::read(destination.join("copy (1)/file")).unwrap(),
             b"other copy"
         );
-        crate::PlatformOps::undo_copy_with_receipt(&crate::DefaultPlatform, &renamed).unwrap();
+        crate::PlatformOps::undo_copy_with_receipt(&crate::DefaultPlatform, &renamed, &mut |_| {
+            Ok(())
+        })
+        .unwrap();
         drop(first);
         assert!(matches!(
             stage(&src, &parent, &central),

@@ -222,6 +222,48 @@ not a physical desktop/graphics or exact-package pass. Mutating-I/O, other workf
 controls, remote/device/filesystem and resource gates remain open. Packages are
 unchanged and public Windows Copy remains disabled.
 
+## Windows Copy Undo Stop and path ownership
+
+Copy Undo now has a per-operation **Stop Undo** action while its worker is running.
+The same receipt and retained-batch inverse paths forward cancellation, and the
+existing native I/O guard belongs to that worker until it finishes. Stopping keeps
+the completed batch cursor and retryable receipt; path ownership stays held until
+the result arrives. Closing the app requests Stop for every remaining Copy Undo.
+
+Native Activity testing exposed an ordinary/verbatim Windows path-prefix mismatch:
+restored Undo claimed `\\?\C:\...`, while ordinary requests used `C:\...`. One shared
+lexical normalization now supplies operation claims and storage-root comparison,
+including UNC prefixes, without resolving filesystem aliases or granting mutation
+authority. A blocked ordinary-path request now conflicts with the running inverse.
+
+All 27 native Activity scenarios pass, including central/local/payload blocks in
+Undo followed by rendered Stop and source-free retry. The focused native controls
+also pass per-operation cancellation, ordinary/verbatim drive/UNC overlap, storage
+bindings and existing operation/text-edit admission regressions. Full Linux tests
+pass 412 platform and 385 UI tests, with four explicit mount/resource ignores;
+strict Linux/Windows platform/UI all-target Clippy passes. Exact source, native
+executables, final scoped results and teardown are recorded in
+`.hermes/evidence/windows-copy-undo-stop-current/ACCEPTANCE.json`.
+
+These are local NTFS pre-mutation interruption and native egui interaction checks.
+Mutating I/O, other filesystem/device/network behavior, full resource limits and
+public workflow/package gates remain open. Windows Copy stays disabled and this
+checkpoint does not update application packages.
+
+## Local Trash Undo receipt discovery
+
+A full Linux UI run reproduced a local Trash worker timeout. System-call tracing
+showed successful deletion followed by unrelated cloud-drive Trash enumeration.
+Receipt discovery now inspects only home-Trash objects with the captured native
+identity, then validates the encoded original path and existing origin binding.
+Ambiguous or changed objects remain non-undoable. External Trash already lacks the
+provenance needed for these receipts and is not scanned to manufacture one.
+
+The previously failing worker test passes, including actual restore. Focused tests
+cover raw-byte/encoded names, unrelated malformed metadata, ambiguous hard links
+and invalid metadata. A fresh trace confirms no cloud-Trash access. This repair is
+covered by the full Linux suite above; packaging remains a separate delivery step.
+
 ## Current Windows Copy implementation checkpoint
 
 Claim and journal setup use persistent private controls. Claims publish only a
