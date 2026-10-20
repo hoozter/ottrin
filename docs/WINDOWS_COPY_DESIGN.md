@@ -474,11 +474,23 @@ count, so rereads neither reset progress nor count as extra copied data. This is
 cooperative cancellation between native calls, not blocked-device/network I/O
 isolation.
 
-Blocked-I/O cancellation still needs an operation-owned native worker boundary
-and real blocked-call acceptance. A cancellation request cannot release path
-ownership or announce completion until that worker has actually stopped and its
-journal outcome has been inspected. Windows cancellation can complete normally,
-abort or fail, and must never target a later operation on a reused thread. See
+Activity forward/name-release recovery and cleanup now bind native cancellation
+to their existing dedicated worker thread. `NativeIoCancellation` duplicates a
+real thread handle with only the required cancellation access, watches the existing
+Stop flag, and retries `CancelSynchronousIo` across call-entry races. A thread-bound
+guard stops and joins that watcher before unrelated work or completion delivery.
+Drop also joins on unwind; explicit finish errors retain the original operation
+error and cleanup completion information. No watcher survives an idle operation.
+
+Three ordinary-account native tests pass for genuinely blocked synchronous pipe
+reads/writes, early requests, repeated Drop and later successful I/O on the same
+worker while the old flag stays set. These tests prove that native cancellation
+can abort those calls, not that every filesystem/device supports it. A request
+cannot release path ownership or announce completion until the worker has actually
+stopped and its journal outcome has been inspected. Windows cancellation can
+complete normally, abort or fail. Device/network, other workflow and full resource
+acceptance remain open. Exact scopes:
+`.hermes/evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`. See
 [CancelSynchronousIo](https://learn.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiset-cancelsynchronousio)
 and [Microsoft cancellation considerations](https://learn.microsoft.com/en-us/windows/win32/fileio/canceling-pending-i-o-operations).
 

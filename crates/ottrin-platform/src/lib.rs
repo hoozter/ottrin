@@ -14,6 +14,10 @@ use thiserror::Error;
 
 #[cfg(target_os = "windows")]
 mod windows_fs;
+#[cfg(target_os = "windows")]
+mod windows_io_cancellation;
+#[cfg(target_os = "windows")]
+pub use windows_io_cancellation::NativeIoCancellation;
 
 #[cfg(target_os = "linux")]
 pub use copy_transaction::RetainedCopyTransaction;

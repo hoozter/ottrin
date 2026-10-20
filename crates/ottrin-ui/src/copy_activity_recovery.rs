@@ -130,18 +130,31 @@ impl OttrinApp {
             {
                 return;
             }
-            let result = plan
-                .run(|_| {
-                    if worker_cancel.load(Ordering::Acquire) {
-                        Err(PlatformError::Io(
-                            "Copy recovery stopped; retained data is preserved for retry.".into(),
-                        ))
-                    } else {
-                        Ok(())
+            let result = match ottrin_platform::NativeIoCancellation::start(worker_cancel.clone()) {
+                Err(error) => Err(error.to_string()),
+                Ok(io_cancellation) => {
+                    let result = plan
+                        .run(|_| {
+                            if worker_cancel.load(Ordering::Acquire) {
+                                Err(PlatformError::Io(
+                                    "Copy recovery stopped; retained data is preserved for retry."
+                                        .into(),
+                                ))
+                            } else {
+                                Ok(())
+                            }
+                        })
+                        .map(|()| success)
+                        .map_err(|error| error.to_string());
+                    match io_cancellation.finish() {
+                        Ok(()) => result,
+                        Err(error) => Err(match result {
+                            Ok(_) => error.to_string(),
+                            Err(operation) => format!("{operation}; {error}"),
+                        }),
                     }
-                })
-                .map(|()| success)
-                .map_err(|error| error.to_string());
+                }
+            };
             repaint.send(&tx, result);
         });
     }

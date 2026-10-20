@@ -151,6 +151,30 @@ calls; blocked-device/network I/O interruption remains required. Packages are
 unchanged and public Windows Copy remains gated. Exact scopes and teardown:
 `.hermes/evidence/windows-copy-verification-cancel-current/ACCEPTANCE.json`.
 
+## Windows Activity native I/O cancellation
+
+Forward/name-release recovery and retained-data cleanup now bind native I/O
+cancellation to their existing dedicated workers. The guard watches the existing
+Stop flag, retries Windows synchronous cancellation across call-entry races, and
+joins its watcher before the worker reports completion or performs later work.
+Operation errors and completed cleanup entries are retained if guard finalization
+also fails. No cancellation watcher remains after that operation ends.
+
+All three ordinary-account native checks pass on both the focused and combined
+platform/UI builds: blocked pipe reads and writes return operation-aborted,
+early requests and Drop repeat successfully, and later I/O on the same worker
+succeeds while the old flag remains set. The combined build also passes all 18
+Activity scenarios, including rendered action clicks, Stop/retry, changed-data
+refusal, name release, forward recovery and cleanup cohorts. Strict Windows UI,
+Windows platform and Linux UI all-target Clippy and formatting pass.
+
+This accepts the operation-bound mechanism and existing Activity paths, not
+universal driver cancellation, device/network behavior, other workflow Stop
+controls or whole-application resource limits. Those gates remain required;
+public Windows Copy stays disabled and packages are unchanged. Exact source,
+executables and teardown:
+`.hermes/evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`.
+
 ## Current Windows Copy implementation checkpoint
 
 Claim and journal setup use persistent private controls. Claims publish only a

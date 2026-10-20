@@ -458,6 +458,21 @@ impl OttrinApp {
         let spawn = std::thread::Builder::new()
             .name("ottrin-copy-cleanup".into())
             .spawn(move || {
+                #[cfg(target_os = "windows")]
+                let io_cancellation =
+                    match ottrin_platform::NativeIoCancellation::start(worker_cancel.clone()) {
+                        Ok(guard) => guard,
+                        Err(error) => {
+                            repaint.send(
+                                &tx,
+                                Event::Finished(Outcome {
+                                    error: Some(error.to_string()),
+                                    ..Default::default()
+                                }),
+                            );
+                            return;
+                        }
+                    };
                 let outcome = run(
                     &selected,
                     #[cfg(target_os = "windows")]
@@ -471,6 +486,17 @@ impl OttrinApp {
                         repaint.send(&tx, Event::Progress(message));
                     },
                 );
+                #[cfg(target_os = "windows")]
+                let outcome = {
+                    let mut outcome = outcome;
+                    if let Err(error) = io_cancellation.finish() {
+                        outcome.error = Some(match outcome.error {
+                            Some(operation) => format!("{operation}; {error}"),
+                            None => error.to_string(),
+                        });
+                    }
+                    outcome
+                };
                 repaint.send(&tx, Event::Finished(outcome));
             });
         if let Err(error) = spawn {
