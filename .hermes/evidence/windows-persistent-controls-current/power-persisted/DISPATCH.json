@@ -1,0 +1,27 @@
+{
+  "id": "e20145bf0584f40c97bc5494384fe9e9",
+  "status": "inspected-recovered-cleaned",
+  "case": "Persisted guest abrupt power stop",
+  "root": "C:\\OttrinCopyCleanupQA\\power-e20145bf0584f40c97bc5494384fe9e9",
+  "binary_sha256": "b9523b9586861bbdec4d1dc42f4da89b2db59ba3e32984a3d5cfdf007bc98ffd",
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "binary_source": {
+    "baseline_commit": "8c07033d785a8de3c086b54055e83b4c6b67787d",
+    "application_files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ab733d51d7979325c83e6de3f377d0d6f16f43b616acd18cd26b74e5dd193b0e",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "cd13331fab941738a1f22c0dde5fbad5cb73d0d1d88c0449bb86a996901e2ca5",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "4da62093a970e49c783a6bde33d14bbcd0d453810e1ece98525fa24559f1bd1f",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/initialization.rs": "5e1be62953f99b97dfbc89409ed88b008e6b30826bbeb6c96479a2b04cc93b5b",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "c16381b96825352f048b4625def6ec0450fefbfe1046773b293f1dfed97010c8",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs": "e48df46c07afda3bd52dca2146e3eae936f2899e3690818108cfde3e3657d011",
+      "crates/ottrin-platform/src/windows_fs.rs": "e0d8238aec6a6b32a75b39ff90741660c2b7dd2c07d4dfe5b52c74b9e1bae401"
+    },
+    "scope": "Persistent claim and paired journal preparation; complete initial-frame no-replace central publication; retain setup data and release live unstarted leases on failure; no automatic deletion",
+    "changes_since_prior_native_run": "Correct initial-record publication expectations while preserving later-record mismatch coverage; remove superseded no-op temporary promotion boundary"
+  },
+  "source_commit": "8c07033d785a8de3c086b54055e83b4c6b67787d",
+  "phase": "Persisted",
+  "expected_fixture": "copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite",
+  "actor_sha256": "51e77a7247af9ba9cbee445e3a540afd1c56eafd632a1d99975f930cc055e74d",
+  "sync_sha256": "337f10485168212491a02dfffb8d9399b4e20ef6a7e8612e7307d27bef58ca4f"
+}

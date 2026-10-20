@@ -1,0 +1,11 @@
+{
+  "exit": 101,
+  "stderr_sha256": "fc5f9bf80caf07bdbc0efe67f425e4a762c8d6b9d2e2ec8a3c2f35090501cb82",
+  "test_arguments": "copy_transaction::windows::journal:: --skip copy_transaction::windows::journal::tests::cleanup:: --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "error": "Native cleanup observation failed",
+  "stdout_sha256": "829a597cdc6d1361f14b57d77f6880c7f7afe667f855faf54f5202a7f908fee0",
+  "status": "fail",
+  "test_binary_hash": "65bc4e66a7a44a6545cbed612dff114a90e466b47ae6f87880dc08b694bf3f8f",
+  "dispatch_id": "f5070d60b2faf12bcd536c539a55ed8b"
+}

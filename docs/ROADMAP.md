@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-19
+Last updated: 2026-10-20
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -101,27 +101,30 @@ remain open.
 
 ## Current Windows Copy implementation checkpoint
 
-**Current safety blocker:** native temporary-lifetime probes show that read-only
-sharing does not exclude a second named-stream writer. With the current private
-descriptor and temporary-file access mask, that writer can add a stream that
-kernel delete-on-close subsequently removes. Directory delete-on-close is also
-unsuitable for unfinished-stage recovery: directory-first close and a hard kill
-leave an empty directory, while an added directory stream can be lost. This
-finding supersedes any inference that the earlier process-cleanup checks proved
-preservation of concurrently added streams. The passing earlier receipts retain
-their narrower scopes.
-A guarded-file candidate was also rejected. Freezing permissions after creation
-blocks later opens, but a permission-changing handle obtained beforehand can
-restore write access, add a stream and have automatic deletion destroy it.
-The ordinary-account native interleave proves that gap; a later-open test alone
-cannot establish safety. The candidate source was archived and removed, and its
-partial/failed Rust runs are not acceptance. The next replacement must preserve
-uncertain preparations and keep canonical records complete without relying on
-revoking already-granted handles. Exact controls, rejected source and teardown:
-`.hermes/evidence/windows-ephemeral-security-current/FINDINGS.md`.
-Earlier directory-lifetime findings remain in
+**Current source replacement:** automatic deletion is removed from claim and
+journal setup controls. Persistent private claim preparations still publish only
+a complete first frame. The central journal now publishes its canonical name
+only after its complete paired Begin is flushed, using the same encoder and
+writer as subsequent records. Failed live setup retains controls/stages and
+returns the unstarted claim for release. Added streams and canonical collisions
+are preserved; ordinary live retry succeeds. The final ordinary-account native journal suite passes 132 tests with six explicit
+exclusions; five separate dispatch tests and strict Windows all-target Clippy pass.
+Real abrupt guest stops at both complete-unpublished and published-claim barriers
+preserve the expected record and recover fresh destination admission without
+changing the source, public file or foreign preparation. These are reservation
+checks, not whole-Copy power-loss or physical-storage acceptance. Public Copy stays
+gated. Exact source, binaries, checks and teardown:
+`.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
+
+The rejected guarded-file design and the earlier directory-lifetime probes remain
+useful negative evidence. A pre-held permission-changing handle can restore write
+access after a permission freeze, insert a stream and have automatic deletion
+remove it. That candidate was archived and removed. Details:
+`.hermes/evidence/windows-ephemeral-security-current/FINDINGS.md` and
 `.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.
-No application behavior or package changes at these investigation checkpoints.
+The remaining work includes restart admission/reclamation for unpublished setup,
+partial stages, mutation/cleanup interference and interruption/resource gates.
+No package changes at this source checkpoint; public Windows Copy remains gated.
 
 The current native journal schema is 17 and claim format is 3. Each destination
 reservation now holds one Claim and Release. Released controls can be retired
@@ -139,17 +142,13 @@ identity references and all independent payload/peer guards; those references do
 not require obsolete claim files to remain present. Completed-Undo retries keep
 both paired journals leased throughout any remaining release.
 
-New claim preparations now receive kernel delete-on-close at the same operation
-that creates their private file. The same writer remains held while the complete
-claim is validated, published without replacement and both directories flushed.
-Only then does the verified extended disposition API clear temporary deletion.
-No journal or payload authority is issued before promotion. Errors and owner exit
-before promotion remove only that newly created file; persisted failures retain a
-complete unstarted claim for existing recovery. Admission now reclaims only
-complete, native-bound unstarted preparations after obtaining their exclusive
-handle and verifying the original namespace, private metadata and absence of
-transaction records. Partial, foreign, renamed and replaced preparations remain
-preserved. The old manual pre-publication disposal path is removed.
+The earlier `45e7111`/`91afa83c` checkpoints used delete-on-close claim
+preparations and extended promotion. Their passing receipts below retain their
+historical scopes; that lifetime model is superseded by persistent preparations.
+Admission still reclaims only complete, native-bound unstarted claim preparations
+after exclusive acquisition, original namespace/private-metadata validation and
+absence of transaction records. Partial, foreign, renamed and replaced records
+remain preserved.
 
 Five ordinary-account native API observations established that the legacy clear
 call reports success but still deletes the file, whereas the extended operation

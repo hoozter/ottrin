@@ -1,0 +1,35 @@
+{
+  "status": "pass",
+  "reader_guest_pid": 7504,
+  "reason": "Current consumers stopped; remaining last-run fixture/export/actor files matched captured hashes before removal. Phase exports were removed by the reusable power cleanup producer.",
+  "removed": [
+    {
+      "name": "results\\power-before.stdout",
+      "sha256": "e7de5eb238069f968037547c2dd1a20a0ddca6d39d161b232b1995ff18fda653"
+    },
+    {
+      "name": "results\\power-before.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "results\\POWER_PREPARATION.bin",
+      "sha256": "690970aa7944f2fb840bcd442a046379705341c8fd007b118ab3c53d13833dae"
+    },
+    {
+      "name": "results\\RESULTS.json",
+      "sha256": "b44835f960ae71a67929ef8d1164f285527e277911831248d89729d927701282"
+    },
+    {
+      "name": "results\\platform.stdout",
+      "sha256": "e453ad19ace458a83cd46a69979ae3ce70b836b6c53e3422407751067c09f56f"
+    },
+    {
+      "name": "results\\platform.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "actor.ps1",
+      "sha256": "0df49d6350a1342567bf87f71f05b62bcc04eaf4e2978b65417ca6c2d5641414"
+    }
+  ]
+}

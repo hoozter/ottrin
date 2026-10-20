@@ -6,7 +6,8 @@ import transport as n
 b=Path(__file__).resolve().parent
 p=Path(os.environ.get("OTTRIN_NATIVE_EVIDENCE_DIR",str(b))).resolve();p.mkdir(parents=True,exist_ok=True)
 assert not (p/'DISPATCH.json').exists(),'Resume the existing experiment, do not overwrite it'
-binary_evidence=Path(os.environ.get('OTTRIN_POWER_BINARY_EVIDENCE_DIR','.hermes/evidence/windows-preparation-cleanup-current')).resolve()
+if not os.environ.get('OTTRIN_POWER_BINARY_EVIDENCE_DIR'):raise SystemExit('Set OTTRIN_POWER_BINARY_EVIDENCE_DIR to the source-verified native test evidence directory')
+binary_evidence=Path(os.environ['OTTRIN_POWER_BINARY_EVIDENCE_DIR']).resolve()
 binary_source=json.loads((binary_evidence/'SOURCE.json').read_text())
 for path,expected in binary_source['application_files'].items():assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==expected,path
 rows=[json.loads(l) for l in (binary_evidence/'build.jsonl').read_text().splitlines()];assert rows[-1].get('success')
@@ -15,7 +16,7 @@ with exe.open('rb') as f:digest=hashlib.file_digest(f,'sha256').hexdigest()
 prior=json.loads((binary_evidence/'TEST_BINARY.json').read_text());assert digest==prior['compiler_sha256']
 phase=os.environ.get('OTTRIN_POWER_PHASE','Prepared');assert phase in ['Prepared','Persisted']
 token=secrets.token_hex(16);root='C:\\OttrinCopyCleanupQA\\power-'+token
-x={'id':token,'status':'preparing','case':phase+' guest abrupt power stop','root':root,'binary_sha256':digest,'compiler_path':str(exe),'binary_source':binary_source,'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'phase':phase,'expected_fixture':'copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_temporary_claim_hard_kill_removes_only_its_preparation'}
+x={'id':token,'status':'preparing','case':phase+' guest abrupt power stop','root':root,'binary_sha256':digest,'compiler_path':str(exe),'binary_source':binary_source,'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'phase':phase,'expected_fixture':'copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_unpublished_claim_hard_kill_preserves_preparation'}
 if phase=='Persisted':x['expected_fixture']='copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite'
 (p/'DISPATCH.json').write_text(json.dumps(x,indent=2)+'\n')
 pid=n.start(r"$t=Get-ScheduledTask 'Ottrin Copy Cleanup QA';if($t.State.ToString()-in@('Running','Queued')-or($null-ne$t.Triggers-and@($t.Triggers).Count-ne0)-or[int]$t.Principal.RunLevel-ne0){throw 'Unexpected owned task state/trigger/privilege'};if(@(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-like'C:\OttrinCopyCleanupQA\*'}).Count){throw 'Owned executable live'};")

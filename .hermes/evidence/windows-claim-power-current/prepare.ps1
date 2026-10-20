@@ -16,9 +16,9 @@ try {
  Write-Durable "$root\destination\user-data" ([Text.Encoding]::ASCII.GetBytes('unrelated public file'))
  foreach($path in @("$root\source\nested","$root\source","$root\destination","$root\central",$root,'C:\OttrinCopyCleanupQA')){[PowerSync]::Directory($path)}
  $env:OTTRIN_TEST_CLAIM_PUBLICATION_ROOT=$root
- $fixture='copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_temporary_claim_hard_kill_removes_only_its_preparation';$barrier="$root\ready"
+ $fixture='copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_unpublished_claim_hard_kill_preserves_preparation';$barrier="$root\ready"
  if('PHASE'-eq'Persisted'){$env:OTTRIN_TEST_CLAIM_PUBLICATION_CASE='1';Write-Durable "$root\publish" ([Text.Encoding]::ASCII.GetBytes('go'));$fixture='copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite';$barrier="$root\result-1"}
- $process=Start-Process C:\OttrinCopyCleanupQA\power-platform.exe -ArgumentList "--exact $fixture --nocapture --test-threads=1" -WorkingDirectory C:\Windows\System32 -PassThru -RedirectStandardOutput C:\OttrinCopyCleanupQA\results\power-before.stdout -RedirectStandardError C:\OttrinCopyCleanupQA\results\power-before.stderr
+ $process=Start-Process C:\OttrinCopyCleanupQA\power-platform.exe -ArgumentList "--exact $fixture --nocapture --test-threads=1" -WorkingDirectory C:\Windows\System32 -PassThru -RedirectStandardOutput "$root\before.stdout" -RedirectStandardError "$root\before.stderr"
  $null=$process.Handle;$deadline=(Get-Date).AddSeconds(30)
  while(-not(Test-Path $barrier)){if($process.HasExited-or(Get-Date)-gt$deadline){throw 'Preparation barrier not reached'};Start-Sleep -Milliseconds 50}
  $claims="$root\destination\.ottrin-copy-target-claims"

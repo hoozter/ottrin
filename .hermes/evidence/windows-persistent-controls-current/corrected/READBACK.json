@@ -1,0 +1,7 @@
+{
+  "reason": "Guest was authoritatively off; restarted retained guest only to retrieve persisted matching dispatch result, not to restart the test",
+  "reader_guest_pid": 3296,
+  "dispatch_id": "cbc1639634ad76375cafe9bf5bb497ff",
+  "native_result_status": "pass",
+  "raw_output_hashes_verified": true
+}

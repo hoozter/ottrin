@@ -1,0 +1,98 @@
+[
+  {
+    "expected": "f77e73c714f756636a557822ba1ca82553dfeba763510a4311938529ed74841e",
+    "name": "results\\POWER_READY.json",
+    "matches": false,
+    "actual": "5ee22d093851bc73da6dacfcb95436d732c09c90e009b201e0183a5b35918b50"
+  },
+  {
+    "expected": "6a543bf5c084811030d2cb2fb550d644a8f434979d5b30b54109ca89e7513701",
+    "name": "results\\POWER_LIVE.json",
+    "matches": false,
+    "actual": "09e7685da39962d29ccd545f78601cf4a6d016216eb0b60f3d6dda0e25ac1f8d"
+  },
+  {
+    "expected": "adff62e6ee56258b38dbac5f318139ca5c38f0b069cf12af1abb1f52d8d352f3",
+    "name": "results\\POWER_AFTER.json",
+    "matches": true,
+    "actual": "adff62e6ee56258b38dbac5f318139ca5c38f0b069cf12af1abb1f52d8d352f3"
+  },
+  {
+    "expected": "8c1d8318645f89b2c2e8ee8102c7b811ccd9c1a9f853c2f4d83a22cac1995b14",
+    "name": "results\\POWER_RECOVERY.json",
+    "matches": true,
+    "actual": "8c1d8318645f89b2c2e8ee8102c7b811ccd9c1a9f853c2f4d83a22cac1995b14"
+  },
+  {
+    "expected": "933bdfe8e6e574bb55fd080f5398f921900aea8745443bfe6c4f6ee752a1d740",
+    "name": "results\\POWER_CLEANUP.json",
+    "matches": true,
+    "actual": "933bdfe8e6e574bb55fd080f5398f921900aea8745443bfe6c4f6ee752a1d740"
+  },
+  {
+    "expected": "3154f521424b6eb0bcc369452c6438bcc6b9ff5e4bb63f21a162b6ea15f1feb0",
+    "name": "results\\POWER_CANONICAL.bin",
+    "matches": true,
+    "actual": "3154f521424b6eb0bcc369452c6438bcc6b9ff5e4bb63f21a162b6ea15f1feb0"
+  },
+  {
+    "expected": "c9710cdab0bb36c0e6b0815c8e365fd642a6669dc87353bc408df33703bea607",
+    "name": "results\\POWER_OLD_CANONICAL.bin",
+    "matches": true,
+    "actual": "c9710cdab0bb36c0e6b0815c8e365fd642a6669dc87353bc408df33703bea607"
+  },
+  {
+    "expected": "e7de5eb238069f968037547c2dd1a20a0ddca6d39d161b232b1995ff18fda653",
+    "name": "results\\power-recover.stdout",
+    "matches": true,
+    "actual": "e7de5eb238069f968037547c2dd1a20a0ddca6d39d161b232b1995ff18fda653"
+  },
+  {
+    "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "name": "results\\power-recover.stderr",
+    "matches": true,
+    "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "expected": "e7de5eb238069f968037547c2dd1a20a0ddca6d39d161b232b1995ff18fda653",
+    "name": "results\\power-before.stdout",
+    "matches": true,
+    "actual": "e7de5eb238069f968037547c2dd1a20a0ddca6d39d161b232b1995ff18fda653"
+  },
+  {
+    "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "name": "results\\power-before.stderr",
+    "matches": true,
+    "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "expected": "690970aa7944f2fb840bcd442a046379705341c8fd007b118ab3c53d13833dae",
+    "name": "results\\POWER_PREPARATION.bin",
+    "matches": true,
+    "actual": "690970aa7944f2fb840bcd442a046379705341c8fd007b118ab3c53d13833dae"
+  },
+  {
+    "expected": "b44835f960ae71a67929ef8d1164f285527e277911831248d89729d927701282",
+    "name": "results\\RESULTS.json",
+    "matches": true,
+    "actual": "b44835f960ae71a67929ef8d1164f285527e277911831248d89729d927701282"
+  },
+  {
+    "expected": "e453ad19ace458a83cd46a69979ae3ce70b836b6c53e3422407751067c09f56f",
+    "name": "results\\platform.stdout",
+    "matches": true,
+    "actual": "e453ad19ace458a83cd46a69979ae3ce70b836b6c53e3422407751067c09f56f"
+  },
+  {
+    "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "name": "results\\platform.stderr",
+    "matches": true,
+    "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "expected": "0df49d6350a1342567bf87f71f05b62bcc04eaf4e2978b65417ca6c2d5641414",
+    "name": "actor.ps1",
+    "matches": true,
+    "actual": "0df49d6350a1342567bf87f71f05b62bcc04eaf4e2978b65417ca6c2d5641414"
+  }
+]

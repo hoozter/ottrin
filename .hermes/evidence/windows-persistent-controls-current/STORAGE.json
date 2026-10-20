@@ -1,0 +1,37 @@
+{
+  "before_observed": {
+    "target/debug/deps": "17G",
+    "target/debug/incremental": "6.1G",
+    "target/x86_64-pc-windows-gnu/debug/deps": "23G",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "19G"
+  },
+  "after_du_kib": {
+    "target/debug/deps": 16975628,
+    "target/debug/incremental": 6400800,
+    "target/x86_64-pc-windows-gnu/debug/deps": 23117056,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 19997780
+  },
+  "current_test_executable": {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+    "bytes": 354552969,
+    "hard_links": 1,
+    "sha256": "b9523b9586861bbdec4d1dc42f4da89b2db59ba3e32984a3d5cfdf007bc98ffd",
+    "purpose": "Current shared standalone native test executable",
+    "pending_consumer": "Remaining Windows Copy restart/admission and interference QA"
+  },
+  "current_profile_sessions": [
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnd6rio2r8-0yd3101-e3pg6pt7fkeg71xnzrmk3yf8q"
+  ],
+  "task_staging_absent": [
+    ".hermes/packaging-tmp/windows-claim-power"
+  ],
+  "new_vm_overlay_or_secondary_disk_created": false,
+  "retained_environment": "ottrin-copy-cleanup-qa and its existing overlay, explicitly retained by project policy; currently shut off",
+  "unused_build_manifest_aliases_removed": [
+    "core/build.jsonl",
+    "corrected/dispatch/build.jsonl"
+  ],
+  "obsolete_first_manifest_archived": "build.jsonl.gz",
+  "other_configurations": "Not classified as obsolete or changed by this task; current shared dependency/release caches preserved",
+  "evidence_bytes_before_receipt": 180348
+}

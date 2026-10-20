@@ -1,0 +1,13 @@
+{
+  "baseline_commit": "8c07033d785a8de3c086b54055e83b4c6b67787d",
+  "application_files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "745e0b28339a8b77c9066692130729bff25be9d17bcbd5f6f328d2e2a2559030",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "8870bf49631e6d972c86df750e6b18e2301d08a49116f4b86efe23ac9fdccc14",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "4da62093a970e49c783a6bde33d14bbcd0d453810e1ece98525fa24559f1bd1f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/initialization.rs": "5e1be62953f99b97dfbc89409ed88b008e6b30826bbeb6c96479a2b04cc93b5b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "31529ec8e1b02884d4966b8682f4e27a593af2269fdbf5fd34658cb98e665e22",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs": "e48df46c07afda3bd52dca2146e3eae936f2899e3690818108cfde3e3657d011",
+    "crates/ottrin-platform/src/windows_fs.rs": "e0d8238aec6a6b32a75b39ff90741660c2b7dd2c07d4dfe5b52c74b9e1bae401"
+  },
+  "scope": "Persistent claim and paired journal preparation; complete initial-frame no-replace central publication; retain setup data and release live unstarted leases on failure; no automatic deletion"
+}

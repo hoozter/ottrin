@@ -1391,15 +1391,13 @@ impl Journal {
             .ok_or_else(|| io("invalid Copy transaction name"))?
             .to_owned();
         let central_name = OsString::from(format!("{name}.copy-journal"));
-        let local = windows_fs::create_private_temporary_file(
-            &stage.directory,
-            OsStr::new(LOCAL),
-            FILE_SHARE_READ,
-        )
-        .map_err(io)?;
+        let preparation_name = OsString::from(format!(".preparing-{name}"));
+        let local =
+            windows_fs::create_private(&stage.directory, OsStr::new(LOCAL), false, FILE_SHARE_READ)
+                .map_err(io)?;
         initialization::boundary(initialization::Point::LocalCreated, stage, central)?;
         let central_file =
-            windows_fs::create_private_temporary_file(central, &central_name, FILE_SHARE_READ)
+            windows_fs::create_private(central, &preparation_name, false, FILE_SHARE_READ)
                 .map_err(io)?;
         initialization::boundary(initialization::Point::ControlsCreated, stage, central)?;
         let creator = security::current_owner()?;
@@ -1437,8 +1435,8 @@ impl Journal {
         central_dir.sync_all().map_err(io)?;
         parent_dir.sync_all().map_err(io)?;
         initialization::boundary(initialization::Point::DirectoriesFlushed, stage, central)?;
-        // From this point onward a failed durability transition retains recovery
-        // state. Before it, the caller still owns the unstarted reservation.
+        // Keep all setup persistent. Only a complete paired Begin is published in
+        // the registry; no setup failure or owner exit may discard added data.
         let mut result = Self {
             claim: claim.take(),
             local,
@@ -1454,11 +1452,31 @@ impl Journal {
             failed: false,
             candidates: Vec::new(),
         };
-        windows_fs::persist_temporary_file(&result.local).map_err(io)?;
-        windows_fs::persist_temporary_file(&result.central).map_err(io)?;
-        result.persist(Record::Begin {
-            header: Box::new(header),
-        })?;
+        let initialized = (|| {
+            result.persist_at(
+                Record::Begin {
+                    header: Box::new(header),
+                },
+                &preparation_name,
+            )?;
+            initialization::boundary(initialization::Point::HeadersFlushed, stage, central)?;
+            crate::move_transaction::rename_windows_handle_no_replace(
+                &result.central,
+                &result.central_dir,
+                &central_name,
+            )?;
+            initialization::boundary(initialization::Point::Published, stage, central)?;
+            result.central_dir.sync_all().map_err(io)?;
+            result.bindings()?;
+            Ok(())
+        })();
+        if let Err(error) = initialized {
+            // No payload command can run before this constructor returns. Return
+            // the live unstarted lease so the caller can release it while keeping
+            // every preparation and any unrelated data intact.
+            *claim = result.claim.take();
+            return Err(error);
+        }
         Ok(result)
     }
     fn from_snapshot(
@@ -2218,6 +2236,9 @@ impl Journal {
         Ok(())
     }
     fn bindings(&self) -> Result<(), PlatformError> {
+        self.bindings_at(&self.header.central_name())
+    }
+    fn bindings_at(&self, central_name: &OsStr) -> Result<(), PlatformError> {
         match &self.claim {
             Some(claim) => claim.validate(self.state.claim_terminal())?,
             None if self.state.claim_terminal() => {}
@@ -2249,11 +2270,7 @@ impl Journal {
             self.header.stage,
         )?;
         bound(&self.stage_dir, OsStr::new(LOCAL), self.header.local_file)?;
-        bound(
-            &self.central_dir,
-            &self.header.central_name(),
-            self.header.central_file,
-        )?;
+        bound(&self.central_dir, central_name, self.header.central_file)?;
         if self.local.metadata().map_err(io)?.len() != self.length
             || self.central.metadata().map_err(io)?.len() != self.length
         {
@@ -2264,11 +2281,14 @@ impl Journal {
         Ok(())
     }
     fn persist(&mut self, record: Record) -> Result<(), PlatformError> {
+        self.persist_at(record, &self.header.central_name())
+    }
+    fn persist_at(&mut self, record: Record, central_name: &OsStr) -> Result<(), PlatformError> {
         if self.failed {
             return Err(io("Copy journal write is uncertain; data retained"));
         }
         self.state.check(&record)?;
-        self.bindings()?;
+        self.bindings_at(central_name)?;
         let payload = record_payload(&record)?;
         if self.length + FRAME_HEADER as u64 + payload.len() as u64 > log_budget() {
             return Err(io("Copy journal exceeds its staging record budget"));
@@ -2294,7 +2314,7 @@ impl Journal {
             boundary(self.sequence, step)?;
         }
         self.length += frame.len() as u64;
-        self.bindings()?;
+        self.bindings_at(central_name)?;
         self.state.apply(record)?;
         self.sequence += 1;
         self.previous = hash;
@@ -2421,19 +2441,15 @@ impl<'a> DurableStage<'a> {
                 Ok(journal) => journal,
                 Err(error) => {
                     if let Some(claim) = claim {
-                        // Temporary empty controls have closed before cleanup. Only
-                        // this live owner's validated empty stage may be discarded.
                         let location = windows_fs::location(&stage.directory)
                             .map(|p| p.display().to_string())
                             .unwrap_or_else(|_| format!("native Copy stage {:?}", stage.name));
-                        return Err(match initialization::discard_empty(stage, central) {
-                            Ok(()) => claim.abort_unstarted(error),
-                            Err(cleanup) => PlatformError::CleanupPending {
-                                transaction: location,
-                                message: format!(
-                                    "{error}; unstarted Copy cleanup needs review: {cleanup}"
-                                ),
-                            },
+                        let error = claim.abort_unstarted(error);
+                        return Err(PlatformError::CleanupPending {
+                            transaction: location,
+                            message: format!(
+                                "{error}; unstarted Copy setup retained for verification"
+                            ),
                         });
                     }
                     return Err(stage_error(&stage, error));
@@ -7498,7 +7514,9 @@ mod tests {
         let src = source(&root.path().join("source"));
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        FAULT.with(|f| f.set(Some((0, Step::CentralFlushed, false))));
+        // Fail after the first payload intent: the complete initial journal is
+        // already canonical, but its staged tree is still unverified.
+        FAULT.with(|f| f.set(Some((1, Step::CentralFlushed, false))));
         assert!(stage(&src, &parent, &central).is_err());
         FAULT.with(|f| f.set(None));
         drop(src);
@@ -8271,7 +8289,28 @@ mod tests {
                 );
                 let name = stage_name(&root.path().join("destination"));
                 let inspection = inspect(&parent, &central, &name);
-                if step == Step::LocalFlushed {
+                if sequence == 0 {
+                    let names = windows_fs::directory_children(&central).unwrap();
+                    assert_eq!(names.len(), 1);
+                    assert!(names[0].to_string_lossy().starts_with(".preparing-"));
+                    let local =
+                        std::fs::read(root.path().join("destination").join(&name).join(LOCAL))
+                            .unwrap();
+                    let prepared =
+                        std::fs::read(root.path().join("central").join(&names[0])).unwrap();
+                    assert!(decode(&local).unwrap().state.header.is_some());
+                    if step == Step::LocalFlushed {
+                        assert!(prepared.is_empty());
+                    } else {
+                        assert_eq!(prepared, local);
+                    }
+                    assert!(
+                        crate::discover_retained_copy_transactions_at(&root.path().join("central"))
+                            .unwrap()
+                            .is_empty()
+                    );
+                }
+                if sequence == 0 || step == Step::LocalFlushed {
                     assert!(inspection.is_err());
                 } else {
                     let report = inspection.unwrap();

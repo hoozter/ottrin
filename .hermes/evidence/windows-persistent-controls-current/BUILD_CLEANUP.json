@@ -1,0 +1,6 @@
+{
+  "reason": "Both owned same-profile builds finished and no compiler remains; retain final native-test incremental session, remove superseded draft session",
+  "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnco4hvrf8-17yl778-1rys1zdnj7obyv3cqn3a8ole5",
+  "retained": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnco7g8w82-04r6f7b-c15kp33pc2e92vrm9drvceo6r",
+  "reclaimed_free_bytes": 548515840
+}

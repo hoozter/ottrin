@@ -1,0 +1,76 @@
+{
+  "outcome": "Persistent Windows Copy control construction component accepted; full roadmap and public Copy gates remain open",
+  "source": {
+    "baseline_commit": "8c07033d785a8de3c086b54055e83b4c6b67787d",
+    "application_files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ab733d51d7979325c83e6de3f377d0d6f16f43b616acd18cd26b74e5dd193b0e",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "cd13331fab941738a1f22c0dde5fbad5cb73d0d1d88c0449bb86a996901e2ca5",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "4da62093a970e49c783a6bde33d14bbcd0d453810e1ece98525fa24559f1bd1f",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/initialization.rs": "5e1be62953f99b97dfbc89409ed88b008e6b30826bbeb6c96479a2b04cc93b5b",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "c16381b96825352f048b4625def6ec0450fefbfe1046773b293f1dfed97010c8",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs": "e48df46c07afda3bd52dca2146e3eae936f2899e3690818108cfde3e3657d011",
+      "crates/ottrin-platform/src/windows_fs.rs": "e0d8238aec6a6b32a75b39ff90741660c2b7dd2c07d4dfe5b52c74b9e1bae401"
+    },
+    "scope": "Persistent claim and paired journal preparation; complete initial-frame no-replace central publication; retain setup data and release live unstarted leases on failure; no automatic deletion",
+    "changes_since_prior_native_run": "Correct initial-record publication expectations while preserving later-record mismatch coverage; remove superseded no-op temporary promotion boundary"
+  },
+  "native_tests": {
+    "journal_core": {
+      "passed": 132,
+      "failed": 0,
+      "ignored": 6,
+      "seconds": 423.77,
+      "binary_sha256": "92e90907ac6cc8027ee4617b5b28d4039c3f7e163a117d3d9282535eeda874c8",
+      "scope": "Journal selection excludes the cleanup module; exact arguments in corrected/TEST_BINARY.json",
+      "explicit_exclusions": [
+        "test copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child ... ignored, owned subprocess for creation-time interruption tests",
+        "test copy_transaction::windows::journal::tests::windows_copy_activity_fixture ... ignored, exports an owned fixture to the native Activity integration consumer",
+        "test copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume ... ignored, requires an owned secondary NTFS volume provisioned by the native QA controller",
+        "test copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child ... ignored, child process selected by interrupted staging test",
+        "test copy_transaction::windows::journal::tests::windows_native_original_move_exit_child ... ignored, abrupt-exit child; owned temporary root supplied by parent",
+        "test copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child ... ignored, abrupt-exit child; owned empty root required"
+      ]
+    },
+    "dispatch": {
+      "passed": 5,
+      "failed": 0,
+      "seconds": 11.75,
+      "binary_sha256": "92e90907ac6cc8027ee4617b5b28d4039c3f7e163a117d3d9282535eeda874c8"
+    },
+    "earlier_focused_setup": {
+      "passed": 4,
+      "scope": "Overlaps final core; prior source before assertion corrections and removal of redundant promotion boundary"
+    },
+    "earlier_core": {
+      "passed": 130,
+      "failed": 2,
+      "scope": "Prior source; outdated initial-publication expectations corrected and rerun, not accepted as a passing suite"
+    }
+  },
+  "strict_windows_all_targets_clippy": "pass",
+  "format": "pass",
+  "power_cases": [
+    "power-prepared",
+    "power-persisted"
+  ],
+  "power_scope": "Abrupt isolated guest stops only. Host/storage remained running. Reservation metadata/re-admission checked; whole-Copy and physical power-loss gates remain open.",
+  "qa_export_cleanup": "power-persisted/EXPORT_CLEANUP.json",
+  "guest_cleanup": "GUEST_CLEANUP.json",
+  "teardown": {
+    "owned_temporary_roots_absent": true,
+    "source_profile_sha256": "5DE3C3B0125B564052E1546B34395558BF0F70F1F881DABE2F8A3289FA81371D",
+    "owned_executable_processes": 0,
+    "temporary_login_credential_absent": true,
+    "source_installation_sha256": "DDD1178F7C7391D9B344B2A9EC25AED1E82188610D28D340823473D6D21F0EC3",
+    "status": "pass",
+    "winlogon_unchanged": true,
+    "owned_vm_state": "shut off"
+  },
+  "packages_changed": false,
+  "public_windows_copy_enabled": false,
+  "remaining": [
+    "Restart admission and controlled review/reclamation for unpublished journal setup/partial stages",
+    "Independent mutation and deletion interference/resource cases",
+    "Current Activity, secondary-volume, public workflow and package/platform gates"
+  ]
+}

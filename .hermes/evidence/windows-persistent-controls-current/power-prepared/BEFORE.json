@@ -1,0 +1,15 @@
+{
+  "source_sha256": "988841927a7a71a5334419bd893c8dd594a1354029ccdf4cfda3e28600b363c7",
+  "preparation_length": 1585,
+  "preparation_sha256": "690970aa7944f2fb840bcd442a046379705341c8fd007b118ab3c53d13833dae",
+  "ordinary_user": true,
+  "canonical_exists": false,
+  "foreign_sha256": "15c1e5d5c018d7728f5be57e1f1bce5e23f2cce302cbffe63afec60e996748b2",
+  "phase": "Prepared",
+  "root": "C:\\OttrinCopyCleanupQA\\power-011eba69aeddd4b9bec2c62b234d31e2",
+  "public_sha256": "2030359493c725cf528a24131f4f415a62773c2dabb6715706fb3d1b1e250029",
+  "child_pid": 1848,
+  "status": "ready-for-cut",
+  "dispatch_id": "011eba69aeddd4b9bec2c62b234d31e2",
+  "binary_sha256": "b9523b9586861bbdec4d1dc42f4da89b2db59ba3e32984a3d5cfdf007bc98ffd"
+}

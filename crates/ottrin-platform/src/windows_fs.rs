@@ -142,15 +142,6 @@ pub(crate) unsafe fn open_relative(
     name: &OsStr,
     options: RelativeOptions,
 ) -> io::Result<File> {
-    unsafe { open_relative_with_lifetime(parent, name, options, false) }
-}
-
-unsafe fn open_relative_with_lifetime(
-    parent: &File,
-    name: &OsStr,
-    options: RelativeOptions,
-    delete_on_close: bool,
-) -> io::Result<File> {
     let mut wide = valid_component(name)?;
     let unicode = UNICODE_STRING {
         Length: (wide.len() * 2) as u16,
@@ -181,11 +172,6 @@ unsafe fn open_relative_with_lifetime(
                 FILE_OPEN
             },
             FILE_OPEN_REPARSE_POINT
-                | if delete_on_close {
-                    FILE_DELETE_ON_CLOSE
-                } else {
-                    0
-                }
                 | FILE_SYNCHRONOUS_IO_NONALERT
                 | match options.directory {
                     Some(true) => FILE_DIRECTORY_FILE,
@@ -338,7 +324,6 @@ impl PerObjectFile {
             directory,
             sharing,
             windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED | SYNCHRONIZE,
-            false,
         )
         .map(Self)
     }
@@ -390,47 +375,7 @@ pub(crate) fn create_private(
         directory,
         sharing,
         FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
-        false,
     )
-}
-
-/// Atomic private creation with kernel cleanup if the owner exits before
-/// promotion. Only this newly created file is ephemeral; no existing entry is
-/// adopted or collected. Keep its writer held through durable publication.
-pub(crate) fn create_private_temporary_file(
-    parent: &File,
-    name: &OsStr,
-    sharing: u32,
-) -> io::Result<File> {
-    create_private_with_access(
-        parent,
-        name,
-        false,
-        sharing,
-        FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
-        true,
-    )
-}
-
-/// Promote the same held file after its complete contents and destination
-/// namespace are durable. The legacy disposition API cannot clear a create-time
-/// delete-on-close flag. Retain the writer throughout this extended transition.
-pub(crate) fn persist_temporary_file(file: &File) -> io::Result<()> {
-    let info = FILE_DISPOSITION_INFO_EX {
-        Flags: FILE_DISPOSITION_FLAG_ON_CLOSE,
-    };
-    if unsafe {
-        SetFileInformationByHandle(
-            file.as_raw_handle().cast(),
-            FileDispositionInfoEx,
-            ptr::from_ref(&info).cast(),
-            size_of::<FILE_DISPOSITION_INFO_EX>() as u32,
-        )
-    } == 0
-    {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(())
 }
 
 fn create_private_with_access(
@@ -439,7 +384,6 @@ fn create_private_with_access(
     directory: bool,
     sharing: u32,
     access: u32,
-    delete_on_close: bool,
 ) -> io::Result<File> {
     let identity =
         crate::move_recovery::stable_identity_from_handle(parent).map_err(io::Error::other)?;
@@ -474,7 +418,7 @@ fn create_private_with_access(
     let security = LocalSecurity::private()?;
     // The owned descriptor remains alive until NtCreateFile returns.
     unsafe {
-        open_relative_with_lifetime(
+        open_relative(
             parent,
             name,
             RelativeOptions {
@@ -486,7 +430,6 @@ fn create_private_with_access(
                 sharing,
                 security: security.as_raw().cast(),
             },
-            delete_on_close,
         )
     }
 }

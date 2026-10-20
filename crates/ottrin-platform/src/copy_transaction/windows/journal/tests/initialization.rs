@@ -37,11 +37,13 @@ fn stages(root: &Path) -> Vec<std::path::PathBuf> {
         .collect()
 }
 #[test]
-fn windows_native_copy_preheader_errors_remove_empty_setup_and_release_name() {
+fn windows_native_copy_setup_errors_preserve_controls_and_release_unstarted_name() {
     for point in [
         setup::Point::LocalCreated,
         setup::Point::ControlsCreated,
         setup::Point::DirectoriesFlushed,
+        setup::Point::HeadersFlushed,
+        setup::Point::Published,
     ] {
         let root = tempfile::tempdir().unwrap();
         fixture(root.path());
@@ -53,11 +55,24 @@ fn windows_native_copy_preheader_errors_remove_empty_setup_and_release_name() {
         let error = create(root.path(), &parent, &central).err().unwrap();
         drop(reset);
         assert!(
-            matches!(error, PlatformError::Io(_)),
+            matches!(error, PlatformError::CleanupPending { .. }),
             "{point:?}: {error:?}"
         );
-        assert!(stages(root.path()).is_empty());
-        assert_eq!(windows_fs::directory_children(&central).unwrap().len(), 0);
+        let stages = stages(root.path());
+        assert_eq!(stages.len(), 1);
+        assert!(stages[0].join(LOCAL).exists());
+        let names = windows_fs::directory_children(&central).unwrap();
+        assert_eq!(
+            names.len(),
+            usize::from(point != setup::Point::LocalCreated)
+        );
+        assert_eq!(
+            names
+                .iter()
+                .filter(|n| super::super::discovery::registry_id(n).is_some())
+                .count(),
+            usize::from(point == setup::Point::Published),
+        );
         assert!(!root.path().join("destination/copy").exists());
         assert_eq!(
             std::fs::read(root.path().join("source/nested/file")).unwrap(),
@@ -76,27 +91,35 @@ fn windows_native_copy_preheader_central_collision_preserves_foreign_record_and_
     let central = owner(&root.path().join("central"));
     let reset = Reset;
     setup::HANDOFF.with(|h| {
-        *h.borrow_mut() = Some(Box::new(|_, central, name| {
-            let id = name
-                .to_str()
-                .unwrap()
-                .strip_prefix(".ottrin-copy-")
+        *h.borrow_mut() = Some((
+            setup::Point::LocalCreated,
+            Box::new(|_, central, name| {
+                let id = name
+                    .to_str()
+                    .unwrap()
+                    .strip_prefix(".ottrin-copy-")
+                    .unwrap();
+                let mut file = windows_fs::create_private(
+                    central,
+                    OsStr::new(&format!("{id}.copy-journal")),
+                    false,
+                    FILE_SHARE_READ,
+                )
                 .unwrap();
-            let mut file = windows_fs::create_private(
-                central,
-                OsStr::new(&format!("{id}.copy-journal")),
-                false,
-                FILE_SHARE_READ,
-            )
-            .unwrap();
-            file.write_all(b"foreign recovery record").unwrap();
-            file.sync_all().unwrap();
-        }))
+                file.write_all(b"foreign recovery record").unwrap();
+                file.sync_all().unwrap();
+            }),
+        ))
     });
     assert!(create(root.path(), &parent, &central).is_err());
     drop(reset);
-    assert!(stages(root.path()).is_empty());
+    assert_eq!(stages(root.path()).len(), 1);
     let names = windows_fs::directory_children(&central).unwrap();
+    assert_eq!(names.len(), 2);
+    let names: Vec<_> = names
+        .into_iter()
+        .filter(|n| super::super::discovery::registry_id(n).is_some())
+        .collect();
     assert_eq!(names.len(), 1);
     assert_eq!(
         std::fs::read(root.path().join("central").join(&names[0])).unwrap(),
@@ -109,7 +132,7 @@ fn windows_native_copy_preheader_central_collision_preserves_foreign_record_and_
     );
 }
 #[test]
-fn windows_native_copy_preheader_cleanup_preserves_unexpected_stage_content_and_claim() {
+fn windows_native_copy_preheader_failure_preserves_unexpected_stage_content_and_releases_name() {
     let root = tempfile::tempdir().unwrap();
     fixture(root.path());
     let parent = owner(&root.path().join("destination"));
@@ -117,13 +140,20 @@ fn windows_native_copy_preheader_cleanup_preserves_unexpected_stage_content_and_
     let reset = Reset;
     setup::FAULT.with(|f| f.set(Some(setup::Point::LocalCreated)));
     setup::HANDOFF.with(|h| {
-        *h.borrow_mut() = Some(Box::new(|stage, _, _| {
-            let mut file =
-                windows_fs::create_private(stage, OsStr::new("foreign"), false, FILE_SHARE_READ)
-                    .unwrap();
-            file.write_all(b"must retain").unwrap();
-            file.sync_all().unwrap();
-        }))
+        *h.borrow_mut() = Some((
+            setup::Point::LocalCreated,
+            Box::new(|stage, _, _| {
+                let mut file = windows_fs::create_private(
+                    stage,
+                    OsStr::new("foreign"),
+                    false,
+                    FILE_SHARE_READ,
+                )
+                .unwrap();
+                file.write_all(b"must retain").unwrap();
+                file.sync_all().unwrap();
+            }),
+        ))
     });
     assert!(matches!(
         create(root.path(), &parent, &central),
@@ -136,10 +166,82 @@ fn windows_native_copy_preheader_cleanup_preserves_unexpected_stage_content_and_
         std::fs::read(stages[0].join("foreign")).unwrap(),
         b"must retain"
     );
-    assert!(!stages[0].join(LOCAL).exists());
+    assert!(stages[0].join(LOCAL).exists());
     assert!(windows_fs::directory_children(&central).unwrap().is_empty());
-    assert!(matches!(
-        create(root.path(), &parent, &central),
-        Err(PlatformError::DestinationExists(_))
-    ));
+    drop(create(root.path(), &parent, &central).unwrap());
+}
+
+#[test]
+fn windows_native_copy_setup_failure_preserves_streams_on_both_controls() {
+    for point in [
+        setup::Point::LocalCreated,
+        setup::Point::ControlsCreated,
+        setup::Point::HeadersFlushed,
+        setup::Point::Published,
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let reset = Reset;
+        setup::FAULT.with(|f| f.set(Some(point)));
+        setup::HANDOFF.with(|h| {
+            *h.borrow_mut() = Some((
+                point,
+                Box::new(move |stage, central, name| {
+                    let local = windows_fs::location(stage).unwrap().join(LOCAL);
+                    std::fs::write(
+                        format!("{}:foreign", local.display()),
+                        b"local foreign bytes",
+                    )
+                    .unwrap();
+                    if point != setup::Point::LocalCreated {
+                        let id = name
+                            .to_str()
+                            .unwrap()
+                            .strip_prefix(".ottrin-copy-")
+                            .unwrap();
+                        let name = if point == setup::Point::Published {
+                            format!("{id}.copy-journal")
+                        } else {
+                            format!(".preparing-{id}")
+                        };
+                        let path = windows_fs::location(central).unwrap().join(name);
+                        std::fs::write(
+                            format!("{}:foreign", path.display()),
+                            b"central foreign bytes",
+                        )
+                        .unwrap();
+                    }
+                }),
+            ));
+        });
+        assert!(matches!(
+            create(root.path(), &parent, &central),
+            Err(PlatformError::CleanupPending { .. })
+        ));
+        drop(reset);
+        let stages = stages(root.path());
+        assert_eq!(
+            std::fs::read(format!("{}:foreign", stages[0].join(LOCAL).display())).unwrap(),
+            b"local foreign bytes"
+        );
+        let names = windows_fs::directory_children(&central).unwrap();
+        if point != setup::Point::LocalCreated {
+            assert_eq!(names.len(), 1);
+            assert_eq!(
+                std::fs::read(format!(
+                    "{}:foreign",
+                    root.path().join("central").join(&names[0]).display()
+                ))
+                .unwrap(),
+                b"central foreign bytes"
+            );
+        }
+        drop(create(root.path(), &parent, &central).unwrap());
+        assert_eq!(
+            std::fs::read(format!("{}:foreign", stages[0].join(LOCAL).display())).unwrap(),
+            b"local foreign bytes"
+        );
+    }
 }

@@ -1,0 +1,7 @@
+{
+  "id": "cbc1639634ad76375cafe9bf5bb497ff",
+  "status": "dispatched",
+  "test_arguments": "copy_transaction::windows::journal:: --skip copy_transaction::windows::journal::tests::cleanup:: --nocapture --test-threads=1",
+  "transferred_sha256": "92e90907ac6cc8027ee4617b5b28d4039c3f7e163a117d3d9282535eeda874c8",
+  "watchdog_ms": 900000
+}

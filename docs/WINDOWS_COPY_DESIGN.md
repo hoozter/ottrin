@@ -9,7 +9,7 @@ in the acceptance section below and the roadmap checkpoint.
 
 ## Confirmed temporary-stream isolation gap
 
-Native probes with the current temporary-file access mask/private descriptor
+Native probes with the earlier temporary-file access mask/private descriptor
 confirm that FILE_SHARE_READ does not exclude a second named-stream writer.
 Kernel delete-on-close then removes that added data. Automatic directory lifetime
 also leaves an empty directory for directory-first close and a hard kill, and
@@ -37,12 +37,14 @@ Earlier lifetime controls:
 
 ## Current claim preparation lifecycle
 
-The current journal schema is 17 and the claim format is `OTCWCL03`. A private
-root-level preparation gets delete-on-close in the same native create call as its
-private descriptor. Only its complete flushed first Claim is renamed without
-replacement into a target bucket; directory flushes precede clearing temporary
-deletion. Process exit removes unfinished temporary files, but a real abrupt
-Windows guest stop left one complete unpublished preparation behind.
+The current journal schema is 17 and the claim format is `OTCWCL03`. New controls
+are ordinary persistent private files. There is no delete-on-close factory or
+in-place temporary disposition transition. A root-level claim preparation is
+flushed and verified before held-handle no-replace publication into its target
+bucket. Close, an ordinary construction error or process termination preserves
+unpublished bytes, including unrelated added streams. Empty/partial frames do not
+occupy canonical keys and do not acquire deletion authority from their names.
+Published keys always begin with a complete first Claim.
 
 Explicit Copy admission now examines root-level preparation candidates through
 held native directories, with a 4,096-entry work budget. A name only selects a
@@ -61,24 +63,37 @@ Focused ordinary-user native regression passes 39 checks, including four new
 preparation cleanup tests. The broader journal and post-change guest-power scopes
 are recorded separately in the roadmap and acceptance receipts.
 
-## Live-owner pre-header rollback
+## Persistent journal setup and live-owner failure
 
-Local and central journal files begin as private delete-on-close creations. The
-caller keeps its unstarted destination claim until both controls and their native
-metadata are prepared and the containing directories have flushed. A failure
-before that boundary closes the empty temporary controls. The live constructor
-may discard only its own identity-bound empty stage: private metadata/streams and
-an empty native child listing must validate first. Both containing namespaces
-are flushed before releasing the unstarted claim. A colliding central record is
-never adopted or removed, and unexpected stage content prevents cleanup and
-keeps the reservation with an explicit review error.
+The local journal and central `.preparing-<transaction>` control are private
+persistent creations. Unpublished central preparations do not match registry
+candidate names. One journal writer and frame encoder handle both initial and
+subsequent records; initial binding checks use the held preparation's actual name.
+Only after the complete paired Begin frame is flushed is the central handle
+renamed without replacement to `<transaction>.copy-journal`, followed by a registry
+directory flush and normal canonical binding validation. No payload command runs
+before this constructor returns successfully.
 
-At the durable-setup boundary, ownership transfers into the journal. Temporary
-deletion is cleared before Begin is appended; failures from that transition
-onward retain uncertain recovery state. No candidate or payload creation occurs
-before successful journal construction. This rollback grants no authority over
-unregistered stages found after a crash, nor does it collect partial anchors or
-unknown setup fragments on restart.
+A live construction error returns the unstarted claim to its caller for release.
+Every setup control/stage is preserved, and the error reports retained setup for
+verification. Foreign canonical collisions and added local/central streams stay
+intact. The former empty-stage rollback and automatic file-disposition paths are
+removed. A fresh destination reservation can proceed after successful live-owner
+release. A hard exit can still leave an unstarted reservation plus stage; existing
+conservative admission must preserve that ambiguous construction. Restart recovery
+and controlled reclamation for these unpublished setups remain open work, as do
+resource bounds and broader independent deletion/cleanup interference cases.
+
+Four focused ordinary-account setup tests first passed. The corrected source then
+passes the full core journal selection (132 passed, six explicit exclusions),
+five separate dispatch tests and strict Windows all-target Clippy. Coverage includes
+five setup failure boundaries, canonical collision preservation, unexpected stage
+content, added streams on both controls, live retry, publication races and hard
+termination with added claim-stream data. Guest cuts at complete-unpublished and
+published-claim barriers both recover fresh admission with protected bytes intact.
+Those cuts test reservation lifetime, not whole-Copy or physical-device power loss.
+Exact source/executable scopes, exclusions and teardown:
+`.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
 
 ## Complete outcome
 

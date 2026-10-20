@@ -143,8 +143,7 @@ mod tests {
                 .unwrap();
             let name = self.preparation.file_name().unwrap();
             let mut file =
-                windows_fs::create_private_temporary_file(root.root(), name, FILE_SHARE_READ)
-                    .unwrap();
+                windows_fs::create_private(root.root(), name, false, FILE_SHARE_READ).unwrap();
             let claim = Claim::capture(
                 &self.parent,
                 &self.central,
@@ -165,9 +164,6 @@ mod tests {
                 .unwrap();
             file.sync_all().unwrap();
             root.writable_root().unwrap().sync_all().unwrap();
-            // Model the complete persisted file observed after the real guest
-            // power cut, rather than relying on normal process close to leave it.
-            windows_fs::persist_temporary_file(&file).unwrap();
             file
         }
         fn admit(&self, id: char) -> Result<Lease, PlatformError> {

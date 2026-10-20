@@ -1,0 +1,19 @@
+{
+  "scope": "Pre-cut reports were exported to the host before destruction. Guest report bytes were not flushed and became NUL after the cut; application records and post-boot recovery were verified independently.",
+  "observations": [
+    {
+      "file": "POWER_READY.json",
+      "after_cut_bytes": 749,
+      "after_cut_all_nul": true,
+      "after_cut_sha256": "5ee22d093851bc73da6dacfcb95436d732c09c90e009b201e0183a5b35918b50",
+      "host_pre_cut_dispatch_verified": true
+    },
+    {
+      "file": "POWER_LIVE.json",
+      "after_cut_bytes": 358,
+      "after_cut_all_nul": true,
+      "after_cut_sha256": "09e7685da39962d29ccd545f78601cf4a6d016216eb0b60f3d6dda0e25ac1f8d",
+      "host_pre_cut_dispatch_verified": true
+    }
+  ]
+}
