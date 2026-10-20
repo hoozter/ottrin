@@ -585,21 +585,26 @@ pub(super) fn stage_entry_streams(
             "candidate aliases the source, has a different type, or is not empty",
         ));
     }
-    if transfer(candidate, None, &mut |_| Ok(()))?
+    if transfer(candidate, None, &mut |_| progress(0))?
         .iter()
         .any(|stream| stream.kind != DATA || stream.bytes != 0)
     {
         return Err(io("candidate already contains named data or metadata"));
     }
-    let copied = transfer(source, Some(candidate), &mut progress)?;
+    let mut copied_bytes = 0;
+    let copied = transfer(source, Some(candidate), &mut |bytes| {
+        progress(bytes)?;
+        copied_bytes = bytes;
+        Ok(())
+    })?;
     candidate.sync_all().map_err(io)?;
     if !target
         .identity
         .same_object(stable_identity_from_handle(candidate).map_err(io)?)
         || version(source)? != before
-        || transfer(source, None, &mut |_| Ok(()))? != copied
+        || transfer(source, None, &mut |_| progress(copied_bytes))? != copied
         || version(source)? != before
-        || transfer(candidate, None, &mut |_| Ok(()))? != copied
+        || transfer(candidate, None, &mut |_| progress(copied_bytes))? != copied
     {
         return Err(io("source changed or staged streams do not match"));
     }
@@ -1454,6 +1459,94 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_copy_verification_cancellation_preserves_source_and_retains_candidate() {
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source");
+        let dst = root.path().join("candidate");
+        let original = vec![37u8; BUFFER_BYTES * 4 + 17];
+        std::fs::write(&src, &original).unwrap();
+        let source = source(&src);
+        let target = candidate(&dst);
+        let mut complete_callbacks = 0;
+        let mut previous = 0;
+        let error = stage_entry_streams(&source, &target, |bytes| {
+            assert!(
+                bytes >= previous,
+                "verification must not reset copy progress"
+            );
+            previous = bytes;
+            if bytes == original.len() as u64 {
+                complete_callbacks += 1;
+                // First is copy completion, second starts source verification,
+                // third follows its first native read chunk.
+                if complete_callbacks == 3 {
+                    return Err(io("stopped during stream verification"));
+                }
+            }
+            Ok(())
+        })
+        .unwrap_err();
+        assert!(
+            error
+                .to_string()
+                .contains("stopped during stream verification")
+        );
+        assert_eq!(complete_callbacks, 3);
+        assert_eq!(std::fs::read(&src).unwrap(), original);
+        assert_eq!(std::fs::read(&dst).unwrap(), original);
+        // Aborted backup contexts must leave no native handle behind.
+        drop((source, target));
+        let exclusive = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .share_mode(0)
+            .open(&dst)
+            .unwrap();
+        assert_eq!(exclusive.metadata().unwrap().len(), original.len() as u64);
+    }
+
+    #[test]
+    fn windows_native_copy_verification_metadata_reads_observe_cancellation_and_retry() {
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source");
+        let dst = root.path().join("candidate");
+        let original = vec![37u8; BUFFER_BYTES * 4 + 17];
+        std::fs::write(&src, &original).unwrap();
+        let source = source(&src);
+        let target = candidate(&dst);
+        let evidence = metadata::stage_entry_payload(&source, &target, |_| Ok(())).unwrap();
+        for verify_source in [true, false] {
+            let mut calls = 0;
+            let mut cancellation = || {
+                calls += 1;
+                if calls == 3 {
+                    Err(io("stopped during metadata payload verification"))
+                } else {
+                    Ok(())
+                }
+            };
+            let result = if verify_source {
+                evidence.validate_source(&source, &mut cancellation)
+            } else {
+                evidence.validate_candidate_streams(&target, &mut cancellation)
+            };
+            assert!(
+                result
+                    .unwrap_err()
+                    .to_string()
+                    .contains("stopped during metadata payload verification")
+            );
+            assert_eq!(calls, 3);
+            evidence.validate_source(&source, || Ok(())).unwrap();
+            evidence
+                .validate_candidate_streams(&target, || Ok(()))
+                .unwrap();
+        }
+        assert_eq!(std::fs::read(&src).unwrap(), original);
+        assert_eq!(std::fs::read(&dst).unwrap(), original);
+    }
+
+    #[test]
     fn windows_native_copy_staging_write_failure_releases_native_contexts() {
         let root = tempfile::tempdir().unwrap();
         let src = root.path().join("source");
@@ -1701,8 +1794,10 @@ mod metadata_tests {
                 .count(),
             2
         );
-        staged.validate_source(&source).unwrap();
-        staged.validate_candidate_streams(&candidate).unwrap();
+        staged.validate_source(&source, || Ok(())).unwrap();
+        staged
+            .validate_candidate_streams(&candidate, || Ok(()))
+            .unwrap();
         // Stream rereads may update access time. The operation itself checked
         // final metadata after stream verification; compare the stable fields.
         let before = metadata::basic(&source).unwrap();
@@ -1766,7 +1861,7 @@ mod metadata_tests {
                 "directories have no synthetic unnamed stream"
             );
             staged.validate_candidate_metadata(&candidate).unwrap();
-            staged.validate_source(&source).unwrap();
+            staged.validate_source(&source, || Ok(())).unwrap();
         }
     }
 
@@ -1814,11 +1909,17 @@ mod metadata_tests {
             let changed = if mutate_source { &src } else { &dst };
             std::fs::write(format!("{}:note:$DATA", changed.display()), b"modified").unwrap();
             if mutate_source {
-                assert!(staged.validate_source(&source).is_err());
-                staged.validate_candidate_streams(&candidate).unwrap();
+                assert!(staged.validate_source(&source, || Ok(())).is_err());
+                staged
+                    .validate_candidate_streams(&candidate, || Ok(()))
+                    .unwrap();
             } else {
-                assert!(staged.validate_candidate_streams(&candidate).is_err());
-                staged.validate_source(&source).unwrap();
+                assert!(
+                    staged
+                        .validate_candidate_streams(&candidate, || Ok(()))
+                        .is_err()
+                );
+                staged.validate_source(&source, || Ok(())).unwrap();
             }
             let retained = if mutate_source { &dst } else { &src };
             assert_eq!(
@@ -1895,7 +1996,7 @@ mod metadata_tests {
         let candidate = rw(&dst);
         let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
         assert_eq!(evidence.streams.len(), 2);
-        evidence.validate_source(&source).unwrap();
+        evidence.validate_source(&source, || Ok(())).unwrap();
         evidence.validate_candidate_metadata(&candidate).unwrap();
         assert_eq!(std::fs::read(&src).unwrap(), std::fs::read(&dst).unwrap());
         assert_eq!(
@@ -1963,7 +2064,7 @@ mod metadata_tests {
         let mut info = metadata::basic(&source).unwrap();
         info.FileAttributes = FILE_ATTRIBUTE_HIDDEN;
         set_basic(&source, &info);
-        assert!(evidence.validate_source(&source).is_err());
+        assert!(evidence.validate_source(&source, || Ok(())).is_err());
     }
     #[test]
     fn windows_native_copy_metadata_refuses_candidate_alias_and_same_size_tampering() {
@@ -1978,7 +2079,11 @@ mod metadata_tests {
         candidate.seek(SeekFrom::Start(0)).unwrap();
         candidate.write_all(b"edited primary data").unwrap();
         set_basic(&candidate, &before);
-        assert!(evidence.validate_candidate_streams(&candidate).is_err());
+        assert!(
+            evidence
+                .validate_candidate_streams(&candidate, || Ok(()))
+                .is_err()
+        );
         assert_eq!(std::fs::read(src).unwrap(), b"source primary data");
     }
 

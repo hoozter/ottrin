@@ -192,10 +192,15 @@ impl StagedEntry {
         Ok(())
     }
 
-    pub(super) fn validate_source(&self, source: &File) -> Result<(), PlatformError> {
+    pub(super) fn validate_source(
+        &self,
+        source: &File,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress()?;
         if version(source)? != self.source
             || compression(source)? != self.compression
-            || super::transfer(source, None, &mut |_| Ok(()))? != self.streams
+            || super::transfer(source, None, &mut |_| progress())? != self.streams
             || version(source)? != self.source
         {
             return Err(io("source metadata changed during staging"));
@@ -203,9 +208,14 @@ impl StagedEntry {
         Ok(())
     }
 
-    pub(super) fn validate_candidate_streams(&self, candidate: &File) -> Result<(), PlatformError> {
+    pub(super) fn validate_candidate_streams(
+        &self,
+        candidate: &File,
+        mut progress: impl FnMut() -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        progress()?;
         if super::stable_identity_from_handle(candidate).map_err(io)? != self.candidate_identity
-            || super::transfer(candidate, None, &mut |_| Ok(()))? != self.streams
+            || super::transfer(candidate, None, &mut |_| progress())? != self.streams
         {
             return Err(io("candidate identity or streams changed"));
         }
@@ -323,7 +333,7 @@ impl StagedEntry {
 pub(super) fn stage_entry_payload(
     source: &File,
     candidate: &File,
-    progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<StagedEntry, PlatformError> {
     let before = version(source)?;
     if before.attributes & !ADMITTED_ATTRIBUTES != 0 {
@@ -352,7 +362,11 @@ pub(super) fn stage_entry_payload(
     {
         windows_fs::set_empty_directory_case_policy(candidate, expected).map_err(io)?;
     }
-    let streams = stage_entry_streams(source, candidate, progress)?;
+    let mut copied_bytes = 0;
+    let streams = stage_entry_streams(source, candidate, |bytes| {
+        copied_bytes = bytes;
+        progress(bytes)
+    })?;
     if compression(candidate)? != format {
         set_compression(candidate, format)?;
     }
@@ -363,9 +377,9 @@ pub(super) fn stage_entry_payload(
         accessed,
         compression: format,
     };
-    result.validate_source(source)?;
-    result.validate_candidate_streams(candidate)?;
+    result.validate_source(source, || progress(copied_bytes))?;
+    result.validate_candidate_streams(candidate, || progress(copied_bytes))?;
     result.apply_final_metadata(candidate)?;
-    result.validate_source(source)?;
+    result.validate_source(source, || progress(copied_bytes))?;
     Ok(result)
 }

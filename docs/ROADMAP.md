@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-20
+Last updated: 2026-10-21
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -130,6 +130,26 @@ bounded NTFS cross-volume evidence; broader filesystems/providers, EFS, measured
 application resources, interference and public/package acceptance remain open.
 Exact executable, volume identities, scope and teardown:
 `.hermes/evidence/windows-sparse-cross-volume-current/ACCEPTANCE.json`.
+
+## Windows Copy verification cancellation
+
+Source and candidate rereads previously discarded the operation callback, so
+Stop could be ignored throughout complete verification passes. The existing
+stream/metadata/tree path now forwards cancellation at every verification chunk,
+including empty-candidate admission and tree finalization. Verification retains
+the last copied-byte count rather than counting rereads as new copied data.
+
+A native regression reproduces the old defect (50 other checks passed, the new
+verification cancellation failed), then passes after the fix. Both source and
+candidate metadata verification stop mid-read and retry successfully. Durable
+staging cancellation retains exact source/candidate bytes and journal, leaves the
+public destination absent, and refuses publication of the incomplete stage.
+All 52 stream/metadata/tree checks, the six sparse checks and the focused durable
+cancellation case pass on one recorded executable. The same executable passes
+all 140 core journal tests with seven explicit fixture exclusions. This is cooperative cancellation between native
+calls; blocked-device/network I/O interruption remains required. Packages are
+unchanged and public Windows Copy remains gated. Exact scopes and teardown:
+`.hermes/evidence/windows-copy-verification-cancel-current/ACCEPTANCE.json`.
 
 ## Current Windows Copy implementation checkpoint
 

@@ -263,7 +263,7 @@ mod native {
                 Ok(())
             })
             .unwrap();
-            evidence.validate_source(&source).unwrap();
+            evidence.validate_source(&source, || Ok(())).unwrap();
             evidence.validate_candidate_metadata(&target).unwrap();
             assert_eq!(version(&source).unwrap(), before);
             assert_eq!(
@@ -333,7 +333,11 @@ mod native {
         writer.write_all(b"foreign bytes").unwrap();
         target.sync_all().unwrap();
         assert_eq!(target.metadata().unwrap().len(), 16 * 1024 * 1024);
-        assert!(evidence.validate_candidate_streams(&target).is_err());
+        assert!(
+            evidence
+                .validate_candidate_streams(&target, || Ok(()))
+                .is_err()
+        );
         assert_eq!(version(&source).unwrap(), before);
     }
 }

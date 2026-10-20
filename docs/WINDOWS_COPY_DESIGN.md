@@ -467,8 +467,20 @@ file/directory/known-link payload path. They require compatible buffered synchro
 handles and an independent, matching-kind candidate with no existing payload.
 Directory handles bypass byte-offset seeking; directory children belong to the
 tree orchestrator. Native BackupRead/BackupWrite contexts are released on success,
-cancellation, failure and unwind. Local chunk boundaries check cancellation; this
-is not blocked-device/network I/O isolation.
+cancellation, failure and unwind. Candidate admission, copy rereads, metadata
+verification and tree finalization all forward the caller's cancellation callback
+through each backup-stream chunk. Verification reports the last copied-byte
+count, so rereads neither reset progress nor count as extra copied data. This is
+cooperative cancellation between native calls, not blocked-device/network I/O
+isolation.
+
+Blocked-I/O cancellation still needs an operation-owned native worker boundary
+and real blocked-call acceptance. A cancellation request cannot release path
+ownership or announce completion until that worker has actually stopped and its
+journal outcome has been inspected. Windows cancellation can complete normally,
+abort or fail, and must never target a later operation on a reused thread. See
+[CancelSynchronousIo](https://learn.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiset-cancelsynchronousio)
+and [Microsoft cancellation considerations](https://learn.microsoft.com/en-us/windows/win32/fileio/canceling-pending-i-o-operations).
 
 The codec streams primary data, alternate streams, extended attributes and admitted
 property records through bounded buffers. Names retain raw UTF-16, each stream has

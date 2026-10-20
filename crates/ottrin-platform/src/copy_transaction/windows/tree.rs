@@ -102,8 +102,12 @@ impl StagedTree {
         for entry in &self.entries {
             progress(0)?;
             entry.payload.validate_after_children(&entry.candidate)?;
-            entry.payload.validate_source(&entry.source.handle)?;
-            entry.payload.validate_candidate_streams(&entry.candidate)?;
+            entry
+                .payload
+                .validate_source(&entry.source.handle, || progress(0))?;
+            entry
+                .payload
+                .validate_candidate_streams(&entry.candidate, || progress(0))?;
         }
         // All namespace/content reads finish before restoring parent times.
         self.namespace()?;

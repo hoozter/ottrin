@@ -4064,6 +4064,7 @@ mod tests {
     mod initialization;
     mod name_release_action;
     mod sparse_workflow;
+    mod verification_cancel;
 
     use super::*;
     use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt, path::Path};
