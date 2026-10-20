@@ -119,6 +119,18 @@ remain open. Exact source, broader regression scopes and cleanup:
 `.hermes/evidence/windows-sparse-current/ACCEPTANCE.json`.
 No packages changed and public Windows Copy remains disabled.
 
+A subsequent native cross-volume check passes four mixed-tree cases between
+NTFS volumes with 4 KiB and 64 KiB allocation units: both directions, each with
+sparse-primary and sparse-named-only data. Data starts off allocation boundaries;
+the sparse primary has a 1 TiB logical EOF. The cases publish, discover verified
+trees, remove their sources, Undo and reclaim retained data while preserving an
+unrelated destination file. The six existing sparse checks also pass on the same
+executable (the cross-volume entry is explicitly selected separately). This adds
+bounded NTFS cross-volume evidence; broader filesystems/providers, EFS, measured
+application resources, interference and public/package acceptance remain open.
+Exact executable, volume identities, scope and teardown:
+`.hermes/evidence/windows-sparse-cross-volume-current/ACCEPTANCE.json`.
+
 ## Current Windows Copy implementation checkpoint
 
 Claim and journal setup use persistent private controls. Claims publish only a

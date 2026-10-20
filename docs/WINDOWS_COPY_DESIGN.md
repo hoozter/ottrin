@@ -561,8 +561,16 @@ EA preservation checks remain intact.
 Exact source/executable scopes, earlier raw-format probes, fixture corrections,
 broader regressions and teardown are recorded in
 `.hermes/evidence/windows-sparse-current/ACCEPTANCE.json`.
-Native cross-volume/filesystem, wider storage/provider, blocked-I/O and resource
-acceptance remain separate gates. No package changed; public Windows Copy stays
+The later cross-volume test reuses the same durable workflow on two owned NTFS
+volumes, with 4 KiB versus 64 KiB allocation units. All four cases pass: both
+copy directions, each with and without a sparse primary. Sparse file/directory
+named streams and unaligned data offsets exercise allocation-independent
+fingerprints through publication, discovery, source-free Undo and cleanup.
+The 1 TiB logical primary also passes on the small secondary volume. This is a
+logical preservation check, not throughput or physical crash acceptance.
+Evidence: `.hermes/evidence/windows-sparse-cross-volume-current/ACCEPTANCE.json`.
+Broader filesystem/provider, EFS, blocked-I/O and resource acceptance remain
+separate gates. No package changed; public Windows Copy stays
 disabled. The native format is documented in [Microsoft's sparse block format](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-bkup/6be866e6-6d1f-4183-8b78-b10c2941228a).
 
 ## Known symbolic links and junctions
