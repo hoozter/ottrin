@@ -142,9 +142,9 @@ Before enabling the public path, implement and accept:
    their restrictive descriptor atomically. Revalidate bindings through held
    parents; remembered paths never authorize mutations.
 2. **Complete staging.** Preserve primary/named/extended/property data, directory
-   children and metadata, and supported links. Sparse/EFS and specialized
-   storage/provider/property semantics remain required.
-   Final permissions follow the accepted Copy policy independently of staging.
+   children and metadata, and supported links. NTFS sparse-stream component scope
+   is recorded below; EFS and broader storage/provider/property semantics remain
+   required. Final permissions follow the accepted Copy policy independently of staging.
 3. **Durable publication/recovery.** Record intent and ownership before mutation.
    Retain the exact displaced Overwrite target and both versions at interruption
    boundaries. Publish only verified data under recorded native authority. Copy
@@ -475,8 +475,8 @@ property records through bounded buffers. Names retain raw UTF-16, each stream h
 length and SHA-256 evidence, and both candidate and reread source must agree.
 Empty file primary streams are explicit even if omitted by native enumeration;
 directories have no synthetic primary stream. Source hard-linked names produce
-independent candidate data. Security, hard-link relationship, sparse and unknown
-backup records are refused rather than silently omitted.
+independent candidate data. Security, hard-link relationship and unknown backup
+records are refused rather than silently omitted. Sparse backup records use the validated path below.
 
 Ordinary metadata includes creation/access/write times and read-only, hidden,
 system, archive, temporary, offline and not-content-indexed attributes. A copy keeps
@@ -522,6 +522,48 @@ identities, bindings and metadata. `verify_and_finalize` repeats verification fo
 a completed stage and refuses changed metadata before normalization. Root binding
 and durable ownership belong to the enclosing journal owner. Move and Copy share
 the same native directory parser/enumerator in `windows_fs.rs`.
+
+### Sparse NTFS streams
+
+The stream engine now admits sparse primary and alternate data streams on files
+and directories. It validates each `BACKUP_SPARSE_BLOCK` against its current data
+stream, rejecting missing contexts, malformed sizes/attributes, overlap, range
+overflow, incomplete data and records after EOF. The native offset-bearing EOF
+record preserves trailing holes. Only validated native records reach BackupWrite;
+security and opaque reparse records retain their separate guards. EFS is still
+explicitly refused.
+
+Sparse evidence stores logical length and a SHA-256 fingerprint of fixed 64 KiB
+logical chunks containing nonzero data, plus the logical EOF. Zero chunks are
+implicit. The domain is `ottrin-windows-sparse-v1`; offsets and EOF are encoded
+little-endian. This fingerprints logical contents independently of native buffer
+and allocation boundaries without reading or hashing large holes. Dense-stream
+SHA-256 remains a hash of the ordinary stream bytes. Existing evidence fields and
+journal schema 17 remain authoritative; the stream sparse attribute selects this
+newly admitted fingerprint. The base file sparse attribute is checked against its
+primary stream, independently of sparse named streams.
+
+Six focused native tests pass. Coverage includes all-hole/empty files and named
+streams, directories, a compressed candidate, a 1 TiB logical sparse file,
+cancellation, same-size tampering, malformed ranges and boundary-independent
+fingerprints. The 1 TiB payload fixture reports 128 KiB through the copy-data
+callback, with at most 128 KiB allocated to each checked target data stream.
+Verification rereads are separate; this is not a whole-application I/O benchmark.
+The durable workflow stages, publishes, removes its source, Undoes and cleans up
+mixed sparse/dense trees while preserving an unrelated destination file. Both
+sparse-primary and sparse-named-only cases pass through the journal validator.
+On the final corrected executable, the core journal suite passes 139 tests with
+six explicit exclusions, all six sparse checks pass, and all 50 ordinary
+stream/metadata/tree tests pass. The EA fixture buffer now has explicit longword
+alignment and retains its native-status diagnostic. This fixes the test producer;
+EA preservation checks remain intact.
+
+Exact source/executable scopes, earlier raw-format probes, fixture corrections,
+broader regressions and teardown are recorded in
+`.hermes/evidence/windows-sparse-current/ACCEPTANCE.json`.
+Native cross-volume/filesystem, wider storage/provider, blocked-I/O and resource
+acceptance remain separate gates. No package changed; public Windows Copy stays
+disabled. The native format is documented in [Microsoft's sparse block format](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-bkup/6be866e6-6d1f-4183-8b78-b10c2941228a).
 
 ## Known symbolic links and junctions
 

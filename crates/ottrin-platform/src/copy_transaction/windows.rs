@@ -48,7 +48,6 @@ use windows_sys::Wdk::Storage::FileSystem::{
 use windows_sys::Win32::Foundation::RtlNtStatusToDosError;
 use windows_sys::Win32::Storage::FileSystem::{
     BackupRead, BackupWrite, FILE_ATTRIBUTE_DEVICE, FILE_ATTRIBUTE_ENCRYPTED,
-    FILE_ATTRIBUTE_SPARSE_FILE,
 };
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 
@@ -57,6 +56,8 @@ const BUFFER_BYTES: usize = 64 * 1024;
 const MAX_NAME_BYTES: usize = 65_534;
 const DATA: u32 = 1;
 const EXTENDED_ATTRIBUTES: u32 = 2;
+mod sparse;
+
 const ALTERNATE_DATA: u32 = 4;
 const PROPERTY_DATA: u32 = 6;
 const REPARSE_DATA: u32 = 8;
@@ -148,12 +149,10 @@ fn version(file: &File) -> Result<EntryVersion, PlatformError> {
     if !(identity.is_regular_file_without_reparse()
         || identity.is_directory_without_reparse()
         || link.is_some())
-        || basic.FileAttributes
-            & (FILE_ATTRIBUTE_DEVICE | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE)
-            != 0
+        || basic.FileAttributes & (FILE_ATTRIBUTE_DEVICE | FILE_ATTRIBUTE_ENCRYPTED) != 0
     {
         return Err(PlatformError::UnsupportedSafeCopy(
-            "this staging engine requires an ordinary file/directory or supported link, without sparse/EFS data".into(),
+            "this staging engine requires an ordinary file/directory or supported link, without EFS data".into(),
         ));
     }
     Ok(EntryVersion {
@@ -366,11 +365,15 @@ fn validate_header(header: &[u8; HEADER_BYTES]) -> Result<(u32, u32, u64, usize)
     let name = u32::from_le_bytes(header[16..20].try_into().unwrap()) as usize;
     if !matches!(
         kind,
-        DATA | EXTENDED_ATTRIBUTES | ALTERNATE_DATA | PROPERTY_DATA | REPARSE_DATA
+        DATA | EXTENDED_ATTRIBUTES | ALTERNATE_DATA | PROPERTY_DATA | REPARSE_DATA | sparse::BLOCK
     ) || bytes > i64::MAX as u64
         || name > MAX_NAME_BYTES
         || !name.is_multiple_of(2)
         || (kind == ALTERNATE_DATA) != (name != 0)
+        || (kind == sparse::BLOCK && (attributes != sparse::ATTRIBUTE || bytes < 8))
+        || (attributes & sparse::ATTRIBUTE != 0
+            && (attributes != sparse::ATTRIBUTE
+                || !matches!(kind, DATA | ALTERNATE_DATA | sparse::BLOCK)))
     {
         return Err(PlatformError::UnsupportedSafeCopy(
             "unsupported or malformed native backup record; candidate remains unpublished".into(),
@@ -392,6 +395,7 @@ fn transfer(
         .map(|file| Backup::new(file, Direction::Write))
         .transpose()?;
     let mut evidence = Vec::new();
+    let mut sparse_stream: Option<sparse::Stream> = None;
     let mut buffer = [0u8; BUFFER_BYTES];
     let mut total = 0u64;
     progress(0)?;
@@ -421,6 +425,52 @@ fn transfer(
                     .any(|unit| [0, 47, 58, 92].contains(unit)))
         {
             return Err(io("invalid alternate stream name"));
+        }
+        if matches!(kind, DATA | ALTERNATE_DATA)
+            && let Some(previous) = sparse_stream.take()
+        {
+            evidence.push(previous.finish()?);
+        }
+        if kind == sparse::BLOCK {
+            let stream = sparse_stream
+                .as_mut()
+                .ok_or_else(|| io("sparse block has no sparse data stream"))?;
+            let mut offset = [0; 8];
+            reader.read_exact(&mut offset, false)?;
+            stream.block(u64::from_le_bytes(offset), bytes - 8)?;
+            if let Some(writer) = &mut writer {
+                writer.write_all(&header)?;
+                writer.write_all(&offset)?;
+            }
+            let mut left = bytes - 8;
+            while left != 0 {
+                let count = left.min(BUFFER_BYTES as u64) as usize;
+                reader.read_exact(&mut buffer[..count], false)?;
+                stream.data(&buffer[..count])?;
+                if let Some(writer) = &mut writer {
+                    writer.write_all(&buffer[..count])?;
+                }
+                left -= count as u64;
+                total = total
+                    .checked_add(count as u64)
+                    .ok_or_else(|| io("stream length overflow"))?;
+                progress(total)?;
+            }
+            progress(total)?;
+            continue;
+        }
+        if attributes == sparse::ATTRIBUTE {
+            if bytes != 0 {
+                return Err(io(
+                    "sparse data header contains an unrecognized inline payload",
+                ));
+            }
+            sparse_stream = Some(sparse::Stream::new(kind, name_units));
+            if let Some(writer) = &mut writer {
+                writer.write_all(&header)?;
+                writer.write_all(&name)?;
+            }
+            continue;
         }
         if kind == REPARSE_DATA {
             let expected = source_version
@@ -477,6 +527,9 @@ fn transfer(
             bytes,
             sha256: format!("{:x}", hash.finalize()),
         });
+    }
+    if let Some(stream) = sparse_stream {
+        evidence.push(stream.finish()?);
     }
     reader.finish()?;
     if let Some(writer) = &mut writer {
@@ -586,6 +639,104 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_copy_sparse_backup_round_trip_preserves_trailing_holes() {
+        use windows_sys::Win32::System::{IO::DeviceIoControl, Ioctl::FSCTL_SET_SPARSE};
+        fn sparse(file: &File, length: u64, offset: u64) {
+            let mut returned = 0;
+            assert_ne!(
+                unsafe {
+                    DeviceIoControl(
+                        file.as_raw_handle().cast(),
+                        FSCTL_SET_SPARSE,
+                        ptr::null(),
+                        0,
+                        ptr::null_mut(),
+                        0,
+                        &mut returned,
+                        ptr::null_mut(),
+                    )
+                },
+                0,
+                "{}",
+                std::io::Error::last_os_error()
+            );
+            file.set_len(length).unwrap();
+            let mut file = file;
+            file.seek(SeekFrom::Start(offset)).unwrap();
+            file.write_all(b"allocated sparse data").unwrap();
+            file.sync_all().unwrap();
+        }
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("source.bin");
+        let dst = root.path().join("candidate.bin");
+        sparse(&candidate(&src), 16 * 1024 * 1024, 65536);
+        let source_named = format!("{}:thin", src.display());
+        let target_named = format!("{}:thin", dst.display());
+        sparse(
+            &candidate(Path::new(&source_named)),
+            4 * 1024 * 1024,
+            131072,
+        );
+        let read = source(&src);
+        let target = candidate(&dst);
+        let mut reader = Backup::new(&read, Direction::Read).unwrap();
+        let mut writer = Backup::new(&target, Direction::Write).unwrap();
+        let mut buffer = [0u8; BUFFER_BYTES];
+        loop {
+            let mut header = [0u8; HEADER_BYTES];
+            if !reader.read_exact(&mut header, true).unwrap() {
+                break;
+            }
+            let kind = u32::from_le_bytes(header[..4].try_into().unwrap());
+            let attributes = u32::from_le_bytes(header[4..8].try_into().unwrap());
+            let bytes = u64::from_le_bytes(header[8..16].try_into().unwrap());
+            let name_bytes = u32::from_le_bytes(header[16..20].try_into().unwrap()) as usize;
+            assert!(name_bytes <= MAX_NAME_BYTES);
+            let mut name = vec![0; name_bytes];
+            reader.read_exact(&mut name, false).unwrap();
+            println!(
+                "sparse backup record: kind={kind} attributes={attributes} bytes={bytes} name={:?}",
+                String::from_utf16_lossy(
+                    &name
+                        .chunks_exact(2)
+                        .map(|b| u16::from_le_bytes([b[0], b[1]]))
+                        .collect::<Vec<_>>()
+                )
+            );
+            writer.write_all(&header).unwrap();
+            writer.write_all(&name).unwrap();
+            let mut left = bytes;
+            while left != 0 {
+                let count = left.min(BUFFER_BYTES as u64) as usize;
+                reader.read_exact(&mut buffer[..count], false).unwrap();
+                if kind == 9 && left == bytes && count >= 8 {
+                    println!(
+                        "sparse block offset={}",
+                        u64::from_le_bytes(buffer[..8].try_into().unwrap())
+                    );
+                }
+                writer.write_all(&buffer[..count]).unwrap();
+                left -= count as u64;
+            }
+        }
+        reader.finish().unwrap();
+        writer.finish().unwrap();
+        target.sync_all().unwrap();
+        println!(
+            "source length={} target length={} source attributes={} target attributes={}",
+            read.metadata().unwrap().len(),
+            target.metadata().unwrap().len(),
+            metadata::basic(&read).unwrap().FileAttributes,
+            metadata::basic(&target).unwrap().FileAttributes
+        );
+        assert_eq!(std::fs::read(&dst).unwrap(), std::fs::read(&src).unwrap());
+        assert_eq!(
+            std::fs::read(target_named).unwrap(),
+            std::fs::read(source_named).unwrap()
+        );
+    }
+
+    #[test]
     fn windows_native_copy_staging_preserves_large_unicode_and_empty_streams() {
         let root = tempfile::tempdir().unwrap();
         let src = root.path().join("source.bin");
@@ -663,21 +814,27 @@ mod tests {
 
     pub(super) fn set_fixture_ea(file: &File) {
         use windows_sys::Wdk::Storage::FileSystem::NtSetEaFile;
-        let mut ea = [0u8; 16];
+        #[repr(align(4))]
+        struct Ea([u8; 16]);
+        let mut storage = Ea([0; 16]);
+        let ea = &mut storage.0;
         ea[5] = 4;
         ea[6..8].copy_from_slice(&3u16.to_le_bytes());
         ea[8..13].copy_from_slice(b"user\0");
         ea[13..].copy_from_slice(b"abc");
         let mut status = IO_STATUS_BLOCK::default();
+        let result = unsafe {
+            NtSetEaFile(
+                file.as_raw_handle().cast(),
+                &mut status,
+                ea.as_ptr().cast(),
+                ea.len() as u32,
+            )
+        };
         assert!(
-            unsafe {
-                NtSetEaFile(
-                    file.as_raw_handle().cast(),
-                    &mut status,
-                    ea.as_ptr().cast(),
-                    ea.len() as u32,
-                )
-            } >= 0
+            result >= 0,
+            "EA fixture NtSetEaFile failed: {result:#x} ({})",
+            std::io::Error::from_raw_os_error(unsafe { RtlNtStatusToDosError(result) } as i32)
         );
     }
 

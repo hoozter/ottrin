@@ -18,7 +18,8 @@ pub(super) const ADMITTED_ATTRIBUTES: u32 = ORDINARY_ATTRIBUTES
     | FILE_ATTRIBUTE_NORMAL
     | FILE_ATTRIBUTE_COMPRESSED
     | FILE_ATTRIBUTE_DIRECTORY
-    | FILE_ATTRIBUTE_REPARSE_POINT;
+    | FILE_ATTRIBUTE_REPARSE_POINT
+    | FILE_ATTRIBUTE_SPARSE_FILE;
 
 /// Only a paired, identity-bound rename metadata intent authorizes this write.
 /// It preserves the creation time through NTFS tunneling without rewriting

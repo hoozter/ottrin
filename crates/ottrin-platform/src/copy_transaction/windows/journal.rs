@@ -531,6 +531,7 @@ fn valid_streams(
     }
     let mut primary = 0;
     let mut reparse = 0;
+    let mut primary_sparse = false;
     for stream in streams {
         if stream.sha256.len() != 64
             || !stream
@@ -548,6 +549,14 @@ fn valid_streams(
             )
         {
             return false;
+        }
+        if stream.attributes & super::sparse::ATTRIBUTE != 0 {
+            if stream.attributes != super::sparse::ATTRIBUTE
+                || !matches!(stream.kind, super::DATA | super::ALTERNATE_DATA)
+            {
+                return false;
+            }
+            primary_sparse |= stream.kind == super::DATA;
         }
         if stream.kind == super::ALTERNATE_DATA {
             if stream.name.len() < 8
@@ -581,7 +590,10 @@ fn valid_streams(
             }
         }
     }
-    primary == usize::from(!source.directory)
+    primary_sparse
+        == (source.attributes & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_SPARSE_FILE
+            != 0)
+        && primary == usize::from(!source.directory)
         && reparse == usize::from(source.link.is_some())
         && streams
             .windows(2)
@@ -4051,6 +4063,7 @@ mod tests {
     mod creation_times;
     mod initialization;
     mod name_release_action;
+    mod sparse_workflow;
 
     use super::*;
     use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt, path::Path};

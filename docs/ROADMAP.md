@@ -99,6 +99,26 @@ This is an application-queue correction, not native cross-process target
 reservation or alias/case-policy acceptance. Those gates and the full roadmap
 remain open.
 
+## Native Windows sparse-stream staging
+
+Sparse primary/named streams now use the shared Copy staging path. Native backup
+blocks preserve holes and logical EOF, while bounded canonical fingerprints
+compare logical contents across allocation/buffer boundaries. The journal checks
+the primary sparse flag separately from named-stream sparsity. Dense data keeps
+its existing hashing path; EFS and broader storage support remain required.
+
+Six focused ordinary-account tests pass, including a 1 TiB logical file with
+128 KiB of copy-data callbacks and bounded target allocation, empty/all-hole
+streams, directories, a compressed candidate, cancellation, tampering, malformed
+ranges and source-free publication/Undo/cleanup. The same executable passes the
+core journal suite (139 passed, six explicit exclusions). The ordinary stream,
+metadata and tree selection passes all 50 tests after correcting the EA fixture's
+buffer alignment. This is native component evidence;
+application performance, native cross-volume/filesystem and public/package gates
+remain open. Exact source, broader regression scopes and cleanup:
+`.hermes/evidence/windows-sparse-current/ACCEPTANCE.json`.
+No packages changed and public Windows Copy remains disabled.
+
 ## Current Windows Copy implementation checkpoint
 
 Claim and journal setup use persistent private controls. Claims publish only a
