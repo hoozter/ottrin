@@ -3361,6 +3361,7 @@ dependencies = [
  "sha2",
  "tempfile",
  "two-face",
+ "windows-sys 0.61.2",
  "zbus",
  "zip",
 ]

@@ -316,9 +316,54 @@ pub(super) fn test_case(root: &Path) {
     } else {
         None
     };
+    let mut blocked = case.strip_prefix("resume-blocked-").map(|target| {
+        crate::test_oplock::Oplock::request(match target {
+            "central" => &journal,
+            "local" => &local_journal,
+            "payload" => &data,
+            _ => panic!("Unknown owned oplock target"),
+        })
+        .unwrap()
+    });
     crate::tests::click_activity_action(&mut app, &ctx, "Resume copy");
     assert!(app.copy_recovery.running());
     assert_eq!(app.operation_history[0].status, OperationStatus::Queued);
+    if let Some(lock) = &mut blocked {
+        let broken = lock.wait_break();
+        std::thread::sleep(Duration::from_millis(100));
+        app.poll_copy_recovery();
+        let pending = app.copy_recovery.running();
+        let owns_paths = !app.operation_history[0].operation_paths.is_empty();
+        if pending {
+            crate::tests::click_activity_action(&mut app, &ctx, "Stop recovery");
+        }
+        let deadline = Instant::now() + Duration::from_secs(3);
+        while app.copy_recovery.running() && Instant::now() < deadline {
+            app.poll_copy_recovery();
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        let stopped = !app.copy_recovery.running();
+        let message = app.operation_history[0].message.clone();
+        // Release the filesystem and let any queued status refresh finish even
+        // when an assertion below will fail. A stopped worker must finish first.
+        let close = lock.close();
+        wait(&mut app);
+        close.unwrap();
+        assert_eq!(broken, windows_sys::Win32::Foundation::WAIT_OBJECT_0);
+        assert!(
+            pending && owns_paths,
+            "Blocked recovery must retain its operation paths"
+        );
+        assert!(stopped, "Rendered Stop did not interrupt blocked recovery");
+        assert!(message.unwrap().contains("995"));
+        assert!(app.operation_history[0].operation_paths.is_empty());
+        assert!(can_recover(&app.operation_history[0]));
+        assert_eq!(std::fs::read(&journal).unwrap(), before);
+        assert_eq!(std::fs::read(&local_journal).unwrap(), local_before);
+        assert_eq!(std::fs::read(&data).unwrap(), b"original data");
+        assert!(!actual.join("copy").exists());
+        crate::tests::click_activity_action(&mut app, &ctx, "Resume copy");
+    }
     if let Some(gate) = start_gate {
         crate::tests::click_activity_action(&mut app, &ctx, "Stop recovery");
         assert!(app.copy_recovery.stopping());

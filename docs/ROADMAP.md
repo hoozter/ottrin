@@ -198,6 +198,30 @@ filesystems, device/network behavior, cancellation during mutating I/O, blocked
 UI action composition and complete workflow/resource acceptance remain open.
 Packages are unchanged and public Windows Copy remains disabled.
 
+## Activity Stop during a blocked NTFS operation
+
+The Activity integration now composes actual rendered Stop clicks with real NTFS
+blocking inside the recovery and cleanup workers. Six new scenarios hold central
+journal, local journal or retained payload opens behind an owned oplock. Before
+Stop, the worker must remain running and retain its path/data ownership. It must
+finish before the test releases the lock; paired journal and payload bytes must
+remain unchanged. Recovery then resumes and Undoes through the normal buttons;
+cleanup retries through its normal action and preserves the published copy.
+
+All 24 native Activity scenarios pass, including those six additions and the
+previous 18 recovery/cleanup cases. The platform's six blocking cases also pass
+after extracting the oplock fixture into one test-only implementation shared by
+both crates. UI tests directly use the existing Windows API crate as a Windows-only
+dev dependency; no runtime dependency or production behavior was added. Strict
+Windows platform/UI and Linux UI all-target Clippy, formatting and locked offline
+builds pass. Evidence and teardown:
+`.hermes/evidence/windows-copy-blocked-activity-current/ACCEPTANCE.json`.
+
+This accepts native egui action/layout input composed with local NTFS cancellation,
+not a physical desktop/graphics or exact-package pass. Mutating-I/O, other workflow
+controls, remote/device/filesystem and resource gates remain open. Packages are
+unchanged and public Windows Copy remains disabled.
+
 ## Current Windows Copy implementation checkpoint
 
 Claim and journal setup use persistent private controls. Claims publish only a

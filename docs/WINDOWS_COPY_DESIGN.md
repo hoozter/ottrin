@@ -501,6 +501,19 @@ These are pre-mutation open interruptions, not mutating-write, remote/device or
 physical power-loss acceptance. The final fixture observes 12–28 ms cancellation,
 not a general latency guarantee. Exact scopes:
 `.hermes/evidence/windows-copy-oplock-current/ACCEPTANCE.json`.
+
+The following Activity integration composes the actual rendered Stop control with
+those kernel-blocked operations. All 24 scenarios pass: the previous 18 plus
+central/local/payload blocks in both forward recovery and cleanup. The worker
+retains path/data ownership while blocked, ends before lock release after Stop,
+preserves journal/payload bytes, and retries through ordinary rendered actions.
+The test releases its oplock before waiting for any queued asynchronous status
+refresh. The shared test-only oplock implementation is in
+`tests/support/windows_oplock.rs`; it is not copied or exposed in production.
+This is native egui action/layout evidence, not physical desktop or package
+acceptance. Exact executable/fixture scopes and cleanup:
+`.hermes/evidence/windows-copy-blocked-activity-current/ACCEPTANCE.json`.
+
 The native fixture follows [Microsoft's level-1 oplock contract](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_request_oplock_level_1)
 and [acknowledgment/close semantics](https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/acknowledging-oplock-breaks).
 

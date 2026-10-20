@@ -1003,8 +1003,54 @@ pub(super) fn windows_test_case(root: &Path) {
     ) {
         app.copy_cleanup.stop_when_missing = Some(control.clone());
     }
+    let mut blocked = case.strip_prefix("cleanup-blocked-").map(|target| {
+        let local = std::fs::read_dir(&destination)
+            .unwrap()
+            .map(|entry| entry.unwrap().path().join("journal"))
+            .find(|path| path.is_file())
+            .unwrap();
+        let local_before = std::fs::read(&local).unwrap();
+        let payload = retained.join("nested/file");
+        let payload_before = std::fs::read(&payload).unwrap();
+        let lock = crate::test_oplock::Oplock::request(match target {
+            "central" => &control,
+            "local" => &local,
+            "payload" => &payload,
+            _ => panic!("Unknown owned oplock target"),
+        })
+        .unwrap();
+        (lock, local, local_before, payload, payload_before)
+    });
     click(&mut app, "Clear retained data");
     assert!(app.copy_cleanup.running());
+    if let Some((lock, local, local_before, payload, payload_before)) = &mut blocked {
+        let broken = lock.wait_break();
+        std::thread::sleep(Duration::from_millis(100));
+        app.poll_copy_cleanup();
+        let pending = app.copy_cleanup.running();
+        let owns_data = app.copy_cleanup.owns(&app.operation_history[0]);
+        if pending {
+            click(&mut app, "Stop cleanup");
+        }
+        let deadline = Instant::now() + Duration::from_secs(3);
+        while app.copy_cleanup.running() && Instant::now() < deadline {
+            app.poll_copy_cleanup();
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        let stopped = !app.copy_cleanup.running();
+        let close = lock.close();
+        wait(&mut app);
+        close.unwrap();
+        assert_eq!(broken, windows_sys::Win32::Foundation::WAIT_OBJECT_0);
+        assert!(
+            pending && owns_data,
+            "Blocked cleanup must retain ownership"
+        );
+        assert!(stopped, "Rendered Stop did not interrupt blocked cleanup");
+        assert_eq!(std::fs::read(&control).unwrap(), before);
+        assert_eq!(std::fs::read(local).unwrap(), *local_before);
+        assert_eq!(std::fs::read(payload).unwrap(), *payload_before);
+    }
     wait(&mut app);
     assert_eq!(
         std::fs::read(destination.join("copy/nested/file")).unwrap(),
@@ -1041,6 +1087,7 @@ pub(super) fn windows_test_case(root: &Path) {
         assert!(!labels.contains(&message));
     } else {
         if busy.is_some()
+            || blocked.is_some()
             || matches!(
                 case.as_str(),
                 "cleanup-stopped-metadata" | "cleanup-cohort" | "cleanup-cohort-partial"

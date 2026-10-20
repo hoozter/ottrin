@@ -1,3 +1,7 @@
+#[cfg(all(test, target_os = "windows"))]
+#[path = "../../../tests/support/windows_oplock.rs"]
+mod test_oplock;
+
 /// Desktop identity shared by all Ottrin windows and the packaged desktop entry.
 pub const DESKTOP_APPLICATION_ID: &str = "org.ottrin.Ottrin";
 
@@ -26057,6 +26061,12 @@ mod tests {
             "resume-changed",
             "resume-moved",
             "resume-stopped",
+            "resume-blocked-central",
+            "resume-blocked-local",
+            "resume-blocked-payload",
+            "cleanup-blocked-central",
+            "cleanup-blocked-local",
+            "cleanup-blocked-payload",
             "cleanup-success",
             "cleanup-changed",
             "cleanup-retry",

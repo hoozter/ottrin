@@ -1,3 +1,7 @@
+#[cfg(all(test, target_os = "windows"))]
+#[path = "../../../tests/support/windows_oplock.rs"]
+mod test_oplock;
+
 use ottrin_core::{
     ConflictAction, DeleteMode, EntryKind, FileCommand, PrivilegedRequest, PrivilegedResponse,
 };
