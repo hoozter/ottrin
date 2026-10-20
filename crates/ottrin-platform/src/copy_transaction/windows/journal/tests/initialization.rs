@@ -1,12 +1,15 @@
 use super::super::initialization as setup;
 use super::*;
 use std::io::Write;
+use windows_sys::Win32::Storage::FileSystem::{DELETE, FILE_GENERIC_WRITE, SYNCHRONIZE};
 
 struct Reset;
 impl Drop for Reset {
     fn drop(&mut self) {
         setup::FAULT.with(|f| f.set(None));
         setup::HANDOFF.with(|h| h.borrow_mut().take());
+        claims::RELEASE_FAULT.with(|f| f.set(None));
+        claims::RELEASE_HANDOFF.with(|h| h.borrow_mut().take());
     }
 }
 fn create<'a>(
@@ -400,6 +403,12 @@ fn windows_native_copy_unpublished_setup_hard_kill_stays_visible_without_actions
         let path = live[0].transaction.as_ref().unwrap();
         let before = std::fs::read(path).unwrap();
         assert_eq!(before.is_empty(), point == "local");
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&registry);
+        assert!(
+            create(root.path(), &parent, &central).is_err(),
+            "live setup admitted a second owner"
+        );
         child.0.kill().unwrap();
         child.0.wait().unwrap();
         let statuses = discover_at(&registry).unwrap();
@@ -420,5 +429,278 @@ fn windows_native_copy_unpublished_setup_hard_kill_stays_visible_without_actions
             std::fs::read(root.path().join("source/nested/file")).unwrap(),
             b"original data"
         );
+        if point == "paired" {
+            drop(create(root.path(), &parent, &central).unwrap());
+        } else {
+            assert!(create(root.path(), &parent, &central).is_err());
+        }
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+fn begin_only(parent: &File, central: &File, unpublished: bool) -> Journal {
+    let id = super::super::super::super::random_transaction_id().unwrap();
+    let claim = claims::Lease::acquire(parent, central, OsStr::new("copy"), &id).unwrap();
+    let prepared = setup::prepare(central, &id).unwrap();
+    let stage = namespace::PrivateStage::for_transaction(parent, &id).unwrap();
+    let journal = Journal::create(
+        &stage,
+        central,
+        prepared,
+        &DestinationAdmission::creation(parent, OsStr::new("copy")).unwrap(),
+        OsStr::new("source"),
+        &mut Some(claim),
+    )
+    .unwrap();
+    if unpublished {
+        crate::move_transaction::rename_windows_handle_no_replace(
+            &journal.central,
+            central,
+            &setup::preparation_name(&id),
+        )
+        .unwrap();
+        central.sync_all().unwrap();
+    }
+    journal
+}
+
+#[test]
+fn windows_native_copy_begin_only_recovery_releases_name_without_changing_retained_data() {
+    for unpublished in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        let journal = begin_only(&parent, &central, unpublished);
+        let header = journal.header.clone();
+        let stage = root.path().join("destination").join(header.stage_name());
+        let local = stage.join(LOCAL);
+        let mirror = root.path().join("central").join(if unpublished {
+            setup::preparation_name(&header.transaction)
+        } else {
+            header.central_name()
+        });
+        let claim = root
+            .path()
+            .join("destination")
+            .join(header.claim.test_relative_path());
+        let claim_before = std::fs::read(&claim).unwrap();
+        assert!(create(root.path(), &parent, &central).is_err());
+        assert_eq!(std::fs::read(&claim).unwrap(), claim_before);
+        drop(journal);
+        let local_before = std::fs::read(&local).unwrap();
+        let central_before = std::fs::read(&mirror).unwrap();
+        let local_stream = format!("{}:foreign", local.display());
+        let central_stream = format!("{}:foreign", mirror.display());
+        std::fs::write(&local_stream, b"local stream survives").unwrap();
+        std::fs::write(&central_stream, b"central stream survives").unwrap();
+        std::fs::write(stage.join("foreign"), b"keep stage contents").unwrap();
+        let candidate = root
+            .path()
+            .join("destination")
+            .join(header.candidate_name());
+        std::fs::write(&candidate, b"keep foreign sibling").unwrap();
+        let next_id = super::super::super::super::random_transaction_id().unwrap();
+        let next = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &next_id).unwrap();
+        assert_ne!(next.binding(), &header.claim);
+        assert_eq!(std::fs::read(&local).unwrap(), local_before);
+        assert_eq!(std::fs::read(&mirror).unwrap(), central_before);
+        assert_eq!(
+            std::fs::read(local_stream).unwrap(),
+            b"local stream survives"
+        );
+        assert_eq!(
+            std::fs::read(central_stream).unwrap(),
+            b"central stream survives"
+        );
+        assert_eq!(
+            std::fs::read(stage.join("foreign")).unwrap(),
+            b"keep stage contents"
+        );
+        assert_eq!(std::fs::read(candidate).unwrap(), b"keep foreign sibling");
+        assert!(!root.path().join("destination/copy").exists());
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_begin_recovery_refuses_intents_mismatches_replacements_and_collisions() {
+    for damage in [
+        "intent",
+        "mirror",
+        "local-replacement",
+        "canonical-collision",
+        "case-policy",
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        fixture(root.path());
+        let parent = owner(&root.path().join("destination"));
+        let central = owner(&root.path().join("central"));
+        if damage == "case-policy" {
+            set_case_policy(&parent, true);
+        }
+        let mut journal = begin_only(&parent, &central, damage == "canonical-collision");
+        let header = journal.header.clone();
+        if damage == "intent" {
+            let src = source(&root.path().join("source"));
+            journal
+                .persist(Record::CreateIntent {
+                    index: 0,
+                    parent: None,
+                    name: header.candidate_name().encode_wide().collect(),
+                    source: super::super::super::version(&src).unwrap(),
+                })
+                .unwrap();
+        }
+        drop(journal);
+        let stage = root.path().join("destination").join(header.stage_name());
+        let local = stage.join(LOCAL);
+        let canonical = root.path().join("central").join(header.central_name());
+        let prepared = root
+            .path()
+            .join("central")
+            .join(setup::preparation_name(&header.transaction));
+        match damage {
+            "mirror" => std::fs::write(&canonical, b"foreign changed record").unwrap(),
+            "local-replacement" => {
+                let bytes = std::fs::read(&local).unwrap();
+                std::fs::rename(&local, stage.join("retained-original")).unwrap();
+                std::fs::write(&local, bytes).unwrap();
+            }
+            "canonical-collision" => {
+                std::fs::write(&canonical, b"foreign canonical record").unwrap()
+            }
+            "case-policy" => set_case_policy(&parent, !header.parent_case_sensitive),
+            _ => {}
+        }
+        let claim = root
+            .path()
+            .join("destination")
+            .join(header.claim.test_relative_path());
+        let paths = [&claim, &local, &canonical, &prepared];
+        let before: Vec<_> = paths.iter().map(|p| std::fs::read(p).ok()).collect();
+        for _ in 0..2 {
+            assert!(create(root.path(), &parent, &central).is_err(), "{damage}");
+            for (path, bytes) in paths.iter().zip(&before) {
+                assert_eq!(
+                    &std::fs::read(path).ok(),
+                    bytes,
+                    "{damage}: {}",
+                    path.display()
+                );
+            }
+        }
+        assert!(!root.path().join("destination/copy").exists());
+        assert_eq!(
+            std::fs::read(root.path().join("source/nested/file")).unwrap(),
+            b"original data"
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_begin_recovery_retries_release_faults_with_both_journals_leased() {
+    use std::{cell::RefCell, rc::Rc};
+    for unpublished in [false, true] {
+        for point in [
+            claims::ReleasePoint::BeforeTruncate,
+            claims::ReleasePoint::Truncated,
+            claims::ReleasePoint::TruncateFlushed,
+            claims::ReleasePoint::BeforeWrite,
+            claims::ReleasePoint::Written,
+            claims::ReleasePoint::Flushed,
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let parent = owner(&root.path().join("destination"));
+            let central = owner(&root.path().join("central"));
+            let journal = begin_only(&parent, &central, unpublished);
+            let header = journal.header.clone();
+            drop(journal);
+            let local = root
+                .path()
+                .join("destination")
+                .join(header.stage_name())
+                .join(LOCAL);
+            let mirror = root.path().join("central").join(if unpublished {
+                setup::preparation_name(&header.transaction)
+            } else {
+                header.central_name()
+            });
+            let before = [
+                std::fs::read(&local).unwrap(),
+                std::fs::read(&mirror).unwrap(),
+            ];
+            let ledger = root
+                .path()
+                .join("destination")
+                .join(header.claim.test_relative_path());
+            if matches!(
+                point,
+                claims::ReleasePoint::BeforeTruncate
+                    | claims::ReleasePoint::Truncated
+                    | claims::ReleasePoint::TruncateFlushed
+            ) {
+                let mut bytes = std::fs::read(&ledger).unwrap();
+                let release = header.claim.test_release_frame(&bytes);
+                bytes.extend_from_slice(&release[..12]);
+                std::fs::write(&ledger, bytes).unwrap();
+            }
+            let reset = Reset;
+            claims::RELEASE_FAULT.with(|fault| fault.set(Some((point, false))));
+            let observations = Rc::new(RefCell::new(Vec::new()));
+            let observed = observations.clone();
+            let paths = [local.clone(), mirror.clone()];
+            claims::RELEASE_HANDOFF.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(move || {
+                    for path in &paths {
+                        for access in [FILE_GENERIC_WRITE, DELETE | SYNCHRONIZE] {
+                            let directory = windows_fs::open_directory(
+                                path.parent().unwrap(),
+                                FILE_GENERIC_READ,
+                            )
+                            .unwrap();
+                            let attempt = unsafe {
+                                windows_fs::open_relative(
+                                    &directory,
+                                    path.file_name().unwrap(),
+                                    RelativeOptions {
+                                        directory: Some(false),
+                                        create_new: false,
+                                        access,
+                                        sharing: FILE_SHARE_READ
+                                            | FILE_SHARE_WRITE
+                                            | FILE_SHARE_DELETE,
+                                        security: ptr::null(),
+                                    },
+                                )
+                            };
+                            observed
+                                .borrow_mut()
+                                .push(attempt.err().and_then(|e| e.raw_os_error()));
+                        }
+                    }
+                }))
+            });
+            let id = super::super::super::super::random_transaction_id().unwrap();
+            assert!(claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &id).is_err());
+            drop(reset);
+            if matches!(
+                point,
+                claims::ReleasePoint::BeforeWrite
+                    | claims::ReleasePoint::Written
+                    | claims::ReleasePoint::Flushed
+            ) {
+                assert_eq!(*observations.borrow(), vec![Some(32); 4]);
+            }
+            let id = super::super::super::super::random_transaction_id().unwrap();
+            drop(claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &id).unwrap());
+            assert_eq!(std::fs::read(local).unwrap(), before[0]);
+            assert_eq!(std::fs::read(mirror).unwrap(), before[1]);
+            assert!(!root.path().join("destination/copy").exists());
+        }
     }
 }

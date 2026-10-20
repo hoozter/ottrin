@@ -3150,6 +3150,27 @@ impl Snapshot {
         access: SnapshotAccess,
         control: Option<&File>,
     ) -> Result<Self, PlatformError> {
+        let mut result = Self::read_pair(parent, central, name, access, control, None)?;
+        let header = result.state.header.as_ref().unwrap();
+        result.claim = if result.state.claim_terminal() {
+            claims::Lease::observe_terminal(parent, &header.claim)?
+        } else {
+            Some(claims::Lease::open(parent, &header.claim, false, false)?)
+        };
+        result.revalidate(parent, central)?;
+        Ok(result)
+    }
+
+    /// Read and validate the paired controls without issuing a claim capability.
+    /// Callers must independently hold/admit the matching claim before mutation.
+    fn read_pair(
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        access: SnapshotAccess,
+        control: Option<&File>,
+        central_name: Option<&OsStr>,
+    ) -> Result<Self, PlatformError> {
         if control.is_some() && access != SnapshotAccess::Read {
             return Err(io("A held peer control is only a read capability"));
         }
@@ -3201,21 +3222,16 @@ impl Snapshot {
         if name != header.stage_name() {
             return Err(io("Copy journal name does not match its transaction"));
         }
+        let central_name = central_name
+            .map(OsStr::to_os_string)
+            .unwrap_or_else(|| header.central_name());
         let mirror = if let Some(control) = control {
             control.try_clone().map_err(io)?
         } else {
-            entry(central, &header.central_name(), false)?
+            entry(central, &central_name, false)?
         };
-        // A recognized partial release is only an observation here. The full
-        // paired-journal/identity checks below must pass before this snapshot
-        // can supply a writer with terminal release authority.
-        let claim = if state.claim_terminal() {
-            None
-        } else {
-            Some(claims::Lease::open(parent, &header.claim, false, false)?)
-        };
-        let mut result = Self {
-            claim,
+        let result = Self {
+            claim: None,
             stage,
             local,
             mirror,
@@ -3225,16 +3241,7 @@ impl Snapshot {
             sequence,
             previous,
         };
-        // Establish paired terminal authority before a missing/replaced name
-        // control can be treated as discharged. No public mutation follows.
-        result.revalidate(parent, central)?;
-        if result.state.claim_terminal() {
-            result.claim = claims::Lease::observe_terminal(
-                parent,
-                &result.state.header.as_ref().unwrap().claim,
-            )?;
-            result.revalidate(parent, central)?;
-        }
+        result.revalidate_pair(parent, central, &central_name)?;
         Ok(result)
     }
     fn revalidate(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
@@ -3243,6 +3250,18 @@ impl Snapshot {
             None if self.state.claim_terminal() => {}
             None => return Err(io("Active Copy snapshot lost its destination claim")),
         }
+        self.revalidate_pair(
+            parent,
+            central,
+            &self.state.header.as_ref().unwrap().central_name(),
+        )
+    }
+    fn revalidate_pair(
+        &self,
+        parent: &File,
+        central: &File,
+        central_name: &OsStr,
+    ) -> Result<(), PlatformError> {
         let header = self.state.header.as_ref().unwrap();
         header.validate_parent_policy(parent)?;
         namespace::validate_single_link(&self.local)?;
@@ -3277,7 +3296,7 @@ impl Snapshot {
         }
         bound(parent, &header.stage_name(), header.stage)?;
         bound(&self.stage, OsStr::new(LOCAL), header.local_file)?;
-        bound(central, &header.central_name(), header.central_file)?;
+        bound(central, central_name, header.central_file)?;
         Ok(())
     }
 }

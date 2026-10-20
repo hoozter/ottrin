@@ -101,34 +101,38 @@ remain open.
 
 ## Current Windows Copy implementation checkpoint
 
-**Current source replacement:** automatic deletion is removed from claim and
-journal setup controls. Persistent private claim preparations still publish only
-a complete first frame. The central journal now publishes its canonical name
-only after its complete paired Begin is flushed, using the same encoder and
-writer as subsequent records. Failed live setup retains controls/stages and
-returns the unstarted claim for release. Added streams and canonical collisions
-are preserved; ordinary live retry succeeds. The final ordinary-account native journal suite passes 132 tests with six explicit
-exclusions; five separate dispatch tests and strict Windows all-target Clippy pass.
-Real abrupt guest stops at both complete-unpublished and published-claim barriers
-preserve the expected record and recover fresh destination admission without
-changing the source, public file or foreign preparation. These are reservation
-checks, not whole-Copy power-loss or physical-storage acceptance. Public Copy stays
-gated. Exact source, binaries, checks and teardown:
-`.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
+Claim and journal setup use persistent private controls. Claims publish only a
+complete first frame; the central journal publishes its canonical name only after
+the complete paired Begin is flushed. Its preparation and directory are flushed
+before a local stage is created. Failed live setup retains the stage and journal
+controls while releasing its unstarted reservation. Read-only discovery shows
+unpublished native names as review-only records, including partial records and
+live writers, without adopting an ID or granting Resume/Undo/cleanup authority.
 
-The next source checkpoint makes unfinished journal setup visible. A central
-preparation and its directory are flushed before creating a local stage.
-Discovery presents matching native filenames as review-only records without
-reading their bytes or adopting a transaction ID. Empty/partial preparations,
-complete unpublished Begin frames and live writers receive no Resume, Undo or
-cleanup authority from presentation. Seven focused ordinary-account tests pass,
-including live discovery and hard kills at empty and paired setup barriers,
-native names, foreign stream preservation and live retry. The same executable
-passes the broader core journal regression (135 passed, six explicit exclusions).
-Strict Windows all-target Clippy and formatting pass. Exact source/teardown
-evidence and the separate dispatch scope are recorded in
+Fresh admission can recover the destination name from a valid interrupted
+Begin-only setup. It holds the prior name-claim writer exclusively and uses the
+existing decoder, creator/security/native-identity/binding checks, including the
+parent case policy. Both journal read leases span release and flush. Old stages,
+journal controls, their added streams and unrelated siblings remain untouched.
+Canonical collisions never fall back to a preparation. Partial/mismatched setups,
+replaced controls and any post-Begin intent cannot authorize this release.
+
+Ten focused ordinary-account native setup/recovery tests pass, including real
+factory hard kills, live-owner exclusion, foreign-data preservation, refusal
+cases and retry across all six release-fault boundaries. The same executable
+passes the broader core journal suite (138 passed, six explicit exclusions).
+Three grouped-cleanup shared-prepare tests also pass, exercising the held-control
+reader, and all five separate dispatch tests pass. Strict Windows all-target
+Clippy and formatting pass. Exact source and teardown:
+`.hermes/evidence/windows-setup-recovery-current/ACCEPTANCE.json`.
+
+Earlier abrupt guest cuts at complete-unpublished and published-claim barriers
+passed reservation recovery without changing protected bytes. Those receipts
+retain their original source/executable scope and are not new whole-Copy or
+physical-storage acceptance:
+`.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
+Earlier native review-visibility evidence is in
 `.hermes/evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
-This does not reclaim ambiguous interrupted stages or enable public Windows Copy.
 
 The rejected guarded-file design and the earlier directory-lifetime probes remain
 useful negative evidence. A pre-held permission-changing handle can restore write

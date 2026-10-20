@@ -747,15 +747,32 @@ impl Lease {
             let mut bytes = read(&file)?;
             validate_control(&root, &bucket, &file, &bytes, &log)?;
             let last = log.owner.as_ref().unwrap();
-            if !last.released && records_absent(parent, central, &last.binding.claim)? {
-                // The prior kernel writer is gone and no transaction records
-                // exist to authorize any further payload work.
-                // Release only this orphan before replacing its control.
+            if !last.released {
                 let binding = last.binding.clone();
-                validate_control(&root, &bucket, &file, &bytes, &log)?;
-                log.finish_release(&mut file, &binding, pending_release)?;
-                bucket.writable_root()?.sync_all().map_err(io)?;
-                bytes = read(&file)?;
+                let absent = records_absent(parent, central, &binding.claim)?;
+                let setup = if absent {
+                    None
+                } else {
+                    initialization::unstarted_setup(
+                        parent,
+                        central,
+                        &binding.claim.transaction,
+                        &binding,
+                    )?
+                };
+                // The exclusive claim excludes the prior owner. Either there
+                // are no recovery records, or held matching Begin-only journals
+                // prove that no payload command was issued. Preserve all setup
+                // data; release only the reservation before fresh admission.
+                if absent || setup.is_some() {
+                    validate_control(&root, &bucket, &file, &bytes, &log)?;
+                    if let Some(setup) = &setup {
+                        setup.revalidate(parent, central)?;
+                    }
+                    log.finish_release(&mut file, &binding, pending_release)?;
+                    bucket.writable_root()?.sync_all().map_err(io)?;
+                    bytes = read(&file)?;
+                }
             }
             if log
                 .owner

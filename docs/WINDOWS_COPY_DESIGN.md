@@ -85,32 +85,40 @@ Every setup control/stage is preserved, and the error reports retained setup for
 verification. Foreign canonical collisions and added local/central streams stay
 intact. The former empty-stage rollback and automatic file-disposition paths are
 removed. A fresh destination reservation can proceed after successful live-owner
-release. A hard exit can still leave an unstarted reservation plus stage; existing
-conservative admission must preserve that ambiguous construction. Review visibility
-does not release an interrupted stage's reservation or prove safe reclamation.
-Restart recovery and controlled reclamation for these unpublished setups remain open work, as do
-resource bounds and broader independent deletion/cleanup interference cases.
+release. Fresh Copy admission also holds the prior name-claim writer exclusively.
+If retained local and central controls form the exact matching Begin-only pair,
+admission can finish the old reservation's release before publishing a fresh claim.
+This uses the existing paired-journal decoder and identity/security/binding checks,
+including the current creator and parent case policy. Both controls stay read-leased
+against writes/deletion throughout the release and flush. A canonical collision is
+never bypassed in favor of an unpublished record. No old stage, journal control,
+added journal stream or unrelated sibling is deleted or modified. Only the name
+reservation ledger changes; its ordinary retirement still uses existing validation.
 
-Four focused ordinary-account setup tests first passed. The corrected source then
-passes the full core journal selection (132 passed, six explicit exclusions),
-five separate dispatch tests and strict Windows all-target Clippy. Coverage includes
-five setup failure boundaries, canonical collision preservation, unexpected stage
-content, added streams on both controls, live retry, publication races and hard
-termination with added claim-stream data. Guest cuts at complete-unpublished and
-published-claim barriers both recover fresh admission with protected bytes intact.
-Those cuts test reservation lifetime, not whole-Copy or physical-device power loss.
-Exact source/executable scopes, exclusions and teardown:
+This retry does not grant Resume, Undo or payload-cleanup authority to the retained
+setup. A partial/unknown or mismatched pair, replaced control, changed parent policy
+or any record after Begin cannot authorize this release. Controlled reclamation and
+recovery for those interrupted setups remain open, along with resource bounds and
+broader independent deletion/cleanup interference cases.
+
+The current source passes ten focused ordinary-account setup/recovery tests,
+the full core journal selection (138 passed, six explicit exclusions) on the same
+executable, three grouped-cleanup shared-prepare tests, five separate dispatch
+tests, and strict Windows all-target Clippy and formatting. Coverage includes live-owner
+exclusion, real factory hard kills at empty and complete unpublished setup,
+retained foreign streams/files, refusal of post-Begin intents/mismatches/replaced
+controls/canonical collisions/parent-policy drift, all six claim-release fault
+boundaries and write/delete exclusion on both journals during release. Broader
+regression, exact source/executables and teardown:
+`.hermes/evidence/windows-setup-recovery-current/ACCEPTANCE.json`.
+
+These are native status/admission checks, not newly rendered Activity or new
+whole-Copy power-loss acceptance. Earlier guest cuts at complete-unpublished and
+published-claim barriers passed reservation recovery with protected bytes intact;
+they retain their original source/executable scope:
 `.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
-
-The subsequent review-visibility checkpoint passes seven focused setup tests and
-the broader core journal selection (135 passed, six explicit exclusions) on the
-same executable, plus strict Windows all-target Clippy and formatting. The new
-hard-kill cases observe empty and complete unpublished journals while their writer
-is alive and after termination, preserve the bytes and refuse Resume/Undo.
-Invalid UTF-16 names, directory candidates and live-failure foreign streams stay
-intact. These are native status/admission checks, not newly rendered Activity or
-new whole-Copy power-loss acceptance. Exact source, separate dispatch checks and
-teardown: `.hermes/evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
+Earlier review-visibility evidence is retained in
+`.hermes/evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
 
 ## Complete outcome
 
