@@ -175,6 +175,29 @@ public Windows Copy stays disabled and packages are unchanged. Exact source,
 executables and teardown:
 `.hermes/evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`.
 
+## NTFS-blocked Copy recovery and cleanup cancellation
+
+Native oplock tests now hold real filesystem opens inside forward recovery and
+retained-data cleanup. Each path is tested separately at the central journal,
+local journal and retained payload. The worker must demonstrably remain blocked
+before Stop, return native operation-aborted before the fixture releases its
+lock, keep both journal bytes and payload unchanged, then retry successfully
+without the original source. Cleanup retry reclaims its records and payload;
+forward retry publishes the verified data. An unrelated destination file remains
+unchanged in every case.
+
+All six cases pass as an ordinary user on the owned NTFS volume (4 KiB allocation
+units). The final run observes cancellation in 12–28 ms; these fixture timings do
+not promise driver/device or application latency. The lock request, OVERLAPPED
+buffer, event and worker are explicitly completed/closed on failure and success.
+Exact source, native scopes and teardown:
+`.hermes/evidence/windows-copy-oplock-current/ACCEPTANCE.json`.
+
+This adds real local-filesystem evidence to the earlier pipe checks. Other
+filesystems, device/network behavior, cancellation during mutating I/O, blocked
+UI action composition and complete workflow/resource acceptance remain open.
+Packages are unchanged and public Windows Copy remains disabled.
+
 ## Current Windows Copy implementation checkpoint
 
 Claim and journal setup use persistent private controls. Claims publish only a

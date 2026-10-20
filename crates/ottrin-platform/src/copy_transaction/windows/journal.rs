@@ -4053,6 +4053,7 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 
 #[cfg(test)]
 mod tests {
+    mod blocked_io;
     mod claim_orphans;
     mod claim_processes;
     mod claim_publication;

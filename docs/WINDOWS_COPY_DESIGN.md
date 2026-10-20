@@ -490,7 +490,21 @@ cannot release path ownership or announce completion until the worker has actual
 stopped and its journal outcome has been inspected. Windows cancellation can
 complete normally, abort or fail. Device/network, other workflow and full resource
 acceptance remain open. Exact scopes:
-`.hermes/evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`. See
+`.hermes/evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`.
+
+The later NTFS oplock fixture blocks actual central/local journal and payload
+opens inside both forward recovery and cleanup. All six Stop cases return native
+operation-aborted while the lock is still held, leave the paired journals and
+payload byte-identical, and retry source-free after lock release. Forward retry
+publishes; cleanup retry fully reclaims; unrelated destination data is retained.
+These are pre-mutation open interruptions, not mutating-write, remote/device or
+physical power-loss acceptance. The final fixture observes 12–28 ms cancellation,
+not a general latency guarantee. Exact scopes:
+`.hermes/evidence/windows-copy-oplock-current/ACCEPTANCE.json`.
+The native fixture follows [Microsoft's level-1 oplock contract](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_request_oplock_level_1)
+and [acknowledgment/close semantics](https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/acknowledging-oplock-breaks).
+
+See
 [CancelSynchronousIo](https://learn.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiset-cancelsynchronousio)
 and [Microsoft cancellation considerations](https://learn.microsoft.com/en-us/windows/win32/fileio/canceling-pending-i-o-operations).
 
