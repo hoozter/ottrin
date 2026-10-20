@@ -1,6 +1,52 @@
 //! Construction boundaries for persistent, unpublished journal preparations.
 use super::*;
 
+const PREPARATION_PREFIX: &str = ".preparing-";
+
+pub(super) fn preparation_name(transaction: &str) -> OsString {
+    OsString::from(format!("{PREPARATION_PREFIX}{transaction}"))
+}
+
+pub(super) fn prepare(central: &File, transaction: &str) -> Result<File, PlatformError> {
+    windows_fs::create_private(
+        central,
+        &preparation_name(transaction),
+        false,
+        FILE_SHARE_READ,
+    )
+    .map_err(io)
+}
+
+/// A presentation candidate only: preserve native names without adopting an ID.
+pub(super) fn preparation_candidate(name: &OsStr) -> bool {
+    let mut units = name.encode_wide();
+    PREPARATION_PREFIX.bytes().all(|byte| {
+        units.next().is_some_and(|unit| {
+            let folded = if (65..=90).contains(&unit) {
+                unit + 32
+            } else {
+                unit
+            };
+            folded == u16::from(byte)
+        })
+    })
+}
+
+pub(super) fn retained_error(
+    claim: claims::Lease,
+    location: &File,
+    error: PlatformError,
+) -> PlatformError {
+    let location = windows_fs::location(location)
+        .map(|p| p.display().to_string())
+        .unwrap_or_else(|_| "native Copy setup".into());
+    let error = claim.abort_unstarted(error);
+    PlatformError::CleanupPending {
+        transaction: location,
+        message: format!("{error}; unstarted Copy setup retained for verification"),
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Point {
     LocalCreated,

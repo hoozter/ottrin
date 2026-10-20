@@ -116,6 +116,20 @@ checks, not whole-Copy power-loss or physical-storage acceptance. Public Copy st
 gated. Exact source, binaries, checks and teardown:
 `.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
 
+The next source checkpoint makes unfinished journal setup visible. A central
+preparation and its directory are flushed before creating a local stage.
+Discovery presents matching native filenames as review-only records without
+reading their bytes or adopting a transaction ID. Empty/partial preparations,
+complete unpublished Begin frames and live writers receive no Resume, Undo or
+cleanup authority from presentation. Seven focused ordinary-account tests pass,
+including live discovery and hard kills at empty and paired setup barriers,
+native names, foreign stream preservation and live retry. The same executable
+passes the broader core journal regression (135 passed, six explicit exclusions).
+Strict Windows all-target Clippy and formatting pass. Exact source/teardown
+evidence and the separate dispatch scope are recorded in
+`.hermes/evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
+This does not reclaim ambiguous interrupted stages or enable public Windows Copy.
+
 The rejected guarded-file design and the earlier directory-lifetime probes remain
 useful negative evidence. A pre-held permission-changing handle can restore write
 access after a permission freeze, insert a stream and have automatic deletion

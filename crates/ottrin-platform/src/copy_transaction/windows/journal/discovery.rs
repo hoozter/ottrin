@@ -558,7 +558,8 @@ pub fn discover_at_with_progress(
     {
         progress(0)?;
         let id = registry_id(&name);
-        if id.is_none() && !registry_candidate(&name) {
+        let unpublished = initialization::preparation_candidate(&name);
+        if id.is_none() && !registry_candidate(&name) && !unpublished {
             continue;
         }
         let mut status = WindowsRetainedCopyStatus {
@@ -573,6 +574,17 @@ pub fn discover_at_with_progress(
                 reason: "Copy journal was not inspected".into(),
             },
         };
+        if unpublished {
+            // The name is only a presentation hint. Do not read/adopt its bytes,
+            // follow a reparse target or issue any transaction capability.
+            status.transaction_id = None;
+            status.transaction = Some(windows_fs::location(&central).map_err(io)?.join(&name));
+            status.evidence = WindowsCopyRecoveryEvidence::NeedsReview {
+                reason: "Unpublished Copy setup record retained for review. It may still be in use or belong to an interrupted setup. Its filename does not authorize Resume, Undo or cleanup.".into(),
+            };
+            output.push(status);
+            continue;
+        }
         if status.transaction_id.is_none() {
             status.transaction = Some(windows_fs::location(&central).map_err(io)?.join(&name));
             status.evidence = WindowsCopyRecoveryEvidence::NeedsReview {

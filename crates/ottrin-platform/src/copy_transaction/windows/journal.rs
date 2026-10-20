@@ -1373,6 +1373,7 @@ impl Journal {
     fn create(
         stage: &namespace::PrivateStage<'_>,
         central: &File,
+        central_file: File,
         destination: &DestinationAdmission,
         source_label: &OsStr,
         claim: &mut Option<claims::Lease>,
@@ -1391,14 +1392,11 @@ impl Journal {
             .ok_or_else(|| io("invalid Copy transaction name"))?
             .to_owned();
         let central_name = OsString::from(format!("{name}.copy-journal"));
-        let preparation_name = OsString::from(format!(".preparing-{name}"));
+        let preparation_name = initialization::preparation_name(&name);
         let local =
             windows_fs::create_private(&stage.directory, OsStr::new(LOCAL), false, FILE_SHARE_READ)
                 .map_err(io)?;
         initialization::boundary(initialization::Point::LocalCreated, stage, central)?;
-        let central_file =
-            windows_fs::create_private(central, &preparation_name, false, FILE_SHARE_READ)
-                .map_err(io)?;
         initialization::boundary(initialization::Point::ControlsCreated, stage, central)?;
         let creator = security::current_owner()?;
         let header = Header {
@@ -2431,30 +2429,40 @@ impl<'a> DurableStage<'a> {
         if let Err(error) = destination.validate(parent) {
             return Err(claim.abort_unstarted(error));
         }
-        let stage = match namespace::PrivateStage::for_transaction(parent, &transaction) {
-            Ok(stage) => stage,
+        // A central review marker exists before any local stage can be left by
+        // an interrupted setup. It grants no recovery authority until publication.
+        let prepared = match initialization::prepare(central, &transaction) {
+            Ok(file) => file,
             Err(error) => return Err(claim.abort_unstarted(error)),
         };
+        if let Err(error) = prepared.sync_all().and_then(|()| central.sync_all()) {
+            return Err(initialization::retained_error(claim, &prepared, io(error)));
+        }
+        let stage = match namespace::PrivateStage::for_transaction(parent, &transaction) {
+            Ok(stage) => stage,
+            Err(error) => return Err(initialization::retained_error(claim, &prepared, error)),
+        };
         let mut claim = Some(claim);
-        let mut journal =
-            match Journal::create(&stage, central, destination, source_label, &mut claim) {
-                Ok(journal) => journal,
-                Err(error) => {
-                    if let Some(claim) = claim {
-                        let location = windows_fs::location(&stage.directory)
-                            .map(|p| p.display().to_string())
-                            .unwrap_or_else(|_| format!("native Copy stage {:?}", stage.name));
-                        let error = claim.abort_unstarted(error);
-                        return Err(PlatformError::CleanupPending {
-                            transaction: location,
-                            message: format!(
-                                "{error}; unstarted Copy setup retained for verification"
-                            ),
-                        });
-                    }
-                    return Err(stage_error(&stage, error));
+        let mut journal = match Journal::create(
+            &stage,
+            central,
+            prepared,
+            destination,
+            source_label,
+            &mut claim,
+        ) {
+            Ok(journal) => journal,
+            Err(error) => {
+                if let Some(claim) = claim {
+                    return Err(initialization::retained_error(
+                        claim,
+                        &stage.directory,
+                        error,
+                    ));
                 }
-            };
+                return Err(stage_error(&stage, error));
+            }
+        };
         let retained = |error| stage_error(&stage, error);
         tree::StagingJournal::intent(&mut journal, 0, None, &stage.candidate_name, source.root())
             .map_err(retained)?;
@@ -8304,11 +8312,15 @@ mod tests {
                     } else {
                         assert_eq!(prepared, local);
                     }
-                    assert!(
+                    let statuses =
                         crate::discover_retained_copy_transactions_at(&root.path().join("central"))
-                            .unwrap()
-                            .is_empty()
-                    );
+                            .unwrap();
+                    assert_eq!(statuses.len(), 1);
+                    assert!(statuses[0].transaction_id.is_none());
+                    assert!(matches!(
+                        statuses[0].evidence,
+                        WindowsCopyRecoveryEvidence::NeedsReview { .. }
+                    ));
                 }
                 if sequence == 0 || step == Step::LocalFlushed {
                     assert!(inspection.is_err());
@@ -8594,10 +8606,12 @@ mod tests {
         let transaction = super::super::super::random_transaction_id().unwrap();
         let claim =
             claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &transaction).unwrap();
+        let prepared = super::initialization::prepare(&central, &transaction).unwrap();
         let stage = namespace::PrivateStage::for_transaction(&parent, &transaction).unwrap();
         let mut journal = Journal::create(
             &stage,
             &central,
+            prepared,
             &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
             OsStr::new("source"),
             &mut Some(claim),

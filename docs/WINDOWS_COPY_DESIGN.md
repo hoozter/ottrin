@@ -66,8 +66,14 @@ are recorded separately in the roadmap and acceptance receipts.
 ## Persistent journal setup and live-owner failure
 
 The local journal and central `.preparing-<transaction>` control are private
-persistent creations. Unpublished central preparations do not match registry
-candidate names. One journal writer and frame encoder handle both initial and
+persistent creations. The central marker and its directory are flushed before
+creating the destination-local stage. Read-only discovery presents unpublished
+preparations as review-only records, preserving their exact native path without
+reading their contents, following directory/reparse targets or adopting a
+transaction ID. This includes empty, partial and complete unpublished journals;
+a matching filename grants no Resume, Undo or cleanup authority. The record may
+belong to a live writer, so presentation does not claim it is abandoned.
+One journal writer and frame encoder handle both initial and
 subsequent records; initial binding checks use the held preparation's actual name.
 Only after the complete paired Begin frame is flushed is the central handle
 renamed without replacement to `<transaction>.copy-journal`, followed by a registry
@@ -80,8 +86,9 @@ verification. Foreign canonical collisions and added local/central streams stay
 intact. The former empty-stage rollback and automatic file-disposition paths are
 removed. A fresh destination reservation can proceed after successful live-owner
 release. A hard exit can still leave an unstarted reservation plus stage; existing
-conservative admission must preserve that ambiguous construction. Restart recovery
-and controlled reclamation for these unpublished setups remain open work, as do
+conservative admission must preserve that ambiguous construction. Review visibility
+does not release an interrupted stage's reservation or prove safe reclamation.
+Restart recovery and controlled reclamation for these unpublished setups remain open work, as do
 resource bounds and broader independent deletion/cleanup interference cases.
 
 Four focused ordinary-account setup tests first passed. The corrected source then
@@ -94,6 +101,16 @@ published-claim barriers both recover fresh admission with protected bytes intac
 Those cuts test reservation lifetime, not whole-Copy or physical-device power loss.
 Exact source/executable scopes, exclusions and teardown:
 `.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
+
+The subsequent review-visibility checkpoint passes seven focused setup tests and
+the broader core journal selection (135 passed, six explicit exclusions) on the
+same executable, plus strict Windows all-target Clippy and formatting. The new
+hard-kill cases observe empty and complete unpublished journals while their writer
+is alive and after termination, preserve the bytes and refuse Resume/Undo.
+Invalid UTF-16 names, directory candidates and live-failure foreign streams stay
+intact. These are native status/admission checks, not newly rendered Activity or
+new whole-Copy power-loss acceptance. Exact source, separate dispatch checks and
+teardown: `.hermes/evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
 
 ## Complete outcome
 
