@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "guest": "TEARDOWN_GUEST.json",
+  "domain_state": "shut off",
+  "persistent_domain_definition_unchanged": true,
+  "host_downloaded_sample_inputs_removed": true,
+  "current_Ottrin_deliverables_preserved": true
+}

@@ -1,0 +1,4 @@
+{
+  "initial_collector_sha256": "d6ac5dee0b5ce90ca310541fb43a44dc877acd8cc249d867ff322171cf3a7360",
+  "observation": "Summary values exported correctly, but direct COM FieldCount access returned no usable count and produced empty data rows. Replaced it with an explicit COM property invocation and reject zero-field rows. No sample installer was executed."
+}

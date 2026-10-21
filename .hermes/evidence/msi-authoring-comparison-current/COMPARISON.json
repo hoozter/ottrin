@@ -1,0 +1,84 @@
+{
+  "status": "read-only comparison complete; rollback defect remains unresolved",
+  "inputs": "INPUTS.json",
+  "tables": {
+    "path": "TABLES.json.gz",
+    "uncompressed_sha256": "b26f71deb0dcfe598214fbe44fa49d1224780f920447295bdb858a16da905cd1"
+  },
+  "observations": {
+    "all_three_word_count_summary_values": 10,
+    "advancedinstaller_failure": {
+      "action": [
+        "ExecuteScriptCode",
+        "37",
+        "",
+        "return -1",
+        ""
+      ],
+      "sequence": [
+        "ExecuteScriptCode",
+        "( ( NOT Installed ) OR ( Installed AND REMOVE <> \"ALL\" AND AI_INSTALL_MODE <> \"Remove\" ) )",
+        "6401"
+      ],
+      "InstallExecute": [
+        "InstallExecute",
+        "",
+        "6500"
+      ],
+      "in_script_deferred_flag": false
+    },
+    "wix_failure": {
+      "action": [
+        "CustomAction1",
+        "1025",
+        "CustomActions_dll",
+        "CustomAction1",
+        ""
+      ],
+      "sequence": [
+        "CustomAction1",
+        "(NOT Installed OR REINSTALL)",
+        "6499"
+      ],
+      "InstallExecute": [
+        "InstallExecute",
+        "NOT Installed",
+        "6500"
+      ],
+      "in_script_deferred_flag": true
+    },
+    "current_ottrin_InstallExecute": [
+      "InstallExecute",
+      "NOT Installed",
+      "6500"
+    ]
+  },
+  "inference": "The supplied Advanced Installer action is immediate and sequenced before InstallExecute; it is not a structurally equivalent control for a deferred/in-script or post-execution rollback failure. Its reported success cannot establish a fix for Ottrin. Equal Word Count values do not differentiate these packages.",
+  "next_action": "Retain the genuine post-execution rollback gate. Do not move failure before execution or copy unrelated authoring settings to claim acceptance. Any uninstall failure fixture must demonstrate the operation script actually executed; current InstallExecute is conditional on NOT Installed.",
+  "sources": [
+    "https://github.com/wixtoolset/issues/issues/8574",
+    "https://learn.microsoft.com/en-us/windows/win32/msi/installexecute-action",
+    "https://learn.microsoft.com/en-us/windows/win32/msi/custom-action-in-script-execution-options",
+    "https://learn.microsoft.com/en-us/windows/win32/msi/word-count-summary"
+  ],
+  "limits": [
+    "No sample package, custom action or MSI installation was executed; this is database inspection, not a new rollback reproduction",
+    "Other authoring/context differences remain; compiler, engine and registry-permission cause are not established",
+    "No production installer, privileges, policies, registry ACLs or package artifacts changed"
+  ],
+  "collector_correction": "COLLECTOR_CORRECTION.json",
+  "tools_sha256": {
+    "inspect.py": "f2d412f5c976b61a1fe3c21bf8ae4e1eb585587135dd1ef62eca7e7aaf4aa080",
+    "inspect.ps1": "f90e0e5c2a886c2969b37e64ba94d1d2b109bab0bbbd424ee7d2799909a9a27d",
+    "teardown.py": "f9f9bf0decfd8ff970d3ddd46133aef82aaa33e28af5ac95c7398ab6dd41d948"
+  },
+  "cleanup": {
+    "status": "pass",
+    "guest": "TEARDOWN_GUEST.json",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "host_downloaded_sample_inputs_removed": true,
+    "current_Ottrin_deliverables_preserved": true
+  },
+  "preservation_scope": "Exact original config.json and Uninstall.exe hashes, plus byte-identical read-only inputs; not a full installation inventory"
+}

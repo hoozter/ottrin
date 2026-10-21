@@ -1,0 +1,8 @@
+{
+  "msi_service_state": "Stopped",
+  "inputs_byte_identical_after_read": true,
+  "owned_comparison_directory_removed": true,
+  "sample_executable_processes": 0,
+  "original_preferences_and_uninstaller_hashes_unchanged": true,
+  "status": "pass"
+}

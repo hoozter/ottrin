@@ -1,0 +1,22 @@
+{
+  "advancedinstaller": {
+    "url": "https://github.com/user-attachments/files/15887617/advancedinstaller.zip",
+    "zip_sha256": "66454695e2f71fd7f4d0bf876d5e54d746270271b07174cd8d17d9cb04b90a47",
+    "msi_sha256": "89d6b3a04206ffca5e8a558fc6154bfa9fc6daf23a2d9b84168df1d39ef71a5b",
+    "msi_bytes": 1359872,
+    "original_member": "test.msi"
+  },
+  "wix": {
+    "url": "https://github.com/user-attachments/files/15887638/wix.zip",
+    "zip_sha256": "bb1790feebb66d5f1e8cbee599482fd039a215a72271ed51680233ed29043b41",
+    "msi_sha256": "bcbed63a0875d03b5c5e7cd35a219df4c2d8873b85d1357e7da66b07505efd38",
+    "msi_bytes": 335872,
+    "original_member": "Installer.msi"
+  },
+  "ottrin": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64.msi",
+    "msi_sha256": "d5ff621ad0033c0b1684f5114284991c4c0b5790439cbd2e4c3d3a526bb14509",
+    "msi_bytes": 51089408,
+    "source_commit": "566f6236aaf29cc95a3548b22cfb6da5e116a94f"
+  }
+}

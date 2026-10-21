@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "base_commit": "48ce879460b7db0d78e362ad39ee7b12f8dd1907",
+  "guest_root": "C:\\OttrinCopyCleanupQA\\msi-authoring-compare",
+  "scope": "Read-only MSI database comparison of upstream attachments; no installation or execution of sample custom actions"
+}

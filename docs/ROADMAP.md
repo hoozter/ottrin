@@ -407,6 +407,33 @@ Current Windows GUI, install/upgrade/repair/rollback/uninstall and broader workf
 acceptance remain open. This refresh includes the recent source fixes; it does
 not enable public Windows Copy or establish release readiness.
 
+## MSI rollback comparison: failure timing matters
+
+Read-only native database inspection compared the two public attachments from
+[WiX issue 8574](https://github.com/wixtoolset/issues/issues/8574) and the current
+`566f6236` Ottrin MSI. All three have Word Count Summary value 10. The Advanced
+Installer attachment's intended failure is Type 37, immediate, at sequence 6401,
+before InstallExecute at 6500. The WiX attachment instead queues a Type 1025
+deferred action into the install script. These are different failure points;
+the reported Advanced Installer outcome cannot establish successful rollback
+after actual script execution. This follows the
+[documented scheduling flags](https://learn.microsoft.com/en-us/windows/win32/msi/custom-action-in-script-execution-options)
+and [InstallExecute behavior](https://learn.microsoft.com/en-us/windows/win32/msi/installexecute-action).
+
+Current Ottrin's InstallExecute also has condition `NOT Installed`. An uninstall
+fixture must therefore prove that the operation script actually executed before
+the deliberate failure; inserting an immediate failure after a skipped action is
+insufficient. Keep the real late-failure gate. Other authoring/context differences
+and the underlying registration failure remain unresolved; no production change
+is justified by this comparison alone.
+
+No attached package or custom action was executed. Input hashes, compressed tables
+and scope are recorded in
+`.hermes/evidence/msi-authoring-comparison-current/COMPARISON.json`.
+The downloaded samples and native input copies are removed, the retained guest
+is shut off with unchanged persistent definition and recorded preferences/
+uninstaller hashes, and current deliverables are unchanged.
+
 ## Local Trash Undo receipt discovery
 
 A full Linux UI run reproduced a local Trash worker timeout. System-call tracing

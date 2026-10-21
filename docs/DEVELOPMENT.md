@@ -1328,6 +1328,15 @@ Windows root-window startup uses the native primary-monitor work area, excluding
 
 The Windows MSI embeds its current indexd as the transaction controller. Before InstallFiles it captures task metadata/runtime intent and stops the index through the authenticated normal service API. Snapshot/rollback/commit use embedded shared PowerShell source and never depend on installed scripts being available. Successful commit preserves preexisting running/idle intent using the upgraded definition; rollback restores the original definition/security. The controller does not remove saved index/configuration. Engine-driven failure/registration rollback requires separate native verification.
 
+A late-failure fixture must prove the queued operation script ran before the
+failure. An immediate custom action before InstallExecute tests a different
+boundary from a deferred in-script failure, even when its sequence number is
+nearer to PublishProduct. The current generated InstallExecute is conditional on
+`NOT Installed`; a fault inserted after it during uninstall must not be accepted
+as post-execution without native log evidence of the actual file/registration
+operations. The read-only upstream-package comparison and exact table hashes
+are in `.hermes/evidence/msi-authoring-comparison-current/COMPARISON.json`.
+
 
 NSIS serializes setup instances with a process-lifetime named mutex so a second
 installer cannot consume an active recovery journal. It uses the same embedded
