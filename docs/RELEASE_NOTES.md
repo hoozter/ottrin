@@ -4,6 +4,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Copy and Move check destination names in the background, keeping the window responsive during large or slow checks. Cancel remains available while checking, and a cancelled result cannot start a later transfer.
+
 - Copy and Move share a themed conflict dialog with Keep both, Replace, Skip, and Cancel choices. Copy no longer silently chooses renamed duplicates when a destination name already exists. Replacement retains the existing guarded transaction and Undo behavior.
 
 - Renaming a selected file keeps the new filename selected in List, Grid, and Column views, so subsequent Copy/Cut actions use the renamed file without requiring another click.

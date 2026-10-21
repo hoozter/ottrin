@@ -1,0 +1,23 @@
+{
+  "status": "source checks pass; package verification pending",
+  "base_revision": "3807fc5af5bc240b22fcf6a03e2989c6570e7d3a",
+  "implementation": "One per-app background destination reader, bounded one-request/one-result queues, cancellation checked before/during/after lookup, unique probe IDs. Original command/storage bindings/clipboard generation remain with the pending intent. No file-operation worker starts until current probe completion or explicit current choice; confirmed choices skip redundant probing and still revalidate admission/storage.",
+  "checks": {
+    "full_suite": "ui-final.log: 394 passed, zero failed, one existing explicit private mount-namespace exclusion",
+    "controlled_block": "Rendered checking modal and Escape operate while filesystem checker is held; no file workers start; owned checker exits on teardown",
+    "bounded_cancel": "One blocked reader plus one queued request; excess request refused; cancelled queued work never checks or publishes",
+    "stale_result": "Already published old response cannot authorize a newer blocked transfer",
+    "performance": "BEFORE.json records original actual missing-name scans. Isolated dispatch samples: 4149, 2442, 2608 microseconds for 20000 names. Read-only worker completes before cancellation; destination remains empty. UI dispatch only, not whole Paste or Copy throughput.",
+    "lint": "Strict all-target Linux/Windows Clippy and formatting pass"
+  },
+  "initial_test_run": "ui-first.log retains four fixture synchronization failures; corrected asynchronous waits, two-pass modal rendering and worker-channel shutdown assertions; source-preservation checks retained",
+  "limits": [
+    "Underlying filesystem I/O is not faster; it no longer executes in the window callback",
+    "Other operation-admission/storage/resource and native Windows GUI gates remain open",
+    "Windows cross lint and controlled headless UI tests are not packaged GUI acceptance"
+  ],
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "9080b4cae99255d800248f5825c6414ae140c11891473281a5ff88c7595a8392",
+    "crates/ottrin-ui/src/transfer_probe.rs": "c7fbc8edcc4642242697e03c86e5c42c94301705f6fa8bebe637a773a6be0299"
+  }
+}

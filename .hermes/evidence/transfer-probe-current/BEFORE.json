@@ -1,0 +1,23 @@
+{
+  "base_revision": "3807fc5af5bc240b22fcf6a03e2989c6570e7d3a",
+  "binary_sha256": "3119f6ab504ec95c81f4380e12ec7fd74f3826ae63c66d73ec7c59ec7daa2c14",
+  "production_helper_sha256": "d392aa90708c2dfdccae550a49c3eeb1546c8e2473195d41ba69008d62d9c38c",
+  "measurement_scope": "Actual original destination-probe helper, three real local-filesystem absent-name scans per batch size. Source path rows are generated; no Copy data transfer or whole-window timing claimed. Test fixture directory removed by TempDir and shared test-workspace isolation.",
+  "samples_microseconds": {
+    "1000": [
+      3526,
+      2496,
+      2431
+    ],
+    "5000": [
+      15602,
+      14897,
+      14462
+    ],
+    "20000": [
+      58250,
+      60259,
+      61115
+    ]
+  }
+}

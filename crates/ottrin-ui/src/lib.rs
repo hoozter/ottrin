@@ -72,6 +72,7 @@ const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer ins
 mod appearance_editor;
 mod config;
 mod operation_paths;
+mod transfer_probe;
 use operation_paths::{OperationPath, OperationPathIndex};
 mod copy_activity_cleanup;
 #[cfg(target_os = "windows")]
@@ -686,8 +687,9 @@ struct PendingDelete {
     selected: DeleteChoice,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 struct PendingTransferConflict {
+    probe: Option<transfer_probe::Probe>,
     cmd: FileCommand,
     tab_id: Option<u64>,
     bindings: Vec<StorageOperationBinding>,
@@ -3426,6 +3428,7 @@ impl ResultRepaint {
 }
 
 pub struct OttrinApp {
+    transfer_probe: transfer_probe::Worker,
     state: AppState,
     colors: Colors,
 
@@ -3679,6 +3682,7 @@ impl OttrinApp {
         let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
         let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
         let result_repaint = ResultRepaint::default();
+        let transfer_probe = transfer_probe::Worker::spawn(result_repaint.clone());
         let office_provider = Arc::new(Mutex::new(None));
         #[cfg(all(any(target_os = "linux", target_os = "windows"), not(test)))]
         {
@@ -4380,6 +4384,7 @@ impl OttrinApp {
         }
 
         let mut app = Self {
+            transfer_probe,
             state,
             colors,
             tab_ui: HashMap::new(),
@@ -6685,6 +6690,7 @@ impl OttrinApp {
     }
 
     fn poll_op_results(&mut self) {
+        self.poll_transfer_probe_results();
         while let Ok(res) = self.op_rx.try_recv() {
             let completed_cmd = res.cmd.clone();
             if matches!(&completed_cmd, FileCommand::Copy { .. })
@@ -10215,9 +10221,24 @@ impl OttrinApp {
     }
 
     fn resolve_transfer_conflict(&mut self, conflict: Option<ConflictAction>) {
+        if conflict.is_some()
+            && self
+                .pending_transfer_conflict
+                .as_ref()
+                .is_some_and(|pending| pending.probe.is_some())
+        {
+            return;
+        }
         let Some(mut pending) = self.pending_transfer_conflict.take() else {
             return;
         };
+        if let Some(clipboard) = self
+            .clipboard
+            .as_mut()
+            .filter(|clipboard| Some(clipboard.generation) == pending.clipboard_generation)
+        {
+            clipboard.in_flight = false;
+        }
         let Some(conflict) = conflict else {
             return;
         };
@@ -10537,7 +10558,7 @@ impl OttrinApp {
             clipboard_generation,
             preconfirmed_conflict_action,
         ) {
-            return false;
+            return self.pending_transfer_conflict.is_some();
         }
         let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
@@ -10815,22 +10836,77 @@ impl OttrinApp {
         else {
             return false;
         };
-        if !transfer_has_destination_conflict(cmd) {
-            return false;
-        }
         if preconfirmed_conflict_action.is_some() {
             return false;
         }
         if self.pending_transfer_conflict.is_some() {
             return true;
         }
+        let id = self.next_id();
+        let probe = match self.transfer_probe.request(id, cmd.clone()) {
+            Ok(probe) => probe,
+            Err(message) => {
+                self.command_frame.error = Some(message.to_owned());
+                self.command_frame.message = None;
+                self.command_frame.visible = true;
+                self.set_status_message(message.to_owned(), false, 6);
+                return true;
+            }
+        };
         self.pending_transfer_conflict = Some(PendingTransferConflict {
+            probe: Some(probe),
             cmd: cmd.clone(),
             tab_id: refresh_tab,
             bindings: bindings.to_vec(),
             clipboard_generation,
         });
         true
+    }
+
+    fn poll_transfer_probe_results(&mut self) {
+        loop {
+            let response = match self.transfer_probe.poll() {
+                Ok(Some(response)) => response,
+                Ok(None) => break,
+                Err(message) => {
+                    if self
+                        .pending_transfer_conflict
+                        .as_ref()
+                        .is_some_and(|pending| pending.probe.is_some())
+                    {
+                        self.resolve_transfer_conflict(None);
+                        self.set_status_message(message.to_owned(), false, 6);
+                    }
+                    break;
+                }
+            };
+            let Some(pending) = self.pending_transfer_conflict.as_mut().filter(|pending| {
+                pending
+                    .probe
+                    .as_ref()
+                    .is_some_and(|probe| probe.id == response.id)
+            }) else {
+                continue;
+            };
+            pending.probe = None;
+            if response.conflict {
+                if let Some(clipboard) = self
+                    .clipboard
+                    .as_mut()
+                    .filter(|clipboard| Some(clipboard.generation) == pending.clipboard_generation)
+                {
+                    clipboard.in_flight = false;
+                }
+            } else {
+                let action = match &pending.cmd {
+                    FileCommand::Copy { conflict, .. } | FileCommand::Move { conflict, .. } => {
+                        *conflict
+                    }
+                    _ => unreachable!("transfer probe command"),
+                };
+                self.resolve_transfer_conflict(Some(action));
+            }
+        }
     }
 
     fn queue_operation_record(&mut self, cmd: FileCommand) -> u64 {
@@ -20562,6 +20638,7 @@ impl OttrinApp {
             _ => return,
         };
         let count = sources.len();
+        let checking = pending.probe.is_some();
         let c = self.colors;
 
         let mut choice = None;
@@ -20577,21 +20654,30 @@ impl OttrinApp {
             .show(ctx, |ui| {
                 ui.set_width(420.0);
                 ui.label(
-                    RichText::new("A destination item already exists")
-                        .color(c.heading)
-                        .size(15.0 * c.font_scale)
-                        .strong(),
+                    RichText::new(if checking {
+                        "Checking destination…"
+                    } else {
+                        "A destination item already exists"
+                    })
+                    .color(c.heading)
+                    .size(15.0 * c.font_scale)
+                    .strong(),
                 );
                 ui.label(
                     RichText::new(format!(
-                        "Choose how to {verb} {count} item{} into {}.",
+                        "{} {verb} {count} item{} into {}.",
+                        if checking {
+                            "Preparing to"
+                        } else {
+                            "Choose how to"
+                        },
                         plural_s(count),
                         path_label(destination)
                     ))
                     .color(c.text_muted)
                     .size(11.0 * c.font_scale),
                 );
-                if count > 1 {
+                if !checking && count > 1 {
                     ui.label(
                         RichText::new(
                             "This choice applies to every conflicting item in this transfer.",
@@ -20601,29 +20687,31 @@ impl OttrinApp {
                     );
                 }
                 ui.add_space(12.0);
-                for (icon, label, action) in [
-                    (
-                        MI_CONTENT_COPY,
-                        "Keep both — rename incoming items",
-                        ConflictAction::Rename,
-                    ),
-                    (
-                        MI_FIND_REPLACE,
-                        "Replace existing items",
-                        ConflictAction::Overwrite,
-                    ),
-                    (MI_SKIP_NEXT, "Skip conflicting items", ConflictAction::Skip),
-                ] {
-                    if ui
-                        .add(
-                            aligned_menu_button("", icon, label, &c)
-                                .frame_when_inactive(true)
-                                .min_size(Vec2::new(ui.available_width(), 32.0 * c.font_scale))
-                                .themed(&c),
-                        )
-                        .clicked()
-                    {
-                        choice = Some(Some(action));
+                if !checking {
+                    for (icon, label, action) in [
+                        (
+                            MI_CONTENT_COPY,
+                            "Keep both — rename incoming items",
+                            ConflictAction::Rename,
+                        ),
+                        (
+                            MI_FIND_REPLACE,
+                            "Replace existing items",
+                            ConflictAction::Overwrite,
+                        ),
+                        (MI_SKIP_NEXT, "Skip conflicting items", ConflictAction::Skip),
+                    ] {
+                        if ui
+                            .add(
+                                aligned_menu_button("", icon, label, &c)
+                                    .frame_when_inactive(true)
+                                    .min_size(Vec2::new(ui.available_width(), 32.0 * c.font_scale))
+                                    .themed(&c),
+                            )
+                            .clicked()
+                        {
+                            choice = Some(Some(action));
+                        }
                     }
                 }
                 ui.add_space(4.0);
@@ -24511,25 +24599,9 @@ fn prepare_clipboard_paste(
     Ok((cmd, bindings))
 }
 
+#[cfg(test)]
 fn transfer_has_destination_conflict(cmd: &FileCommand) -> bool {
-    let (FileCommand::Move {
-        sources,
-        destination,
-        ..
-    }
-    | FileCommand::Copy {
-        sources,
-        destination,
-        ..
-    }) = cmd
-    else {
-        return false;
-    };
-    sources.iter().any(|source| {
-        source
-            .file_name()
-            .is_some_and(|name| std::fs::symlink_metadata(destination.join(name)).is_ok())
-    })
+    transfer_probe::has_destination_conflict(cmd, &AtomicBool::new(false))
 }
 
 fn validate_privileged_retry(
@@ -27052,6 +27124,19 @@ mod tests {
         );
     }
 
+    fn wait_for_transfer_probe(app: &mut OttrinApp) {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app
+            .pending_transfer_conflict
+            .as_ref()
+            .is_some_and(|pending| pending.probe.is_some())
+        {
+            assert!(Instant::now() < deadline, "destination probe timed out");
+            app.poll_transfer_probe_results();
+            std::thread::sleep(Duration::from_millis(5));
+        }
+    }
+
     fn clipboard_keyboard_fixture() -> (tempfile::TempDir, OttrinApp, PathBuf) {
         // File transfers require a home or discovered-volume binding. /tmp is
         // neither, even though it is a valid location for other test fixtures.
@@ -27648,6 +27733,203 @@ mod tests {
     }
 
     #[test]
+    fn blocked_destination_probe_keeps_the_modal_and_escape_responsive() {
+        struct Stopped(Sender<()>);
+        impl Drop for Stopped {
+            fn drop(&mut self) {
+                let _ = self.0.send(());
+            }
+        }
+        let (_root, mut app, source) = clipboard_keyboard_fixture();
+        let (entered_tx, entered_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let (stopped_tx, stopped_rx) = mpsc::channel();
+        let stopped = Stopped(stopped_tx);
+        app.transfer_probe =
+            transfer_probe::Worker::spawn_with(app.result_repaint.clone(), move |_, _| {
+                let _ = &stopped;
+                entered_tx.send(()).unwrap();
+                let _ = release_rx.recv_timeout(Duration::from_secs(5));
+                false
+            });
+        assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
+        app.paste_clipboard();
+        entered_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert!(app.clipboard.as_ref().unwrap().in_flight);
+        let ctx = Context::default();
+        let draw = |app: &mut OttrinApp, time| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(900.0, 680.0),
+                    )),
+                    time: Some(time),
+                    ..Default::default()
+                },
+                |ctx| app.render_transfer_conflict_confirmation(ctx),
+            )
+        };
+        let _ = draw(&mut app, 0.0);
+        let output = draw(&mut app, 1.0);
+        assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::Shape::Text(text) if text.galley.job.text == "Checking destination…")));
+        let _ = ctx.run(
+            egui::RawInput {
+                events: vec![egui::Event::Key {
+                    key: Key::Escape,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                }],
+                ..Default::default()
+            },
+            |ctx| app.handle_transfer_conflict_confirmation_keyboard(ctx),
+        );
+        assert!(app.pending_transfer_conflict.is_none());
+        assert!(!app.clipboard.as_ref().unwrap().in_flight);
+        assert!(app.operation_history.is_empty());
+        assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        release_tx.send(()).unwrap();
+        drop(app);
+        stopped_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+    }
+
+    #[test]
+    fn completed_cancelled_probe_cannot_start_a_newer_transfer() {
+        struct Stopped(Sender<()>);
+        impl Drop for Stopped {
+            fn drop(&mut self) {
+                let _ = self.0.send(());
+            }
+        }
+        let (_root, mut app, source) = clipboard_keyboard_fixture();
+        let ctx = Context::default();
+        let (wake_tx, wake_rx) = mpsc::channel();
+        ctx.set_request_repaint_callback(move |_| {
+            let _ = wake_tx.send(std::thread::current().id());
+        });
+        app.result_repaint.bind(&ctx);
+        let (entered_tx, entered_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let (stopped_tx, stopped_rx) = mpsc::channel();
+        let stopped = Stopped(stopped_tx);
+        let mut calls = 0;
+        app.transfer_probe =
+            transfer_probe::Worker::spawn_with(app.result_repaint.clone(), move |_, _| {
+                let _ = &stopped;
+                calls += 1;
+                entered_tx.send(std::thread::current().id()).unwrap();
+                if calls == 2 {
+                    let _ = release_rx.recv_timeout(Duration::from_secs(5));
+                }
+                false
+            });
+        assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
+        app.paste_clipboard();
+        let reader = entered_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        // This reader wakes the GUI only after its response is in the queue.
+        while wake_rx.recv_timeout(Duration::from_secs(5)).unwrap() != reader {}
+        app.resolve_transfer_conflict(None);
+        app.paste_clipboard();
+        entered_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        let current = app
+            .pending_transfer_conflict
+            .as_ref()
+            .unwrap()
+            .probe
+            .as_ref()
+            .unwrap()
+            .id;
+        app.poll_transfer_probe_results();
+        assert_eq!(
+            app.pending_transfer_conflict
+                .as_ref()
+                .unwrap()
+                .probe
+                .as_ref()
+                .unwrap()
+                .id,
+            current
+        );
+        assert!(
+            app.operation_history.is_empty(),
+            "the queued old response must not authorize the newer transfer"
+        );
+        app.resolve_transfer_conflict(None);
+        assert!(!app.clipboard.as_ref().unwrap().in_flight);
+        release_tx.send(()).unwrap();
+        drop(app);
+        stopped_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+    }
+
+    #[test]
+    fn large_destination_probe_dispatch_can_cancel_without_starting_file_workers() {
+        struct Stopped(Sender<()>);
+        impl Drop for Stopped {
+            fn drop(&mut self) {
+                let _ = self.0.send(());
+            }
+        }
+        let root = tempfile::tempdir().unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let command = FileCommand::Copy {
+            sources: (0..20_000)
+                .map(|i| root.path().join(format!("source/item-{i}.txt")))
+                .collect(),
+            destination: destination.clone(),
+            conflict: ConflictAction::Rename,
+        };
+        let mut samples = Vec::new();
+        for _ in 0..3 {
+            let mut app = OttrinApp::default();
+            let (stopped_tx, stopped_rx) = mpsc::channel();
+            let stopped = Stopped(stopped_tx);
+            app.transfer_probe = transfer_probe::Worker::spawn_with(
+                app.result_repaint.clone(),
+                move |command, cancelled| {
+                    let _ = &stopped;
+                    transfer_probe::has_destination_conflict(command, cancelled)
+                },
+            );
+            let start = Instant::now();
+            assert!(app.request_transfer_conflict_confirmation(&command, None, &[], None, None));
+            samples.push(start.elapsed().as_micros());
+            let deadline = Instant::now() + Duration::from_secs(5);
+            let response = loop {
+                assert!(
+                    Instant::now() < deadline,
+                    "owned destination reader timed out"
+                );
+                if let Some(response) = app.transfer_probe.poll().unwrap() {
+                    break response;
+                }
+                std::thread::sleep(Duration::from_millis(1));
+            };
+            assert!(!response.conflict);
+            assert_eq!(
+                app.pending_transfer_conflict
+                    .as_ref()
+                    .unwrap()
+                    .probe
+                    .as_ref()
+                    .unwrap()
+                    .id,
+                response.id
+            );
+            // Consume the read-only result directly, then cancel instead of authorizing a Copy.
+            app.resolve_transfer_conflict(None);
+            assert!(app.operation_history.is_empty());
+            drop(app);
+            stopped_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+            assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 0);
+        }
+        println!("transfer_probe_dispatch entries=20000 microseconds={samples:?}");
+    }
+
+    #[test]
     fn clipboard_native_copy_and_cut_events_capture_selected_file() {
         for (event, cut) in [(egui::Event::Copy, false), (egui::Event::Cut, true)] {
             let (_root, mut app, source) = clipboard_keyboard_fixture();
@@ -27782,6 +28064,7 @@ mod tests {
             },
             |ctx| app.handle_keyboard(ctx),
         );
+        wait_for_transfer_probe(&mut app);
         assert!(
             app.pending_transfer_conflict.is_some(),
             "Copy conflict must offer choices before mutation"
@@ -27850,6 +28133,7 @@ mod tests {
             },
             |ctx| app.handle_keyboard(ctx),
         );
+        wait_for_transfer_probe(&mut app);
         assert!(app.pending_transfer_conflict.is_some());
         assert!(!app.clipboard.as_ref().unwrap().in_flight);
         assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
@@ -27865,6 +28149,7 @@ mod tests {
         let (root, mut app, source) = clipboard_keyboard_fixture();
         assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
         app.paste_clipboard();
+        wait_for_transfer_probe(&mut app);
         assert!(app.pending_transfer_conflict.is_some());
         app.resolve_transfer_conflict(Some(ConflictAction::Overwrite));
         let result = app.op_rx.recv_timeout(Duration::from_secs(5)).unwrap();
@@ -27899,6 +28184,7 @@ mod tests {
             app.state.active_tab_mut().current_dir = destination;
             app.paste_clipboard();
 
+            wait_for_transfer_probe(&mut app);
             assert!(app.pending_transfer_conflict.is_some());
             assert!(app.operation_history.is_empty());
             assert_eq!(std::fs::read(&existing).unwrap(), b"displaced bytes");
@@ -29478,6 +29764,7 @@ mod tests {
         let mut app = OttrinApp::default();
 
         assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None,));
+        wait_for_transfer_probe(&mut app);
         let result = app
             .op_rx
             .recv_timeout(Duration::from_secs(2))
@@ -36043,6 +36330,7 @@ mod tests {
         let mut app = OttrinApp::default();
         app.operation_history.clear();
         app.pending_transfer_conflict = Some(PendingTransferConflict {
+            probe: None,
             cmd: FileCommand::Move {
                 sources: vec![source.clone()],
                 destination,
@@ -36200,6 +36488,7 @@ mod tests {
 
         app.tab_ui.entry(tab_id).or_default().rubber_band = None;
         app.pending_transfer_conflict = Some(PendingTransferConflict {
+            probe: None,
             cmd: FileCommand::Move {
                 sources: vec![source],
                 destination,
@@ -36339,6 +36628,7 @@ mod tests {
                 None
             ));
             assert!(app.pending_transfer_conflict.is_some());
+            wait_for_transfer_probe(&mut app);
             app.resolve_transfer_conflict(action);
 
             assert!(app.pending_transfer_conflict.is_none());
@@ -36387,6 +36677,7 @@ mod tests {
             let mut app = OttrinApp::default();
             app.operation_history.clear();
             app.pending_transfer_conflict = Some(PendingTransferConflict {
+                probe: None,
                 cmd: FileCommand::Move {
                     sources: vec![source],
                     destination,

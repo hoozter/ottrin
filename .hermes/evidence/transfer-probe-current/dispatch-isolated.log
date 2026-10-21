@@ -1,0 +1,12 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.72s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-b21e7538cbb86b0a)
+
+running 1 test
+transfer_probe_dispatch entries=20000 microseconds=[4149, 2442, 2608]
+test tests::large_destination_probe_dispatch_can_cancel_without_starting_file_workers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 394 filtered out; finished in 0.19s
+

@@ -1,0 +1,21 @@
+    #[test]
+    fn transfer_conflict_probe_latency_measurement() {
+        let root = tempfile::tempdir().unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        for count in [1_000, 5_000, 20_000] {
+            let command = FileCommand::Copy {
+                sources: (0..count).map(|i| root.path().join(format!("source/item-{i}.txt"))).collect(),
+                destination: destination.clone(),
+                conflict: ConflictAction::Rename,
+            };
+            let mut micros = Vec::new();
+            for _ in 0..3 {
+                let start = Instant::now();
+                assert!(!transfer_has_destination_conflict(&command));
+                micros.push(start.elapsed().as_micros());
+            }
+            println!("transfer_probe entries={count} microseconds={micros:?}");
+        }
+    }
+

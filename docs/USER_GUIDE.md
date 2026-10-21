@@ -160,6 +160,8 @@ Search results show **Previous** and **Next** when another page is available, al
 
 ## Copy and Move conflicts
 
+You can cancel the transfer while Ottrin checks destination names.
+
 When Copy or Move finds an existing destination name, Ottrin asks how to handle the conflict before starting the transfer. **Keep both** gives incoming items new names; **Replace existing items** uses the operation's guarded replacement path; **Skip conflicting items** transfers only items whose names are free. For a batch, the choice applies to every conflict in that transfer. **Cancel transfer** or Escape leaves the files and clipboard unchanged.
 
 ## Trash

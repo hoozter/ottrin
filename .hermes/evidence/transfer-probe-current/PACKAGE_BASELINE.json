@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "source_revision": "329473d63abe5a2bdb976a847014c8001550d550",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "150d50c5b5e77f315b1f3d23029a9bdede24dd140f8222917bd2b72373a7156c",
+    "Ottrin-0.1.0-x86_64.AppImage": "506213f4fc4db5bceb5e9a0236474a5518dd50c05435b188b48bc6490acd813c",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "19d472454179fca2f925ac8056a9f8d7eb72b705b4cd103ae82c55528919c564",
+    "ottrin_0.1.0_amd64.deb": "b2d607c1bef69e7a7b6ba7f4c7a2aba7ff5e5dcdec669ab3d5b193ca73555426"
+  },
+  "checks": [
+    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
+    "portable six payload byte identities",
+    "all four formats contain exact current guide and release docs",
+    "clean embedded source revision",
+    "all package runtime identities checked against the actual rebuilt AppImage",
+    "Canonical build-all staged checksums and all-format privileged-helper path verification",
+    "Actual Dark100 AppImage: Copy Cancel/Skip/Keep both/Replace, replacement and renamed-copy Undo, Move Escape/Replace/Undo; eleven file checks",
+    "Actual Light150 AppImage: themed/scaled dialog, Copy Replace and Undo; three file checks",
+    "Actual three-item batch: Skip copies free nested folder/file, preserves conflict, and batch Undo withdraws only new publications; four file checks",
+    "All three owned app/display/bus/daemon/profile groups exited; all source hashes preserved"
+  ],
+  "scope": "Four-format content and targeted private-X11 ordinary file workflows. Fresh distro lifecycle, native Windows GUI, physical devices and full roadmap/resource acceptance remain open.",
+  "verifier_sha256": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
+  "cleanup": "private extractions removed by TemporaryDirectory",
+  "evidence": ".hermes/evidence/transfer-conflicts-current"
+}
