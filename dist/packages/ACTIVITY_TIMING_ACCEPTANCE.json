@@ -116,7 +116,95 @@
       "bytes": 109480381,
       "replacement_source": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24"
     },
-    "preserved": "Shared Cargo/release caches, unrelated staging and retained QA VMs"
+    "preserved": "Shared Cargo/release caches, unrelated staging and retained QA VMs",
+    "incremental_sessions": {
+      "status": "removed",
+      "retired_sessions": [
+        {
+          "path": "target/debug/incremental/ottrin_priv_helper-0emq546gv7miv/s-hneh9nq83b-02x50fn-3arzip10es5g2azkmq5w5g5mq",
+          "replacement": "target/debug/incremental/ottrin_priv_helper-0emq546gv7miv/s-hnej3vq4sp-1dxn3gi-701drp70x5w12wkxkmthkxjay",
+          "logical_bytes": 846830
+        },
+        {
+          "path": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnei43fcjl-0dgr1w3-0pobwkkf2u7qc5q71izkirk76",
+          "replacement": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hneieyxpth-1x4rakd-ar2h3glbbv6o47931merp3dp8",
+          "logical_bytes": 336940282
+        },
+        {
+          "path": "target/debug/incremental/ottrin_platform-3njrtbzoawl0q/s-hneh9e2tyh-0vaiebc-1r6e9xy8o8nb3wjk0iwjh44sk",
+          "replacement": "target/debug/incremental/ottrin_platform-3njrtbzoawl0q/s-hnej3u73dm-0ao9i3q-eoi2e7jq13emo2iwm7l4dkphx",
+          "logical_bytes": 37516108
+        },
+        {
+          "path": "target/debug/incremental/ottrin_priv_helper-1v4t2ucqbu8ts/s-hneh9iqi7z-0gd7fj9-6ilbb3bxut1w4vt1d4t49nbgb",
+          "replacement": "target/debug/incremental/ottrin_priv_helper-1v4t2ucqbu8ts/s-hnej3yqtva-1tcduw9-117iheuoie378c1g653sdxe00",
+          "logical_bytes": 1034082
+        },
+        {
+          "path": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnei4w6kbd-00zc9i2-ccedgncebt24t24st8udx6kzc",
+          "replacement": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnej3vuoi0-112txbd-0uddt0rqj3udec346z2jxcty5",
+          "logical_bytes": 47038920
+        },
+        {
+          "path": "target/debug/incremental/ottrin_platform-3twz5sojevr4i/s-hneh7tpbsy-1ggx44s-d34flhnnhw157uvhl7puvfwor",
+          "replacement": "target/debug/incremental/ottrin_platform-3twz5sojevr4i/s-hneigoadff-1sgune5-7lzs1yxeahnbglnam6gaysc8p",
+          "logical_bytes": 357290545
+        },
+        {
+          "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0pzfp55m6he1z/s-hneha0q4e1-1e5l04y-2bqbjkstjj6cewdruvbb1en0k",
+          "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0pzfp55m6he1z/s-hnej3r9pzt-04hrx16-di1k9yt2w0771by4wm689hke0",
+          "logical_bytes": 774118
+        },
+        {
+          "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hneh9szkpt-0cpitav-9a3jgsc5o9zoayb6hhvk5asib",
+          "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnej3m8t2f-1kipwcr-4r5mkx25fq8t30plra6b7xbdh",
+          "logical_bytes": 49265310
+        },
+        {
+          "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hneh9wtneu-0r6hzyw-5jm0apxv4k24kn4pyv3jq3g28",
+          "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hnej3phe0i-03xfp8k-cofoq0g0az2l4rshdzklnzblq",
+          "logical_bytes": 47936090
+        },
+        {
+          "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-2769xux6t0ndt/s-hneh9wh9bu-0vvmukn-e0zaotaiqrbyejjhzvmjenokx",
+          "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-2769xux6t0ndt/s-hnej3rc3cc-0a0hx4j-0a02xjvhh3duzto5nl9xiglme",
+          "logical_bytes": 759993
+        }
+      ],
+      "retained_profiles": [
+        {
+          "path": "target/debug/incremental/ottrin_ui-16oqn01qw0izd",
+          "reason": "External hardlinks; preserve until owners identified",
+          "example": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnej3x2vnp-0sqg8cx-e1tnvdtzq3eya34ydq42hu7ko/metadata.rmeta",
+          "links": 2
+        },
+        {
+          "path": "target/debug/incremental/ottrin_platform-3irto4pgedwys",
+          "reason": "External hardlinks; preserve until owners identified",
+          "example": "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnej3u6zg0-0rhr4cx-97001h31xd10du0ebkzebfs42/metadata.rmeta",
+          "links": 2
+        },
+        {
+          "path": "target/debug/incremental/ottrin_platform-0u7jskgx7wt1r",
+          "reason": "External hardlinks; preserve until owners identified",
+          "example": "target/debug/incremental/ottrin_platform-0u7jskgx7wt1r/s-hneiexo5y0-05yklht-aivs4vu66zcheschd5u7j8w1e/metadata.rmeta",
+          "links": 2
+        },
+        {
+          "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2uh0o0ad189n0",
+          "reason": "External hardlinks; preserve until owners identified",
+          "example": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2uh0o0ad189n0/s-hnej3m8mld-1csgbe5-c0m7kjfmkx1nj15dwn2s2p6ok/metadata.rmeta",
+          "links": 2
+        },
+        {
+          "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql",
+          "reason": "External hardlinks; preserve until owners identified",
+          "example": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql/s-hnej3rgc2q-0sbvdkc-ecb0hla85qtta922e2k19n2wk/metadata.rmeta",
+          "links": 2
+        }
+      ],
+      "policy": "Only task-touched platform/UI/helper profiles; newest finalized session retained; exclusive compiler locks held; no live compilers; external hardlinks preserve profile"
+    }
   },
   "remaining": "Full roadmap remains active. Windows public Copy is gated; native mutating-I/O, orphan/partial claim, released-log retirement and broader workflow/platform/release gates remain."
 }
