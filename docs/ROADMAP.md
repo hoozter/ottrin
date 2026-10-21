@@ -352,6 +352,28 @@ payload. Remaining staging/setup/metadata boundaries, Undo/cleanup full-disk pha
 and the broader Windows Copy gates remain. No production behavior or packages
 changed; public Windows Copy stays disabled.
 
+## Actionable Windows Copy recovery locations
+
+Source `b88c84b4` keeps the observed recovery location as a native path in Activity
+ownership, separately from descriptive text and data location. Recovery details
+show a labeled, selectable path and **Copy recovery path**. The action emits the
+exact Unicode text without starting recovery or cleanup; paths that cannot be
+represented as clipboard text disable the action. If discovery loses the record,
+the stale recovery location is cleared. Incomplete staging explicitly explains
+that Resume and automatic cleanup are unavailable and retained files are kept.
+
+The ordinary-account Windows functional egui check exercises actual pointer
+events, the emitted clipboard command, unchanged retained bytes and absence of
+mutation workers. Phase/evidence and raw native-name checks pass, as do strict
+Linux/Windows platform/UI all-target Clippy. Guest exports and temporary data are
+removed; the retained guest is shut off with unchanged persistent definition and
+recorded preferences/uninstaller hashes. Receipt:
+`.hermes/evidence/windows-copy-review-current/ACCEPTANCE.json`.
+
+This source checkpoint adds no mutation authority. Exact package refresh, native
+desktop/OS-clipboard acceptance and the remaining interrupted-staging protocol
+are still open; existing packages and public Windows Copy are unchanged.
+
 ## Local Trash Undo receipt discovery
 
 A full Linux UI run reproduced a local Trash worker timeout. System-call tracing

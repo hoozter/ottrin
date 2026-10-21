@@ -1,0 +1,8 @@
+{
+  "base_commit": "457cdbe50591903ee50cc78be3a9724d7764af89",
+  "source_commit": "b88c84b4047c3f36e29bb9d52b14d4666b61e7ed",
+  "files": {
+    "crates/ottrin-ui/src/lib.rs": "4500b9560f9b2cefb486ebf948c1ef17709ff15c70cf3b6ee2a739544ba3bbb3",
+    "crates/ottrin-ui/src/copy_activity_cleanup.rs": "6e0cea83bd1eba0b1666003950fc332d88c2e8389a7354c3e7ca189a536c787b"
+  }
+}

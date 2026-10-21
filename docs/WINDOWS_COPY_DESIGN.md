@@ -73,6 +73,11 @@ reading their contents, following directory/reparse targets or adopting a
 transaction ID. This includes empty, partial and complete unpublished journals;
 a matching filename grants no Resume, Undo or cleanup authority. The record may
 belong to a live writer, so presentation does not claim it is abandoned.
+Activity keeps this observed recovery location as a native path, separate from
+display text and mutation plans. Recovery details show the path and offer an exact
+text clipboard action when representable. Missing discovery clears stale locations.
+Incomplete staging explains why Resume and automatic cleanup are unavailable;
+showing or copying a recovery path grants no permission to mutate its contents.
 One journal writer and frame encoder handle both initial and
 subsequent records; initial binding checks use the held preparation's actual name.
 Only after the complete paired Begin frame is flushed is the central handle

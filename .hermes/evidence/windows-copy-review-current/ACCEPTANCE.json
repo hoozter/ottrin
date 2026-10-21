@@ -1,0 +1,34 @@
+{
+  "status": "pass for native functional Activity path/clipboard scope",
+  "source": "SOURCE.json",
+  "native_result": "RESULTS.json",
+  "test_binary": "TEST_BINARY.json",
+  "coverage": [
+    "Typed recovery location remains distinct from data location and presentation text across all phase/evidence combinations",
+    "Unrecognized native filenames keep distinct exact path identities without gaining transaction/action authority",
+    "Actual egui pointer events expand Recovery details and click Copy recovery path; emitted clipboard command matches exact Unicode path",
+    "Retained fixture bytes unchanged; no recovery/cleanup worker starts; no Resume or retained-cleanup action is offered for the incomplete copy",
+    "Empty fresh discovery clears the formerly observed recovery path"
+  ],
+  "checks": {
+    "strict_linux_platform_ui_all_target_clippy": "pass; clippy-linux.log",
+    "strict_windows_platform_ui_all_target_clippy": "pass; clippy-windows.log",
+    "format_and_diff": "pass"
+  },
+  "cleanup": {
+    "status": "pass",
+    "guest": "TEARDOWN_GUEST.json",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "retained_guest_preserved": true,
+    "additional_disks_or_guests_created": false
+  },
+  "preservation_scope": "BASELINE.json plus guest teardown verify original config.json and Uninstall.exe hashes; not whole installation inventory",
+  "storage": "STORAGE.json",
+  "delivery": "Source UI change only; current installed packages and internal Windows candidates are unchanged. Public Windows Copy remains gated.",
+  "limits": [
+    "Functional egui test executed on native Windows, not native desktop screenshot or OS clipboard integration acceptance",
+    "Exact package refresh and packaged window acceptance remain required",
+    "No incomplete-payload mutation, resumption or reclamation authority added"
+  ]
+}

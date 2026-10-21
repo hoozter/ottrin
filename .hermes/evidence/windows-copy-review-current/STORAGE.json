@@ -1,0 +1,33 @@
+{
+  "scope": "Task-touched UI incremental configurations on host and Windows; newest finalized sessions kept, compiler locks held, outside hard links checked",
+  "before_du": "17G\ttarget/debug/deps\n6.9G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n526M\t.hermes/packaging-tmp\n",
+  "retired_sessions": [
+    {
+      "path": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnej3x2vnp-0sqg8cx-e1tnvdtzq3eya34ydq42hu7ko",
+      "replacement": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnemgn384f-182c4yt-c5slb50etpyn9obziw6ro9o7i",
+      "logical_bytes": 38839779
+    },
+    {
+      "path": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnej3vuoi0-112txbd-0uddt0rqj3udec346z2jxcty5",
+      "replacement": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnemgn3bxd-1gxs35n-9gehr9v2qb5hz8ah5tk4dz31y",
+      "logical_bytes": 46791348
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hnel3kau3v-0ttrbzc-3u1te3g4u0q0djfcyfm0z9j4s",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hnemfc1nuo-0vlb4x2-0wucnrjg0nnchxsugcr9my6m2",
+      "logical_bytes": 133543069
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql/s-hnel59f3o4-1m8ghm8-78dul5y9k289bsymos1qwmuph",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql/s-hnemg3mlbg-13k4159-1hrmdpul43ntwj5u3axg4m9lc",
+      "logical_bytes": 40304332
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hnel58hohn-0nvsqlb-b4zyse1akkz062jv0o7fovrat",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hnemg3moes-1vh7nuh-8sdoe2y824q6r2lnop4dhmnlo",
+      "logical_bytes": 47889988
+    }
+  ],
+  "status": "removed",
+  "after_du": "17G\ttarget/debug/deps\n6.9G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n526M\t.hermes/packaging-tmp\n452K\t.hermes/evidence/windows-copy-review-current\n"
+}
