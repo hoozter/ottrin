@@ -1,0 +1,46 @@
+{
+  "status": "pass within native exact-target Move prerequisite scope; Windows Undo remains unavailable",
+  "source_parent": "570e31598a106777d862150da69f0f1e93068ae9",
+  "production_source_sha256": {
+    "crates/ottrin-platform/src/move_transaction.rs": "1a2207d7fb7b1097ca61cf8f5fe539ced71a4ad9604def21528be052e6ef46c6"
+  },
+  "native_move_suite": {
+    "passed": 76,
+    "failed": 0,
+    "ignored": 0,
+    "excluded": [
+      "windows_native_move_fat32_boundary_preserves_both_entries",
+      "windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite"
+    ],
+    "ordinary_user": true,
+    "temporary_entries": 0,
+    "result": "RESULTS.json",
+    "test_binary_sha256": "8c5dac70e39a1615b763e0ab7146705505986d46b05efa74958482cd5f56732b"
+  },
+  "new_tests": [
+    "windows_native_named_move_preserves_original_name_and_occupied_entries",
+    "windows_native_named_move_rejects_non_leaf_targets_before_mutation",
+    "windows_native_cross_volume_named_move_preserves_exact_original_name",
+    "windows_native_cross_volume_named_move_recovery_keeps_requested_target"
+  ],
+  "scope": "One Windows Move engine accepts a validated explicit destination basename. Existing callers still use source basename. Files/directories preserve occupied names; cross-volume process-exit recovery retains requested name and refuses another name without changing source or paired journals. Stream, traversal, root and null target names are rejected before mutation.",
+  "fixture_correction": "first-boundary-fixture/SOURCE.json",
+  "source_checks": {
+    "strict_windows_platform_all_target_clippy": "clippy-windows.log",
+    "cargo_fmt": "pass",
+    "diff_check": "pass"
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "domain": "TEARDOWN.json",
+    "owned_vhd": "VOLUME_TEARDOWN.json",
+    "superseded_incremental_sessions": "CACHE_RETIREMENT.json"
+  },
+  "remaining": [
+    "Bind opaque Windows Move receipts to authoritative publication and parent/retained identity evidence",
+    "Implement no-overwrite same/cross-volume inverse including displaced restoration and durable interruption recovery",
+    "Integrate Activity/Ctrl+Z and operation claims with honest failure/retry state",
+    "Native adverse/race/interruption coverage and exact packaged GUI Undo acceptance"
+  ],
+  "package_scope": "Current internal Windows candidate remains source 68962f05, portable SHA256 66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d. This new prerequisite is not packaged; no Undo control was enabled. Public Windows and Linux packages unchanged."
+}

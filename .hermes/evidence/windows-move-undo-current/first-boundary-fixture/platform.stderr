@@ -1,0 +1,10 @@
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_named_move_recovery_keeps_requested_target' (7176) panicked at crates/ottrin-platform/src/move_transaction.rs:9182:13:
+child did not reach process-exit boundary
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_named_move_recovery_keeps_requested_target' (4692) panicked at crates/ottrin-platform/src/move_transaction.rs:9202:13:
+assertion `left == right` failed
+  left: Some(101)
+ right: Some(87)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

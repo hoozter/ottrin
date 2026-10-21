@@ -136,6 +136,41 @@ same-volume GUI acceptance retains its own artifact scope.
 Containing-parent renames, unavailable private paths, Windows Move Undo and the
 remaining platform gates are still separate unfinished outcomes.
 
+## Windows Move Undo — exact-name engine prerequisite
+
+Windows Move still returns no Undo receipt. Undo must restore the original
+basename after Keep Both and must refuse an occupied original name. The source
+now permits an explicit, validated destination basename through the existing
+Windows Move engine, retaining its shared recovery lock, handles, source checks,
+no-replace publication and cross-volume transaction path. Ordinary Move callers
+continue to request the source basename. Pending recovery also binds its initial
+requested target; requesting another name refuses without rewriting source or
+journal evidence. Stream, traversal, root and NUL names are rejected before any
+namespace mutation through the shared native component validator.
+
+The final ordinary-user Windows Move suite passes 76 tests, including new
+same/cross-volume exact-name file/directory checks, preservation of occupied names,
+and real child-process exits before and after directory publication. Retrying a
+different target leaves source and paired journals untouched; the original target
+recovers correctly. FAT32 and guest hard-power-cut fixtures remain explicitly
+excluded. Strict Windows platform all-target Clippy, formatting and diff checks
+pass. The initial recovery fixture used directory-only hooks with a regular file;
+that fixture mistake and the corrected run are preserved separately.
+
+Evidence: `.hermes/evidence/windows-move-undo-current/ACCEPTANCE.json`.
+The task removes its VHD and native payload, preserves checked original app files,
+returns the retained VM to off with unchanged definition, and retires superseded
+compiler sessions while keeping each current configuration's latest cache.
+
+This is a source/native prerequisite, not a working Undo feature or a new package.
+The internal candidate remains `68962f05` with its recorded packaged GUI acceptance;
+public Windows and Linux downloads are unchanged. Next are authoritative opaque
+receipt capture, identity/content/parent guards, same/cross-volume inverse intent
+and interruption recovery, restoration of displaced destinations, Activity/Ctrl+Z
+and conflict ownership, then native adverse/interruption checks and exact-package
+GUI acceptance. An occupied original name must produce a visible refusal/retry,
+not a silently skipped or renamed inverse. No Undo action is enabled prematurely.
+
 ## Windows Copy: end an incomplete attempt without discarding files
 
 Activity now offers “End copy attempt…” only after opaque read-only admission of

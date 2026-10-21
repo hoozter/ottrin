@@ -1309,10 +1309,29 @@ pub(super) fn move_entry_transactional(
     destination_dir: &Path,
     conflict: ConflictAction,
 ) -> Result<MovePublication, PlatformError> {
+    let destination_name = source
+        .file_name()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    move_windows_entry_to_named_destination(source, destination_dir, destination_name, conflict)
+}
+
+/// Use the ordinary Move transaction with an exact destination basename. An
+/// inverse must restore the original name even when Keep Both renamed the entry.
+#[cfg(target_os = "windows")]
+pub(super) fn move_windows_entry_to_named_destination(
+    source: &Path,
+    destination_dir: &Path,
+    destination_name: &std::ffi::OsStr,
+    conflict: ConflictAction,
+) -> Result<MovePublication, PlatformError> {
+    super::windows_fs::valid_component(destination_name)
+        .map_err(|error| PlatformError::InvalidDestination(error.to_string()))?;
     // Every recovery scan and transaction mutation shares one process-lifetime-independent
     // ownership domain. Windows releases the exclusive share reservation if this process dies.
     let _recovery_lock = acquire_windows_recovery_lock()?;
-    if let Some(publication) = recover_windows_overwrites_before_move(source, destination_dir)? {
+    if let Some(publication) =
+        recover_windows_overwrites_before_move(source, destination_dir, destination_name)?
+    {
         return Ok(publication);
     }
     std::fs::symlink_metadata(source)
@@ -1346,6 +1365,7 @@ pub(super) fn move_entry_transactional(
             move_windows_same_volume(
                 source,
                 destination_dir,
+                destination_name,
                 conflict,
                 source_handle,
                 destination_handle,
@@ -1354,6 +1374,7 @@ pub(super) fn move_entry_transactional(
         WindowsMoveRoute::CrossVolume => move_windows_cross_volume_preflight(
             source,
             destination_dir,
+            destination_name,
             conflict,
             source_handle,
             destination_handle,
@@ -1413,14 +1434,13 @@ fn windows_recovery_lock_path(recovery_root: &Path) -> PathBuf {
 fn move_windows_cross_volume_preflight(
     source: &Path,
     destination_dir: &Path,
+    destination_name: &std::ffi::OsStr,
     conflict: ConflictAction,
     source_handle: std::fs::File,
     destination_handle: std::fs::File,
 ) -> Result<MovePublication, PlatformError> {
-    let source_name = source
-        .file_name()
-        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-    let destination_exists = match std::fs::symlink_metadata(destination_dir.join(source_name)) {
+    let destination_exists = match std::fs::symlink_metadata(destination_dir.join(destination_name))
+    {
         Ok(_) => true,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => false,
         Err(error) => return Err(PlatformError::Io(error.to_string())),
@@ -1452,7 +1472,7 @@ fn move_windows_cross_volume_preflight(
             start_windows_cross_volume_move(
                 source,
                 destination_dir,
-                &destination_dir.join(source_name),
+                &destination_dir.join(destination_name),
                 // Replace applies only to an existing, identified destination.
                 // A mixed batch also contains unoccupied names; publish those
                 // without replacement and preserve any destination that races
@@ -1470,7 +1490,7 @@ fn move_windows_cross_volume_preflight(
         WindowsCrossVolumePreflight::TransactionRequired
             if conflict == ConflictAction::Overwrite =>
         {
-            let target = destination_dir.join(source_name);
+            let target = destination_dir.join(destination_name);
             let destination_identity = move_recovery::stable_identity_of_entry(&target)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
             let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
@@ -1812,14 +1832,12 @@ fn drain_windows_claimed_source_directory(
 fn move_windows_same_volume(
     source: &Path,
     destination_dir: &Path,
+    destination_name: &std::ffi::OsStr,
     conflict: ConflictAction,
     source_handle: std::fs::File,
     destination_handle: std::fs::File,
 ) -> Result<MovePublication, PlatformError> {
-    let source_name = source
-        .file_name()
-        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-    let mut candidate = source_name.to_os_string();
+    let mut candidate = destination_name.to_os_string();
     loop {
         let published_path = destination_dir.join(&candidate);
         match rename_windows_handle_no_replace(&source_handle, &destination_handle, &candidate) {
@@ -1864,7 +1882,8 @@ pub(super) fn rename_windows_handle_no_replace(
     destination_directory: &std::fs::File,
     destination_name: &std::ffi::OsStr,
 ) -> Result<(), PlatformError> {
-    let name = destination_name.encode_wide().collect::<Vec<_>>();
+    let name = super::windows_fs::valid_component(destination_name)
+        .map_err(|error| PlatformError::InvalidDestination(error.to_string()))?;
     let name_bytes = name
         .len()
         .checked_mul(mem::size_of::<u16>())
@@ -2378,6 +2397,7 @@ fn load_windows_cross_volume_record(
 fn recover_windows_overwrites_before_move(
     source: &Path,
     destination_dir: &Path,
+    destination_name: &std::ffi::OsStr,
 ) -> Result<Option<MovePublication>, PlatformError> {
     let recovery_root = windows_recovery_root()?;
     let entries = match std::fs::read_dir(&recovery_root) {
@@ -2414,8 +2434,16 @@ fn recover_windows_overwrites_before_move(
                     continue;
                 }
             }
-            let is_matching = record.source_path()? == source
+            let same_endpoints = record.source_path()? == source
                 && record.destination_parent_path()? == destination_dir;
+            let is_matching =
+                same_endpoints && record.target_path()? == destination_dir.join(destination_name);
+            if same_endpoints && !is_matching {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: path.display().to_string(),
+                    message: "Pending Windows Move has a different destination name".into(),
+                });
+            }
             (
                 is_matching,
                 resume_windows_overwrite(&recovery_root, record)?,
@@ -2425,8 +2453,22 @@ fn recover_windows_overwrites_before_move(
             if completed_windows_cross_volume_overwrite(&recovery_root, &mut record)?.is_some() {
                 continue;
             }
-            let is_matching = record.source_path()? == source
+            let same_endpoints = record.source_path()? == source
                 && record.destination_parent_path()? == destination_dir;
+            let requested_target = record
+                .target_candidates
+                .first()
+                .ok_or_else(|| PlatformError::Io("Windows Move target journal is empty".into()))?
+                .decode()
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            let is_matching =
+                same_endpoints && requested_target == destination_dir.join(destination_name);
+            if same_endpoints && !is_matching {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: path.display().to_string(),
+                    message: "Pending Windows Move has a different destination name".into(),
+                });
+            }
             let publication = resume_windows_cross_volume(&recovery_root, &mut record, None)?;
             (is_matching, publication)
         } else {
@@ -8966,6 +9008,251 @@ mod windows_source_tests {
     }
 
     #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_named_move_preserves_original_name_and_occupied_entries() {
+        for directory in [false, true] {
+            let fixture = crate::tests::TestDir::new("named-move");
+            let destination = fixture.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let source = fixture.path().join("incoming (1)");
+            let content = if directory {
+                std::fs::create_dir(&source).unwrap();
+                source.join("child.txt")
+            } else {
+                source.clone()
+            };
+            std::fs::write(&content, b"selected original").unwrap();
+            let target = destination.join("original");
+            std::fs::write(&target, b"later occupant").unwrap();
+            let identity = move_recovery::stable_identity_of_entry(&source).unwrap();
+            let skipped = super::move_windows_entry_to_named_destination(
+                &source,
+                &destination,
+                std::ffi::OsStr::new("original"),
+                ConflictAction::Skip,
+            )
+            .unwrap();
+            assert_eq!(skipped.disposition, crate::MoveDisposition::Skipped);
+            assert_eq!(std::fs::read(&content).unwrap(), b"selected original");
+            assert_eq!(std::fs::read(&target).unwrap(), b"later occupant");
+            std::fs::rename(&target, destination.join("parked-occupant")).unwrap();
+            let moved = super::move_windows_entry_to_named_destination(
+                &source,
+                &destination,
+                std::ffi::OsStr::new("original"),
+                ConflictAction::Skip,
+            )
+            .unwrap();
+            assert_eq!(moved.published_path.as_deref(), Some(target.as_path()));
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&target).unwrap(),
+                identity
+            );
+            assert_eq!(
+                std::fs::read(if directory {
+                    target.join("child.txt")
+                } else {
+                    target
+                })
+                .unwrap(),
+                b"selected original"
+            );
+            assert_eq!(
+                std::fs::read(destination.join("parked-occupant")).unwrap(),
+                b"later occupant"
+            );
+            assert!(!source.exists());
+            assert!(!destination.join("incoming (1)").exists());
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_named_move_rejects_non_leaf_targets_before_mutation() {
+        let fixture = crate::tests::TestDir::new("named-move-invalid");
+        let source = fixture.path().join("source.txt");
+        let destination = fixture.path().join("destination");
+        std::fs::write(&source, b"untouched source").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        for name in [
+            "",
+            ".",
+            "..",
+            r"..\escape",
+            r"D:\escape",
+            "note:stream",
+            "bad\0",
+        ] {
+            assert!(matches!(
+                super::move_windows_entry_to_named_destination(
+                    &source,
+                    &destination,
+                    std::ffi::OsStr::new(name),
+                    ConflictAction::Skip
+                ),
+                Err(PlatformError::InvalidDestination(_))
+            ));
+            assert_eq!(std::fs::read(&source).unwrap(), b"untouched source");
+            assert_eq!(std::fs::read_dir(&destination).unwrap().count(), 0);
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires an owned second NTFS volume in OTTRIN_WINDOWS_CROSS_VOLUME_ROOT"]
+    fn windows_native_cross_volume_named_move_preserves_exact_original_name() {
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for directory in [false, true] {
+            let sources = crate::tests::TestDir::new("named-cross-source");
+            let destination = crate::tests::TestDir::new_at(&volume, "named-cross-destination");
+            let _ = super::replace_test_recovery_root(Some(sources.path().join("move-state")));
+            let source = sources.path().join("incoming (1)");
+            let content = if directory {
+                std::fs::create_dir(&source).unwrap();
+                source.join("child.txt")
+            } else {
+                source.clone()
+            };
+            std::fs::write(&content, b"selected original").unwrap();
+            let target = destination.path().join("original");
+            std::fs::write(&target, b"later occupant").unwrap();
+            assert_ne!(
+                move_recovery::stable_identity_of_entry(&source)
+                    .unwrap()
+                    .volume_serial_number(),
+                move_recovery::stable_identity_of_entry(destination.path())
+                    .unwrap()
+                    .volume_serial_number()
+            );
+            let skipped = super::move_windows_entry_to_named_destination(
+                &source,
+                destination.path(),
+                std::ffi::OsStr::new("original"),
+                ConflictAction::Skip,
+            )
+            .unwrap();
+            assert_eq!(skipped.disposition, crate::MoveDisposition::Skipped);
+            assert_eq!(std::fs::read(&content).unwrap(), b"selected original");
+            assert_eq!(std::fs::read(&target).unwrap(), b"later occupant");
+            std::fs::rename(&target, destination.path().join("parked-occupant")).unwrap();
+            let moved = super::move_windows_entry_to_named_destination(
+                &source,
+                destination.path(),
+                std::ffi::OsStr::new("original"),
+                ConflictAction::Skip,
+            )
+            .unwrap();
+            assert_eq!(moved.published_path.as_deref(), Some(target.as_path()));
+            assert_eq!(
+                std::fs::read(if directory {
+                    target.join("child.txt")
+                } else {
+                    target
+                })
+                .unwrap(),
+                b"selected original"
+            );
+            assert!(!source.exists());
+            assert!(!destination.path().join("incoming (1)").exists());
+            assert_eq!(
+                std::fs::read(destination.path().join("parked-occupant")).unwrap(),
+                b"later occupant"
+            );
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires an owned second NTFS volume in OTTRIN_WINDOWS_CROSS_VOLUME_ROOT"]
+    fn windows_native_cross_volume_named_move_recovery_keeps_requested_target() {
+        if std::env::var_os("OTTRIN_NAMED_MOVE_EXIT_CHILD").is_some() {
+            let source =
+                std::path::PathBuf::from(std::env::var_os("OTTRIN_NAMED_MOVE_SOURCE").unwrap());
+            let destination = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_NAMED_MOVE_DESTINATION").unwrap(),
+            );
+            super::move_windows_entry_to_named_destination(
+                &source,
+                &destination,
+                std::ffi::OsStr::new("original.txt"),
+                ConflictAction::Skip,
+            )
+            .unwrap();
+            panic!("child did not reach process-exit boundary");
+        }
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for boundary in ["CandidateUnlocked", "CandidatePublished"] {
+            let sources = crate::tests::TestDir::new("named-cross-recovery-source");
+            let destination =
+                crate::tests::TestDir::new_at(&volume, "named-cross-recovery-destination");
+            let state = sources.path().join("move-state");
+            let _ = super::replace_test_recovery_root(Some(state.clone()));
+            let source = sources.path().join("incoming (1).txt");
+            std::fs::create_dir(&source).unwrap();
+            std::fs::write(source.join("child.txt"), b"selected original").unwrap();
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_named_move_recovery_keeps_requested_target", "--nocapture"])
+                .env("OTTRIN_NAMED_MOVE_EXIT_CHILD", "1")
+                .env("OTTRIN_NAMED_MOVE_SOURCE", &source)
+                .env("OTTRIN_NAMED_MOVE_DESTINATION", destination.path())
+                .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", &state)
+                .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", boundary)
+                .status().unwrap();
+            assert_eq!(status.code(), Some(87));
+            let journal = std::fs::read_dir(&state)
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .find(|path| {
+                    path.extension()
+                        .is_some_and(|extension| extension == "cross-journal")
+                })
+                .unwrap();
+            let record = super::load_windows_cross_volume_record(&journal).unwrap();
+            let local = record
+                .transaction_path()
+                .unwrap()
+                .join(super::WINDOWS_LOCAL_JOURNAL_NAME);
+            let central_before = std::fs::read(&journal).unwrap();
+            let local_before = std::fs::read(&local).unwrap();
+            assert!(matches!(
+                super::move_windows_entry_to_named_destination(
+                    &source,
+                    destination.path(),
+                    std::ffi::OsStr::new("different.txt"),
+                    ConflictAction::Skip
+                ),
+                Err(PlatformError::ClaimedRecoveryPending { .. })
+            ));
+            assert_eq!(
+                std::fs::read(source.join("child.txt")).unwrap(),
+                b"selected original"
+            );
+            assert_eq!(std::fs::read(&journal).unwrap(), central_before);
+            assert_eq!(std::fs::read(&local).unwrap(), local_before);
+            assert!(!destination.path().join("different.txt").exists());
+            let completed = super::move_windows_entry_to_named_destination(
+                &source,
+                destination.path(),
+                std::ffi::OsStr::new("original.txt"),
+                ConflictAction::Skip,
+            )
+            .unwrap();
+            assert_eq!(
+                completed.published_path.as_deref(),
+                Some(destination.path().join("original.txt").as_path())
+            );
+            assert_eq!(
+                std::fs::read(destination.path().join("original.txt").join("child.txt")).unwrap(),
+                b"selected original"
+            );
+            assert!(!source.exists());
+            assert!(!destination.path().join("incoming (1).txt").exists());
+        }
+    }
+
+    #[cfg(target_os = "windows")]
     struct CompletedCrossMoveFixture {
         // TestDir restores the thread-local root: drop destination before source.
         destination: crate::tests::TestDir,
@@ -11430,6 +11717,7 @@ mod windows_source_tests {
             super::move_windows_cross_volume_preflight(
                 &source,
                 &destination_root,
+                source.file_name().expect("child source filename"),
                 ConflictAction::Rename,
                 source_handle,
                 destination_handle,

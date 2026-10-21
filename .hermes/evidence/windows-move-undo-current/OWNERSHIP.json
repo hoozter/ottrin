@@ -1,0 +1,8 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "570e31598a106777d862150da69f0f1e93068ae9",
+  "purpose": "Native exact-target Move primitive prerequisite for Windows Move Undo; session receipts/inverse protocol not enabled yet",
+  "guest_fixture": "C:\\OttrinCopyCleanupQA\\cross-move-volume",
+  "actor": "OttrinCopyQA"
+}

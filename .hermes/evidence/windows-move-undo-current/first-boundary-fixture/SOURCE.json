@@ -1,0 +1,4 @@
+{
+  "sha256": "e2784e78f4380cab58e54b0e6e0b52abc9107afaed66efefe8967934792eb2be",
+  "issue": "New recovery fixture chose directory-only hook boundaries for a regular file. Native child completed normally and test panicked because its expected exit was not reached. Other 75 tests pass. Change fixture to a directory; do not change production hooks."
+}
