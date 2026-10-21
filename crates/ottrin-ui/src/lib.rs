@@ -6901,7 +6901,13 @@ impl OttrinApp {
             }
             if current_dir == parent {
                 if let Some(path) = selected_path {
-                    ui_state.pending_select_path = Some(path);
+                    // Pointer selection and the refreshed row must follow the
+                    // same identity. The old numeric row is invalid until the
+                    // new listing arrives; clipboard actions use these paths.
+                    ui_state.pending_select_path = Some(path.clone());
+                    ui_state.selected_paths = HashSet::from([path.clone()]);
+                    ui_state.selection_anchor = Some(path);
+                    ui_state.main_sel = None;
                 }
                 self.request_listing(ListingKey::TabMain(tab_id), current_dir);
             }
@@ -28963,6 +28969,44 @@ mod tests {
             OperationStatus::Completed,
             None
         ));
+    }
+
+    #[test]
+    fn rename_refresh_keeps_pointer_selection_available_to_native_cut() {
+        for mode in [ViewMode::List, ViewMode::Grid, ViewMode::Miller] {
+            let (root, mut app, before) = clipboard_keyboard_fixture();
+            let after = root.path().join("renamed.txt");
+            let tab_id = app.state.active_tab().id;
+            app.state.active_tab_mut().view_mode = mode;
+            let ui = app.tab_ui.get_mut(&tab_id).unwrap();
+            ui.selected_paths.insert(before.clone());
+            ui.selection_anchor = Some(before.clone());
+            std::fs::rename(&before, &after).unwrap();
+
+            app.refresh_rename_parent(root.path(), Some(tab_id), &after);
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while app.tab_ui[&tab_id].main.loading {
+                assert!(Instant::now() < deadline, "rename listing timed out");
+                app.poll_listing_results();
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            let ctx = Context::default();
+            let _ = ctx.run(
+                egui::RawInput {
+                    events: vec![egui::Event::Cut],
+                    ..Default::default()
+                },
+                |ctx| app.handle_keyboard(ctx),
+            );
+            let clip = app
+                .clipboard
+                .as_ref()
+                .expect("renamed row must remain selected");
+            assert!(clip.cut);
+            assert_eq!(clip.sources, vec![after.clone()]);
+            assert_eq!(std::fs::read_to_string(after).unwrap(), "clipboard fixture");
+            assert!(!before.exists());
+        }
     }
 
     #[test]

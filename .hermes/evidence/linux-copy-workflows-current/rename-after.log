@@ -1,0 +1,14 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 42.16s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-b21e7538cbb86b0a)
+
+running 6 tests
+test tests::rename_completion_selects_only_the_origin_tab_still_showing_the_parent ... ok
+test appearance_editor::tests::appearance_save_copy_preserves_original_and_rename_is_explicit ... ok
+test tests::queued_operation_footprints_cover_delete_permissions_batches_and_rename_targets ... ok
+test tests::failed_or_warning_rename_results_never_create_an_undo_token_or_retry ... ok
+test tests::rename_refresh_reloads_a_parent_visible_in_a_miller_column_without_navigation ... ok
+test tests::rename_refresh_keeps_pointer_selection_available_to_native_cut ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 383 filtered out; finished in 0.04s
+

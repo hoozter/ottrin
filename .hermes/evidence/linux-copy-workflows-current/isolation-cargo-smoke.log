@@ -1,0 +1,39 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.35s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_core-f537903df95abb79)
+
+running 32 tests
+test tests::app_state_activate_tandem_and_select_tab ... ok
+test tests::administrator_home_ignores_preserved_user_environment ... ok
+test tests::app_state_new_tab_and_close ... ok
+test tests::automatic_renderer_uses_compatibility_for_rdp_and_problem_adapters ... ok
+test tests::automatic_renderer_uses_native_for_physical_graphics ... ok
+test tests::close_active_final_tab_selects_preceding_tab ... ok
+test tests::an_explicit_saved_view_choice_survives_config_round_trip_and_new_tabs ... ok
+test tests::close_active_middle_tab_selects_tab_that_moves_into_its_index ... ok
+test tests::close_inactive_tab_after_active_preserves_active_tab_identity_and_index ... ok
+test tests::close_inactive_tab_before_active_preserves_active_tab_identity ... ok
+test tests::closing_tandem_member_unlinks_but_unrelated_tab_preserves_linked_ids ... ok
+test tests::fresh_profiles_and_tabs_default_to_miller_view ... ok
+test tests::graphics_renderer_reset_is_automatic_and_notice_is_opt_in_persistence ... ok
+test tests::installed_office_previews_default_enabled_and_disabled_choice_round_trips ... ok
+test tests::link_view_tracks_pinned_side_and_reassigns_tabs ... ok
+test tests::navigate_to_clears_forward_history ... ok
+test tests::renderer_preference_and_cli_have_documented_precedence ... ok
+test tests::reorder_tabs_preserves_active_tab_history_and_linked_ids ... ok
+test tests::reorder_tabs_rejects_invalid_and_noop_positions ... ok
+test tests::search_defaults_index_the_home_directory ... ok
+test tests::search_response_remains_constructible_by_downstream_struct_literals ... ok
+test tests::select_tab_idx_preserves_pinned_tandem_pair ... ok
+test tests::search_setup_is_pending_by_default_and_completed_choice_round_trips ... ok
+test tests::semantic_code_subtype_mapping ... ok
+test tests::semantic_filesystem_fallbacks ... ok
+test tests::semantic_platform_case_mode ... ok
+test tests::semantic_priority_exact_over_extension ... ok
+test tests::source_group_includes_every_editable_code_extension ... ok
+test tests::tab_navigation_history ... ok
+test tests::close_last_tab_is_refused ... ok
+test tests::target_state_pinned_behavior ... ok
+test tests::target_state_recent_list ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

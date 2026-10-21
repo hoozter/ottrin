@@ -1,0 +1,9 @@
+{
+  "scope": "Actual current AppImage ordinary Copy/Paste, conflict, rename/move/Undo GUI workflows; private Xvfb, bus and disposable state from scripts/test-workspace.py",
+  "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+  "artifact_sha256": "6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033",
+  "package_source": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24",
+  "fixture_root_policy": "Owned .hermes/qa/ottrin-ui-* directory removed after every consumer exits",
+  "host_desktop": "never used",
+  "workspace_mcp": "unavailable in this session; existing project private-display driver used"
+}

@@ -2,6 +2,7 @@
 """Run Cargo tests with disposable app state and the existing Cargo build cache."""
 
 import os
+from contextlib import contextmanager
 from pathlib import Path
 import signal
 import subprocess
@@ -55,16 +56,16 @@ def stop_render_jobs(profile):
             subprocess.run(["systemctl", "--user", "stop", unit], check=True)
 
 
-def main():
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        signal.signal(sig, cancelled)
+@contextmanager
+def isolated_environment(*, directory=None, prefix="ot-"):
+    """Share disposable app state and existing compiler caches with GUI QA too."""
     operator_home = Path.home()
     env = os.environ.copy()
     env.setdefault("CARGO_HOME", str(operator_home / ".cargo"))
     env.setdefault("RUSTUP_HOME", str(operator_home / ".rustup"))
-    with tempfile.TemporaryDirectory(prefix="ot-") as temporary:
+    with tempfile.TemporaryDirectory(prefix=prefix, dir=directory) as temporary:
         profile = Path(temporary)
-        for variable, directory in (
+        for variable, subdirectory in (
             ("HOME", "home"),
             ("USERPROFILE", "home"),
             ("XDG_STATE_HOME", "state"),
@@ -77,11 +78,21 @@ def main():
             ("TMP", "t"),
             ("TEMP", "t"),
         ):
-            path = profile / directory
+            path = profile / subdirectory
             path.mkdir(mode=0o700, exist_ok=True)
             env[variable] = str(path)
         for variable in ("DISPLAY", "WAYLAND_DISPLAY"):
             env.pop(variable, None)
+        try:
+            yield profile, env
+        finally:
+            stop_render_jobs(profile)
+
+
+def main():
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(sig, cancelled)
+    with isolated_environment() as (profile, env):
         process = subprocess.Popen(
             ["cargo", "test", *(sys.argv[1:] or ["--workspace"])],
             cwd=Path(__file__).resolve().parent.parent,
@@ -92,7 +103,6 @@ def main():
             return process.wait()
         finally:
             stop_tests(process)
-            stop_render_jobs(profile)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,27 @@
+{
+  "status": "source regression fixed; packaged validation pending",
+  "base_revision": "5cc5d53d92aa5a564bae3cb34096305c2131a651",
+  "defect": "Rename refresh left pointer selection at the former filename, so native Cut captured no file.",
+  "implementation": "Retarget origin-tab selection paths and anchor and invalidate its old row before reloading; other tabs and navigated-away tabs retain existing behavior.",
+  "checks": {
+    "before_fix": "rename-before.log: new regression fails with no clipboard capture",
+    "after_fix": "rename-after.log: six rename-related tests pass; new test exercises List/Grid/Miller",
+    "suite": "ui-suite.log: 388 passed, zero failed, one explicit owned mount-namespace exclusion",
+    "clippy": "strict all-target UI checks pass on Linux and Windows cross target",
+    "format": "cargo fmt --all -- --check and git diff --check pass",
+    "test_isolation": "Shared disposable HOME/XDG helper; 32 core tests passed after extraction. GUI run used private Xvfb and bus; source files preserved and owned processes/profile removed."
+  },
+  "prior_package": "dark100/RESULTS.json remains failed; four preceding Copy/Undo/Rename checks passed, subsequent move failed. No package acceptance claimed.",
+  "limitations": [
+    "Windows native clipboard execution not covered by Linux headless test or cross lint",
+    "Full roadmap and broad daily-driver acceptance remain open"
+  ],
+  "logs": {
+    "isolation-cargo-smoke.log": "9ff36949dd31d8206f840baaf1c88e5eb618a4d4f74d64752c9ba2024047bf68",
+    "clippy-linux.log": "3e40f190f5b547d37341c7c03b2a2417b453ce27fe2d631d889fa5e01469fa68",
+    "rename-before.log": "2d2013686d4a1b1987f7bb2da2942301b2a5579ca9dc9639f34f80f365169ec6",
+    "rename-after.log": "4571fe3cb985fb595bcbe80fd12a38060b711501ed8fc2a3a5e4f34278d9ba12",
+    "ui-suite.log": "38a309174a418feed1100cdc8b85eddbdd263223bc4a0db2fb0cc4c0721e813b",
+    "clippy-windows.log": "a5104e1fd66c00fe09407578847991eaaa955dee1b2c0998c11a2efebb30ab3b"
+  }
+}

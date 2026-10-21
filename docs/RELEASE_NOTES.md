@@ -4,6 +4,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Renaming a selected file keeps the new filename selected in List, Grid, and Column views, so subsequent Copy/Cut actions use the renamed file without requiring another click.
+
 - Windows text editing preserves already exact file permissions instead of reapplying inheritance. This repairs safe-save refusals in private folders while retaining exact metadata checks.
 
 - Positive literal content queries count and sort their complete saved/live match set before paging, deduplicate overlapping sources and use a path tie-breaker for stable pages. Query failures replace stale rows with current partial results and an explicit error. Search exposes Previous/Next and visible ranges; the CLI accepts `--limit` and `--offset`. Superseded content queries interrupt the live provider and release their saved-generation reader. Bounded system-filename/fallback completeness remains a separate gate.
