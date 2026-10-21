@@ -2389,24 +2389,46 @@ fn recover_windows_overwrites_before_move(
     for entry in entries {
         let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
         let path = entry.path();
-        let (is_matching, publication) =
-            if path.extension() == Some(std::ffi::OsStr::new("journal")) {
-                let record = load_windows_overwrite_record(&path)?;
-                let is_matching = record.source_path()? == source
-                    && record.destination_parent_path()? == destination_dir;
-                (
-                    is_matching,
-                    resume_windows_overwrite(&recovery_root, record)?,
-                )
-            } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
-                let mut record = load_windows_cross_volume_record(&path)?;
-                let is_matching = record.source_path()? == source
-                    && record.destination_parent_path()? == destination_dir;
-                let publication = resume_windows_cross_volume(&recovery_root, &mut record, None)?;
-                (is_matching, publication)
-            } else {
-                continue;
-            };
+        let (is_matching, publication) = if path.extension()
+            == Some(std::ffi::OsStr::new("journal"))
+        {
+            let record = load_windows_overwrite_record(&path)?;
+            // A paired, completed publication is retained history, not a
+            // reservation of its former source/target names. Those names
+            // may now describe unrelated entries. Do not replay this old
+            // transaction against them or return its result for a new Move.
+            // Unpaired/pending/private-claim evidence still takes the
+            // existing fail-closed recovery path below.
+            if record.phase == WindowsOverwritePhase::Published {
+                let transaction = record.transaction_path()?;
+                let local =
+                    load_windows_overwrite_record(&transaction.join(WINDOWS_LOCAL_JOURNAL_NAME))?;
+                if local == record
+                    && record.retained_identity == record.destination_identity
+                    && observe_windows_identity(&transaction)?
+                        == Some(record.transaction_directory_identity)
+                    && observe_windows_identity(&record.replacement_path()?)?.is_none()
+                    && observe_windows_identity(&record.retained_path()?)?
+                        == Some(record.retained_identity)
+                {
+                    continue;
+                }
+            }
+            let is_matching = record.source_path()? == source
+                && record.destination_parent_path()? == destination_dir;
+            (
+                is_matching,
+                resume_windows_overwrite(&recovery_root, record)?,
+            )
+        } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
+            let mut record = load_windows_cross_volume_record(&path)?;
+            let is_matching = record.source_path()? == source
+                && record.destination_parent_path()? == destination_dir;
+            let publication = resume_windows_cross_volume(&recovery_root, &mut record, None)?;
+            (is_matching, publication)
+        } else {
+            continue;
+        };
         if is_matching {
             if matching.is_some() {
                 return Err(PlatformError::ClaimedRecoveryPending {
@@ -8740,6 +8762,113 @@ mod windows_source_tests {
                 .expect("read moved nested payload"),
             b"same-volume directory payload"
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_completed_overwrite_does_not_own_reused_source_or_target_names() {
+        let fixture = crate::tests::TestDir::new("completed-overwrite-name-reuse");
+        let source = fixture.path().join("note.txt");
+        let destination = fixture.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let target = destination.join("note.txt");
+        std::fs::write(&source, b"first source").unwrap();
+        std::fs::write(&target, b"displaced destination").unwrap();
+        let first =
+            super::move_entry_transactional(&source, &destination, ConflictAction::Overwrite)
+                .unwrap();
+        let retained = first.retained_displaced_path.unwrap();
+        let root = super::windows_recovery_root().unwrap();
+        let journal = std::fs::read_dir(&root)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .find(|path| {
+                path.extension()
+                    .is_some_and(|extension| extension == "journal")
+            })
+            .unwrap();
+        let record = super::load_windows_overwrite_record(&journal).unwrap();
+        let local = record
+            .transaction_path()
+            .unwrap()
+            .join(super::WINDOWS_LOCAL_JOURNAL_NAME);
+        let central_bytes = std::fs::read(&journal).unwrap();
+        let local_bytes = std::fs::read(&local).unwrap();
+
+        std::fs::write(&source, b"later source").unwrap();
+        let second = super::move_entry_transactional(&source, &destination, ConflictAction::Rename)
+            .expect("a completed Replace must not reserve the old source name");
+        assert_eq!(
+            std::fs::read(second.published_path.unwrap()).unwrap(),
+            b"later source"
+        );
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"first source");
+
+        std::fs::remove_file(&target).unwrap();
+        std::fs::write(&target, b"reused destination").unwrap();
+        let unrelated = fixture.path().join("unrelated.txt");
+        std::fs::write(&unrelated, b"unrelated source").unwrap();
+        let third =
+            super::move_entry_transactional(&unrelated, &destination, ConflictAction::Rename)
+                .expect("a completed Replace must not constrain later destination changes");
+        assert_eq!(
+            std::fs::read(third.published_path.unwrap()).unwrap(),
+            b"unrelated source"
+        );
+        assert_eq!(std::fs::read(&target).unwrap(), b"reused destination");
+        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced destination");
+        assert_eq!(std::fs::read(&journal).unwrap(), central_bytes);
+        assert_eq!(std::fs::read(&local).unwrap(), local_bytes);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_completed_overwrite_keeps_ambiguous_private_evidence_blocked() {
+        for inject_replacement in [false, true] {
+            let fixture = crate::tests::TestDir::new("completed-overwrite-ambiguous");
+            let source = fixture.path().join("note.txt");
+            let destination = fixture.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let target = destination.join("note.txt");
+            std::fs::write(&source, b"first source").unwrap();
+            std::fs::write(&target, b"displaced destination").unwrap();
+            let first =
+                super::move_entry_transactional(&source, &destination, ConflictAction::Overwrite)
+                    .unwrap();
+            let retained = first.retained_displaced_path.unwrap();
+            let journal = std::fs::read_dir(super::windows_recovery_root().unwrap())
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .find(|path| {
+                    path.extension()
+                        .is_some_and(|extension| extension == "journal")
+                })
+                .unwrap();
+            let mut record = super::load_windows_overwrite_record(&journal).unwrap();
+            if inject_replacement {
+                std::fs::write(record.replacement_path().unwrap(), b"unowned private entry")
+                    .unwrap();
+            } else {
+                record.phase = super::WindowsOverwritePhase::SourceClaimed;
+                // Leave the local Published journal unchanged.
+                super::write_windows_record_file(&journal, &record, false).unwrap();
+            }
+            std::fs::write(&source, b"later source").unwrap();
+            assert!(
+                super::move_entry_transactional(&source, &destination, ConflictAction::Rename)
+                    .is_err()
+            );
+            assert_eq!(std::fs::read(&source).unwrap(), b"later source");
+            assert_eq!(std::fs::read(&target).unwrap(), b"first source");
+            assert_eq!(std::fs::read(&retained).unwrap(), b"displaced destination");
+            if inject_replacement {
+                assert_eq!(
+                    std::fs::read(record.replacement_path().unwrap()).unwrap(),
+                    b"unowned private entry"
+                );
+            }
+        }
     }
 
     /// Two invocations separated by an orchestrator-owned guest hard power cut.

@@ -1,0 +1,86 @@
+{
+  "status": "source correction passed native tests; fixed package refresh and GUI rerun required",
+  "date": "2026-10-21",
+  "package_tested": {
+    "source": "fce1ea673d4792636670ff4d8feb496cefd0229c",
+    "archive_sha256": "5a9ca2929f22ddeb666bbec91d75043ffd4d5eeeaed3611e387fa6efb5be858c",
+    "payload_files_verified": 57,
+    "ordinary_interactive_account": true,
+    "display": "1280x800 at 100 percent, Dark/List, default renderer selection",
+    "format": "portable; no installer lifecycle claim"
+  },
+  "packaged_gui_passed": [
+    "Usable main window with requested Dark theme/List view",
+    "Unoccupied Cut/Paste Move and return Move with exact byte checks",
+    "Move conflict Escape preserves source and destination",
+    "Move conflict Skip preserves source and destination",
+    "Move Replace publishes original source and preserves displaced bytes with identical paired published journals",
+    "Rename followed by Cut/Paste without reselection preserves the new pathname and bytes",
+    "VCF Inspector: click text body, Right selects next file, Left returns to VCF, Space closes; exact VCF and text bytes unchanged"
+  ],
+  "packaged_gui_failure": {
+    "trigger": "Replace note.txt, create a later file at that old source name, then request Move/Keep Both into the same destination",
+    "result": "Windows Overwrite restart topology is ambiguous; all entries were retained",
+    "source_and_current_destination_preserved": true,
+    "screenshot": "reused-source-move-refusal.png",
+    "fixed_package_retested": false
+  },
+  "native_source_verification": {
+    "before_fix": {
+      "passed": 0,
+      "failed": 1,
+      "ignored": 0,
+      "log": "before-fix.stdout",
+      "panic": "before-fix.stderr"
+    },
+    "after_fix": {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "log": "after-fix.stdout"
+    },
+    "broader_move_module": {
+      "passed": 46,
+      "failed": 0,
+      "ignored": 25,
+      "includes_two_new_regressions": true,
+      "log": "move-suite.stdout"
+    },
+    "source_sha256": "c9dd8df61787dcafa4462704586c624ec235f44a059869a3bf6d5a4f499ab221",
+    "transferred_executable_sha256": "057b7f3361d68cb1543610355cdb63fd9f09fadbdd963bda0092369d2b41de46",
+    "ordinary_account": true,
+    "windows_strict_all_target_clippy": "pass",
+    "formatting": "pass"
+  },
+  "cleanup": "TEARDOWN.json",
+  "limits": [
+    "Corrected production source has not yet been packaged or retested through the main window",
+    "Cross-volume retained-record completion/name reuse requires separate native verification",
+    "Windows Move is session-tracked without Undo; Ctrl+Z opens Activity",
+    "25 explicit Move fixtures not executed in this native module run",
+    "No installer lifecycle, Office/media, physical GPU, user acceptance or release readiness claim",
+    "Public Windows Copy remains disabled; public Windows packages and Linux deliverables are unchanged"
+  ],
+  "qa_setup_corrections": [
+    "Disposable config writer now uses UTF-8 without BOM and reapplies intended values after defaults were saved",
+    "Usable-window readiness excludes the initial 6x6 helper window",
+    "Native-test dispatch verifies executable SHA-256 and retains process handle for exit status",
+    "Cancelled raw test upload was replaced by hash-verified compressed transfer; attempted partial executable launch did not execute tests",
+    "Fixture retirement restores access only inside the owned root, one entry at a time, refusing reparse points"
+  ],
+  "tools_sha256": {
+    "scripts/windows-desktop-qa/README.md": "10b2a0fe77234411e7114f1cee8a952f56ed2f83a3fee0be1d343befec9e2c49",
+    "scripts/windows-desktop-qa/actor.ps1": "4ada090e0c63c69dce0917705363d34dddb9d3c67cdc3b2b72cc0b16da425925",
+    "scripts/windows-desktop-qa/cleanup.ps1": "fdacaf3321037f226db0617e88355f01b88d4e2dabf791982976dbf85b645eec",
+    "scripts/windows-desktop-qa/desktop.py": "73d13abb673cec0a22bd4e62fc7bcc3da5da195dbeeca0fc47366814d40ee6e7",
+    "scripts/windows-desktop-qa/interop.ps1": "6b7692e4da6b2bbaedfc8ecf26258c41bd79b1cc34be8c527cdb12e27687f10e",
+    "scripts/windows-desktop-qa/prepare.ps1": "d54d2d4e72cdf217fda768c2471648300a9fc29d38fdbcd3ce0084cce66a3359",
+    "scripts/windows-desktop-qa/retire-owned-root.ps1": "fe06de31996717292bda531f980f40cb9986b9d8b0aed636cd9a327a8ba9dfd1"
+  },
+  "storage": {
+    "shared_staging_bytes_removed": 1024845746,
+    "incremental_retirement": "INCREMENTAL_CLEANUP.json",
+    "current_caches_retained": true,
+    "final_du": "17G\ttarget/debug/deps\n7.0G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n527M\t.hermes/packaging-tmp\n7.6M\t/home/campbell/Projects/Ottrin/.hermes/evidence/windows-packaged-workflows-current\n"
+  }
+}

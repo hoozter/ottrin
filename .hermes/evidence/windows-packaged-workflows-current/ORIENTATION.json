@@ -1,0 +1,7 @@
+{
+  "default_password_present": false,
+  "msiserver": "Stopped",
+  "temporary_root_exists": false,
+  "console_user": null,
+  "temporary_user_exists": false
+}

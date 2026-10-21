@@ -1,5 +1,5 @@
 {
-  "status": "pass within package content and native loader/CLI scopes",
+  "status": "content/loader checks pass; known packaged Move workflow failure; source correction awaits refresh",
   "source_commit": "fce1ea673d4792636670ff4d8feb496cefd0229c",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
@@ -88,5 +88,14 @@
     "production_source_files_match_candidate": true,
     "scope": "Controlled native UI-library checking/cancellation/selection; no packaged window or OS clipboard claim"
   },
-  "packaged_documentation_snapshot": "Packaged docs are the clean fce1ea67 source snapshot. Repository roadmap/status is updated after acceptance; current hashes and scopes are authoritative in dist/WINDOWS_CANDIDATE_ACCEPTANCE.json."
+  "packaged_documentation_snapshot": "Packaged docs are the clean fce1ea67 source snapshot. Repository roadmap/status is updated after acceptance; current hashes and scopes are authoritative in dist/WINDOWS_CANDIDATE_ACCEPTANCE.json.",
+  "packaged_gui_checkpoint": {
+    "evidence": "../.hermes/evidence/windows-packaged-workflows-current/ACCEPTANCE.json",
+    "archive_sha256": "5a9ca2929f22ddeb666bbec91d75043ffd4d5eeeaed3611e387fa6efb5be858c",
+    "ordinary_account": true,
+    "scope": "Actual portable window at Dark100/default renderer: startup, native Cut/Paste/Move, rename selection and read-only VCF Inspector navigation/Space",
+    "known_failure": "A later Move reusing the source name of a completed Replace is refused as ambiguous recovery",
+    "source_correction": "Same-volume correction passes two new native regressions and broader Move module: 46 passed,25 fixture-dependent cases not run; not included in these packages",
+    "fixed_package_gui_rerun_required": true
+  }
 }

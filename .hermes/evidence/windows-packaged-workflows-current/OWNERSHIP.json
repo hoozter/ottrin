@@ -1,0 +1,10 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinWindowQA",
+  "account": "OttrinWindowQA",
+  "package_source": "fce1ea673d4792636670ff4d8feb496cefd0229c",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-portable.zip",
+  "archive_sha256": "5a9ca2929f22ddeb666bbec91d75043ffd4d5eeeaed3611e387fa6efb5be858c",
+  "scope": "Owned ordinary desktop account and disposable portable workflow fixtures; preserve original preferences/install and restore touched login settings; retain VM"
+}

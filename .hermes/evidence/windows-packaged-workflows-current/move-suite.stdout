@@ -1,0 +1,75 @@
+
+running 71 tests
+test move_transaction::windows_source_tests::windows_cross_volume_candidate_handle_denies_all_concurrent_mutation ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_completion_flushes_source_namespace_before_cleanup ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_destination_parent_handle_can_flush_publication_namespace ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_directories_require_no_data_streams ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_directory_overwrite_retains_before_publishing ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_link_overwrite_resumes_after_displaced_retention ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_overwrite_restart_requires_retained_displaced_identity ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_does_not_flush_namespace_after_file_flush_failure ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_flushes_file_and_namespace_after_rename ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_requires_the_recorded_destination_parent ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_recovery_flushes_retained_and_namespace_before_recording ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_regular_file_rejects_named_data_streams ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_rename_advances_from_latest_durable_candidate ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_rename_candidate_journals_reconcile_only_by_prefix ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_restart_flushes_unrecorded_publication_before_source_removal ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_restart_uses_durable_identity_topology ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_skip_finishes_without_mutating_an_existing_destination ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_source_handle_denies_write_and_delete_sharing ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_source_kind_accepts_supported_entries_only ... ok
+test move_transaction::windows_source_tests::windows_directory_cleanup_accepts_only_manifest_subsets_and_orders_children_first ... ok
+test move_transaction::windows_source_tests::windows_directory_cleanup_claims_once_and_resumes_only_the_pinned_claim ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_accepts_and_binds_nested_symbolic_links ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_evidence_is_order_independent_and_path_bound ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_rejects_missing_or_nondirectory_ancestors ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_rejects_paths_that_escape_or_alias_tree_entries ... ok
+test move_transaction::windows_source_tests::windows_directory_slice_allows_verified_publication_but_keeps_source_removal_fail_closed ... ok
+test move_transaction::windows_source_tests::windows_incomplete_private_directory_candidate_is_discarded_before_retry ... ok
+test move_transaction::windows_source_tests::windows_incomplete_staging_cleanup_is_bound_to_its_transaction_directory ... ok
+test move_transaction::windows_source_tests::windows_move_route_distinguishes_same_and_cross_volume_paths ... ok
+test move_transaction::windows_source_tests::windows_native_completed_overwrite_does_not_own_reused_source_or_target_names ... ok
+test move_transaction::windows_source_tests::windows_native_completed_overwrite_keeps_ambiguous_private_evidence_blocked ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_conflicts_preserve_published_and_displaced_entries ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_destination_acl_denial_preserves_source_and_allows_retry ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_handoff_mutations_preserve_source ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_move_publishes_verified_tree ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_process_exit_recovers_without_data_loss ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_explicit_recovery_retains_displaced_file ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_extended_attributes_are_preserved_by_refusal ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_into_modify_only_destination ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_preserves_basic_metadata ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_preserves_read_only_file ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_overwrite_retention_process_exit_recovers ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_published_file_or_link_change_preserves_source ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_destination_preserves_entries_and_allows_retry ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_publication_exit_recovers ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_retains_displaced_file ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_recovery_excludes_another_process_until_owner_death ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_regular_file_move_preserves_verified_bytes ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_replace_batch_moves_unoccupied_files_and_trees ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_sharing_conflicts_preserve_source_and_allow_retry ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_preserves_raw_target_without_dereferencing ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_streams_are_preserved_by_refusal ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_cross_volume_teardown_retries_after_central_journal_sharing_failure ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume
+test move_transaction::windows_source_tests::windows_native_directory_streams_are_empty_or_rejected ... ok
+test move_transaction::windows_source_tests::windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite ... ignored, requires an owned guest power cut and prepare/recover fixture orchestration
+test move_transaction::windows_source_tests::windows_native_locked_directory_snapshot_preserves_exclusion ... ok
+test move_transaction::windows_source_tests::windows_native_move_fat32_boundary_preserves_both_entries ... ignored, requires OTTRIN_WINDOWS_FAT32_ROOT on an owned native FAT32 volume
+test move_transaction::windows_source_tests::windows_native_move_journal_requires_namespace_flush ... ok
+test move_transaction::windows_source_tests::windows_native_same_volume_directory_move_preserves_the_complete_tree ... ok
+test move_transaction::windows_source_tests::windows_native_same_volume_overwrite_rejects_replaced_selection ... ok
+test move_transaction::windows_source_tests::windows_overwrite_requires_published_source_and_retained_displaced_identity ... ok
+test move_transaction::windows_source_tests::windows_overwrite_restart_uses_durable_identities_not_advisory_phase ... ok
+test move_transaction::windows_source_tests::windows_recovery_discovery_accepts_only_exact_durable_journal_names ... ok
+test move_transaction::windows_source_tests::windows_recovery_lock_denies_concurrent_recovery_owners ... ok
+test move_transaction::windows_source_tests::windows_retained_move_discovery_does_not_initialize_missing_state ... ok
+test move_transaction::windows_source_tests::windows_same_volume_overwrite_uses_rename_publication_for_non_file_entries ... ok
+test move_transaction::windows_source_tests::windows_same_volume_source_kind_accepts_links_but_rejects_other_reparse_points ... ok
+test move_transaction::windows_source_tests::windows_source_removal_requires_identity_and_content_evidence ... ok
+test move_transaction::windows_source_tests::windows_symbolic_link_evidence_preserves_raw_utf16_target ... ok
+test move_transaction::windows_source_tests::windows_symbolic_link_snapshot_requires_target_and_kind_to_match ... ok
+
+test result: ok. 46 passed; 0 failed; 25 ignored; 0 measured; 395 filtered out; finished in 0.98s

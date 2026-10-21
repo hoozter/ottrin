@@ -1,0 +1,8 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "compiler_sha256": "d3c13198e416eb01c8a6ce63b80380acbdc38becb9ffc893b2f18efd26142f06",
+  "transfer_sha256": "e69ca7f3a1e733e933a8e0db3d310027a47a4f28099e5e5dcc3ba27dfc9c1806",
+  "production_source_sha256": "078e0dec1ee183eb4491ffee4d17a6adee021f794f54ab73018f1f9aa264f309",
+  "transfer": "Compressed after deliberately cancelling raw upload before test dispatch",
+  "zip_sha256": "d24adf9ab411a54566346140ad7df0356b5bc6a02e92dfb12d8804880fe0c2fa"
+}

@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "changes": [
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnfdef88e3-0uu9qwr-4pp464tomz9qty4k20zouqxbs",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnfdg97m3x-1i8aaf1-awl41tttudkebyg0yejwnoztd",
+      "logical_bytes": 1294480146
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnepp9xip0-0jgfsbr-7v1bylmqpivyf0346eawgk2qa",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnfdi832tm-0ddvqrc-5jr47wj0ecduretmv7jqocy0f",
+      "logical_bytes": 35844580
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnepwm20ye-0uvfamw-7trd7tr4hnqel7pedg06p37i5",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnfdi832sz-0gplbs7-826gaberkm0rfzbygtm0sse7c",
+      "logical_bytes": 48363325
+    }
+  ],
+  "checks": [
+    "exclusive flock and record locks",
+    "no open or mapped consumers",
+    "all hard links accounted for in shared incremental root"
+  ],
+  "scope": "Only older sessions replaced by this task; newest session per configuration retained"
+}

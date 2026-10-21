@@ -1,0 +1,6 @@
+
+running 2 tests
+test move_transaction::windows_source_tests::windows_native_completed_overwrite_does_not_own_reused_source_or_target_names ... ok
+test move_transaction::windows_source_tests::windows_native_completed_overwrite_keeps_ambiguous_private_evidence_blocked ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.37s

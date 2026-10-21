@@ -1,0 +1,4 @@
+
+thread 'move_transaction::windows_source_tests::windows_native_completed_overwrite_does_not_own_reused_source_or_target_names' (7920) panicked at crates/ottrin-platform/src/move_transaction.rs:8775:14:
+a completed Replace must not reserve the old source name: CommittedCleanupPending { transaction: "C:\\OttrinWindowQA\\actor-temp\\ottrin-platform-completed-overwrite-name-reuse-2844-0\\destination\\.ottrin-move-9cdad581ffa9633efdd3758f1062c648", message: "Windows Overwrite restart topology is ambiguous; all entries were retained" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

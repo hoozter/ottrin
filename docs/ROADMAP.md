@@ -33,20 +33,42 @@ not prove the follow-up is packaged.
 The Linux build entry point stages all formats and validates their checksums before
 promotion. Regression cases prove a later build failure or corrupted staged checksum
 preserves the prior deliverables. The real staged build passed. Linux UI checks pass
-387 tests; four explicit mount/resource fixtures also pass in private namespaces,
+394 tests; four explicit mount/resource fixtures also pass in private namespaces,
 with host mounts unchanged. These checks do not replace physical desktop, device,
 fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The current internal portable/MSI/NSIS candidate has matching 57-file payloads, native MSI compilation/extraction and loader/argument checks. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records its source, hashes and limits. Six ordinary-account native checking/clipboard-selection regressions pass with no skips; these are controlled UI-library tests, not packaged window acceptance. Office/graphics GUI evidence retains its earlier artifact scope. | Finish native Copy and remaining transaction/resource/workflow gates, then current packaged GUI, installation/upgrade/repair/rollback/uninstall, graphics and platform acceptance. Public Windows Copy remains gated. |
+| Windows | The internal candidate has matching 57-file payloads and native content/loader checks. Actual ordinary-account portable GUI checks pass startup, rename then Cut/Paste, unoccupied Move, Cancel/Skip/Replace and read-only VCF Inspector navigation/Space. A later Move after reusing a completed Replace's source name fails in that package. The source correction passes two native regressions and the broader Move module (46 passed, 25 fixture-dependent tests not run). [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) separates the old package failure from the unshipped source correction. | Refresh the candidate and rerun the failing GUI sequence; verify cross-volume completed-record name reuse and implement Windows Move Undo. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
 User acceptance is deferred. Continue independently executable work; each
 checkpoint below retains its recorded source and artifact scope. These outcomes
 remain required before release.
+
+### Windows completed Replace and later pathname reuse
+
+The current portable package reproduces a recovery error when a later file uses
+the source pathname of a completed Replace. Its automatic Move scan replays old
+published history against the later file. The later source, current destination
+and displaced original all remain intact, but the new Move is refused.
+
+The corrected same-volume scan excludes a completed publication only when its
+central/local Published records agree, its private directory and retained entry
+identities match, and no replacement claim remains. It preserves all history and
+does not reserve former source/target names. Explicit recovery and incomplete or
+inconsistent evidence retain their existing validation. Native regressions prove
+source-name reuse, subsequent target replacement and unrelated Moves, with old
+journals and displaced bytes unchanged; unpaired/private-claim cases still refuse.
+
+Evidence: `.hermes/evidence/windows-packaged-workflows-current/ACCEPTANCE.json`.
+This is a source/native checkpoint, not delivery of the correction. The existing
+candidate still contains the defect until rebuilt and tested. Cross-volume
+retained completion/name reuse, Windows Move Undo and the other platform gates
+remain required. The temporary account, password, fixtures and transferred test
+binaries are removed; the retained guest is off and its definition is unchanged.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

@@ -1,0 +1,18 @@
+[
+  {
+    "path": ".hermes/packaging-tmp/windows-window-regression.zip",
+    "bytes": 60284792
+  },
+  {
+    "path": ".hermes/packaging-tmp/windows-window-regression-fixed.exe",
+    "bytes": 452218181
+  },
+  {
+    "path": ".hermes/packaging-tmp/windows-window-regression.exe",
+    "bytes": 452199595
+  },
+  {
+    "path": ".hermes/packaging-tmp/windows-window-regression-fixed.zip",
+    "bytes": 60143178
+  }
+]
