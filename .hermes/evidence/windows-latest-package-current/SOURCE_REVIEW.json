@@ -1,0 +1,13 @@
+{
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "a540c44e6645d6f591dbcf8b04b528ac6c88c61fd8fe585a00f1a9d6b654d0dd",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "7b058e8b183721cfdd6b5380313081682fbf31dabd5930a71a35a86abbc7b8be",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "f1ac5a6cb89eb391823f0d7a4b1d61e051962205674c63bc37b8a73cbc708087",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort.rs": "140b7b24a269b602f56288cacda29dfc79450000847315234bd236f29b98282f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort_dependencies.rs": "3800a33c24cf0d9eaa6743f89b0c9e1303f4a25af1bf6a675fb2f1313c7ff927",
+    "crates/ottrin-ui/src/icons.rs": "ac0dea38300f43bd3e4baa85f6ab76294b29047390928f41bd2ebad86c9a8e91",
+    "crates/ottrin-ui/src/lib.rs": "9080b4cae99255d800248f5825c6414ae140c11891473281a5ff88c7595a8392",
+    "crates/ottrin-ui/src/transfer_probe.rs": "c7fbc8edcc4642242697e03c86e5c42c94301705f6fa8bebe637a773a6be0299"
+  },
+  "scope": "Windows ended-dependency platform source has 14 focused and 149 core native checks in windows-ended-dependencies-current. Shared UI source has 394 Linux tests and strict Linux/Windows cross-target lint; native Windows UI and packaged GUI acceptance are separate."
+}

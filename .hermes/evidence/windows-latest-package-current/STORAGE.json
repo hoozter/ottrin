@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "before": "Host deps/incremental 17G/7.0G; cross 23G/20G; shared staging 527M",
+  "after": "Shared staging 527M; latest native-test configurations retained and superseded sessions retired under locks; exact final inventory in storage-after.txt",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "cleanup": "Guest compiler, payload/admin extractions and CLI outputs removed; source-test executable, actor and temporary namespace removed; retained guest off twice with unchanged definition",
+  "cache_policy": "Reused target/Cargo/Rust caches and existing native opt0/debug0 configuration; no independent target trees or broad cleaning",
+  "incremental_receipt": "../windows-current-ui-checks/INCREMENTAL_CLEANUP.json"
+}

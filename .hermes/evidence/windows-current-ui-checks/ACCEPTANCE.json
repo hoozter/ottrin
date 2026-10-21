@@ -1,0 +1,33 @@
+{
+  "status": "pass within ordinary-account native UI-library scope",
+  "result": {
+    "exit": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation --nocapture --test-threads=1",
+    "ordinary_user": true,
+    "stdout_sha256": "2e082e01138e6229af1ff39f61a87d2d6a665fbb79997d83afa35a9b42a5b579",
+    "temporary_entries": 0,
+    "status": "pass",
+    "test_binary_hash": "2ee8199820431226fdde9696dce914806a431840f38a20aa9d02a580752ecb89",
+    "dispatch_id": "0d4247649ad3cdb7a1393d091202e229"
+  },
+  "cases": 6,
+  "failures": 0,
+  "ignored": 0,
+  "duration_seconds": 0.1,
+  "binary": "TEST_BINARY.json",
+  "compiler_source": "Product sources compiled before the runner-only selector change and match SOURCE_REVIEW.json plus the refreshed candidate production files",
+  "checks": [
+    "Blocked reader permits checking-modal rendering and Escape without starting a file worker",
+    "Cancelled queued readers do not reach the checker or publish results",
+    "Already published old result cannot start a newer transfer",
+    "Rename selection follows the new pathname for native Cut capture in List/Grid/Miller",
+    "Native egui Copy/Cut events capture selected file",
+    "Native egui Cut/Paste conflict waits without mutation"
+  ],
+  "teardown": "TEARDOWN.json and TEARDOWN_GUEST.json; retained guest off, same definition, no new disks/guests; original config/uninstaller hashes preserved",
+  "limits": [
+    "These tests execute the library on Windows; no actual main-window, OS clipboard, native/Mesa graphics or installer lifecycle acceptance",
+    "Public Windows Copy remains disabled; remaining roadmap gates unchanged"
+  ]
+}

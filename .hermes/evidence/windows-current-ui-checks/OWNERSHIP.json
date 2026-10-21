@@ -1,0 +1,9 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_commit": "db8cc761a3a0d62f5b35b7a60c054a73bf5e4c74",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "scope": "Ordinary-account native Windows checking/cancellation/clipboard-selection tests; no GUI-window or installer lifecycle claim",
+  "package_source_commit": "fce1ea673d4792636670ff4d8feb496cefd0229c"
+}

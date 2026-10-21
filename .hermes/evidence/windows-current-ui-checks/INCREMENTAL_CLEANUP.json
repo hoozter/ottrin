@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "changes": [
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hneokni15j-0qa242a-3yuzuhul53ks0towprjsuok80",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hnfbsbvcqm-0e6c1mn-9z7wghi0w2mzpd5v285s8ma1o",
+      "logical_bytes": 136214396
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hneoizwbwc-1wsb8sm-9xyofj03spyg6mlqpp0meyfph",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnfbs7xwok-0ejs29j-b8a6u6a7de0at73bjebcvxurt",
+      "logical_bytes": 1263125405
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3vtbsbkakuwb7/s-hneoizwc9e-03ygvtm-cb7erhv3mdtdb24zkx5fsewa9",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3vtbsbkakuwb7/s-hnfbs7xwpe-1x0x4f2-93aw7hjwqheorq3nwgukpfeh0",
+      "logical_bytes": 88100282
+    }
+  ],
+  "checks": [
+    "Exclusive flock and record locks",
+    "No mapped or open consumers",
+    "All hard links accounted for within shared incremental root"
+  ],
+  "scope": "Only the three native-test configurations replaced in this task; newest finalized sessions retained, other configurations preserved"
+}

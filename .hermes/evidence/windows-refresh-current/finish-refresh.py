@@ -50,4 +50,5 @@ receipt={'status':'pass within package content and native loader/CLI scopes','so
 delta=json.loads((p/'PAYLOAD_DELTA.json').read_text());changed=[f for f,x in delta.items() if x['changed']]
 receipt['changed_payload_files']=changed
 write('ACCEPTANCE.json',receipt)
+(root/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').write_text(json.dumps(receipt,indent=2)+'\n')
 print(json.dumps({'status':'pass','source_commit':owner['source_commit'],'artifacts':checks['artifacts'],'changed_payload_files':changed}),flush=True)

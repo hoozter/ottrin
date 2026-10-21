@@ -40,7 +40,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal clean `4fbc3e1a` portable/MSI/NSIS candidates include staging-end recovery and have matching 57-file payloads; native MSI compilation/extraction and loader/argument checks pass. Office/graphics GUI acceptance retains its earlier artifact scope. Pending-I/O, disk-full and Activity source checkpoints below retain their recorded native scopes. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
+| Windows | The current internal portable/MSI/NSIS candidate has matching 57-file payloads, native MSI compilation/extraction and loader/argument checks. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records its source, hashes and limits. Six ordinary-account native checking/clipboard-selection regressions pass with no skips; these are controlled UI-library tests, not packaged window acceptance. Office/graphics GUI evidence retains its earlier artifact scope. | Finish native Copy and remaining transaction/resource/workflow gates, then current packaged GUI, installation/upgrade/repair/rollback/uninstall, graphics and platform acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -91,10 +91,13 @@ source/binary bindings, data preservation and clean retained-VM teardown are in
 `.hermes/evidence/windows-ended-dependencies-current/ACCEPTANCE.json`.
 This follow-up is source-only; it does not add partial-payload reclamation.
 
-The current internal Windows `4fbc3e1a` candidates contain the preceding staging-end
-source checkpoint, before this dependency follow-up; package checks are below. Linux
-packages are unchanged. Incomplete-payload reclamation, remaining transaction/
-resource/workflow acceptance, packaged GUI and installer lifecycle acceptance and
+The latest internal Windows candidate now includes this dependency follow-up and
+the shared rename-selection, transfer-conflict and asynchronous destination-check
+source. Current identity/content/native-loader scopes are recorded in
+[`WINDOWS_CANDIDATE_ACCEPTANCE.json`](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json).
+Six ordinary-account native UI-library cases also pass without skips; normal
+packaged window/OS clipboard and installer lifecycle acceptance remain separate.
+Incomplete-payload reclamation, remaining transaction/resource/workflow gates and
 public Windows Copy remain unfinished. User testing stays deferred.
 
 ## Large-batch operation admission
