@@ -1,0 +1,16 @@
+
+thread 'tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive' (4004) panicked at crates/ottrin-ui/src/lib.rs:27165:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: PathError { path: "C:\\OttrinCopyCleanupQA\\temp\\home\\.ottrin-clipboard-test-Nr5G2v", err: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." } } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::clipboard_native_copy_and_cut_events_capture_selected_file' (696) panicked at crates/ottrin-ui/src/lib.rs:27165:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: PathError { path: "C:\\OttrinCopyCleanupQA\\temp\\home\\.ottrin-clipboard-test-VEB1E7", err: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." } } }
+
+thread 'tests::clipboard_native_cut_paste_conflict_requires_confirmation' (656) panicked at crates/ottrin-ui/src/lib.rs:27165:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: PathError { path: "C:\\OttrinCopyCleanupQA\\temp\\home\\.ottrin-clipboard-test-tlZya3", err: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." } } }
+
+thread 'tests::completed_cancelled_probe_cannot_start_a_newer_transfer' (2020) panicked at crates/ottrin-ui/src/lib.rs:27165:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: PathError { path: "C:\\OttrinCopyCleanupQA\\temp\\home\\.ottrin-clipboard-test-o1ObrW", err: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." } } }
+
+thread 'tests::rename_refresh_keeps_pointer_selection_available_to_native_cut' (2016) panicked at crates/ottrin-ui/src/lib.rs:27165:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: PathError { path: "C:\\OttrinCopyCleanupQA\\temp\\home\\.ottrin-clipboard-test-QtRiQH", err: Os { code: 3, kind: NotFound, message: "The system cannot find the path specified." } } }

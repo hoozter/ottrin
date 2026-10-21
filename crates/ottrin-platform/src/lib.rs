@@ -407,7 +407,8 @@ pub fn is_windows_reserved_creation_name(name: &str) -> bool {
 /// On Linux this is `symlink_metadata`'s device and inode pair, so it binds a
 /// symlink entry rather than the symlink target. It is intentionally opaque to
 /// callers: only this crate may compare it before an inverse rename. Windows
-/// Copy receipts carry the native volume/file identity and an admitted journal plan.
+/// receipts bind native volume/file identities, with an admitted Copy journal
+/// plan or a short-lived Move namespace guard.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(target_os = "linux", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(target_os = "linux", serde(deny_unknown_fields))]
@@ -436,11 +437,18 @@ struct CrossFilesystemUndoState {
     destination_transaction: Option<PathBuf>,
 }
 
+#[cfg(target_os = "windows")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum WindowsPathUndo {
+    Copy(RetainedCopyUndoPlan),
+    Move(move_transaction::windows_undo::WindowsMoveUndoGuard),
+}
+
 /// Session-only proof required to attempt one inverse of a completed pathname publication.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PathMoveUndoReceipt {
     #[cfg(target_os = "windows")]
-    windows_copy: Option<RetainedCopyUndoPlan>,
+    windows_undo: Option<WindowsPathUndo>,
     before_path: PathBuf,
     after_path: PathBuf,
     identity: PathMoveIdentity,
@@ -498,6 +506,14 @@ impl TrashUndoReceipt {
 }
 
 impl PathMoveUndoReceipt {
+    #[cfg(target_os = "windows")]
+    fn windows_copy_plan(&self) -> Option<&RetainedCopyUndoPlan> {
+        match self.windows_undo.as_ref()? {
+            WindowsPathUndo::Copy(plan) => Some(plan),
+            WindowsPathUndo::Move(_) => None,
+        }
+    }
+
     pub fn before_path(&self) -> &Path {
         &self.before_path
     }
@@ -508,21 +524,27 @@ impl PathMoveUndoReceipt {
     /// Reserved inverse names, including a displaced Windows Copy original.
     pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         #[cfg(target_os = "windows")]
-        if let Some(plan) = &self.windows_copy {
+        if let Some(plan) = self.windows_copy_plan() {
             return plan.path_pairs();
         }
         vec![(self.before_path(), self.after_path())]
     }
     pub fn copy_transaction_id(&self) -> Option<&str> {
         #[cfg(target_os = "windows")]
-        if let Some(plan) = &self.windows_copy {
-            return plan.transaction_ids().into_iter().next();
+        {
+            self.windows_copy_plan()?
+                .transaction_ids()
+                .into_iter()
+                .next()
         }
-        self.before_path
-            .parent()?
-            .file_name()?
-            .to_str()?
-            .strip_prefix(".ottrin-txn-")
+        #[cfg(not(target_os = "windows"))]
+        {
+            self.before_path
+                .parent()?
+                .file_name()?
+                .to_str()?
+                .strip_prefix(".ottrin-txn-")
+        }
     }
 }
 
@@ -1822,7 +1844,7 @@ impl PlatformOps for DefaultPlatform {
         }
         #[cfg(target_os = "windows")]
         {
-            let mut plan = receipt.windows_copy.clone().ok_or_else(|| {
+            let mut plan = receipt.windows_copy_plan().cloned().ok_or_else(|| {
                 PlatformError::InvalidPathMoveUndoReceipt(
                     "Windows Copy receipt has no native completion binding".into(),
                 )
@@ -1900,7 +1922,12 @@ impl PlatformOps for DefaultPlatform {
             };
             Ok((publication.disposition, receipt))
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            move_entry_transactional(source, destination, conflict)
+                .map(|publication| (publication.disposition, publication.windows_undo))
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             move_entry_transactional(source, destination, conflict)
                 .map(|publication| (publication.disposition, None))
@@ -1912,7 +1939,11 @@ impl PlatformOps for DefaultPlatform {
         {
             undo_path_move_linux(receipt)
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            move_transaction::windows_undo::undo(receipt)
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             let _ = receipt;
             Err(PlatformError::NotAvailable(

@@ -1,0 +1,16 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+error[E0425]: cannot find value `op_id` in this scope
+     --> crates/ottrin-ui/src/lib.rs:30459:32
+      |
+30459 |         app.run_path_move_undo(op_id);
+      |                                ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `op_id` in this scope
+     --> crates/ottrin-ui/src/lib.rs:30483:32
+      |
+30483 |         app.run_path_move_undo(op_id);
+      |                                ^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `ottrin-ui` (lib test) due to 2 previous errors

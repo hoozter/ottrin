@@ -45,10 +45,23 @@ pub(crate) struct RelativeOptions {
 
 /// Pin an ordinary directory at a user-supplied path without following its leaf.
 pub(crate) fn open_directory(path: &std::path::Path, access: u32) -> io::Result<File> {
+    open_directory_with_sharing(
+        path,
+        access,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    )
+}
+
+/// Short-lived namespace guards may exclude renames while an inverse publishes.
+pub(crate) fn open_directory_with_sharing(
+    path: &std::path::Path,
+    access: u32,
+    sharing: u32,
+) -> io::Result<File> {
     use std::os::windows::fs::OpenOptionsExt;
     let file = std::fs::OpenOptions::new()
         .access_mode(access)
-        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .share_mode(sharing)
         .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
         .open(path)?;
     if !crate::move_recovery::stable_identity_from_handle(&file)

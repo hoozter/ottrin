@@ -1,0 +1,11 @@
+{
+    "exit":  101,
+    "stderr_sha256":  "65fe9db34474a3963b45b2ecaf5f393c1d7d67a40b7918863e5c931488484ad8",
+    "test_arguments":  "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "error":  "Native cleanup observation failed",
+    "stdout_sha256":  "abe3635bb25ce7fc2dc28f4e0b07abb51c53fdac363c9f5384843f30ed9d4cc1",
+    "status":  "fail",
+    "test_binary_hash":  "7f3edb6c2003f5391bdde066e6ed0678632a32872c499278219de99cd3ab52db",
+    "dispatch_id":  "3a1d4fc40274593414187d8e303d535e"
+}

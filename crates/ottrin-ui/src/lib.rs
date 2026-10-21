@@ -7150,7 +7150,12 @@ impl OttrinApp {
                                 || matches!(
                                     error,
                                     PlatformError::CommittedUndoCleanupPending { .. }
-                                );
+                                )
+                                || (kind == PathMoveUndoKind::Move
+                                    && matches!(
+                                        error,
+                                        PlatformError::DestinationExists(_) | PlatformError::Io(_)
+                                    ));
                             (Err(error.to_string()), retryable)
                         }
                     },
@@ -7237,6 +7242,20 @@ impl OttrinApp {
     }
 
     fn finish_path_move_undo(&mut self, op_id: u64, result: Result<(), String>, retryable: bool) {
+        if self.operation_history.iter().any(|record| {
+            record.id == op_id
+                && record.undo_kind == Some(PathMoveUndoKind::Move)
+                && record.path_move_undo_token.is_some()
+        }) {
+            match &result {
+                Ok(()) => self.set_status_message("Move undone", true, 5),
+                Err(reason) => self.set_status_message(
+                    format!("Undo move needs attention: {reason}"),
+                    false,
+                    8,
+                ),
+            }
+        }
         let affected_paths: Vec<_> = self
             .operation_history
             .iter()
@@ -7285,7 +7304,7 @@ impl OttrinApp {
                     Err(reason) if retryable => {
                         record.path_move_undo = Some(PathMoveUndoState::Available);
                         record.message = Some(format!(
-                            "Undo completed, but recovery cleanup is pending: {reason} Select Undo again to retry cleanup."
+                            "Undo needs attention: {reason} Select Undo again to retry."
                         ));
                         Some((
                             token.receipt.before_path().to_path_buf(),
@@ -27809,22 +27828,24 @@ mod tests {
         ctx.set_request_repaint_callback(move |_| {
             let _ = wake_tx.send(std::thread::current().id());
         });
-        app.result_repaint.bind(&ctx);
+        // Other app workers may request a repaint first. Egui coalesces those
+        // requests, so only this probe may use the synchronization context.
+        let probe_repaint = ResultRepaint::default();
+        probe_repaint.bind(&ctx);
         let (entered_tx, entered_rx) = mpsc::channel();
         let (release_tx, release_rx) = mpsc::channel();
         let (stopped_tx, stopped_rx) = mpsc::channel();
         let stopped = Stopped(stopped_tx);
         let mut calls = 0;
-        app.transfer_probe =
-            transfer_probe::Worker::spawn_with(app.result_repaint.clone(), move |_, _| {
-                let _ = &stopped;
-                calls += 1;
-                entered_tx.send(std::thread::current().id()).unwrap();
-                if calls == 2 {
-                    let _ = release_rx.recv_timeout(Duration::from_secs(5));
-                }
-                false
-            });
+        app.transfer_probe = transfer_probe::Worker::spawn_with(probe_repaint, move |_, _| {
+            let _ = &stopped;
+            calls += 1;
+            entered_tx.send(std::thread::current().id()).unwrap();
+            if calls == 2 {
+                let _ = release_rx.recv_timeout(Duration::from_secs(5));
+            }
+            false
+        });
         assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
         app.paste_clipboard();
         let reader = entered_rx.recv_timeout(Duration::from_secs(5)).unwrap();
@@ -30411,14 +30432,11 @@ mod tests {
         std::fs::remove_dir_all(root).unwrap();
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[test]
-    fn file_operation_worker_publishes_undo_for_a_successful_single_move() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-ui-move-worker-undo-{}-{}",
-            std::process::id(),
-            Instant::now().elapsed().as_nanos()
-        ));
+    fn file_operation_worker_move_undo_preserves_collision_and_allows_retry() {
+        let fixture = tempfile::tempdir().unwrap();
+        let root = fixture.path();
         let source_dir = root.join("source");
         let destination_dir = root.join("destination");
         std::fs::create_dir_all(&source_dir).unwrap();
@@ -30427,7 +30445,7 @@ mod tests {
         std::fs::write(&source, "original bytes").unwrap();
         let command = FileCommand::Move {
             sources: vec![source.clone()],
-            destination: destination_dir,
+            destination: destination_dir.clone(),
             conflict: ConflictAction::Skip,
         };
         let mut app = OttrinApp::default();
@@ -30453,7 +30471,61 @@ mod tests {
             record.path_move_undo,
             Some(PathMoveUndoState::Available)
         ));
-        std::fs::remove_dir_all(root).unwrap();
+        let op_id = record.id;
+        std::fs::write(&source, "later occupant").unwrap();
+        app.run_path_move_undo(op_id);
+        let refusal = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(5))
+            .expect("guarded inverse refusal");
+        assert!(refusal.result.is_err());
+        assert!(refusal.retryable);
+        app.finish_path_move_undo(refusal.op_id, refusal.result, refusal.retryable);
+        let record = app.operation_history.front().unwrap();
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        assert!(record.path_move_undo_token.is_some());
+        let message = record.message.as_deref().unwrap();
+        assert!(message.contains("retry"));
+        assert!(!message.contains("Undo completed"));
+        let status = app
+            .status_message
+            .as_ref()
+            .expect("visible main-window refusal");
+        assert!(!status.ok);
+        assert!(status.text.contains("Undo move needs attention"));
+        assert!(!status.text.contains("Move undone"));
+        assert_eq!(std::fs::read(&source).unwrap(), b"later occupant");
+        assert_eq!(
+            std::fs::read(destination_dir.join("entry.txt")).unwrap(),
+            b"original bytes"
+        );
+        let parked = source_dir.join("parked-occupant.txt");
+        std::fs::rename(&source, &parked).unwrap();
+        app.run_path_move_undo(op_id);
+        let completion = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(5))
+            .expect("inverse retry result");
+        assert!(completion.result.is_ok(), "{:?}", completion.result);
+        app.finish_path_move_undo(completion.op_id, completion.result, completion.retryable);
+        let record = app.operation_history.front().unwrap();
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        assert!(record.message.is_none());
+        let status = app
+            .status_message
+            .as_ref()
+            .expect("visible main-window completion");
+        assert!(status.ok);
+        assert_eq!(status.text, "Move undone");
+        assert_eq!(std::fs::read(&source).unwrap(), b"original bytes");
+        assert_eq!(std::fs::read(&parked).unwrap(), b"later occupant");
+        assert!(!destination_dir.join("entry.txt").exists());
     }
 
     #[test]

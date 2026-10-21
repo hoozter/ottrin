@@ -1,0 +1,7 @@
+{
+  "id": "9fbf0f7d9948a6fd03164f996da54143",
+  "status": "dispatched",
+  "test_arguments": "--exact tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --nocapture --test-threads=1",
+  "transferred_sha256": "7f3edb6c2003f5391bdde066e6ed0678632a32872c499278219de99cd3ab52db",
+  "watchdog_ms": 300000
+}

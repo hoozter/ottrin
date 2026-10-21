@@ -4847,8 +4847,12 @@ mod tests {
             |_| Ok(()),
         )
         .unwrap();
+        assert!(matches!(
+            crate::DefaultPlatform.undo_move_with_receipt(&receipt),
+            Err(PlatformError::InvalidPathMoveUndoReceipt(_))
+        ));
         let mut malformed = receipt.clone();
-        malformed.windows_copy = None;
+        malformed.windows_undo = None;
         assert!(matches!(
             crate::DefaultPlatform.undo_copy_with_receipt(&malformed, &mut |_| Ok(())),
             Err(PlatformError::InvalidPathMoveUndoReceipt(_))

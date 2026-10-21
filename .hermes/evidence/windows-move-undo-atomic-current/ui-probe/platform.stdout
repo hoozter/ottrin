@@ -1,0 +1,11 @@
+
+running 6 tests
+test tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive ... ok
+test tests::clipboard_native_copy_and_cut_events_capture_selected_file ... ok
+test tests::clipboard_native_cut_paste_conflict_requires_confirmation ... ok
+test tests::completed_cancelled_probe_cannot_start_a_newer_transfer ... ok
+test tests::rename_refresh_keeps_pointer_selection_available_to_native_cut ... ok
+test transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.10s
+

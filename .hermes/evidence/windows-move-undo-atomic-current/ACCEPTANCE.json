@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-22",
+  "status": "source_and_native_checkpoint_passed",
+  "source_base": "d81e422b90eefb5b2869700b94e84b7e7c4442bd",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Same-volume Windows Move session Undo for successful publications with no displaced destination and ordinary native parents; full roadmap outcome remains incomplete",
+  "implementation": [
+    "Exclusive Copy/Move native receipt authority",
+    "Pre-publication selected entry identity and original parent identity binding",
+    "Short-lived native parent/entry handles, shared no-replace rename and namespace flush",
+    "Original basename after Keep Both; preserve later content edits and raw symlink entry target",
+    "Occupied original name preserves both entries and retry authority; main-window/Activity refusal and success feedback"
+  ],
+  "verification": {
+    "windows_platform": {
+      "passed": 89,
+      "failed": 0,
+      "binary": "TEST_BINARY.json",
+      "result": "RESULTS.json",
+      "new_atomic_inverse_cases": 7,
+      "exclusions": [
+        "FAT32 boundary fixture",
+        "Guest hard-power-cut fixture"
+      ],
+      "scope_note": "Child-process exit immediately after inverse rename with owner-retained receipt does not establish app-restart receipt recovery or power-cut acceptance"
+    },
+    "windows_ui_final": {
+      "passed": 1,
+      "binary": "ui-status/TEST_BINARY.json",
+      "result": "ui-status/RESULTS.json",
+      "assertions": [
+        "collision leaves later source and moved content intact",
+        "retry retains opaque token and Available state",
+        "refusal visible in main-window status without false success",
+        "retry restores original name and leaves parked occupant intact",
+        "successful record Undone and main-window status Move undone"
+      ]
+    },
+    "windows_transfer_probes": {
+      "passed": 6,
+      "binary": "ui-probe/TEST_BINARY.json",
+      "result": "ui-probe/RESULTS.json"
+    },
+    "linux_ui": {
+      "passed": 394,
+      "failed": 0,
+      "existing_ignored": 1,
+      "log": "ui-linux-fixed.log",
+      "focused_recheck": "cancelled-probe-focused.log"
+    },
+    "strict_all_target_clippy": [
+      "Windows ottrin-platform",
+      "Windows ottrin-ui",
+      "Linux ottrin-ui"
+    ],
+    "source_formatting": "cargo fmt --all -- --check; git diff --cached --check for source, roadmap and runner. Original native logs/results retain CRLF, progress-line whitespace and terminal blank lines so their bound hashes remain valid."
+  },
+  "failures_retained": {
+    "ui-linux-fixture-compile.log": "Earlier test fixture compile correction for missing op_id",
+    "ui-linux-final.log": "Transfer cancellation synchronization timed out on a shared coalescing repaint context; corrected to probe-only context",
+    "ui-probe-initial-preflight.log": "Extra case had no build manifest; fixed before dispatch",
+    "ui-probe-failed-profile/": "Isolated HOME was configured but absent; create all isolated profile directories before native UI test process"
+  },
+  "cleanup": {
+    "final_guest": "TEARDOWN.json",
+    "first_guest_phase": "ui/TEARDOWN.json",
+    "owned_vhd": "VOLUME_TEARDOWN.json",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "domain_definition": "DOMAIN_BEFORE.xml.gz",
+    "task_payloads_profiles_processes_removed": true,
+    "original_checked_app_files_unchanged": true,
+    "retained_guest": "off, persistent definition unchanged"
+  },
+  "delivery": {
+    "new_package": false,
+    "internal_windows_candidate_source": "68962f05b66aaa9b181b378df62912de3fde4e05",
+    "public_windows_and_linux_packages": "unchanged",
+    "rendered_gui_acceptance_for_new_inverse": false
+  },
+  "required_remaining": [
+    "Retained/displaced destination restoration for Replace",
+    "Cross-volume inverse with current-content protection and durable interruption recovery",
+    "Pending inverse recovery admission, Activity/Ctrl+Z conflict ownership and parent/unavailable-volume lifecycle",
+    "Native adverse/interruption verification for full inverse",
+    "Rebuild stable packages and exact-package GUI acceptance",
+    "Remaining Linux/Windows roadmap and release gates; user testing deferred"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "d81e422b90eefb5b2869700b94e84b7e7c4442bd",
+  "actor": "OttrinCopyQA",
+  "guest_fixture": "C:\\OttrinCopyCleanupQA\\cross-move-volume",
+  "purpose": "Atomic same-volume Windows Move Undo native/API/UI worker checks plus existing Move recovery tests; owned VHD and private profiles removed after consumers exit"
+}

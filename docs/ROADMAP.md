@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-21
+Last updated: 2026-10-22
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -40,7 +40,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Implement Windows Move Undo and complete the remaining retained-path lifecycle checks. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Complete Windows Move Undo for Replace and cross-volume moves, package and exercise its actual UI, and complete the remaining retained-path lifecycle checks. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -138,8 +138,8 @@ remaining platform gates are still separate unfinished outcomes.
 
 ## Windows Move Undo — exact-name engine prerequisite
 
-Windows Move still returns no Undo receipt. Undo must restore the original
-basename after Keep Both and must refuse an occupied original name. The source
+At this prerequisite checkpoint Windows Move returned no Undo receipt. Undo must
+restore the original basename after Keep Both and refuse an occupied original name. The source
 now permits an explicit, validated destination basename through the existing
 Windows Move engine, retaining its shared recovery lock, handles, source checks,
 no-replace publication and cross-volume transaction path. Ordinary Move callers
@@ -170,6 +170,45 @@ and interruption recovery, restoration of displaced destinations, Activity/Ctrl+
 and conflict ownership, then native adverse/interruption checks and exact-package
 GUI acceptance. An occupied original name must produce a visible refusal/retry,
 not a silently skipped or renamed inverse. No Undo action is enabled prematurely.
+
+## Windows Move Undo — atomic same-volume session inverse
+
+The source now issues an opaque native Undo receipt for a successful same-volume
+Move without a displaced destination, including Keep Both. It binds the selected
+entry's pre-Move identity and both original parent identities. The inverse pins
+ordinary native parents and the exact entry, uses the shared no-replace rename,
+and flushes both parent namespaces. Files, directories and link entries return to
+their original basename; edits made after Move stay with the same entry. No receipt
+holds open handles between actions. Copy and Move receipts cannot authorize one
+another's inverse.
+
+An occupied original name leaves both entries untouched and retains Undo for
+retry. Activity and the main-window status report the refusal without claiming
+completion; clearing the collision permits a retry. Changed entry or parent
+identity refuses. Native race checks cover parent/publication rename sharing,
+new-name collisions and publication handoff replacement. A child process exiting
+immediately after inverse rename proves retry with an already-retained session
+receipt; it does not prove receipt restoration after app restart or power loss.
+
+The ordinary-user Windows platform run passes 89 checks, including seven new
+atomic inverse cases and existing Move/Copy ownership checks. FAT32 and guest
+hard-power-cut fixtures remain excluded. The final native UI worker check passes
+collision/refusal/retry and visible status assertions; six native transfer and
+cancellation checks also pass. Linux UI passes 394 tests with one existing ignore.
+The repaint synchronization test now uses a dedicated context so unrelated worker
+repaints cannot consume its completion signal. The earlier timeout and a native
+QA HOME-directory setup failure are retained with their corrected runs. Strict
+Windows platform and Linux/Windows UI all-target Clippy, formatting and diff
+checks pass. Exact evidence and cleanup are recorded in
+`.hermes/evidence/windows-move-undo-atomic-current/ACCEPTANCE.json`.
+
+This checkpoint is source/native only. The stable internal Windows candidate is
+still `68962f05`; no public Windows or Linux package includes this change yet.
+Replace must restore its displaced destination through durable inverse intent,
+and cross-volume Undo must preserve current content with interruption recovery.
+Those cases currently offer no Undo receipt. Their Activity/Ctrl+Z and conflict
+ownership, retained-path lifecycle, adverse checks and exact-package GUI acceptance
+remain required. Full Windows Move Undo is not complete.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

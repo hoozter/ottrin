@@ -179,7 +179,7 @@ fn windows_native_copy_ended_attempt_still_protects_recorded_created_aliases() {
             |_| Ok(()),
         )
         .unwrap();
-        receipt.windows_copy.as_ref().unwrap().transaction_ids()[0].to_owned()
+        receipt.windows_copy_plan().unwrap().transaction_ids()[0].to_owned()
     };
     let before = namespace_contents(root.path());
     let refusal = RetainedCopyCleanupPlan::observe_at(&fixture.registry, &[id], |_| Ok(()))

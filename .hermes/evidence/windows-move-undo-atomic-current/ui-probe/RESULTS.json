@@ -1,0 +1,11 @@
+{
+    "exit":  0,
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments":  "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "b5e7864b1c3542ac378414ff7e13dd9eba17067e715a627e841ad594100d40cf",
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "7f3edb6c2003f5391bdde066e6ed0678632a32872c499278219de99cd3ab52db",
+    "dispatch_id":  "f4c159569bf09d626791b342d1568e77"
+}

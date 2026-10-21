@@ -154,7 +154,7 @@ pub(super) fn session_receipt(
             .as_ref()
             .map(|_| location.join(header.original_name())),
         requirement: crate::PathMoveUndoRequirement::None,
-        windows_copy: Some(plan),
+        windows_undo: Some(crate::WindowsPathUndo::Copy(plan)),
     })
 }
 

@@ -54,7 +54,12 @@ use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
+#[cfg(target_os = "windows")]
+pub(super) mod windows_undo;
+
 pub(super) struct MovePublication {
+    #[cfg(target_os = "windows")]
+    pub windows_undo: Option<crate::PathMoveUndoReceipt>,
     pub disposition: MoveDisposition,
     pub published_path: Option<PathBuf>,
     pub retained_displaced_path: Option<PathBuf>,
@@ -1255,12 +1260,16 @@ pub(super) fn move_entry_transactional(
     match conflict {
         ConflictAction::Skip => match rename_without_replacement(source, &target) {
             Ok(()) => Ok(MovePublication {
+                #[cfg(target_os = "windows")]
+                windows_undo: None,
                 disposition: MoveDisposition::Moved,
                 published_path: Some(target),
                 retained_displaced_path: None,
                 published_content: None,
             }),
             Err(PlatformError::DestinationExists(_)) => Ok(MovePublication {
+                #[cfg(target_os = "windows")]
+                windows_undo: None,
                 disposition: MoveDisposition::Skipped,
                 published_path: None,
                 retained_displaced_path: None,
@@ -1274,6 +1283,8 @@ pub(super) fn move_entry_transactional(
                 match rename_without_replacement(source, &candidate) {
                     Ok(()) => {
                         return Ok(MovePublication {
+                            #[cfg(target_os = "windows")]
+                            windows_undo: None,
                             disposition: MoveDisposition::Moved,
                             published_path: Some(candidate),
                             retained_displaced_path: None,
@@ -1292,6 +1303,8 @@ pub(super) fn move_entry_transactional(
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
                 rename_without_replacement(source, &target)?;
                 Ok(MovePublication {
+                    #[cfg(target_os = "windows")]
+                    windows_undo: None,
                     disposition: MoveDisposition::Moved,
                     published_path: Some(target),
                     retained_displaced_path: None,
@@ -1351,10 +1364,18 @@ pub(super) fn move_windows_entry_to_named_destination(
             PlatformError::Io(format!("destination identity probe failed: {error}"))
         })?;
 
-    match windows_move_route(
+    let source_parent_identity = move_recovery::stable_identity_of_entry(
+        source
+            .parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new(".")),
+    )
+    .map_err(|error| PlatformError::Io(format!("source parent identity probe failed: {error}")))?;
+    let route = windows_move_route(
         source_identity.volume_serial_number(),
         destination_identity.volume_serial_number(),
-    ) {
+    );
+    let mut publication = match route {
         WindowsMoveRoute::SameVolume => {
             windows_same_volume_source_kind(
                 source_identity.is_regular_file_without_reparse(),
@@ -1379,7 +1400,23 @@ pub(super) fn move_windows_entry_to_named_destination(
             source_handle,
             destination_handle,
         ),
+    }?;
+    if route == WindowsMoveRoute::SameVolume
+        && publication.retained_displaced_path.is_none()
+        && source_parent_identity.is_directory_without_reparse()
+        && let Some(after_path) = publication.published_path.as_ref()
+    {
+        #[cfg(test)]
+        windows_move_boundary(WindowsMoveBoundary::BeforeUndoReceipt, after_path);
+        publication.windows_undo = Some(windows_undo::issue(
+            source,
+            after_path,
+            source_identity,
+            source_parent_identity,
+            destination_identity,
+        )?);
     }
+    Ok(publication)
 }
 
 #[cfg(target_os = "windows")]
@@ -1447,6 +1484,8 @@ fn move_windows_cross_volume_preflight(
     };
     match classify_windows_cross_volume_preflight(conflict, destination_exists) {
         WindowsCrossVolumePreflight::Skip => Ok(MovePublication {
+            #[cfg(target_os = "windows")]
+            windows_undo: None,
             disposition: MoveDisposition::Skipped,
             published_path: None,
             retained_displaced_path: None,
@@ -1843,6 +1882,8 @@ fn move_windows_same_volume(
         match rename_windows_handle_no_replace(&source_handle, &destination_handle, &candidate) {
             Ok(()) => {
                 return Ok(MovePublication {
+                    #[cfg(target_os = "windows")]
+                    windows_undo: None,
                     disposition: MoveDisposition::Moved,
                     published_path: Some(published_path),
                     retained_displaced_path: None,
@@ -1851,6 +1892,8 @@ fn move_windows_same_volume(
             Err(PlatformError::DestinationExists(_)) => match conflict {
                 ConflictAction::Skip => {
                     return Ok(MovePublication {
+                        #[cfg(target_os = "windows")]
+                        windows_undo: None,
                         disposition: MoveDisposition::Skipped,
                         published_path: None,
                         retained_displaced_path: None,
@@ -2715,6 +2758,8 @@ fn finish_windows_cross_volume_teardown(
         .sync_all()
         .map_err(|error| cleanup_error(error.to_string()))?;
     Ok(MovePublication {
+        #[cfg(target_os = "windows")]
+        windows_undo: None,
         disposition: MoveDisposition::Moved,
         published_path: Some(record.target_path()?),
         retained_displaced_path: None,
@@ -3235,6 +3280,10 @@ fn start_windows_cross_volume_move(
 #[cfg(all(target_os = "windows", test))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsMoveBoundary {
+    BeforeUndoReceipt,
+    UndoParentsOpened,
+    BeforeUndoRename,
+    UndoRenamed,
     JournalPublished,
     FileReplaced,
     FilePublicationFlushed,
@@ -3545,6 +3594,8 @@ fn completed_windows_cross_volume_overwrite(
         })?;
     }
     Ok(Some(MovePublication {
+        #[cfg(target_os = "windows")]
+        windows_undo: None,
         disposition: MoveDisposition::Moved,
         published_path: Some(target),
         retained_displaced_path: Some(retained),
@@ -5494,6 +5545,8 @@ fn resume_windows_overwrite(
                     })?;
                 }
                 return Ok(MovePublication {
+                    #[cfg(target_os = "windows")]
+                    windows_undo: None,
                     disposition: MoveDisposition::Moved,
                     published_path: Some(target),
                     retained_displaced_path: Some(retained),
@@ -5824,6 +5877,8 @@ fn move_with_hooks(
         )?
     {
         return Ok(MovePublication {
+            #[cfg(target_os = "windows")]
+            windows_undo: None,
             disposition,
             published_path: None,
             retained_displaced_path: None,
@@ -5857,6 +5912,8 @@ fn move_with_hooks(
         && conflict == ConflictAction::Skip
     {
         return Ok(MovePublication {
+            #[cfg(target_os = "windows")]
+            windows_undo: None,
             disposition: MoveDisposition::Skipped,
             published_path: None,
             retained_displaced_path: None,
@@ -6097,6 +6154,8 @@ fn move_with_hooks(
                         );
                         let _ = std::fs::remove_dir_all(destination_transaction_path_path);
                         return Ok(MovePublication {
+                            #[cfg(target_os = "windows")]
+                            windows_undo: None,
                             disposition: MoveDisposition::Skipped,
                             published_path: None,
                             retained_displaced_path: None,
@@ -6340,6 +6399,8 @@ fn move_with_hooks(
                 cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
         }
         return Ok(MovePublication {
+            #[cfg(target_os = "windows")]
+            windows_undo: None,
             disposition: MoveDisposition::Moved,
             published_path: Some(destination_target),
             retained_displaced_path,
@@ -6405,6 +6466,8 @@ fn move_with_hooks(
                         &recovery_transaction_id,
                     );
                     return Ok(MovePublication {
+                        #[cfg(target_os = "windows")]
+                        windows_undo: None,
                         disposition: MoveDisposition::Skipped,
                         published_path: None,
                         retained_displaced_path: None,
@@ -6483,6 +6546,8 @@ fn move_with_hooks(
                 message: format!("overwrite publication durable state failed: {error}"),
             })?;
         Ok(MovePublication {
+            #[cfg(target_os = "windows")]
+            windows_undo: None,
             disposition: MoveDisposition::Moved,
             published_path: Some(destination_target),
             retained_displaced_path: Some(retained_displaced_path),
@@ -6498,6 +6563,8 @@ fn move_with_hooks(
 
         let _ = cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
         Ok(MovePublication {
+            #[cfg(target_os = "windows")]
+            windows_undo: None,
             disposition: MoveDisposition::Moved,
             published_path: Some(destination_target),
             retained_displaced_path: None,
@@ -7471,6 +7538,8 @@ fn replay_cross_filesystem_pending_destination_with_record(
                             &transaction_id,
                         );
                         return Ok(Some(MovePublication {
+                            #[cfg(target_os = "windows")]
+                            windows_undo: None,
                             disposition: MoveDisposition::Moved,
                             published_path: Some(destination_target),
                             retained_displaced_path: None,
@@ -7538,6 +7607,8 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                 &transaction_id,
                             );
                             return Ok(Some(MovePublication {
+                                #[cfg(target_os = "windows")]
+                                windows_undo: None,
                                 disposition: MoveDisposition::Moved,
                                 published_path: Some(destination_target),
                                 retained_displaced_path: None,
@@ -7574,6 +7645,8 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                 &transaction_id,
                             );
                             return Ok(Some(MovePublication {
+                                #[cfg(target_os = "windows")]
+                                windows_undo: None,
                                 disposition: MoveDisposition::Skipped,
                                 published_path: None,
                                 retained_displaced_path: None,
