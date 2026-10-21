@@ -1,0 +1,8 @@
+
+running 3 tests
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_allows_later_name_reuse ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_converges_each_terminal_journal_gap ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_refuses_ambiguous_private_evidence ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 466 filtered out; finished in 1.30s
+

@@ -1,0 +1,6 @@
+17G	target/debug/deps
+7.0G	target/debug/incremental
+23G	target/x86_64-pc-windows-gnu/debug/deps
+20G	target/x86_64-pc-windows-gnu/debug/incremental
+264K	.hermes/evidence/windows-cross-move-reuse-current
+527M	.hermes/packaging-tmp

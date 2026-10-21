@@ -1,0 +1,5 @@
+{
+  "base_commit": "3dc7dd480c0f82524ec40839453f39d056801a56",
+  "move_transaction_sha256": "5b546b088836371344b533f41b2e53e07ea15ddc4e54bb58445d3b576c345048",
+  "scope": "Production source unchanged from current package; one new native regression added before correction"
+}

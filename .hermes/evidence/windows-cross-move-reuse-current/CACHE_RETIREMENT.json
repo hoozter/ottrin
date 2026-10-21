@@ -1,0 +1,42 @@
+{
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnff5upesn-0grmdeq-3uxqossfqtgoxx60h38te3nz9",
+      "logical_bytes": 1297201313,
+      "hardlinked_files_unlinked_only": 252,
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnff8yzrae-1yl0xyw-7i6155oubsbdc32624h2osc2o",
+      "locks": "flock and POSIX record exclusive acquired",
+      "accessible_consumers": []
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnff7gjxo8-16udseb-7mxxuafjyo7fy44frrqgyx880",
+      "logical_bytes": 35800596,
+      "hardlinked_files_unlinked_only": 0,
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnffaewyfp-1xdldlt-0hn85s28e77agj9aqi1hujzzc",
+      "locks": "flock and POSIX record exclusive acquired",
+      "accessible_consumers": []
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0gtmbt5s4hx9o/s-hnff7io7ta-0eav3w1-0w4mo75hb5ie39q4xa6gje6ez",
+      "logical_bytes": 706753,
+      "hardlinked_files_unlinked_only": 0,
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0gtmbt5s4hx9o/s-hnffagyevx-0k9bvpo-d1l0kfsj5t3p1lnxp4ak6sls5",
+      "locks": "flock and POSIX record exclusive acquired",
+      "accessible_consumers": []
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1gd6w80okik1s/s-hnff7ipxoq-1bdlsp6-de75gj0cdh9fnr8a26muwlyyw",
+      "logical_bytes": 720875,
+      "hardlinked_files_unlinked_only": 0,
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1gd6w80okik1s/s-hnffagwctk-0xf884s-1glwo4tfqr36em2q8snu99rp8",
+      "locks": "flock and POSIX record exclusive acquired",
+      "accessible_consumers": []
+    }
+  ],
+  "retained_latest_each_configuration": [
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnff8yzrae-1yl0xyw-7i6155oubsbdc32624h2osc2o",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnffaewyfp-1xdldlt-0hn85s28e77agj9aqi1hujzzc",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0gtmbt5s4hx9o/s-hnffagyevx-0k9bvpo-d1l0kfsj5t3p1lnxp4ak6sls5",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1gd6w80okik1s/s-hnffagwctk-0xf884s-1glwo4tfqr36em2q8snu99rp8"
+  ]
+}

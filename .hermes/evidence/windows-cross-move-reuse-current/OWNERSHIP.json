@@ -1,0 +1,8 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "3dc7dd480c0f82524ec40839453f39d056801a56",
+  "actor": "OttrinCopyQA",
+  "guest_fixture": "C:\\OttrinCopyCleanupQA\\cross-move-volume",
+  "purpose": "Native cross-volume completed Move name reuse, with task-owned 256MiB VHD removed after consumers exit; preserve all retained guests and original app data"
+}

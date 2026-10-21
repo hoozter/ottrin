@@ -1,0 +1,10 @@
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_directory_move_publishes_verified_tree' (7532) panicked at crates/ottrin-platform/src/move_transaction.rs:9559:14:
+set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_regular_file_move_preserves_verified_bytes' (288) panicked at crates/ottrin-platform/src/move_transaction.rs:9342:9:
+set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_preserves_raw_target_without_dereferencing' (3740) panicked at crates/ottrin-platform/src/move_transaction.rs:9491:9:
+set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root

@@ -1,0 +1,4 @@
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_allows_later_name_reuse' (7292) panicked at crates/ottrin-platform/src/move_transaction.rs:8916:18:
+completed cross-volume Replace must not reserve its old source name: ClaimedRecoveryPending { transaction: "D:\\OttrinCopyQA\\ottrin-platform-cross-completed-destination-916-1\\.ottrin-move-f14b1d017576d2e1883b52c1f7b5f56b", message: "Windows cross-volume topology is ambiguous; source and evidence were preserved" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

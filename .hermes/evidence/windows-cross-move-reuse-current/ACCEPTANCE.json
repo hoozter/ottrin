@@ -1,0 +1,50 @@
+{
+  "status": "pass within native Windows Move scope; not yet packaged",
+  "source_parent": "3dc7dd480c0f82524ec40839453f39d056801a56",
+  "production_source_sha256": {
+    "crates/ottrin-platform/src/move_transaction.rs": "48da6c34cd41bc81cb6570f61ba754f68a6cbc0a325288b6eefe2860b00d35a9"
+  },
+  "before": {
+    "result": "failed as expected before fix",
+    "evidence": "before/RESULTS.json",
+    "observed": "Completed cross-volume Replace blocks a later Move after source pathname reuse"
+  },
+  "after": {
+    "focused": "after/RESULTS.json",
+    "focused_tests_passed": 3,
+    "all_cross_volume": "suite-fixed-environment/RESULTS.json",
+    "cross_volume_tests_passed": 26,
+    "move_module": "move-suite/RESULTS.json",
+    "move_module_passed": 72,
+    "move_module_excluded": [
+      "windows_native_move_fat32_boundary_preserves_both_entries",
+      "windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite"
+    ],
+    "test_binary_sha256": "c14538f74d8306aa3e5ed3dc48b3b14712e8725485512b71b352529ad4f7a8ef",
+    "ordinary_user": true,
+    "temporary_entries": 0
+  },
+  "fixture_setup_correction": {
+    "evidence": "suite/RESULTS.json",
+    "explanation": "Three existing cross-volume tests required OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT. Added isolated fixture root and guarded removal of its empty directory and zero-byte lock; corrected suite passes."
+  },
+  "source_checks": {
+    "strict_windows_platform_all_targets_clippy": "clippy-windows.log",
+    "cargo_fmt": "pass",
+    "diff_check": "pass"
+  },
+  "scope": "SourceRemoved is persisted after source-removal namespace flush. Matching paired completion evidence and private identities release old public names without deleting retained bytes. Either terminal journal write gap converges. Divergent private metadata, unknown candidate, retained identity replacement and private source claim refuse without altering data.",
+  "cleanup": {
+    "native": "TEARDOWN.json",
+    "guest_volume": "VOLUME_TEARDOWN.json",
+    "guest_vhd_created_and_removed": true,
+    "cache_retirement": "CACHE_RETIREMENT.json"
+  },
+  "limits": [
+    "Current internal/public packages do not contain this correction yet",
+    "Old paired Published records without durable completion proof remain fail-closed for review",
+    "Containing-parent renames and unavailable/private paths require separate lifecycle verification",
+    "Windows Move Undo and remaining roadmap/platform gates are incomplete",
+    "No user acceptance or release readiness claim"
+  ]
+}

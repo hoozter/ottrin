@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "windows_native_cross_volume_completed_overwrite_ --ignored --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "stdout_sha256": "db3c53ec6a938bd7df91379de42672d557080c40e89f6356319ff9375ed7470a",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "c14538f74d8306aa3e5ed3dc48b3b14712e8725485512b71b352529ad4f7a8ef",
+  "dispatch_id": "93d1a01995492ca42a346d1d0b27765a"
+}

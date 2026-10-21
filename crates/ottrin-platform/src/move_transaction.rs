@@ -2422,6 +2422,9 @@ fn recover_windows_overwrites_before_move(
             )
         } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
             let mut record = load_windows_cross_volume_record(&path)?;
+            if completed_windows_cross_volume_overwrite(&recovery_root, &mut record)?.is_some() {
+                continue;
+            }
             let is_matching = record.source_path()? == source
                 && record.destination_parent_path()? == destination_dir;
             let publication = resume_windows_cross_volume(&recovery_root, &mut record, None)?;
@@ -3426,11 +3429,95 @@ fn reclaim_windows_readonly_publication(
 }
 
 #[cfg(target_os = "windows")]
+fn completed_windows_cross_volume_overwrite(
+    recovery_root: &Path,
+    record: &mut WindowsCrossVolumeRecord,
+) -> Result<Option<MovePublication>, PlatformError> {
+    if record.conflict != ConflictAction::Overwrite
+        || !matches!(
+            record.phase,
+            WindowsCrossVolumePhase::Published | WindowsCrossVolumePhase::SourceRemoved
+        )
+    {
+        return Ok(None);
+    }
+    let transaction = record.transaction_path()?;
+    let local = load_windows_cross_volume_record(&transaction.join(WINDOWS_LOCAL_JOURNAL_NAME))?;
+    if record.phase != WindowsCrossVolumePhase::SourceRemoved
+        && local.phase != WindowsCrossVolumePhase::SourceRemoved
+    {
+        return Ok(None);
+    }
+    let invalid = || PlatformError::CommittedCleanupPending {
+        transaction: transaction.display().to_string(),
+        message:
+            "Windows completed retained Move evidence is inconsistent; all entries were preserved"
+                .into(),
+    };
+    // SourceRemoved is written only after the source-removal namespace flush.
+    // A crash can leave either journal one write ahead. Reconcile only that
+    // exact phase transition; all other evidence must agree without inference
+    // from source/target names, which may already describe later files.
+    let mut completed = record.clone();
+    completed.phase = WindowsCrossVolumePhase::SourceRemoved;
+    let mut local_completed = local.clone();
+    local_completed.phase = WindowsCrossVolumePhase::SourceRemoved;
+    let destination = record.destination_parent_path()?;
+    let target = record.target_path()?;
+    let retained = record.retained_path()?.ok_or_else(invalid)?;
+    let source = record.source_path()?;
+    let source_parent = source.parent().ok_or_else(invalid)?;
+    if !matches!(
+        local.phase,
+        WindowsCrossVolumePhase::Published | WindowsCrossVolumePhase::SourceRemoved
+    ) || completed != local_completed
+        || record.candidate_identity.is_none()
+        || record.destination_identity.is_none()
+        || transaction
+            != destination.join(format!(
+                ".ottrin-move-{}",
+                encode_transaction_id(record.transaction_id()?)
+            ))
+        || target.parent() != Some(destination.as_path())
+        || retained != transaction.join(WINDOWS_RETAINED_NAME)
+        || !windows_staging_candidate_matches_transaction(&transaction, &record.candidate_path()?)
+        || observe_windows_identity(&transaction)? != Some(record.transaction_directory_identity)
+        || observe_windows_identity(&record.candidate_path()?)?.is_some()
+        || observe_windows_identity(&retained)? != record.destination_identity
+        || observe_windows_identity(&windows_directory_source_claim_path(source_parent, record)?)?
+            .is_some()
+    {
+        return Err(invalid());
+    }
+    if record.phase != WindowsCrossVolumePhase::SourceRemoved
+        || local.phase != WindowsCrossVolumePhase::SourceRemoved
+    {
+        *record = completed;
+        persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: format!(
+                    "Windows completed retained Move journals could not converge: {error}"
+                ),
+            }
+        })?;
+    }
+    Ok(Some(MovePublication {
+        disposition: MoveDisposition::Moved,
+        published_path: Some(target),
+        retained_displaced_path: Some(retained),
+    }))
+}
+
+#[cfg(target_os = "windows")]
 fn resume_windows_cross_volume(
     recovery_root: &Path,
     record: &mut WindowsCrossVolumeRecord,
     mut source_handle: Option<std::fs::File>,
 ) -> Result<MovePublication, PlatformError> {
+    if let Some(publication) = completed_windows_cross_volume_overwrite(recovery_root, record)? {
+        return Ok(publication);
+    }
     if record.phase == WindowsCrossVolumePhase::SourceRemoved {
         return finish_windows_cross_volume_teardown(recovery_root, record);
     }
@@ -5022,11 +5109,18 @@ fn resume_windows_cross_volume(
                     || Ok(()),
                 )?;
                 if record.conflict == ConflictAction::Overwrite {
-                    return Ok(MovePublication {
-                        disposition: MoveDisposition::Moved,
-                        published_path: Some(target),
-                        retained_displaced_path: retained_displaced,
-                    });
+                    record.phase = WindowsCrossVolumePhase::SourceRemoved;
+                    persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!("Windows retained Move source removal could not be recorded: {error}"),
+                        }
+                    })?;
+                    return completed_windows_cross_volume_overwrite(recovery_root, record)?
+                        .ok_or_else(|| PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: "Windows retained Move completion record is missing".into(),
+                        });
                 }
                 record.phase = WindowsCrossVolumePhase::SourceRemoved;
                 // The terminal central receipt survives until teardown is durable.
@@ -8867,6 +8961,223 @@ mod windows_source_tests {
                     std::fs::read(record.replacement_path().unwrap()).unwrap(),
                     b"unowned private entry"
                 );
+            }
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    struct CompletedCrossMoveFixture {
+        // TestDir restores the thread-local root: drop destination before source.
+        destination: crate::tests::TestDir,
+        sources: crate::tests::TestDir,
+        source: std::path::PathBuf,
+        target: std::path::PathBuf,
+        retained: std::path::PathBuf,
+        journal: std::path::PathBuf,
+        local: std::path::PathBuf,
+        record: super::WindowsCrossVolumeRecord,
+    }
+
+    #[cfg(target_os = "windows")]
+    fn completed_cross_move_fixture() -> CompletedCrossMoveFixture {
+        let volume = std::path::PathBuf::from(
+            std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").expect("owned second volume"),
+        );
+        let sources = crate::tests::TestDir::new("cross-completed-source");
+        let destination = crate::tests::TestDir::new_at(&volume, "cross-completed-destination");
+        let recovery_root = sources.path().join("move-state");
+        let _ = super::replace_test_recovery_root(Some(recovery_root.clone()));
+        let source = sources.path().join("note.txt");
+        let target = destination.path().join("note.txt");
+        std::fs::write(&source, b"first source").unwrap();
+        std::fs::write(&target, b"displaced destination").unwrap();
+        let first =
+            super::move_entry_transactional(&source, destination.path(), ConflictAction::Overwrite)
+                .unwrap();
+        let retained = first.retained_displaced_path.unwrap();
+        let journal = std::fs::read_dir(&recovery_root)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .find(|path| {
+                path.extension()
+                    .is_some_and(|extension| extension == "cross-journal")
+            })
+            .unwrap();
+        let record = super::load_windows_cross_volume_record(&journal).unwrap();
+        assert_ne!(
+            record.source_identity.volume_serial_number(),
+            record.destination_parent_identity.volume_serial_number()
+        );
+        let local = record
+            .transaction_path()
+            .unwrap()
+            .join(super::WINDOWS_LOCAL_JOURNAL_NAME);
+        assert_eq!(record.phase, super::WindowsCrossVolumePhase::SourceRemoved);
+        assert_eq!(
+            super::load_windows_cross_volume_record(&local).unwrap(),
+            record
+        );
+        CompletedCrossMoveFixture {
+            destination,
+            sources,
+            source,
+            target,
+            retained,
+            journal,
+            local,
+            record,
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires an owned second native NTFS volume in OTTRIN_WINDOWS_CROSS_VOLUME_ROOT"]
+    fn windows_native_cross_volume_completed_overwrite_allows_later_name_reuse() {
+        let fixture = completed_cross_move_fixture();
+        let source = &fixture.source;
+        let target = &fixture.target;
+        let destination = &fixture.destination;
+        let sources = &fixture.sources;
+        let retained = &fixture.retained;
+        let journal = &fixture.journal;
+        let local = &fixture.local;
+        let central_bytes = std::fs::read(journal).unwrap();
+        let local_bytes = std::fs::read(local).unwrap();
+
+        std::fs::write(source, b"later source").unwrap();
+        let second =
+            super::move_entry_transactional(source, destination.path(), ConflictAction::Rename)
+                .expect("completed cross-volume Replace must not reserve its old source name");
+        assert_eq!(
+            std::fs::read(second.published_path.unwrap()).unwrap(),
+            b"later source"
+        );
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(target).unwrap(), b"first source");
+
+        std::fs::remove_file(target).unwrap();
+        std::fs::write(target, b"reused destination").unwrap();
+        let unrelated = sources.path().join("unrelated.txt");
+        std::fs::write(&unrelated, b"unrelated source").unwrap();
+        let third =
+            super::move_entry_transactional(&unrelated, destination.path(), ConflictAction::Rename)
+                .expect("completed cross-volume Replace must not constrain later target changes");
+        assert_eq!(
+            std::fs::read(third.published_path.unwrap()).unwrap(),
+            b"unrelated source"
+        );
+        assert_eq!(std::fs::read(target).unwrap(), b"reused destination");
+        assert_eq!(std::fs::read(retained).unwrap(), b"displaced destination");
+        assert_eq!(std::fs::read(journal).unwrap(), central_bytes);
+        assert_eq!(std::fs::read(local).unwrap(), local_bytes);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires an owned second native NTFS volume in OTTRIN_WINDOWS_CROSS_VOLUME_ROOT"]
+    fn windows_native_cross_volume_completed_overwrite_converges_each_terminal_journal_gap() {
+        for central_is_ahead in [false, true] {
+            let fixture = completed_cross_move_fixture();
+            let mut older = fixture.record.clone();
+            older.phase = super::WindowsCrossVolumePhase::Published;
+            let path = if central_is_ahead {
+                &fixture.local
+            } else {
+                &fixture.journal
+            };
+            super::write_windows_record_file(path, &older, false).unwrap();
+            std::fs::write(&fixture.source, b"later source").unwrap();
+            let publication = super::move_entry_transactional(
+                &fixture.source,
+                fixture.destination.path(),
+                ConflictAction::Rename,
+            )
+            .expect("a source-removal completion marker must survive either paired journal gap");
+            assert_eq!(
+                std::fs::read(publication.published_path.unwrap()).unwrap(),
+                b"later source"
+            );
+            assert!(!fixture.source.exists());
+            assert_eq!(std::fs::read(&fixture.target).unwrap(), b"first source");
+            assert_eq!(
+                std::fs::read(&fixture.retained).unwrap(),
+                b"displaced destination"
+            );
+            assert_eq!(
+                super::load_windows_cross_volume_record(&fixture.journal).unwrap(),
+                fixture.record
+            );
+            assert_eq!(
+                super::load_windows_cross_volume_record(&fixture.local).unwrap(),
+                fixture.record
+            );
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires an owned second native NTFS volume in OTTRIN_WINDOWS_CROSS_VOLUME_ROOT"]
+    fn windows_native_cross_volume_completed_overwrite_refuses_ambiguous_private_evidence() {
+        for mutation in 0..4 {
+            let fixture = completed_cross_move_fixture();
+            let transaction = fixture.record.transaction_path().unwrap();
+            let claim =
+                super::windows_directory_source_claim_path(fixture.sources.path(), &fixture.record)
+                    .unwrap();
+            match mutation {
+                0 => {
+                    let mut changed = fixture.record.clone();
+                    changed.source_size += 1;
+                    super::write_windows_record_file(&fixture.local, &changed, false).unwrap();
+                }
+                1 => std::fs::write(
+                    fixture.record.candidate_path().unwrap(),
+                    b"unknown candidate",
+                )
+                .unwrap(),
+                2 => {
+                    std::fs::rename(&fixture.retained, transaction.join("original-retained"))
+                        .unwrap();
+                    std::fs::write(&fixture.retained, b"unknown retained entry").unwrap();
+                }
+                3 => std::fs::write(&claim, b"unknown source claim").unwrap(),
+                _ => unreachable!(),
+            }
+            let journal_before = std::fs::read(&fixture.journal).unwrap();
+            let local_before = std::fs::read(&fixture.local).unwrap();
+            std::fs::write(&fixture.source, b"later source").unwrap();
+            assert!(
+                super::move_entry_transactional(
+                    &fixture.source,
+                    fixture.destination.path(),
+                    ConflictAction::Rename
+                )
+                .is_err()
+            );
+            assert_eq!(std::fs::read(&fixture.source).unwrap(), b"later source");
+            assert_eq!(std::fs::read(&fixture.target).unwrap(), b"first source");
+            assert_eq!(std::fs::read(&fixture.journal).unwrap(), journal_before);
+            assert_eq!(std::fs::read(&fixture.local).unwrap(), local_before);
+            match mutation {
+                1 => assert_eq!(
+                    std::fs::read(fixture.record.candidate_path().unwrap()).unwrap(),
+                    b"unknown candidate"
+                ),
+                2 => {
+                    assert_eq!(
+                        std::fs::read(&fixture.retained).unwrap(),
+                        b"unknown retained entry"
+                    );
+                    assert_eq!(
+                        std::fs::read(transaction.join("original-retained")).unwrap(),
+                        b"displaced destination"
+                    );
+                }
+                3 => assert_eq!(std::fs::read(claim).unwrap(), b"unknown source claim"),
+                _ => assert_eq!(
+                    std::fs::read(&fixture.retained).unwrap(),
+                    b"displaced destination"
+                ),
             }
         }
     }

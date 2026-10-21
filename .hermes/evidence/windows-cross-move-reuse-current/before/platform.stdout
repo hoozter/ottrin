@@ -1,0 +1,11 @@
+
+running 1 test
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_allows_later_name_reuse ... FAILED
+
+failures:
+
+failures:
+    move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_allows_later_name_reuse
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 466 filtered out; finished in 0.17s
+

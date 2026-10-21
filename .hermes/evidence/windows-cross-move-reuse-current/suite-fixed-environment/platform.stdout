@@ -1,0 +1,79 @@
+
+running 26 tests
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_allows_later_name_reuse ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_converges_each_terminal_journal_gap ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_refuses_ambiguous_private_evidence ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_conflicts_preserve_published_and_displaced_entries ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_destination_acl_denial_preserves_source_and_allows_retry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_handoff_mutations_preserve_source ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_move_publishes_verified_tree ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_process_exit_recovers_without_data_loss ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_explicit_recovery_retains_displaced_file ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_extended_attributes_are_preserved_by_refusal ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_into_modify_only_destination ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_preserves_basic_metadata ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_preserves_read_only_file ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_overwrite_retention_process_exit_recovers ... 
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_published_file_or_link_change_preserves_source ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_destination_preserves_entries_and_allows_retry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_publication_exit_recovers ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_retains_displaced_file ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_recovery_excludes_another_process_until_owner_death ... 
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_regular_file_move_preserves_verified_bytes ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_replace_batch_moves_unoccupied_files_and_trees ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_sharing_conflicts_preserve_source_and_allow_retry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... 
+running 1 test
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... 
+running 1 test
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... 
+running 1 test
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_preserves_raw_target_without_dereferencing ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_streams_are_preserved_by_refusal ... 
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_teardown_retries_after_central_journal_sharing_failure ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 443 filtered out; finished in 7.63s
+

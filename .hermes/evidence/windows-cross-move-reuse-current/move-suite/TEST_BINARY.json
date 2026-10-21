@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_platform",
+  "test_arguments": "move_transaction::windows_source_tests:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "compiler_sha256": "82e38a46066a10b1b7bf215a9e3804e521b17ce02b5e7e9f637a37c993f0e086",
+  "transferred_sha256": "c14538f74d8306aa3e5ed3dc48b3b14712e8725485512b71b352529ad4f7a8ef",
+  "retained_sections": {
+    ".text": "ebd9bae988539cf499b55dc18132093cab496559cba033f13850fa45e805b3c9",
+    ".data": "0c2048e8bbf2fe0e105e52346b48ee34cb9e3b854fd07415ff9fcaf41a4c3ef8",
+    ".rdata": "0b947ed3039e4b190b4273f9d9acb326cb84119deb6499b60c45b43a983c6a24",
+    ".pdata": "4d7a30d62f78fd2d7d598281c1077de05bb587002da8e7fa8d9e1f4ad141a430",
+    ".xdata": "5da70322703311a32922172af1ef6abdaaa123d52329e454f4a36d384ebc3da3",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "b556b8e7e093e07092f3e65f2add7f5539d7bc91ecfccb2aab056334ad1b8e05",
+    ".CRT": "990219997c1a0685eb35b7b78fca4393a5866d7d1a366c7ecb895c5396839867",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "b8da9a8a5265994f7371449d1334740df087b1654630e067ad67f46e25eba17b"
+  }
+}

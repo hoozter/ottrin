@@ -54,6 +54,6 @@ while run('domstate', owner['domain']) != 'shut off':
     assert time.monotonic() < end, 'Guest shutdown pending; inspect same domain'
     time.sleep(1)
 assert run('dumpxml', owner['domain'], '--inactive') == (p / 'DOMAIN_BEFORE.xml').read_text().strip()
-receipt = {'status': 'pass', 'guest': 'TEARDOWN_GUEST.json', 'domain_state': 'shut off', 'persistent_domain_definition_unchanged': True, 'retained_guest_preserved': True, 'additional_disks_or_guests_created': False}
+receipt = {'status': 'pass', 'guest': 'TEARDOWN_GUEST.json', 'domain_state': 'shut off', 'persistent_domain_definition_unchanged': True, 'retained_guest_preserved': True, 'additional_hypervisor_disks_or_guests_created': False}
 (p / 'TEARDOWN.json').write_text(json.dumps(receipt, indent=2) + '\n')
 print(json.dumps(receipt))

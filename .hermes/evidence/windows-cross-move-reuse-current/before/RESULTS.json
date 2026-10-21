@@ -1,0 +1,11 @@
+{
+  "exit": 101,
+  "stderr_sha256": "b09b22ec0890821c93bd6710b71368506fd81cfffe8768638ce2b5960e6a027b",
+  "test_arguments": "windows_native_cross_volume_completed_overwrite_ --ignored --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "error": "Native cleanup observation failed",
+  "stdout_sha256": "0af4c353247625b7771a263880aeca3ad402c16db40f303e169d2a0872205d80",
+  "status": "fail",
+  "test_binary_hash": "33dacabfb0f23d95e8bb0f9de35e78f33f75143870caed2fb76613879323ad57",
+  "dispatch_id": "af80b39aee16f5e8d29545c95f6b66c1"
+}
