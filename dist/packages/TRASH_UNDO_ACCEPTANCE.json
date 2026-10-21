@@ -1,0 +1,49 @@
+{
+  "status": "pass",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "sha256": "0bc732b4a67cddb4b19b8c844246aa77fbdda65a996fdcb4fafb3e2e493b35eb",
+  "source_revision": "52b8248c8ed79883056b44b2a0e96a58acd22586",
+  "code_revision": "f2021b04b2c56267e314786582878c0dea6ee98c",
+  "source_provenance": "clean embedded source record and matching sidecar; packaging-only commit reuses release binaries from identical Rust/dependency/asset inputs",
+  "checks": [
+    "Exact extracted AppImage GUI: Trash confirmation, completed Activity Undo, original-byte restoration, paired Trash-entry removal, unrelated file preservation and normal exit in Dark100/Light150",
+    "All five packaged executable hashes match the tested release outputs",
+    "Bundled GUI/document runtime closures, notices and system-media boundary pass",
+    "Packaged media helper: missing-components fallback, malformed input, Stop, 20 video frames, pause/resume, retained-descriptor input after pathname replacement and cleanup",
+    "Publication regression executes the actual AppImage tail with clean and genuinely dirty source; invalidating a tracked cohort receipt cannot relabel clean input"
+  ],
+  "ui_runs": {
+    "dark100": {
+      "theme": "Dark",
+      "scale": 1.0,
+      "seconds_to_visible_undo": 0.9470982349957922,
+      "normal_exit": true,
+      "original_bytes_restored": true,
+      "unrelated_file_preserved": true,
+      "paired_trash_entries_removed": true,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": [],
+        "display_stopped": true
+      }
+    },
+    "light150": {
+      "theme": "Light",
+      "scale": 1.5,
+      "seconds_to_visible_undo": 0.9968664199986961,
+      "normal_exit": true,
+      "original_bytes_restored": true,
+      "unrelated_file_preserved": true,
+      "paired_trash_entries_removed": true,
+      "cleanup": {
+        "profile_removed": true,
+        "private_processes": [],
+        "display_stopped": true
+      }
+    }
+  },
+  "known_ui_issue": "Activity currently labels operation duration as an age and can render just now ago. Found in visual review; remains queued for the next UI correction. Trash/Undo behavior passes.",
+  "scope": "Targeted exact extracted AppImage runtime and native private X11 interaction; no physical desktop, FUSE mount, fresh-distribution installation, audio-device or full release acceptance. Portable/DEB/RPM and Windows artifacts retain their preceding scopes and need separate refresh.",
+  "evidence": ".hermes/evidence/linux-trash-receipt-package-current",
+  "cleanup": "Owned app groups, session index daemons, Xvfb displays, message buses, temporary profiles and extracts removed."
+}

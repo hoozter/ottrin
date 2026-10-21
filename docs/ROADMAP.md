@@ -10,16 +10,21 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current delivery and remaining outcomes
 
-The latest published Linux delivery is clean source `a6dc090`. All four formats
-are available at the stable paths in `dist/packages/`. The current AppImage is
-`Ottrin-0.1.0-x86_64.AppImage`, SHA-256
-`f2a49b3a97364e8d734aadd4c172bd8c044dc20b71f102243b2fc8e1574d5d6d`.
-Exact package and runtime scopes are recorded in
-[`OFFICE_UI_ACCEPTANCE.json`](../dist/packages/OFFICE_UI_ACCEPTANCE.json).
+The current AppImage is clean package source `52b8248c` with application code
+`f2021b04`, kept at `dist/packages/Ottrin-0.1.0-x86_64.AppImage`. Its SHA-256 is
+`0bc732b4a67cddb4b19b8c844246aa77fbdda65a996fdcb4fafb3e2e493b35eb`.
+Actual extracted-package Trash/Activity Undo, exact byte restoration and normal
+exit pass Dark100/Light150; all five executable identities, runtime closure and
+packaged media-helper checks pass. Scope:
+[`TRASH_UNDO_ACCEPTANCE.json`](../dist/packages/TRASH_UNDO_ACCEPTANCE.json).
+Portable, DEB and RPM retain their preceding clean `a6dc090` delivery and recorded
+scopes in [`OFFICE_UI_ACCEPTANCE.json`](../dist/packages/OFFICE_UI_ACCEPTANCE.json).
+Their refresh and a new coherent all-format receipt remain pending; the old
+all-format receipt is invalidated when one package is replaced.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four published package formats pass payload/provenance checks. The current AppImage passes Activity Cancel, Undo, retained-data cleanup and normal close. Earlier workflow receipts retain their own artifact scopes. | Complete the remaining software outcomes below, then the concentrated clean-desktop, real-device, media, elevation and final candidate acceptance pass. |
+| Linux | The current AppImage passes the scoped Trash/Undo and component checks above. Other formats and earlier workflows retain their own artifact scopes. | Refresh the remaining Linux formats and cohort receipt; correct the Activity time caption noted below, then complete remaining software and concentrated clean-desktop, real-device, media, elevation and final candidate acceptance. |
 | Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
@@ -262,7 +267,17 @@ provenance needed for these receipts and is not scanned to manufacture one.
 The previously failing worker test passes, including actual restore. Focused tests
 cover raw-byte/encoded names, unrelated malformed metadata, ambiguous hard links
 and invalid metadata. A fresh trace confirms no cloud-Trash access. This repair is
-covered by the full Linux suite above; packaging remains a separate delivery step.
+covered by the full Linux suite above. The clean `52b8248c` AppImage now passes
+actual extracted-package Trash and Activity Undo in Dark100 and Light150, with
+original/unrelated bytes preserved and all test processes/profiles removed.
+Publishing previously computed its sidecar cleanliness after deleting the tracked
+old cohort receipt; it now uses the single embedded source snapshot. Actual
+publication-tail regressions cover clean and genuinely dirty source. Exact scope:
+`dist/packages/TRASH_UNDO_ACCEPTANCE.json`.
+
+Visual review also found that Activity displays operation duration as a relative
+age, including “just now ago.” Correct that caption before final UI acceptance;
+this package checkpoint accepts the file operation, not that remaining wording.
 
 ## Current Windows Copy implementation checkpoint
 
