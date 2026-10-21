@@ -5779,7 +5779,9 @@ mod tests {
                 .unwrap()
                 .success()
         );
-        let root = tempfile::tempdir().unwrap();
+        // TMPDIR may name the runner's profile beneath the /tmp mount we just
+        // hid. Keep the fixture on the new namespace-owned filesystem itself.
+        let root = tempfile::tempdir_in("/tmp").unwrap();
         let mount_path = root.path().join("destination");
         std::fs::create_dir(&mount_path).unwrap();
         struct PrivateMount(std::path::PathBuf);
