@@ -1,0 +1,46 @@
+{
+  "status": "pass within exact portable GUI same-volume Move name-reuse scope",
+  "date": "2026-10-21",
+  "source_commit": "1cd2871f9bae17edcce3f1cb202f8745dc13be9d",
+  "archive_sha256": "0c73bcdfe5d1d4d0d9f1a8bd252d26874cc4af608d326d14f7b0a055143412c0",
+  "package_content_evidence": "../windows-move-reuse-package-current/ACCEPTANCE.json",
+  "payload_files_verified": 57,
+  "ordinary_interactive_account": true,
+  "configuration": "Dark/List at 1280x800, 100 percent, default renderer selection",
+  "passed": [
+    "Usable window and Dark/List settings after ordinary relaunch",
+    "Replace publishes original source and preserves displaced destination",
+    "Reused source name then Keep Both completes with both payloads preserved",
+    "Move of original published target to another directory completes",
+    "Unrelated Move completes while the original published target name is absent",
+    "Later file publishes under the former source and target names",
+    "Unrelated VCF Move completes after target identity changes",
+    "Final bytes and absent source names verified after normal window close",
+    "All four snapshots of old paired journal/displaced hashes are identical"
+  ],
+  "file_state_checks": 7,
+  "retained_checks": 4,
+  "original_retained_hashes": {
+    "displaced_sha256": "B9F9ECCB9BBA3C5A67D19293F4C4E3E5E508A1B39AAE18DEAC635915FA920D47",
+    "central_sha256": "CBD3E8E6B7A56B867878D922E24202D5A1C2061C2A8555598CBB97B95BED10D6",
+    "local_sha256": "CBD3E8E6B7A56B867878D922E24202D5A1C2061C2A8555598CBB97B95BED10D6"
+  },
+  "native_source_evidence": "../windows-packaged-workflows-current/ACCEPTANCE.json",
+  "cleanup": "TEARDOWN.json",
+  "qa_setup": "First-login Search/Start surfaces intercepted input despite an app image being visible; point/PID and foreground guards refused input. Only temporary-account SearchHost was stopped after SID/path validation; app was normally relaunched after onboarding. No application file operation started until native point ownership matched the app.",
+  "tools_sha256": {
+    "scripts/windows-desktop-qa/README.md": "4539f013d49453b6f2f846d99794aafcb483b3e8331af38623cab30a24675479",
+    "scripts/windows-desktop-qa/actor.ps1": "486b65e399f46c45745b6577f6af62ef89400f788f77300df7a478f2a73517f3",
+    "scripts/windows-desktop-qa/cleanup.ps1": "03b979f7e3c725677068f10b83b03415461543012e3ab2b451697ea6692282f4",
+    "scripts/windows-desktop-qa/desktop.py": "bd0c76b7aec47459fcb14039ef87b3110f06e6ce5df15551360d3b9ba6c317d8",
+    "scripts/windows-desktop-qa/interop.ps1": "6b7692e4da6b2bbaedfc8ecf26258c41bd79b1cc34be8c527cdb12e27687f10e",
+    "scripts/windows-desktop-qa/prepare.ps1": "d54d2d4e72cdf217fda768c2471648300a9fc29d38fdbcd3ce0084cce66a3359",
+    "scripts/windows-desktop-qa/retire-owned-root.ps1": "fe06de31996717292bda531f980f40cb9986b9d8b0aed636cd9a327a8ba9dfd1"
+  },
+  "limits": [
+    "Portable GUI exercised; NSIS/MSI payload identity is not installer lifecycle acceptance",
+    "Cross-volume retained completion/name reuse remains separate",
+    "Windows Move Undo remains unavailable; public Windows Copy remains disabled",
+    "No broad Office/media, physical graphics, user acceptance or release readiness claim"
+  ]
+}

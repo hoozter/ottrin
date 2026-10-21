@@ -1,0 +1,7 @@
+{
+  "files": {
+    "crates/ottrin-platform/src/move_transaction.rs": "c9dd8df61787dcafa4462704586c624ec235f44a059869a3bf6d5a4f499ab221"
+  },
+  "scope": "Completed same-volume Replace name-reuse correction: before-fix native reproduction, two corrected native regressions; broader Windows Move module 46 passed and 25 fixture-dependent cases not executed. Strict Windows platform all-target Clippy passes. Packaged workflow rerun remains separate.",
+  "evidence": "../windows-packaged-workflows-current/ACCEPTANCE.json"
+}

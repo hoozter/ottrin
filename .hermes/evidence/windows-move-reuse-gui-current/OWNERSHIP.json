@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinWindowQA",
+  "account": "OttrinWindowQA",
+  "package_source": "1cd2871f9bae17edcce3f1cb202f8745dc13be9d",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-portable.zip",
+  "archive_sha256": "0c73bcdfe5d1d4d0d9f1a8bd252d26874cc4af608d326d14f7b0a055143412c0",
+  "payload_manifest": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-reuse-package-current/PAYLOAD.json",
+  "scope": "Fresh ordinary desktop account; exact packaged completed Replace source/target name-reuse regression, no public Windows promotion or original installation mutation"
+}

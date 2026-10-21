@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "domain_state": "shut off",
+  "persistent_domain_definition_unchanged": true,
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "guest": {
+    "actor_task_removed": true,
+    "original_files_preserved": true,
+    "profile_removed": true,
+    "temporary_password_removed": true,
+    "login_values_restored": true,
+    "status": "pass",
+    "ordinary_account_removed": true
+  },
+  "owned_root_removed": "cleanup.log: bounded fixture retirement succeeded",
+  "scope": "Original Ottrin config.json and Uninstall.exe hashes and exact touched login values preserved; not a whole-profile inventory"
+}

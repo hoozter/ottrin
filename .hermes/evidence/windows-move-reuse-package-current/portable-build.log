@@ -1,0 +1,21 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 3m 12s
+    Finished `release` profile [optimized] target(s) in 0.51s
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+/tmp/tmp.opZuQ4IJjy/pdfium.tgz: OK
+/tmp/tmp.zGMLm2y6IQ/mesa.7z: OK
+/tmp/tmp.zGMLm2y6IQ/mesa-source.tar.gz: OK
+/tmp/tmp.zGMLm2y6IQ/pal1000-LICENSE.txt: OK
+/tmp/tmp.zGMLm2y6IQ/dxc.zip: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/opengl32.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libEGL.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libGLESv2.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libgallium_wgl.dll: OK
+/tmp/tmp.zGMLm2y6IQ/dxc/LICENSE-MS.txt: OK
+/tmp/tmp.zGMLm2y6IQ/dxc/bin/x64/dxil.dll: OK
+/tmp/tmp.MBlHcfR5U9/archive: OK
+/tmp/tmp.MBlHcfR5U9/extract/ripgrep-15.2.0-x86_64-pc-windows-msvc/rg.exe: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage/Ottrin-0.1.0-windows-x64-portable.zip

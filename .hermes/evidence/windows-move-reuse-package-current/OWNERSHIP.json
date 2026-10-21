@@ -1,0 +1,8 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_commit": "1cd2871f9bae17edcce3f1cb202f8745dc13be9d",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "scope": "Current internal portable/NSIS/MSI refresh for completed same-volume Replace name reuse; content/native CLI validation followed by ordinary-account packaged workflow rerun. Public Windows deliverables and retained guests preserved."
+}

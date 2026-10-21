@@ -5,7 +5,7 @@ if($u.SID.Value-ne$owned.sid-or$u.Description-ne'Ottrin owned packaged workflow 
 $task=Get-ScheduledTask 'Ottrin Window Input QA'
 if($task.State.ToString()-in@('Running','Queued')){throw 'Owned actor still active'}
 # Emergency cleanup may terminate only executables under this owned payload.
-foreach($p in @(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-like"$root\payload\*"})){Stop-Process -Id $p.ProcessId -ErrorAction Stop}
+foreach($p in @(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-like"$root\payload\*"})){Stop-Process -Id $p.ProcessId -Force -ErrorAction Stop}
 $b=Get-Content "$root\system\baseline.json" -Raw|ConvertFrom-Json
 foreach($e in $b.PSObject.Properties){if($e.Value){if((Get-FileHash $e.Name).Hash-ne$e.Value){throw 'Original installation/profile changed'}}elseif(Test-Path $e.Name){throw 'Previously absent original file appeared'}}
 $backup=Get-Content "$root\system\winlogon-backup.json" -Raw|ConvertFrom-Json

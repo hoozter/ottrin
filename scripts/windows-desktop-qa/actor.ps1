@@ -114,6 +114,11 @@ if($c.op-eq'prepare'){
   }else{[Windows.Forms.Clipboard]::SetText([string]$c.text);[Windows.Forms.SendKeys]::SendWait('^v')}
  }
  Start-Sleep -Milliseconds 300
+}elseif($c.op-eq'probe'){
+ $point=New-Object CopyActivityDesktop+POINT;$point.X=[int]$c.x;$point.Y=[int]$c.y
+ [uint32]$pointPid=0;$hit=[CopyActivityDesktop]::WindowFromPoint($point);$null=[CopyActivityDesktop]::GetWindowThreadProcessId($hit,[ref]$pointPid)
+ $title=New-Object Text.StringBuilder 512;$null=[CopyActivityDesktop]::GetWindowText($hit,$title,512)
+ $verification=@{label='Native point ownership probe';x=$point.X;y=$point.Y;hit_handle=$hit.ToInt64();hit_pid=$pointPid;hit_title=$title.ToString();app_pid=@($processes|Select-Object -ExpandProperty ProcessId)}
 }elseif($c.op-ne'observe'){throw 'Unknown desktop operation'}
 $processes=@(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-eq$app})
 $windows=@();foreach($process in $processes){foreach($h in [CopyActivityDesktop]::Windows($process.ProcessId)){$rect=New-Object CopyActivityDesktop+RECT;$null=[CopyActivityDesktop]::GetWindowRect($h,[ref]$rect);$title=New-Object Text.StringBuilder 512;$null=[CopyActivityDesktop]::GetWindowText($h,$title,512);$windows+=@{handle=$h.ToInt64();title=$title.ToString();left=$rect.Left;top=$rect.Top;right=$rect.Right;bottom=$rect.Bottom}}}

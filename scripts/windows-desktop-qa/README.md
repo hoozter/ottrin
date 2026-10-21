@@ -4,19 +4,22 @@ This driver uses the retained `ottrin-copy-cleanup-qa` guest through the existin
 QEMU guest-agent transport. It does not control the host desktop. It creates one
 ordinary temporary `OttrinWindowQA` account and portable fixtures under
 `C:\OttrinWindowQA`. Start with the guest off, record its persistent definition
-and an `OWNERSHIP.json` containing the exact archive/source/SHA-256, then boot it.
+and an `OWNERSHIP.json` containing `archive`, `package_source`, `archive_sha256`
+and `payload_manifest` (the package cohort's verified `PAYLOAD.json`), then boot it.
 The guest must have no application work or existing autologon password to replace.
 
-Use `python3 scripts/windows-desktop-qa/desktop.py [--evidence-dir PATH] OP`.
-The default evidence directory is the original
-`.hermes/evidence/windows-packaged-workflows-current` checkpoint. Use a new owned
-evidence directory for a different package; preserve the earlier receipt's scope.
+Use `python3 scripts/windows-desktop-qa/desktop.py --evidence-dir PATH OP`.
+An explicit owned evidence directory is required. Use a new directory for a
+different package; preserve the earlier receipt's scope.
 
-1. `prepare` saves protected restoration data, creates the account, verifies and
+1. `prepare` verifies the archive/manifest/source agree before any guest mutation,
+   saves protected restoration data, creates the account, verifies and
    extracts the exact candidate. Reboot the guest once into the temporary account.
-2. JSON operations `prepare`, `launch`, `observe`, `click`, `key`, `nav`, `verify`
+2. Finish the temporary account's first-login onboarding before launching Ottrin.
+   JSON operations `prepare`, `launch`, `observe`, `probe`, `click`, `key`, `nav`, `verify`
    and `close` drive/check that account. Window input checks the target process;
-   inspect screenshots before choosing coordinates. First-login onboarding input
+   inspect screenshots before choosing coordinates. `probe` reports native point
+   ownership without sending input. First-login onboarding input
    additionally requires the observed foreground PID and the owned `wwahost.exe`.
    Native regression execution requires the transferred executable's SHA-256.
 3. An input observer timeout exits 75: use `resume` to observe the same guest PID.

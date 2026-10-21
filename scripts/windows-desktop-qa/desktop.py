@@ -1,5 +1,6 @@
 """Owned Windows desktop input; observer timeouts resume the same guest PID."""
 import hashlib
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -11,14 +12,14 @@ sys.path.insert(0, str(ROOT / '.hermes/evidence/windows-copy-cleanup-current'))
 import transport as n
 
 n.GROOT = r'C:\OttrinWindowQA'
-E = ROOT / '.hermes/evidence/windows-packaged-workflows-current'
 HERE = Path(__file__).resolve().parent
-arguments = sys.argv[1:]
-if arguments[:1] == ['--evidence-dir']:
-    E = Path(arguments[1]).resolve()
-    if E.parent != ROOT / '.hermes/evidence':
-        raise SystemExit('Evidence must be one owned directory under .hermes/evidence')
-    arguments = arguments[2:]
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--evidence-dir', required=True, type=Path)
+parser.add_argument('operation', help='prepare, cleanup, retire, resume, or a JSON desktop operation')
+arguments = parser.parse_args()
+E = arguments.evidence_dir.resolve()
+if E.parent != ROOT / '.hermes/evidence':
+    raise SystemExit('Evidence must be one owned directory under .hermes/evidence')
 
 
 def wait(pid):
@@ -30,7 +31,7 @@ def wait(pid):
         raise SystemExit(75)
 
 
-operation = arguments[0]
+operation = arguments.operation
 if operation in ['cleanup', 'retire']:
     if operation == 'cleanup':
         wait(n.start((HERE / 'cleanup.ps1').read_text()))
@@ -45,11 +46,16 @@ if operation == 'prepare':
     owner = json.loads((E / 'OWNERSHIP.json').read_text())
     archive = Path(owner['archive'])
     assert hashlib.sha256(archive.read_bytes()).hexdigest() == owner['archive_sha256']
+    manifest = Path(owner['payload_manifest']).resolve()
+    manifest.relative_to(ROOT / '.hermes/evidence')
+    payload = json.loads(manifest.read_text())
+    assert payload['archive_sha256'] == owner['archive_sha256']
+    assert payload['source_commit'] == owner['package_source']
     wait(n.start((HERE / 'prepare.ps1').read_text()))
     for name in ['interop.ps1', 'actor.ps1', 'cleanup.ps1']:
         n.upload(HERE / name, name)
     n.upload(ROOT / '.hermes/evidence/address-selection-current/VALID_CONFIG_TEMPLATE.json', 'config-template.json')
-    n.upload(ROOT / '.hermes/evidence/windows-latest-package-current/PAYLOAD.json', 'payload-manifest.json')
+    n.upload(manifest, 'payload-manifest.json')
     n.upload(archive, 'payload.zip')
     wait(n.start(r"""
 $root='C:\OttrinWindowQA'
