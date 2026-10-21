@@ -100,21 +100,40 @@ fn reserve_allocation(file: &File, spare: i64) {
     assert_eq!(
         read(file).unwrap(),
         before,
-        "Trimming spare allocation must preserve every journal byte"
+        "Changing spare allocation must preserve every journal byte"
     );
 }
 
 #[test]
 #[ignore = "Requires a token-bound disposable NTFS volume of at most 512 MiB"]
 fn windows_native_copy_disk_full_paired_journals_recover_after_space_is_freed() {
-    run_case(false);
+    run_case(Layout::Paired);
 }
 #[test]
 #[ignore = "Requires a token-bound disposable NTFS volume of at most 512 MiB"]
 fn windows_native_copy_disk_full_divergent_journals_preserve_data_and_refuse_retry() {
-    run_case(true);
+    run_case(Layout::ReservedLocal);
 }
-fn run_case(expect_divergence: bool) {
+#[test]
+#[ignore = "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"]
+fn windows_native_copy_destination_full_with_separate_registry_recovers() {
+    run_case(Layout::DestinationFull);
+}
+#[test]
+#[ignore = "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"]
+fn windows_native_copy_registry_full_with_separate_destination_preserves_and_refuses() {
+    run_case(Layout::RegistryFull);
+}
+#[derive(Clone, Copy, Debug)]
+enum Layout {
+    Paired,
+    ReservedLocal,
+    DestinationFull,
+    RegistryFull,
+}
+fn run_case(layout: Layout) {
+    let split = matches!(layout, Layout::DestinationFull | Layout::RegistryFull);
+    let expect_divergence = matches!(layout, Layout::ReservedLocal | Layout::RegistryFull);
     let volume = std::path::PathBuf::from(
         std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_IO_VOLUME").expect("Owned volume required"),
     );
@@ -130,10 +149,20 @@ fn run_case(expect_divergence: bool) {
         (128 * 1024 * 1024..=512 * 1024 * 1024).contains(&capacity),
         "Refuse to fill any other volume"
     );
-    let root = tempfile::tempdir_in(&volume).unwrap();
-    fixture(root.path());
-    let registry = root.path().join("central");
-    std::fs::remove_dir(&registry).unwrap();
+    let full_root = tempfile::tempdir_in(&volume).unwrap();
+    let other_root = split.then(|| tempfile::tempdir().unwrap());
+    let root = if matches!(layout, Layout::RegistryFull) {
+        other_root.as_ref().unwrap().path()
+    } else {
+        full_root.path()
+    };
+    fixture(root);
+    std::fs::remove_dir(root.join("central")).unwrap();
+    let registry = if matches!(layout, Layout::DestinationFull) {
+        other_root.as_ref().unwrap().path().join("central")
+    } else {
+        full_root.path().join("central")
+    };
     drop(
         super::super::super::registry::AnchoredRoot::open_at(&registry, true)
             .unwrap()
@@ -141,14 +170,14 @@ fn run_case(expect_divergence: bool) {
     );
     for index in 0..64 {
         std::fs::write(
-            root.path().join(format!("source/nested/item-{index}")),
+            root.join(format!("source/nested/item-{index}")),
             format!("payload {index}"),
         )
         .unwrap();
     }
-    let parent_path = root.path().join("destination");
+    let parent_path = root.join("destination");
     let (name, candidate) = {
-        let input = source(&root.path().join("source"));
+        let input = source(&root.join("source"));
         let parent = owner(&parent_path);
         let central = owner(&registry);
         let staged = stage(&input, &parent, &central).unwrap();
@@ -157,7 +186,7 @@ fn run_case(expect_divergence: bool) {
             staged.stage.candidate_name.clone(),
         )
     };
-    remove_undo_fixture_source(root.path());
+    remove_undo_fixture_source(root);
     let local = parent_path.join(&name).join(LOCAL);
     let header = decode(&std::fs::read(&local).unwrap())
         .unwrap()
@@ -165,6 +194,18 @@ fn run_case(expect_divergence: bool) {
         .header
         .unwrap();
     let mirror = registry.join(header.central_name());
+    let parent_id = stable_identity_from_handle(&owner(&parent_path)).unwrap();
+    let registry_id = stable_identity_from_handle(&owner(&registry)).unwrap();
+    assert_eq!(
+        parent_id.volume_serial_number() != registry_id.volume_serial_number(),
+        split,
+        "Requested native volume separation must be real"
+    );
+    println!(
+        "disk-full layout={layout:?} parent_volume={} registry_volume={}",
+        parent_id.volume_serial_number(),
+        registry_id.volume_serial_number()
+    );
     let before = std::fs::read(&local).unwrap();
     assert_eq!(std::fs::read(&mirror).unwrap(), before);
     let payload = parent_path.join(&candidate);
@@ -178,7 +219,7 @@ fn run_case(expect_divergence: bool) {
             .write(true)
             .create_new(true)
             .custom_flags(FILE_FLAG_WRITE_THROUGH)
-            .open(root.path().join("owned-filler"))
+            .open(full_root.path().join("owned-filler"))
             .unwrap(),
     ))));
     let retained = filler.0.clone();
@@ -186,7 +227,7 @@ fn run_case(expect_divergence: bool) {
     APPEND_HANDOFF.with(|slot| *slot.borrow_mut() = Some(Box::new(move |local, central| {
         // Keep these reservations on the actual live writer objects. Closing a
         // setup writer can discard its unused allocation before the append.
-        reserve_allocation(local, if expect_divergence { 64 * 1024 } else { 0 });
+        reserve_allocation(local, if matches!(layout, Layout::ReservedLocal) { 64 * 1024 } else { 0 });
         reserve_allocation(central, 0);
         let mut guard = retained.lock().unwrap();let file = guard.as_mut().unwrap();
         let data = vec![73u8; 1024 * 1024];
@@ -219,7 +260,7 @@ fn run_case(expect_divergence: bool) {
         std::fs::read(parent_path.join("foreign")).unwrap(),
         b"unrelated public data"
     );
-    assert!(!root.path().join("source").exists());
+    assert!(!root.join("source").exists());
     let paired = local_after == central_after && decode(&local_after).is_ok();
     assert_eq!(
         paired, !expect_divergence,
