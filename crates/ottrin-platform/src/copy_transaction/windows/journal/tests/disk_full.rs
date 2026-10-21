@@ -131,9 +131,7 @@ enum Layout {
     DestinationFull,
     RegistryFull,
 }
-fn run_case(layout: Layout) {
-    let split = matches!(layout, Layout::DestinationFull | Layout::RegistryFull);
-    let expect_divergence = matches!(layout, Layout::ReservedLocal | Layout::RegistryFull);
+fn owned_volume() -> std::path::PathBuf {
     let volume = std::path::PathBuf::from(
         std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_IO_VOLUME").expect("Owned volume required"),
     );
@@ -149,6 +147,13 @@ fn run_case(layout: Layout) {
         (128 * 1024 * 1024..=512 * 1024 * 1024).contains(&capacity),
         "Refuse to fill any other volume"
     );
+    volume
+}
+
+fn run_case(layout: Layout) {
+    let split = matches!(layout, Layout::DestinationFull | Layout::RegistryFull);
+    let expect_divergence = matches!(layout, Layout::ReservedLocal | Layout::RegistryFull);
+    let volume = owned_volume();
     let full_root = tempfile::tempdir_in(&volume).unwrap();
     let other_root = split.then(|| tempfile::tempdir().unwrap());
     let root = if matches!(layout, Layout::RegistryFull) {
@@ -224,26 +229,24 @@ fn run_case(layout: Layout) {
     ))));
     let retained = filler.0.clone();
     let owned_volume = volume.clone();
-    APPEND_HANDOFF.with(|slot| *slot.borrow_mut() = Some(Box::new(move |local, central| {
-        // Keep these reservations on the actual live writer objects. Closing a
-        // setup writer can discard its unused allocation before the append.
-        reserve_allocation(local, if matches!(layout, Layout::ReservedLocal) { 64 * 1024 } else { 0 });
-        reserve_allocation(central, 0);
-        let mut guard = retained.lock().unwrap();let file = guard.as_mut().unwrap();
-        let data = vec![73u8; 1024 * 1024];
-        let mut written = 0u64;
-        for size in [data.len(), 4096] {
-            loop {
-                match file.write(&data[..size]) {
-                    Ok(0) => panic!("Filler write made no progress"),
-                    Ok(count) => { written += count as u64;assert!(written <= 1024 * 1024 * 1024, "Filler exceeded owned-volume bound"); },
-                    Err(error) => { assert!(matches!(error.raw_os_error(), Some(code) if code == ERROR_DISK_FULL as i32 || code == ERROR_HANDLE_DISK_FULL as i32), "Unexpected filler error: {error}");break; }
-                }
-            }
-        }
-        assert!(space(&owned_volume).0 < 4096);
-        println!("real disk-full barrier: allocated={} free={}", file.metadata().unwrap().len(), space(&owned_volume).0);
-    })));
+    APPEND_HANDOFF.with(|slot| {
+        *slot.borrow_mut() = Some(Box::new(move |local, central| {
+            // Keep these reservations on the actual live writer objects. Closing a
+            // setup writer can discard its unused allocation before the append.
+            reserve_allocation(
+                local,
+                if matches!(layout, Layout::ReservedLocal) {
+                    64 * 1024
+                } else {
+                    0
+                },
+            );
+            reserve_allocation(central, 0);
+            let mut guard = retained.lock().unwrap();
+            let file = guard.as_mut().unwrap();
+            fill(file, &owned_volume);
+        }))
+    });
     let outcome = plan.resume(|_| Ok(()));
     let local_after = std::fs::read(&local).unwrap();
     let central_after = std::fs::read(&mirror).unwrap();
@@ -295,4 +298,170 @@ fn run_case(layout: Layout) {
         assert_eq!(std::fs::read(&mirror).unwrap(), central_after);
         assert_eq!(super::cleanup::namespace_contents(&payload), payload_before);
     }
+}
+
+fn fill(file: &mut File, volume: &Path) {
+    let data = vec![73u8; 1024 * 1024];
+    let mut written = 0u64;
+    for size in [data.len(), 4096] {
+        loop {
+            match file.write(&data[..size]) {
+                Ok(0) => panic!("Filler write made no progress"),
+                Ok(count) => {
+                    written += count as u64;
+                    assert!(
+                        written <= 1024 * 1024 * 1024,
+                        "Filler exceeded owned-volume bound"
+                    );
+                }
+                Err(error) => {
+                    assert!(
+                        matches!(error.raw_os_error(), Some(code) if code == ERROR_DISK_FULL as i32 || code == ERROR_HANDLE_DISK_FULL as i32),
+                        "Unexpected filler error: {error}"
+                    );
+                    break;
+                }
+            }
+        }
+    }
+    assert!(space(volume).0 < 4096);
+    println!(
+        "real disk-full barrier: allocated={} free={}",
+        file.metadata().unwrap().len(),
+        space(volume).0
+    );
+}
+
+#[test]
+#[ignore = "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"]
+fn windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage() {
+    let volume = owned_volume();
+    let full_root = tempfile::tempdir_in(&volume).unwrap();
+    let root = tempfile::tempdir().unwrap();
+    fixture(root.path());
+    let original = vec![37u8; super::super::super::BUFFER_BYTES * 8 + 17];
+    let source_path = root.path().join("source/nested/file");
+    std::fs::write(&source_path, &original).unwrap();
+    let named = vec![83u8; super::super::super::BUFFER_BYTES * 4 + 19];
+    let named_path = root.path().join("source/nested/file:payload");
+    std::fs::write(&named_path, &named).unwrap();
+    let destination = full_root.path().join("destination");
+    std::fs::create_dir(&destination).unwrap();
+    std::fs::write(destination.join("foreign"), b"unrelated public data").unwrap();
+    let registry = root.path().join("central");
+    std::fs::remove_dir(&registry).unwrap();
+    drop(
+        super::super::super::registry::AnchoredRoot::open_at(&registry, true)
+            .unwrap()
+            .unwrap(),
+    );
+    let mut filler = Filler(Arc::new(Mutex::new(Some(
+        OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .custom_flags(FILE_FLAG_WRITE_THROUGH)
+            .open(full_root.path().join("owned-filler"))
+            .unwrap(),
+    ))));
+    let mut barrier = None;
+    let outcome = {
+        let src = source(&root.path().join("source"));
+        let parent = owner(&destination);
+        let central = owner(&registry);
+        let parent_id = stable_identity_from_handle(&parent).unwrap();
+        let central_id = stable_identity_from_handle(&central).unwrap();
+        assert_ne!(
+            parent_id.volume_serial_number(),
+            central_id.volume_serial_number()
+        );
+        println!(
+            "payload-full parent_volume={} registry_volume={}",
+            parent_id.volume_serial_number(),
+            central_id.volume_serial_number()
+        );
+        let admission = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+        DurableStage::create(
+            &src,
+            &parent,
+            &central,
+            &admission,
+            OsStr::new("source"),
+            100,
+            |bytes| {
+                if bytes > 0 && barrier.is_none() {
+                    assert!(bytes < original.len() as u64);
+                    barrier = Some(bytes);
+                    fill(filler.0.lock().unwrap().as_mut().unwrap(), &volume);
+                }
+                Ok(())
+            },
+        )
+        .map(|_| ())
+    };
+    filler.release().unwrap();
+    let error = outcome.unwrap_err();
+    assert!(matches!(error, PlatformError::CleanupPending { .. }));
+    let message = error.to_string();
+    assert!(
+        message.contains("(os error 112)") || message.contains("(os error 39)"),
+        "{message}"
+    );
+    assert!(barrier.is_some());
+    assert_eq!(std::fs::read(&source_path).unwrap(), original);
+    assert!(!destination.join("copy").exists());
+    assert_eq!(
+        std::fs::read(destination.join("foreign")).unwrap(),
+        b"unrelated public data"
+    );
+    let name = stage_name(&destination);
+    let local = destination.join(&name).join(LOCAL);
+    let before = std::fs::read(&local).unwrap();
+    let state = decode(&before).unwrap().state;
+    let header = state.header.as_ref().unwrap();
+    let mirror = registry.join(header.central_name());
+    assert_eq!(std::fs::read(&mirror).unwrap(), before);
+    assert!(state.nodes.iter().any(|node| node.staged.is_none()));
+    let candidate = destination.join(header.candidate_name());
+    let partial = std::fs::read(candidate.join("nested/file")).unwrap();
+    assert_eq!(partial, original);
+    let read_stream = || match std::fs::read(candidate.join("nested/file:payload")) {
+        Ok(bytes) => Some(bytes),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => panic!("Could not inspect retained stream: {error}"),
+    };
+    let partial_stream = read_stream();
+    assert!(
+        partial_stream
+            .as_ref()
+            .is_none_or(|bytes| bytes.len() <= named.len())
+    );
+    assert_ne!(partial_stream.as_deref(), Some(named.as_slice()));
+    assert_eq!(std::fs::read(&named_path).unwrap(), named);
+    assert!(
+        discovery::RetainedCopyResumePlan::admit(&registry, &header.transaction, |_| Ok(()))
+            .is_err()
+    );
+    assert!(
+        PermissionStage::publish(&owner(&destination), &owner(&registry), &name, |_| Ok(()))
+            .is_err()
+    );
+    assert_eq!(std::fs::read(&local).unwrap(), before);
+    assert_eq!(std::fs::read(&mirror).unwrap(), before);
+    assert_eq!(
+        std::fs::read(candidate.join("nested/file")).unwrap(),
+        partial
+    );
+    assert_eq!(read_stream(), partial_stream);
+    assert_eq!(std::fs::read(&source_path).unwrap(), original);
+    assert_eq!(std::fs::read(&named_path).unwrap(), named);
+    assert!(!destination.join("copy").exists());
+    println!(
+        "payload-full result: error={message}; barrier={}; primary={}; source={}; named_retained={}; named_source={}; journals={}; publication refused with bytes preserved",
+        barrier.unwrap(),
+        partial.len(),
+        original.len(),
+        partial_stream.as_ref().map_or(0, Vec::len),
+        named.len(),
+        before.len()
+    );
 }
