@@ -1,0 +1,41 @@
+{
+  "status": "verified Linux delivery",
+  "source_revision": "62889236081c7299385a3fc1093716a5ffb1a0a3",
+  "source_commit": "62889236",
+  "checks": {
+    "source": "394 UI tests passed, zero failures, one existing explicit private mount-namespace exclusion; strict final Linux/Windows all-target Clippy and formatting pass",
+    "performance": "BEFORE.json and dispatch-isolated.log. For 20000 absent destination names, original on-window scans were 58.3/60.3/61.1 ms; isolated request dispatch was 4.149/2.442/2.608 ms. Different phases: filesystem work still runs and is awaited in the reader. No Copy throughput or whole-Paste benchmark claimed.",
+    "controlled_responsiveness": "Modal paints and Escape cancels while reader is held; bounded queue refuses excess jobs; cancelled work never publishes; an already queued old reply cannot start a newer transfer. All owned controlled readers stop.",
+    "package": "FINAL_PACKAGE_IDENTITIES.json; all four payload/docs/source/helper identities, canonical staged checksum/helper-path checks and AppImage/RPM namespace ownership pass",
+    "actual_appimage": "Dark100 eight file checks and Light150 three; automatic nonconflicting completion, clipboard retention after cancellation, current-choice execution and Undo byte restoration checked. Source hashes preserved and both app exits normal.",
+    "cleanup": "Both PROCESS_CLEANUP records prove profiles absent and no owned-marker processes. Packaging/checker extractions and outer candidate removed. INCREMENTAL_CLEANUP retires five superseded finalized UI sessions with locks/consumer/link checks, retaining newest configurations."
+  },
+  "storage": {
+    "before": "Host deps/incremental 17G/7.0G; cross deps/incremental 23G/20G; shared staging 527M",
+    "after": "Host deps/incremental 17G/7.0G; cross deps/incremental 23G/20G; shared staging 527M; compact evidence 964K"
+  },
+  "delivery": {
+    "status": "pass",
+    "source_revision": "62889236081c7299385a3fc1093716a5ffb1a0a3",
+    "artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "4cfaf7cc30f30ed06b2e1bba20b446f32a60ddcc470e45581fcc460989283f4b",
+      "Ottrin-0.1.0-x86_64.AppImage": "16acff2724a55194fb74bc0cb70665804283a2c09c6ecda78b79b36c3eb9f7d7",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "98f6e5cba08360863b9ace0ba03cdb81cc2d5fb4a763afb9359437c6a1dcc184",
+      "ottrin_0.1.0_amd64.deb": "ccfbd52a7c6dae22237b6e5d150028752d6d83d08c3f13d0566baecce447b62e"
+    },
+    "superseded_artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "150d50c5b5e77f315b1f3d23029a9bdede24dd140f8222917bd2b72373a7156c",
+      "Ottrin-0.1.0-x86_64.AppImage": "506213f4fc4db5bceb5e9a0236474a5518dd50c05435b188b48bc6490acd813c",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "19d472454179fca2f925ac8056a9f8d7eb72b705b4cd103ae82c55528919c564",
+      "ottrin_0.1.0_amd64.deb": "b2d607c1bef69e7a7b6ba7f4c7a2aba7ff5e5dcdec669ab3d5b193ca73555426"
+    },
+    "candidate_removed": true,
+    "stable_directory": "/home/campbell/Projects/Ottrin/dist/packages",
+    "operator_profiles_service": "Unchanged; open superseded AppImage inodes remain valid"
+  },
+  "limits": [
+    "Native slow-storage GUI, whole-operation responsiveness/resource/interruption, physical devices, fresh distro lifecycle and other roadmap outcomes remain open",
+    "Windows native GUI and Windows candidate refresh remain pending; public Windows Copy gate unchanged",
+    "Earlier theme/media/platform receipts retain their original source/artifact scopes"
+  ]
+}

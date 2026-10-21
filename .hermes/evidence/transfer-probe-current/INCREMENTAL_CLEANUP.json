@@ -1,0 +1,36 @@
+{
+  "status": "pass",
+  "changes": [
+    {
+      "removed": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnfaxqy7cd-0qj2ja3-dkguo3wzotul8qbjx3crossjo",
+      "replacement": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnfb16453g-1fwesrn-7q7n0cv32habwtkpkydp1kdwu",
+      "logical_bytes": 347167235
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnfaz4c17k-1ffnaqc-90sexfr23nvie4v8js3m3g31t",
+      "replacement": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnfb27p2rp-1n17erg-3bptx77awia1pon96wxgawxp3",
+      "logical_bytes": 39099616
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnfaz4c174-01l6oay-34750a1u5642uolgqqnsgcc1w",
+      "replacement": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnfb27p2uj-0vc0gat-2d8yjk3p6i7alfng3l45q9atj",
+      "logical_bytes": 47314777
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-07enwzf14u6c9/s-hnfaz8pqpb-0dd8ew4-0ev0p7wg1dtbhlitm06hzndzg",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-07enwzf14u6c9/s-hnfb2eknq2-0zg425z-cb63z5gc4mhagv3ji1kk5o85l",
+      "logical_bytes": 40467503
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-24n6j5jy68xc3/s-hnfaz8pqa8-1fts3ts-1agyt6dvk77qhz4wvixgi0e4e",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-24n6j5jy68xc3/s-hnfb2eknmj-1i2rxwu-34xlanno01j5kcopuaij0pagd",
+      "logical_bytes": 48204092
+    }
+  ],
+  "checks": [
+    "Both exclusive lock forms held",
+    "No open/mapped consumers",
+    "All hard links accounted for within same shared incremental root"
+  ],
+  "scope": "Only UI configurations replaced during this task; newest finalized session in each retained, other configurations untouched"
+}

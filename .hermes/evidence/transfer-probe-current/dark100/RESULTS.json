@@ -1,0 +1,96 @@
+{
+  "artifact_sha256": "16acff2724a55194fb74bc0cb70665804283a2c09c6ecda78b79b36c3eb9f7d7",
+  "theme": "Dark",
+  "scale": "1",
+  "flow": "ordinary",
+  "status": "pass",
+  "source_files_before": {
+    "source/note.txt": "ff8c0734f703a26d82ac74f558e090b19bb8a0a93b67d84eec13e38f7caac11f",
+    "source/other.txt": "f957b19529906961933c5c30f8713c500a9bb5d9d0695c40d48c97a26a3594ec",
+    "source/Folder/nested/leaf.txt": "840c2ff3c5325e1305b00fddf2885d4b70688ae357825045b3bb3900803a66c6",
+    "replacement/note.txt": "3cc98e7956d06ebfa0831553878073e5bfb3709934d72ac89aeac35530530fc3"
+  },
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 62889236081c7299385a3fc1093716a5ffb1a0a3\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "file_checks": [
+    {
+      "label": "Async nonconflicting Copy wakes and publishes",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Conflict check waits for choice without duplicate publication",
+      "files": {
+        "destination/note.txt": "first source\n"
+      },
+      "absent": [
+        "destination/note (1).txt"
+      ]
+    },
+    {
+      "label": "Copy Escape retains clipboard without publication",
+      "files": {
+        "destination/note.txt": "first source\n"
+      },
+      "absent": [
+        "destination/note (1).txt"
+      ]
+    },
+    {
+      "label": "Keep both starts only after current confirmation",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "destination/note (1).txt": "first source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Undo withdraws only confirmed duplicate",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": [
+        "destination/note (1).txt"
+      ]
+    },
+    {
+      "label": "Move Escape preserves cut source and clipboard",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Confirmed Move Replace publishes after async check",
+      "files": {
+        "destination/note.txt": "replacement source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": [
+        "replacement/note.txt"
+      ]
+    },
+    {
+      "label": "Undo Move restores original source and destination",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": []
+    }
+  ],
+  "visual_checks": [
+    "Actual Dark100 AppImage: async nonconflicting Copy wakes and publishes",
+    "Copy/Move ready dialogs keep aligned themed controls and correct operation verbs",
+    "Escape retains clipboard; Keep both/Undo and Move Replace/Undo preserve exact checked bytes"
+  ],
+  "normal_app_exit": true,
+  "source_files_preserved": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and shared disposable app state removed"
+}
