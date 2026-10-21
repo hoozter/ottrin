@@ -1,6 +1,9 @@
 from pathlib import Path
-import hashlib,json,subprocess,tempfile,zipfile
-p=Path(__file__).resolve().parent;root=p.parents[2]
+import hashlib,json,os,subprocess,tempfile,zipfile
+tool_dir=Path(__file__).resolve().parent
+p=Path(os.environ.get("OTTRIN_WINDOWS_PACKAGE_EVIDENCE_DIR",str(tool_dir))).resolve()
+assert p.parent==tool_dir.parent,"Evidence must have a workspace-owned family"
+root=tool_dir.parents[2]
 o=json.loads((p/'OWNERSHIP.json').read_text());stage=Path(o['stage']);payload=stage/'windows-payload/Ottrin-0.1.0-windows-x64'
 sha=lambda path:hashlib.sha256(path.read_bytes()).hexdigest()
 m=json.loads((p/'PAYLOAD.json').read_text());expected={key.split('/',1)[1]:value for key,value in m['entries'].items()}

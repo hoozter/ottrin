@@ -1,6 +1,9 @@
 from pathlib import Path
 import json,hashlib,os,shutil,subprocess
-p=Path(__file__).resolve().parent;o=json.loads((p/'OWNERSHIP.json').read_text());stage=Path(o['stage']);candidate=Path(o['candidate']);backup=candidate.with_name('.windows-activity-previous');sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
+tool_dir=Path(__file__).resolve().parent
+p=Path(os.environ.get("OTTRIN_WINDOWS_PACKAGE_EVIDENCE_DIR",str(tool_dir))).resolve()
+assert p.parent==tool_dir.parent,"Evidence must have a workspace-owned family"
+o=json.loads((p/'OWNERSHIP.json').read_text());stage=Path(o['stage']);candidate=Path(o['candidate']);backup=candidate.with_name('.windows-activity-previous');sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
 assert json.loads((p/'TEARDOWN.json').read_text())['status']=='pass'
 checks=json.loads((p/'PACKAGE_IDENTITIES.json').read_text());assert checks['status']=='pass' and checks['source_commit']==o['source_commit']
 assert json.loads((p/'CLI_SMOKE.json').read_text(encoding='utf-8-sig'))['status']=='pass'

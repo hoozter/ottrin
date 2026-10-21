@@ -3,8 +3,10 @@
 from pathlib import Path
 import base64, hashlib, json, os, subprocess, sys, time, zipfile
 
-p = Path(__file__).resolve().parent
-root = p.parents[2]
+tool_dir = Path(__file__).resolve().parent
+p = Path(os.environ.get("OTTRIN_WINDOWS_PACKAGE_EVIDENCE_DIR", str(tool_dir))).resolve()
+assert p.parent == tool_dir.parent, "Evidence must have a workspace-owned family"
+root = tool_dir.parents[2]
 owner = json.loads((p / 'OWNERSHIP.json').read_text())
 assert owner['domain'] == 'ottrin-copy-cleanup-qa'
 stage = Path(owner['stage'])
