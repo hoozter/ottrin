@@ -1,0 +1,8 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_commit": "4fbc3e1a5b80795423747d1603020f77b18706fc",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "scope": "Owned staged Windows portable/NSIS/MSI refresh for staging-end source; native compiler and payload verification, no installation/public Windows replacement/additional guest or disk"
+}

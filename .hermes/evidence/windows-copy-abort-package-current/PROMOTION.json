@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "source_commit": "4fbc3e1a5b80795423747d1603020f77b18706fc",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "0f2cc470b0118f8b66a3e5cf4b677687e14587fa9f825f434264e68066cab78b",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "4b1250516a3ff9f7fd5f27db513aad7120596f8f107fba34f1059ff864371897",
+    "Ottrin-0.1.0-windows-x64.msi": "85a61bcf63d04d99fee8669046b1e5ad8542f7dd3ab1f96eb0e8c18e85850e5a"
+  },
+  "payload_files": 57,
+  "previous_generated_candidate_removed": true,
+  "removed_empty_previous_work_dirs": [],
+  "task_staging_directory_absent": true,
+  "checked_accessible_host_fd_and_cwd_consumers": [],
+  "public_windows_files_unchanged": true,
+  "native_guest_teardown": "TEARDOWN.json"
+}

@@ -34,7 +34,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal clean `566f6236` portable/MSI/NSIS candidates have matching 57-file payloads; native MSI compilation/extraction and loader/argument checks pass. Office/graphics GUI acceptance retains its earlier artifact scope. Pending-I/O, disk-full and Activity source checkpoints below retain their recorded native scopes. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
+| Windows | The internal clean `4fbc3e1a` portable/MSI/NSIS candidates include staging-end recovery and have matching 57-file payloads; native MSI compilation/extraction and loader/argument checks pass. Office/graphics GUI acceptance retains its earlier artifact scope. Pending-I/O, disk-full and Activity source checkpoints below retain their recorded native scopes. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -71,10 +71,11 @@ Superseded finalized compiler sessions are retired while keeping each affected
 configuration's current cache. Schema 18 preserves older records for review
 without converting or deleting them.
 
-This is a source/native-functional checkpoint. Current Linux packages and the
-internal Windows `566f6236` candidates are unchanged. Incomplete-payload
-reclamation, remaining transaction/resource/workflow acceptance, current package
-acceptance and public Windows Copy remain unfinished. User testing stays deferred.
+The current internal Windows `4fbc3e1a` candidates now contain this source
+checkpoint; package content and native loader checks are recorded below. Linux
+packages are unchanged. Incomplete-payload reclamation, remaining transaction/
+resource/workflow acceptance, packaged GUI and installer lifecycle acceptance and
+public Windows Copy remain unfinished. User testing stays deferred.
 
 ## Large-batch operation admission
 
@@ -410,36 +411,37 @@ are still open; existing packages and public Windows Copy are unchanged.
 
 ## Current Windows candidate refresh
 
-All three internal Windows formats now come from clean source `566f6236`, at the
-stable `.hermes/packaging-tmp/windows-activity-candidate/` path. Portable, NSIS
-and native MSI administrative extraction match all 57 payload files. The NSIS
-generated uninstaller has the expected GUI header; its embedded index controller
-and transaction script match the accepted stage/source. All five executables
-match the release outputs. Artifact SHA-256 values:
+The three internal Windows formats now come from clean source `4fbc3e1a`, at
+`.hermes/packaging-tmp/windows-activity-candidate/`. They include the schema-18
+incomplete-attempt recovery and Activity confirmation accepted at `5d33bcaf`.
+The intervening commit only makes the existing package-check tools reusable;
+all production files match that reviewed source byte-for-byte.
 
-- Portable ZIP: `f564f89faff8a73452455eb6045784aeefb03d19fed6d73809d4a0ffb06388ca`
-- NSIS setup: `ccefbf5c206354093c92b374ddcb5010a0ef5a5160733e5af6a6f0d5507c4c5a`
-- MSI: `d5ff621ad0033c0b1684f5114284991c4c0b5790439cbd2e4c3d3a526bb14509`
+- Portable ZIP: `0f2cc470b0118f8b66a3e5cf4b677687e14587fa9f825f434264e68066cab78b`
+- NSIS setup: `4b1250516a3ff9f7fd5f27db513aad7120596f8f107fba34f1059ff864371897`
+- MSI: `85a61bcf63d04d99fee8669046b1e5ad8542f7dd3ab1f96eb0e8c18e85850e5a`
 
-Native loader/argument checks pass for the three changed executables: main app
-help exits successfully, while indexd/helper reject the unsupported help argument
-with their expected usage/exit status. These checks run as SYSTEM and establish
-neither ordinary-user service lifecycle nor native GUI/OS-clipboard acceptance.
-The reviewed Activity production source is byte-identical in this package source.
-Office helpers and bundled runtimes are byte-identical to the prior candidate;
-earlier Office/graphics presentation acceptance keeps its original artifact scope.
+All 57 files match across the portable archive, extracted NSIS payload and native
+MSI administrative extraction. All five executable payloads match the current
+release outputs; NSIS's generated uninstaller, index controller and transaction
+script also pass their checks. Native loader/argument checks pass for main,
+indexd and privileged helper as SYSTEM. This establishes loader/CLI behavior,
+not ordinary-user GUI, service or installer lifecycle acceptance.
 
-The new cohort was staged and checked before replacing the old generated cohort.
-Its staging/rollback directories and native compiler/payload/MSI extractions are
-removed. The retained guest is shut off with unchanged persistent definition,
-recorded preferences/uninstaller hashes and restored Windows Installer service
-state. Linux packages and public Windows artifact files remain unchanged.
-Exact receipts and limits:
-`.hermes/evidence/windows-refresh-current/ACCEPTANCE.json`.
+Only main/indexd/helper, the source note and the two updated packaged documents
+changed from the preceding `566f6236` cohort. Office helpers and all bundled
+runtimes remain byte-identical; their earlier GUI acceptance retains its original
+artifact scope. These packages have not gained fresh Office/graphics, OS
+clipboard, install/upgrade/repair/rollback/uninstall or daily-driver acceptance.
 
-Current Windows GUI, install/upgrade/repair/rollback/uninstall and broader workflow
-acceptance remain open. This refresh includes the recent source fixes; it does
-not enable public Windows Copy or establish release readiness.
+The replacement was staged and checked before the previous generated candidate
+was removed. Task staging/rollback directories and native compiler/payload/MSI
+extractions are gone. The retained guest is shut off with unchanged persistent
+definition, original preferences/uninstaller hashes and restored MSI service
+state. Shared caches are retained; public Windows downloads and Linux packages
+are unchanged. Exact receipts and limits:
+`.hermes/evidence/windows-copy-abort-package-current/ACCEPTANCE.json`.
+Public Windows Copy stays disabled; the remaining roadmap outcomes remain open.
 
 ## MSI rollback comparison: failure timing matters
 
@@ -542,7 +544,7 @@ The remaining work includes restart admission/reclamation for unpublished setup,
 partial stages, mutation/cleanup interference and interruption/resource gates.
 No package changes at this source checkpoint; public Windows Copy remains gated.
 
-The current native journal schema is 17 and claim format is 3. Each destination
+The current native journal schema is 18 and claim format is 3. Each destination
 reservation now holds one Claim and Release. Released controls can be retired
 while paired terminal recovery records remain; every new owner uses the existing
 complete private preparation and native held-handle no-replace publication.

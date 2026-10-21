@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "before": "storage-before.txt",
+  "after": "storage-after.txt",
+  "staging_and_rollback_absent": true,
+  "superseded_generated_candidate_removed": true,
+  "native_compiler_and_extractions_removed": true,
+  "shared_cache_policy": "Existing target/Cargo/Rust caches reused; no new debug/incremental configurations and no broad cache deletion",
+  "retained_task_deliverable": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "retained_task_evidence": "Compact receipts, hashes and compressed CLI output; no extracted fixture/runtime copies"
+}

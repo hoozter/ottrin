@@ -1,0 +1,91 @@
+{
+  "status": "pass within package content and native loader/CLI scopes",
+  "source_commit": "4fbc3e1a5b80795423747d1603020f77b18706fc",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "0f2cc470b0118f8b66a3e5cf4b677687e14587fa9f825f434264e68066cab78b",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "4b1250516a3ff9f7fd5f27db513aad7120596f8f107fba34f1059ff864371897",
+    "Ottrin-0.1.0-windows-x64.msi": "85a61bcf63d04d99fee8669046b1e5ad8542f7dd3ab1f96eb0e8c18e85850e5a"
+  },
+  "payload_files": 57,
+  "package_identity": "PACKAGE_IDENTITIES.json",
+  "native_deployment": "DEPLOYMENT.json",
+  "native_msi_administrative_extraction": "MSI_PAYLOAD.json",
+  "native_loader_cli": {
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status": "pass",
+    "runs": [
+      {
+        "exit": 0,
+        "stdout_sha256": "daecf3c1dfcbfebc72eb2108cfb1b1cc0650f8427e18b1bd23560d600da9b972",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "executable": "ottrin.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+        "executable": "ottrin-indexd.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+        "executable": "ottrin-priv-helper.exe"
+      }
+    ],
+    "identity": "NT AUTHORITY\\SYSTEM"
+  },
+  "source_ui_acceptance": {
+    "evidence": "../windows-copy-abort-current/ACCEPTANCE.json",
+    "production_files_byte_identical_to_reviewed_source": true
+  },
+  "payload_delta": "PAYLOAD_DELTA.json",
+  "unchanged_office_and_graphics_bytes": "Both Office helpers and all bundled runtimes match the preceding candidate; this is byte identity, not fresh main-window/Office GUI acceptance",
+  "promotion": "PROMOTION.json",
+  "cleanup": {
+    "status": "pass",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "guest": "TEARDOWN_GUEST.json",
+    "retained_guests_preserved": true
+  },
+  "guest_preservation_scope": "Original config.json and Uninstall.exe hashes plus prior MSI service state; not whole profile/installation inventory",
+  "storage": "STORAGE.json",
+  "public_windows_files_unchanged": true,
+  "linux_packages_unchanged": true,
+  "tools_sha256": {
+    "native-package.py": "ee4bb03f99c1a2752ac379704040b848c7065fed0f3b15a8fd3f15d6e05cc59d",
+    "verify-host.py": "3f64ba27d4964acf0b0c901b99a5c5c3d417b863b7c20b704d24207feb01190a",
+    "promote.py": "833758cdff838e5fb2962518a157a5877ec78fc6cc08f36000d5809b14d891a8"
+  },
+  "limits": [
+    "Native CLI ran as SYSTEM, not ordinary-account GUI or service-lifecycle acceptance",
+    "Native MSI compilation/administrative extraction is not installation, upgrade, repair, rollback or uninstall acceptance",
+    "Native source Activity acceptance remains separate from packaged window/OS clipboard acceptance",
+    "Schema 18 preserves older recovery bytes for review without conversion",
+    "Incomplete-payload reclamation and remaining transaction/storage/interruption/resource/workflow gates remain; public Windows Copy stays disabled",
+    "No user acceptance, release readiness or daily-driver readiness claim"
+  ],
+  "changed_payload_files": [
+    "SOURCE_REVISION.txt",
+    "bin/ottrin-indexd.exe",
+    "bin/ottrin-priv-helper.exe",
+    "bin/ottrin.exe",
+    "docs/DEVELOPMENT.md",
+    "docs/ROADMAP.md"
+  ],
+  "driver_sha256": "ba481ce342d8e532dcd9af42cf8aeddd5ff0deaa5c43ab245897c4ef1835e408",
+  "evidence_encoding": "JSON and controller logs normalized to LF; changed controller logs and native CLI output have exact-byte compressed originals with recorded hashes",
+  "normalized_controller_logs": {
+    "msi-build.log": {
+      "original_sha256": "759f498ecb4634376084abda2e2445cda4a79ef2c95c884d2b9f5700cebbce95",
+      "original": "msi-build.log.gz"
+    },
+    "prepare.log": {
+      "original_sha256": "1d0cddc2d5d4a3c74ed86c4e87f6a74e15d219ff1604387a6e45a50531d82b91",
+      "original": "prepare.log.gz"
+    }
+  }
+}
