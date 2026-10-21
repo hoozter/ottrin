@@ -10,19 +10,25 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current delivery and remaining outcomes
 
-The current Linux AppImage, portable archive, DEB and RPM all come from clean
-package source `a9fa93e5`. The AppImage remains at
-`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
-`6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033`.
-All four formats pass payload, source-note, helper-policy and search-provider
-checks. RPM's provider bytes are exactly reproduced by standard symbol/comment
-stripping of the pinned upstream binary, and its actual search smoke passes.
-The extracted AppImage passes Trash/Activity Undo and byte restoration in Dark100
-and Light150, including the corrected elapsed/duration caption and normal exit.
-Runtime closure and packaged media-helper checks pass within their recorded scope.
-Current artifact hashes and limits are in
+The stable Linux AppImage, portable archive, DEB and RPM are published at
+`dist/packages/`; the AppImage has one stable path:
+`dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 [`LINUX_PACKAGES_ACCEPTANCE.json`](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json)
-and [`ACTIVITY_TIMING_ACCEPTANCE.json`](../dist/packages/ACTIVITY_TIMING_ACCEPTANCE.json).
+is the authority for the current package source, all four hashes, tested scope
+and limitations. Earlier receipts retain their original artifact scopes and do
+not automatically accept a newer build.
+
+The rename-selection correction is delivered: renaming keeps the new pathname
+selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
+Copy/Paste, conflict renaming, Copy Undo, Rename, Cut/Paste without reselection,
+Move Undo and Rename Undo, with source bytes preserved and clean private-process
+teardown. All four formats pass payload/source/helper checks. Exact evidence is
+in `.hermes/evidence/linux-copy-workflows-current/PACKAGED_ACCEPTANCE.json`.
+The source now extends the existing Move conflict confirmation to Copy, exposing
+Keep both, Replace, Skip and Cancel through one dialog. That follow-up's source
+checks and exact-package acceptance are recorded separately in
+`.hermes/evidence/transfer-conflicts-current/`; the rename delivery alone does
+not prove the follow-up is packaged.
 
 The Linux build entry point stages all formats and validates their checksums before
 promotion. Regression cases prove a later build failure or corrupted staged checksum

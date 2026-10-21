@@ -1,0 +1,24 @@
+{
+  "status": "source checks pass; package verification pending",
+  "base_revision": "3ddabdd6ef2df4e1ca5deb6aabfb053b2d9c3345",
+  "implementation": "One shared Copy/Move conflict dialog and pending state, retains authoritative storage bindings and clipboard generation, revalidates admission before worker, suppresses modal re-entry only for confirmed choice. Explicit overwrite commands retain their existing behavior.",
+  "ui": "Full-width framed themed choices with consistent icon/text columns, correct copy/move verb and batch applicability, Escape/Cancel retain clipboard.",
+  "checks": {
+    "before": "before.log: native Copy/Paste conflict fails new no-mutation-before-choice assertion on old implementation",
+    "after": "ui-final.log: 390 passed, zero failed, one existing explicit private mount-namespace exclusion",
+    "regressions": "Native clipboard Keep both; Cancel/Skip/Replace with source/clipboard preservation; displaced destination restored by Undo; same-source Replace refused; existing Move modal, keyboard, storage and re-entry tests pass",
+    "lint": "Linux and Windows all-target strict UI Clippy pass",
+    "format": "cargo fmt and git diff --check pass"
+  },
+  "limitations": [
+    "Source/headless Linux checks do not establish packaged GUI or native Windows clipboard acceptance",
+    "Windows public Copy gate unchanged"
+  ],
+  "logs": {
+    "before.log": "feeb920c2d61c739428e212c5d97cd7759b16102143c0f447feed3f1e9b46ab2",
+    "clippy-linux.log": "6222a27dcd6163344f239de6d6bf23520c259de260ba390b60ed5189d0077de9",
+    "ui-final.log": "b0547c22422fe4855d7ac76bdc8e753711257bd03b549b8f2730182a8ba0811d",
+    "ui-suite.log": "f896a1e03b3b23484b4fcd9c18036e5b91ef8bcbaafa4eef8bb83079f04c1d28",
+    "clippy-windows.log": "1e588db95031fa508b4e0f02061cdda0df3a1dcf813cd79802a2dcfa20b2fbd4"
+  }
+}

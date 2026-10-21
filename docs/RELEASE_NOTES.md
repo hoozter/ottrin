@@ -4,6 +4,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Copy and Move share a themed conflict dialog with Keep both, Replace, Skip, and Cancel choices. Copy no longer silently chooses renamed duplicates when a destination name already exists. Replacement retains the existing guarded transaction and Undo behavior.
+
 - Renaming a selected file keeps the new filename selected in List, Grid, and Column views, so subsequent Copy/Cut actions use the renamed file without requiring another click.
 
 - Windows text editing preserves already exact file permissions instead of reapplying inheritance. This repairs safe-save refusals in private folders while retaining exact metadata checks.

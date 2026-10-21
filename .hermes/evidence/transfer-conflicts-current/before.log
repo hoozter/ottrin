@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 40.52s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-b21e7538cbb86b0a)
+
+running 1 test
+test tests::clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict ... FAILED
+
+failures:
+
+---- tests::clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict stdout ----
+
+thread 'tests::clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict' (476626) panicked at crates/ottrin-ui/src/lib.rs:27756:9:
+Copy conflict must offer choices before mutation
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 388 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

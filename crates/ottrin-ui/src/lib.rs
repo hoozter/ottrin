@@ -687,7 +687,7 @@ struct PendingDelete {
 }
 
 #[derive(Debug, Clone)]
-struct PendingMoveConflict {
+struct PendingTransferConflict {
     cmd: FileCommand,
     tab_id: Option<u64>,
     bindings: Vec<StorageOperationBinding>,
@@ -3480,7 +3480,7 @@ pub struct OttrinApp {
     pending_rename: Option<PendingRename>,
     pending_creation: Option<PendingCreation>,
     pending_delete: Option<PendingDelete>,
-    pending_move_conflict: Option<PendingMoveConflict>,
+    pending_transfer_conflict: Option<PendingTransferConflict>,
     pending_empty_trash: bool,
     open_with_dialog: Option<OpenWithDialog>,
     pending_privileged_retry: Option<PendingPrivilegedRetry>,
@@ -4424,7 +4424,7 @@ impl OttrinApp {
             pending_rename: None,
             pending_creation: None,
             pending_delete: None,
-            pending_move_conflict: None,
+            pending_transfer_conflict: None,
             pending_empty_trash: false,
             open_with_dialog: None,
             pending_privileged_retry: None,
@@ -9413,17 +9413,17 @@ impl OttrinApp {
         }
     }
 
-    fn handle_move_conflict_confirmation_keyboard(&mut self, ctx: &Context) {
-        if self.pending_move_conflict.is_none() {
+    fn handle_transfer_conflict_confirmation_keyboard(&mut self, ctx: &Context) {
+        if self.pending_transfer_conflict.is_none() {
             return;
         }
         let cancel = ctx.input_mut(|input| input.consume_key(egui::Modifiers::NONE, Key::Escape));
         if cancel {
-            self.resolve_move_conflict(None);
+            self.resolve_transfer_conflict(None);
         }
     }
 
-    fn consume_move_conflict_modal_scroll_input(ctx: &Context) {
+    fn consume_transfer_conflict_modal_scroll_input(ctx: &Context) {
         ctx.input_mut(|input| {
             input
                 .events
@@ -10214,38 +10214,26 @@ impl OttrinApp {
         }
     }
 
-    fn resolve_move_conflict(&mut self, conflict: Option<ConflictAction>) {
-        let Some(mut pending) = self.pending_move_conflict.take() else {
+    fn resolve_transfer_conflict(&mut self, conflict: Option<ConflictAction>) {
+        let Some(mut pending) = self.pending_transfer_conflict.take() else {
             return;
         };
         let Some(conflict) = conflict else {
             return;
         };
-        let FileCommand::Move {
-            conflict: action, ..
-        } = &mut pending.cmd
-        else {
-            return;
+        let action = match &mut pending.cmd {
+            FileCommand::Copy { conflict, .. } | FileCommand::Move { conflict, .. } => conflict,
+            _ => return,
         };
         *action = conflict;
-        let started = match pending.clipboard_generation {
-            Some(clipboard_generation) => self.run_file_op_bound(
-                pending.cmd,
-                pending.tab_id,
-                Vec::new(),
-                Some(pending.bindings),
-                Some(clipboard_generation),
-                Some(conflict),
-            ),
-            None => self.run_file_op_bound(
-                pending.cmd,
-                pending.tab_id,
-                Vec::new(),
-                Some(pending.bindings),
-                None,
-                Some(conflict),
-            ),
-        };
+        let started = self.run_file_op_bound(
+            pending.cmd,
+            pending.tab_id,
+            Vec::new(),
+            Some(pending.bindings),
+            pending.clipboard_generation,
+            Some(conflict),
+        );
         if started
             && let Some(clipboard_generation) = pending.clipboard_generation
             && let Some(clipboard) = self
@@ -10542,7 +10530,7 @@ impl OttrinApp {
             self.set_status_message(message, false, 6);
             return false;
         }
-        if self.request_move_conflict_confirmation(
+        if self.request_transfer_conflict_confirmation(
             &cmd,
             refresh_tab,
             &bindings,
@@ -10808,7 +10796,7 @@ impl OttrinApp {
         true
     }
 
-    fn request_move_conflict_confirmation(
+    fn request_transfer_conflict_confirmation(
         &mut self,
         cmd: &FileCommand,
         refresh_tab: Option<u64>,
@@ -10816,23 +10804,27 @@ impl OttrinApp {
         clipboard_generation: Option<u64>,
         preconfirmed_conflict_action: Option<ConflictAction>,
     ) -> bool {
-        let FileCommand::Move {
+        let (FileCommand::Move {
             conflict: ConflictAction::Rename | ConflictAction::Skip,
             ..
-        } = cmd
+        }
+        | FileCommand::Copy {
+            conflict: ConflictAction::Rename | ConflictAction::Skip,
+            ..
+        }) = cmd
         else {
             return false;
         };
-        if !move_has_destination_conflict(cmd) {
+        if !transfer_has_destination_conflict(cmd) {
             return false;
         }
         if preconfirmed_conflict_action.is_some() {
             return false;
         }
-        if self.pending_move_conflict.is_some() {
+        if self.pending_transfer_conflict.is_some() {
             return true;
         }
-        self.pending_move_conflict = Some(PendingMoveConflict {
+        self.pending_transfer_conflict = Some(PendingTransferConflict {
             cmd: cmd.clone(),
             tab_id: refresh_tab,
             bindings: bindings.to_vec(),
@@ -20552,23 +20544,28 @@ impl OttrinApp {
         }
     }
 
-    fn render_move_conflict_confirmation(&mut self, ctx: &Context) {
-        let Some(pending) = self.pending_move_conflict.as_ref() else {
+    fn render_transfer_conflict_confirmation(&mut self, ctx: &Context) {
+        let Some(pending) = self.pending_transfer_conflict.as_ref() else {
             return;
         };
-        let FileCommand::Move {
-            sources,
-            destination,
-            ..
-        } = &pending.cmd
-        else {
-            return;
+        let (verb, sources, destination) = match &pending.cmd {
+            FileCommand::Copy {
+                sources,
+                destination,
+                ..
+            } => ("copy", sources, destination),
+            FileCommand::Move {
+                sources,
+                destination,
+                ..
+            } => ("move", sources, destination),
+            _ => return,
         };
         let count = sources.len();
         let c = self.colors;
 
         let mut choice = None;
-        egui::Modal::new(egui::Id::new("move_conflict_modal"))
+        egui::Modal::new(egui::Id::new("transfer_conflict_modal"))
             .backdrop_color(Color32::from_rgba_unmultiplied(0, 0, 0, 82))
             .frame(
                 Frame::new()
@@ -20587,36 +20584,63 @@ impl OttrinApp {
                 );
                 ui.label(
                     RichText::new(format!(
-                        "Choose how to move {count} item{} into {}.",
+                        "Choose how to {verb} {count} item{} into {}.",
                         plural_s(count),
                         path_label(destination)
                     ))
                     .color(c.text_muted)
                     .size(11.0 * c.font_scale),
                 );
+                if count > 1 {
+                    ui.label(
+                        RichText::new(
+                            "This choice applies to every conflicting item in this transfer.",
+                        )
+                        .color(c.text_muted)
+                        .size(11.0 * c.font_scale),
+                    );
+                }
                 ui.add_space(12.0);
-                if ui
-                    .add(egui::Button::new("Replace existing item").themed(&c))
-                    .clicked()
-                {
-                    choice = Some(Some(ConflictAction::Overwrite));
-                }
-                if ui.add(egui::Button::new("Keep Both").themed(&c)).clicked() {
-                    choice = Some(Some(ConflictAction::Rename));
-                }
-                if ui
-                    .add(egui::Button::new("Skip conflicting item").themed(&c))
-                    .clicked()
-                {
-                    choice = Some(Some(ConflictAction::Skip));
+                for (icon, label, action) in [
+                    (
+                        MI_CONTENT_COPY,
+                        "Keep both — rename incoming items",
+                        ConflictAction::Rename,
+                    ),
+                    (
+                        MI_FIND_REPLACE,
+                        "Replace existing items",
+                        ConflictAction::Overwrite,
+                    ),
+                    (MI_SKIP_NEXT, "Skip conflicting items", ConflictAction::Skip),
+                ] {
+                    if ui
+                        .add(
+                            aligned_menu_button("", icon, label, &c)
+                                .frame_when_inactive(true)
+                                .min_size(Vec2::new(ui.available_width(), 32.0 * c.font_scale))
+                                .themed(&c),
+                        )
+                        .clicked()
+                    {
+                        choice = Some(Some(action));
+                    }
                 }
                 ui.add_space(4.0);
-                if ui.add(egui::Button::new("Cancel").themed(&c)).clicked() {
+                if ui
+                    .add(
+                        aligned_menu_button("", MI_CLOSE, "Cancel transfer", &c)
+                            .frame_when_inactive(true)
+                            .min_size(Vec2::new(ui.available_width(), 32.0 * c.font_scale))
+                            .themed(&c),
+                    )
+                    .clicked()
+                {
                     choice = Some(None);
                 }
             });
         if let Some(choice) = choice {
-            self.resolve_move_conflict(choice);
+            self.resolve_transfer_conflict(choice);
         }
     }
 
@@ -22950,7 +22974,7 @@ impl OttrinApp {
     fn handle_viewport_resize(&self, ctx: &Context) {
         if self.pending_rename.is_some()
             || self.pending_delete.is_some()
-            || self.pending_move_conflict.is_some()
+            || self.pending_transfer_conflict.is_some()
             || self.pending_empty_trash
         {
             return;
@@ -23184,8 +23208,8 @@ impl eframe::App for OttrinApp {
             ctx.request_repaint();
         }
 
-        if self.pending_move_conflict.is_some() || self.creation_modal_active() {
-            Self::consume_move_conflict_modal_scroll_input(ctx);
+        if self.pending_transfer_conflict.is_some() || self.creation_modal_active() {
+            Self::consume_transfer_conflict_modal_scroll_input(ctx);
         }
 
         let inspector_entry_modal_active = inspector_owns_entry_modal(
@@ -23201,8 +23225,8 @@ impl eframe::App for OttrinApp {
             if !inspector_entry_modal_active {
                 self.handle_delete_confirmation_keyboard(ctx);
             }
-        } else if self.pending_move_conflict.is_some() {
-            self.handle_move_conflict_confirmation_keyboard(ctx);
+        } else if self.pending_transfer_conflict.is_some() {
+            self.handle_transfer_conflict_confirmation_keyboard(ctx);
         } else if self.pending_empty_trash {
             self.handle_empty_trash_confirmation_keyboard(ctx);
         } else if !(self.preview.visible && self.preview.text_editor.is_some()) {
@@ -23214,7 +23238,7 @@ impl eframe::App for OttrinApp {
         if self.pending_rename.is_none()
             && !self.creation_modal_active()
             && self.pending_delete.is_none()
-            && self.pending_move_conflict.is_none()
+            && self.pending_transfer_conflict.is_none()
             && !self.pending_empty_trash
             && !self.any_address_bar_editing()
             && !self.command_frame.visible
@@ -23322,7 +23346,7 @@ impl eframe::App for OttrinApp {
             #[cfg(target_os = "windows")]
             self.render_copy_abort_confirmation(ctx);
         }
-        self.render_move_conflict_confirmation(ctx);
+        self.render_transfer_conflict_confirmation(ctx);
         self.render_empty_trash_confirmation(ctx);
         self.render_open_with_dialog(ctx);
         self.render_about_popup(ctx);
@@ -24487,12 +24511,17 @@ fn prepare_clipboard_paste(
     Ok((cmd, bindings))
 }
 
-fn move_has_destination_conflict(cmd: &FileCommand) -> bool {
-    let FileCommand::Move {
+fn transfer_has_destination_conflict(cmd: &FileCommand) -> bool {
+    let (FileCommand::Move {
         sources,
         destination,
         ..
-    } = cmd
+    }
+    | FileCommand::Copy {
+        sources,
+        destination,
+        ..
+    }) = cmd
     else {
         return false;
     };
@@ -27733,7 +27762,7 @@ mod tests {
     }
 
     #[test]
-    fn clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict() {
+    fn clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict() {
         let (root, mut app, source) = clipboard_keyboard_fixture();
         let destination = root.path().join("destination");
         std::fs::create_dir(&destination).unwrap();
@@ -27753,6 +27782,17 @@ mod tests {
             },
             |ctx| app.handle_keyboard(ctx),
         );
+        assert!(
+            app.pending_transfer_conflict.is_some(),
+            "Copy conflict must offer choices before mutation"
+        );
+        assert!(!app.clipboard.as_ref().unwrap().in_flight);
+        assert!(app.operation_history.is_empty());
+        assert_eq!(
+            std::fs::read(destination.join("source.txt")).unwrap(),
+            b"keep existing"
+        );
+        app.resolve_transfer_conflict(Some(ConflictAction::Rename));
         let deadline = Instant::now() + Duration::from_secs(5);
         while app.clipboard.as_ref().unwrap().in_flight && Instant::now() < deadline {
             std::thread::sleep(Duration::from_millis(10));
@@ -27783,8 +27823,8 @@ mod tests {
         }
         assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
         assert!(
-            app.pending_move_conflict.is_none(),
-            "Copy conflicts use automatic Rename, not the Move dialog"
+            app.pending_transfer_conflict.is_none(),
+            "confirmed Copy must not reopen the conflict dialog"
         );
     }
 
@@ -27810,13 +27850,91 @@ mod tests {
             },
             |ctx| app.handle_keyboard(ctx),
         );
-        assert!(app.pending_move_conflict.is_some());
+        assert!(app.pending_transfer_conflict.is_some());
         assert!(!app.clipboard.as_ref().unwrap().in_flight);
         assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
         assert_eq!(
             std::fs::read(destination.join("source.txt")).unwrap(),
             b"keep existing"
         );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn clipboard_copy_replace_refuses_to_overwrite_its_own_source() {
+        let (root, mut app, source) = clipboard_keyboard_fixture();
+        assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
+        app.paste_clipboard();
+        assert!(app.pending_transfer_conflict.is_some());
+        app.resolve_transfer_conflict(Some(ConflictAction::Overwrite));
+        let result = app.op_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert!(
+            result.error.is_some(),
+            "same-entry replacement must be refused"
+        );
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+        assert_eq!(std::fs::read(&source).unwrap(), b"clipboard fixture");
+        assert_eq!(app.state.active_tab().current_dir, root.path());
+        let clip = app.clipboard.as_ref().unwrap();
+        assert_eq!(clip.sources, vec![source]);
+        assert!(!clip.in_flight);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn clipboard_copy_conflict_cancel_skip_and_replace_preserve_sources_and_undo() {
+        for choice in [
+            None,
+            Some(ConflictAction::Skip),
+            Some(ConflictAction::Overwrite),
+        ] {
+            let (root, mut app, source) = clipboard_keyboard_fixture();
+            let destination = root.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let existing = destination.join("source.txt");
+            std::fs::write(&existing, "displaced bytes").unwrap();
+            assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
+            let generation = app.clipboard.as_ref().unwrap().generation;
+            app.state.active_tab_mut().current_dir = destination;
+            app.paste_clipboard();
+
+            assert!(app.pending_transfer_conflict.is_some());
+            assert!(app.operation_history.is_empty());
+            assert_eq!(std::fs::read(&existing).unwrap(), b"displaced bytes");
+            app.resolve_transfer_conflict(choice);
+            assert!(app.pending_transfer_conflict.is_none());
+            if choice.is_some() {
+                let result = app.op_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+                app.op_tx.send(result).unwrap();
+                app.poll_op_results();
+                assert_eq!(app.operation_history.len(), 1);
+                assert_eq!(
+                    app.operation_history.front().unwrap().status,
+                    OperationStatus::Completed
+                );
+            } else {
+                assert!(app.operation_history.is_empty());
+            }
+            let clip = app.clipboard.as_ref().unwrap();
+            assert_eq!(clip.generation, generation);
+            assert_eq!(clip.sources, vec![source.clone()]);
+            assert!(!clip.in_flight);
+            assert_eq!(std::fs::read(&source).unwrap(), b"clipboard fixture");
+            if choice == Some(ConflictAction::Overwrite) {
+                assert_eq!(std::fs::read(&existing).unwrap(), b"clipboard fixture");
+                let id = app.operation_history.front().unwrap().id;
+                app.run_path_move_undo(id);
+                let result = app
+                    .path_move_undo_rx
+                    .recv_timeout(Duration::from_secs(5))
+                    .unwrap();
+                assert!(result.result.is_ok(), "{:?}", result.result);
+                app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+            }
+            assert_eq!(std::fs::read(&existing).unwrap(), b"displaced bytes");
+            assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        }
     }
 
     struct SearchTestFixture {
@@ -30336,7 +30454,7 @@ mod tests {
     }
 
     #[test]
-    fn pending_move_conflict_message_names_the_move_operation() {
+    fn path_move_undo_conflict_message_names_the_move_operation() {
         assert_eq!(
             path_move_undo_conflict_message(PathMoveUndoKind::Move),
             "Undo move was not started because a conflicting file operation is still running."
@@ -35722,8 +35840,11 @@ mod tests {
             conflict: ConflictAction::Rename,
         };
 
-        assert!(move_has_destination_conflict(&move_command));
-        assert!(!move_has_destination_conflict(&copy_command));
+        assert!(transfer_has_destination_conflict(&move_command));
+        assert!(transfer_has_destination_conflict(&copy_command));
+        std::fs::remove_file(destination.join("report.txt")).unwrap();
+        assert!(!transfer_has_destination_conflict(&move_command));
+        assert!(!transfer_has_destination_conflict(&copy_command));
         std::fs::remove_dir_all(root).expect("remove fixture");
     }
 
@@ -35903,7 +36024,7 @@ mod tests {
     }
 
     #[test]
-    fn move_conflict_modal_escape_cancels_without_mutating_source_or_destination() {
+    fn transfer_conflict_modal_escape_cancels_without_mutating_source_or_destination() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-move-conflict-escape-{}-{}",
             std::process::id(),
@@ -35921,7 +36042,7 @@ mod tests {
 
         let mut app = OttrinApp::default();
         app.operation_history.clear();
-        app.pending_move_conflict = Some(PendingMoveConflict {
+        app.pending_transfer_conflict = Some(PendingTransferConflict {
             cmd: FileCommand::Move {
                 sources: vec![source.clone()],
                 destination,
@@ -35942,9 +36063,9 @@ mod tests {
                 modifiers: egui::Modifiers::NONE,
             });
         });
-        app.handle_move_conflict_confirmation_keyboard(&ctx);
+        app.handle_transfer_conflict_confirmation_keyboard(&ctx);
 
-        assert!(app.pending_move_conflict.is_none());
+        assert!(app.pending_transfer_conflict.is_none());
         assert_eq!(
             std::fs::read_to_string(&source).expect("source remains readable"),
             "source payload"
@@ -35959,7 +36080,7 @@ mod tests {
     }
 
     #[test]
-    fn move_conflict_modal_only_blocks_scroll_input_and_preserves_pointer_and_touch_events() {
+    fn transfer_conflict_modal_only_blocks_scroll_input_and_preserves_pointer_and_touch_events() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-move-conflict-pointer-and-scroll-block-{}-{}",
             std::process::id(),
@@ -36078,7 +36199,7 @@ mod tests {
         assert_ne!(baseline_raw_scroll_delta, Vec2::ZERO);
 
         app.tab_ui.entry(tab_id).or_default().rubber_band = None;
-        app.pending_move_conflict = Some(PendingMoveConflict {
+        app.pending_transfer_conflict = Some(PendingTransferConflict {
             cmd: FileCommand::Move {
                 sources: vec![source],
                 destination,
@@ -36133,13 +36254,13 @@ mod tests {
         assert_eq!(raw_scroll_delta, Vec2::ZERO);
         assert_eq!(smooth_scroll_delta, Vec2::ZERO);
         assert!(app.tab_ui.entry(tab_id).or_default().rubber_band.is_none());
-        assert!(app.pending_move_conflict.is_some());
+        assert!(app.pending_transfer_conflict.is_some());
 
         let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
-    fn move_conflict_modal_resolution_actions_clears_pending_without_reentry() {
+    fn transfer_conflict_modal_resolution_actions_clears_pending_without_reentry() {
         #[cfg(target_os = "linux")]
         if std::env::var_os("OTTRIN_UI_MOVE_CONFLICT_ACTIONS_CHILD").is_none() {
             let root = std::env::temp_dir().join(format!(
@@ -36154,7 +36275,7 @@ mod tests {
             let status = std::process::Command::new(std::env::current_exe().unwrap())
                 .args([
                     "--exact",
-                    "tests::move_conflict_modal_resolution_actions_clears_pending_without_reentry",
+                    "tests::transfer_conflict_modal_resolution_actions_clears_pending_without_reentry",
                     "--test-threads=1",
                     "--nocapture",
                 ])
@@ -36210,11 +36331,17 @@ mod tests {
             app.command_frame = Default::default();
             app.operation_history.clear();
 
-            assert!(app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None, None));
-            assert!(app.pending_move_conflict.is_some());
-            app.resolve_move_conflict(action);
+            assert!(app.request_transfer_conflict_confirmation(
+                &cmd,
+                None,
+                &Vec::new(),
+                None,
+                None
+            ));
+            assert!(app.pending_transfer_conflict.is_some());
+            app.resolve_transfer_conflict(action);
 
-            assert!(app.pending_move_conflict.is_none());
+            assert!(app.pending_transfer_conflict.is_none());
             if action.is_some() {
                 let result = app
                     .op_rx
@@ -36223,9 +36350,15 @@ mod tests {
                 app.op_tx.send(result).unwrap();
                 app.poll_op_results();
             }
-            assert!(app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None, None));
-            assert!(app.pending_move_conflict.is_some());
-            app.pending_move_conflict = None;
+            assert!(app.request_transfer_conflict_confirmation(
+                &cmd,
+                None,
+                &Vec::new(),
+                None,
+                None
+            ));
+            assert!(app.pending_transfer_conflict.is_some());
+            app.pending_transfer_conflict = None;
         }
 
         let _ = std::fs::remove_dir_all(root);
@@ -36253,7 +36386,7 @@ mod tests {
             let generation = 42;
             let mut app = OttrinApp::default();
             app.operation_history.clear();
-            app.pending_move_conflict = Some(PendingMoveConflict {
+            app.pending_transfer_conflict = Some(PendingTransferConflict {
                 cmd: FileCommand::Move {
                     sources: vec![source],
                     destination,
@@ -36264,9 +36397,9 @@ mod tests {
                 clipboard_generation: Some(generation),
             });
 
-            app.resolve_move_conflict(Some(conflict));
+            app.resolve_transfer_conflict(Some(conflict));
 
-            assert!(app.pending_move_conflict.is_none());
+            assert!(app.pending_transfer_conflict.is_none());
             assert_eq!(app.operation_history.len(), 1);
             let result = app
                 .op_rx
@@ -36300,11 +36433,12 @@ mod tests {
             destination,
             conflict: ConflictAction::Rename,
         };
-        let blocked = app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None, None);
+        let blocked =
+            app.request_transfer_conflict_confirmation(&cmd, None, &Vec::new(), None, None);
         assert!(blocked);
-        assert!(app.pending_move_conflict.is_some());
+        assert!(app.pending_transfer_conflict.is_some());
         assert!(
-            app.pending_move_conflict
+            app.pending_transfer_conflict
                 .as_ref()
                 .is_some_and(|pending| { pending.tab_id.is_none() })
         );
@@ -36332,7 +36466,7 @@ mod tests {
             destination,
             conflict: ConflictAction::Skip,
         };
-        let blocked = app.request_move_conflict_confirmation(
+        let blocked = app.request_transfer_conflict_confirmation(
             &cmd,
             Some(1),
             &Vec::new(),
@@ -36340,7 +36474,7 @@ mod tests {
             Some(ConflictAction::Rename),
         );
         assert!(!blocked);
-        assert!(app.pending_move_conflict.is_none());
+        assert!(app.pending_transfer_conflict.is_none());
         let _ = std::fs::remove_dir_all(root);
     }
 
