@@ -10,7 +10,7 @@ use std::{
 };
 use windows_sys::Win32::Foundation::WAIT_OBJECT_0;
 
-enum Recovery {
+pub(super) enum Recovery {
     Forward(discovery::RetainedCopyResumePlan),
     Cleanup(Box<RetainedCopyCleanupPlan>),
     SessionUndo {
@@ -19,7 +19,7 @@ enum Recovery {
     },
 }
 impl Recovery {
-    fn run(
+    pub(super) fn run(
         &mut self,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
@@ -37,7 +37,7 @@ impl Recovery {
             }
         }
     }
-    fn complete(&self) -> bool {
+    pub(super) fn complete(&self) -> bool {
         match self {
             Self::Forward(plan) => plan.complete(),
             Self::Cleanup(plan) => plan.complete(),

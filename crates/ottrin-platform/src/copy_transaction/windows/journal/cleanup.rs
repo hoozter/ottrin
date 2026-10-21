@@ -342,13 +342,18 @@ impl Admission {
             if dependencies.fingerprint()? != self.catalog {
                 return Err(io("Copy control update changed its catalog"));
             }
+            // Once the held writer has committed control records, finish its
+            // validated acknowledgement before another cancellation callback.
+            // The group stores this epoch, then checks cancellation before any
+            // payload removal. Losing it would make our own writes look foreign
+            // on retry. Filesystem/binding validation errors still propagate.
             let change = self.capture_change(
                 &journal,
                 &remaining,
                 &dependencies,
                 parent,
                 central,
-                &mut cancel,
+                &mut |_| Ok(()),
             )?;
             Ok((change, value))
         })();

@@ -2314,6 +2314,10 @@ impl Journal {
         // Any failure after starting an append poisons this owner. Never append
         // a second interpretation of an uncertain sequence or repair one mirror.
         self.failed = true;
+        #[cfg(test)]
+        if let Some(hook) = APPEND_HANDOFF.with(|slot| slot.borrow_mut().take()) {
+            hook();
+        }
         for (file, step) in [
             (&mut self.local, Step::LocalFlushed),
             (&mut self.central, Step::CentralFlushed),
@@ -4039,6 +4043,8 @@ fn boundary(_: u64, _: Step) -> Result<(), PlatformError> {
     Ok(())
 }
 #[cfg(test)]
+thread_local! {static APPEND_HANDOFF: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const { std::cell::RefCell::new(None) };}
+#[cfg(test)]
 thread_local! {static FAULT:std::cell::Cell<Option<(u64,Step,bool)>>=const {std::cell::Cell::new(None)};}
 #[cfg(test)]
 fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
@@ -4065,6 +4071,7 @@ mod tests {
     mod initialization;
     mod name_release_action;
     mod sparse_workflow;
+    mod throttled_io;
     mod verification_cancel;
 
     use super::*;

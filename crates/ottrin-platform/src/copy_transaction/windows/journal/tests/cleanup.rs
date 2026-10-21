@@ -2205,6 +2205,76 @@ fn cleanup_chain_at(
 }
 
 #[test]
+fn windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryable() {
+    use std::sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    };
+    for (directory, overwrite, registry_destination) in [
+        (false, false, false),
+        (false, true, false),
+        (true, false, false),
+        (true, true, false),
+        (false, true, true),
+        (true, true, true),
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        let names = cleanup_chain_at(root.path(), directory, overwrite, registry_destination);
+        let parent = owner(&root.path().join(if registry_destination {
+            "central"
+        } else {
+            "destination"
+        }));
+        let central = owner(&root.path().join("central"));
+        let headers = names
+            .iter()
+            .map(|name| {
+                Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
+                    .unwrap()
+                    .state
+                    .header
+                    .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        // Setup uses delete-capable handles; configured admission deliberately
+        // pins the registry without delete sharing. Release setup leases first.
+        drop((parent, central));
+        let mut plan =
+            RetainedCopyCleanupPlan::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
+                .unwrap();
+        let before = namespace_contents(root.path());
+        let cancelled = Arc::new(AtomicBool::new(false));
+        let flag = cancelled.clone();
+        APPEND_HANDOFF.with(|slot| {
+            *slot.borrow_mut() = Some(Box::new(move || flag.store(true, Ordering::Release)))
+        });
+        let stopped = plan.reclaim(|_| {
+            if cancelled.load(Ordering::Acquire) {
+                Err(io("Stop after owned control write"))
+            } else {
+                Ok(())
+            }
+        });
+        assert!(cancelled.load(Ordering::Acquire));
+        assert!(stopped.is_err());
+        assert!(!plan.complete());
+        let after = namespace_contents(root.path());
+        assert_only_journals_changed(&before, &after, &headers);
+        assert_ne!(
+            before, after,
+            "The cancellation must follow a real control append"
+        );
+        plan.reclaim(|_| Ok(())).unwrap();
+        assert!(plan.complete());
+        assert!(!root.path().join("source").exists());
+    }
+}
+
+#[test]
 fn windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payload() {
     for case in 0..6 {
         let root = tempfile::tempdir().unwrap();
