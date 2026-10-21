@@ -797,6 +797,27 @@ struct OperationRecord {
 }
 
 impl OperationRecord {
+    fn timing_label(&self, now: Instant) -> String {
+        if self
+            .retained_copy
+            .as_ref()
+            .is_some_and(|owner| owner.restored)
+        {
+            return "Restored history · original time unavailable".to_owned();
+        }
+        let (label, end) = if self.status == OperationStatus::Queued {
+            ("Elapsed", now)
+        } else if let Some(finished) = self.finished_at {
+            ("Duration", finished)
+        } else {
+            return "Duration unavailable".to_owned();
+        };
+        format!(
+            "{label}: {}",
+            format_duration_short(end.saturating_duration_since(self.queued_at))
+        )
+    }
+
     fn undo_kind(&self) -> PathMoveUndoKind {
         self.undo_kind.expect("Undo state has an operation kind")
     }
@@ -14928,10 +14949,6 @@ impl OttrinApp {
                                 .on_hover_text(tip);
                         }
                         ui.add_space(4.0);
-                        let elapsed = record
-                            .finished_at
-                            .unwrap_or_else(Instant::now)
-                            .saturating_duration_since(record.queued_at);
                         #[cfg(target_os = "windows")]
                         if matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
                             && record.undo_kind() == PathMoveUndoKind::Copy
@@ -14955,11 +14972,7 @@ impl OttrinApp {
                                 });
                         }
                         ui.label(
-                            RichText::new(if record.retained_copy.as_ref().is_some_and(|owner| owner.restored) {
-                                "Restored history · original time unavailable".to_owned()
-                            } else {
-                                format!("{} ago", format_duration_short(elapsed))
-                            })
+                            RichText::new(record.timing_label(Instant::now()))
                                 .color(c.text_muted)
                                 .size(9.5 * c.font_scale),
                         );
@@ -24174,8 +24187,8 @@ fn plural_s(count: usize) -> &'static str {
 
 fn format_duration_short(duration: Duration) -> String {
     let secs = duration.as_secs();
-    if secs < 2 {
-        "just now".to_string()
+    if secs == 0 {
+        "<1s".to_string()
     } else if secs < 60 {
         format!("{secs}s")
     } else if secs < 3_600 {
@@ -25746,6 +25759,101 @@ fn format_search_duration(duration_ms: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn activity_timing_distinguishes_duration_from_age_and_preserves_unknown_history() {
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        app.queue_activity_record_with_recoverability(
+            "Copy",
+            "fixture",
+            OperationRecoverability::Informational,
+        );
+        let record = app.operation_history.front_mut().unwrap();
+        let start = Instant::now();
+        record.queued_at = start;
+        for (seconds, expected) in [
+            (0, "<1s"),
+            (1, "1s"),
+            (59, "59s"),
+            (60, "1m"),
+            (3599, "59m"),
+            (3600, "1h"),
+        ] {
+            let now = start + Duration::from_secs(seconds);
+            assert_eq!(record.timing_label(now), format!("Elapsed: {expected}"));
+            record.status = OperationStatus::Completed;
+            record.finished_at = Some(now);
+            assert_eq!(
+                record.timing_label(now + Duration::from_secs(7200)),
+                format!("Duration: {expected}")
+            );
+            record.status = OperationStatus::Queued;
+            record.finished_at = None;
+        }
+        record.status = OperationStatus::Failed;
+        assert_eq!(record.timing_label(start), "Duration unavailable");
+        record.finished_at = Some(start + Duration::from_secs(5));
+        assert_eq!(
+            record.timing_label(start + Duration::from_secs(7200)),
+            "Duration: 5s"
+        );
+        record.retained_copy = Some(RetainedCopyOwnership {
+            key: "fixture".into(),
+            transactions: Vec::new(),
+            blocked_by: Vec::new(),
+            restored: true,
+            finalization: None,
+            #[cfg(target_os = "windows")]
+            recovery: None,
+            #[cfg(target_os = "windows")]
+            cleanup_phase: None,
+        });
+        assert_eq!(
+            record.timing_label(start),
+            "Restored history · original time unavailable"
+        );
+    }
+
+    #[test]
+    fn activity_renders_duration_without_relative_age_wording() {
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        let id = app.queue_activity_record_with_recoverability(
+            "Move to Trash",
+            "report.txt",
+            OperationRecoverability::NotUndoable,
+        );
+        app.finish_operation_record(id, OperationStatus::Completed, None);
+        let record = app.operation_history.front_mut().unwrap();
+        record.finished_at = Some(record.queued_at + Duration::from_secs(5));
+        let ctx = Context::default();
+        let mut frame = || {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(420.0, 600.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
+                },
+            )
+        };
+        frame();
+        let texts: Vec<_> = frame()
+            .shapes
+            .into_iter()
+            .filter_map(|shape| match shape.shape {
+                egui::Shape::Text(item) => Some(item.galley.job.text.clone()),
+                _ => None,
+            })
+            .collect();
+        assert!(texts.iter().any(|text| text == "Duration: 5s"));
+        assert!(!texts.iter().any(|text| text.ends_with(" ago")));
+    }
 
     #[test]
     fn activity_headers_keep_status_visible_with_long_titles_and_scaled_text() {

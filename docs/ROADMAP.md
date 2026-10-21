@@ -24,7 +24,7 @@ all-format receipt is invalidated when one package is replaced.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | The current AppImage passes the scoped Trash/Undo and component checks above. Other formats and earlier workflows retain their own artifact scopes. | Refresh the remaining Linux formats and cohort receipt; correct the Activity time caption noted below, then complete remaining software and concentrated clean-desktop, real-device, media, elevation and final candidate acceptance. |
+| Linux | The current AppImage passes the scoped Trash/Undo and component checks above. Other formats and earlier workflows retain their own artifact scopes. | Refresh the remaining Linux formats and cohort receipt, then complete remaining software and concentrated clean-desktop, real-device, media, elevation and final candidate acceptance. |
 | Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
@@ -275,9 +275,14 @@ old cohort receipt; it now uses the single embedded source snapshot. Actual
 publication-tail regressions cover clean and genuinely dirty source. Exact scope:
 `dist/packages/TRASH_UNDO_ACCEPTANCE.json`.
 
-Visual review also found that Activity displays operation duration as a relative
-age, including “just now ago.” Correct that caption before final UI acceptance;
-this package checkpoint accepts the file operation, not that remaining wording.
+Visual review found Activity was displaying operation duration as a relative age,
+including “just now ago.” The source now labels running records **Elapsed** and
+finished records **Duration**, using the existing timestamps. Restored history
+keeps its unknown-time label; missing completion timing is not fabricated. All
+387 regular Linux UI tests and strict Linux/Windows UI all-target Clippy pass.
+Temporal and rendered-caption regressions cover this correction. The preceding
+Trash package receipt still describes its own artifact until the package refresh
+is accepted. Evidence: `.hermes/evidence/activity-timing-current/ACCEPTANCE.json`.
 
 ## Current Windows Copy implementation checkpoint
 
