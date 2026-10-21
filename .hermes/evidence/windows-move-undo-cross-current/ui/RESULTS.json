@@ -1,0 +1,11 @@
+{
+    "exit":  0,
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments":  "--exact tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry --nocapture --test-threads=1 --include-ignored",
+    "ordinary_user":  true,
+    "stdout_sha256":  "4b37c65ff12c932afb619fd3fa48e74bd769b8e0fbf00068a96d72814a6af06b",
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "26b76d31b04f04089242fe9eedb46cf245ffafb1b90c866f1a19bca757d89d1c",
+    "dispatch_id":  "1d1e2f7af5382252cb283eb23abbdb38"
+}

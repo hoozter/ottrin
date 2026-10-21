@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_ui",
+  "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-6b36f1213ec139e1.exe",
+  "compiler_sha256": "97ce827b8890a66ef8668a64fbed23e9ef86cd42a50a903093773db212ca7cf6",
+  "transferred_sha256": "26b76d31b04f04089242fe9eedb46cf245ffafb1b90c866f1a19bca757d89d1c",
+  "retained_sections": {
+    ".text": "8a66cd792f72f68b076ee740200c6ce0e885c9d80f9c45bf9e49f599b6d06daf",
+    ".data": "ea48714d493f5b6d2983a7eb4bce0c36e90454d276db3815a487787afddefc8c",
+    ".rdata": "b4e8edbfcfddb1958cf3cfa41313b970c1367a12ee5e09a89a8bfd853680b3b5",
+    ".pdata": "a8a350ebb3ea9ee00c1b85b1c82eb652dcbeaa1b5d623b3d7171ef4624f93019",
+    ".xdata": "9fe114094a139e60d805c5612ee797ae8a5337ccaced198f8cc6b57d3e0dbe87",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "60f38383af07ef5b822af2b43df3781462be18e72378c7c95ce89d510d93e039",
+    ".CRT": "78569fabe5006252f325e32c8c612c4e8aa2325d7cd458db6f591e10df034244",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "60eafaa4654156eefeae1613f5d05410bb962b7c6494dce41a1018c1525a8899"
+  }
+}

@@ -50,14 +50,12 @@ impl Fixture {
             .execute_move_with_undo_receipt(&source, &destination, ConflictAction::Overwrite)
             .unwrap();
         let receipt = receipt.expect("Replace has guarded native Undo");
-        let Some(WindowsPathUndo::Move(guard)) = &receipt.windows_undo else {
+        let Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::Replace(record))) =
+            &receipt.windows_undo
+        else {
             panic!("wrong native receipt")
         };
-        let record = guard
-            .retained
-            .as_deref()
-            .expect("retained identity authority")
-            .clone();
+        let record = record.as_ref().clone();
         (receipt, record)
     }
 }

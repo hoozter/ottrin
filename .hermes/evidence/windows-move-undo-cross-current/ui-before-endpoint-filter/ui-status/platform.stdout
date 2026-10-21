@@ -1,0 +1,13 @@
+
+running 8 tests
+test tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive ... ok
+test tests::clipboard_native_copy_and_cut_events_capture_selected_file ... ok
+test tests::clipboard_native_cut_paste_conflict_requires_confirmation ... ok
+test tests::completed_cancelled_probe_cannot_start_a_newer_transfer ... ok
+test tests::rename_refresh_keeps_pointer_selection_available_to_native_cut ... ok
+test tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo ... ok
+test tests::windows_retained_move_activity_exposes_both_transaction_kinds ... ok
+test transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.11s
+

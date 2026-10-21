@@ -151,10 +151,9 @@ pub(in crate::move_transaction) fn issue(
             record.source_parent_identity,
             record.destination_parent_identity,
         )?;
-        let Some(WindowsPathUndo::Move(guard)) = receipt.windows_undo.as_mut() else {
-            unreachable!()
-        };
-        guard.retained = Some(Box::new(record.clone()));
+        receipt.windows_undo = Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::Replace(
+            Box::new(record.clone()),
+        )));
         receipt.displaced_identity = Some(PathMoveIdentity {
             windows: record.retained_identity,
         });

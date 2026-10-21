@@ -1003,7 +1003,7 @@ enum WindowsOverwritePhase {
 #[cfg(target_os = "windows")]
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
-struct WindowsOverwriteRecord {
+pub(crate) struct WindowsOverwriteRecord {
     schema_major: u16,
     schema_minor: u16,
     transaction_id: String,
@@ -1132,6 +1132,8 @@ struct WindowsCrossVolumeRecord {
     candidate_identity: Option<move_recovery::WindowsStableIdentity>,
     #[serde(default)]
     retained_displaced: Option<move_recovery::NativePath>,
+    #[serde(default)]
+    undo_origin: Option<windows_undo::cross::Origin>,
 }
 
 #[cfg(target_os = "windows")]
@@ -1512,7 +1514,6 @@ fn move_windows_cross_volume_preflight(
             }
             start_windows_cross_volume_move(
                 source,
-                destination_dir,
                 &destination_dir.join(destination_name),
                 // Replace applies only to an existing, identified destination.
                 // A mixed batch also contains unoccupied names; publish those
@@ -1525,6 +1526,7 @@ fn move_windows_cross_volume_preflight(
                 },
                 source_handle,
                 destination_handle,
+                None,
                 None,
             )
         }
@@ -1563,12 +1565,12 @@ fn move_windows_cross_volume_preflight(
             }
             start_windows_cross_volume_move(
                 source,
-                destination_dir,
                 &target,
                 conflict,
                 source_handle,
                 destination_handle,
                 Some(destination_identity),
+                None,
             )
         }
         WindowsCrossVolumePreflight::TransactionRequired => Err(
@@ -2201,7 +2203,11 @@ pub(super) fn discover_retained_windows_move_transactions_at(
                     record.transaction_id()?
                 }
                 WindowsJournalKind::CrossVolume => {
-                    load_windows_cross_volume_record(&entry.path())?.transaction_id()?
+                    let record = load_windows_cross_volume_record(&entry.path())?;
+                    if record.undo_origin.is_some() {
+                        undo_status = windows_undo::cross::status(&record)?;
+                    }
+                    record.transaction_id()?
                 }
             };
             if record_transaction_id != transaction_id {
@@ -2529,11 +2535,34 @@ fn recover_windows_overwrites_before_move(
             )
         } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
             let mut record = load_windows_cross_volume_record(&path)?;
+            if record.undo_origin.is_some() {
+                if windows_undo::cross::status(&record)?
+                    == move_recovery::WindowsMoveUndoStatus::Complete
+                {
+                    continue;
+                }
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: record.transaction_id.clone(),
+                    message: "Cross-volume Move Undo is pending; resume it from Activity before another Move".into(),
+                });
+            }
             if completed_windows_cross_volume_overwrite(&recovery_root, &mut record)?.is_some() {
                 continue;
             }
             let same_endpoints = record.source_path()? == source
                 && record.destination_parent_path()? == destination_dir;
+            if record.phase == WindowsCrossVolumePhase::SourceRemoved
+                && record.conflict != ConflictAction::Overwrite
+                && same_endpoints
+                && observe_windows_identity(source)?.is_some()
+            {
+                // SourceRemoved follows the durable removal flush. Any current
+                // source name is a later entry, never this completed operation.
+                // Retire only the old controls, then admit a fresh Move instead
+                // of returning its predecessor's publication for the new file.
+                finish_windows_cross_volume_teardown(&recovery_root, &record)?;
+                continue;
+            }
             let requested_target = record
                 .target_candidates
                 .first()
@@ -2658,6 +2687,7 @@ fn finish_windows_cross_volume_teardown(
     };
     if record.phase != WindowsCrossVolumePhase::SourceRemoved
         || record.conflict == ConflictAction::Overwrite
+        || record.undo_origin.is_some()
         || record.candidate_identity.is_none()
         || record.retained_displaced.is_some()
         || transaction != destination.join(format!(".ottrin-move-{}", encode_transaction_id(id)))
@@ -2763,6 +2793,7 @@ fn finish_windows_cross_volume_teardown(
             ));
         }
     }
+    let undo_receipt = windows_undo::cross::issue_if_owned(record)?;
     let central = windows_cross_volume_journal_path(recovery_root, id);
     let central_file = OpenOptions::new()
         .access_mode(GENERIC_READ | DELETE)
@@ -2795,7 +2826,7 @@ fn finish_windows_cross_volume_teardown(
         .map_err(|error| cleanup_error(error.to_string()))?;
     Ok(MovePublication {
         #[cfg(target_os = "windows")]
-        windows_undo: None,
+        windows_undo: undo_receipt,
         disposition: MoveDisposition::Moved,
         published_path: Some(record.target_path()?),
         retained_displaced_path: None,
@@ -3170,13 +3201,19 @@ fn stage_windows_directory_snapshot(
 #[cfg(target_os = "windows")]
 fn start_windows_cross_volume_move(
     source: &Path,
-    destination_dir: &Path,
     target: &Path,
     conflict: ConflictAction,
     mut source_handle: std::fs::File,
     destination_handle: std::fs::File,
     destination_identity: Option<move_recovery::WindowsStableIdentity>,
+    undo: Option<(
+        &windows_undo::cross::Origin,
+        &std::sync::OnceLock<WindowsCrossVolumeRecord>,
+    )>,
 ) -> Result<MovePublication, PlatformError> {
+    let destination_dir = target
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidDestination(target.display().to_string()))?;
     require_windows_move_without_extended_attributes(&source_handle)?;
     let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -3203,6 +3240,17 @@ fn start_windows_cross_volume_move(
         return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
             source.display().to_string(),
         ));
+    }
+    if let Some((origin, _)) = undo {
+        origin.validate_inputs(
+            source,
+            target,
+            source_identity,
+            source_parent_identity,
+            destination_parent_identity,
+            conflict,
+            destination_identity,
+        )?;
     }
     let (source_size, source_sha256, source_manifest, source_link_target, source_link_is_directory) =
         match source_kind {
@@ -3304,7 +3352,15 @@ fn start_windows_cross_volume_move(
         retained_displaced: (conflict == ConflictAction::Overwrite).then(|| {
             move_recovery::NativePath::encode(&transaction_path.join(WINDOWS_RETAINED_NAME))
         }),
+        undo_origin: undo.map(|(origin, _)| origin.clone()),
     };
+    if let Some((_, binding)) = undo {
+        binding.set(record.clone()).map_err(|_| {
+            PlatformError::InvalidPathMoveUndoReceipt(
+                "Cross-volume inverse already has a transaction".into(),
+            )
+        })?;
+    }
     persist_windows_cross_volume_record(&recovery_root, &record).map_err(|error| {
         PlatformError::Io(format!(
             "durable Windows cross-volume Move intent failed before staging: {error}"
@@ -3648,6 +3704,12 @@ fn resume_windows_cross_volume(
     record: &mut WindowsCrossVolumeRecord,
     mut source_handle: Option<std::fs::File>,
 ) -> Result<MovePublication, PlatformError> {
+    if record.undo_origin.is_some() {
+        windows_undo::cross::validate_record(record)?;
+        if let Some(publication) = windows_undo::cross::completed(recovery_root, record)? {
+            return Ok(publication);
+        }
+    }
     if let Some(publication) = completed_windows_cross_volume_overwrite(recovery_root, record)? {
         return Ok(publication);
     }
@@ -5241,6 +5303,16 @@ fn resume_windows_cross_volume(
                     },
                     || Ok(()),
                 )?;
+                if record.undo_origin.is_some() {
+                    record.phase = WindowsCrossVolumePhase::SourceRemoved;
+                    persist_windows_cross_volume_record(recovery_root, record)?;
+                    return windows_undo::cross::completed(recovery_root, record)?.ok_or_else(
+                        || PlatformError::CommittedUndoCleanupPending {
+                            transaction: record.transaction_id.clone(),
+                            message: "Cross-volume inverse completion proof is missing".into(),
+                        },
+                    );
+                }
                 if record.conflict == ConflictAction::Overwrite {
                     record.phase = WindowsCrossVolumePhase::SourceRemoved;
                     persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
@@ -9759,6 +9831,7 @@ mod windows_source_tests {
         let destination_fixture =
             crate::tests::TestDir::new_at(&destination_volume, "cross-volume-public-destination");
         let source_root = source_fixture.path();
+        let _ = super::replace_test_recovery_root(Some(source_root.join("move-state")));
         let destination_root = destination_fixture.path();
         let source = source_root.join("payload.bin");
         let destination = destination_root.join("payload.bin");
@@ -9786,10 +9859,7 @@ mod windows_source_tests {
             .execute_move_with_undo_receipt(&source, destination_root, ConflictAction::Rename)
             .expect("public cross-volume Move should complete");
         assert_eq!(disposition, crate::MoveDisposition::Moved);
-        assert!(
-            receipt.is_none(),
-            "Windows must not advertise unsupported Move undo"
-        );
+        let receipt = receipt.expect("native cross-volume session Undo");
         assert!(
             !source.exists(),
             "source must be removed only after publication"
@@ -9798,6 +9868,12 @@ mod windows_source_tests {
             std::fs::read(&destination).expect("read destination"),
             payload
         );
+
+        crate::DefaultPlatform
+            .undo_move_with_receipt(&receipt)
+            .expect("restore verified bytes across volumes");
+        assert_eq!(std::fs::read(&source).unwrap(), payload);
+        assert!(!destination.exists());
 
         let batch_source = source_root.join("batch.bin");
         std::fs::write(&batch_source, payload).unwrap();
@@ -9883,12 +9959,21 @@ mod windows_source_tests {
             )
             .expect("Move into a Modify-only destination");
         assert_eq!(disposition, crate::MoveDisposition::Moved);
-        assert!(receipt.is_none());
+        let receipt =
+            receipt.expect("Modify-only cross-volume destination supplies Undo authority");
         assert!(!source.exists());
         assert_eq!(
             std::fs::read(destination_fixture.path().join("payload.txt")).unwrap(),
             b"move with Modify destination access"
         );
+        crate::DefaultPlatform
+            .undo_move_with_receipt(&receipt)
+            .expect("Undo with ordinary Modify-only destination access");
+        assert_eq!(
+            std::fs::read(&source).unwrap(),
+            b"move with Modify destination access"
+        );
+        assert!(!destination_fixture.path().join("payload.txt").exists());
     }
 
     #[cfg(target_os = "windows")]

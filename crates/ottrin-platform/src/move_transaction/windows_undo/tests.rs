@@ -281,10 +281,9 @@ fn windows_native_move_undo_retries_after_inverse_process_exit() {
             WindowsStableIdentity,
         ) = serde_json::from_str(&encoded).unwrap();
         let receipt = PathMoveUndoReceipt {
-            windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard {
+            windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::Atomic {
                 before_parent,
                 after_parent,
-                retained: None,
             })),
             before_path: before,
             after_path: after,
@@ -298,15 +297,19 @@ fn windows_native_move_undo_retries_after_inverse_process_exit() {
     }
     let fixture = crate::tests::TestDir::new("native-move-undo-exit");
     let receipt = moved(fixture.path());
-    let Some(WindowsPathUndo::Move(guard)) = &receipt.windows_undo else {
+    let Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::Atomic {
+        before_parent,
+        after_parent,
+    })) = &receipt.windows_undo
+    else {
         panic!("wrong receipt kind")
     };
     let encoded = serde_json::to_string(&(
         receipt.before_path(),
         receipt.after_path(),
         receipt.identity.windows,
-        guard.before_parent,
-        guard.after_parent,
+        before_parent,
+        after_parent,
     ))
     .unwrap();
     let status = std::process::Command::new(std::env::current_exe().unwrap())

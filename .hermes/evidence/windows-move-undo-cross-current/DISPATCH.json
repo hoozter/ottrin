@@ -1,0 +1,7 @@
+{
+  "id": "ef0feba2df1f608a1943888dd9bb79b0",
+  "status": "dispatched",
+  "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --nocapture --test-threads=1",
+  "transferred_sha256": "9401a676a0f74b3de031aff1f85d5ff53d06d678079f097446ab7d7c87e44b63",
+  "watchdog_ms": 600000
+}

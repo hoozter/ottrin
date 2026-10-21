@@ -1,0 +1,204 @@
+
+running 105 tests
+test copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_allows_unrelated_overwrite_and_cleanup ... ok
+test copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases ... ok
+test copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_executes_admitted_creation_and_overwrite_then_public_undo ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_failure_preserves_committed_classification_and_data ... ok
+test copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_rejects_missing_authority_and_changed_publications ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_candidate_handle_denies_all_concurrent_mutation ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_completion_flushes_source_namespace_before_cleanup ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_destination_parent_handle_can_flush_publication_namespace ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_directories_require_no_data_streams ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_directory_overwrite_retains_before_publishing ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_link_overwrite_resumes_after_displaced_retention ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_overwrite_restart_requires_retained_displaced_identity ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_does_not_flush_namespace_after_file_flush_failure ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_flushes_file_and_namespace_after_rename ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_publication_requires_the_recorded_destination_parent ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_recovery_flushes_retained_and_namespace_before_recording ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_regular_file_rejects_named_data_streams ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_rename_advances_from_latest_durable_candidate ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_rename_candidate_journals_reconcile_only_by_prefix ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_restart_flushes_unrecorded_publication_before_source_removal ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_restart_uses_durable_identity_topology ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_skip_finishes_without_mutating_an_existing_destination ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_source_handle_denies_write_and_delete_sharing ... ok
+test move_transaction::windows_source_tests::windows_cross_volume_source_kind_accepts_supported_entries_only ... ok
+test move_transaction::windows_source_tests::windows_directory_cleanup_accepts_only_manifest_subsets_and_orders_children_first ... ok
+test move_transaction::windows_source_tests::windows_directory_cleanup_claims_once_and_resumes_only_the_pinned_claim ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_accepts_and_binds_nested_symbolic_links ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_evidence_is_order_independent_and_path_bound ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_rejects_missing_or_nondirectory_ancestors ... ok
+test move_transaction::windows_source_tests::windows_directory_manifest_rejects_paths_that_escape_or_alias_tree_entries ... ok
+test move_transaction::windows_source_tests::windows_directory_slice_allows_verified_publication_but_keeps_source_removal_fail_closed ... ok
+test move_transaction::windows_source_tests::windows_incomplete_private_directory_candidate_is_discarded_before_retry ... ok
+test move_transaction::windows_source_tests::windows_incomplete_staging_cleanup_is_bound_to_its_transaction_directory ... ok
+test move_transaction::windows_source_tests::windows_move_route_distinguishes_same_and_cross_volume_paths ... ok
+test move_transaction::windows_source_tests::windows_native_completed_overwrite_does_not_own_reused_source_or_target_names ... ok
+test move_transaction::windows_source_tests::windows_native_completed_overwrite_keeps_ambiguous_private_evidence_blocked ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_allows_later_name_reuse ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_converges_each_terminal_journal_gap ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_completed_overwrite_refuses_ambiguous_private_evidence ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_conflicts_preserve_published_and_displaced_entries ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_destination_acl_denial_preserves_source_and_allows_retry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_handoff_mutations_preserve_source ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_move_publishes_verified_tree ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_directory_process_exit_recovers_without_data_loss ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_explicit_recovery_retains_displaced_file ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_extended_attributes_are_preserved_by_refusal ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_into_modify_only_destination ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_preserves_basic_metadata ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_move_preserves_read_only_file ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_named_move_preserves_exact_original_name ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_named_move_recovery_keeps_requested_target ... 
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_overwrite_retention_process_exit_recovers ... 
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_published_file_or_link_change_preserves_source ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_destination_preserves_entries_and_allows_retry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_publication_exit_recovers ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_retains_displaced_file ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_recovery_excludes_another_process_until_owner_death ... 
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_regular_file_move_preserves_verified_bytes ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_replace_batch_moves_unoccupied_files_and_trees ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_sharing_conflicts_preserve_source_and_allow_retry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... 
+running 1 test
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... 
+running 1 test
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... 
+running 1 test
+test move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_preserves_raw_target_without_dereferencing ... ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_streams_are_preserved_by_refusal ... 
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_cross_volume_teardown_retries_after_central_journal_sharing_failure ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_source_tests::windows_native_directory_streams_are_empty_or_rejected ... ok
+test move_transaction::windows_source_tests::windows_native_locked_directory_snapshot_preserves_exclusion ... ok
+test move_transaction::windows_source_tests::windows_native_move_journal_requires_namespace_flush ... ok
+test move_transaction::windows_source_tests::windows_native_named_move_preserves_original_name_and_occupied_entries ... ok
+test move_transaction::windows_source_tests::windows_native_named_move_rejects_non_leaf_targets_before_mutation ... ok
+test move_transaction::windows_source_tests::windows_native_same_volume_directory_move_preserves_the_complete_tree ... ok
+test move_transaction::windows_source_tests::windows_native_same_volume_overwrite_rejects_replaced_selection ... ok
+test move_transaction::windows_source_tests::windows_overwrite_requires_published_source_and_retained_displaced_identity ... ok
+test move_transaction::windows_source_tests::windows_overwrite_restart_uses_durable_identities_not_advisory_phase ... ok
+test move_transaction::windows_source_tests::windows_recovery_discovery_accepts_only_exact_durable_journal_names ... ok
+test move_transaction::windows_source_tests::windows_recovery_lock_denies_concurrent_recovery_owners ... ok
+test move_transaction::windows_source_tests::windows_retained_move_discovery_does_not_initialize_missing_state ... ok
+test move_transaction::windows_source_tests::windows_same_volume_overwrite_uses_rename_publication_for_non_file_entries ... ok
+test move_transaction::windows_source_tests::windows_same_volume_source_kind_accepts_links_but_rejects_other_reparse_points ... ok
+test move_transaction::windows_source_tests::windows_source_removal_requires_identity_and_content_evidence ... ok
+test move_transaction::windows_source_tests::windows_symbolic_link_evidence_preserves_raw_utf16_target ... ok
+test move_transaction::windows_source_tests::windows_symbolic_link_snapshot_requires_target_and_kind_to_match ... ok
+test move_transaction::windows_undo::cross::tests::windows_native_cross_undo_original_name_collision_preserves_both_files_and_retries ... ok
+test move_transaction::windows_undo::cross::tests::windows_native_cross_undo_process_exit_recovers_without_session_receipt ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_undo::cross::tests::windows_native_cross_undo_raced_collision_preserves_files_and_resumes_bound_intent ... ok
+test move_transaction::windows_undo::cross::tests::windows_native_cross_undo_refuses_added_stream_without_removing_current_data ... ok
+test move_transaction::windows_undo::cross::tests::windows_native_cross_undo_refuses_changed_publication_or_parent_before_intent ... ok
+test move_transaction::windows_undo::cross::tests::windows_native_cross_undo_restores_current_file_directory_and_raw_link_to_original_name ... ok
+test move_transaction::windows_undo::cross::tests::windows_native_cross_undo_terminal_proof_preserves_later_names_and_unknown_private_data ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_collision_is_non_mutating_and_retryable ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_pins_names_and_preserves_a_raced_original_collision ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_process_exit_recovers_from_paired_intent ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_refuses_replaced_retained_entry_and_parent ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_rejects_noncausal_or_changed_journals ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_both_entries_and_later_edits ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_mixed_entry_kinds ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_sharing_refuses_before_intent_and_retries ... ok
+test move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_terminal_history_releases_later_public_names ... ok
+test move_transaction::windows_undo::tests::windows_native_move_undo_adverse_sharing_preserves_data_and_retries ... ok
+test move_transaction::windows_undo::tests::windows_native_move_undo_pins_parents_and_publication_during_name_race ... ok
+test move_transaction::windows_undo::tests::windows_native_move_undo_receipt_cannot_adopt_publication_handoff_replacement ... ok
+test move_transaction::windows_undo::tests::windows_native_move_undo_refuses_changed_entry_or_parent ... ok
+test move_transaction::windows_undo::tests::windows_native_move_undo_refuses_occupied_name_and_retries_without_repeating ... ok
+test move_transaction::windows_undo::tests::windows_native_move_undo_restores_file_directory_and_link_after_keep_both ... ok
+test move_transaction::windows_undo::tests::windows_native_move_undo_retries_after_inverse_process_exit ... 
+running 1 test
+ok
+
+test result: ok. 105 passed; 0 failed; 0 ignored; 0 measured; 391 filtered out; finished in 31.47s
+

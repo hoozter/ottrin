@@ -1,0 +1,7 @@
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_move_into_modify_only_destination' (3992) panicked at crates/ottrin-platform/src/move_transaction.rs:9946:9:
+assertion failed: receipt.is_none()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_regular_file_move_preserves_verified_bytes' (5948) panicked at crates/ottrin-platform/src/move_transaction.rs:9849:9:
+Windows must not advertise unsupported Move undo

@@ -1,0 +1,143 @@
+{
+  "policy": "Retire superseded finalized sessions only; preserve newest per affected configuration, require both locks and no live consumers",
+  "retired": [
+    {
+      "removed": "target/debug/incremental/ottrin_platform-0u7jskgx7wt1r/s-hnfj5axajf-0ud4twy-b9abncbe9e82m0lg5ck2q2x4x",
+      "replacement": "target/debug/incremental/ottrin_platform-0u7jskgx7wt1r/s-hnfjhm3z15-0tyefod-2ga84j5w9ty6vebczn1ovgg9n",
+      "logical_bytes": 165533271,
+      "hardlinked_files": 225,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnfjoept33-0ksqyhq-ewa4xw0ir5zql4x2ov6vi5qva",
+      "replacement": "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnfjuf17mk-1wa043y-bfodzl4wk4sqe1gyd78a8gtmb",
+      "logical_bytes": 27873485,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnfj5k2jpi-1u83191-2bofrsahuwi6vh2qxutzmaxd3",
+      "replacement": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnfjhn049a-0lqpnbe-cqbbbl09r3jai83wfbbcp5753",
+      "logical_bytes": 348483042,
+      "hardlinked_files": 358,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnfjogbt99-1vojbro-afbl63pdsbgwgyl3r7hlbcawj",
+      "replacement": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnfjugla51-1v5w1r7-cl1ejgp6hhk9pfaw361jv9ey0",
+      "logical_bytes": 39333219,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnfjogbtzc-1yqr8bb-11xjl817rec2a8bp66efu8f7v",
+      "replacement": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnfjugl8wx-064tb0a-542um4esunkax21jnqhji0mpl",
+      "logical_bytes": 47656556,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnfjncj484-0x1hwpu-5nrj8flvu7stf2l84mh67thtr",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnfjtut1hs-1gizatv-ej10jycbbznakpbe20bdemao0",
+      "logical_bytes": 36757299,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnfjm5kt21-10ioun1-3izyebc6qtp1d4db7j5jtvrcf",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnfjszuna5-1ncq3sz-daina7kq81doweh6hy0p6o4sm",
+      "logical_bytes": 1299803318,
+      "hardlinked_files": 251,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnfjncj5el-0i48izp-1d2go2uo91y2fafz72mul7jil",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnfjtut13v-17w7ize-4c2q35j0ej32pyp4857hrkbnb",
+      "logical_bytes": 50433434,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-317d1bdx0qeud/s-hnfjnxbjfx-0nztzsw-cwomywjz8ue2dah05s3hrhu8t",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-317d1bdx0qeud/s-hnfju0oap1-1qe11kk-cs6qklotga8c23p25fcd6xwc2",
+      "logical_bytes": 90741359,
+      "hardlinked_files": 254,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3lcvc99e9bs5f/s-hnfjo9e3cj-0hn3kiy-5888tmu6i6c0xfejkspf2ya7q",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3lcvc99e9bs5f/s-hnfju9od5c-0ykf9tc-05d7q0hb6aw924yy8ishvn7kf",
+      "logical_bytes": 38563466,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0gtmbt5s4hx9o/s-hnfjnenkeu-13djvjq-aead8xz57rq6op54373yt7n11",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0gtmbt5s4hx9o/s-hnfjty00ol-0jb22yz-4mtnhr425h4b3llgkikitdoyj",
+      "logical_bytes": 707725,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1gd6w80okik1s/s-hnfjnepazj-0fy5wr3-32wsk78sho6nshnblb3jzy2zw",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1gd6w80okik1s/s-hnfjty4smk-08ui780-8yqtc5l59hx0ermsksackx7fn",
+      "logical_bytes": 721847,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-07enwzf14u6c9/s-hnfjobqa2y-1kw5wwg-2206s65j31dvbvng34wihlxjx",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-07enwzf14u6c9/s-hnfjuc1mcz-1rykefj-46rsscyo4bdafe9bh6tcfa45l",
+      "logical_bytes": 40684094,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1szaycdh0jarx/s-hnfjo0risf-1oo396x-akhh14d4537gqzbf9nlt7jrem",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1szaycdh0jarx/s-hnfju27k6e-049at1y-299zwgn6n5sqg3owrinuvv58t",
+      "logical_bytes": 137870752,
+      "hardlinked_files": 256,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-24n6j5jy68xc3/s-hnfjobq8hb-1tzh117-6ppwgmdluvy1qzaac2nx2coo2",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-24n6j5jy68xc3/s-hnfjuc1p9b-1bz20pl-as5xpghyiph9toms9zezahnsu",
+      "logical_bytes": 48548761,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    }
+  ],
+  "preserved": [
+    "target/debug/incremental/ottrin_platform-0u7jskgx7wt1r/s-hnfjhm3z15-0tyefod-2ga84j5w9ty6vebczn1ovgg9n",
+    "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnfjuf17mk-1wa043y-bfodzl4wk4sqe1gyd78a8gtmb",
+    "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnfjhn049a-0lqpnbe-cqbbbl09r3jai83wfbbcp5753",
+    "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnfjugla51-1v5w1r7-cl1ejgp6hhk9pfaw361jv9ey0",
+    "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnfjugl8wx-064tb0a-542um4esunkax21jnqhji0mpl",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnfjtut1hs-1gizatv-ej10jycbbznakpbe20bdemao0",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnfjszuna5-1ncq3sz-daina7kq81doweh6hy0p6o4sm",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnfjtut13v-17w7ize-4c2q35j0ej32pyp4857hrkbnb",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-317d1bdx0qeud/s-hnfju0oap1-1qe11kk-cs6qklotga8c23p25fcd6xwc2",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3lcvc99e9bs5f/s-hnfju9od5c-0ykf9tc-05d7q0hb6aw924yy8ishvn7kf",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-0gtmbt5s4hx9o/s-hnfjty00ol-0jb22yz-4mtnhr425h4b3llgkikitdoyj",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1gd6w80okik1s/s-hnfjty4smk-08ui780-8yqtc5l59hx0ermsksackx7fn",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-07enwzf14u6c9/s-hnfjuc1mcz-1rykefj-46rsscyo4bdafe9bh6tcfa45l",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1szaycdh0jarx/s-hnfju27k6e-049at1y-299zwgn6n5sqg3owrinuvv58t",
+    "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-24n6j5jy68xc3/s-hnfjuc1p9b-1bz20pl-as5xpghyiph9toms9zezahnsu"
+  ],
+  "logical_bytes_removed": 2373711628
+}

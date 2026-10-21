@@ -11,10 +11,13 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct WindowsMoveUndoGuard {
-    before_parent: WindowsStableIdentity,
-    after_parent: WindowsStableIdentity,
-    retained: Option<Box<super::WindowsOverwriteRecord>>,
+pub(crate) enum WindowsMoveUndoGuard {
+    Atomic {
+        before_parent: WindowsStableIdentity,
+        after_parent: WindowsStableIdentity,
+    },
+    Replace(Box<super::WindowsOverwriteRecord>),
+    CrossVolume(cross::Guard),
 }
 
 fn io(error: impl std::fmt::Display) -> PlatformError {
@@ -61,10 +64,9 @@ pub(super) fn issue(
     };
     verify().map_err(pending)?;
     Ok(PathMoveUndoReceipt {
-        windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard {
+        windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::Atomic {
             before_parent,
             after_parent,
-            retained: None,
         })),
         before_path: before.to_path_buf(),
         after_path: after.to_path_buf(),
@@ -99,33 +101,31 @@ fn observe(parent: &File, name: &OsStr) -> Result<Option<WindowsStableIdentity>,
 }
 
 pub(crate) fn undo(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
-    let lock = super::acquire_windows_recovery_lock()?;
-    undo_locked(receipt, &lock)
-}
-
-fn undo_locked(
-    receipt: &PathMoveUndoReceipt,
-    _lock: &super::WindowsRecoveryLock,
-) -> Result<(), PlatformError> {
     let Some(WindowsPathUndo::Move(guard)) = receipt.windows_undo.as_ref() else {
         return Err(PlatformError::InvalidPathMoveUndoReceipt(
             "Windows Move receipt has no native publication binding".into(),
         ));
     };
-    if let Some(record) = guard.retained.as_deref() {
-        return overwrite::undo(receipt, record);
-    }
+    let _lock = super::acquire_windows_recovery_lock()?;
+    let (before_parent_identity, after_parent_identity) = match guard {
+        WindowsMoveUndoGuard::Replace(record) => return overwrite::undo(receipt, record),
+        WindowsMoveUndoGuard::CrossVolume(guard) => return cross::undo(receipt, guard),
+        WindowsMoveUndoGuard::Atomic {
+            before_parent,
+            after_parent,
+        } => (*before_parent, *after_parent),
+    };
     if receipt.before_path == receipt.after_path
         || super::windows_same_volume_kind_from_identity(receipt.identity.windows).is_none()
         || receipt.displaced_identity.is_some()
         || receipt.retained_displaced_path.is_some()
         || receipt.requirement != PathMoveUndoRequirement::None
-        || !guard.before_parent.is_directory_without_reparse()
-        || !guard.after_parent.is_directory_without_reparse()
+        || !before_parent_identity.is_directory_without_reparse()
+        || !after_parent_identity.is_directory_without_reparse()
         || receipt.identity.windows.volume_serial_number()
-            != guard.before_parent.volume_serial_number()
+            != before_parent_identity.volume_serial_number()
         || receipt.identity.windows.volume_serial_number()
-            != guard.after_parent.volume_serial_number()
+            != after_parent_identity.volume_serial_number()
     {
         return Err(PlatformError::InvalidPathMoveUndoReceipt(
             "Unsupported Windows Move inverse topology".into(),
@@ -148,16 +148,16 @@ fn undo_locked(
     let after_parent =
         windows_fs::open_directory_with_sharing(after_dir, access, sharing).map_err(io)?;
     if move_recovery::stable_identity_from_handle(&before_parent).map_err(io)?
-        != guard.before_parent
+        != before_parent_identity
         || move_recovery::stable_identity_from_handle(&after_parent).map_err(io)?
-            != guard.after_parent
+            != after_parent_identity
     {
         return Err(stale(before));
     }
     #[cfg(test)]
     super::windows_move_boundary(super::WindowsMoveBoundary::UndoParentsOpened, before_dir);
-    if move_recovery::stable_identity_of_entry(before_dir).map_err(io)? != guard.before_parent
-        || move_recovery::stable_identity_of_entry(after_dir).map_err(io)? != guard.after_parent
+    if move_recovery::stable_identity_of_entry(before_dir).map_err(io)? != before_parent_identity
+        || move_recovery::stable_identity_of_entry(after_dir).map_err(io)? != after_parent_identity
     {
         return Err(stale(before));
     }
@@ -216,3 +216,5 @@ fn undo_locked(
 mod tests;
 
 pub(in crate::move_transaction) mod overwrite;
+
+pub(in crate::move_transaction) mod cross;

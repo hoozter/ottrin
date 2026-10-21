@@ -1,0 +1,18 @@
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+error: type `move_transaction::WindowsOverwriteRecord` is more private than the item `move_transaction::windows_undo::WindowsMoveUndoGuard::Replace::0`
+    --> crates/ottrin-platform/src/move_transaction/windows_undo.rs:19:13
+     |
+  19 |     Replace(Box<super::WindowsOverwriteRecord>),
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `move_transaction::windows_undo::WindowsMoveUndoGuard::Replace::0` is reachable at visibility `pub(crate)`
+     |
+note: but type `move_transaction::WindowsOverwriteRecord` is only usable at visibility `pub(self)`
+    --> crates/ottrin-platform/src/move_transaction.rs:1006:1
+     |
+1006 | struct WindowsOverwriteRecord {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: `-D private-interfaces` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(private_interfaces)]`
+
+error: could not compile `ottrin-platform` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `ottrin-platform` (lib test) due to 1 previous error

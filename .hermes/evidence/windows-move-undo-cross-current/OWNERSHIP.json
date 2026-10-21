@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "9a3bfe24e5653d23a192317495569b3f6c9f36dd",
+  "actor": "OttrinCopyQA",
+  "purpose": "Cross-volume Move Undo through bound inverse transactions; owned temporary VHD removed after native consumers exit"
+}

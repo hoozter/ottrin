@@ -1102,9 +1102,17 @@ fn windows_retained_move_activity(
         transaction_id: transaction.transaction_id,
         phase: match transaction.undo_status {
             ottrin_platform::move_recovery::WindowsMoveUndoStatus::Pending => {
-                "Replace Undo pending"
+                match transaction.kind {
+                    WindowsMoveTransactionKind::SameVolumeOverwrite => "Replace Undo pending",
+                    WindowsMoveTransactionKind::CrossVolume => "Cross-volume Undo pending",
+                }
             }
-            ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete => "Replace undone",
+            ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete => {
+                match transaction.kind {
+                    WindowsMoveTransactionKind::SameVolumeOverwrite => "Replace undone",
+                    WindowsMoveTransactionKind::CrossVolume => "Cross-volume Move undone",
+                }
+            }
             ottrin_platform::move_recovery::WindowsMoveUndoStatus::NotStarted => {
                 match transaction.kind {
                     WindowsMoveTransactionKind::SameVolumeOverwrite => "same-volume overwrite",
@@ -26875,30 +26883,43 @@ mod tests {
     #[test]
     fn windows_retained_move_activity_distinguishes_pending_and_completed_undo() {
         use ottrin_platform::move_recovery::WindowsMoveUndoStatus;
-        for (undo_status, phase, recovery, label) in [
+        for (kind, pending_phase, complete_phase) in [
             (
-                WindowsMoveUndoStatus::Pending,
+                WindowsMoveTransactionKind::SameVolumeOverwrite,
                 "Replace Undo pending",
-                RetainedMoveRecovery::Undo,
-                Some("Resume Undo"),
+                "Replace undone",
             ),
             (
-                WindowsMoveUndoStatus::Complete,
-                "Replace undone",
-                RetainedMoveRecovery::Undone,
-                None,
+                WindowsMoveTransactionKind::CrossVolume,
+                "Cross-volume Undo pending",
+                "Cross-volume Move undone",
             ),
         ] {
-            let activity = windows_retained_move_activity(
-                ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
-                    transaction_id: [0x23; 16],
-                    kind: WindowsMoveTransactionKind::SameVolumeOverwrite,
-                    undo_status,
-                },
-            );
-            assert_eq!(activity.phase, phase);
-            assert_eq!(activity.recovery, recovery);
-            assert_eq!(activity.recovery.action_label(), label);
+            for (undo_status, phase, recovery, label) in [
+                (
+                    WindowsMoveUndoStatus::Pending,
+                    pending_phase,
+                    RetainedMoveRecovery::Undo,
+                    Some("Resume Undo"),
+                ),
+                (
+                    WindowsMoveUndoStatus::Complete,
+                    complete_phase,
+                    RetainedMoveRecovery::Undone,
+                    None,
+                ),
+            ] {
+                let activity = windows_retained_move_activity(
+                    ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
+                        transaction_id: [0x23; 16],
+                        kind,
+                        undo_status,
+                    },
+                );
+                assert_eq!(activity.phase, phase);
+                assert_eq!(activity.recovery, recovery);
+                assert_eq!(activity.recovery.action_label(), label);
+            }
         }
     }
 
@@ -30511,107 +30532,143 @@ mod tests {
     fn file_operation_worker_move_undo_preserves_collision_and_allows_retry() {
         for conflict in [ConflictAction::Skip, ConflictAction::Overwrite] {
             let fixture = tempfile::tempdir().unwrap();
-            let root = fixture.path();
-            let source_dir = root.join("source");
-            let destination_dir = root.join("destination");
-            std::fs::create_dir_all(&source_dir).unwrap();
-            std::fs::create_dir_all(&destination_dir).unwrap();
-            let source = source_dir.join("entry.txt");
-            std::fs::write(&source, "original bytes").unwrap();
-            if conflict == ConflictAction::Overwrite {
-                std::fs::write(destination_dir.join("entry.txt"), b"displaced original").unwrap();
-            }
-            let command = FileCommand::Move {
-                sources: vec![source.clone()],
-                destination: destination_dir.clone(),
+            assert_worker_move_undo_collision(
+                fixture.path(),
+                &fixture.path().join("destination"),
                 conflict,
-            };
-            let mut app = OttrinApp::default();
+            );
+        }
+    }
 
-            assert!(app.run_file_op_bound(
-                command,
-                None,
-                Vec::new(),
-                Some(Vec::new()),
-                None,
-                Some(ConflictAction::Skip),
-            ));
-            let result = app
-                .op_rx
-                .recv_timeout(Duration::from_secs(2))
-                .expect("move worker result");
-            app.op_tx.send(result).unwrap();
-            app.poll_op_results();
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    fn assert_worker_move_undo_collision(
+        root: &std::path::Path,
+        destination_dir: &std::path::Path,
+        conflict: ConflictAction,
+    ) {
+        let source_dir = root.join("source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        std::fs::write(&source, "original bytes").unwrap();
+        if conflict == ConflictAction::Overwrite {
+            std::fs::write(destination_dir.join("entry.txt"), b"displaced original").unwrap();
+        }
+        let command = FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination_dir.to_path_buf(),
+            conflict,
+        };
+        let mut app = OttrinApp::default();
 
-            let record = app.operation_history.front().expect("move activity record");
-            assert_eq!(record.status, OperationStatus::Completed);
-            assert!(matches!(
-                record.path_move_undo,
-                Some(PathMoveUndoState::Available)
-            ));
-            let op_id = record.id;
-            std::fs::write(&source, "later occupant").unwrap();
-            app.run_path_move_undo(op_id);
-            let refusal = app
-                .path_move_undo_rx
-                .recv_timeout(Duration::from_secs(5))
-                .expect("guarded inverse refusal");
-            assert!(refusal.result.is_err());
-            assert!(refusal.retryable);
-            app.finish_path_move_undo(refusal.op_id, refusal.result, refusal.retryable);
-            let record = app.operation_history.front().unwrap();
-            assert!(matches!(
-                record.path_move_undo,
-                Some(PathMoveUndoState::Available)
-            ));
-            assert!(record.path_move_undo_token.is_some());
-            let message = record.message.as_deref().unwrap();
-            assert!(message.contains("retry"));
-            assert!(!message.contains("Undo completed"));
-            let status = app
-                .status_message
-                .as_ref()
-                .expect("visible main-window refusal");
-            assert!(!status.ok);
-            assert!(status.text.contains("Undo move needs attention"));
-            assert!(!status.text.contains("Move undone"));
-            assert_eq!(std::fs::read(&source).unwrap(), b"later occupant");
+        assert!(app.run_file_op_bound(
+            command,
+            None,
+            Vec::new(),
+            Some(Vec::new()),
+            None,
+            Some(ConflictAction::Skip),
+        ));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(5))
+            .expect("move worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        let record = app.operation_history.front().expect("move activity record");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        let op_id = record.id;
+        std::fs::write(&source, "later occupant").unwrap();
+        app.run_path_move_undo(op_id);
+        let refusal = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(5))
+            .expect("guarded inverse refusal");
+        assert!(refusal.result.is_err());
+        assert!(refusal.retryable);
+        app.finish_path_move_undo(refusal.op_id, refusal.result, refusal.retryable);
+        let record = app.operation_history.front().unwrap();
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        assert!(record.path_move_undo_token.is_some());
+        let message = record.message.as_deref().unwrap();
+        assert!(message.contains("retry"));
+        assert!(!message.contains("Undo completed"));
+        let status = app
+            .status_message
+            .as_ref()
+            .expect("visible main-window refusal");
+        assert!(!status.ok);
+        assert!(status.text.contains("Undo move needs attention"));
+        assert!(!status.text.contains("Move undone"));
+        assert_eq!(std::fs::read(&source).unwrap(), b"later occupant");
+        assert_eq!(
+            std::fs::read(destination_dir.join("entry.txt")).unwrap(),
+            b"original bytes"
+        );
+        let parked = source_dir.join("parked-occupant.txt");
+        std::fs::rename(&source, &parked).unwrap();
+        app.run_path_move_undo(op_id);
+        let completion = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(5))
+            .expect("inverse retry result");
+        assert!(completion.result.is_ok(), "{:?}", completion.result);
+        app.finish_path_move_undo(completion.op_id, completion.result, completion.retryable);
+        let record = app.operation_history.front().unwrap();
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        assert!(record.message.is_none());
+        let status = app
+            .status_message
+            .as_ref()
+            .expect("visible main-window completion");
+        assert!(status.ok);
+        assert_eq!(status.text, "Move undone");
+        assert_eq!(std::fs::read(&source).unwrap(), b"original bytes");
+        assert_eq!(std::fs::read(&parked).unwrap(), b"later occupant");
+        if conflict == ConflictAction::Overwrite {
             assert_eq!(
                 std::fs::read(destination_dir.join("entry.txt")).unwrap(),
-                b"original bytes"
+                b"displaced original"
             );
-            let parked = source_dir.join("parked-occupant.txt");
-            std::fs::rename(&source, &parked).unwrap();
-            app.run_path_move_undo(op_id);
-            let completion = app
-                .path_move_undo_rx
-                .recv_timeout(Duration::from_secs(5))
-                .expect("inverse retry result");
-            assert!(completion.result.is_ok(), "{:?}", completion.result);
-            app.finish_path_move_undo(completion.op_id, completion.result, completion.retryable);
-            let record = app.operation_history.front().unwrap();
-            assert!(matches!(
-                record.path_move_undo,
-                Some(PathMoveUndoState::Undone)
-            ));
-            assert!(record.message.is_none());
-            let status = app
-                .status_message
-                .as_ref()
-                .expect("visible main-window completion");
-            assert!(status.ok);
-            assert_eq!(status.text, "Move undone");
-            assert_eq!(std::fs::read(&source).unwrap(), b"original bytes");
-            assert_eq!(std::fs::read(&parked).unwrap(), b"later occupant");
-            if conflict == ConflictAction::Overwrite {
-                assert_eq!(
-                    std::fs::read(destination_dir.join("entry.txt")).unwrap(),
-                    b"displaced original"
-                );
-            } else {
-                assert!(!destination_dir.join("entry.txt").exists());
-            }
+        } else {
+            assert!(!destination_dir.join("entry.txt").exists());
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on an owned second volume"]
+    fn file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry() {
+        let source = tempfile::tempdir().unwrap();
+        let volume = std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+            .expect("owned native second volume");
+        let destination = tempfile::Builder::new()
+            .prefix("ottrin-cross-undo-ui-")
+            .tempdir_in(volume)
+            .unwrap();
+        assert_worker_move_undo_collision(
+            source.path(),
+            &destination.path().join("destination"),
+            ConflictAction::Skip,
+        );
+        let found = ottrin_platform::discover_retained_move_transactions().unwrap();
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].kind, WindowsMoveTransactionKind::CrossVolume);
+        assert_eq!(
+            found[0].undo_status,
+            ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete
+        );
     }
 
     #[test]
