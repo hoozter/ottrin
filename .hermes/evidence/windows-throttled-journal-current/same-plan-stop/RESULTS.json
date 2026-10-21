@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryable --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "stdout_sha256": "7ef0b235161e9d8d2e3f48c82f8de8d0e179f0b937581edbf45ca161521cb933",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "8658c6cb2f1c63a52b6e5256637d8842d26bdc6434f9ff005d5d214974c136cf",
+  "dispatch_id": "cac29c135240ca29848c7f429447dde8"
+}

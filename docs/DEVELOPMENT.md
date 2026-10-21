@@ -1018,6 +1018,27 @@ an injected central-journal flush failure, verifies the completion seal and
 checks exact payload bytes and persistent metadata against the interrupted
 state. Finalization needs journal writes but must not mutate the payload.
 
+After a held cleanup writer commits control records, it must finish validating
+and returning its `ControlChange` before another cancellation callback. The group
+records that exact writer epoch before checking Stop and before removing payload.
+An interrupted acknowledgement must not make the next retry mistake our own
+journal append for an external catalog change. Filesystem, binding, security and
+content validation errors still propagate; this is not permission to reopen an ID
+and adopt whatever is there.
+
+Native Stop is a request, not proof that pending Windows I/O has ended. The
+operation stays **Stopping…** and retains its path/worker ownership until the
+native request completes and the worker acknowledges cancellation. Do not free
+buffers, close operation state or report completion merely because a cancellation
+API returned. Some driver requests complete normally despite cancellation; the
+ordinary callbacks must still stop subsequent work. See
+[Microsoft's cancellation considerations](https://learn.microsoft.com/en-us/windows/win32/fileio/canceling-pending-i-o-operations).
+Explicit `throttled_io` tests require an owned secondary NTFS disk, a responsive
+control directory on another disk and a host controller that always removes its
+throttle. They stop actual Copy/Undo/cleanup journal I/O, verify retained bytes,
+and retry without the source. The control scripts and precise acceptance scope
+live under `.hermes/evidence/windows-throttled-journal-current/`.
+
 Windows recovery admission now binds the authenticated registry/header,
 sealed immutable completion digest and actual parent location before creation
 Undo. It retains no file handles, does not read the source and does not modify

@@ -1,0 +1,19 @@
+{
+  "base_commit": "c084bf4758e03efe748c19c17dc2e084c2914c47",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "50f977fbf874e925974176be614cb0aff2c000a3ddc66eb61475daddfa536b38",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "248fdb27a695b408b55b353f77f5b7a4ee10d848ce205dcc48b63d477e7e9eca",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/throttled_io.rs": "145d07674da746edac0cb66d329820bb21e0f43278683362697e5d72f86fbe2b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/blocked_io.rs": "e0d7d151d3e33e5cb59889083cbfc1f25caa2ceabb243ce70b7a8e4d715533fb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "816f796970dbae8aac1f5f866e497d37f60afcc7de96d89387a3bb71f325883d",
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "a62c3855e6f17dc7816efeb66e506231d641d682300ece37e5575c4d49b23b4d"
+  },
+  "build_manifest": "build-fixed.jsonl",
+  "scope": "Windows backend fix plus test-only append handoff; release Linux runtime code unchanged",
+  "source_commit": "e0e8a28d4866fc20dbe63ee65176c660818757ea",
+  "build_manifests": [
+    "build-fixed.jsonl",
+    "build-regression.jsonl"
+  ],
+  "verification_scope": "Disk cases and related regressions use the fixed production code; final six-cohort regression changes test setup only. Each exact executable is recorded per run."
+}

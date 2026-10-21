@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_io_stop_preserves_data_and_recovers --nocapture --test-threads=1 --ignored",
+  "ordinary_user": true,
+  "stdout_sha256": "aea7d08f6698ef459065759aeb25e7262d8f5b9002a732969950163c5ffe997f",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+  "dispatch_id": "7312c60ae51e15c4d6cc6f8ecd787d0b"
+}

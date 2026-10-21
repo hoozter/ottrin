@@ -1,0 +1,97 @@
+{
+  "status": "removed",
+  "retired_sessions": [
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2uh0o0ad189n0/s-hnejo6q0jn-1y6k8at-cfrjssjp9iid509m9nvur9w98",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2uh0o0ad189n0/s-hnejv14euw-00sxeuu-42kzi09urqpup1gfvl6fkauj0",
+      "logical_bytes": 37280054
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hnejg2jnao-0jvyn06-32b5512hqztswqqbnxxqqm9oj",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hnejsau4kg-1nucjqv-967vbpvmhy4ihzt8xy6ah207y",
+      "logical_bytes": 133764994
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql/s-hnejobudol-0sgbwtc-115kvzbbz47ssesc3ycv09rs3",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql/s-hnejv5inf8-01pwf4m-8udf37bekr6mrhj5laijpixq1",
+      "logical_bytes": 40268482
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnek5u8nmh-0lz8vs4-c14nxyp9dt1fkgkwcwedqts0q",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hneka6fzcj-0f97qdp-5b4cx6c8orxgl86xtbexc8fum",
+      "logical_bytes": 49578514
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hnejo9fle6-01eqm6g-b2yayeemoi65qv1a3rnw54tre",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hnejv3jxif-12ixjho-8kg3zag5nu6golgfwt9q53d4x",
+      "logical_bytes": 47824162
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3vtbsbkakuwb7/s-hnejg0hco8-06t2dpz-ckadq9m3hs7cvgq15iouf2pd9",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3vtbsbkakuwb7/s-hnejs9axr7-1ix9l6y-1uy0439jdwtoafcj864aa4nw1",
+      "logical_bytes": 87705718
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnek32nnt3-1oihioi-378c9scjgn3xggze1x9vd3n6o",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnek8vjywv-1pk0job-3rau4o21szdngni2tmp81hzka",
+      "logical_bytes": 1254159681
+    }
+  ],
+  "retained_sessions": [],
+  "scope": "Only task-touched Windows UI/platform profiles; shared target/configuration reused; newest finalized session preserved; exclusive compiler locks held",
+  "disposable_manifests": [
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/before-fix-undo/build.jsonl",
+      "sha256": "cd29ba57277fdc1d249ae7db66ffb507b50955ec0252d1ee5c3cbca46c2a43ab"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/same-plan-stop/build.jsonl",
+      "sha256": "5683dd989055b5e986553936e387e5b529dd0f05e0eedfc96c9fef2ba2048940"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/cleanup/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/undo/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/same-plan-stop-handle-fixture-failure/build.jsonl",
+      "sha256": "645dac9fe740478bf59376daec1653b599f6a564287be6c008b27fd1ecef1b08"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/forward/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/same-plan-stop-fixture-failure/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/start-barrier/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/guard/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/oplock/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/before-fix-forward/build.jsonl",
+      "sha256": "cd29ba57277fdc1d249ae7db66ffb507b50955ec0252d1ee5c3cbca46c2a43ab"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/configured/build.jsonl",
+      "sha256": "bccb5146ee68b26c1a8af928b8572e348ad3b8958da54e38a65a8da17b63415c"
+    },
+    {
+      "path": ".hermes/evidence/windows-throttled-journal-current/before-fix-cleanup/build.jsonl",
+      "sha256": "cd29ba57277fdc1d249ae7db66ffb507b50955ec0252d1ee5c3cbca46c2a43ab"
+    }
+  ],
+  "after_du": "17G\ttarget/debug/deps\n6.9G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n526M\t.hermes/packaging-tmp\n2.4M\t.hermes/evidence/windows-throttled-journal-current\n"
+}

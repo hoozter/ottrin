@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "guest": "TEARDOWN_GUEST.json",
+  "domain_state": "shut off",
+  "persistent_domain_definition_unchanged": true,
+  "task_disk_detached_and_deleted_via_libvirt": true,
+  "domain_and_snapshot_references_clear": true,
+  "retained_base_and_other_guests_preserved": true
+}

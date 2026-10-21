@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "windows_native_copy_oplock_ --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "stdout_sha256": "200bc170e8e87bc507a482d93b7ec82c12aa12c48cc2c1cc1b693365069c46b0",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+  "dispatch_id": "8bbe20690e2940c77af3197153826fcf"
+}

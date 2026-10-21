@@ -34,7 +34,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
+| Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. Separately, the pending-journal-I/O Stop/retry source checkpoint below passes 16 native tests. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -263,6 +263,33 @@ These are local NTFS pre-mutation interruption and native egui interaction check
 Mutating I/O, other filesystem/device/network behavior, full resource limits and
 public workflow/package gates remain open. Windows Copy stays disabled and this
 checkpoint does not update application packages.
+
+## Windows Copy Stop during pending journal I/O
+
+Source `e0e8a28d` fixes a cleanup retry failure found on a throttled native NTFS
+disk. Stop could arrive after a control append completed but before its writer
+acknowledgement reached the retained plan. Retry then mistook our own journal
+change for an external catalog change. The writer now finishes validating that
+acknowledgement before the group records it and checks Stop. Filesystem, binding,
+security and content validation still propagate errors.
+
+Sixteen named ordinary-account native tests pass: three real pending-journal-I/O
+cases (Copy, Undo and cleanup), the existing blocked-open and cancellation-guard
+checks, start barriers, configured cleanup, and a regression covering six anchored
+two-member cohort layouts. The disk cases preserve payload/unrelated bytes and
+retry without the source. In each, I/O remained pending beyond a three-second Stop
+observation; after storage resumed, callbacks stopped further work safely. This
+proves recovery in that condition, not immediate abort of a stalled driver.
+Strict Windows platform/UI all-target Clippy passes. The disposable disk is
+unthrottled, detached and deleted through libvirt; test processes/files are gone,
+the original preferences/uninstaller hashes and persistent guest definition match,
+and the retained guest is shut off. Exact executable scopes and limits are in
+`.hermes/evidence/windows-throttled-journal-current/ACCEPTANCE.json`.
+
+Actual aborted/partial writes, additional payload/security/metadata I/O phases,
+remote/device/other-filesystem, physical-power, resource and remaining public
+workflow/package gates stay open. Public Windows Copy and existing Windows
+packages remain unchanged.
 
 ## Local Trash Undo receipt discovery
 

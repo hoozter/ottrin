@@ -1,0 +1,148 @@
+{
+  "status": "pass for pending journal I/O and cleanup retry scope",
+  "source": {
+    "base_commit": "c084bf4758e03efe748c19c17dc2e084c2914c47",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "50f977fbf874e925974176be614cb0aff2c000a3ddc66eb61475daddfa536b38",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "248fdb27a695b408b55b353f77f5b7a4ee10d848ce205dcc48b63d477e7e9eca",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/throttled_io.rs": "145d07674da746edac0cb66d329820bb21e0f43278683362697e5d72f86fbe2b",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/blocked_io.rs": "e0d7d151d3e33e5cb59889083cbfc1f25caa2ceabb243ce70b7a8e4d715533fb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "816f796970dbae8aac1f5f866e497d37f60afcc7de96d89387a3bb71f325883d",
+      ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "a62c3855e6f17dc7816efeb66e506231d641d682300ece37e5575c4d49b23b4d"
+    },
+    "build_manifest": "build-fixed.jsonl",
+    "scope": "Windows backend fix plus test-only append handoff; release Linux runtime code unchanged",
+    "source_commit": "e0e8a28d4866fc20dbe63ee65176c660818757ea",
+    "build_manifests": [
+      "build-fixed.jsonl",
+      "build-regression.jsonl"
+    ],
+    "verification_scope": "Disk cases and related regressions use the fixed production code; final six-cohort regression changes test setup only. Each exact executable is recorded per run."
+  },
+  "runs": {
+    "forward": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+      "arguments": "--exact copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_io_stop_preserves_data_and_recovers --nocapture --test-threads=1 --ignored",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "forward/RESULTS.json"
+    },
+    "undo": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+      "arguments": "--exact copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_undo_stop_preserves_data_and_recovers --nocapture --test-threads=1 --ignored",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "undo/RESULTS.json"
+    },
+    "cleanup": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+      "arguments": "--exact copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_cleanup_stop_preserves_data_and_recovers --nocapture --test-threads=1 --ignored",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "cleanup/RESULTS.json"
+    },
+    "oplock": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+      "arguments": "windows_native_copy_oplock_ --nocapture --test-threads=1",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "oplock/RESULTS.json"
+    },
+    "guard": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+      "arguments": "windows_native_copy_io_cancellation --nocapture --test-threads=1",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "guard/RESULTS.json"
+    },
+    "start-barrier": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+      "arguments": "windows_native_copy_cleanup_group_start --nocapture --test-threads=1",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "start-barrier/RESULTS.json"
+    },
+    "configured": {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "0a914a5f4ebb6d50c419811f205e5e65a4661d2129607d5e0059b629d55a0661",
+      "arguments": "windows_native_copy_cleanup_configured --nocapture --test-threads=1",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "configured/RESULTS.json"
+    },
+    "same-plan-stop": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "test_binary_sha256": "8658c6cb2f1c63a52b6e5256637d8842d26bdc6434f9ff005d5d214974c136cf",
+      "arguments": "--exact copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryable --nocapture --test-threads=1",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "same-plan-stop/RESULTS.json"
+    }
+  },
+  "named_native_tests": 16,
+  "six_layout_regression": "One named test executes six anchored two-member cohorts: file/folder, creation/overwrite, ordinary/registry destination",
+  "proof": [
+    "Real native thread I/O pending during a Copy/Undo/cleanup journal append on the task-owned secondary NTFS disk; live host write throttle confirmed and always released",
+    "Stop retained payload and unrelated bytes without finishing publication/Undo/cleanup; the same operation retried after storage resumed, with original sources absent",
+    "Initial cleanup retry failed because cancellation interrupted the held writer acknowledgement; the production fix captures and stores that validated epoch before the group checks Stop",
+    "Filesystem/binding/security/catalog validation remains enabled; no reopened-by-ID adoption or ignored filesystem errors",
+    "Existing blocked-open, cancellation guard, start-barrier and configured-cleanup regressions pass"
+  ],
+  "timing_limit": "All three disk cases remained pending after the three-second Stop observation. Host unthrottling allowed Windows I/O to complete, then the normal callback stopped further work. This is not immediate native abort or a universal latency guarantee.",
+  "before_fix_failure": "before-fix-cleanup/RESULTS.json",
+  "fixture_corrections": [
+    "Replaced an unanchored legacy test registry with the existing anchored cohort producer",
+    "Released delete-capable setup handles before configured admission; production correctly refused those conflicting leases"
+  ],
+  "checks": {
+    "windows_platform_ui_strict_all_targets_clippy": "clippy-final.log",
+    "format_and_diff": "pass"
+  },
+  "teardown": {
+    "status": "pass",
+    "guest": "TEARDOWN_GUEST.json",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "task_disk_detached_and_deleted_via_libvirt": true,
+    "domain_and_snapshot_references_clear": true,
+    "retained_base_and_other_guests_preserved": true
+  },
+  "storage": "STORAGE.json",
+  "packages": "Windows installers/portable and all Linux deliverables unchanged; this is native source/test acceptance, not new exact-package acceptance. Public Windows Copy remains disabled.",
+  "remaining": [
+    "Actual canceled/partial writes and additional payload/security/metadata I/O phases",
+    "Remote/device/other-filesystem, physical-power and full-application resource acceptance",
+    "Remaining Copy admission/interference/public-workflow gates and current Windows package/installer acceptance"
+  ],
+  "preservation_scope": {
+    "baseline": "BASELINE.json",
+    "verified_paths": [
+      "C:\\Users\\campbell\\AppData\\Roaming\\ottrin\\config.json",
+      "C:\\Users\\campbell\\AppData\\Local\\Programs\\Ottrin\\Uninstall.exe"
+    ],
+    "limit": "These are exact preferences/uninstaller hashes, not an inventory hash of every installed application file."
+  },
+  "evidence_encoding": "Structured JSON exports normalized to LF; compressed stdout/stderr snapshots preserve exact native bytes and match RESULTS SHA-256 fields."
+}
