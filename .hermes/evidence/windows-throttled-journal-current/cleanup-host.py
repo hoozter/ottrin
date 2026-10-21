@@ -1,6 +1,8 @@
 from pathlib import Path
-import json,subprocess,sys,time,xml.etree.ElementTree as E
-p=Path(__file__).resolve().parent;root=Path.cwd();sys.path.insert(0,str(root/'.hermes/evidence/windows-copy-cleanup-current'));import transport as n
+import argparse,json,re,subprocess,sys,time,xml.etree.ElementTree as E
+templates=Path(__file__).resolve().parent
+parser=argparse.ArgumentParser();parser.add_argument('--evidence-dir',type=Path,required=True);parser.add_argument('--case',required=True);parser.add_argument('--retire-detached-volume',action='store_true');args=parser.parse_args();assert re.fullmatch(r'[A-Za-z0-9_-]+',args.case)
+p=args.evidence_dir.resolve();root=Path.cwd();sys.path.insert(0,str(root/'.hermes/evidence/windows-copy-cleanup-current'));import transport as n
 o=json.loads((p/'OWNERSHIP.json').read_text());domain=o['domain'];source='/var/lib/libvirt/images/'+o['secondary_volume']
 def virsh(*args):return subprocess.check_output(['virsh',*args],text=True).strip()
 def volume_names():
@@ -25,8 +27,7 @@ def retire_volume():
  assert o['secondary_volume'] not in volume_names()
  receipt={'status':'pass','guest':'TEARDOWN_GUEST.json','domain_state':'shut off','persistent_domain_definition_unchanged':True,'task_disk_detached_and_deleted_via_libvirt':True,'domain_and_snapshot_references_clear':True,'retained_base_and_other_guests_preserved':True}
  (p/'TEARDOWN.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt),flush=True)
-if len(sys.argv)>1:
- assert sys.argv[1:] == ['--retire-detached-volume']
+if args.retire_detached_volume:
  retire_volume();raise SystemExit(0)
 disks=E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk')
 matching=[d for d in disks if d.find('target').get('dev')==o['target']]
@@ -34,8 +35,14 @@ assert len(matching)==1 and matching[0].find('source').get('file')==source
 assert matching[0].find('serial').text==o['secondary_serial']
 tune=dict(line.split(':',1) for line in virsh('blkdeviotune',domain,o['target'],'--live').splitlines() if ':' in line)
 assert int(tune['write_bytes_sec'].strip())==0
-result=json.loads((p/'same-plan-stop/RESULTS.json').read_text(encoding='utf-8-sig'));assert result['status']=='pass'
-script=(p/'teardown.ps1').read_text().replace('EXPECTED_HASH',result['test_binary_hash'])
+result=json.loads((p/args.case/'RESULTS.json').read_text(encoding='utf-8-sig'))
+dispatch=json.loads((p/args.case/'DISPATCH.json').read_text())
+binary=json.loads((p/args.case/'TEST_BINARY.json').read_text())
+assert result['status'] in ['pass','fail'] and result['dispatch_id']==dispatch['id']
+assert result['test_arguments']==dispatch['test_arguments']
+expected=binary['transferred_sha256'];assert expected==dispatch['transferred_sha256'] and re.fullmatch('[0-9a-f]{64}',expected)
+assert result.get('test_binary_hash') in [None,expected]
+script=(templates/'teardown.ps1').read_text().replace('EXPECTED_HASH',expected)
 pid=n.start(script);(p/'teardown.pid').write_text(str(pid));n.wait(pid,45)
 n.download('IO_TEARDOWN.json',p/'TEARDOWN_GUEST.json')
 virsh('detach-disk',domain,o['target'],'--live')

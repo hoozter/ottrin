@@ -2250,7 +2250,7 @@ fn windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryabl
         let cancelled = Arc::new(AtomicBool::new(false));
         let flag = cancelled.clone();
         APPEND_HANDOFF.with(|slot| {
-            *slot.borrow_mut() = Some(Box::new(move || flag.store(true, Ordering::Release)))
+            *slot.borrow_mut() = Some(Box::new(move |_, _| flag.store(true, Ordering::Release)))
         });
         let stopped = plan.reclaim(|_| {
             if cancelled.load(Ordering::Acquire) {

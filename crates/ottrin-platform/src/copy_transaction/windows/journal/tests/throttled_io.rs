@@ -136,7 +136,7 @@ fn run_case(operation: &str) {
     let worker = OwnedWorker(Some(std::thread::spawn(move || {
         let guard = crate::NativeIoCancellation::start(worker_flag.clone()).unwrap();
         APPEND_HANDOFF.with(|slot| {
-            *slot.borrow_mut() = Some(Box::new(move || {
+            *slot.borrow_mut() = Some(Box::new(move |_, _| {
                 ready_tx.send(()).unwrap();
                 go.recv_timeout(Duration::from_secs(30)).unwrap();
             }))

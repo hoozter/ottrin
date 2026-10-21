@@ -2316,7 +2316,7 @@ impl Journal {
         self.failed = true;
         #[cfg(test)]
         if let Some(hook) = APPEND_HANDOFF.with(|slot| slot.borrow_mut().take()) {
-            hook();
+            hook(&self.local, &self.central);
         }
         for (file, step) in [
             (&mut self.local, Step::LocalFlushed),
@@ -4043,7 +4043,9 @@ fn boundary(_: u64, _: Step) -> Result<(), PlatformError> {
     Ok(())
 }
 #[cfg(test)]
-thread_local! {static APPEND_HANDOFF: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const { std::cell::RefCell::new(None) };}
+type AppendHook = Box<dyn FnOnce(&File, &File)>;
+#[cfg(test)]
+thread_local! {static APPEND_HANDOFF: std::cell::RefCell<Option<AppendHook>> = const { std::cell::RefCell::new(None) };}
 #[cfg(test)]
 thread_local! {static FAULT:std::cell::Cell<Option<(u64,Step,bool)>>=const {std::cell::Cell::new(None)};}
 #[cfg(test)]
@@ -4068,6 +4070,7 @@ mod tests {
     mod claim_retirement;
     mod cleanup;
     mod creation_times;
+    mod disk_full;
     mod initialization;
     mod name_release_action;
     mod sparse_workflow;

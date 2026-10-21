@@ -1,3 +1,7 @@
+param(
+ [Parameter(Mandatory=$true)][ValidatePattern('^[a-z0-9-]{1,20}$')][string]$Serial,
+ [Parameter(Mandatory=$true)][ValidatePattern('^[a-f0-9]{32}$')][string]$Token
+)
 $ErrorActionPreference='Stop'
 $t=Get-ScheduledTask 'Ottrin Copy Cleanup QA'
 if($t.State.ToString()-in@('Running','Queued')-or[int]$t.Principal.RunLevel-ne0){throw 'Owned limited actor is unavailable'}
@@ -7,7 +11,7 @@ if(Test-Path $control){throw 'Control directory already exists'}
 $baseline=@{}
 foreach($pair in @(@('preferences','C:\Users\campbell\AppData\Roaming\ottrin\config.json'),@('installation','C:\Users\campbell\AppData\Local\Programs\Ottrin\Uninstall.exe'))){$baseline[$pair[0]]=@{path=$pair[1];hash=$(if(Test-Path -LiteralPath $pair[1]){(Get-FileHash -LiteralPath $pair[1]).Hash}else{$null})}}
 $baseline|ConvertTo-Json -Depth 4|Set-Content C:\OttrinCopyCleanupQA\io-baseline.json
-$disks=@(Get-Disk|Where-Object{$_.SerialNumber-eq'ottrin-throttled-jou'})
+$disks=@(Get-Disk|Where-Object{$_.SerialNumber-eq$Serial})
 if($disks.Count-ne1-or$disks[0].Size-ne512MB-or$disks[0].IsBoot-or$disks[0].IsSystem-or$disks[0].PartitionStyle-ne'RAW'){throw 'Owned blank secondary disk guard failed'}
 $number=$disks[0].Number;$identity=$disks[0].UniqueId
 function OwnedDisk {$d=Get-Disk -Number $number;if($d.UniqueId-ne$identity-or$d.IsBoot-or$d.IsSystem-or$d.Size-ne512MB){throw 'Owned secondary disk association changed'};$d}
@@ -25,7 +29,7 @@ $sid=(Get-LocalUser OttrinCopyQA).SID
 $acl=[Security.AccessControl.DirectorySecurity]::new()
 $acl.SetSecurityDescriptorSddlForm("O:$($sid.Value)D:P(A;OICI;FA;;;$($sid.Value))(A;OICI;FA;;;SY)")
 Set-Acl -LiteralPath $root -AclObject $acl
-'ccd1342584ce85acde55ba8756c1e353'|Set-Content -LiteralPath (Join-Path $root '.ottrin-owned-secondary-volume')
+$Token|Set-Content -LiteralPath (Join-Path $root '.ottrin-owned-secondary-volume')
 New-Item -ItemType Directory $control|Out-Null
-@{root=$root;control=$control;token='ccd1342584ce85acde55ba8756c1e353';actor_sid=$sid.Value;disk_number=$number;disk_unique_id=$identity;volume_unique_id=$volume.UniqueId;drive_letter=$partition.DriveLetter.ToString()}|ConvertTo-Json|Set-Content C:\OttrinCopyCleanupQA\IO_VOLUME.json
+@{root=$root;control=$control;token=$Token;actor_sid=$sid.Value;disk_number=$number;disk_unique_id=$identity;volume_unique_id=$volume.UniqueId;drive_letter=$partition.DriveLetter.ToString()}|ConvertTo-Json|Set-Content C:\OttrinCopyCleanupQA\IO_VOLUME.json
 Get-Content C:\OttrinCopyCleanupQA\IO_VOLUME.json -Raw
