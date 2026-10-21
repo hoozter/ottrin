@@ -1,11 +1,11 @@
 {
   "status": "pass",
-  "source_revision": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24",
+  "source_revision": "93fd4c975d74a7a31360a8baf4ae3942f6aada51",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "7ba8673531bd5cd784ab24b9a6e831a931a3181e02db933f9ec0a201f7cf00b8",
-    "Ottrin-0.1.0-x86_64.AppImage": "6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f42888f529d65b183f347728819f46f746dea8fdebe44dd319c83abd97705314",
-    "ottrin_0.1.0_amd64.deb": "5e5e98327d1c75a51491dae9cda9ef86d2bbf4bd6a68992e0aedbaca3b008819"
+    "ottrin-0.1.0-1.x86_64.rpm": "60dfd4e5321d39b8e87b07750eaab66ee8a7876924735abcc5e9050f0b93feea",
+    "Ottrin-0.1.0-x86_64.AppImage": "0fa7ff08236093645038533c087a552fb52393761df12c1a256cec6c1cace7a6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "30737e1fd49506e71377e744db40f1c36bb8121f919cf53ae44d486efcda3baa",
+    "ottrin_0.1.0_amd64.deb": "9a302e1d0956fa28d9a193f1e0f1c10a7dca62dc7c9cd6099ab62e5c3be8392f"
   },
   "checks": [
     "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
@@ -13,12 +13,11 @@
     "all four formats contain exact current guide and release docs",
     "clean embedded source revision",
     "all package runtime identities checked against the actual rebuilt AppImage",
-    "Pinned upstream search provider and notices; RPM code identity and exact standard-strip reproduction; actual RPM search smoke",
-    "Exact extracted AppImage Dark100/Light150: visible Duration caption, Trash/Activity Undo, original and unrelated bytes, normal exit and private process/profile/display teardown",
-    "AppImage and RPM private namespace ownership checks preserve foreign daemons and source/config"
+    "Actual Dark100 AppImage: Copy/Paste, automatic conflict Rename, Copy Undo, Rename, Cut/Paste without reselection, Move Undo, Rename Undo",
+    "All four fixture sources preserved; normal app exit, owned display/daemon/profile teardown verified"
   ],
-  "scope": "Linux package content and targeted private X11/namespace acceptance. Fresh distro lifecycle, physical desktop/device, full media and release gates remain open.",
+  "scope": "Four-format package content/identity and targeted Linux X11 ordinary file workflow acceptance. Windows native GUI, fresh distro lifecycle, physical desktop and full roadmap gates remain open.",
   "verifier_sha256": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
   "cleanup": "private extractions removed by TemporaryDirectory",
-  "evidence": ".hermes/evidence/activity-timing-current"
+  "evidence": ".hermes/evidence/linux-copy-workflows-current"
 }

@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "removed": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnequ6vhu7-0klp5p5-8w5f3sygg3tqtdfe3uarm0jxn",
+  "replacement": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hneqv3ih0k-074ont7-5tt3j0r6tcgsi7oxkhcfjnspq",
+  "logical_bytes": 336773878,
+  "checks": [
+    "exclusive flock and record locks",
+    "no mapped/open consumer",
+    "all hard links accounted for within shared incremental root"
+  ],
+  "scope": "Only this task superseded host UI test session; useful current and other configurations retained"
+}

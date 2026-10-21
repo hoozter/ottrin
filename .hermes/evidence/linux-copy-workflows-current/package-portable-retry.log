@@ -1,0 +1,44 @@
+   Compiling x11-dl v2.21.0
+   Compiling glib-sys v0.20.10
+   Compiling gobject-sys v0.20.10
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling gio-sys v0.20.10
+   Compiling fontique v0.11.1
+   Compiling winit v0.30.12
+   Compiling glutin_glx_sys v0.6.1
+   Compiling glib v0.20.12
+   Compiling parley v0.11.1
+   Compiling glutin v0.32.3
+   Compiling gio v0.20.12
+   Compiling egui-wgpu v0.33.3
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling rwml v0.1.4
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling glutin-winit v0.5.0
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling eframe v0.33.3
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 4m 32s
+   Compiling glib-sys v0.21.5
+   Compiling gobject-sys v0.21.5
+   Compiling gstreamer-sys v0.24.5
+   Compiling gio-sys v0.21.5
+   Compiling gstreamer-base-sys v0.24.5
+   Compiling fontique v0.11.1
+   Compiling glib v0.21.5
+   Compiling gstreamer-app-sys v0.24.5
+   Compiling parley v0.11.1
+   Compiling rwml v0.1.4
+   Compiling gstreamer v0.24.4
+   Compiling gstreamer-base v0.24.5
+   Compiling gstreamer-app v0.24.4
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 1m 06s
+   Compiling rwml v0.1.4
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 1m 16s
+/tmp/tmp.A5a3j6tY0J/pdfium.tgz: OK
+/tmp/tmp.HXnl2gePUn/archive: OK
+/tmp/tmp.HXnl2gePUn/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/linux-rename-refresh/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
