@@ -1,0 +1,7 @@
+{
+  "status": "fixture assumption rejected by native test",
+  "source_sha256": "5252d1cf25ee7883355b1684ecbf4a037110a8e56a792b8a48f3492c62dfc9a2",
+  "snapshot": "initial-fixture.rs.gz",
+  "result": "initial-payload-full/RESULTS.json",
+  "reason": "BackupWrite reserved the primary stream before the first data progress callback; filling remaining space then did not cause a payload allocation error. Production operation completed correctly."
+}

@@ -1,0 +1,97 @@
+{
+  "status": "pass for recorded native payload allocation failure and journal regressions",
+  "source": "SOURCE.json",
+  "runs": {
+    "paired": {
+      "status": "pass",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "paired/RESULTS.json",
+      "arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_paired_journals_recover_after_space_is_freed --nocapture --test-threads=1 --ignored",
+      "test_binary_sha256": "4b7699a46ba95794d7597fcbfdb0ae71cb7de93e3a77617442d8798b0245c278",
+      "source_scope": "initial snapshot, unchanged shared helper and journal test definitions"
+    },
+    "divergent": {
+      "status": "pass",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "divergent/RESULTS.json",
+      "arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_divergent_journals_preserve_data_and_refuse_retry --nocapture --test-threads=1 --ignored",
+      "test_binary_sha256": "4b7699a46ba95794d7597fcbfdb0ae71cb7de93e3a77617442d8798b0245c278",
+      "source_scope": "initial snapshot, unchanged shared helper and journal test definitions"
+    },
+    "destination-full": {
+      "status": "pass",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "destination-full/RESULTS.json",
+      "arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_destination_full_with_separate_registry_recovers --nocapture --test-threads=1 --ignored",
+      "test_binary_sha256": "4b7699a46ba95794d7597fcbfdb0ae71cb7de93e3a77617442d8798b0245c278",
+      "source_scope": "initial snapshot, unchanged shared helper and journal test definitions"
+    },
+    "registry-full": {
+      "status": "pass",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "registry-full/RESULTS.json",
+      "arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_registry_full_with_separate_destination_preserves_and_refuses --nocapture --test-threads=1 --ignored",
+      "test_binary_sha256": "4b7699a46ba95794d7597fcbfdb0ae71cb7de93e3a77617442d8798b0245c278",
+      "source_scope": "initial snapshot, unchanged shared helper and journal test definitions"
+    },
+    "payload-full": {
+      "status": "pass",
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "evidence": "payload-full/RESULTS.json",
+      "arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage --nocapture --test-threads=1 --ignored",
+      "test_binary_sha256": "842b6937da07daa246775774a72e0b642a9b9799fe7d273c0355b3270ae72c59",
+      "source_scope": "final source"
+    }
+  },
+  "payload_observation": {
+    "parent_volume": 15575380230202567598,
+    "registry_volume": 11426905405696362349,
+    "progress_before_fill": 65536,
+    "primary_source_and_candidate_bytes": 524305,
+    "named_source_bytes": 262163,
+    "named_candidate_bytes": 0,
+    "paired_journal_bytes": 8444,
+    "native_error": 112,
+    "available_bytes_at_barrier": 0
+  },
+  "proof": [
+    "Filler consumes only token-bound 512 MiB secondary NTFS volume; source and registry remain on distinct healthy volume",
+    "Actual named-stream BackupWrite allocation fails with Windows error 112 after the primary stream has started; caller receives CleanupPending with retained path",
+    "Both complete source streams are unchanged; unrelated destination file is unchanged; public destination remains absent",
+    "Primary destination bytes match source; named payload is incomplete; paired journals remain parseable and byte-identical",
+    "Fresh resume admission and direct publication refuse the incomplete tree without changing journals, retained primary/named bytes or source",
+    "Each passing native case explicitly selected, ordinary-account execution, one passed and zero ignored; four earlier journal cases retain their exact executable identity"
+  ],
+  "fixture_correction": "INITIAL_FIXTURE.json records rejected assumption and exact source snapshot: filling after primary stream reservation did not force a write error. A second stream forces a subsequent real allocation. This is a fixture correction, not a production defect fix.",
+  "checks": {
+    "strict_cross_windows_platform_ui_all_target_clippy": "pass; clippy-final.log",
+    "format_and_diff": "pass"
+  },
+  "cleanup": {
+    "status": "pass",
+    "guest": "TEARDOWN_GUEST.json",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "task_disk_detached_and_deleted_via_libvirt": true,
+    "domain_and_snapshot_references_clear": true,
+    "retained_base_and_other_guests_preserved": true
+  },
+  "preservation_scope": {
+    "baseline": "BASELINE.json",
+    "verified": "Exact original config.json and installed Uninstall.exe hashes; not a full installed-payload inventory"
+  },
+  "storage": "STORAGE.json",
+  "delivery": "No production code changed; no packages rebuilt or published. Public Windows Copy remains gated.",
+  "limits": [
+    "One NTFS named-stream allocation failure after initial primary data; this does not cover every primary/sparse/metadata/setup allocation boundary",
+    "Preserved incomplete payload is refused, not automatically resumed or reclaimed; unfinished-transaction handling remains required",
+    "Undo and cleanup full-disk mutation phases, torn records, cancellation inside writes, power, remote/device/other-filesystem and full application resource acceptance remain",
+    "Current public Windows workflows and package/installer acceptance remain"
+  ],
+  "evidence_encoding": "JSON normalized to LF; gzip stdout/stderr preserve exact native bytes and RESULT hashes"
+}

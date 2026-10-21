@@ -1056,7 +1056,7 @@ through libvirt. The current disk-full receipt and driver are under
 `.hermes/evidence/windows-full-disk-current/`.
 
 The shared `run-case.py` driver requires `--evidence-dir PATH` with the matching
-ownership and actual-volume token receipts. It runs all four explicit disk-full
+ownership and actual-volume token receipts. It runs all five explicit disk-full
 cases on one executable. The separate-volume cases place either destination or
 registry on the owned full disk and the other on the ordinary actor's temp volume;
 native volume serial numbers must differ. Only the owned disk may be filled.
@@ -1065,6 +1065,17 @@ registry-full must preserve and refuse its divergent pair on fresh and retained
 retries. Current four-case acceptance is in
 `.hermes/evidence/windows-split-full-disk-current/ACCEPTANCE.json`. This covers
 forward journal writes after staging, not initial payload, Undo or cleanup writes.
+
+The fifth case fills the owned destination after the first primary-stream data
+callback. Windows may already have reserved that stream's allocation, so a second
+named stream is required to force a subsequent payload allocation failure. Require
+the actual native disk-full error, unchanged primary and named source bytes,
+retained incomplete candidate and paired journals, no public destination, and
+byte-preserving refusal by fresh resume and direct publication. Filling the disk
+alone is insufficient proof of a failed write. The exact native payload receipt
+and rejected first fixture are under
+`.hermes/evidence/windows-payload-full-current/`. This adds one payload failure
+scope; it does not establish automatic recovery or cleanup of incomplete data.
 
 Windows recovery admission now binds the authenticated registry/header,
 sealed immutable completion digest and actual parent location before creation

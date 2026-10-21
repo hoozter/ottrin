@@ -1,0 +1,43 @@
+{
+  "scope": "Only task-touched Windows platform/UI configurations; newest finalized sessions retained with compiler locks held and external hard links checked",
+  "retired_sessions": [
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnem16skq8-0n89u7k-3crx4zgh055cywcfxt14qu6xg",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnem7z5qd1-184c1vr-7bivspxhe6rm54leckht4usyp",
+      "logical_bytes": 49817850
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnely9azvt-1xvlnnn-5d5cj7pwzk9tjixnqbhu4z7tg",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnem5j9gxg-09zigcy-cgd8y26cukj32fn4t5tw1ns93",
+      "logical_bytes": 1265335296
+    }
+  ],
+  "removed_disposable_files": [
+    {
+      "path": ".hermes/evidence/windows-payload-full-current/registry-full/build.jsonl",
+      "sha256": "635b347b920f677d41ea206977de1e1069d40199416ba7a22f4d326e95a19ed0"
+    },
+    {
+      "path": ".hermes/evidence/windows-payload-full-current/payload-full/build.jsonl",
+      "sha256": "b32b0681c35807647efa531c7b2a0720bf2fe4cca9e20530ffae51c55b5b1b4e"
+    },
+    {
+      "path": ".hermes/evidence/windows-payload-full-current/paired/build.jsonl",
+      "sha256": "635b347b920f677d41ea206977de1e1069d40199416ba7a22f4d326e95a19ed0"
+    },
+    {
+      "path": ".hermes/evidence/windows-payload-full-current/initial-payload-full/build.jsonl",
+      "sha256": "635b347b920f677d41ea206977de1e1069d40199416ba7a22f4d326e95a19ed0"
+    },
+    {
+      "path": ".hermes/evidence/windows-payload-full-current/divergent/build.jsonl",
+      "sha256": "635b347b920f677d41ea206977de1e1069d40199416ba7a22f4d326e95a19ed0"
+    },
+    {
+      "path": ".hermes/evidence/windows-payload-full-current/destination-full/build.jsonl",
+      "sha256": "635b347b920f677d41ea206977de1e1069d40199416ba7a22f4d326e95a19ed0"
+    }
+  ],
+  "status": "removed",
+  "after_du": "17G\ttarget/debug/deps\n6.9G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n526M\t.hermes/packaging-tmp\n1.1M\t.hermes/evidence/windows-payload-full-current\n"
+}

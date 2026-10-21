@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "secondary_volume": "ottrin-payload-full-current.qcow2",
+  "secondary_serial": "ottrin-payload-full",
+  "secondary_size": 536870912,
+  "target": "vdb",
+  "token": "7d9c6168d2ed18f4873f92b72e393eac",
+  "base_commit": "959fbd0a782d7f6863b8e1cded8e85e8364a5499",
+  "scope": "Fill owned secondary NTFS disk during actual Copy payload writes; source and registry remain on separate healthy volume"
+}

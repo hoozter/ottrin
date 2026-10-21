@@ -1,0 +1,10 @@
+{
+  "disk_unique_id": "ottrin-payload-full",
+  "actor_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+  "volume_unique_id": "\\\\?\\Volume{d6d4d641-9e8a-4e7b-b783-297668aaa609}\\",
+  "control": "C:\\OttrinCopyCleanupQA\\io-control",
+  "token": "7d9c6168d2ed18f4873f92b72e393eac",
+  "drive_letter": "D",
+  "root": "D:\\OttrinIOQA",
+  "disk_number": 0
+}

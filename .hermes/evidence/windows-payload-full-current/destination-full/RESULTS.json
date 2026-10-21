@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_destination_full_with_separate_registry_recovers --nocapture --test-threads=1 --ignored",
+  "ordinary_user": true,
+  "stdout_sha256": "eab577bbebce18b99ad91df72ec2df28f0501a3514a0276d9544708af3d3d4f2",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "4b7699a46ba95794d7597fcbfdb0ae71cb7de93e3a77617442d8798b0245c278",
+  "dispatch_id": "23041771b1de2b36ab4d4940c4480fb9"
+}

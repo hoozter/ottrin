@@ -1,0 +1,13 @@
+{
+  "base_commit": "959fbd0a782d7f6863b8e1cded8e85e8364a5499",
+  "source_commit": "19da4a09c22240f662828d8be9d6d9b772076419",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/disk_full.rs": "5b8e1ec4093938d40581b93e6039c9099c23e094009a8e18d1764509b24e867e",
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "08b4ac408b5651ecd0db7c5c102ba6f9ab715d099a82af155835a4995c0dccaf",
+    ".hermes/evidence/windows-full-disk-current/run-case.py": "39b80d8e23493bd391cbb21e6ce5cbab2ad42a23996554ae6c3f1d77888bc668"
+  },
+  "initial_fixture_snapshot": "initial-fixture.rs.gz",
+  "initial_fixture_sha256": "5252d1cf25ee7883355b1684ecbf4a037110a8e56a792b8a48f3492c62dfc9a2",
+  "unchanged_shared_helper_and_four_journal_tests_prefix_sha256": "17e02d76174b12391850205a92c5427dc12c2729d67e57866afb3732dce9f146",
+  "scope": "Test-only changes. Four journal cases ran before the payload-fixture correction; their shared helper and test definitions are byte-identical to final source. Corrected payload case ran on final source."
+}

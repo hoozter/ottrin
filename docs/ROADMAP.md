@@ -324,6 +324,34 @@ inside a record, torn records, remote/device/other filesystems, power and full
 application resource gates remain. These checkpoints change tests/QA tooling only;
 public Windows Copy and existing application packages remain unchanged.
 
+## Native Windows payload disk-full preservation
+
+Test source `19da4a09` also exercises allocation failure during payload staging.
+The destination is on the owned small NTFS disk; source and registry are on a
+distinct healthy volume. After the first 65,536 data bytes, the fixture fills the
+destination. The primary stream's reserved allocation permits it to finish, but
+the subsequent named stream fails with native Windows error 112. Both source
+streams remain exact; the unpublished candidate retains its complete 524,305-byte
+primary stream and incomplete named stream. Matching 8,444-byte journals remain
+parseable. Fresh resume admission and direct publication refuse the incomplete
+tree without changing source, candidate or journal bytes.
+
+The initial single-stream fixture completed successfully because Windows had
+already reserved its allocation; its failed test expectation and source snapshot
+are retained. Adding the second stream tests a real later allocation failure.
+The four journal cases also pass after extracting the shared filler helper;
+their exact executable precedes the payload-fixture correction, with unchanged
+helper and journal-test definitions. The corrected payload case passes on final
+source, with strict Windows platform/UI all-target Clippy. The owned disk and
+fixtures are removed, the retained guest is shut off, and its persistent definition
+and recorded preferences/uninstaller hashes match. Exact scopes:
+`.hermes/evidence/windows-payload-full-current/ACCEPTANCE.json`.
+
+This verifies preservation and refusal, not resuming or reclaiming an incomplete
+payload. Remaining staging/setup/metadata boundaries, Undo/cleanup full-disk phases
+and the broader Windows Copy gates remain. No production behavior or packages
+changed; public Windows Copy stays disabled.
+
 ## Local Trash Undo receipt discovery
 
 A full Linux UI run reproduced a local Trash worker timeout. System-call tracing

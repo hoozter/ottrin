@@ -1,0 +1,11 @@
+{
+  "exit": 101,
+  "stderr_sha256": "33a145c6d14f2524b414d45e4302ae7152979e3b893709e07bfaf84b40aa56c6",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage --nocapture --test-threads=1 --ignored",
+  "ordinary_user": true,
+  "error": "Native cleanup observation failed",
+  "stdout_sha256": "e36d2c862e9d1ce8e4d1ef9a438de3f2800df1380d1f88ffe5ef4016d894436a",
+  "status": "fail",
+  "test_binary_hash": "4b7699a46ba95794d7597fcbfdb0ae71cb7de93e3a77617442d8798b0245c278",
+  "dispatch_id": "e0c915f0e7109c9bd44333f2d73e0c9e"
+}
