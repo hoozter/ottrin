@@ -37,8 +37,9 @@ pub use copy_recovery::{
 
 #[cfg(target_os = "windows")]
 pub use copy_transaction::{
-    RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan, RetainedCopyResumePlan,
-    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyAbortPlan, RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan,
+    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
+    WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub fn discover_retained_copy_transactions_at(
@@ -74,6 +75,21 @@ pub fn restore_retained_copy_undo_plan(
     transaction_id: &str,
 ) -> Result<RetainedCopyUndoPlan, PlatformError> {
     copy_transaction::restore_windows_copy_undo(transaction_id)
+}
+
+/// Read-only admission to end an unverified Windows Copy attempt.
+/// Execution permanently prevents publication and releases only its name claim;
+/// all partial files, source data and recovery journals remain in place.
+#[cfg(target_os = "windows")]
+pub fn restore_retained_copy_abort_plan_at(
+    root: &Path,
+    id: &str,
+) -> Result<RetainedCopyAbortPlan, PlatformError> {
+    copy_transaction::restore_windows_copy_abort_at(root, id)
+}
+#[cfg(target_os = "windows")]
+pub fn restore_retained_copy_abort_plan(id: &str) -> Result<RetainedCopyAbortPlan, PlatformError> {
+    copy_transaction::restore_windows_copy_abort(id)
 }
 
 /// Read-only admission of non-destructive Windows name-release recovery.

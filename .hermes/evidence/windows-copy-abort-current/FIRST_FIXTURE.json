@@ -1,0 +1,12 @@
+{
+  "source_sha256": "72d9f0fefba52b675d3032f383f7550d534648ff91a691e7a25bd6b47009c4ae",
+  "source_snapshot": "initial-fixture.rs.gz",
+  "result": "abort-initial/RESULTS.json",
+  "reason": "Writable setup directory handles remained live across configured read-only admission, causing native sharing error 32. Setup handles now end before configured APIs. Production permissions and sharing masks unchanged.",
+  "second_fixture": {
+    "snapshot": "claim-only-fixture.rs.gz",
+    "sha256": "6e9e74592d0f25e82532d7c5d1db522ad8b1e9be2b06e0b834ca920c38646b7b",
+    "result": "abort-claim-only/RESULTS.json",
+    "reason": "A later claim with no durable staging is intentionally reclaimed by the existing unstarted-claim protocol. The stale-plan test now creates an actual later durable stage before checking that reservation remains protected."
+  }
+}

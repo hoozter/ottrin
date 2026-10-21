@@ -27,6 +27,7 @@ mod cleanup;
 mod cleanup_action;
 mod initialization;
 pub use cleanup_action::RetainedCopyCleanupPlan;
+mod abort;
 mod cleanup_dependencies;
 mod cleanup_finalize;
 mod cleanup_group;
@@ -34,6 +35,8 @@ mod cleanup_peer;
 mod cleanup_protocol;
 mod cleanup_tree;
 mod discovery;
+pub use abort::RetainedCopyAbortPlan;
+pub(crate) use abort::{restore_abort, restore_abort_at};
 mod name_release;
 pub use name_release::RetainedCopyNameReleasePlan;
 pub(crate) use name_release::{restore_name_release, restore_name_release_at};
@@ -48,7 +51,7 @@ pub(crate) use discovery::{
 };
 use rename_creation::{RenameCreation, RenameKind, pending_undo_epochs};
 
-const MAGIC: &[u8; 8] = b"OTCPWJ17";
+const MAGIC: &[u8; 8] = b"OTCPWJ18";
 const FRAME_HEADER: usize = 84;
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 const MAX_LOG: u64 = 64 * 1024 * 1024;
@@ -302,7 +305,7 @@ impl Header {
     }
     fn valid(&self) -> bool {
         self.protocol == "ottrin-windows-copy"
-            && self.schema == 17
+            && self.schema == 18
             && self.claim.matches(
                 self.parent,
                 self.central,
@@ -372,6 +375,7 @@ enum Record {
     TreeVerified {
         count: usize,
     },
+    StagingAborted,
     SecurityPlanBegin {
         header: Box<security::SecurityPlanHeader>,
     },
@@ -456,6 +460,7 @@ struct State {
     header: Option<Header>,
     nodes: Vec<Node>,
     verified: bool,
+    aborted: bool,
     planned: Option<security::TreeSecurityEvidence>,
     planning: Option<Planning>,
     permissions: security::PermissionProgress,
@@ -601,7 +606,10 @@ fn valid_streams(
 }
 impl State {
     fn claim_terminal(&self) -> bool {
-        self.undo_complete() || self.cleanup.is_some()
+        self.aborted || self.undo_complete() || self.cleanup.is_some()
+    }
+    fn can_abort_staging(&self) -> bool {
+        self.header.is_some() && !self.verified && !self.aborted
     }
     fn undo_complete(&self) -> bool {
         self.undone.is_some() && (self.original.is_none() || self.original_restored.is_some())
@@ -711,6 +719,16 @@ impl State {
     }
     fn check(&self, record: &Record) -> Result<(), PlatformError> {
         let invalid = || io("invalid Windows Copy staging journal transition or evidence");
+        if self.aborted {
+            return Err(invalid());
+        }
+        if matches!(record, Record::StagingAborted) {
+            return if self.can_abort_staging() {
+                Ok(())
+            } else {
+                Err(invalid())
+            };
+        }
         if self.check_cleanup_record(record)? {
             return Ok(());
         }
@@ -1064,7 +1082,7 @@ impl State {
             | Record::SecurityPlanBegin { .. }
             | Record::SecurityPlanEntry { .. }
             | Record::SecurityPlanComplete { .. } => return Err(invalid()),
-            Record::Cleanup { .. } => return Err(invalid()),
+            Record::Cleanup { .. } | Record::StagingAborted => return Err(invalid()),
             Record::TreeVerified { count } => {
                 if self.header.is_none()
                     || *count == 0
@@ -1176,6 +1194,7 @@ impl State {
             }
             Record::EntryStaged { index, evidence } => self.nodes[index].staged = Some(evidence),
             Record::TreeVerified { .. } => self.verified = true,
+            Record::StagingAborted => self.aborted = true,
             Record::SecurityPlanBegin { header } => {
                 self.planning = Some(Planning {
                     expected: header.count(),
@@ -1417,7 +1436,7 @@ impl Journal {
             central_security: security::PrivateSecurity::capture(&central_file, &creator)?,
             creator,
             protocol: "ottrin-windows-copy".into(),
-            schema: 17,
+            schema: 18,
             transaction: name,
             parent: parent_id,
             parent_case_sensitive: destination.case_sensitive,
@@ -4061,6 +4080,7 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 
 #[cfg(test)]
 mod tests {
+    mod abort;
     mod blocked_io;
     mod claim_orphans;
     mod claim_processes;
@@ -6841,6 +6861,10 @@ mod tests {
         }
         let registry = local.join("Ottrin/State/copies");
         let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
+        if case.starts_with("abort-") {
+            abort::partial_stage_at(&fixture_root, &registry, &destination);
+            return;
+        }
         let (name, candidate, _cleanup) = if case.starts_with("resume") {
             staged_resume_fixture_at(&fixture_root, &destination, true, false, Some(&registry))
         } else {

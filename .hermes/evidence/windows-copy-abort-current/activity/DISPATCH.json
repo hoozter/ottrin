@@ -1,0 +1,7 @@
+{
+  "id": "503099a82560cf7c6b056452ae6d2af4",
+  "status": "dispatched",
+  "test_arguments": "--exact tests::windows_copy_recovery_activity_integration --nocapture --test-threads=1 --ignored",
+  "transferred_sha256": "ca31c1501f392dacb2b4e8bca8909cb13349d5629d71551a0125941b30e1a7a5",
+  "watchdog_ms": 300000
+}

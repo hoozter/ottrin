@@ -1,0 +1,19 @@
+{
+  "base_commit": "f3fb4739d07e080b907528acc3f8d125b31d58d3",
+  "status": "uncommitted current implementation; hashes bind the final focused platform and Activity runs",
+  "files": {
+    ".hermes/evidence/windows-copy-abort-current/run-matrix.py": "0315f230b52d429655763abcd9b8fb457bdf05b6d8ad5a8747ba1eee3b6c6644",
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "7040c26c099080e30849883b60887479870e38fdb97a0ea75abb396933a8f6c6",
+    ".hermes/evidence/windows-copy-cleanup-current/teardown-native.py": "96ceada162d5a7de515cbcc2f13e109a01020a78d523cc9935cf9c5989a49e9c",
+    "crates/ottrin-platform/src/copy_transaction.rs": "db56cc8e4d309478b8027b1abe605d68a6c74373f608c111c9ba9d63f7577b85",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "030fe6cf4ab89c3b0984d695cea8dbb47213c876a2b17898e942c62660b66d68",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "5d33ff54737b278a0b2611b8a9747bbc5629658331d733ee2005c4e8e6728626",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/abort.rs": "9da84c7d0b888aa909e71ed9eb1fd644f3e5b2143314a6a781342846f41ee289",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "040aefc449a20f9b771772aa9edc001429fec17638c1739a077b4fdeb60ddbbd",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort.rs": "c2b5be1f0ce65f1d2bf03670aa6817939f3dc8e207ec5ac8477a6dac66b18d3b",
+    "crates/ottrin-platform/src/lib.rs": "78ecdaeacd3e5de7ad952fecb3565e3b669e5257fa44dd55bd27d53d46399757",
+    "crates/ottrin-ui/src/copy_activity_recovery.rs": "03ef0c20119bb5eb44f10caa199b8a08da5ee71a4d1d0e512ab922bd595714dd",
+    "crates/ottrin-ui/src/lib.rs": "0602c6e2358d116bcba22b6ecb29cc6526509bb53651e7b6615f8f336de88160"
+  },
+  "broader_core": "core/TEST_BINARY.json binds the earlier protocol test executable before the UI, target display getter and shared Activity fixture refactor. Its exact scope is supplemental; abort-final and Activity bind the final build."
+}

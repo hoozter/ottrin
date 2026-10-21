@@ -37,7 +37,7 @@ Earlier lifetime controls:
 
 ## Current claim preparation lifecycle
 
-The current journal schema is 17 and the claim format is `OTCWCL03`. New controls
+The current journal schema is 18 and the claim format is `OTCWCL03`. New controls
 are ordinary persistent private files. There is no delete-on-close factory or
 in-place temporary disposition transition. A root-level claim preparation is
 flushed and verified before held-handle no-replace publication into its target
@@ -62,6 +62,30 @@ this rule adds neither a filename/age-based sweeper nor payload deletion rights.
 Focused ordinary-user native regression passes 39 checks, including four new
 preparation cleanup tests. The broader journal and post-change guest-power scopes
 are recorded separately in the roadmap and acceptance receipts.
+
+## Ending unverified staging
+
+A canonical incomplete transaction can admit an opaque `RetainedCopyAbortPlan`
+without opening any payload or source. The plan captures the registry anchor,
+paired journal bytes, native parent location/security and exact claim epoch.
+Explicit confirmation in Activity permanently ends that attempt and releases its
+reserved destination name. It keeps all partial files, edits, additional streams,
+unrecognized files and recovery journals; it does not reclaim storage.
+
+The exclusive writer rechecks the captured controls before persisting the paired
+`StagingAborted` record. That record is terminal: no subsequent staging,
+verification, publication, Undo or payload-cleanup transition is valid. Ordinary
+durable claim release follows only the paired terminal record. A one-sided append
+remains refused and reserved; a fully paired terminal prefix can use the existing
+non-destructive name-release action after restart. An older plan cannot release
+a later durable copy's reservation.
+
+Schema 18 adds this terminal state. Older schemas remain review-only and are not
+converted or deleted. UI confirmation retains the exact originally admitted plan;
+refresh cannot silently replace the action the user reviewed. Current native
+acceptance is recorded in `.hermes/evidence/windows-copy-abort-current/`.
+Incomplete-payload reclamation, broader transaction/workflow acceptance and public
+Windows Copy remain unfinished.
 
 ## Persistent journal setup and live-owner failure
 
@@ -612,7 +636,7 @@ implicit. The domain is `ottrin-windows-sparse-v1`; offsets and EOF are encoded
 little-endian. This fingerprints logical contents independently of native buffer
 and allocation boundaries without reading or hashing large holes. Dense-stream
 SHA-256 remains a hash of the ordinary stream bytes. Existing evidence fields and
-journal schema 17 remain authoritative; the stream sparse attribute selects this
+journal schema 18 remain authoritative; the stream sparse attribute selects this
 newly admitted fingerprint. The base file sparse attribute is checked against its
 primary stream, independently of sparse named streams.
 

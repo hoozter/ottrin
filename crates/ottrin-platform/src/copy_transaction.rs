@@ -13,13 +13,15 @@ use std::path::{Path, PathBuf};
 mod windows;
 #[cfg(target_os = "windows")]
 pub use windows::{
-    RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan, RetainedCopyResumePlan,
-    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyAbortPlan, RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan,
+    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
+    WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub(super) use windows::{
     discover_windows_copy_transactions, discover_windows_copy_transactions_at,
-    discover_windows_copy_transactions_at_with_progress, restore_windows_copy_name_release,
+    discover_windows_copy_transactions_at_with_progress, restore_windows_copy_abort,
+    restore_windows_copy_abort_at, restore_windows_copy_name_release,
     restore_windows_copy_name_release_at, restore_windows_copy_resume,
     restore_windows_copy_resume_at, restore_windows_copy_undo, restore_windows_copy_undo_at,
 };

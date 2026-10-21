@@ -1,0 +1,12 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact tests::windows_copy_recovery_activity_integration --nocapture --test-threads=1 --ignored",
+  "ordinary_user": true,
+  "stdout_sha256": "8234f9c9c600919baacbf497d349b5be2610111ee9b08de711842f41ccb81a03",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "ca31c1501f392dacb2b4e8bca8909cb13349d5629d71551a0125941b30e1a7a5",
+  "dispatch_id": "503099a82560cf7c6b056452ae6d2af4",
+  "fixture_binary_hash": "e720681e83af0cfd14572bda8336fc6714a97531aabbf5cac79504ec42dbd629"
+}

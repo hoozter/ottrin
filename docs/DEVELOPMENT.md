@@ -1307,6 +1307,29 @@ that upgrading removes the old product registration, retains only the new one,
 preserves preferences/source data and migrates the per-user index task.
 
 
+## Native Windows incomplete Copy staging-end checks
+
+`RetainedCopyAbortPlan` ends only an unverified canonical staging attempt. It
+captures private controls at read-only admission, rechecks them as an exclusive
+writer, writes the paired terminal `StagingAborted` event, then uses ordinary
+claim release. It never opens or deletes the payload or source. Activity requires
+explicit confirmation and retains the originally reviewed plan across refresh.
+Schema 18 preserves older records for review without converting them.
+
+Focused native tests are in `journal/tests/abort.rs`. They retain edited partial
+files, an added named stream and an unknown file, deny publication after ending,
+refuse live/stale/verified controls and protect a later durable stage's reservation.
+One-sided journal failure stays reserved; a complete paired terminal prefix can
+finish through the normal name-release action. The native Activity integration
+also exercises cancel, confirm and changed controls through rendered clicks.
+The canonical QA runner exports and verifies its current platform fixture rather
+than relying on an executable left by an earlier task; teardown removes that
+fixture after checking its hash. Receipts and limits belong in
+`.hermes/evidence/windows-copy-abort-current/ACCEPTANCE.json`.
+
+This action does not reclaim incomplete payloads, remove their recovery records,
+complete resource/concurrency/workflow acceptance, or enable public Windows Copy.
+
 ## Native Linux package lifecycle
 
 DEB/RPM use `packaging/linux/native-package-lifecycle.sh` for native service cleanup and post-install refresh. User files are changed only after switching to that UID with a sanitized environment; effective executable ownership keeps independent portable/AppImage services intact. Removal performs ownership preflight before mutation, refuses unresolved offline overrides, and retains preferences, indexes and source files. Reinstall uses try-restart so stopped registrations remain stopped.

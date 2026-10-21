@@ -1,4 +1,4 @@
-//! Explicit Windows forward and name-release recovery. Only a freshly admitted
+//! Explicit Windows forward, staging-end and name-release recovery. Only a freshly admitted
 //! typed plan can start the shared off-thread worker.
 use super::*;
 
@@ -13,6 +13,7 @@ pub(super) struct CopyRecoveryUi {
     operation: Option<u64>,
     cancellation: Option<Arc<AtomicBool>>,
     errors: HashMap<u64, String>,
+    confirmation: Option<(u64, CopyRecoveryAction)>,
     // Test builds can hold the real worker before its first platform callback,
     // so a rendered Stop click is deterministic even for a tiny fixture.
     #[cfg(test)]
@@ -66,7 +67,56 @@ pub(super) fn can_recover(record: &OperationRecord) -> bool {
 }
 
 impl OttrinApp {
-    pub(super) fn run_copy_recovery(&mut self, id: u64) {
+    pub(super) fn request_copy_recovery(&mut self, id: u64) {
+        if self.copy_recovery.running() || self.copy_cleanup.running() {
+            return;
+        }
+        let plan = self
+            .operation_history
+            .iter()
+            .find(|record| record.id == id && can_recover(record))
+            .and_then(|record| record.retained_copy.as_ref())
+            .and_then(|owner| owner.recovery.as_ref());
+        if let Some(plan @ CopyRecoveryAction::Abort(_)) = plan {
+            self.copy_recovery.confirmation = Some((id, plan.clone()));
+        } else {
+            self.start_copy_recovery(id, None);
+        }
+    }
+
+    pub(super) fn render_copy_abort_confirmation(&mut self, ctx: &Context) {
+        let Some((id, plan)) = self.copy_recovery.confirmation.clone() else {
+            return;
+        };
+        let c = self.colors;
+        let mut choice = None;
+        let response = egui::Modal::new(egui::Id::new("copy_abort_confirmation"))
+            .frame(Frame::new().fill(c.panel).stroke(Stroke::new(c.window_border_width, c.window_border))
+                .corner_radius(c.app_radius).inner_margin(18))
+            .show(ctx, |ui| {
+                ui.set_width(400.0 * c.font_scale);
+                ui.label(RichText::new("End this copy attempt?").color(c.heading).strong().size(15.0 * c.font_scale));
+                ui.add_space(8.0);
+                if let CopyRecoveryAction::Abort(plan) = &plan {
+                    ui.label(format!("Destination: {}", path_label(&plan.target())));
+                }
+                ui.label("This attempt will no longer be able to resume or publish. Its reserved file name will become available for another copy.");
+                ui.label("All partial files, later edits and recovery records are kept. This does not reclaim disk space.");
+                ui.add_space(12.0);
+                ui.horizontal(|ui| {
+                    if ui.add(egui::Button::new("Keep attempt").themed(&c)).clicked() { choice = Some(false); }
+                    if ui.add(egui::Button::new("End attempt").themed(&c)).clicked() { choice = Some(true); }
+                });
+            });
+        if choice == Some(true) {
+            self.copy_recovery.confirmation = None;
+            self.start_copy_recovery(id, Some(plan));
+        } else if choice == Some(false) || response.should_close() {
+            self.copy_recovery.confirmation = None;
+        }
+    }
+
+    fn start_copy_recovery(&mut self, id: u64, confirmed: Option<CopyRecoveryAction>) {
         if self.copy_recovery.running() || self.copy_cleanup.running() {
             return;
         }
@@ -78,14 +128,15 @@ impl OttrinApp {
         }) else {
             return;
         };
-        let mut plan = record
-            .retained_copy
-            .as_ref()
-            .unwrap()
-            .recovery
-            .as_ref()
-            .unwrap()
-            .clone();
+        let owner = record.retained_copy.as_ref().unwrap();
+        let mut plan = confirmed.unwrap_or_else(|| owner.recovery.as_ref().unwrap().clone());
+        if plan.complete()
+            || plan
+                .transaction_id()
+                .is_none_or(|id| owner.transactions != [id])
+        {
+            return;
+        }
         if self.activity_paths_conflict(id, &plan.path_pairs()) {
             self.set_status_message(
                 "Wait for the operation using this Copy destination to finish.",
@@ -193,13 +244,13 @@ impl OttrinApp {
                 // Terminal state comes from the executed opaque platform plan,
                 // not the row's presentation fields. Keep ownership separately.
                 record.path_move_undo_token = None;
-                record.path_move_undo = Some(
-                    if *phase == ottrin_platform::WindowsCopyPhase::Undone {
-                        PathMoveUndoState::Undone
-                    } else {
-                        PathMoveUndoState::Unavailable { reason: "Cleanup has already revoked Undo. Retained data is kept until cleanup is resumed.".into() }
+                record.path_move_undo = Some(match phase {
+                    ottrin_platform::WindowsCopyPhase::Undone => PathMoveUndoState::Undone,
+                    ottrin_platform::WindowsCopyPhase::Aborted => PathMoveUndoState::Unavailable {
+                        reason: "This copy attempt has ended. Partial files and recovery records are preserved.".into(),
                     },
-                );
+                    _ => PathMoveUndoState::Unavailable { reason: "Cleanup has already revoked Undo. Retained data is kept until cleanup is resumed.".into() },
+                });
             }
             // Fresh discovery must admit the next action, including Undo after
             // successful completion or a retry after a stopped/failed attempt.
@@ -226,6 +277,141 @@ impl OttrinApp {
                 record.message = Some(error.clone());
             }
         }
+    }
+}
+
+#[cfg(test)]
+pub(super) fn abort_test_case(root: &Path) {
+    fn wait(app: &mut OttrinApp) {
+        let deadline = Instant::now() + Duration::from_secs(10);
+        loop {
+            app.poll_copy_recovery();
+            app.poll_retained_copy_activity();
+            if !app.copy_recovery.running() && !app.retained_copy_activity_loader.pending {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "Staging-end Activity worker timed out"
+            );
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        assert!(app.retained_copy_activity_error.is_none());
+    }
+    let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
+    let destination = std::env::var_os("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_DESTINATION")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| root.join("fixture/destination"));
+    let entry = ottrin_platform::discover_retained_copy_transactions()
+        .unwrap()
+        .remove(0);
+    let transaction = entry.transaction_id.as_deref().unwrap().to_owned();
+    let journal = root
+        .join("profile/Ottrin/State/copies")
+        .join(format!("{transaction}.copy-journal"));
+    let local_journal = entry.transaction.as_ref().unwrap().join("journal");
+    let before = std::fs::read(&journal).unwrap();
+    let local_before = std::fs::read(&local_journal).unwrap();
+    let payload = destination.join(format!(".ottrin-copy-{transaction}.candidate"));
+    let check_payload = || {
+        assert_eq!(
+            std::fs::read(payload.join("nested/file")).unwrap(),
+            b"later retained edits"
+        );
+        assert_eq!(
+            std::fs::read(payload.join("nested/file:keep")).unwrap(),
+            b"later named stream"
+        );
+        assert_eq!(
+            std::fs::read(payload.join("unrecognized")).unwrap(),
+            b"unexpected retained file"
+        );
+        assert_eq!(
+            std::fs::read(destination.join("foreign")).unwrap(),
+            b"unrelated public data"
+        );
+        assert!(!destination.join("copy").exists());
+        assert!(!root.join("fixture/source").exists());
+    };
+    let plan = ottrin_platform::restore_retained_copy_abort_plan(&transaction).unwrap();
+    let mut wrong = entry;
+    wrong.transaction_id = Some("0".repeat(32));
+    assert!(
+        windows_retained_copy_activity(wrong, None, Some(Ok(CopyRecoveryAction::Abort(plan))))
+            .ownership
+            .recovery
+            .is_none(),
+        "An end-attempt plan cannot attach to another transaction"
+    );
+    let mut app = OttrinApp::default();
+    app.operation_history.clear();
+    app.retained_copy_activity_loader =
+        RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+    app.refresh_retained_copy_activity();
+    wait(&mut app);
+    assert_eq!(app.operation_history.len(), 1);
+    let id = app.operation_history[0].id;
+    assert!(can_recover(&app.operation_history[0]));
+    assert!(!name_release_pending(&app.operation_history[0]));
+    assert!(!copy_activity_cleanup::can_cleanup(
+        &app.operation_history[0]
+    ));
+    assert!(app.operation_history[0].path_move_undo_token.is_none());
+    let ctx = Context::default();
+    let text = crate::tests::activity_text(&mut app, &ctx);
+    assert!(text.iter().any(|text| text == "Incomplete copy"));
+    assert!(!text.iter().any(|text| text == "Resume copy"));
+    crate::tests::click_activity_action(&mut app, &ctx, "End copy attempt…");
+    assert!(app.copy_recovery.confirmation.is_some() && !app.copy_recovery.running());
+    let text = crate::tests::activity_text(&mut app, &ctx);
+    assert!(
+        text.iter()
+            .any(|text| text.contains("does not reclaim disk space"))
+    );
+    crate::tests::click_activity_action(&mut app, &ctx, "Keep attempt");
+    assert!(app.copy_recovery.confirmation.is_none() && !app.copy_recovery.running());
+    assert_eq!(std::fs::read(&journal).unwrap(), before);
+    assert_eq!(std::fs::read(&local_journal).unwrap(), local_before);
+    check_payload();
+    crate::tests::click_activity_action(&mut app, &ctx, "End copy attempt…");
+    let mut expected = before.clone();
+    if case == "abort-changed-controls" {
+        expected.push(7);
+        std::fs::write(&journal, &expected).unwrap();
+        std::fs::write(&local_journal, &expected).unwrap();
+        // A refresh cannot silently replace the plan the user confirmed.
+        app.refresh_retained_copy_activity();
+    }
+    crate::tests::click_activity_action(&mut app, &ctx, "End attempt");
+    wait(&mut app);
+    assert_eq!(app.operation_history[0].id, id);
+    check_payload();
+    assert!(app.copy_recovery.confirmation.is_none());
+    if case == "abort-changed-controls" {
+        assert_eq!(std::fs::read(&journal).unwrap(), expected);
+        assert_eq!(std::fs::read(&local_journal).unwrap(), expected);
+        assert!(ottrin_platform::restore_retained_copy_abort_plan(&transaction).is_err());
+        assert!(!app.operation_history.iter().any(can_recover));
+    } else {
+        let entry = ottrin_platform::discover_retained_copy_transactions()
+            .unwrap()
+            .remove(0);
+        assert_eq!(
+            entry.phase,
+            Some(ottrin_platform::WindowsCopyPhase::Aborted)
+        );
+        assert!(!can_recover(&app.operation_history[0]));
+        assert!(!copy_activity_cleanup::can_cleanup(
+            &app.operation_history[0]
+        ));
+        assert!(ottrin_platform::restore_retained_copy_resume_plan(&transaction).is_err());
+        assert!(ottrin_platform::restore_retained_copy_abort_plan(&transaction).is_err());
+        app.clear_finished_activity();
+        assert_eq!(
+            app.operation_history.len(),
+            1,
+            "Ending keeps the recovery row and records"
+        );
     }
 }
 

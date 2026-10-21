@@ -13,13 +13,15 @@ mod dispatch;
 mod journal;
 mod registry;
 pub use journal::{
-    RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan, RetainedCopyResumePlan,
-    RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsRetainedCopyStatus,
+    RetainedCopyAbortPlan, RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan,
+    RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
+    WindowsRetainedCopyStatus,
 };
 pub(crate) use journal::{
     discover as discover_windows_copy_transactions,
     discover_at as discover_windows_copy_transactions_at,
     discover_at_with_progress as discover_windows_copy_transactions_at_with_progress,
+    restore_abort as restore_windows_copy_abort, restore_abort_at as restore_windows_copy_abort_at,
     restore_name_release as restore_windows_copy_name_release,
     restore_name_release_at as restore_windows_copy_name_release_at,
     restore_resume as restore_windows_copy_resume,

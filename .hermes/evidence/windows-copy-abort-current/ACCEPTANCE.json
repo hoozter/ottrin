@@ -1,0 +1,215 @@
+{
+  "status": "pass within recorded native functional scopes",
+  "source": "SOURCE.json",
+  "runs": {
+    "abort-initial": {
+      "result": "abort-initial/RESULTS.json",
+      "binary": "abort-initial/TEST_BINARY.json",
+      "passed": 0,
+      "failed": 3,
+      "ignored": 0,
+      "seconds": 1.34,
+      "test_binary_hash": "b99cc451f93d86edcb7d5d6138a4d59fa64cdfd226eac2093db9e3ac18872059",
+      "stdout_sha256": "252a9779a3b54aa7fb65831382537d2282099b45eb31787b92f1b961f5639e54",
+      "stderr_sha256": "1c4f5444e6b25c3f5d287f13932cef224f70340d17135e8926c584eb28af8b63",
+      "build_manifest_sha256": "b651d2e7824270c3a472da0e55f570eb03873f49200126f0cf59c457e475ca6d"
+    },
+    "abort-claim-only": {
+      "result": "abort-claim-only/RESULTS.json",
+      "binary": "abort-claim-only/TEST_BINARY.json",
+      "passed": 2,
+      "failed": 1,
+      "ignored": 0,
+      "seconds": 1.66,
+      "test_binary_hash": "8c84b12f9ec74ff6e138573a6beba2d9a05e72a9255dca8e5bb6d3acdaa26c66",
+      "stdout_sha256": "fd99a1220ba49bdb34c3a14744fb66e7fbd5016fe749ed351889382c6beb41f3",
+      "stderr_sha256": "d3431a0adf718c588756ebabdd7d12b7993dc7f480a198aa60804fe44b63d115",
+      "build_manifest_sha256": "1bcda195673138c834f1fbb0ecd5fe317c3fff3e2aa9bf50a44108022515d048"
+    },
+    "abort": {
+      "result": "abort/RESULTS.json",
+      "binary": "abort/TEST_BINARY.json",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 1.77,
+      "test_binary_hash": "f8d6028cc22d0802a04d5660fecae6bcc9e3ab257542d956a7a45306e6cbfabd",
+      "stdout_sha256": "437a6b5407c8ce179765687643bdefe2317fb882e9d03bcd516dd5ce762f750d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "build_manifest_sha256": "8fe476ca3072a84c20dde9a192eaf401814e5d1c86414cc799fa3fd5b214bd15"
+    },
+    "core": {
+      "result": "core/RESULTS.json",
+      "binary": "core/TEST_BINARY.json",
+      "passed": 146,
+      "failed": 0,
+      "ignored": 15,
+      "seconds": 599.66,
+      "test_binary_hash": "f8d6028cc22d0802a04d5660fecae6bcc9e3ab257542d956a7a45306e6cbfabd",
+      "stdout_sha256": "6c3c0d98d7bdddfeb227735debcec7be54daa88451084e45bb78f204c78bb97c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exclusions": [
+        [
+          "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child",
+          "owned subprocess for creation-time interruption tests"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_destination_full_with_separate_registry_recovers",
+          "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_divergent_journals_preserve_data_and_refuse_retry",
+          "Requires a token-bound disposable NTFS volume of at most 512 MiB"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_paired_journals_recover_after_space_is_freed",
+          "Requires a token-bound disposable NTFS volume of at most 512 MiB"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage",
+          "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_registry_full_with_separate_destination_preserves_and_refuses",
+          "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::sparse_workflow::windows_native_copy_sparse_cross_volume_publication_source_free_undo_and_cleanup",
+          "requires an owned secondary NTFS volume provisioned by the native QA controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_cleanup_stop_preserves_data_and_recovers",
+          "Requires an owned secondary NTFS disk and a host throttle controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_io_stop_preserves_data_and_recovers",
+          "Requires an owned secondary NTFS disk and a host throttle controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_undo_stop_preserves_data_and_recovers",
+          "Requires an owned secondary NTFS disk and a host throttle controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_copy_activity_fixture",
+          "exports an owned fixture to the native Activity integration consumer"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume",
+          "requires an owned secondary NTFS volume provisioned by the native QA controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child",
+          "child process selected by interrupted staging test"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child",
+          "abrupt-exit child; owned temporary root supplied by parent"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child",
+          "abrupt-exit child; owned empty root required"
+        ]
+      ],
+      "scope": "Earlier protocol executable; excludes cleanup namespace. Final focused API and Activity runs use the final build.",
+      "build_manifest_sha256": "8fe476ca3072a84c20dde9a192eaf401814e5d1c86414cc799fa3fd5b214bd15"
+    },
+    "abort-final": {
+      "result": "abort-final/RESULTS.json",
+      "binary": "abort-final/TEST_BINARY.json",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 2.43,
+      "test_binary_hash": "e720681e83af0cfd14572bda8336fc6714a97531aabbf5cac79504ec42dbd629",
+      "stdout_sha256": "e3a98afeb757c0a090f9c7e68a66550935804a563596eb4b13ff2630deefee2f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "build_manifest_sha256": "f52ac545d12432f51fdd2429e99585bfaf7a49d3089339625b5bb43525067f30"
+    },
+    "ui-state": {
+      "result": "ui-state/RESULTS.json",
+      "binary": "ui-state/TEST_BINARY.json",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 0.02,
+      "test_binary_hash": "ca31c1501f392dacb2b4e8bca8909cb13349d5629d71551a0125941b30e1a7a5",
+      "stdout_sha256": "f6770713efa95d969181e5bf3e2ba28393bcfa98dbea1bf5273cf46a3f91dee0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "build_manifest_sha256": "f52ac545d12432f51fdd2429e99585bfaf7a49d3089339625b5bb43525067f30"
+    },
+    "activity": {
+      "result": "activity/RESULTS.json",
+      "binary": "activity/TEST_BINARY.json",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 37.73,
+      "test_binary_hash": "ca31c1501f392dacb2b4e8bca8909cb13349d5629d71551a0125941b30e1a7a5",
+      "stdout_sha256": "8234f9c9c600919baacbf497d349b5be2610111ee9b08de711842f41ccb81a03",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "build_manifest_sha256": "f52ac545d12432f51fdd2429e99585bfaf7a49d3089339625b5bb43525067f30"
+    }
+  },
+  "activity_cases": [
+    "abort-staging",
+    "abort-changed-controls",
+    "success",
+    "changed",
+    "moved",
+    "pending",
+    "undo-blocked-central",
+    "undo-blocked-local",
+    "undo-blocked-payload",
+    "name-release",
+    "name-release-stopped",
+    "name-release-changed",
+    "resume-staged",
+    "resume-finalizing",
+    "resume-changed",
+    "resume-moved",
+    "resume-stopped",
+    "resume-blocked-central",
+    "resume-blocked-local",
+    "resume-blocked-payload",
+    "cleanup-blocked-central",
+    "cleanup-blocked-local",
+    "cleanup-blocked-payload",
+    "cleanup-success",
+    "cleanup-changed",
+    "cleanup-retry",
+    "cleanup-stopped-metadata",
+    "cleanup-cohort",
+    "cleanup-cohort-partial"
+  ],
+  "fixture_failures": "FIRST_FIXTURE.json; setup handle lifetime and a reclaimable unstarted claim corrected in fixtures without weakening production guards",
+  "checks": {
+    "strict_linux_platform_ui_all_target_clippy": "pass; clippy-linux.log",
+    "strict_windows_platform_ui_all_target_clippy": "pass; clippy-windows.log",
+    "format_and_diff": "pass"
+  },
+  "coverage": [
+    "Source-free opaque admission of incomplete staging and explicit terminal paired record before normal name release",
+    "Edited partial file, added named stream, unknown payload file and foreign public file preserved; no payload reclamation",
+    "Exclusive payload-root lease remains held while ending; stale/live/verified controls refuse",
+    "One-sided append remains reserved/refused; paired terminal prefix recovers through existing non-destructive name release",
+    "A later real durable stage keeps its reservation against stale old end-attempt plans",
+    "Native egui Activity cancel/confirm and changed-control refusal; existing Undo/forward/release/cleanup scenarios remain covered"
+  ],
+  "cleanup": "TEARDOWN.json and TEARDOWN_GUEST.json",
+  "storage": "STORAGE.json; only superseded finalized platform/UI incremental sessions retired, latest configurations retained",
+  "delivery": "Source/native-test checkpoint. Existing Linux packages and internal Windows candidates unchanged. Public Windows Copy remains disabled.",
+  "limits": [
+    "Functional native egui interaction is not OS compositor, physical desktop or packaged UI acceptance",
+    "Broader core used the earlier protocol executable; final API and Activity scopes have separately bound current executables",
+    "15 broad-suite explicit ignores include dedicated volume/resource fixtures and subprocess entry points; this turn did not rerun their separate historical acceptance",
+    "Incomplete payload reclamation, remaining concurrency/alias/resource/interruption/workflow gates and exact current-package acceptance remain open",
+    "Schema 18 does not read/convert older schemas; their bytes remain preserved for review"
+  ],
+  "preservation_scope": "BASELINE.json plus guest teardown verify original config.json and Uninstall.exe hashes; not a whole-profile or installation inventory",
+  "storage_inventory": {
+    "before": "storage-before.txt",
+    "after": "storage-after.txt",
+    "superseded_logical_bytes_removed": 1821486237,
+    "limits": "Logical size includes cache hard links and is not a claim of physically reclaimed bytes."
+  }
+}

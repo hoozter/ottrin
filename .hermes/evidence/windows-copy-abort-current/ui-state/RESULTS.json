@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact tests::windows_retained_copy_activity_keeps_evidence_and_actions_separate --nocapture --test-threads=1",
+  "ordinary_user": true,
+  "stdout_sha256": "f6770713efa95d969181e5bf3e2ba28393bcfa98dbea1bf5273cf46a3f91dee0",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "ca31c1501f392dacb2b4e8bca8909cb13349d5629d71551a0125941b30e1a7a5",
+  "dispatch_id": "d8f32699fb36f37ac9a3115408ec06bf"
+}

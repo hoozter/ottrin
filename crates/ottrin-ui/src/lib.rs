@@ -1104,6 +1104,7 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
 #[derive(Debug, Clone)]
 enum CopyRecoveryAction {
     Forward(ottrin_platform::RetainedCopyResumePlan),
+    Abort(ottrin_platform::RetainedCopyAbortPlan),
     NameRelease(ottrin_platform::RetainedCopyNameReleasePlan),
     NameReleaseBlocked,
 }
@@ -1112,6 +1113,7 @@ impl CopyRecoveryAction {
     fn transaction_id(&self) -> Option<&str> {
         match self {
             Self::Forward(plan) => Some(plan.transaction_id()),
+            Self::Abort(plan) => Some(plan.transaction_id()),
             Self::NameRelease(plan) => Some(plan.transaction_id()),
             Self::NameReleaseBlocked => None,
         }
@@ -1119,16 +1121,18 @@ impl CopyRecoveryAction {
     fn complete(&self) -> bool {
         match self {
             Self::Forward(plan) => plan.complete(),
+            Self::Abort(plan) => plan.complete(),
             Self::NameRelease(plan) => plan.complete(),
             Self::NameReleaseBlocked => true,
         }
     }
     fn is_name_release(&self) -> bool {
-        !matches!(self, Self::Forward(_))
+        matches!(self, Self::NameRelease(_) | Self::NameReleaseBlocked)
     }
     fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         match self {
             Self::Forward(plan) => plan.path_pairs(),
+            Self::Abort(plan) => vec![(plan.destination(), plan.destination())],
             Self::NameRelease(plan) => vec![(plan.destination(), plan.destination())],
             Self::NameReleaseBlocked => Vec::new(),
         }
@@ -1140,7 +1144,9 @@ impl CopyRecoveryAction {
         }
     }
     fn label(&self) -> &'static str {
-        if self.is_name_release() {
+        if matches!(self, Self::Abort(_)) {
+            "End copy attempt…"
+        } else if self.is_name_release() {
             "Finish releasing name"
         } else {
             "Resume copy"
@@ -1149,11 +1155,14 @@ impl CopyRecoveryAction {
     fn released_phase(&self) -> Option<ottrin_platform::WindowsCopyPhase> {
         match self {
             Self::NameRelease(plan) => Some(plan.admitted_phase()),
+            Self::Abort(_) => Some(ottrin_platform::WindowsCopyPhase::Aborted),
             _ => None,
         }
     }
     fn success_message(&self) -> &'static str {
-        if self.is_name_release() {
+        if matches!(self, Self::Abort(_)) {
+            "Copy attempt ended. Partial files and recovery records are preserved."
+        } else if self.is_name_release() {
             "File name released. Retained files are unchanged."
         } else {
             "Copy recovery completed."
@@ -1165,6 +1174,7 @@ impl CopyRecoveryAction {
     ) -> Result<(), PlatformError> {
         match self {
             Self::Forward(plan) => plan.resume(progress),
+            Self::Abort(plan) => plan.end_attempt(progress),
             Self::NameRelease(plan) => plan.finish(progress),
             Self::NameReleaseBlocked => Err(PlatformError::Io(
                 "Copy recovery has no admitted action; refresh status.".into(),
@@ -1266,6 +1276,11 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
                                 ottrin_platform::restore_retained_copy_resume_plan(id)
                                     .map(CopyRecoveryAction::Forward),
                             )
+                        } else if windows_copy_can_abort(&entry) {
+                            Some(
+                                ottrin_platform::restore_retained_copy_abort_plan(id)
+                                    .map(CopyRecoveryAction::Abort),
+                            )
                         } else {
                             None
                         }
@@ -1314,6 +1329,17 @@ fn windows_copy_can_resume(entry: &ottrin_platform::WindowsRetainedCopyStatus) -
 }
 
 #[cfg(target_os = "windows")]
+fn windows_copy_can_abort(entry: &ottrin_platform::WindowsRetainedCopyStatus) -> bool {
+    use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
+    entry.transaction_id.is_some()
+        && entry.phase == Some(Phase::Staging)
+        && matches!(
+            entry.evidence,
+            Evidence::UnverifiedStage | Evidence::NeedsReview { .. }
+        )
+}
+
+#[cfg(target_os = "windows")]
 fn windows_retained_copy_activity(
     entry: ottrin_platform::WindowsRetainedCopyStatus,
     admission: Option<Result<ottrin_platform::RetainedCopyUndoPlan, PlatformError>>,
@@ -1323,9 +1349,11 @@ fn windows_retained_copy_activity(
     let recovery_location = entry.transaction.clone();
     let eligible = windows_copy_can_admit(&entry);
     let resumable = windows_copy_can_resume(&entry);
+    let abortable = windows_copy_can_abort(&entry);
     let releasing = entry.evidence == Evidence::PendingNameRelease;
     let mut phase = match entry.phase {
         Some(Phase::Staging) => "Staging interrupted",
+        Some(Phase::Aborted) => "Copy attempt ended · partial files kept",
         Some(Phase::Staged) => "Staged copy",
         Some(Phase::PlanningPermissions) => "Permission planning interrupted",
         Some(Phase::ReadyToPublish) => "Prepared copy",
@@ -1368,6 +1396,12 @@ fn windows_retained_copy_activity(
             "Remaining cleanup data verified",
             PathMoveUndoState::Unavailable {
                 reason: "Cleanup has started. Undo and forward recovery are unavailable; remaining data is preserved until cleanup is explicitly resumed.".into(),
+            },
+        ),
+        Evidence::UnverifiedStage if entry.phase == Some(Phase::Aborted) => (
+            "Payload remains unverified",
+            PathMoveUndoState::Unavailable {
+                reason: "This copy attempt has ended. Its partial files and recovery records are preserved; it cannot resume or publish.".into(),
             },
         ),
         Evidence::UnverifiedStage => (
@@ -1416,14 +1450,17 @@ fn windows_retained_copy_activity(
     if releasing {
         phase = "File name release pending";
     }
-    if resumable || releasing {
+    if resumable || releasing || abortable {
         match recovery_admission {
             Some(Ok(plan))
                 if plan.transaction_id() == entry.transaction_id.as_deref()
-                    && plan.is_name_release() == releasing =>
+                    && plan.is_name_release() == releasing
+                    && matches!(plan, CopyRecoveryAction::Abort(_)) == abortable =>
             {
                 phase = if releasing {
                     "Ready to release file name"
+                } else if abortable {
+                    "Incomplete copy · can end attempt and keep files"
                 } else {
                     "Verified copy · ready to resume"
                 };
@@ -14715,17 +14752,24 @@ impl OttrinApp {
                     #[cfg(not(target_os = "windows"))]
                     { false }
                 };
+                let ending_attempt = {
+                    #[cfg(target_os = "windows")]
+                    { record.retained_copy.as_ref().and_then(|owner| owner.recovery.as_ref())
+                        .is_some_and(|plan| matches!(plan, CopyRecoveryAction::Abort(_))) }
+                    #[cfg(not(target_os = "windows"))]
+                    { false }
+                };
                 let (status_text, status_color, status_icon) = if self.copy_cleanup.owns(record) {
                     ("Cleaning up", c.accent_dim, MI_HISTORY)
                 } else if copy_recovery_available {
                     if record.status == OperationStatus::Queued {
                         #[cfg(target_os = "windows")]
-                        let label = if self.copy_recovery.stopping() { "Stopping" } else if name_release_pending { "Releasing name" } else { "Resuming" };
+                        let label = if self.copy_recovery.stopping() { "Stopping" } else if name_release_pending { "Releasing name" } else if ending_attempt { "Ending attempt" } else { "Resuming" };
                         #[cfg(not(target_os = "windows"))]
                         let label = "Resuming";
                         (label, c.accent_dim, MI_HISTORY)
                     }
-                    else { (if name_release_pending { "Ready to release name" } else { "Ready to resume" }, c.accent, MI_HISTORY) }
+                    else { (if name_release_pending { "Ready to release name" } else if ending_attempt { "Incomplete copy" } else { "Ready to resume" }, c.accent, MI_HISTORY) }
                 } else if name_release_pending { ("Name release needs review", c.error, MI_HISTORY) }
                 else { match record.status {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
@@ -14740,6 +14784,8 @@ impl OttrinApp {
                         "Cleanup could not finish. Remaining data is kept for review and retry."
                     } else if name_release_pending {
                         "The file name is still reserved. Finish releasing it without changing retained files."
+                    } else if ending_attempt {
+                        "Copying stopped before verification. End this attempt to release its reserved name and keep all partial files."
                     } else if copy_recovery_available {
                         "Verified copy data is available to finish this operation."
                     } else if matches!(record.status, OperationStatus::Failed | OperationStatus::NeedsReview) {
@@ -14797,7 +14843,7 @@ impl OttrinApp {
                             {
                                 ui.add_space(4.0);
                                 if self.copy_recovery.owns(record.id) {
-                                    ui.label(RichText::new(if name_release_pending { "Finishing file name release…" } else { "Verifying and resuming copy…" }).color(c.accent_dim));
+                                    ui.label(RichText::new(if name_release_pending { "Finishing file name release…" } else if ending_attempt { "Ending copy attempt; keeping partial files…" } else { "Verifying and resuming copy…" }).color(c.accent_dim));
                                     let stopping = self.copy_recovery.stopping();
                                     if ui.add_enabled(!stopping, egui::Button::new(if stopping { "Stopping…" } else { "Stop recovery" }).themed(&c))
                                         .on_hover_text("Stop at the next recovery boundary and keep retained data for retry.").clicked() {
@@ -14805,7 +14851,7 @@ impl OttrinApp {
                                     }
                                 } else if ui.add_enabled(!self.copy_recovery.running() && !self.retained_copy_activity_loader.pending,
                                     egui::Button::new(record.retained_copy.as_ref().unwrap().recovery.as_ref().unwrap().label()).themed(&c))
-                                    .on_hover_text(if name_release_pending { "Release the finished operation's file name without changing or deleting retained files." } else { "Verify the retained copy again and finish publication without reopening its source." }).clicked() {
+                                    .on_hover_text(if name_release_pending { "Release the finished operation's file name without changing or deleting retained files." } else if ending_attempt { "Review ending this incomplete attempt. Partial files and recovery records will be kept." } else { "Verify the retained copy again and finish publication without reopening its source." }).clicked() {
                                     resume_copy = Some(record.id);
                                 }
                             }
@@ -15004,7 +15050,7 @@ impl OttrinApp {
         }
         #[cfg(target_os = "windows")]
         if let Some(op_id) = resume_copy {
-            self.run_copy_recovery(op_id);
+            self.request_copy_recovery(op_id);
         }
     }
 
@@ -23267,6 +23313,8 @@ impl eframe::App for OttrinApp {
             self.render_rename_modal(ctx);
             self.render_delete_confirmation(ctx);
             self.render_copy_cleanup_confirmation(ctx);
+            #[cfg(target_os = "windows")]
+            self.render_copy_abort_confirmation(ctx);
         }
         self.render_move_conflict_confirmation(ctx);
         self.render_empty_trash_confirmation(ctx);
@@ -25979,6 +26027,7 @@ mod tests {
             |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
                 app.render_copy_cleanup_confirmation(ctx);
+                app.render_copy_abort_confirmation(ctx);
             },
         )
     }
@@ -26062,6 +26111,13 @@ mod tests {
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr)
             );
+            if std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE")
+                .unwrap()
+                .starts_with("abort-")
+            {
+                copy_activity_recovery::abort_test_case(&root);
+                return;
+            }
             if std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE")
                 .unwrap()
                 .starts_with("name-release")
@@ -26307,6 +26363,8 @@ mod tests {
             return;
         }
         for case in [
+            "abort-staging",
+            "abort-changed-controls",
             "success",
             "changed",
             "moved",
@@ -26423,6 +26481,7 @@ mod tests {
         use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
         for phase in [
             Phase::Staging,
+            Phase::Aborted,
             Phase::Staged,
             Phase::PlanningPermissions,
             Phase::ReadyToPublish,

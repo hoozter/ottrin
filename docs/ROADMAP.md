@@ -42,6 +42,40 @@ User acceptance is deferred. Continue independently executable work; each
 checkpoint below retains its recorded source and artifact scope. These outcomes
 remain required before release.
 
+## Windows Copy: end an incomplete attempt without discarding files
+
+Activity now offers “End copy attempt…” only after opaque read-only admission of
+canonical incomplete staging. Its themed confirmation names the destination and
+explains that the attempt cannot resume or publish afterward. The captured plan
+is preserved through confirmation, then rechecked by the existing off-thread
+recovery worker. A paired terminal journal event precedes durable name release.
+All partial files, later edits, added streams, unknown payload files and recovery
+records remain in place. This releases a name; it does not reclaim disk space.
+
+The final current platform executable passes all three focused native checks
+(2.43s), including source-free admission, live/stale/verified refusal, paired-write
+failure recovery and protection of a later durable attempt's reservation. The
+native Activity integration passes all 29 scenarios (37.73s), including the two
+new confirmation/refusal cases, and the separate evidence/action mapping check
+passes. An earlier protocol executable also passes 146 broader journal cases
+with zero failures and 15 explicit fixture/resource ignores; it excludes the
+cleanup namespace. Strict Linux/Windows platform/UI all-target Clippy and
+formatting pass. Exact binaries, scopes, exclusions and the two corrected fixture
+failures are recorded in
+`.hermes/evidence/windows-copy-abort-current/ACCEPTANCE.json`.
+
+Teardown removes the owned native test and fixture executables, checks the
+original profile/installation hashes, leaves no owned test processes or temporary
+entries and shuts off the retained VM without changing its persistent definition.
+Superseded finalized compiler sessions are retired while keeping each affected
+configuration's current cache. Schema 18 preserves older records for review
+without converting or deleting them.
+
+This is a source/native-functional checkpoint. Current Linux packages and the
+internal Windows `566f6236` candidates are unchanged. Incomplete-payload
+reclamation, remaining transaction/resource/workflow acceptance, current package
+acceptance and public Windows Copy remain unfinished. User testing stays deferred.
+
 ## Large-batch operation admission
 
 A measured queue-admission stall now has an indexed implementation. The previous

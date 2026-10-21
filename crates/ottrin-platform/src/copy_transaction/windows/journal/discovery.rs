@@ -285,6 +285,7 @@ impl RetainedCopyUndoPlan {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum WindowsCopyPhase {
     Staging,
+    Aborted,
     Staged,
     PlanningPermissions,
     ReadyToPublish,
@@ -328,7 +329,9 @@ pub struct WindowsRetainedCopyStatus {
     pub evidence: WindowsCopyRecoveryEvidence,
 }
 pub(super) fn phase(state: &State) -> WindowsCopyPhase {
-    if state.cleanup.is_some() {
+    if state.aborted {
+        WindowsCopyPhase::Aborted
+    } else if state.cleanup.is_some() {
         WindowsCopyPhase::CleaningUp
     } else if state.undo_complete() {
         WindowsCopyPhase::Undone

@@ -1,0 +1,6 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "base_commit": "f3fb4739d07e080b907528acc3f8d125b31d58d3",
+  "scope": "Ordinary-account native staging-end API, paired-prefix refusal/recovery, data preservation, newer durable reservation and rendered Activity confirmation/refusal/regression; no extra disk or guest"
+}
