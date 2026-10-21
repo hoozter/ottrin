@@ -1,0 +1,119 @@
+{
+  "status": "pass for four recorded native NTFS full-disk journal cases",
+  "source": "SOURCE.json",
+  "runs": {
+    "paired": {
+      "result": {
+        "exit": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_paired_journals_recover_after_space_is_freed --nocapture --test-threads=1 --ignored",
+        "ordinary_user": true,
+        "stdout_sha256": "a6fc1d2cf62cfa75a1b335f070bd1c770a7cc9dfe3b86c421b429649e58cf075",
+        "temporary_entries": 0,
+        "status": "pass",
+        "test_binary_hash": "02ee2735ee778dda1cbf725175633b28c880b2eac6e042545bc410b98927bbc5",
+        "dispatch_id": "69def6a4131ca49717a720a562ced2c0"
+      },
+      "parent_volume": 17312097252309502244,
+      "registry_volume": 17312097252309502244,
+      "journal_before": 125042,
+      "journal_local": 125805,
+      "journal_central": 125805,
+      "paired": true,
+      "evidence": "paired/RESULTS.json"
+    },
+    "divergent": {
+      "result": {
+        "exit": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_divergent_journals_preserve_data_and_refuse_retry --nocapture --test-threads=1 --ignored",
+        "ordinary_user": true,
+        "stdout_sha256": "14574e6ceea2250d7380e1776a40cbe012024bb50c404b9c88d16d3c29d3e932",
+        "temporary_entries": 0,
+        "status": "pass",
+        "test_binary_hash": "02ee2735ee778dda1cbf725175633b28c880b2eac6e042545bc410b98927bbc5",
+        "dispatch_id": "fd6b6cc25db14efc068a7682386451ad"
+      },
+      "parent_volume": 17312097252309502244,
+      "registry_volume": 17312097252309502244,
+      "journal_before": 125044,
+      "journal_local": 126991,
+      "journal_central": 125807,
+      "paired": false,
+      "evidence": "divergent/RESULTS.json"
+    },
+    "destination-full": {
+      "result": {
+        "exit": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_destination_full_with_separate_registry_recovers --nocapture --test-threads=1 --ignored",
+        "ordinary_user": true,
+        "stdout_sha256": "1300e2000f41601a7ba547d047744e89b69be1da2e3d96c0b03e428b20758fc4",
+        "temporary_entries": 0,
+        "status": "pass",
+        "test_binary_hash": "02ee2735ee778dda1cbf725175633b28c880b2eac6e042545bc410b98927bbc5",
+        "dispatch_id": "20ebd233f328392be3db50d4dabf78cf"
+      },
+      "parent_volume": 17312097252309502244,
+      "registry_volume": 11426905405696362349,
+      "journal_before": 125057,
+      "journal_local": 125820,
+      "journal_central": 125820,
+      "paired": true,
+      "evidence": "destination-full/RESULTS.json"
+    },
+    "registry-full": {
+      "result": {
+        "exit": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_registry_full_with_separate_destination_preserves_and_refuses --nocapture --test-threads=1 --ignored",
+        "ordinary_user": true,
+        "stdout_sha256": "99152f8b7da3e5abc0be2f712f81008d9ebaec8f5d95765f86260e6f6b08f4bd",
+        "temporary_entries": 0,
+        "status": "pass",
+        "test_binary_hash": "02ee2735ee778dda1cbf725175633b28c880b2eac6e042545bc410b98927bbc5",
+        "dispatch_id": "c745b18ec00d6c05610e78879912cea6"
+      },
+      "parent_volume": 11426905405696362349,
+      "registry_volume": 17312097252309502244,
+      "journal_before": 125670,
+      "journal_local": 127424,
+      "journal_central": 126337,
+      "paired": false,
+      "evidence": "registry-full/RESULTS.json"
+    }
+  },
+  "proof": [
+    "All four tests ran explicitly on the same native executable as the ordinary Windows QA user, with zero temporary entries after each run",
+    "Only token-bound disposable NTFS disk filled; real available bytes reached zero and native journal writes returned Windows error 112",
+    "Destination-full with registry on another actual volume preserved matching complete journals and recovered source-free after space was freed",
+    "Registry-full with destination on another actual volume left local journal 1087 bytes ahead; both fresh and retained retries refused without changing journals, payload or foreign data",
+    "Same-volume paired recovery and divergent refusal regressions also passed"
+  ],
+  "checks": {
+    "cross_windows_platform_ui_all_target_clippy": "pass; clippy.log",
+    "format_and_diff": "pass"
+  },
+  "cleanup": {
+    "status": "pass",
+    "guest": "TEARDOWN_GUEST.json",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "task_disk_detached_and_deleted_via_libvirt": true,
+    "domain_and_snapshot_references_clear": true,
+    "retained_base_and_other_guests_preserved": true
+  },
+  "preservation_scope": {
+    "baseline": "BASELINE.json",
+    "verified": "Exact original config.json and installed Uninstall.exe hashes; not a full installed payload inventory"
+  },
+  "storage": "STORAGE.json",
+  "delivery": "No production code changed; no packages rebuilt or published; public Windows Copy remains gated",
+  "limits": [
+    "Only forward journal I/O after completed staging; initial Copy payload/staging writes, Undo and cleanup disk-full phases remain",
+    "No torn record, cancellation inside a write, power-loss, remote/device/other-filesystem or full-application resource acceptance",
+    "Remaining public workflows and current Windows package/installer acceptance remain",
+    "Existing six-cohort Stop regression was not rerun in this matrix; prior scoped receipt remains separate"
+  ],
+  "evidence_encoding": "JSON normalized to LF; gzip native stdout/stderr retain exact original bytes and RESULT hashes"
+}

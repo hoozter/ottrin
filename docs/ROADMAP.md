@@ -308,11 +308,21 @@ its persistent definition is unchanged, and the recorded preferences/uninstaller
 hashes match. Scopes and exact executables are in
 `.hermes/evidence/windows-full-disk-current/ACCEPTANCE.json`.
 
-This advances the native resource gate for incomplete paired appends. Cancellation
-inside a record, torn records, separate-volume full conditions, other mutation
-phases, remote/device/other filesystems, power and full application resource gates
-remain. This checkpoint changes tests/QA tooling only; public Windows Copy and
-existing application packages remain unchanged.
+The later `ca903085` matrix also covers separate destination and registry volumes,
+verified by native volume serial numbers. A full destination with a healthy registry
+leaves matching journals and recovers source-free after space is freed. A full
+registry with a healthy destination leaves the local journal 1,087 bytes ahead;
+fresh and retained retries refuse it while preserving both journals, payload and
+unrelated data. Both same-volume cases also pass on that exact executable. The
+disposable disk is retired through libvirt, the retained guest is shut off, and its
+persistent definition and recorded preferences/uninstaller hashes match. Receipt:
+`.hermes/evidence/windows-split-full-disk-current/ACCEPTANCE.json`.
+
+This advances the native resource gate for incomplete paired appends after staging.
+Initial Copy payload/staging writes, Undo and cleanup disk-full phases, cancellation
+inside a record, torn records, remote/device/other filesystems, power and full
+application resource gates remain. These checkpoints change tests/QA tooling only;
+public Windows Copy and existing application packages remain unchanged.
 
 ## Local Trash Undo receipt discovery
 

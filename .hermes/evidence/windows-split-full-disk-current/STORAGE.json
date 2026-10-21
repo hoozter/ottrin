@@ -1,0 +1,35 @@
+{
+  "scope": "Only task-touched Windows platform/UI incremental configurations; preserve newest finalized sessions, hold compiler locks, reject external links",
+  "retired_sessions": [
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnel536hzw-0w0x3r9-4jg5nqc6y35xyr34n046qwm4t",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnelof46op-0666e1w-5q100hnio3ectzgz28403hdgs",
+      "logical_bytes": 49829432
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnel3iqkmu-1xuz4k3-6fokid15fr2w6gh2l09ui77vt",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnelj28c43-1q1biub-cwu489mvdz5112jt1lurcw4dp",
+      "logical_bytes": 1257196336
+    }
+  ],
+  "removed_disposable_files": [
+    {
+      "path": ".hermes/evidence/windows-split-full-disk-current/registry-full/build.jsonl",
+      "sha256": "30636bb349365a61b7319941fe10a3caee91e4f825a983776a50db70056c989d"
+    },
+    {
+      "path": ".hermes/evidence/windows-split-full-disk-current/paired/build.jsonl",
+      "sha256": "30636bb349365a61b7319941fe10a3caee91e4f825a983776a50db70056c989d"
+    },
+    {
+      "path": ".hermes/evidence/windows-split-full-disk-current/divergent/build.jsonl",
+      "sha256": "30636bb349365a61b7319941fe10a3caee91e4f825a983776a50db70056c989d"
+    },
+    {
+      "path": ".hermes/evidence/windows-split-full-disk-current/destination-full/build.jsonl",
+      "sha256": "30636bb349365a61b7319941fe10a3caee91e4f825a983776a50db70056c989d"
+    }
+  ],
+  "status": "removed",
+  "after_du": "17G\ttarget/debug/deps\n6.9G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n526M\t.hermes/packaging-tmp\n620K\t.hermes/evidence/windows-split-full-disk-current\n"
+}

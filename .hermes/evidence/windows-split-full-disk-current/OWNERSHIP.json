@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "secondary_volume": "ottrin-split-full-disk-current.qcow2",
+  "secondary_serial": "ottrin-split-full-disk-current",
+  "secondary_size": 536870912,
+  "target": "vdb",
+  "token": "934442fd794291959be309b676e97818",
+  "base_commit": "8ebbb26cecd7bfaec10f47b0ba0a0863b6dab439",
+  "scope": "Owned small NTFS disk; test registry and destination on different actual volumes; fill secondary only"
+}

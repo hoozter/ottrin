@@ -1055,6 +1055,17 @@ original guest definition and volume dependencies, and retires only the owned di
 through libvirt. The current disk-full receipt and driver are under
 `.hermes/evidence/windows-full-disk-current/`.
 
+The shared `run-case.py` driver requires `--evidence-dir PATH` with the matching
+ownership and actual-volume token receipts. It runs all four explicit disk-full
+cases on one executable. The separate-volume cases place either destination or
+registry on the owned full disk and the other on the ordinary actor's temp volume;
+native volume serial numbers must differ. Only the owned disk may be filled.
+Destination-full must preserve a matching pair and recover after space is freed;
+registry-full must preserve and refuse its divergent pair on fresh and retained
+retries. Current four-case acceptance is in
+`.hermes/evidence/windows-split-full-disk-current/ACCEPTANCE.json`. This covers
+forward journal writes after staging, not initial payload, Undo or cleanup writes.
+
 Windows recovery admission now binds the authenticated registry/header,
 sealed immutable completion digest and actual parent location before creation
 Undo. It retains no file handles, does not read the source and does not modify

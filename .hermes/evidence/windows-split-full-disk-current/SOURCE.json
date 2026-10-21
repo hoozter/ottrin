@@ -1,0 +1,10 @@
+{
+  "base_commit": "8ebbb26cecd7bfaec10f47b0ba0a0863b6dab439",
+  "source_commit": "ca903085185d107e19de1bbae1646bd89d880c0d",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/disk_full.rs": "0f8ef5468e995052fee3525557da9b1252edd0e55263bbc4aca977f38d42541d",
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "f4d164499ae438d968a9527ba47657a62d147efd4d15b0a5a64c7e8c924390b7",
+    ".hermes/evidence/windows-full-disk-current/run-case.py": "202a2c2494b7c4e0c59e5b85726bcb52039208d5df0f22cfa61951f6427377cc"
+  },
+  "scope": "Tests and QA driver only; production Copy behavior unchanged"
+}
