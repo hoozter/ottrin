@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_paired_journals_recover_after_space_is_freed --nocapture --test-threads=1 --ignored",
+  "ordinary_user": true,
+  "stdout_sha256": "3100d0affea771d03b34745960b930030b9dd52246f9156384caa53932415d06",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "174c7d884e07e0da6d9fc8848e27e7ac7d42978fcb598dc71aa8632d57b56740",
+  "dispatch_id": "69205f998fcc6a48c193117430b6723c"
+}

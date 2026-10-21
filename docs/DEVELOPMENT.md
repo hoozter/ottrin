@@ -1039,6 +1039,22 @@ throttle. They stop actual Copy/Undo/cleanup journal I/O, verify retained bytes,
 and retry without the source. The control scripts and precise acceptance scope
 live under `.hermes/evidence/windows-throttled-journal-current/`.
 
+The explicit `disk_full` tests use the same token-bound small NTFS volume and the
+actual held journal writer handles. They preserve journal bytes while controlling
+spare allocation, fill only the owned volume, require a native disk-full error,
+and release the filler by its retained handle before recovery or assertion cleanup.
+Matched complete journals must resume source-free. Divergent journals must be
+refused byte-for-byte by both fresh and retained plans. An allocation set through
+a closed setup handle is not proof that the active writer still has that reserve;
+the fixture asserts its requested mirror state rather than accepting either result.
+
+The shared storage fixture provisioner accepts explicit `Serial` and `Token`
+PowerShell parameters. Its host teardown requires `--evidence-dir` and `--case`,
+checks the exact dispatch/executable even for a failed native run, validates the
+original guest definition and volume dependencies, and retires only the owned disk
+through libvirt. The current disk-full receipt and driver are under
+`.hermes/evidence/windows-full-disk-current/`.
+
 Windows recovery admission now binds the authenticated registry/header,
 sealed immutable completion digest and actual parent location before creation
 Undo. It retains no file handles, does not read the source and does not modify

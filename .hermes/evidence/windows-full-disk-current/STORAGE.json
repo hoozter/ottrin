@@ -1,0 +1,73 @@
+{
+  "status": "removed",
+  "retired_sessions": [
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2uh0o0ad189n0/s-hnekqhm613-1hec5cq-76elvp7fw54bngd0mc1inv844",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2uh0o0ad189n0/s-hnel536ngd-1ut8z0v-3gzfdwvkpeq1gsyhy8kw8lbc2",
+      "logical_bytes": 37250571
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hnekn0oial-1r9mp5y-9soeg5lscm4hv3jn3mn4x9xzj",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1bij7t0iruzsf/s-hnel3kau3v-0ttrbzc-3u1te3g4u0q0djfcyfm0z9j4s",
+      "logical_bytes": 133542871
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql/s-hnekqjy669-138awjz-b6rbdegqa4hhurfjjn0gjginr",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0qfsi9uc9dmql/s-hnel59f3o4-1m8ghm8-78dul5y9k289bsymos1qwmuph",
+      "logical_bytes": 40304332
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnekxob7jg-1vsjze0-928aqikpehpmalstrxuvpkdw8",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kcsd0ivjzzjt/s-hnel536hzw-0w0x3r9-4jg5nqc6y35xyr34n046qwm4t",
+      "logical_bytes": 49721923
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hnekqm4scn-1cisl4d-3ddj5daezs7r0fceobizsn5ed",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-2ows2mo72pet7/s-hnel58hohn-0nvsqlb-b4zyse1akkz062jv0o7fovrat",
+      "logical_bytes": 47889988
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3vtbsbkakuwb7/s-hnekmz7vwf-0r64nrs-e77ry6w2ia1em42qawgn9cyyh",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3vtbsbkakuwb7/s-hnel3iqkju-00kt8d6-ad1ki131ffmdkgrxlfa7d1iv5",
+      "logical_bytes": 87562650
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnekxbuk1h-1s48vgy-eyxydrbx8lavwnje9lxqmzalc",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2j5205mxzvs4p/s-hnel3iqkmu-1xuz4k3-6fokid15fr2w6gh2l09ui77vt",
+      "logical_bytes": 1255223294
+    }
+  ],
+  "retained_sessions": [],
+  "scope": "Only task-touched Windows platform/UI configurations; newest finalized session kept, compiler locks held, no compilers or external links in removed sessions",
+  "removed_disposable_files": [
+    {
+      "path": ".hermes/evidence/windows-full-disk-current/setup-reservation-paired/build.jsonl",
+      "sha256": "ebe652bb5d2b2d210f606b4d07dc7fb1c27a45c6fc7f543225984e9e8eca4127"
+    },
+    {
+      "path": ".hermes/evidence/windows-full-disk-current/retry-regression/build.jsonl",
+      "sha256": "1745c63829e845250cba2e924437549ca048437623ec37a8120ffd5996ca08a3"
+    },
+    {
+      "path": ".hermes/evidence/windows-full-disk-current/paired/build.jsonl",
+      "sha256": "1745c63829e845250cba2e924437549ca048437623ec37a8120ffd5996ca08a3"
+    },
+    {
+      "path": ".hermes/evidence/windows-full-disk-current/initial-paired/build.jsonl",
+      "sha256": "b8923bc1cad485e35e5eee142c99af20f18f25261d931e41068c62eff10451ec"
+    },
+    {
+      "path": ".hermes/evidence/windows-full-disk-current/divergent/build.jsonl",
+      "sha256": "1745c63829e845250cba2e924437549ca048437623ec37a8120ffd5996ca08a3"
+    },
+    {
+      "path": ".hermes/evidence/windows-full-disk-current/setup-reservation-divergent/build.jsonl",
+      "sha256": "ebe652bb5d2b2d210f606b4d07dc7fb1c27a45c6fc7f543225984e9e8eca4127"
+    },
+    {
+      "path": ".hermes/evidence/windows-full-disk-current/run-regression.py",
+      "sha256": "647ab2ee943543d6be8eafc587aba8855e67ca14f9ed7bb2ea0c2930760507a1"
+    }
+  ],
+  "after_du": "17G\ttarget/debug/deps\n6.9G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n526M\t.hermes/packaging-tmp\n1.4M\t.hermes/evidence/windows-full-disk-current\n"
+}

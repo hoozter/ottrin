@@ -1,0 +1,95 @@
+{
+  "status": "pass for recorded native NTFS disk-full journal scopes",
+  "source": {
+    "base_commit": "4f4a79cc4d0e2ab8429fe22afe4453d4388c814e",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "f7f5f4e5f509ee51854e64efadd065decdc453648ed46027a72c03914e9454ce",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/disk_full.rs": "634c20059eae9aa66cde17823d52c49722096d370831af6854e10cb643e8d0cc",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/throttled_io.rs": "f0597f8308a1c4c836dc6a1e8cbbcf3ca5c7c6e68530bb8d1342cd0292abddb2",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "5a4b7379052ece52a982c57c4f734ecccc6f33ae1d749951316bf04a0326b1c9",
+      ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "162e8c30188eeb2903c8aefb7875321462541fd66f40838a40853cd2c55d5908",
+      ".hermes/evidence/windows-throttled-journal-current/prepare.ps1": "7b11d95eb31a3feb7ffa521d4601a25df8c8d2e31f1ffac7d834718e9a7de214",
+      ".hermes/evidence/windows-throttled-journal-current/cleanup-host.py": "d95ab1e47b2584b3e488a22f2013be8cd7e12d368919901985166a19a62950cb"
+    },
+    "build_manifest": "build-final.jsonl",
+    "scope": "Test-only held-writer append hook and native disk-full fixtures; shared storage QA provisioning/teardown reused. Production Copy behavior unchanged.",
+    "source_commit": "181d6623e4a54b501cdc0c6bbb2261621760d0a9"
+  },
+  "runs": {
+    "paired": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "test_binary_sha256": "174c7d884e07e0da6d9fc8848e27e7ac7d42978fcb598dc71aa8632d57b56740",
+      "arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_paired_journals_recover_after_space_is_freed --nocapture --test-threads=1 --ignored",
+      "evidence": "paired/RESULTS.json"
+    },
+    "divergent": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "test_binary_sha256": "174c7d884e07e0da6d9fc8848e27e7ac7d42978fcb598dc71aa8632d57b56740",
+      "arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_divergent_journals_preserve_data_and_refuse_retry --nocapture --test-threads=1 --ignored",
+      "evidence": "divergent/RESULTS.json"
+    },
+    "retry-regression": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "ordinary_user": true,
+      "temporary_entries": 0,
+      "test_binary_sha256": "174c7d884e07e0da6d9fc8848e27e7ac7d42978fcb598dc71aa8632d57b56740",
+      "arguments": "--exact copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryable --nocapture --test-threads=1",
+      "evidence": "retry-regression/RESULTS.json"
+    }
+  },
+  "named_native_tests": 3,
+  "regression_layouts": 6,
+  "observed_divergent_lengths": {
+    "before": 124775,
+    "local": 127744,
+    "central": 126724,
+    "local_ahead_bytes": 1020
+  },
+  "proof": [
+    "Actual 512 MiB NTFS volume filled to zero available bytes through write-through I/O; native journal operation returned Windows error 112",
+    "Complete matching mirrors re-admitted and resumed after freeing the filler, without original sources",
+    "A spare local allocation on the live writer produced an actual one-sided append. Fresh and retained retries refused the divergent pair without altering either journal or the 67-entry payload tree",
+    "Unrelated public file and absent source remained unchanged; publication did not finish on failure",
+    "Existing Stop-after-control-write regression passed all six anchored cohort layouts on the same exact executable"
+  ],
+  "fixture_correction": "The first spare-allocation setup did not persist into the active writer. Applying it through the held writer objects exercised the requested divergent state; both cases explicitly assert their mirror outcome.",
+  "checks": {
+    "strict_windows_platform_ui_all_target_clippy": "clippy-final.log",
+    "format_and_diff": "pass"
+  },
+  "cleanup": {
+    "status": "pass",
+    "guest": "TEARDOWN_GUEST.json",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "task_disk_detached_and_deleted_via_libvirt": true,
+    "domain_and_snapshot_references_clear": true,
+    "retained_base_and_other_guests_preserved": true
+  },
+  "preservation_scope": {
+    "baseline": "BASELINE.json",
+    "verified_paths": [
+      "C:\\Users\\campbell\\AppData\\Roaming\\ottrin\\config.json",
+      "C:\\Users\\campbell\\AppData\\Local\\Programs\\Ottrin\\Uninstall.exe"
+    ],
+    "limit": "Exact preferences/uninstaller hashes, not a full installed-payload inventory"
+  },
+  "storage": "STORAGE.json",
+  "delivery": "No production Copy behavior changed and no deliverables were rebuilt or published; public Windows Copy remains gated.",
+  "limits": [
+    "This is incomplete paired-append acceptance, not a torn record or cancellation inside a write",
+    "One local NTFS virtual volume; separate-volume full conditions, remote/device/other-filesystem, power and full application resource gates remain",
+    "Remaining public workflows and exact current Windows package/installer acceptance remain"
+  ],
+  "evidence_encoding": "Structured JSON normalized to LF; gzip stdout/stderr snapshots preserve exact native bytes and match RESULT hashes"
+}

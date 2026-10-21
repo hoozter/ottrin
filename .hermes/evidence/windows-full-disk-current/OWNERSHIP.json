@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "secondary_volume": "ottrin-full-disk-current.qcow2",
+  "secondary_serial": "ottrin-full-disk-current",
+  "secondary_size": 536870912,
+  "target": "vdb",
+  "token": "ac853b2b7e8ad6dfc5b958bccb07d749",
+  "base_commit": "4f4a79cc4d0e2ab8429fe22afe4453d4388c814e",
+  "scope": "Owned 512 MiB secondary disk for native disk-full journal failure; preserve main overlay, original preferences and installation"
+}

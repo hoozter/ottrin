@@ -34,7 +34,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. Separately, the pending-journal-I/O Stop/retry source checkpoint below passes 16 native tests. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
+| Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. Separately, the pending-I/O and disk-full source checkpoints below pass their recorded native scopes. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -290,6 +290,29 @@ Actual aborted/partial writes, additional payload/security/metadata I/O phases,
 remote/device/other-filesystem, physical-power, resource and remaining public
 workflow/package gates stay open. Public Windows Copy and existing Windows
 packages remain unchanged.
+
+## Native Windows disk-full journal acceptance
+
+Test source `181d6623` exercises real allocation failure on a token-bound disposable
+512 MiB NTFS volume. At zero available bytes, the actual journal operation returns
+Windows error 112. Complete matching journals re-admit and recover after space is
+freed, without the original source. A separate live-writer allocation case leaves
+the local journal 1,020 bytes ahead of the registry mirror: fresh and retained
+retries both refuse it and preserve the exact journals, payload tree and unrelated
+public data. No automatic repair or truncation is introduced.
+
+Both explicit disk-full cases and the existing six-cohort Stop/retry regression
+pass on the same native executable. Strict Windows platform/UI all-target Clippy
+passes. The test disk and fixture data are removed; the retained guest is shut off,
+its persistent definition is unchanged, and the recorded preferences/uninstaller
+hashes match. Scopes and exact executables are in
+`.hermes/evidence/windows-full-disk-current/ACCEPTANCE.json`.
+
+This advances the native resource gate for incomplete paired appends. Cancellation
+inside a record, torn records, separate-volume full conditions, other mutation
+phases, remote/device/other filesystems, power and full application resource gates
+remain. This checkpoint changes tests/QA tooling only; public Windows Copy and
+existing application packages remain unchanged.
 
 ## Local Trash Undo receipt discovery
 

@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test_arguments": "--exact copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_divergent_journals_preserve_data_and_refuse_retry --nocapture --test-threads=1 --ignored",
+  "ordinary_user": true,
+  "stdout_sha256": "39ca7ac6e98575ff9d4226e61e627acffa94f44aaadde5a8fa51a6e76442f729",
+  "temporary_entries": 0,
+  "status": "pass",
+  "test_binary_hash": "174c7d884e07e0da6d9fc8848e27e7ac7d42978fcb598dc71aa8632d57b56740",
+  "dispatch_id": "f2047edbc69f410560c81b5688db2fb2"
+}
