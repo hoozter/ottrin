@@ -40,7 +40,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Complete Windows Move Undo for Replace and cross-volume moves, package and exercise its actual UI, and complete the remaining retained-path lifecycle checks. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Complete cross-volume Windows Move Undo and the remaining inverse recovery admission/lifecycle checks, package and exercise its actual UI, and complete the remaining retained-path lifecycle checks. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -209,6 +209,45 @@ and cross-volume Undo must preserve current content with interruption recovery.
 Those cases currently offer no Undo receipt. Their Activity/Ctrl+Z and conflict
 ownership, retained-path lifecycle, adverse checks and exact-package GUI acceptance
 remain required. Full Windows Move Undo is not complete.
+
+## Windows Move Undo — durable same-volume Replace inverse
+
+Same-volume Replace now supplies an opaque Undo receipt from the completed paired
+forward record, binding the selected source, retained destination and all native
+parent identities. The existing journal has causal Undoing/Undone states: local
+intent is persisted before central intent, both precede inverse mutation, and
+paired completion follows both namespace flushes. Recovery dispatches inverse
+intent exclusively to the inverse path. It never interprets a restored original
+layout as a new forward Move. A pending inverse blocks another Move with an
+explicit Activity recovery message; completed paired inverse history releases
+public names without inspecting or changing later files under those names.
+
+The inverse pins native parents and exact entries across its two no-replace
+renames. It restores the selected entry to its original basename, then returns the
+displaced entry to the target. Later edits, folder contents, raw link targets and
+unknown private files are preserved. Occupied original names refuse before intent;
+a collision racing after intent remains untouched and the inverse can resume after
+the occupant is parked. Changed identities or noncausal journal pairs refuse.
+Activity distinguishes pending Replace Undo, offers “Resume Undo”, and shows
+completed Undo without another recovery action. The ordinary UI worker now checks
+both Skip/no-displacement and Replace collision/refusal/retry, including displaced
+restoration and accurate main-window status.
+
+The final ordinary-user Windows run passes 70 checks with 30 explicit fixture or
+second-volume ignores. It includes nine Replace inverse tests, mixed entry types,
+sharing and rename races, terminal-name reuse, changed retained/private identities,
+and child exits at six intent/restoration/completion boundaries. The earlier
+68-check run is retained separately. Linux UI passes 395 tests with one existing
+ignore; strict Windows platform and Linux/Windows UI all-target Clippy pass. Native
+UI and teardown receipts bind their own binaries and scopes. Evidence:
+`.hermes/evidence/windows-move-undo-replace-current/ACCEPTANCE.json`.
+
+This remains source/native work. Current Windows candidates and all Linux/public
+packages are unchanged. Cross-volume Undo, recovery operation-path admission and
+session-history reconciliation, containing-parent/unavailable-volume lifecycle,
+hard-power-cut acceptance, broader native Copy/platform gates and exact-package
+GUI acceptance remain required. User testing stays deferred; independent work
+continues.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

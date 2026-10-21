@@ -996,6 +996,8 @@ enum WindowsOverwritePhase {
     Prepared,
     SourceClaimed,
     Published,
+    Undoing,
+    Undone,
 }
 
 #[cfg(target_os = "windows")]
@@ -2174,11 +2176,29 @@ pub(super) fn discover_retained_windows_move_transactions_at(
                 entry.path().display()
             )));
         }
+        #[cfg(not(target_os = "windows"))]
+        let undo_status = move_recovery::WindowsMoveUndoStatus::NotStarted;
         #[cfg(target_os = "windows")]
-        {
+        let undo_status = {
+            let mut undo_status = move_recovery::WindowsMoveUndoStatus::NotStarted;
             let record_transaction_id = match kind {
                 WindowsJournalKind::SameVolumeOverwrite => {
-                    load_windows_overwrite_record(&entry.path())?.transaction_id()?
+                    let record = load_windows_overwrite_record(&entry.path())?;
+                    let local = load_windows_overwrite_record(
+                        &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
+                    )?;
+                    if windows_undo::overwrite::has_inverse_intent(&record, &local) {
+                        undo_status = if windows_undo::overwrite::completed(
+                            recovery_root,
+                            &record,
+                            &local,
+                        )? {
+                            move_recovery::WindowsMoveUndoStatus::Complete
+                        } else {
+                            move_recovery::WindowsMoveUndoStatus::Pending
+                        };
+                    }
+                    record.transaction_id()?
                 }
                 WindowsJournalKind::CrossVolume => {
                     load_windows_cross_volume_record(&entry.path())?.transaction_id()?
@@ -2190,7 +2210,8 @@ pub(super) fn discover_retained_windows_move_transactions_at(
                     encode_transaction_id(transaction_id)
                 )));
             }
-        }
+            undo_status
+        };
         let kind = match kind {
             WindowsJournalKind::SameVolumeOverwrite => {
                 move_recovery::WindowsMoveTransactionKind::SameVolumeOverwrite
@@ -2202,6 +2223,7 @@ pub(super) fn discover_retained_windows_move_transactions_at(
         discovered.push(move_recovery::WindowsDiscoveredMoveTransaction {
             transaction_id,
             kind,
+            undo_status,
         });
     }
     discovered.sort_by_key(|transaction| (transaction.transaction_id, transaction.kind));
@@ -2456,6 +2478,20 @@ fn recover_windows_overwrites_before_move(
             == Some(std::ffi::OsStr::new("journal"))
         {
             let record = load_windows_overwrite_record(&path)?;
+            let local = load_windows_overwrite_record(
+                &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
+            )?;
+            if windows_undo::overwrite::has_inverse_intent(&record, &local) {
+                if windows_undo::overwrite::completed(&recovery_root, &record, &local)? {
+                    continue;
+                }
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: record.transaction_id.clone(),
+                    message:
+                        "Windows Move Undo is pending; resume it from Activity before another Move"
+                            .into(),
+                });
+            }
             // A paired, completed publication is retained history, not a
             // reservation of its former source/target names. Those names
             // may now describe unrelated entries. Do not replay this old
@@ -3281,6 +3317,10 @@ fn start_windows_cross_volume_move(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsMoveBoundary {
     BeforeUndoReceipt,
+    OverwriteUndoIntent,
+    OverwriteUndoSourceRestored,
+    OverwriteUndoDisplacedRestored,
+    OverwriteUndoComplete,
     UndoParentsOpened,
     BeforeUndoRename,
     UndoRenamed,
@@ -5376,6 +5416,15 @@ fn resume_windows_overwrite(
             message: "Windows Overwrite durable journals or retained identity disagree".to_string(),
         });
     }
+    if windows_undo::overwrite::has_inverse_intent(&record, &local_record) {
+        windows_undo::overwrite::resume(recovery_root, record, local_record)?;
+        return Ok(MovePublication {
+            windows_undo: None,
+            disposition: MoveDisposition::Skipped,
+            published_path: None,
+            retained_displaced_path: None,
+        });
+    }
     let source = record.source_path()?;
     let source_parent = source
         .parent()
@@ -5544,9 +5593,9 @@ fn resume_windows_overwrite(
                         }
                     })?;
                 }
+                let undo = windows_undo::overwrite::issue(&record)?;
                 return Ok(MovePublication {
-                    #[cfg(target_os = "windows")]
-                    windows_undo: None,
+                    windows_undo: Some(undo),
                     disposition: MoveDisposition::Moved,
                     published_path: Some(target),
                     retained_displaced_path: Some(retained),

@@ -1708,12 +1708,21 @@ pub enum WindowsMoveTransactionKind {
     CrossVolume,
 }
 
+/// Durable inverse status. Discovery reports intent; only recovery grants mutation authority.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum WindowsMoveUndoStatus {
+    NotStarted,
+    Pending,
+    Complete,
+}
+
 /// Read-only Windows Move status discovered from the central journal namespace.
 /// Recovery revalidates journal topology, identities and content before mutation.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct WindowsDiscoveredMoveTransaction {
     pub transaction_id: [u8; 16],
     pub kind: WindowsMoveTransactionKind,
+    pub undo_status: WindowsMoveUndoStatus,
 }
 
 #[cfg(target_os = "linux")]

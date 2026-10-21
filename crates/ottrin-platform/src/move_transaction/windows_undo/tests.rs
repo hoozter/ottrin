@@ -284,6 +284,7 @@ fn windows_native_move_undo_retries_after_inverse_process_exit() {
             windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard {
                 before_parent,
                 after_parent,
+                retained: None,
             })),
             before_path: before,
             after_path: after,

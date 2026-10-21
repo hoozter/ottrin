@@ -527,6 +527,15 @@ impl PathMoveUndoReceipt {
         if let Some(plan) = self.windows_copy_plan() {
             return plan.path_pairs();
         }
+        #[cfg(target_os = "windows")]
+        {
+            let mut pairs = vec![(self.before_path(), self.after_path())];
+            if let Some(retained) = self.retained_displaced_path.as_deref() {
+                pairs.push((retained, self.after_path()));
+            }
+            pairs
+        }
+        #[cfg(not(target_os = "windows"))]
         vec![(self.before_path(), self.after_path())]
     }
     pub fn copy_transaction_id(&self) -> Option<&str> {

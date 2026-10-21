@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-22",
+  "status": "source_native_checkpoint_passed",
+  "source_base": "a4f6a649c06e536a8addb37dd835e226c1d16def",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Durable same-volume Windows Replace Undo; full cross-volume/recovery/lifecycle/package roadmap outcome remains incomplete",
+  "implementation": [
+    "Opaque receipt from paired completed forward record binds original source, retained destination and native parents",
+    "Causal local-first Undoing/Undone journal events route exclusively to inverse recovery",
+    "Exact native entry and parent handles pin both no-replace inverse renames; flushes precede terminal completion",
+    "Occupied original names refuse before intent; raced names remain untouched and inverse can resume",
+    "Identity/content of later object edits, raw link targets and unknown private content preserved",
+    "Pending inverse blocks forward Move; paired completed inverse history releases public names without replay",
+    "Activity exposes Resume Undo only for pending inverse, completed inverse has no recovery action"
+  ],
+  "verification": {
+    "native_platform": {
+      "passed": 70,
+      "failed": 0,
+      "explicit_ignored": 30,
+      "result": "RESULTS.json",
+      "binary": "TEST_BINARY.json",
+      "scope": "Move module and Copy receipt/dependency regressions without --include-ignored; secondary-volume, FAT32, hard-power-cut and other explicitly gated fixtures not run",
+      "new_replace_inverse_tests": 9,
+      "child_exit_boundaries": [
+        "local-intent",
+        "OverwriteUndoIntent",
+        "OverwriteUndoSourceRestored",
+        "OverwriteUndoDisplacedRestored",
+        "local-complete",
+        "OverwriteUndoComplete"
+      ],
+      "scope_limit": "Actual child-process exit/recovery, not a hard-power-cut or rendered app-restart acceptance"
+    },
+    "earlier_native_run": {
+      "passed": 68,
+      "result": "initial/RESULTS.json",
+      "binary": "initial/TEST_BINARY.json"
+    },
+    "native_ui_worker": {
+      "passed": 1,
+      "result": "ui/RESULTS.json",
+      "binary": "ui/TEST_BINARY.json",
+      "scenarios": [
+        "Skip/no-displacement collision/refusal/retry",
+        "Replace collision/refusal/retry restores displaced original",
+        "Accurate Available/Undone history, retained token and main-window refusal/success feedback"
+      ]
+    },
+    "native_ui_status_transfer": {
+      "passed": 8,
+      "result": "ui-status/RESULTS.json",
+      "binary": "ui-status/TEST_BINARY.json",
+      "scope": "Existing six native transfer/cancellation checks plus forward/inverse Activity state/action mapping"
+    },
+    "linux_ui": {
+      "passed": 395,
+      "failed": 0,
+      "existing_ignored": 1,
+      "log": "ui-linux-final.log"
+    },
+    "strict_all_target_clippy": [
+      "Windows ottrin-platform",
+      "Windows ottrin-ui",
+      "Linux ottrin-ui"
+    ],
+    "source_formatting": "cargo fmt --all -- --check; source/roadmap/runner diff checks. Raw native evidence retains CRLF, progress-line whitespace and terminal blank lines so log hashes stay exact."
+  },
+  "fixture_tooling_notes": {
+    "production-first-build.log": "Preliminary native production build; the terminal initial/ run binds its own later test executable",
+    "clippy-ui-windows-platform-variant.log": "Windows production build reports Linux-only Unavailable variant as unconstructed; variant-specific platform allowance preserves strict checks. Final UI test executable has identical test behavior; later change only documents/applies a non-test compiler attribute."
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "host": "TEARDOWN.json",
+    "domain_definition": "DOMAIN_BEFORE.xml.gz",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "owned_executable_actor_baseline_profiles_and_processes_removed": true,
+    "checked_original_preferences_and_installation_hashes_unchanged": true,
+    "retained_guest": "off with unchanged persistent definition",
+    "additional_disks_guests_or_credentials_created": false
+  },
+  "delivery": {
+    "new_package": false,
+    "internal_windows_candidate_source": "68962f05b66aaa9b181b378df62912de3fde4e05",
+    "linux_and_public_windows_packages": "unchanged",
+    "rendered_gui_acceptance_for_inverse": false
+  },
+  "required_remaining": [
+    "Cross-volume Undo with durable current-content preservation and displaced restoration",
+    "Recovery operation-path admission and session-history reconciliation",
+    "Containing-parent and unavailable-volume lifecycle",
+    "Hard-power-cut and further native adverse acceptance",
+    "Refresh stable packages and exact-package GUI acceptance",
+    "Remaining native Copy, platform, installer, Linux and release roadmap outcomes; user testing deferred"
+  ]
+}

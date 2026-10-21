@@ -1,0 +1,7 @@
+{
+  "id": "e9c4bef08dc321cdc5c81c182bee4e64",
+  "status": "dispatched",
+  "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --nocapture --test-threads=1",
+  "transferred_sha256": "193ef75a34c90d4594591bb7d23f77f54576d6d7da55e3dc6bdb35ace65faac9",
+  "watchdog_ms": 600000
+}

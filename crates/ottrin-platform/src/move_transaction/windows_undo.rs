@@ -14,6 +14,7 @@ use windows_sys::Win32::Storage::FileSystem::{
 pub(crate) struct WindowsMoveUndoGuard {
     before_parent: WindowsStableIdentity,
     after_parent: WindowsStableIdentity,
+    retained: Option<Box<super::WindowsOverwriteRecord>>,
 }
 
 fn io(error: impl std::fmt::Display) -> PlatformError {
@@ -63,6 +64,7 @@ pub(super) fn issue(
         windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard {
             before_parent,
             after_parent,
+            retained: None,
         })),
         before_path: before.to_path_buf(),
         after_path: after.to_path_buf(),
@@ -97,11 +99,22 @@ fn observe(parent: &File, name: &OsStr) -> Result<Option<WindowsStableIdentity>,
 }
 
 pub(crate) fn undo(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+    let lock = super::acquire_windows_recovery_lock()?;
+    undo_locked(receipt, &lock)
+}
+
+fn undo_locked(
+    receipt: &PathMoveUndoReceipt,
+    _lock: &super::WindowsRecoveryLock,
+) -> Result<(), PlatformError> {
     let Some(WindowsPathUndo::Move(guard)) = receipt.windows_undo.as_ref() else {
         return Err(PlatformError::InvalidPathMoveUndoReceipt(
             "Windows Move receipt has no native publication binding".into(),
         ));
     };
+    if let Some(record) = guard.retained.as_deref() {
+        return overwrite::undo(receipt, record);
+    }
     if receipt.before_path == receipt.after_path
         || super::windows_same_volume_kind_from_identity(receipt.identity.windows).is_none()
         || receipt.displaced_identity.is_some()
@@ -126,7 +139,6 @@ pub(crate) fn undo(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
     let after_name = after.file_name().ok_or_else(|| stale(after))?;
     windows_fs::valid_component(before_name).map_err(io)?;
     windows_fs::valid_component(after_name).map_err(io)?;
-    let _lock = super::acquire_windows_recovery_lock()?;
     // Native parents stay pinned only during the inverse. No receipt retains a
     // handle that could prevent a later ordinary volume unmount.
     let access = move_recovery::WINDOWS_DESTINATION_PARENT_ACCESS_MODE;
@@ -202,3 +214,5 @@ pub(crate) fn undo(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
 
 #[cfg(test)]
 mod tests;
+
+pub(in crate::move_transaction) mod overwrite;
