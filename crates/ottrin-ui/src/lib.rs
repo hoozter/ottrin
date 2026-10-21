@@ -30650,25 +30650,42 @@ mod tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on an owned second volume"]
     fn file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry() {
-        let source = tempfile::tempdir().unwrap();
-        let volume = std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
-            .expect("owned native second volume");
-        let destination = tempfile::Builder::new()
-            .prefix("ottrin-cross-undo-ui-")
-            .tempdir_in(volume)
-            .unwrap();
-        assert_worker_move_undo_collision(
-            source.path(),
-            &destination.path().join("destination"),
-            ConflictAction::Skip,
+        let volume = PathBuf::from(
+            std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+                .expect("owned native second volume"),
         );
-        let found = ottrin_platform::discover_retained_move_transactions().unwrap();
-        assert_eq!(found.len(), 1);
-        assert_eq!(found[0].kind, WindowsMoveTransactionKind::CrossVolume);
-        assert_eq!(
-            found[0].undo_status,
-            ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete
-        );
+        // Keep both fixture parents alive while discovery reads the first completed inverse.
+        let sources = [tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap()];
+        let destinations = [
+            tempfile::Builder::new()
+                .prefix("ottrin-cross-undo-ui-")
+                .tempdir_in(&volume)
+                .unwrap(),
+            tempfile::Builder::new()
+                .prefix("ottrin-cross-undo-ui-")
+                .tempdir_in(&volume)
+                .unwrap(),
+        ];
+        for (index, conflict) in [ConflictAction::Skip, ConflictAction::Overwrite]
+            .into_iter()
+            .enumerate()
+        {
+            assert_worker_move_undo_collision(
+                sources[index].path(),
+                &destinations[index].path().join("destination"),
+                conflict,
+            );
+            let found = ottrin_platform::discover_retained_move_transactions().unwrap();
+            assert_eq!(
+                found.len(),
+                index + 1,
+                "one visible row per logical inverse"
+            );
+            assert!(found.iter().all(|record| record.kind
+                == WindowsMoveTransactionKind::CrossVolume
+                && record.undo_status
+                    == ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete));
+        }
     }
 
     #[test]

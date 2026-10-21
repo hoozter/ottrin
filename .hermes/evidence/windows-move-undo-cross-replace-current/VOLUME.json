@@ -1,0 +1,19 @@
+{
+    "disk_unique_id":  "60022480F59B05310F046FB6684CFF00",
+    "image":  "C:\\OttrinCopyCleanupQA\\cross-move-volume\\owned.vhdx",
+    "filesystem":  "NTFS",
+    "actor_sid":  "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "volume_unique_id":  "\\\\?\\Volume{d075bf19-b70d-4343-bf26-859be51e8529}\\",
+    "original_disk_numbers":  [
+                                  0
+                              ],
+    "label":  "OttrinMoveQA",
+    "token":  "6d8aded013024fe691ce4990c8167dfc",
+    "drive_letter":  "D",
+    "status":  "ready",
+    "secondary_allocation_unit":  65536,
+    "disk_size":  268435456,
+    "root":  "D:\\OttrinCopyQA",
+    "primary_allocation_unit":  4096,
+    "disk_number":  1
+}

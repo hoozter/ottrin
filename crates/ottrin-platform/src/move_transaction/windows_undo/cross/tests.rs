@@ -89,7 +89,7 @@ fn terminal_record(receipt: &PathMoveUndoReceipt) -> Record {
     ))
     .unwrap();
     assert_eq!(
-        status(&record).unwrap(),
+        status(&root(), &record).unwrap(),
         move_recovery::WindowsMoveUndoStatus::Complete
     );
     record
@@ -389,10 +389,10 @@ fn windows_native_cross_undo_process_exit_recovers_without_session_receipt() {
         let identity = origin.publication_identity;
         let receipt = PathMoveUndoReceipt {
             windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::CrossVolume(
-                Guard {
+                Box::new(Guard {
                     origin,
                     inverse: Arc::new(OnceLock::new()),
-                },
+                }),
             ))),
             before_path: before,
             after_path: after,

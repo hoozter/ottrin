@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "b963d7a58195bfef6d60e3034d0b2d1cb34ef073",
+  "actor": "OttrinCopyQA",
+  "purpose": "Cross-volume Replace Undo with paired controller and inverse ownership; owned in-guest VHD removed after native consumers exit"
+}

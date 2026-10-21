@@ -17,7 +17,7 @@ pub(crate) enum WindowsMoveUndoGuard {
         after_parent: WindowsStableIdentity,
     },
     Replace(Box<super::WindowsOverwriteRecord>),
-    CrossVolume(cross::Guard),
+    CrossVolume(Box<cross::Guard>),
 }
 
 fn io(error: impl std::fmt::Display) -> PlatformError {

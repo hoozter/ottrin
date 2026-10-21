@@ -1,0 +1,130 @@
+{
+  "date": "2026-10-22",
+  "status": "source_native_checkpoint_passed",
+  "source_base": "b963d7a58195bfef6d60e3034d0b2d1cb34ef073",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Windows cross-volume Replace Undo with paired forward-controller/inverse ownership. Source and native checkpoint only; full roadmap remains incomplete.",
+  "implementation": [
+    "Existing cross-volume engine copies current supported publication content back to the exact original name; retained destination is restored by native no-replace rename",
+    "Original paired forward journals bind Undoing to the inverse ID before payload mutation and persist Undone only after both entries are restored",
+    "Inverse records bind original transaction, private-directory identity, retained-entry identity, publication identity and both original parents",
+    "Explicit recovery through either owner resumes the same inverse without the original session receipt; validated discovery presents one logical recovery row",
+    "Completed records release former public names without replaying or rewriting terminal journals; unknown private files remain untouched",
+    "Restored entry uses DELETE-access handle without delete sharing throughout retained restoration and paired completion; attribute-only pin defect found by native race test was corrected"
+  ],
+  "verification": {
+    "windows_platform": {
+      "passed": 113,
+      "failed": 0,
+      "ignored_in_run": 0,
+      "result": "RESULTS.json",
+      "binary": "TEST_BINARY.json",
+      "excluded": [
+        "windows_native_move_fat32_boundary_preserves_both_entries",
+        "windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite"
+      ],
+      "scope": "Entire selected Move module plus native Copy session-receipt and abort-dependency checks; --include-ignored uses the owned second NTFS volume",
+      "new_retained_cross_inverse_tests": 7
+    },
+    "interruption": {
+      "child_exits": 22,
+      "types": [
+        "file",
+        "directory"
+      ],
+      "boundaries": [
+        "inverse-Prepared-central",
+        "controller-Undoing-central",
+        "controller-Undoing-local",
+        "CrossRetainedUndoIntent",
+        "inverse-Published-central",
+        "inverse-SourceRemoved-central",
+        "CrossRetainedBeforeRestore",
+        "CrossRetainedRestored",
+        "controller-Undone-central",
+        "controller-Undone-local",
+        "CrossRetainedUndoComplete"
+      ],
+      "recovery": "Files and directories recover through either linked owner without original session receipt; before controller link is published discovery supplies the inverse owner",
+      "not_proven": "Hard-power-cut or rendered application-restart acceptance"
+    },
+    "native_cross_ui_worker": {
+      "passed": 1,
+      "result": "ui/RESULTS.json",
+      "binary": "ui/TEST_BINARY.json",
+      "scope": "Actual C: to owned D: Move/Undo operation workers for Skip and Overwrite; collision preserves original occupant; retry restores source and displaced original, reports Undone, and discovery shows one completed row per logical inverse."
+    },
+    "native_same_volume_ui_worker": {
+      "passed": 1,
+      "result": "ui-same/RESULTS.json",
+      "binary": "ui-same/TEST_BINARY.json",
+      "scenarios": [
+        "Skip/no-displacement",
+        "Replace and displaced restoration"
+      ]
+    },
+    "native_ui_transfer_status": {
+      "passed": 8,
+      "result": "ui-status/RESULTS.json",
+      "binary": "ui-status/TEST_BINARY.json",
+      "scope": "Existing transfer/cancellation checks plus typed forward/pending/completed status/action mapping for both journal families"
+    },
+    "ui_worker_limits": "Headless actual workers with explicit empty storage-binding fixtures; not rendered GUI, drive-discovery admission or package acceptance",
+    "linux_ui": {
+      "passed": 395,
+      "failed": 0,
+      "existing_ignored": 1,
+      "log": "ui-linux.log",
+      "later_changes": "Final refinement and expanded UI test are Windows-only; strict Linux Clippy also passed."
+    },
+    "strict_all_target_clippy": [
+      "Windows ottrin-platform",
+      "Windows ottrin-ui",
+      "Linux ottrin-ui"
+    ],
+    "source_formatting": "cargo fmt --all -- --check; source, roadmap and runner diff checks. Native logs/results preserve original whitespace and CRLF for exact bound hashes.",
+    "native_retained_content_scope": [
+      "Late file and tree edits to both source publication and retained destination",
+      "Raw relative link targets",
+      "Retained named stream preserved through same-volume rename",
+      "Restored-source handle blocks raced rename",
+      "Foreign destination race preserves three entries, supports current-source edits while pending, and does not copy back twice",
+      "Changed retained entry or private-directory identity refuses mutation",
+      "Noncausal and relinked controller evidence refuses mutation",
+      "Repeated Undo and explicit recovery preserve later public occupants and unknown private files with all four journal bytes unchanged"
+    ]
+  },
+  "prior_scopes_retained": {
+    "failed-before-entry-pin-fix/": "112 passed and one failed restored-source rename race assertion; raw failed result and bound stdout/stderr preserved. Corrected DELETE-access entry pin passes full113 rerun.",
+    "production-first-build.log": "Preliminary build emitted unused import warning; removed before strict checks.",
+    "clippy-platform-windows-style.log": "Strict check rejected collapsible-if style; flattened before final strict checks."
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "host": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "domain_definition": "DOMAIN_BEFORE.xml.gz",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "owned_fixture_profiles_payloads_processes_and_vhd_removed": true,
+    "secondary_fixture_root_contained_only_owner_marker_before_removal": true,
+    "original_disk_inventory_restored": true,
+    "checked_original_preferences_and_installation_hashes_unchanged": true,
+    "retained_guest": "off with unchanged persistent definition",
+    "no_new_hypervisor_guest_disk_or_credentials": true
+  },
+  "delivery": {
+    "packages_promoted": false,
+    "candidate_authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "linux_and_public_windows_deliverables": "not changed by this work",
+    "rendered_package_gui_acceptance": false
+  },
+  "required_remaining": [
+    "Recovery operation-path admission and session-history reconciliation",
+    "Terminal inverse-control retirement/lifecycle and containing-parent or unavailable-volume behavior",
+    "General metadata/stream support and resource outcomes beyond existing safe refusal policy",
+    "Hard-power-cut checks and exact-package GUI acceptance",
+    "Remaining native Copy, platform, installer, Linux and release roadmap work; user acceptance deferred"
+  ]
+}

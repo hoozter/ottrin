@@ -1,0 +1,4 @@
+
+thread 'move_transaction::windows_undo::cross::retained::tests::windows_native_cross_replace_undo_target_race_retries_without_copying_back_twice' (1676) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs:253:17:
+restored source stays pinned
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

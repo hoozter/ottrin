@@ -1,0 +1,7 @@
+{
+  "id": "009f5e5799fb0327b736ffe415ff81e9",
+  "status": "dispatched",
+  "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo --nocapture --test-threads=1",
+  "transferred_sha256": "033a18ba19668ce60e5a11d22ede791105670fec2f756a935ae36539644f6d50",
+  "watchdog_ms": 600000
+}

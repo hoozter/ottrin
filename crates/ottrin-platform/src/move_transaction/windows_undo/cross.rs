@@ -19,6 +19,8 @@ pub(in crate::move_transaction) struct Origin {
     publication: move_recovery::NativePath,
     publication_parent: WindowsStableIdentity,
     publication_identity: WindowsStableIdentity,
+    #[serde(default)]
+    retained: Option<retained::Binding>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -64,6 +66,9 @@ impl Origin {
             .is_none()
         {
             return Err(stale(&publication));
+        }
+        if let Some(binding) = &self.retained {
+            binding.validate(self)?;
         }
         windows_fs::valid_component(original.file_name().unwrap()).map_err(io)?;
         windows_fs::valid_component(publication.file_name().unwrap()).map_err(io)?;
@@ -133,6 +138,7 @@ pub(in crate::move_transaction) fn validate_record(record: &Record) -> Result<()
         || record.target_path()?.parent() != Some(destination.as_path())
         || transaction != expected
         || record.retained_displaced.is_some()
+        || record.undo_transaction.is_some()
         || !record.destination_manifest.is_empty()
         || !record
             .transaction_directory_identity
@@ -185,14 +191,19 @@ fn terminal(record: &Record) -> Result<Option<(Record, bool)>, PlatformError> {
 }
 
 pub(in crate::move_transaction) fn status(
+    root: &Path,
     record: &Record,
 ) -> Result<move_recovery::WindowsMoveUndoStatus, PlatformError> {
     validate_record(record)?;
-    Ok(if terminal(record)?.is_some_and(|(_, paired)| paired) {
-        move_recovery::WindowsMoveUndoStatus::Complete
-    } else {
-        move_recovery::WindowsMoveUndoStatus::Pending
-    })
+    Ok(
+        if terminal(record)?.is_some_and(|(_, paired)| paired)
+            && retained::inverse_complete(root, record)?
+        {
+            move_recovery::WindowsMoveUndoStatus::Complete
+        } else {
+            move_recovery::WindowsMoveUndoStatus::Pending
+        },
+    )
 }
 
 pub(in crate::move_transaction) fn completed(
@@ -206,6 +217,7 @@ pub(in crate::move_transaction) fn completed(
         *record = canonical;
         persist_windows_cross_volume_record(root, record).map_err(|e| pending(record, e))?;
     }
+    retained::finish(root, record)?;
     Ok(Some(super::super::MovePublication {
         windows_undo: None,
         disposition: crate::MoveDisposition::Moved,
@@ -220,10 +232,7 @@ pub(in crate::move_transaction) fn completed(
 pub(in crate::move_transaction) fn issue_if_owned(
     record: &Record,
 ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
-    if record.undo_origin.is_some()
-        || record.retained_displaced.is_some()
-        || record.conflict == crate::ConflictAction::Overwrite
-    {
+    if record.undo_origin.is_some() || retained::has_intent(record) {
         return Ok(None);
     }
     let Some(identity) = record.candidate_identity else {
@@ -247,20 +256,36 @@ pub(in crate::move_transaction) fn issue_if_owned(
         publication: move_recovery::NativePath::encode(&after),
         publication_parent: record.destination_parent_identity,
         publication_identity: identity,
+        retained: if record.conflict == crate::ConflictAction::Overwrite {
+            Some(retained::bind(record)?)
+        } else {
+            if record.retained_displaced.is_some() {
+                return Err(stale(&after));
+            }
+            None
+        },
     };
     origin.validate()?;
+    let displaced_identity = origin.retained.as_ref().map(|binding| PathMoveIdentity {
+        windows: binding.entry,
+    });
+    let retained_displaced_path = origin
+        .retained
+        .as_ref()
+        .map(|binding| binding.retained_path())
+        .transpose()?;
     Ok(Some(PathMoveUndoReceipt {
         windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::CrossVolume(
-            Guard {
+            Box::new(Guard {
                 origin,
                 inverse: Arc::new(OnceLock::new()),
-            },
+            }),
         ))),
         before_path: before,
         after_path: after,
         identity: PathMoveIdentity { windows: identity },
-        displaced_identity: None,
-        retained_displaced_path: None,
+        displaced_identity,
+        retained_displaced_path,
         requirement: PathMoveUndoRequirement::None,
     }))
 }
@@ -287,8 +312,18 @@ pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), P
     if receipt.before_path != before
         || receipt.after_path != after
         || receipt.identity.windows != guard.origin.publication_identity
-        || receipt.displaced_identity.is_some()
-        || receipt.retained_displaced_path.is_some()
+        || receipt
+            .displaced_identity
+            .as_ref()
+            .map(|identity| identity.windows)
+            != guard.origin.retained.as_ref().map(|binding| binding.entry)
+        || receipt.retained_displaced_path
+            != guard
+                .origin
+                .retained
+                .as_ref()
+                .map(|binding| binding.retained_path())
+                .transpose()?
         || receipt.requirement != PathMoveUndoRequirement::None
     {
         return Err(PlatformError::InvalidPathMoveUndoReceipt(
@@ -380,3 +415,5 @@ pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), P
 
 #[cfg(test)]
 mod tests;
+
+pub(in crate::move_transaction) mod retained;

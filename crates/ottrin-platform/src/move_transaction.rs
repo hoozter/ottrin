@@ -1095,6 +1095,8 @@ enum WindowsCrossVolumePhase {
     ReclaimingPublication,
     Published,
     SourceRemoved,
+    Undoing,
+    Undone,
 }
 
 #[cfg(target_os = "windows")]
@@ -1134,6 +1136,8 @@ struct WindowsCrossVolumeRecord {
     retained_displaced: Option<move_recovery::NativePath>,
     #[serde(default)]
     undo_origin: Option<windows_undo::cross::Origin>,
+    #[serde(default)]
+    undo_transaction: Option<[u8; 16]>,
 }
 
 #[cfg(target_os = "windows")]
@@ -2163,6 +2167,8 @@ pub(super) fn discover_retained_windows_move_transactions_at(
         Err(error) => return Err(PlatformError::Io(error.to_string())),
     };
     let mut discovered = Vec::new();
+    #[cfg(target_os = "windows")]
+    let mut suppressed_controllers = std::collections::BTreeSet::new();
     for entry in entries {
         let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
         let Some((transaction_id, kind)) = parse_windows_journal_name(&entry.file_name()) else {
@@ -2205,7 +2211,18 @@ pub(super) fn discover_retained_windows_move_transactions_at(
                 WindowsJournalKind::CrossVolume => {
                     let record = load_windows_cross_volume_record(&entry.path())?;
                     if record.undo_origin.is_some() {
-                        undo_status = windows_undo::cross::status(&record)?;
+                        undo_status = windows_undo::cross::status(recovery_root, &record)?;
+                        if let Some(owner) = windows_undo::cross::retained::presentation_controller(
+                            recovery_root,
+                            &record,
+                        )? {
+                            suppressed_controllers.insert(owner);
+                        }
+                    } else if windows_undo::cross::retained::has_intent(&record) {
+                        undo_status = windows_undo::cross::retained::controller_status(
+                            recovery_root,
+                            &record,
+                        )?;
                     }
                     record.transaction_id()?
                 }
@@ -2241,6 +2258,8 @@ pub(super) fn discover_retained_windows_move_transactions_at(
             "multiple durable Windows Move journals share a transaction ID".to_string(),
         ));
     }
+    #[cfg(target_os = "windows")]
+    discovered.retain(|entry| !suppressed_controllers.contains(&entry.transaction_id));
     Ok(discovered)
 }
 
@@ -2535,10 +2554,13 @@ fn recover_windows_overwrites_before_move(
             )
         } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
             let mut record = load_windows_cross_volume_record(&path)?;
-            if record.undo_origin.is_some() {
-                if windows_undo::cross::status(&record)?
-                    == move_recovery::WindowsMoveUndoStatus::Complete
-                {
+            if record.undo_origin.is_some() || windows_undo::cross::retained::has_intent(&record) {
+                let status = if record.undo_origin.is_some() {
+                    windows_undo::cross::status(&recovery_root, &record)?
+                } else {
+                    windows_undo::cross::retained::controller_status(&recovery_root, &record)?
+                };
+                if status == move_recovery::WindowsMoveUndoStatus::Complete {
                     continue;
                 }
                 return Err(PlatformError::ClaimedRecoveryPending {
@@ -3353,6 +3375,7 @@ fn start_windows_cross_volume_move(
             move_recovery::NativePath::encode(&transaction_path.join(WINDOWS_RETAINED_NAME))
         }),
         undo_origin: undo.map(|(origin, _)| origin.clone()),
+        undo_transaction: None,
     };
     if let Some((_, binding)) = undo {
         binding.set(record.clone()).map_err(|_| {
@@ -3373,6 +3396,10 @@ fn start_windows_cross_volume_move(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsMoveBoundary {
     BeforeUndoReceipt,
+    CrossRetainedUndoIntent,
+    CrossRetainedBeforeRestore,
+    CrossRetainedRestored,
+    CrossRetainedUndoComplete,
     OverwriteUndoIntent,
     OverwriteUndoSourceRestored,
     OverwriteUndoDisplacedRestored,
@@ -3691,7 +3718,7 @@ fn completed_windows_cross_volume_overwrite(
     }
     Ok(Some(MovePublication {
         #[cfg(target_os = "windows")]
-        windows_undo: None,
+        windows_undo: windows_undo::cross::issue_if_owned(record)?,
         disposition: MoveDisposition::Moved,
         published_path: Some(target),
         retained_displaced_path: Some(retained),
@@ -3704,8 +3731,12 @@ fn resume_windows_cross_volume(
     record: &mut WindowsCrossVolumeRecord,
     mut source_handle: Option<std::fs::File>,
 ) -> Result<MovePublication, PlatformError> {
+    if windows_undo::cross::retained::has_intent(record) {
+        return windows_undo::cross::retained::resume_controller(recovery_root, record);
+    }
     if record.undo_origin.is_some() {
         windows_undo::cross::validate_record(record)?;
+        windows_undo::cross::retained::prepare(recovery_root, record)?;
         if let Some(publication) = windows_undo::cross::completed(recovery_root, record)? {
             return Ok(publication);
         }

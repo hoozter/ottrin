@@ -1,0 +1,12 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+warning: unused import: `encode_transaction_id`
+ --> crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained.rs:6:63
+  |
+6 |     WINDOWS_CROSS_VOLUME_CANDIDATE_NAME, WindowsMoveBoundary, encode_transaction_id,
+  |                                                               ^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ottrin-platform` (lib test) generated 1 warning (run `cargo fix --lib -p ottrin-platform --tests` to apply 1 suggestion)
+    Finished `test` profile [optimized + debuginfo] target(s) in 51.61s
+  Executable unittests src/lib.rs (target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe)
