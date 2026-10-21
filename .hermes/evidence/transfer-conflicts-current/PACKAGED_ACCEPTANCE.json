@@ -1,0 +1,18 @@
+{
+  "status": "verified Linux delivery",
+  "source_commit": "329473d6",
+  "source_revision": "329473d63abe5a2bdb976a847014c8001550d550",
+  "checks": {
+    "source": "390 UI tests passed, zero failures, one explicit private mount-namespace exclusion; strict Linux/Windows all-target Clippy and formatting pass",
+    "package_content": "FINAL_PACKAGE_IDENTITIES.json; all four formats match current payload/docs/source/helper policy; AppImage and RPM namespace checks pass",
+    "actual_gui": "18 filesystem checks across Dark100, Light150 and a three-item mixed batch. Copy/Move modal wording, icons, grouping and alignment inspected in captured composed windows. Exact source bytes and original destinations checked before and after choices/Undo.",
+    "cleanup": "All three PROCESS_CLEANUP.json records prove profiles absent and no private-marker processes; app normal exits and all original source hashes verified. Build-all and checker extractions removed; outer candidate directory removed after promotion. Shared staging returned to 527M baseline.",
+    "incremental": "INCREMENTAL_CLEANUP.json: three superseded host UI sessions retired with both lock forms, no consumers and hard links accounted for; newest sessions retained. Host deps/incremental 17G/7.0G, cross 23G/20G after work."
+  },
+  "delivery": "PROMOTION.json and dist/packages/LINUX_PACKAGES_ACCEPTANCE.json bind exact current hashes; public/internal Windows artifacts unchanged",
+  "limits": [
+    "Small-fixture GUI checks do not prove large-batch responsiveness, full cross-volume interruption/resource, physical storage/device or full daily-driver acceptance",
+    "Windows source cross-lint is not native Windows clipboard/GUI or installer lifecycle acceptance; public Windows Copy stays gated",
+    "Earlier media, distribution, appearance and performance receipts retain original artifact scopes"
+  ]
+}

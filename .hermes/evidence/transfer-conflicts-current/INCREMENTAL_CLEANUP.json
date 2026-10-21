@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "changes": [
+    {
+      "removed": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnfa0yuxgu-1z08f1u-8pjabe1ev3u5uy8dxnxygkub7",
+      "replacement": "target/debug/incremental/ottrin_ui-051awtp9qt3lv/s-hnfa3taus5-1wpxoly-8ofwgyhi0rtfhueem9hp3e0ea",
+      "logical_bytes": 338893395
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hneqvqesih-013zbbl-3bc3hywpgbslgrsb0silnq7sw",
+      "replacement": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnfa4nrm15-1ecqpxe-6z2sispjq1abupki2kv7eto1y",
+      "logical_bytes": 39041419
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hneqvqeieg-0ptnzcy-cgxyvf5dvg8qhqzn7re4r7ntl",
+      "replacement": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnfa4nrg4k-1tf6n97-5l50ouwtxpfl4mu0jsojtk75e",
+      "logical_bytes": 47198555
+    }
+  ],
+  "checks": [
+    "Both exclusive lock forms held",
+    "No open/mapped consumers",
+    "All hard links accounted for within shared incremental root"
+  ],
+  "scope": "Superseded finalized host UI sessions only; newest per existing configuration retained"
+}

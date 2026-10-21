@@ -1,0 +1,124 @@
+{
+  "artifact_sha256": "506213f4fc4db5bceb5e9a0236474a5518dd50c05435b188b48bc6490acd813c",
+  "theme": "Dark",
+  "scale": "1",
+  "flow": "ordinary",
+  "status": "pass",
+  "source_files_before": {
+    "source/note.txt": "ff8c0734f703a26d82ac74f558e090b19bb8a0a93b67d84eec13e38f7caac11f",
+    "source/other.txt": "f957b19529906961933c5c30f8713c500a9bb5d9d0695c40d48c97a26a3594ec",
+    "source/Folder/nested/leaf.txt": "840c2ff3c5325e1305b00fddf2885d4b70688ae357825045b3bb3900803a66c6",
+    "replacement/note.txt": "3cc98e7956d06ebfa0831553878073e5bfb3709934d72ac89aeac35530530fc3"
+  },
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 329473d63abe5a2bdb976a847014c8001550d550\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "file_checks": [
+    {
+      "label": "Unoccupied Copy publishes without prompt",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Copy conflict waits without mutation",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n"
+      },
+      "absent": [
+        "destination/note (1).txt"
+      ]
+    },
+    {
+      "label": "Copy Cancel preserves both files",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n"
+      },
+      "absent": [
+        "destination/note (1).txt"
+      ]
+    },
+    {
+      "label": "Copy Skip preserves occupied destination and clipboard source",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n"
+      },
+      "absent": [
+        "destination/note (1).txt"
+      ]
+    },
+    {
+      "label": "Copy Replace publishes replacement and preserves source",
+      "files": {
+        "destination/note.txt": "replacement source\n",
+        "replacement/note.txt": "replacement source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Undo Copy Replace restores displaced destination",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Copy Keep both renames incoming item",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "destination/note (1).txt": "replacement source\n",
+        "replacement/note.txt": "replacement source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Undo Keep both withdraws only renamed publication",
+      "files": {
+        "destination/note.txt": "first source\n"
+      },
+      "absent": [
+        "destination/note (1).txt"
+      ]
+    },
+    {
+      "label": "Move Escape cancels without consuming cut source",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Move Replace transfers cut source",
+      "files": {
+        "destination/note.txt": "replacement source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": [
+        "replacement/note.txt"
+      ]
+    },
+    {
+      "label": "Undo Move Replace restores source and displaced destination",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "replacement/note.txt": "replacement source\n",
+        "source/note.txt": "first source\n"
+      },
+      "absent": []
+    }
+  ],
+  "visual_checks": [
+    "Dark100 real AppImage modal has correct Copy/Move verbs, four framed icon choices and aligned text",
+    "Copy Cancel, Skip, Keep both, Replace, and both corresponding Undo paths preserve checked bytes",
+    "Move Escape retains clipboard; Replace and Undo restore both original entries"
+  ],
+  "normal_app_exit": true,
+  "source_files_preserved": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and shared disposable app state removed"
+}

@@ -1,0 +1,151 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 3m 07s
+    Finished `release` profile [optimized] target(s) in 0.34s
+    Finished `release` profile [optimized] target(s) in 0.25s
+
+==> Building Linux portable tarball
+/tmp/tmp.5Q6AEkwIoP/pdfium.tgz: OK
+/tmp/tmp.G9dNPmrLAC/archive: OK
+/tmp/tmp.G9dNPmrLAC/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+
+==> Building Linux AppImage
+/tmp/tmp.0Yce9NSTlE/pdfium.tgz: OK
+/tmp/tmp.JxHZ2VZfg1/archive: OK
+/tmp/tmp.JxHZ2VZfg1/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/dist/appimagetool-x86_64.AppImage: OK
+appimagetool, continuous build (commit 5735cc5), build <local dev build> built on 2023-03-08 22:52:04 UTC
+Using architecture x86_64
+Deleting pre-existing .DirIcon
+Creating .DirIcon symlink based on information from desktop file
+AppStream upstream metadata found in usr/share/metainfo/org.ottrin.Ottrin.appdata.xml
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.appimage.C8cbHy/AppDir should be packaged as /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.appimage.C8cbHy/Ottrin-0.1.0-x86_64.AppImage
+Trying to validate AppStream information with the appstreamcli tool
+In case of issues, please refer to https://github.com/ximion/appstream
+org.ottrin.Ottrin.appdata.xml
+
+✔ Validation was successful: pedantic: 1
+Generating squashfs...
+Parallel mksquashfs: Using 16 processors
+Creating 4.0 filesystem on /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.appimage.C8cbHy/Ottrin-0.1.0-x86_64.AppImage, block size 131072.
+[===============================================================|] 643/643 100%
+
+Exportable Squashfs 4.0 filesystem, gzip compressed, data block size 131072
+	compressed data, compressed metadata, compressed fragments,
+	compressed xattrs, compressed ids
+	duplicates are removed
+Filesystem size 30421.14 Kbytes (29.71 Mbytes)
+	42.72% of uncompressed filesystem size (71205.69 Kbytes)
+Inode table size 3089 bytes (3.02 Kbytes)
+	47.12% of uncompressed inode table size (6556 bytes)
+Directory table size 1633 bytes (1.59 Kbytes)
+	50.28% of uncompressed directory table size (3248 bytes)
+Number of duplicate files found 7
+Number of inodes 135
+Number of files 108
+Number of fragments 15
+Number of symbolic links  1
+Number of device nodes 0
+Number of fifo nodes 0
+Number of socket nodes 0
+Number of directories 26
+Number of ids (unique uids + gids) 1
+Number of uids 1
+	root (0)
+Number of gids 1
+	root (0)
+Embedding ELF...
+Marking the AppImage as executable...
+Embedding MD5 digest
+Success
+
+Please consider submitting your AppImage to AppImageHub, the crowd-sourced
+central directory of available AppImages, by opening a pull request
+at https://github.com/AppImage/appimage.github.io
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/Ottrin-0.1.0-x86_64.AppImage
+
+==> Building native Debian package
+/tmp/tmp.qsA679RYWz/pdfium.tgz: OK
+/tmp/tmp.gBoo7Z777u/archive: OK
+/tmp/tmp.gBoo7Z777u/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.deb.5w19Tc/package
+dpkg-deb: building package 'ottrin' in '/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.deb.5w19Tc/ottrin_0.1.0_amd64.deb'.
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/ottrin_0.1.0_amd64.deb
+
+==> Building native RPM package
+/tmp/tmp.WOIAhmsMt1/pdfium.tgz: OK
+/tmp/tmp.Yp2BtAkeqF/archive: OK
+/tmp/tmp.Yp2BtAkeqF/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/SOURCES/stage
+Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.p31iZ1
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.H7WZIy
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.1cniMl
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ /bin/mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT
++ /bin/mkdir /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ cp -a /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/SOURCES/stage/. /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-compress /usr
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-elfperms
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-static-archive /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-remove-la-files
+Processing files: ottrin-0.1.0-1.x86_64
+warning: Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+Provides: application() application(org.ottrin.Ottrin.desktop) libpdfium.so()(64bit) metainfo() metainfo(org.ottrin.Ottrin.appdata.xml) ottrin = 0.1.0-1 ottrin(x86-64) = 0.1.0-1
+Requires(interp): /bin/sh /bin/sh
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+Requires(preun): /bin/sh
+Requires(posttrans): /bin/sh
+Requires: /bin/sh ld-linux-x86-64.so.2()(64bit) ld-linux-x86-64.so.2(GLIBC_2.3)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.10)(64bit) libc.so.6(GLIBC_2.11)(64bit) libc.so.6(GLIBC_2.14)(64bit) libc.so.6(GLIBC_2.15)(64bit) libc.so.6(GLIBC_2.16)(64bit) libc.so.6(GLIBC_2.17)(64bit) libc.so.6(GLIBC_2.18)(64bit) libc.so.6(GLIBC_2.2.5)(64bit) libc.so.6(GLIBC_2.25)(64bit) libc.so.6(GLIBC_2.27)(64bit) libc.so.6(GLIBC_2.28)(64bit) libc.so.6(GLIBC_2.29)(64bit) libc.so.6(GLIBC_2.3)(64bit) libc.so.6(GLIBC_2.3.2)(64bit) libc.so.6(GLIBC_2.3.4)(64bit) libc.so.6(GLIBC_2.30)(64bit) libc.so.6(GLIBC_2.32)(64bit) libc.so.6(GLIBC_2.33)(64bit) libc.so.6(GLIBC_2.34)(64bit) libc.so.6(GLIBC_2.39)(64bit) libc.so.6(GLIBC_2.4)(64bit) libc.so.6(GLIBC_2.5)(64bit) libc.so.6(GLIBC_2.7)(64bit) libc.so.6(GLIBC_2.9)(64bit) libfontconfig.so.1()(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libgcc_s.so.1(GCC_3.3)(64bit) libgcc_s.so.1(GCC_4.2.0)(64bit) libgio-2.0.so.0()(64bit) libglib-2.0.so.0()(64bit) libgobject-2.0.so.0()(64bit) libgstapp-1.0.so.0()(64bit) libgstbase-1.0.so.0()(64bit) libgstreamer-1.0.so.0()(64bit) libm.so.6()(64bit) libm.so.6(GLIBC_2.2.5)(64bit) libm.so.6(GLIBC_2.27)(64bit) libm.so.6(GLIBC_2.29)(64bit) libm.so.6(GLIBC_2.35)(64bit) libpthread.so.0()(64bit) libpthread.so.0(GLIBC_2.2.5)(64bit) libpthread.so.0(GLIBC_2.3.2)(64bit) rtld(GNU_HASH)
+Checking for unpackaged file(s): /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/check-files /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
+Wrote: /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/RPMS/x86_64/ottrin-0.1.0-1.x86_64.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.GbuRbb
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(rmbuild): /bin/sh -e /var/tmp/rpm-tmp.40bhTG
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+    Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/.rpm.wMIozu/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+
+RPM build warnings:
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/.build-all.CtYxxP/linux/ottrin-0.1.0-1.x86_64.rpm
+portable: packaged helper and policy path PASS
+appimage: packaged helper and policy path PASS
+deb: packaged helper and policy path PASS
+rpm: packaged helper and policy path PASS
+Ottrin-0.1.0-linux-x86_64-portable.tar.gz: OK
+Ottrin-0.1.0-x86_64.AppImage: OK
+ottrin_0.1.0_amd64.deb: OK
+ottrin-0.1.0-1.x86_64.rpm: OK
+
+Built artifacts:
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/Ottrin-0.1.0-x86_64.AppImage
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/Ottrin-0.1.0-x86_64.AppImage.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/ottrin_0.1.0_amd64.deb
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/ottrin_0.1.0_amd64.deb.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/ottrin-0.1.0-1.x86_64.rpm
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/transfer-conflicts-refresh/ottrin-0.1.0-1.x86_64.rpm.sha256

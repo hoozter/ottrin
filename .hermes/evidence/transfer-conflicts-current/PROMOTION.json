@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "source_revision": "329473d63abe5a2bdb976a847014c8001550d550",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "150d50c5b5e77f315b1f3d23029a9bdede24dd140f8222917bd2b72373a7156c",
+    "Ottrin-0.1.0-x86_64.AppImage": "506213f4fc4db5bceb5e9a0236474a5518dd50c05435b188b48bc6490acd813c",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "19d472454179fca2f925ac8056a9f8d7eb72b705b4cd103ae82c55528919c564",
+    "ottrin_0.1.0_amd64.deb": "b2d607c1bef69e7a7b6ba7f4c7a2aba7ff5e5dcdec669ab3d5b193ca73555426"
+  },
+  "superseded_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "60dfd4e5321d39b8e87b07750eaab66ee8a7876924735abcc5e9050f0b93feea",
+    "Ottrin-0.1.0-x86_64.AppImage": "0fa7ff08236093645038533c087a552fb52393761df12c1a256cec6c1cace7a6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "30737e1fd49506e71377e744db40f1c36bb8121f919cf53ae44d486efcda3baa",
+    "ottrin_0.1.0_amd64.deb": "9a302e1d0956fa28d9a193f1e0f1c10a7dca62dc7c9cd6099ab62e5c3be8392f"
+  },
+  "candidate_removed": true,
+  "stable_directory": "/home/campbell/Projects/Ottrin/dist/packages",
+  "operator_profiles_service": "Unchanged; open superseded AppImage inodes remain valid"
+}
