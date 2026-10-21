@@ -23,13 +23,31 @@ printf 'fixture license\n' > "$TMP/pdfium/LICENSE"
 printf 'fixture license\n' > "$TMP/pdfium/licenses/pdfium.txt"
 tar -czf "$TMP/pdfium.tgz" -C "$TMP/pdfium" .
 export OTTRIN_TEST_PDFIUM_ARCHIVE="$TMP/pdfium.tgz"
+export OTTRIN_TEST_SEARCH_ARCHIVE="$TMP/search.tgz"
+python3 - "$ROOT/packaging/search-runtime.json" "$TMP/search" "$OTTRIN_TEST_SEARCH_ARCHIVE" <<'PY'
+import json,pathlib,shutil,sys,tarfile
+manifest=json.loads(pathlib.Path(sys.argv[1]).read_text())
+platform=manifest['platforms']['linux-x86_64']
+payload=pathlib.Path(sys.argv[2])/platform['prefix']
+payload.mkdir(parents=True)
+shutil.copy2('/bin/true',payload/platform['binary'])
+for name in manifest['licenses']:(payload/name).write_text('fixture license\n')
+with tarfile.open(sys.argv[3],'w:gz') as archive:archive.add(payload,arcname=platform['prefix'])
+PY
 cat > "$TMP/tools/curl" <<'MOCK'
 #!/bin/sh
+archive=''
+destination=''
 while [ "$#" -gt 0 ]; do
-  if [ "$1" = '-o' ]; then cp "$OTTRIN_TEST_PDFIUM_ARCHIVE" "$2"; exit; fi
+  case "$1" in
+    */pdfium-binaries/releases/*) archive="$OTTRIN_TEST_PDFIUM_ARCHIVE" ;;
+    */ripgrep/releases/*) archive="$OTTRIN_TEST_SEARCH_ARCHIVE" ;;
+    -o) destination="$2"; shift ;;
+  esac
   shift
 done
-exit 1
+[ -n "$archive" ] && [ -n "$destination" ] || exit 1
+cp "$archive" "$destination"
 MOCK
 cat > "$TMP/tools/sha256sum" <<'MOCK'
 #!/bin/sh
@@ -52,6 +70,7 @@ for executable in \
   usr/bin/ottrin-indexd \
   usr/bin/ottrin-legacy-doc-render \
   usr/bin/ottrin-media-playback \
+  usr/libexec/ottrin/rg \
   usr/libexec/ottrin/ottrin-priv-helper \
   usr/libexec/ottrin/native-package-lifecycle; do
   test -x "$STAGE/$executable"
@@ -66,6 +85,10 @@ for payload in \
   usr/share/doc/ottrin/SOURCE_REVISION.txt \
   usr/libexec/ottrin/pdfium/lib/libpdfium.so \
   usr/libexec/ottrin/pdfium/LICENSE \
+  usr/share/doc/ottrin/third-party-notices/ripgrep/MANIFEST.txt \
+  usr/share/doc/ottrin/third-party-notices/ripgrep/COPYING \
+  usr/share/doc/ottrin/third-party-notices/ripgrep/LICENSE-MIT \
+  usr/share/doc/ottrin/third-party-notices/ripgrep/UNLICENSE \
   usr/libexec/ottrin/pdfium/licenses/pdfium.txt; do
   test -f "$STAGE/$payload"
 done

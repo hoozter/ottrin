@@ -576,6 +576,14 @@ Linux AppImage:
 ./packaging/linux/package-appimage.sh
 ```
 
+Use `./build-all.sh --linux-only` to refresh the Linux set together. It stages
+the selected formats beside the output directory and completes their build,
+helper-policy and checksum checks before replacing published Linux artifacts.
+Failed builds or checks preserve the previous Linux files and receipts. Source
+snapshots are captured before publication invalidates the old cohort receipt;
+temporary stages are removed on exit. Runtime and platform acceptance is recorded
+separately after testing the resulting packages.
+
 Native Linux packages:
 
 ```sh

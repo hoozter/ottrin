@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$ROOT/packaging/package-lifecycle.sh"
 WINDOWS_TARGET="${OTTRIN_TARGET:-x86_64-pc-windows-gnu}"
 HOST_OS="$(uname -s)"
 
@@ -80,8 +81,10 @@ cd "$ROOT"
 export OTTRIN_DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist/packages}"
 mkdir -p "$OTTRIN_DIST_DIR"
 
-WORK="$(mktemp -d)"
+WORK="$(mktemp -d "$OTTRIN_DIST_DIR/.build-all.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
+LINUX_STAGE="$WORK/linux"
+mkdir -p "$LINUX_STAGE"
 
 artifacts=()
 linux_helper_artifacts=()
@@ -100,22 +103,24 @@ run_packager() {
 }
 
 if [[ "$build_linux" == true ]]; then
-  run_packager "Building Linux portable tarball" "$ROOT/packaging/linux/package-portable.sh"
+  run_packager "Building Linux portable tarball" \
+    env OTTRIN_DIST_DIR="$LINUX_STAGE" "$ROOT/packaging/linux/package-portable.sh"
   linux_helper_artifacts+=("portable=${artifacts[-1]}")
 fi
 
 if [[ "$build_appimage" == true ]]; then
-  run_packager "Building Linux AppImage" "$ROOT/packaging/linux/package-appimage.sh"
+  run_packager "Building Linux AppImage" \
+    env OTTRIN_DIST_DIR="$LINUX_STAGE" "$ROOT/packaging/linux/package-appimage.sh"
   linux_helper_artifacts+=("appimage=${artifacts[-1]}")
 fi
 
 if [[ "$build_linux" == true ]]; then
   run_packager "Building native Debian package" \
-    env OTTRIN_SKIP_BUILD=1 "$ROOT/packaging/linux/package-deb.sh"
+    env OTTRIN_SKIP_BUILD=1 OTTRIN_DIST_DIR="$LINUX_STAGE" "$ROOT/packaging/linux/package-deb.sh"
   linux_helper_artifacts+=("deb=${artifacts[-1]}")
   if command -v rpmbuild >/dev/null 2>&1; then
     run_packager "Building native RPM package" \
-      env OTTRIN_SKIP_BUILD=1 "$ROOT/packaging/linux/package-rpm.sh"
+      env OTTRIN_SKIP_BUILD=1 OTTRIN_DIST_DIR="$LINUX_STAGE" "$ROOT/packaging/linux/package-rpm.sh"
     linux_helper_artifacts+=("rpm=${artifacts[-1]}")
   else
     printf '\n==> Skipping native RPM package; rpmbuild is unavailable\n'
@@ -156,6 +161,32 @@ elif [[ "$build_windows" == auto ]]; then
   printf '\n==> Skipping Windows portable zip; target not installed (%s)\n' "$WINDOWS_TARGET"
   printf '    Run ./build-all.sh --with-windows after: rustup target add %s\n' "$WINDOWS_TARGET"
 fi
+
+# Build every selected format before changing the published Linux set. In
+# particular, invalidating a tracked cohort receipt must happen after all
+# source snapshots have been captured, including optional Windows packaging.
+for artifact in "${artifacts[@]}"; do
+  if [[ "$artifact" == "$LINUX_STAGE/"* ]]; then
+    [[ -f "$artifact" && ! -L "$artifact" && -f "$artifact.sha256" && ! -L "$artifact.sha256" ]] || {
+      printf 'Staged Linux artifact or checksum is missing: %s\n' "$artifact" >&2
+      exit 1
+    }
+    (cd "$(dirname "$artifact")" && sha256sum -c "$(basename "$artifact.sha256")")
+  fi
+done
+for index in "${!artifacts[@]}"; do
+  artifact="${artifacts[index]}"
+  if [[ "$artifact" == "$LINUX_STAGE/"* ]]; then
+    destination="$OTTRIN_DIST_DIR/$(basename "$artifact")"
+    ottrin_publish_artifact "$artifact" "$destination"
+    for suffix in .sha256 .provenance.json; do
+      if [[ -f "$artifact$suffix" ]]; then
+        mv -f -- "$artifact$suffix" "$destination$suffix"
+      fi
+    done
+    artifacts[index]="$destination"
+  fi
+done
 
 printf '\nBuilt artifacts:\n'
 for artifact in "${artifacts[@]}"; do
