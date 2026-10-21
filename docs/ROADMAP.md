@@ -10,21 +10,30 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current delivery and remaining outcomes
 
-The current AppImage is clean package source `52b8248c` with application code
-`f2021b04`, kept at `dist/packages/Ottrin-0.1.0-x86_64.AppImage`. Its SHA-256 is
-`0bc732b4a67cddb4b19b8c844246aa77fbdda65a996fdcb4fafb3e2e493b35eb`.
-Actual extracted-package Trash/Activity Undo, exact byte restoration and normal
-exit pass Dark100/Light150; all five executable identities, runtime closure and
-packaged media-helper checks pass. Scope:
-[`TRASH_UNDO_ACCEPTANCE.json`](../dist/packages/TRASH_UNDO_ACCEPTANCE.json).
-Portable, DEB and RPM retain their preceding clean `a6dc090` delivery and recorded
-scopes in [`OFFICE_UI_ACCEPTANCE.json`](../dist/packages/OFFICE_UI_ACCEPTANCE.json).
-Their refresh and a new coherent all-format receipt remain pending; the old
-all-format receipt is invalidated when one package is replaced.
+The current Linux AppImage, portable archive, DEB and RPM all come from clean
+package source `a9fa93e5`. The AppImage remains at
+`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
+`6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033`.
+All four formats pass payload, source-note, helper-policy and search-provider
+checks. RPM's provider bytes are exactly reproduced by standard symbol/comment
+stripping of the pinned upstream binary, and its actual search smoke passes.
+The extracted AppImage passes Trash/Activity Undo and byte restoration in Dark100
+and Light150, including the corrected elapsed/duration caption and normal exit.
+Runtime closure and packaged media-helper checks pass within their recorded scope.
+Current artifact hashes and limits are in
+[`LINUX_PACKAGES_ACCEPTANCE.json`](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json)
+and [`ACTIVITY_TIMING_ACCEPTANCE.json`](../dist/packages/ACTIVITY_TIMING_ACCEPTANCE.json).
+
+The Linux build entry point stages all formats and validates their checksums before
+promotion. Regression cases prove a later build failure or corrupted staged checksum
+preserves the prior deliverables. The real staged build passed. Linux UI checks pass
+387 tests; four explicit mount/resource fixtures also pass in private namespaces,
+with host mounts unchanged. These checks do not replace physical desktop, device,
+fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | The current AppImage passes the scoped Trash/Undo and component checks above. Other formats and earlier workflows retain their own artifact scopes. | Refresh the remaining Linux formats and cohort receipt, then complete remaining software and concentrated clean-desktop, real-device, media, elevation and final candidate acceptance. |
+| Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
 | Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |

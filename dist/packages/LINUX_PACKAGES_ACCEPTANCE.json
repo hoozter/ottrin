@@ -1,11 +1,11 @@
 {
   "status": "pass",
-  "source_revision": "a356c2a830fbbdfa8c48dcf2273a0d2d37015149",
+  "source_revision": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "baefc5c861d36a5e7cefbe9e86e582acf579a66251e883c813a1a9b5923035de",
-    "Ottrin-0.1.0-x86_64.AppImage": "00a619e2e89f5431de814ab363a029c26eaf8f159c68a889124f5cbb0863eac5",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "bfa753a93f64a1ae9d2e77e5b14eb0c1e2cb7410b984cf3fe971cca30ea3d359",
-    "ottrin_0.1.0_amd64.deb": "2e693646cd64de9b96e22234b1563227e33b4c0c4f54eb76c23d8c61e82c51b0"
+    "ottrin-0.1.0-1.x86_64.rpm": "7ba8673531bd5cd784ab24b9a6e831a931a3181e02db933f9ec0a201f7cf00b8",
+    "Ottrin-0.1.0-x86_64.AppImage": "6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f42888f529d65b183f347728819f46f746dea8fdebe44dd319c83abd97705314",
+    "ottrin_0.1.0_amd64.deb": "5e5e98327d1c75a51491dae9cda9ef86d2bbf4bd6a68992e0aedbaca3b008819"
   },
   "checks": [
     "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
@@ -13,9 +13,12 @@
     "all four formats contain exact current guide and release docs",
     "clean embedded source revision",
     "all package runtime identities checked against the actual rebuilt AppImage",
-    "Exact extracted AppImage Dark100/Light150: visible duration caption, completed Trash and Activity Undo, exact original/unrelated bytes, normal close",
-    "Actual AppImage/RPM private namespace ownership checks pass; foreign daemon and source/config preserved"
+    "Pinned upstream search provider and notices; RPM code identity and exact standard-strip reproduction; actual RPM search smoke",
+    "Exact extracted AppImage Dark100/Light150: visible Duration caption, Trash/Activity Undo, original and unrelated bytes, normal exit and private process/profile/display teardown",
+    "AppImage and RPM private namespace ownership checks preserve foreign daemons and source/config"
   ],
-  "scope": "Current Linux package content and targeted private X11/namespace acceptance. Fresh distro lifecycle, physical desktop/device, full media and release gates remain open.",
+  "scope": "Linux package content and targeted private X11/namespace acceptance. Fresh distro lifecycle, physical desktop/device, full media and release gates remain open.",
+  "verifier_sha256": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
+  "cleanup": "private extractions removed by TemporaryDirectory",
   "evidence": ".hermes/evidence/activity-timing-current"
 }

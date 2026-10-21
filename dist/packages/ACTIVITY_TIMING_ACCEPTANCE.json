@@ -1,0 +1,122 @@
+{
+  "status": "pass",
+  "source_revision": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24",
+  "implementation_commits": {
+    "timing": "85d5d278ad29700b8691524b91a33feb6d6f281b",
+    "private_mount_fixture": "a356c2a830fbbdfa8c48dcf2273a0d2d37015149",
+    "staged_cohort_publication": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24"
+  },
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "7ba8673531bd5cd784ab24b9a6e831a931a3181e02db933f9ec0a201f7cf00b8",
+    "Ottrin-0.1.0-x86_64.AppImage": "6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f42888f529d65b183f347728819f46f746dea8fdebe44dd319c83abd97705314",
+    "ottrin_0.1.0_amd64.deb": "5e5e98327d1c75a51491dae9cda9ef86d2bbf4bd6a68992e0aedbaca3b008819"
+  },
+  "behavior": [
+    "Running Activity shows elapsed time; completed Activity shows fixed duration, not relative age",
+    "Restored history without original timestamps remains explicitly unknown",
+    "All Linux formats stage and validate before replacing public files; failure preserves existing packages"
+  ],
+  "validation": {
+    "linux_ui": {
+      "passed": 387,
+      "ignored": 1,
+      "log": "linux-tests.log"
+    },
+    "explicit_private_mount_cases": {
+      "passed": 4,
+      "receipt": "EXPLICIT_FIXTURES.json",
+      "scope": "Private user/mount namespaces; host mounts unchanged; bounded fixture resource measurement"
+    },
+    "strict_all_target_clippy": [
+      "linux-clippy-final.log",
+      "windows-clippy-final.log"
+    ],
+    "package_gui": [
+      {
+        "status": "pass",
+        "theme": "Dark",
+        "scale": 1.0,
+        "artifact_sha256": "6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033",
+        "source_commit": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24",
+        "payload_sha256": {
+          "usr/bin/ottrin": "233ededa7feb533f3511b078845a2f0c1d36ff23a6bf6960f703805d747a2bd9",
+          "usr/bin/ottrin-indexd": "2bc95f2ae41d5d0e2051a78208d0e08d8af0d02f78831ef19d8e4f11b1f84c33",
+          "usr/bin/ottrin-legacy-doc-render": "b905a8b771f59d8312668a1fa922ee6c6615b190d879564c02a43d07054b217b",
+          "usr/bin/ottrin-media-playback": "9827ea355cda1dd922b6a35b1b495cd0ae4cbb30fb823e85dcc43676af8447dc",
+          "usr/libexec/ottrin/ottrin-priv-helper": "0e785ccf6ad3bececbb85fd5e874a7c74114624a824afb6915379fd7868e6f95"
+        },
+        "runtime_closure_and_media_boundary": true,
+        "packaged_media_smoke": true,
+        "rendered_duration_caption": true,
+        "seconds_to_visible_undo": 1.487060717001441,
+        "normal_exit": true,
+        "trash_and_undo": true,
+        "original_bytes_restored": true,
+        "unrelated_file_preserved": true,
+        "paired_trash_entries_removed": true,
+        "cleanup": {
+          "profile_removed": true,
+          "private_processes": [],
+          "display_stopped": true
+        }
+      },
+      {
+        "status": "pass",
+        "theme": "Light",
+        "scale": 1.5,
+        "artifact_sha256": "6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033",
+        "source_commit": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24",
+        "payload_sha256": {
+          "usr/bin/ottrin": "233ededa7feb533f3511b078845a2f0c1d36ff23a6bf6960f703805d747a2bd9",
+          "usr/bin/ottrin-indexd": "2bc95f2ae41d5d0e2051a78208d0e08d8af0d02f78831ef19d8e4f11b1f84c33",
+          "usr/bin/ottrin-legacy-doc-render": "b905a8b771f59d8312668a1fa922ee6c6615b190d879564c02a43d07054b217b",
+          "usr/bin/ottrin-media-playback": "9827ea355cda1dd922b6a35b1b495cd0ae4cbb30fb823e85dcc43676af8447dc",
+          "usr/libexec/ottrin/ottrin-priv-helper": "0e785ccf6ad3bececbb85fd5e874a7c74114624a824afb6915379fd7868e6f95"
+        },
+        "rendered_duration_caption": true,
+        "seconds_to_visible_undo": 1.9531031490041642,
+        "normal_exit": true,
+        "trash_and_undo": true,
+        "original_bytes_restored": true,
+        "unrelated_file_preserved": true,
+        "paired_trash_entries_removed": true,
+        "cleanup": {
+          "profile_removed": true,
+          "private_processes": [],
+          "display_stopped": true
+        }
+      }
+    ],
+    "package_content": "FINAL_PACKAGE_IDENTITIES.json",
+    "provider": "PACKAGED_SEARCH_PROVIDER_RPM.json",
+    "packaging_contracts": [
+      "build-all-staging-green.log",
+      "package-lifecycle.log",
+      "native-package-contract.log",
+      "macos-routing-contract.log"
+    ]
+  },
+  "cleanup": {
+    "test_configuration": {
+      "status": "removed",
+      "replacement": "target/debug/deps/ottrin_platform-274f7976d82372f5",
+      "paths": [
+        "target/debug/deps/ottrin_platform-1b88e0c53f3a82a7",
+        "target/debug/deps/ottrin_platform-1b88e0c53f3a82a7.d",
+        "target/debug/.fingerprint/ottrin-platform-1b88e0c53f3a82a7",
+        "target/debug/incremental/ottrin_platform-1qnmh6yaagvee"
+      ],
+      "logical_bytes": 474839416,
+      "identity": "552 old-exclusive test symbols; zero replacement-exclusive symbols",
+      "compiler_locks": "exclusive locks held; no executable/maps consumers or external hardlinks"
+    },
+    "rollback": {
+      "status": "removed",
+      "bytes": 109480381,
+      "replacement_source": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24"
+    },
+    "preserved": "Shared Cargo/release caches, unrelated staging and retained QA VMs"
+  },
+  "remaining": "Full roadmap remains active. Windows public Copy is gated; native mutating-I/O, orphan/partial claim, released-log retirement and broader workflow/platform/release gates remain."
+}

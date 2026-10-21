@@ -703,10 +703,18 @@ RPM_STAGE="$APPIMAGE_EXTRACT_DIR/rpm"
 mkdir -p "$DEB_STAGE" "$RPM_STAGE"
 dpkg-deb -x "$LINUX_DEB" "$DEB_STAGE"
 rpm2cpio "$LINUX_RPM" | (cd "$RPM_STAGE"; cpio -idm --quiet)
+SEARCH_BINARY_SHA256="$(python3 - "$ROOT/packaging/search-runtime.json" <<'PYSEARCH'
+import json, sys
+print(json.load(open(sys.argv[1]))['platforms']['linux-x86_64']['binary_sha256'])
+PYSEARCH
+)"
+printf '%s  %s\n' "$SEARCH_BINARY_SHA256" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/libexec/ottrin/rg" | sha256sum -c -
 for stage in "$DEB_STAGE" "$RPM_STAGE"; do
   for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
     usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
-    usr/libexec/ottrin/ottrin-priv-helper usr/libexec/ottrin/native-package-lifecycle; do
+    usr/libexec/ottrin/ottrin-priv-helper usr/libexec/ottrin/rg \
+    usr/libexec/ottrin/native-package-lifecycle; do
     test -x "$stage/$executable" || {
       printf 'Native package is missing executable: %s\n' "$executable" >&2
       exit 1
@@ -724,7 +732,7 @@ for stage in "$DEB_STAGE" "$RPM_STAGE"; do
   # Compare actual release code as well as the separately staged source note.
   for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
     usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
-    usr/libexec/ottrin/ottrin-priv-helper \
+    usr/libexec/ottrin/ottrin-priv-helper usr/libexec/ottrin/rg \
     usr/libexec/ottrin/pdfium/lib/libpdfium.so; do
     expected="$APPIMAGE_EXTRACT_DIR/squashfs-root/$executable"
     if [[ "$executable" == usr/libexec/ottrin/pdfium/lib/libpdfium.so ]]; then
@@ -741,6 +749,10 @@ for stage in "$DEB_STAGE" "$RPM_STAGE"; do
         cmp "$APPIMAGE_EXTRACT_DIR/native-section" "$APPIMAGE_EXTRACT_DIR/appimage-section"
       done
     fi
+  done
+  for notice in MANIFEST.txt COPYING LICENSE-MIT UNLICENSE PCRE2-10.45-LICENCE.md; do
+    cmp "$stage/usr/share/doc/ottrin/third-party-notices/ripgrep/$notice" \
+      "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/ripgrep/$notice"
   done
   verify_source_revision 'Linux native package' \
     "$(<"$stage/usr/share/doc/ottrin/SOURCE_REVISION.txt")"
