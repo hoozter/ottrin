@@ -409,6 +409,22 @@ impl RegisteredJournal {
             FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::DELETE,
         )
     }
+    /// Bind the central dependency observation to its exact local mirror and
+    /// native namespace. Returned read leases exclude journal writers/removal;
+    /// they do not open, verify or grant mutation rights over the peer payload.
+    pub(super) fn paired_leases(
+        &self,
+        parent: File,
+        central: &File,
+    ) -> Result<Vec<File>, PlatformError> {
+        let header = self.state.header.as_ref().unwrap();
+        let snapshot =
+            Snapshot::read_with_control(&parent, central, &header.stage_name(), &self.file)?;
+        if snapshot.bytes != self.bytes {
+            return Err(io("Copy dependency journals disagree; mutation refused"));
+        }
+        Ok(vec![snapshot.local, snapshot.stage, parent])
+    }
     fn with_access(central: &File, name: &OsStr, access: u32) -> Result<Self, PlatformError> {
         registry_id(name).ok_or_else(|| io("invalid Copy transaction ID"))?;
         let file = unsafe {

@@ -80,6 +80,16 @@ remains refused and reserved; a fully paired terminal prefix can use the existin
 non-destructive name-release action after restart. An older plan cannot release
 a later durable copy's reservation.
 
+An ended attempt also closes its recorded dependency claims. Unrelated Overwrite
+and cleanup can proceed after both journals and their native directory bindings
+are validated and read-leased. Every recorded creation identity remains protected,
+including a partial file that has no completed stream evidence. Its former
+original-destination observation grants no mutation authority after ending. No
+partial payload is opened, adopted or deleted to establish this closed set.
+Active incomplete manifests, live writers, corrupt records and divergent pairs
+remain refused. Cleanup rechecks the paired terminal proof at writer handoff;
+observing a central terminal frame alone is insufficient.
+
 Schema 18 adds this terminal state. Older schemas remain review-only and are not
 converted or deleted. UI confirmation retains the exact originally admitted plan;
 refresh cannot silently replace the action the user reviewed. Current native

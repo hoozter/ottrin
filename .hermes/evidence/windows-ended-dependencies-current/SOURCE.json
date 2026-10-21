@@ -1,0 +1,13 @@
+{
+  "base_commit": "fbf6eec13a3b9690ded55e396b1566b97be8a7f2",
+  "files": {
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "965ce773f8d303cab891d51bf4c8ab63486c08098846694e805ad8d35ce92937",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "a540c44e6645d6f591dbcf8b04b528ac6c88c61fd8fe585a00f1a9d6b654d0dd",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "7b058e8b183721cfdd6b5380313081682fbf31dabd5930a71a35a86abbc7b8be",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "f1ac5a6cb89eb391823f0d7a4b1d61e051962205674c63bc37b8a73cbc708087",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort.rs": "140b7b24a269b602f56288cacda29dfc79450000847315234bd236f29b98282f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort_dependencies.rs": "3800a33c24cf0d9eaa6743f89b0c9e1303f4a25af1bf6a675fb2f1313c7ff927"
+  },
+  "configuration": "workspace target; platform-only native test profile opt-level=0, debug=0, shared dependency opt-level=1; no new target directory",
+  "limits": "Only recorded immutable terminal dependency claims are admitted; no partial-payload cleanup or public Copy enablement"
+}

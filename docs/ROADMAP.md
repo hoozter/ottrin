@@ -71,8 +71,22 @@ Superseded finalized compiler sessions are retired while keeping each affected
 configuration's current cache. Schema 18 preserves older records for review
 without converting or deleting them.
 
-The current internal Windows `4fbc3e1a` candidates now contain this source
-checkpoint; package content and native loader checks are recorded below. Linux
+The ended-attempt dependency follow-up fixes a native integration failure: a
+valid ended partial journal previously blocked unrelated Overwrite and cleanup.
+The shared admission predicate now recognizes only a frozen terminal claim set,
+backed by matching native-leased local/central controls. Recorded created objects
+remain protected, including through hard-link aliases; payloads stay unverified
+and untouched. All 14 focused ordinary-account checks pass on the final executable
+(35.59s), including stale cleanup writer-handoff refusal without writes. The same
+executable passes 149 broader journal cases with zero failures and 15 explicit
+exclusions (555.37s); its selection excludes the cleanup namespace. Strict
+Linux/Windows platform all-target Clippy and formatting pass. Before-fix failures,
+source/binary bindings, data preservation and clean retained-VM teardown are in
+`.hermes/evidence/windows-ended-dependencies-current/ACCEPTANCE.json`.
+This follow-up is source-only; it does not add partial-payload reclamation.
+
+The current internal Windows `4fbc3e1a` candidates contain the preceding staging-end
+source checkpoint, before this dependency follow-up; package checks are below. Linux
 packages are unchanged. Incomplete-payload reclamation, remaining transaction/
 resource/workflow acceptance, packaged GUI and installer lifecycle acceptance and
 public Windows Copy remain unfinished. User testing stays deferred.

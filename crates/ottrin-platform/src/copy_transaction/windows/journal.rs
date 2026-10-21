@@ -169,10 +169,7 @@ impl DestinationAdmission {
             }
             let peer = discovery::RegisteredJournal::dependency(central, name)?;
             let header = peer.state.header.as_ref().unwrap();
-            if !peer.state.verified
-                || header.original_admission.is_some()
-                    && !peer.state.original.as_ref().is_some_and(|plan| plan.sealed)
-            {
+            if !peer.state.dependency_claims_complete() {
                 return Err(io("Overwrite needs completed Copy dependency evidence"));
             }
             let peer_parent = if header.parent == self.parent {
@@ -180,15 +177,7 @@ impl DestinationAdmission {
             } else {
                 volumes.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?
             };
-            let snapshot = Snapshot::read_with_control(
-                &peer_parent,
-                central,
-                &header.stage_name(),
-                &peer.file,
-            )?;
-            if snapshot.bytes != peer.bytes {
-                return Err(io("Copy dependency journals disagree; Overwrite refused"));
-            }
+            leases.extend(peer.paired_leases(peer_parent, central)?);
             if cleanup_dependencies::references(&peer.state)
                 .iter()
                 .any(|identity| self.original_objects.contains(&identity.object_key()))
@@ -202,7 +191,7 @@ impl DestinationAdmission {
             // read-only native control/binding leases survive; appends,
             // replacement and writable mappings remain excluded for the
             // operation's lifetime.
-            leases.extend([peer.file, snapshot.local, snapshot.stage, peer_parent]);
+            leases.push(peer.file);
         }
         if windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
             .map_err(io)?
@@ -607,6 +596,16 @@ fn valid_streams(
 impl State {
     fn claim_terminal(&self) -> bool {
         self.aborted || self.undo_complete() || self.cleanup.is_some()
+    }
+    /// A terminal staging-end freezes every recorded creation claim. It does
+    /// not verify or adopt partial payload contents or the former destination.
+    fn dependency_claims_complete(&self) -> bool {
+        self.header.as_ref().is_some_and(|header| {
+            self.aborted
+                || self.verified
+                    && (header.original_admission.is_none()
+                        || self.original.as_ref().is_some_and(|plan| plan.sealed))
+        })
     }
     fn can_abort_staging(&self) -> bool {
         self.header.is_some() && !self.verified && !self.aborted
@@ -4081,6 +4080,7 @@ fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
 #[cfg(test)]
 mod tests {
     mod abort;
+    mod abort_dependencies;
     mod blocked_io;
     mod claim_orphans;
     mod claim_processes;
@@ -6862,7 +6862,7 @@ mod tests {
         let registry = local.join("Ottrin/State/copies");
         let case = std::env::var("OTTRIN_TEST_WINDOWS_COPY_ACTIVITY_CASE").unwrap();
         if case.starts_with("abort-") {
-            abort::partial_stage_at(&fixture_root, &registry, &destination);
+            abort::partial_stage_at(&fixture_root, &registry, &destination, false);
             return;
         }
         let (name, candidate, _cleanup) = if case.starts_with("resume") {

@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 fn interrupted(root: &Path) -> (PathBuf, Header) {
     let registry = root.join("profile/Ottrin/State/copies");
-    partial_stage_at(root, &registry, &root.join("destination"));
+    partial_stage_at(root, &registry, &root.join("destination"), false);
     let name = stage_name(&root.join("destination"));
     let header = decode(&std::fs::read(root.join("destination").join(name).join(LOCAL)).unwrap())
         .unwrap()
@@ -14,7 +14,7 @@ fn interrupted(root: &Path) -> (PathBuf, Header) {
     (registry, header)
 }
 
-pub(super) fn partial_stage_at(root: &Path, registry: &Path, destination: &Path) {
+pub(super) fn partial_stage_at(root: &Path, registry: &Path, destination: &Path, overwrite: bool) {
     fixture(root);
     if destination != root.join("destination") {
         std::fs::remove_dir(root.join("destination")).unwrap();
@@ -25,13 +25,20 @@ pub(super) fn partial_stage_at(root: &Path, registry: &Path, destination: &Path)
             .unwrap()
             .unwrap(),
     );
+    if overwrite {
+        std::fs::write(destination.join("copy"), b"unrelated original destination").unwrap();
+    }
     let original = vec![37u8; super::super::super::BUFFER_BYTES * 4 + 17];
     std::fs::write(root.join("source/nested/file"), &original).unwrap();
     {
         let input = source(&root.join("source"));
         let parent = owner(destination);
         let central = owner(registry);
-        let admission = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+        let admission = if overwrite {
+            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap()
+        } else {
+            DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+        };
         let error = DurableStage::create(
             &input,
             &parent,

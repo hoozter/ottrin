@@ -1,0 +1,7 @@
+{
+  "id": "6eca2cbf80d47c3c40cc5b5b69fd5de7",
+  "status": "dispatched",
+  "test_arguments": "copy_transaction::windows::journal::tests::abort:: copy_transaction::windows::journal::tests::abort_dependencies:: copy_transaction::windows::dispatch:: copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_originals copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unverified_registry_peer_refuses_before_any_write copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_unrecognized_registry_names_stay_visible_and_block_mutation --nocapture --test-threads=1",
+  "transferred_sha256": "356b234dbde54f4e0b66f2ec55fc59765ddaca7cfb1038849d9c6cdb649671d1",
+  "watchdog_ms": 600000
+}

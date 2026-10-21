@@ -11,6 +11,9 @@ struct Peer {
     security: security::PrivateSecurity,
     creator: Vec<u8>,
     digest: [u8; 32],
+    // Terminal incomplete peers need both controls and their native directory
+    // bindings held, not merely a central record that says staging ended.
+    _pair: Vec<File>,
 }
 
 pub(super) struct Dependencies {
@@ -164,6 +167,7 @@ impl Dependencies {
             windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
                 .map_err(io)?;
         let mut peers = Vec::new();
+        let mut volumes = None;
         for name in &names {
             cancel(0)?;
             if *name == header.central_name() {
@@ -180,17 +184,28 @@ impl Dependencies {
             }
             let peer = discovery::RegisteredJournal::dependency(central, name)?;
             let other = peer.state.header.as_ref().unwrap();
-            // Incomplete source/original manifests cannot certify an absent
-            // dependency. They must be resolved before destructive cleanup.
-            if !peer.state.verified
-                || other.original_admission.is_some()
-                    && !peer.state.original.as_ref().is_some_and(|plan| plan.sealed)
-            {
+            // Active incomplete manifests can still add creation claims. An
+            // ended peer is frozen, but only a matching, leased pair can certify
+            // that terminal state. Recorded creation identities remain protected.
+            if !peer.state.dependency_claims_complete() {
                 return Err(io(format!(
                     "Copy cleanup needs completed dependency evidence from {}",
                     other.transaction
                 )));
             }
+            let pair = if peer.state.aborted {
+                if volumes.is_none() {
+                    volumes = Some(discovery::Volumes::new(central)?);
+                }
+                let parent = volumes.as_mut().unwrap().resolve(
+                    other.parent,
+                    FILE_GENERIC_READ,
+                    &mut cancel,
+                )?;
+                peer.paired_leases(parent, central)?
+            } else {
+                Vec::new()
+            };
             let references = references(&peer.state);
             let selection = match &scope {
                 Scope::Ordinary | Scope::Current(_) => None,
@@ -238,6 +253,7 @@ impl Dependencies {
                 creator: other.creator.clone(),
                 digest: Sha256::digest(&peer.bytes).into(),
                 file: peer.file,
+                _pair: pair,
             };
             // The raw record and decoded graph drop at this iteration's end.
             peers.push((name.clone(), lease));

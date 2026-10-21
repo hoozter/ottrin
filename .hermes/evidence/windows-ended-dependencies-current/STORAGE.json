@@ -1,0 +1,28 @@
+{
+  "status": "retired",
+  "scope": "Only older finalized platform configurations replaced during this task; all compiler locks held, no compiler consumers or outside-profile hard links",
+  "sessions": [
+    {
+      "remove": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnefrjttxk-19e238i-74axr4mnvw6x765onnj2x1egh",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnepp9xip0-0jgfsbr-7v1bylmqpivyf0346eawgk2qa",
+      "logical_bytes": 35486013,
+      "lock": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-06mx881b0us1o/s-hnefrjttxk-19e238i.lock",
+      "outside_profile_hard_links": 0
+    },
+    {
+      "remove": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnepo0mw03-0fotvxf-9t3moaodun7ft8vv17ge8via9",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnepsbqo2g-0cp47bf-f51hm5ins7qf5wbect3cllwdl",
+      "logical_bytes": 1290154263,
+      "lock": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnepo0mw03-0fotvxf.lock",
+      "outside_profile_hard_links": 0
+    },
+    {
+      "remove": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnepp9xjk2-1muy0hd-0sajr7plhn6v95dcdy2kujh8c",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnepwm20ye-0uvfamw-7trd7tr4hnqel7pedg06p37i5",
+      "logical_bytes": 48569590,
+      "lock": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnepp9xjk2-1muy0hd.lock",
+      "outside_profile_hard_links": 0
+    }
+  ],
+  "logical_bytes_removed": 1374209866
+}

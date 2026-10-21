@@ -1,0 +1,6 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "base_commit": "fbf6eec13a3b9690ded55e396b1566b97be8a7f2",
+  "scope": "Ordinary-account terminal paired dependency admission for ended partial attempts; unrelated Overwrite/cleanup progress, alias protection, live-writer and mismatched-pair refusal; no additional disk/guest"
+}

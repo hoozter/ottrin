@@ -1327,6 +1327,17 @@ than relying on an executable left by an earlier task; teardown removes that
 fixture after checking its hash. Receipts and limits belong in
 `.hermes/evidence/windows-copy-abort-current/ACCEPTANCE.json`.
 
+Ended attempts must not block unrelated work solely because their payloads were
+never verified. `State::dependency_claims_complete` is shared by Overwrite and
+cleanup admission. A terminal partial graph is closed only with its exact paired
+journal proof; recorded creation identities remain dependency claims. The shared
+`RegisteredJournal::paired_leases` reader pins both controls and their native
+bindings. Cleanup retains those leases for the held dependency scope and rereads
+fresh pairs at writer handoff; it never opens the partial payload. The native
+`abort_dependencies` fixtures exercise unrelated dispatch and actual cleanup,
+recorded hard-link overlap, live controls and divergent local mirrors. Evidence:
+`.hermes/evidence/windows-ended-dependencies-current/ACCEPTANCE.json`.
+
 This action does not reclaim incomplete payloads, remove their recovery records,
 complete resource/concurrency/workflow acceptance, or enable public Windows Copy.
 

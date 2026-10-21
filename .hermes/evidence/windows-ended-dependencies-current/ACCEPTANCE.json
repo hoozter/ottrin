@@ -1,0 +1,141 @@
+{
+  "status": "pass for recorded native dependency-admission scope",
+  "source": "SOURCE.json",
+  "before_fix": "BEFORE_SOURCE.json and compressed original patch/test module; three regressions fail on unchanged dependency checks",
+  "runs": {
+    "before-fix": {
+      "passed": 3,
+      "failed": 3,
+      "ignored": 0,
+      "seconds": 5.23,
+      "result": "before-fix/RESULTS.json",
+      "binary": "before-fix/TEST_BINARY.json",
+      "test_binary_hash": "7e4ede45d60621563e46148163268b9d4e2d4b28fd75758ba88265db760e1f28",
+      "build_manifest_sha256": "4d4af29980761b0603c962dfb28f8965493c65cae793355c3bd633b9fff41178"
+    },
+    "focused": {
+      "passed": 14,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 36.7,
+      "result": "focused/RESULTS.json",
+      "binary": "focused/TEST_BINARY.json",
+      "test_binary_hash": "3a2442fb5394e69efeff9c127598384fcb0d261d2b9dd4570c7246ef29bd0594",
+      "build_manifest_sha256": "f182cc73d306c5ab2b82bfab12042585966c8ced34a19953a0ecaafc801f5bc1"
+    },
+    "focused-final": {
+      "passed": 14,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 35.59,
+      "result": "focused-final/RESULTS.json",
+      "binary": "focused-final/TEST_BINARY.json",
+      "test_binary_hash": "356b234dbde54f4e0b66f2ec55fc59765ddaca7cfb1038849d9c6cdb649671d1",
+      "build_manifest_sha256": "323eaba753cd8ff2de644c2f9ced30e249ee55e070199b28059d905f7ed7b1cc"
+    },
+    "core": {
+      "passed": 149,
+      "failed": 0,
+      "ignored": 15,
+      "seconds": 555.37,
+      "result": "core/RESULTS.json",
+      "binary": "core/TEST_BINARY.json",
+      "test_binary_hash": "356b234dbde54f4e0b66f2ec55fc59765ddaca7cfb1038849d9c6cdb649671d1",
+      "explicit_ignores": [
+        [
+          "copy_transaction::windows::journal::tests::creation_times::windows_native_copy_creation_exit_child",
+          "owned subprocess for creation-time interruption tests"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_destination_full_with_separate_registry_recovers",
+          "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_divergent_journals_preserve_data_and_refuse_retry",
+          "Requires a token-bound disposable NTFS volume of at most 512 MiB"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_disk_full_paired_journals_recover_after_space_is_freed",
+          "Requires a token-bound disposable NTFS volume of at most 512 MiB"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage",
+          "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::disk_full::windows_native_copy_registry_full_with_separate_destination_preserves_and_refuses",
+          "Requires a token-bound disposable NTFS volume and a separate NTFS temp volume"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::sparse_workflow::windows_native_copy_sparse_cross_volume_publication_source_free_undo_and_cleanup",
+          "requires an owned secondary NTFS volume provisioned by the native QA controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_cleanup_stop_preserves_data_and_recovers",
+          "Requires an owned secondary NTFS disk and a host throttle controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_io_stop_preserves_data_and_recovers",
+          "Requires an owned secondary NTFS disk and a host throttle controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_undo_stop_preserves_data_and_recovers",
+          "Requires an owned secondary NTFS disk and a host throttle controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_copy_activity_fixture",
+          "exports an owned fixture to the native Activity integration consumer"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_discovery_resolves_parent_on_an_owned_other_volume",
+          "requires an owned secondary NTFS volume provisioned by the native QA controller"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child",
+          "child process selected by interrupted staging test"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child",
+          "abrupt-exit child; owned temporary root supplied by parent"
+        ],
+        [
+          "copy_transaction::windows::journal::tests::windows_native_overwrite_exit_child",
+          "abrupt-exit child; owned empty root required"
+        ]
+      ],
+      "build_manifest_sha256": "323eaba753cd8ff2de644c2f9ced30e249ee55e070199b28059d905f7ed7b1cc"
+    }
+  },
+  "checks": {
+    "strict_windows_platform_all_target_clippy": "pass; clippy-windows.log",
+    "strict_linux_platform_all_target_clippy": "pass; clippy-linux.log",
+    "format_and_diff": "pass"
+  },
+  "coverage": [
+    "Ended attempts with creation and former Overwrite admission allow unrelated actual dispatch Overwrite and retained-data cleanup",
+    "Edited partial file, added stream, unknown payload file, foreign public file and both peer journals preserved",
+    "Unrelated mutation succeeds while the ended payload root remains exclusively held; no payload inspection/adoption needed",
+    "Actual hard-link identity overlap remains refused for Overwrite and cleanup",
+    "Overwrite and held cleanup dependencies exclude writers to the local peer journal; handle-free observation does not retain those leases",
+    "Active incomplete graphs, live writer controls, divergent local prefixes and stale cleanup handoff remain refused without writes",
+    "Existing dispatch, verified/shared dependency, unrecognized and corrupt-peer refusal regressions pass"
+  ],
+  "format": "Schema 18 unchanged; this grants no forward/Undo or partial-payload deletion authority",
+  "cleanup": {
+    "status": "pass",
+    "guest": "TEARDOWN_GUEST.json",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "retained_guest_preserved": true,
+    "additional_disks_or_guests_created": false
+  },
+  "preservation_scope": "Original config.json and Uninstall.exe hashes plus unchanged retained VM definition; not whole-profile inventory",
+  "storage": "STORAGE.json",
+  "delivery": "Source/native API checkpoint; current Linux and internal/public Windows packages unchanged",
+  "limits": [
+    "No new native GUI/OS clipboard or packaged acceptance",
+    "Core excludes cleanup namespace and has 15 explicit fixture/resource exclusions; focused selection separately covers three relevant cleanup cases",
+    "Incomplete payload reclamation and broader transaction, concurrency/alias, resource, interruption, normal workflow and package gates remain open",
+    "Public Windows Copy remains disabled; user testing deferred"
+  ]
+}

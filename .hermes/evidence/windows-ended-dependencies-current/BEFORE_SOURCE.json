@@ -1,0 +1,6 @@
+{
+  "base_commit": "fbf6eec13a3b9690ded55e396b1566b97be8a7f2",
+  "tracked_patch_sha256": "c3ebea66ad70d9847c823c6106551352d97652764e1679e10f9f04bd82fa2ee9",
+  "test_module_sha256": "f6658cde8aaa898996a067f249f9292374fc842a0ceda1045da6d0c19136ad24",
+  "scope": "New regression fixtures only; production dependency checks unchanged"
+}
