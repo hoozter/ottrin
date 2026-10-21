@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "source_commit": "566f6236aaf29cc95a3548b22cfb6da5e116a94f",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "f564f89faff8a73452455eb6045784aeefb03d19fed6d73809d4a0ffb06388ca",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ccefbf5c206354093c92b374ddcb5010a0ef5a5160733e5af6a6f0d5507c4c5a",
+    "Ottrin-0.1.0-windows-x64.msi": "d5ff621ad0033c0b1684f5114284991c4c0b5790439cbd2e4c3d3a526bb14509"
+  },
+  "payload_files": 57,
+  "all_three_payloads_match": true,
+  "five_executables_match_release_outputs": true,
+  "nsis_generated_uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+  "nsis_index_controller_matches": true,
+  "nsis_transaction_script_matches_source": true,
+  "host_nsis_extraction_removed": true,
+  "scope": "Package content and native MSI administrative extraction only; no installation, GUI or daily-driver acceptance"
+}

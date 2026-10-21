@@ -1,0 +1,17 @@
+{
+  ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64.msi.sha256": "e490d3b0f7336b6719c4b6a071cafc6f27e18c329d92865dba94339ed69e76b4",
+  ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-portable.zip": "2dd1fa1551995ca2a99c91c971818a2a135739b04b516a5ffe7d7181775bdda6",
+  ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-setup.exe.sha256": "1903af54fd50675b366edfd11da082a97e9d4c206c0f6249738b2dfb47c6fc75",
+  ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64.msi": "3363b92cb5f8c87bfbf841dfa3854419a63924deb93c1c2a010cdd1e3e10cbc4",
+  ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-setup.exe": "a46ff9ac8481a99811273bbeed86bf118352c81bf87e12c4099f0598f1c13d9c",
+  ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-portable.zip.sha256": "3b7e65f0dbeb7d83a0a1bb54057891e24b73cf3c6e8b571dc82d6f2ac512eef4",
+  "dist/Ottrin-0.1.0-windows-x64.msi.sha256": "020c6488e554d2687cd3e9063e5edfaa76df02b401a98857f529f953a9280861",
+  "dist/Ottrin-0.1.0-windows-x64-portable.zip": "92d722ddd803d748247196e507152b9c473e8949c3a3f6f04b5bb234109ceae1",
+  "dist/Ottrin-0.1.0-windows-x64-setup.exe.sha256": "75b65a298aa22bf3f29736c86ff4cded91a380045d10069e937ae798e56ff960",
+  "dist/Ottrin-0.1.0-windows-x64.msi": "de47dae2de001294809187d91cb981d1e3b8aa6a542f5369045453b5807421f9",
+  "dist/Ottrin-0.1.0-windows-x64-setup.exe": "fd917b1ef84c9601eb3529523ef6dd8d178ec33a4a33953379ab2d4c4045342c",
+  "dist/Ottrin-0.1.0-windows-x64-setup.exe.provenance.json": "34f3121a0d0c0751f2c19f773725f2f2abb1fa3010f3483a006b0853d6f9b259",
+  "dist/Ottrin-0.1.0-windows-x64-portable.zip.sha256": "f526914188551fc410ae7d06325b43c8fc32442c66be03988824ffdd937f45a4",
+  "dist/Ottrin-0.1.0-windows-x64.msi.provenance.json": "5fbdc8b2c2c7ab077a709a07d6be99a7d2eee7bffb3d0daedc58be2fed600810",
+  "dist/Ottrin-0.1.0-windows-x64-portable.zip.provenance.json": "111cfa1ef8fa5ce40ca81c1d0107fa3b366e0968c5686cca63e91d9359b6c24a"
+}

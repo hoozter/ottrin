@@ -1,0 +1,64 @@
+{
+  "status": "pass for package content and native loader/CLI scopes; runtime and installer lifecycle remain open",
+  "source_commit": "566f6236aaf29cc95a3548b22cfb6da5e116a94f",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "f564f89faff8a73452455eb6045784aeefb03d19fed6d73809d4a0ffb06388ca",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ccefbf5c206354093c92b374ddcb5010a0ef5a5160733e5af6a6f0d5507c4c5a",
+    "Ottrin-0.1.0-windows-x64.msi": "d5ff621ad0033c0b1684f5114284991c4c0b5790439cbd2e4c3d3a526bb14509"
+  },
+  "payload_files": 57,
+  "package_identity": "PACKAGE_IDENTITIES.json",
+  "native_deployment": "DEPLOYMENT.json",
+  "native_msi_administrative_extraction": "MSI_PAYLOAD.json",
+  "native_loader_cli": {
+    "evidence": "CLI_SMOKE.json",
+    "identity": "NT AUTHORITY\\SYSTEM",
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "expected_argument_results": {
+      "ottrin.exe --help": 0,
+      "ottrin-indexd.exe --help": 2,
+      "ottrin-priv-helper.exe --help": 2
+    }
+  },
+  "source_ui_acceptance": {
+    "evidence": "../windows-copy-review-current/ACCEPTANCE.json",
+    "production_files_byte_identical_to_reviewed_source": true
+  },
+  "payload_delta": "PAYLOAD_DELTA.json",
+  "unchanged_office_and_graphics_bytes": "Both Office render helpers and all bundled runtimes match the preceding candidate; this is byte identity, not a fresh main-window/Office GUI acceptance",
+  "promotion": "PROMOTION.json",
+  "cleanup": {
+    "status": "pass",
+    "domain_state": "shut off",
+    "persistent_domain_definition_unchanged": true,
+    "guest": "TEARDOWN_GUEST.json",
+    "retained_guests_preserved": true
+  },
+  "guest_preservation_scope": "Original config.json and Uninstall.exe hashes, plus MSI service prior state; not a whole installed-payload inventory",
+  "storage": "STORAGE.json",
+  "public_windows_files_unchanged": true,
+  "linux_packages_unchanged": {
+    "source_commit": "a9fa93e5d71eb4477d4ea6b6778a232bd678ae24",
+    "artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "7ba8673531bd5cd784ab24b9a6e831a931a3181e02db933f9ec0a201f7cf00b8",
+      "Ottrin-0.1.0-x86_64.AppImage": "6716193a303db2535ee5cba477d7dc9305f29bd9980f06701432338f05554033",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f42888f529d65b183f347728819f46f746dea8fdebe44dd319c83abd97705314",
+      "ottrin_0.1.0_amd64.deb": "5e5e98327d1c75a51491dae9cda9ef86d2bbf4bd6a68992e0aedbaca3b008819"
+    }
+  },
+  "tools_sha256": {
+    "verify-host.py": "73eb3d03f5a767789ab7d2a2c658a242e5f0dfe2433b7f23af3035e71c5d6367",
+    "promote.py": "51091caa758cfb2078279c002488a8052271c275fc613111e59f8b5ceac48373",
+    "native-package.py": "7c6f0fbd8ecdb510225bcbc87abbf1c0ad2adedace43233b9c565423c33916d8"
+  },
+  "limits": [
+    "Current Windows native GUI, OS clipboard, Office/graphics presentation and installed-app workflows are not accepted by these checks",
+    "Native MSI compilation/administrative extraction does not establish install, upgrade, repair, rollback or uninstall lifecycle",
+    "Loader and argument tests ran as SYSTEM; ordinary-account functional source UI acceptance remains separately scoped",
+    "Incomplete Windows Copy staging/reclamation and remaining security/storage/interruption/resource gates remain; public Windows Copy stays disabled",
+    "No user acceptance or release/daily-driver readiness claim"
+  ],
+  "evidence_encoding": "JSON normalized to LF; gzipped CLI output preserves native bytes and exact recorded hashes"
+}

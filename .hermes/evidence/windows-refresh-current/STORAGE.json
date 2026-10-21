@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "after_du": "17G\ttarget/debug/deps\n6.9G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n527M\t.hermes/packaging-tmp\n212K\t.hermes/evidence/windows-refresh-current\n",
+  "portable_temporary_directories_verified_absent": [
+    "/tmp/tmp.9C9mf5VP2u",
+    "/tmp/tmp.LlwpZj06Lh",
+    "/tmp/tmp.Qwq78cM3wY"
+  ],
+  "nsis_temporary_extractions_absent": true,
+  "task_stage_and_rollback_directories_absent": true,
+  "current_candidate_retained_at": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "unrelated_existing_staging_preserved": true,
+  "cargo_caches": "Existing debug and release configurations reused; useful current caches retained; no new test executable/profile configuration created"
+}

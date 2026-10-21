@@ -1,0 +1,10 @@
+{
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "rollback": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-activity-previous",
+  "replacement_artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "f564f89faff8a73452455eb6045784aeefb03d19fed6d73809d4a0ffb06388ca",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ccefbf5c206354093c92b374ddcb5010a0ef5a5160733e5af6a6f0d5507c4c5a",
+    "Ottrin-0.1.0-windows-x64.msi": "d5ff621ad0033c0b1684f5114284991c4c0b5790439cbd2e4c3d3a526bb14509"
+  }
+}

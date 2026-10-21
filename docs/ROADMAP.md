@@ -34,7 +34,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal `a6dc090` portable/MSI/NSIS candidates have matching 57-file payloads. Actual portable Office conversion and OpenGL main/Inspector rendering and fallback pass. Separately, the pending-I/O and disk-full source checkpoints below pass their recorded native scopes. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
+| Windows | The internal clean `566f6236` portable/MSI/NSIS candidates have matching 57-file payloads; native MSI compilation/extraction and loader/argument checks pass. Office/graphics GUI acceptance retains its earlier artifact scope. Pending-I/O, disk-full and Activity source checkpoints below retain their recorded native scopes. | Finish native Copy, including durable target claims, remaining staging/metadata/security and interruption/resource cases, then public workflows and current package/installer/graphics acceptance. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -373,6 +373,39 @@ recorded preferences/uninstaller hashes. Receipt:
 This source checkpoint adds no mutation authority. Exact package refresh, native
 desktop/OS-clipboard acceptance and the remaining interrupted-staging protocol
 are still open; existing packages and public Windows Copy are unchanged.
+
+## Current Windows candidate refresh
+
+All three internal Windows formats now come from clean source `566f6236`, at the
+stable `.hermes/packaging-tmp/windows-activity-candidate/` path. Portable, NSIS
+and native MSI administrative extraction match all 57 payload files. The NSIS
+generated uninstaller has the expected GUI header; its embedded index controller
+and transaction script match the accepted stage/source. All five executables
+match the release outputs. Artifact SHA-256 values:
+
+- Portable ZIP: `f564f89faff8a73452455eb6045784aeefb03d19fed6d73809d4a0ffb06388ca`
+- NSIS setup: `ccefbf5c206354093c92b374ddcb5010a0ef5a5160733e5af6a6f0d5507c4c5a`
+- MSI: `d5ff621ad0033c0b1684f5114284991c4c0b5790439cbd2e4c3d3a526bb14509`
+
+Native loader/argument checks pass for the three changed executables: main app
+help exits successfully, while indexd/helper reject the unsupported help argument
+with their expected usage/exit status. These checks run as SYSTEM and establish
+neither ordinary-user service lifecycle nor native GUI/OS-clipboard acceptance.
+The reviewed Activity production source is byte-identical in this package source.
+Office helpers and bundled runtimes are byte-identical to the prior candidate;
+earlier Office/graphics presentation acceptance keeps its original artifact scope.
+
+The new cohort was staged and checked before replacing the old generated cohort.
+Its staging/rollback directories and native compiler/payload/MSI extractions are
+removed. The retained guest is shut off with unchanged persistent definition,
+recorded preferences/uninstaller hashes and restored Windows Installer service
+state. Linux packages and public Windows artifact files remain unchanged.
+Exact receipts and limits:
+`.hermes/evidence/windows-refresh-current/ACCEPTANCE.json`.
+
+Current Windows GUI, install/upgrade/repair/rollback/uninstall and broader workflow
+acceptance remain open. This refresh includes the recent source fixes; it does
+not enable public Windows Copy or establish release readiness.
 
 ## Local Trash Undo receipt discovery
 

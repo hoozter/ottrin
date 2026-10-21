@@ -1,0 +1,8 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate/.windows-portable.VKulUF",
+    "device": 66306,
+    "inode": 7733819,
+    "reason": "Empty obsolete work directory from the portable builder; no accessible live fd/cwd consumer"
+  }
+]
