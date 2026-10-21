@@ -55,6 +55,8 @@ use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
 #[cfg(target_os = "windows")]
+pub(super) mod windows_recovery_plan;
+#[cfg(target_os = "windows")]
 pub(super) mod windows_undo;
 
 pub(super) struct MovePublication {
@@ -2630,10 +2632,16 @@ fn windows_cross_volume_journal_path(root: &Path, transaction_id: [u8; 16]) -> P
 pub(super) fn recover_retained_windows_move_transaction(
     transaction_id: [u8; 16],
 ) -> Result<(), PlatformError> {
-    let _recovery_lock = acquire_windows_recovery_lock()?;
-    let recovery_root = windows_recovery_root()?;
-    let same_volume_journal = windows_journal_path(&recovery_root, transaction_id);
-    let cross_volume_journal = windows_cross_volume_journal_path(&recovery_root, transaction_id);
+    windows_recovery_plan::WindowsMoveRecoveryPlan::capture(transaction_id)?.execute()
+}
+
+#[cfg(target_os = "windows")]
+fn recover_retained_windows_move_transaction_at(
+    recovery_root: &Path,
+    transaction_id: [u8; 16],
+) -> Result<(), PlatformError> {
+    let same_volume_journal = windows_journal_path(recovery_root, transaction_id);
+    let cross_volume_journal = windows_cross_volume_journal_path(recovery_root, transaction_id);
     let same_volume_exists = same_volume_journal
         .try_exists()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -2654,7 +2662,7 @@ pub(super) fn recover_retained_windows_move_transaction(
                 "Windows Move journal filename does not match its transaction ID".to_string(),
             ));
         }
-        return resume_windows_cross_volume(&recovery_root, &mut record, None).map(|_| ());
+        return resume_windows_cross_volume(recovery_root, &mut record, None).map(|_| ());
     }
     if !same_volume_exists {
         return Err(PlatformError::Io(format!(
@@ -2669,7 +2677,7 @@ pub(super) fn recover_retained_windows_move_transaction(
             "Windows Move journal filename does not match its transaction ID".to_string(),
         ));
     }
-    resume_windows_overwrite(&recovery_root, record).map(|_| ())
+    resume_windows_overwrite(recovery_root, record).map(|_| ())
 }
 
 #[cfg(target_os = "windows")]

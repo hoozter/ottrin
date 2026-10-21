@@ -199,6 +199,8 @@ use copy_transaction::copy_entry_transactional;
 pub mod move_recovery;
 mod move_transaction;
 use move_transaction::move_entry_transactional;
+#[cfg(target_os = "windows")]
+pub use move_transaction::windows_recovery_plan::WindowsMoveRecoveryPlan;
 #[cfg(target_os = "linux")]
 pub mod local_storage;
 pub mod text_edit;

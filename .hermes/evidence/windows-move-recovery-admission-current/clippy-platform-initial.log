@@ -1,0 +1,50 @@
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+error: large size difference between variants
+ --> crates/ottrin-platform/src/move_transaction/windows_recovery_plan.rs:6:1
+  |
+6 | / enum Evidence {
+7 | |     Same(PathBuf, Option<WindowsOverwriteRecord>),
+  | |     --------------------------------------------- the second-largest variant contains at least 496 bytes
+8 | |     Cross(PathBuf, Option<WindowsCrossVolumeRecord>),
+  | |     ------------------------------------------------ the largest variant contains at least 936 bytes
+9 | | }
+  | |_^ the entire enum is at least 936 bytes
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#large_enum_variant
+  = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+  |
+8 -     Cross(PathBuf, Option<WindowsCrossVolumeRecord>),
+8 +     Cross(PathBuf, Box<Option<WindowsCrossVolumeRecord>>),
+  |
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+    --> crates/ottrin-platform/src/move_transaction.rs:2644:66
+     |
+2644 |     let cross_volume_journal = windows_cross_volume_journal_path(&recovery_root, transaction_id);
+     |                                                                  ^^^^^^^^^^^^^^ help: change this to: `recovery_root`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_borrow
+     = note: `-D clippy::needless-borrow` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+    --> crates/ottrin-platform/src/move_transaction.rs:2665:44
+     |
+2665 |         return resume_windows_cross_volume(&recovery_root, &mut record, None).map(|_| ());
+     |                                            ^^^^^^^^^^^^^^ help: change this to: `recovery_root`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_borrow
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+    --> crates/ottrin-platform/src/move_transaction.rs:2680:30
+     |
+2680 |     resume_windows_overwrite(&recovery_root, record).map(|_| ())
+     |                              ^^^^^^^^^^^^^^ help: change this to: `recovery_root`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_borrow
+
+error: could not compile `ottrin-platform` (lib) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `ottrin-platform` (lib test) due to 4 previous errors

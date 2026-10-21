@@ -1,0 +1,11 @@
+{
+    "exit":  0,
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments":  "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "fa055f3a4c1e993f8b6a779f93bc199e85bbda4e1cdd47c32e051990cad33beb",
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "057e2a47036869cc46389f8f53978619f8c13320f07ca360b8fd2fea89923f51",
+    "dispatch_id":  "3612ec0e859a37cc785412c5be1ca23f"
+}

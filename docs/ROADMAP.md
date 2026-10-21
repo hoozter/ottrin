@@ -330,6 +330,29 @@ containing-parent/unavailable-volume behavior, broader metadata support, resourc
 and hard-power outcomes, and exact-package GUI acceptance remain required before
 calling Windows Move Undo complete. User acceptance remains deferred.
 
+## Windows Move recovery — queue and drive admission
+
+Windows Activity now captures an opaque recovery plan on its existing background
+scan. The plan records both central/local journals, including both controller and
+inverse for cross-volume Replace, the registry directory identity, and the complete
+source-parent, destination-parent, private-stage and registry footprint. Capturing
+it does not create or modify recovery state. A queue request without that captured
+plan is rejected and asks for an Activity refresh.
+
+Recovery participates in the ordinary mutation-path scheduler and captures actual
+drive bindings for every affected path. The worker revalidates those bindings and
+compares all captured recovery evidence under the shared recovery lock before
+using the existing native recovery engine. A changed snapshot is refused without
+refreshing its own authority. Central-first intent gaps retain an explicit absent
+local-journal observation, allowing the native engine to recover that legitimate
+interruption without bypassing the queue check.
+
+Evidence: `.hermes/evidence/windows-move-recovery-admission-current/ACCEPTANCE.json`.
+This is a source/native checkpoint; packages are unchanged. Session-history
+reconciliation, terminal-control retirement, containing-parent/unavailable-volume
+lifecycle, hard-power/resource and exact-package acceptance remain required.
+Linux retained Move admission still needs its corresponding native-plan work.
+
 ## Windows Copy: end an incomplete attempt without discarding files
 
 Activity now offers “End copy attempt…” only after opaque read-only admission of

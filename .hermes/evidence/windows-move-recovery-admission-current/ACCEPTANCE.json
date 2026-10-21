@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-22",
+  "status": "source_native_checkpoint_passed",
+  "source_base": "7fde4207c8fbe5ce6d80ec6b717593b9b3964c42",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Windows retained Move recovery queue, snapshot and real-drive admission. Source/native checkpoint only; full roadmap remains incomplete.",
+  "implementation": [
+    "Opaque WindowsMoveRecoveryPlan captures central/local journals and registry identity without mutation",
+    "Cross-volume Replace plan follows both owner records and reserves both parents, both stages and the registry",
+    "Missing local journal at a legitimate central-first interruption is recorded as absence, revalidated, and left to existing native engine recovery",
+    "Existing Activity background loader captures actionable plans; unknown ID-only UI commands are refused",
+    "Queue records full mutation paths and captures real native storage bindings; normal worker revalidates drives before recovery",
+    "Under shared recovery lock, registry identity and every captured journal are compared before calling the existing engine; stale plan refuses rather than adopting new authority",
+    "Direct platform ID recovery uses the same capture/execute path instead of a parallel implementation"
+  ],
+  "verification": {
+    "windows_platform": {
+      "passed": 115,
+      "failed": 0,
+      "result": "RESULTS.json",
+      "binary": "TEST_BINARY.json",
+      "scope": "Full selected Move suite, including native Copy session-receipt/abort dependency cases and owned second-volume tests",
+      "new_cases": [
+        "Same-volume plan refuses changed local journal without mutating entries, then resumes forward and supports ordinary Undo",
+        "Cross-volume Replace plan captures both owners and footprint, refuses changed controller through either owner, then resumes inverse and requires fresh plan after completion"
+      ],
+      "excluded": [
+        "windows_native_move_fat32_boundary_preserves_both_entries",
+        "windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite"
+      ],
+      "interruption_scope": "Existing 22 retained-cross inverse process exits and other Move interruption cases re-executed through the common recovery admission path; not hard-power acceptance"
+    },
+    "windows_ui_status_and_recovery": {
+      "passed": 9,
+      "result": "ui-status/RESULTS.json",
+      "binary": "ui-status/TEST_BINARY.json",
+      "new_case": "Unknown ID rejected without queueing; actual same-volume Replace recovery captures real discovered drive bindings, holds source/destination paths while queued, completes via worker, releases paths, never turns forward recovery into Undo; ordinary Undo restores both entries",
+      "scope": "Headless actual UI methods/workers and native Windows storage discovery; not rendered GUI or exact-package acceptance"
+    },
+    "windows_cross_ui_worker": {
+      "passed": 1,
+      "result": "ui/RESULTS.json",
+      "scope": "Skip and Replace Move/Undo, collisions, retries and completed recovery discovery; existing explicit empty storage-binding fixture retained for this separate worker test"
+    },
+    "windows_same_ui_worker": {
+      "passed": 1,
+      "result": "ui-same/RESULTS.json",
+      "scope": "Skip and Replace Move/Undo collisions and retry"
+    },
+    "linux_ui": {
+      "passed": 395,
+      "failed": 0,
+      "existing_ignored": 1,
+      "log": "ui-linux.log"
+    },
+    "strict_all_target_clippy": [
+      "Windows ottrin-platform",
+      "Windows ottrin-ui",
+      "Linux ottrin-ui"
+    ],
+    "formatting": "cargo fmt --all -- --check; source/roadmap/runner diff whitespace check"
+  },
+  "prior_checks": {
+    "clippy-platform-initial.log": "Initial strict check rejected large enum footprint and needless borrows; boxed record variants and corrected references before successful final checks",
+    "clippy-ui-windows-initial.log": "Preliminary successful strict Windows UI check",
+    "ui-initial-check.log": "Preliminary successful Windows UI test compilation"
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "host": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "retained_guest": "off with unchanged persistent definition",
+    "owned_fixture_profiles_payloads_processes_and_vhd_removed": true,
+    "secondary_fixture_root_contained_only_owner_marker_before_removal": true,
+    "original_disk_inventory_restored": true,
+    "original_preferences_and_installation_hashes_unchanged": true
+  },
+  "delivery": {
+    "packages_promoted": false,
+    "candidate_authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "linux_and_public_windows_deliverables": "unchanged",
+    "rendered_package_gui_acceptance": false
+  },
+  "required_remaining": [
+    "Session-history reconciliation after independent recovery",
+    "Terminal inverse-control retirement/lifecycle and containing-parent or unavailable-volume behavior",
+    "Linux retained Move native-plan admission",
+    "Metadata/stream/resource/hard-power and exact-package GUI acceptance",
+    "Remaining Copy, platform, installer, Linux and release roadmap work; user acceptance deferred"
+  ]
+}

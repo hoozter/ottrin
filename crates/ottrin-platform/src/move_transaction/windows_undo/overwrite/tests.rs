@@ -67,6 +67,55 @@ impl Drop for Fixture {
 fn root() -> PathBuf {
     super::super::super::windows_recovery_root().unwrap()
 }
+
+#[test]
+fn windows_native_replace_recovery_plan_refuses_changed_local_evidence() {
+    let fixture = Fixture::new();
+    let (receipt, record) = fixture.moved(0);
+    let plan = crate::WindowsMoveRecoveryPlan::capture(record.transaction_id().unwrap()).unwrap();
+    assert!(plan.paths().contains(&root()));
+    assert!(
+        plan.paths()
+            .contains(&record.source_path().unwrap().parent().unwrap().to_owned())
+    );
+    assert!(
+        plan.paths()
+            .contains(&record.destination_parent_path().unwrap())
+    );
+    let saved = std::fs::read(local(&record)).unwrap();
+    let mut changed = record.clone();
+    changed.phase = Phase::Undoing;
+    let changed = serde_json::to_vec(&changed).unwrap();
+    std::fs::write(local(&record), &changed).unwrap();
+    assert!(
+        plan.execute()
+            .unwrap_err()
+            .to_string()
+            .contains("evidence changed")
+    );
+    assert_eq!(std::fs::read(local(&record)).unwrap(), changed);
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"selected original"
+    );
+    assert_eq!(
+        std::fs::read(record.retained_path().unwrap()).unwrap(),
+        b"displaced original"
+    );
+    assert!(!receipt.before_path().exists());
+    std::fs::write(local(&record), saved).unwrap();
+    plan.execute().unwrap();
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"selected original"
+    );
+    assert!(
+        !receipt.before_path().exists(),
+        "a forward recovery plan never turns into Undo"
+    );
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    assert_terminal(&record);
+}
 fn journal(record: &Record) -> PathBuf {
     windows_journal_path(&root(), record.transaction_id().unwrap())
 }

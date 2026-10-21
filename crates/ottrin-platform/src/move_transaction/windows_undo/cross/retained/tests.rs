@@ -315,6 +315,94 @@ fn windows_native_cross_replace_undo_target_race_retries_without_copying_back_tw
 
 #[test]
 #[ignore = "requires an owned second native Windows volume"]
+fn windows_native_cross_replace_recovery_plan_binds_both_owners_before_mutation() {
+    let fixture = Fixture::new();
+    let receipt = fixture.moved(0);
+    let before = receipt.before_path().to_path_buf();
+    super::super::super::super::WINDOWS_MOVE_HOOK.with(|hook| {
+        *hook.borrow_mut() = Some(Box::new(move |boundary, _| {
+            if boundary == WindowsMoveBoundary::CrossRetainedUndoIntent {
+                std::fs::write(&before, b"later original-name occupant").unwrap();
+            }
+        }))
+    });
+    let reset = Reset;
+    assert!(DefaultPlatform.undo_move_with_receipt(&receipt).is_err());
+    drop(reset);
+    let inverse_id = guard(&receipt)
+        .inverse
+        .get()
+        .unwrap()
+        .transaction_id()
+        .unwrap();
+    let controller = load_windows_cross_volume_record(&central(&receipt)).unwrap();
+    let controller_id = controller.transaction_id().unwrap();
+    let first = crate::WindowsMoveRecoveryPlan::capture(inverse_id).unwrap();
+    let second = crate::WindowsMoveRecoveryPlan::capture(controller_id).unwrap();
+    assert_eq!(first.paths(), second.paths());
+    for expected in [
+        root(),
+        receipt.before_path().parent().unwrap().to_owned(),
+        receipt.after_path().parent().unwrap().to_owned(),
+        controller.transaction_path().unwrap(),
+    ] {
+        assert!(
+            first.paths().contains(&expected),
+            "missing recovery footprint: {}",
+            expected.display()
+        );
+    }
+    let saved = std::fs::read(central(&receipt)).unwrap();
+    let mut changed = controller;
+    changed.phase = Phase::SourceRemoved;
+    changed.undo_transaction = None;
+    let changed = serde_json::to_vec(&changed).unwrap();
+    std::fs::write(central(&receipt), &changed).unwrap();
+    for plan in [&first, &second] {
+        assert!(
+            plan.execute()
+                .unwrap_err()
+                .to_string()
+                .contains("evidence changed")
+        );
+        assert_eq!(std::fs::read(central(&receipt)).unwrap(), changed);
+        assert_eq!(
+            std::fs::read(receipt.before_path()).unwrap(),
+            b"later original-name occupant"
+        );
+        assert_eq!(
+            std::fs::read(receipt.after_path()).unwrap(),
+            b"source bytes"
+        );
+        assert_eq!(
+            std::fs::read(binding(&receipt).retained_path().unwrap()).unwrap(),
+            b"retained bytes"
+        );
+    }
+    std::fs::write(central(&receipt), saved).unwrap();
+    let parked = fixture.primary.path().join("parked");
+    std::fs::rename(receipt.before_path(), &parked).unwrap();
+    first.execute().unwrap();
+    assert_done(&receipt);
+    assert_eq!(
+        std::fs::read(parked).unwrap(),
+        b"later original-name occupant"
+    );
+    assert!(
+        second
+            .execute()
+            .unwrap_err()
+            .to_string()
+            .contains("evidence changed")
+    );
+    crate::WindowsMoveRecoveryPlan::capture(controller_id)
+        .unwrap()
+        .execute()
+        .unwrap();
+}
+
+#[test]
+#[ignore = "requires an owned second native Windows volume"]
 fn windows_native_cross_replace_undo_refuses_changed_retained_entry_or_private_parent() {
     for changed_parent in [false, true] {
         let fixture = Fixture::new();
