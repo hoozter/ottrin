@@ -97,16 +97,22 @@ fi
 printf '%s  %s\n' "$APPIMAGETOOL_SHA256" "$APPIMAGETOOL" | sha256sum -c -
 
 ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$WORK/$(basename "$APPIMAGE")"
+# The embedded record is the source snapshot. Publishing invalidates the old
+# cohort receipt, which may itself be tracked; it must not change this record.
+source_record="$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt"
+revision="$(sed -n 's/^Git revision: //p' "$source_record")"
+[[ "$revision" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid embedded source revision.' >&2; exit 1; }
+if grep -Fqx 'Working tree: clean' "$source_record"; then
+  clean_source=true
+elif grep -Fqx 'Working tree: tracked-dirty' "$source_record"; then
+  clean_source=false
+else
+  echo 'Invalid embedded source cleanliness.' >&2
+  exit 1
+fi
 ottrin_publish_artifact "$WORK/$(basename "$APPIMAGE")" "$APPIMAGE"
 sha256sum "$APPIMAGE" | sed "s|$APPIMAGE|$(basename "$APPIMAGE")|" > "$APPIMAGE.sha256"
 artifact_sha256="$(sha256sum "$APPIMAGE" | awk '{print $1}')"
-revision="$(git -C "$ROOT" rev-parse --verify HEAD)"
-if git -C "$ROOT" diff --quiet --ignore-submodules -- && \
-   git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
-  clean_source=true
-else
-  clean_source=false
-fi
 cat > "$APPIMAGE.provenance.json" <<EOF
 {
   "artifact": "$(basename "$APPIMAGE")",
