@@ -1,9 +1,9 @@
-param([Parameter(Mandatory=$true)][ValidateSet('prepare','remove')][string]$Action)
+param([Parameter(Mandatory=$true)][ValidateSet('prepare','remove')][string]$Action,[ValidateSet('OttrinCopyQA','OttrinWindowQA')][string]$Actor='OttrinCopyQA')
 $ErrorActionPreference='Stop'
 $r='C:\OttrinCopyCleanupQA\cross-move-volume'
 if($Action-eq'remove'){
- if((Get-ScheduledTask 'Ottrin Copy Cleanup QA').State.ToString()-in@('Running','Queued')){throw 'Owned actor still live'}
- if(@(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-like'C:\OttrinCopyCleanupQA\*'}).Count){throw 'Owned native process remains'}
+ foreach($task in @('Ottrin Copy Cleanup QA','Ottrin Window Input QA')){if([string](Get-ScheduledTask $task -ErrorAction SilentlyContinue).State-in@('Running','Queued')){throw 'Owned actor still live'}}
+ if(@(Get-CimInstance Win32_Process|Where-Object{($_.ExecutablePath-like'C:\OttrinCopyCleanupQA\*'-or$_.ExecutablePath-like'C:\OttrinWindowQA\payload\*')}).Count){throw 'Owned native process remains'}
  $v=Get-Content "$r\volume.json" -Raw|ConvertFrom-Json
  if($v.image-ne"$r\owned.vhdx"-or$v.disk_size-ne256MB){throw 'Unexpected fixture ownership'}
  $image=Get-DiskImage -ImagePath $v.image;$disk=$image|Get-Disk;$volume=Get-Volume -DriveLetter $v.drive_letter
@@ -27,7 +27,7 @@ $image=Join-Path $r 'owned.vhdx'
 'create vdisk file="'+$image+'" maximum=256 type=expandable'|Set-Content "$r\create.txt"
 & diskpart.exe /s "$r\create.txt"|Set-Content "$r\create.log"
 if($LASTEXITCODE-ne0-or-not(Test-Path -LiteralPath $image)){throw 'VHD creation failed'}
-$sid=(Get-LocalUser -Name OttrinCopyQA).SID
+$sid=(Get-LocalUser -Name $Actor).SID
 $acl=Get-Acl -LiteralPath $image
 $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','Allow'))
 Set-Acl -LiteralPath $image -AclObject $acl
@@ -49,9 +49,9 @@ $null=OwnedDisk
 Format-Volume -Partition $partition -FileSystem NTFS -AllocationUnitSize 65536 -NewFileSystemLabel 'OttrinMoveQA' -Force -Confirm:$false|Out-Null
 $volume=Get-Volume -DriveLetter $partition.DriveLetter
 if($volume.FileSystem-ne'NTFS'-or$volume.FileSystemLabel-ne'OttrinMoveQA'-or$volume.AllocationUnitSize-ne65536){throw 'Owned volume format not confirmed'}
-$root="$($partition.DriveLetter):\OttrinCopyQA"
+$root="$($partition.DriveLetter):\$Actor"
 New-Item -ItemType Directory -Path $root|Out-Null
-$sid=(Get-LocalUser -Name OttrinCopyQA).SID
+$sid=(Get-LocalUser -Name $Actor).SID
 $acl=[Security.AccessControl.DirectorySecurity]::new()
 $acl.SetSecurityDescriptorSddlForm("O:$($sid.Value)D:P(A;OICI;FA;;;$($sid.Value))(A;OICI;FA;;;SY)")
 Set-Acl -LiteralPath $root -AclObject $acl

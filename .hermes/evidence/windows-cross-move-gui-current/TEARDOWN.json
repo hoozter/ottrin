@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "guest": "TEARDOWN_GUEST.json",
+  "volume": "VOLUME_TEARDOWN.json",
+  "domain_state": "shut off",
+  "persistent_domain_definition_unchanged": true,
+  "retained_guest_preserved": true,
+  "owned_guest_vhd_removed": true,
+  "hypervisor_disks_unchanged": true,
+  "guest_fixture_root_removed": true
+}

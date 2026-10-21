@@ -1,0 +1,9 @@
+{
+  "scope": "QA setup/input; no new product selection defect established",
+  "console": "Original QA VM console had no Ottrin/document app work; signed out before creating temporary account",
+  "first_login": "Finished temporary-account onboarding; point/PID guard refused click intercepted by StartMenuExperienceHost. Stopped only observed PID after exact executable path and temporary-account ownership checks.",
+  "missed_input": "Two later file-state assertions failed before any corresponding Move journal was created; source bytes remained. Clicking filename selected the row. Rechecking with explicit native foreground ownership and fresh pointer position selected the entire row, including empty name-column space at x500. Corrected driver used for subsequent source/target reuse and VCF workflow. Earlier row-hit interpretation was retracted.",
+  "driver_change": "Focus the already-owned target window, verify foreground PID, refresh cursor position and separate down/up before native click. No Ottrin selection implementation change.",
+  "script_execution": "Initial direct .ps1 invocation was refused by guest execution policy before volume creation. Used encoded-command ScriptBlock execution without changing persistent policy.",
+  "product_file_states": "Seven distinct passing file-state checks including final post-close verification; six unchanged retained-journal/data snapshots."
+}

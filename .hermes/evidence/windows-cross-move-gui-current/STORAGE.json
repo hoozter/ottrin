@@ -1,0 +1,8 @@
+{
+  "baseline_source": "../windows-cross-move-package-current/STORAGE.json",
+  "before": "17G\ttarget/debug/deps\n7.0G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n527M\t.hermes/packaging-tmp\n",
+  "after": "17G\ttarget/debug/deps\n7.0G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n527M\t.hermes/packaging-tmp\n5.1M\t.hermes/evidence/windows-cross-move-gui-current\n",
+  "no_new_compiler_configuration_or_independent_target_tree": true,
+  "owned_guest_volume_and_payload_removed": true,
+  "retained_guest_kept": true
+}

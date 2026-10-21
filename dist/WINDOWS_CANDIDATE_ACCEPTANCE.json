@@ -1,5 +1,5 @@
 {
-  "status": "pass within package content and native loader/CLI scopes",
+  "status": "pass within package content, native loader/CLI and scoped portable GUI cross-volume Move checks",
   "source_commit": "68962f05b66aaa9b181b378df62912de3fde4e05",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
@@ -81,6 +81,12 @@
   "prior_gui_acceptance": {
     "source_commit": "1cd2871f9bae17edcce3f1cb202f8745dc13be9d",
     "evidence": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-reuse-gui-current/ACCEPTANCE.json",
-    "scope": "Earlier same-volume GUI receipt does not accept this refreshed artifact; current packaged cross-volume GUI testing remains pending"
+    "scope": "Earlier same-volume GUI receipt retains its original 1cd2871f artifact scope; current cross-volume GUI acceptance is recorded separately."
+  },
+  "portable_gui_cross_volume_acceptance": {
+    "source_commit": "68962f05b66aaa9b181b378df62912de3fde4e05",
+    "archive_sha256": "66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d",
+    "evidence": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cross-move-gui-current/ACCEPTANCE.json",
+    "scope": "Ordinary account Dark/List100/default renderer: cross-volume Replace, source-name reuse/Keep Both, target Move, later source/target name reuse and unrelated Moves; seven file-state checks including post-close and six identical paired journal/displaced-data snapshots. QA input correction is recorded separately."
   }
 }

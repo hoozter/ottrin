@@ -13,10 +13,21 @@ $c=Get-Content "$root\command.json" -Raw|ConvertFrom-Json
 if($c.case-ne'ordinary'){throw 'Unknown disposable case'}
 $caseRoot="$root\cases\ordinary";$fixture="$caseRoot\fixture";$app="$root\payload\Ottrin-0.1.0-windows-x64\bin\ottrin.exe"
 $env:LOCALAPPDATA="$caseRoot\profile";$env:APPDATA="$caseRoot\roaming";$env:USERPROFILE="$caseRoot\userprofile";$env:HOME=$env:USERPROFILE
+$secondary=$null
+if(Test-Path "$root\secondary-volume.json"){
+ $secondary=Get-Content "$root\secondary-volume.json" -Raw|ConvertFrom-Json
+ $v=Get-Volume -DriveLetter $secondary.drive_letter
+ if($v.UniqueId-ne$secondary.volume_unique_id-or$v.FileSystem-ne'NTFS'-or$v.FileSystemLabel-ne'OttrinMoveQA'-or$secondary.actor_sid-ne$owner.sid-or((Get-Content (Join-Path $secondary.root '.ottrin-owned-secondary-volume') -Raw).Trim()-ne$secondary.token)){throw 'Owned secondary GUI volume changed'}
+}
 function FixturePath([string]$relative){
  if([IO.Path]::IsPathRooted($relative)){throw 'Fixture path must be relative'}
- $path=[IO.Path]::GetFullPath((Join-Path $fixture $relative))
- if($path-ne$fixture-and-not$path.StartsWith($fixture+'\',[StringComparison]::OrdinalIgnoreCase)){throw 'Fixture path escaped'}
+ $base=$fixture
+ if($relative-eq'secondary'-or$relative.StartsWith('secondary\')){
+  if(-not$secondary){throw 'Owned secondary fixture is not configured'}
+  $base=$secondary.root;$relative=$relative.Substring(9).TrimStart('\')
+ }
+ $path=[IO.Path]::GetFullPath((Join-Path $base $relative))
+ if($path-ne$base-and-not$path.StartsWith($base+'\',[StringComparison]::OrdinalIgnoreCase)){throw 'Fixture path escaped'}
  return $path
 }
 function WriteFixtureConfig {
@@ -36,6 +47,10 @@ if($c.op-eq'prepare'){
  [IO.File]::WriteAllText("$fixture\source\other.txt","other original`n",$utf8)
  [IO.File]::WriteAllText("$fixture\source\contact.vcf","BEGIN:VCARD`r`nVERSION:3.0`r`nFN:Ottrin QA`r`nEND:VCARD`r`n",$utf8)
  [IO.File]::WriteAllText("$fixture\destination\note.txt","destination original`n",$utf8)
+ if($secondary){
+  New-Item -ItemType Directory (FixturePath 'secondary\destination'),(FixturePath 'secondary\moved')|Out-Null
+  [IO.File]::WriteAllText((FixturePath 'secondary\destination\note.txt'),"destination original`n",$utf8)
+ }
  WriteFixtureConfig
  $baseline=@{};foreach($f in Get-ChildItem "$fixture\source","$fixture\destination" -File){$baseline[$f.FullName]=(Get-FileHash $f.FullName).Hash};$baseline|ConvertTo-Json|Set-Content "$caseRoot\fixture-baseline.json"
 }elseif($c.op-eq'configure'){
@@ -74,14 +89,14 @@ if($c.op-eq'prepare'){
  foreach($j in Get-ChildItem "$env:LOCALAPPDATA\Ottrin\State\moves" -File|Where-Object Extension -in @('.journal','.cross-journal')){
   $record=Get-Content $j.FullName -Raw|ConvertFrom-Json
   if($record.retained_displaced){$path=DecodePath $record.retained_displaced;if([IO.File]::ReadAllText($path)-ceq"destination original`n"){
-   if($record.phase-ne'published'){throw 'Retained Move was not published'}
+   $expectedPhase=if($j.Extension-eq'.cross-journal'){'source-removed'}else{'published'};if($record.phase-ne$expectedPhase){throw 'Retained Move was not complete'}
    $stage=DecodePath $record.transaction_directory;$local=@(Get-ChildItem $stage -File -Force|Where-Object Name -like '*journal*')
    if($local.Count-ne1-or[IO.File]::ReadAllText($local[0].FullName).Trim()-cne[IO.File]::ReadAllText($j.FullName).Trim()){throw 'Retained journal pair differs'}
    $matches+=@{central_sha256=(Get-FileHash $j.FullName).Hash;local_sha256=(Get-FileHash $local[0].FullName).Hash;displaced_sha256=(Get-FileHash $path).Hash}
   }}
  }
  if($matches.Count-ne1){throw 'Expected one exact retained displaced destination'}
- $verification=@{status='pass';label='Replace preserves displaced bytes with paired published journals';matches=$matches}
+ $verification=@{status='pass';label='Replace preserves displaced bytes with paired completion journals';matches=$matches}
 }elseif($c.op-eq'verify'){
  foreach($item in $c.files.PSObject.Properties){$path=FixturePath $item.Name;if(-not(Test-Path -LiteralPath $path -PathType Leaf)-or[IO.File]::ReadAllText($path)-cne[string]$item.Value){throw ('Fixture mismatch: '+$item.Name)}}
  foreach($relative in $c.absent){if(Test-Path -LiteralPath (FixturePath $relative)){throw ('Fixture unexpectedly exists: '+$relative)}}
@@ -102,7 +117,11 @@ if($c.op-eq'prepare'){
   $point=New-Object CopyActivityDesktop+POINT;$point.X=[int]$c.x;$point.Y=[int]$c.y
   [uint32]$pointPid=0;$null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::WindowFromPoint($point),[ref]$pointPid)
   if($pointPid-ne$p.Id){throw 'Visible input point is not owned'}
-  $null=[CopyActivityDesktop]::SetCursorPos($point.X,$point.Y);[CopyActivityDesktop]::mouse_event(2,0,0,0,[UIntPtr]::Zero);[CopyActivityDesktop]::mouse_event(4,0,0,0,[UIntPtr]::Zero)
+  $null=[CopyActivityDesktop]::SetForegroundWindow($window);Start-Sleep -Milliseconds 100
+  $null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($foregroundPid-ne$p.Id){throw 'Owned app did not receive pointer focus'}
+  # Refresh native pointer position after focus changes, including an unchanged target point.
+  $null=[CopyActivityDesktop]::SetCursorPos($point.X+1,$point.Y);Start-Sleep -Milliseconds 50
+  $null=[CopyActivityDesktop]::SetCursorPos($point.X,$point.Y);Start-Sleep -Milliseconds 75;[CopyActivityDesktop]::mouse_event(2,0,0,0,[UIntPtr]::Zero);Start-Sleep -Milliseconds 75;[CopyActivityDesktop]::mouse_event(4,0,0,0,[UIntPtr]::Zero)
  }else{
   $null=[CopyActivityDesktop]::SetForegroundWindow($window);Start-Sleep -Milliseconds 100
   $null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($foregroundPid-ne$p.Id){throw 'Owned app did not receive focus'}

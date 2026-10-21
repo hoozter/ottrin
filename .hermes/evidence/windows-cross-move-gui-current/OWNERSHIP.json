@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinWindowQA",
+  "account": "OttrinWindowQA",
+  "package_source": "68962f05b66aaa9b181b378df62912de3fde4e05",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-portable.zip",
+  "archive_sha256": "66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d",
+  "payload_manifest": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cross-move-package-current/PAYLOAD.json",
+  "scope": "Exact packaged cross-volume completed Replace name reuse using ordinary interactive account and owned 256MiB NTFS disk, both removed after testing"
+}

@@ -1,0 +1,51 @@
+{
+  "status": "pass within exact portable GUI cross-volume Move name-reuse scope",
+  "date": "2026-10-21",
+  "source_commit": "68962f05b66aaa9b181b378df62912de3fde4e05",
+  "archive_sha256": "66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d",
+  "package_content_evidence": "../windows-cross-move-package-current/ACCEPTANCE.json",
+  "native_source_evidence": "../windows-cross-move-reuse-current/ACCEPTANCE.json",
+  "payload_files_verified": 57,
+  "ordinary_interactive_account": true,
+  "configuration": "Dark/List 1280x800 at 100 percent, default renderer selection",
+  "volume": "VOLUME.json",
+  "passed": [
+    "Cross-volume Replace publishes exact bytes and removes source",
+    "Cross-volume Keep Both succeeds after source-name reuse",
+    "Published target can move back across volumes",
+    "Unrelated cross-volume Move works while original target is absent after explicit filename selection",
+    "Later file reuses old source and target names after guarded row-area selection",
+    "Unrelated VCF Move succeeds after target identity reuse",
+    "All cross-volume workflow bytes persist after normal window close"
+  ],
+  "file_state_checks": 7,
+  "retained_checks": 6,
+  "original_retained_hashes": {
+    "displaced_sha256": "B9F9ECCB9BBA3C5A67D19293F4C4E3E5E508A1B39AAE18DEAC635915FA920D47",
+    "central_sha256": "84F73468579704148987AD1ED6EBF61A4499D3232513C0A861A5B6FF1C5CAA5C",
+    "local_sha256": "84F73468579704148987AD1ED6EBF61A4499D3232513C0A861A5B6FF1C5CAA5C"
+  },
+  "completion_phase_asserted": "source-removed for cross-journal; paired complete records remain identical",
+  "row_area_selection": "row-empty-area-selection.png",
+  "qa_setup_and_input_correction": "INPUT_DIAGNOSIS.json",
+  "driver_versions": "Driver extended for secondary fixture; initial native click input could be missed after focus changes. Final driver ownership/focus/pointer correction was exercised for later name reuse, VCF Move and post-close checks; whole run did not use a single unchanged driver revision.",
+  "tools_final_tested_sha256": {
+    "scripts/windows-desktop-qa/README.md": "829e45172df19c363ed855a4e94d2d71196b7792ee017470846c008a026363e0",
+    "scripts/windows-desktop-qa/actor.ps1": "6468bf6c02fcabe3eebec93ea4189abb6bacb535463557eb659dc2afc03a9932",
+    "scripts/windows-desktop-qa/cleanup.ps1": "03b979f7e3c725677068f10b83b03415461543012e3ab2b451697ea6692282f4",
+    "scripts/windows-desktop-qa/desktop.py": "bd0c76b7aec47459fcb14039ef87b3110f06e6ce5df15551360d3b9ba6c317d8",
+    "scripts/windows-desktop-qa/interop.ps1": "6b7692e4da6b2bbaedfc8ecf26258c41bd79b1cc34be8c527cdb12e27687f10e",
+    "scripts/windows-desktop-qa/prepare.ps1": "d54d2d4e72cdf217fda768c2471648300a9fc29d38fdbcd3ce0084cce66a3359",
+    "scripts/windows-desktop-qa/retire-owned-root.ps1": "fe06de31996717292bda531f980f40cb9986b9d8b0aed636cd9a327a8ba9dfd1",
+    "scripts/windows-cross-move-qa/volume.ps1": "2c7d29cb3908382dc2685e5f0771c03048ea06c30a8b109d27d29a9735d88cfb"
+  },
+  "cleanup": "TEARDOWN.json",
+  "guest_preservation_scope": "Original config.json and Uninstall.exe hashes plus login values; not whole profile inventory",
+  "limits": [
+    "Regular-file portable GUI workflows only; no new directory/metadata/power-cut or FAT32 acceptance",
+    "NSIS/MSI payload identity does not prove installation, upgrade, rollback or uninstall acceptance",
+    "Containing-parent/private-path lifecycle, Windows Move Undo and remaining roadmap gates are unfinished",
+    "No new same-volume GUI rerun against this artifact; preceding same-volume receipt retains own source scope",
+    "Public Windows Copy remains disabled; no user acceptance or release readiness claim"
+  ]
+}

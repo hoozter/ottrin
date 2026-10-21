@@ -39,3 +39,15 @@ different package; preserve the earlier receipt's scope.
 Never infer a successful workflow from dispatch, exit status alone, a visible
 window handle, or an unverified screenshot. Check exact fixture bytes and native
 test counts, and keep source corrections separate from packaged GUI acceptance.
+
+For cross-volume Move acceptance, after entering the temporary account and before
+case preparation, use `scripts/windows-cross-move-qa/volume.ps1 -Action prepare
+-Actor OttrinWindowQA` through the guest agent. Copy its verified descriptor to
+`C:\OttrinWindowQA\secondary-volume.json`. The actor validates NTFS volume ID,
+label, ownership SID and marker on every action. `secondary\destination` and
+`secondary\moved` address only that owned volume; ordinary paths stay in the
+private C: fixture. Retained completion checks require source-removed for cross-
+volume journals and published for same-volume journals. Close the owned app,
+remove the volume with the same volume helper, remove its descriptor, then run
+normal account/fixture cleanup. The helper refuses live QA tasks or payloads;
+verify the original disk inventory and persistent VM definition after teardown.

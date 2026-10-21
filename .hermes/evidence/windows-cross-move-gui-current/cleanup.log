@@ -1,0 +1,7 @@
+native PID 4256
+native PID 7488
+Owned fixtures removed, including protected transaction data.
+
+Domain 'ottrin-copy-cleanup-qa' is being shutdown
+
+Owned fixtures/account removed; guest shutdown requested. Verify domain off and unchanged XML.
