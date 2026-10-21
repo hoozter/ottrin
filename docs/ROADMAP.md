@@ -40,7 +40,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `1cd2871f`; all 57 payload files match. Actual ordinary-account portable GUI checks now pass the previously failing Replace/source-name-reuse/Keep Both sequence, target-name reuse, unrelated Moves and final bytes after normal close. Old retained data and both journals remain unchanged in four snapshots. Seven file-state checks pass. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. Earlier Inspector/menu evidence retains its original package scope. | Package and verify the source-corrected cross-volume completed-record name reuse, then implement Windows Move Undo. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. Actual same-volume GUI name-reuse acceptance remains scoped to preceding `1cd2871f`; the refreshed artifact still needs packaged cross-volume GUI acceptance. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Complete packaged cross-volume workflow acceptance and implement Windows Move Undo. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -106,11 +106,18 @@ its definition unchanged. Superseded compiler sessions are retired while keeping
 the newest cache for each affected configuration.
 
 Evidence: `.hermes/evidence/windows-cross-move-reuse-current/ACCEPTANCE.json`.
-This is source/native acceptance only: the current `1cd2871f` internal candidate
-and public downloads do not yet contain this cross-volume correction. Candidate
-refresh and real packaged cross-volume GUI checks are next. Containing-parent
-renames, unavailable private paths, Windows Move Undo and remaining platform gates
-are still separate unfinished outcomes.
+The internal portable/NSIS/MSI candidate now contains this correction from clean
+`68962f05`. All 57 payload files agree across portable, extracted NSIS and native
+MSI administrative extraction, and all five executables match release outputs.
+Native loader/CLI checks pass. Receipt:
+`.hermes/evidence/windows-cross-move-package-current/ACCEPTANCE.json`.
+The prior generated candidate, compiler/extraction fixtures and temporary MSI
+service changes are retired/restored; the retained guest is off with unchanged
+persistent definition and checked profile/installation hashes. Public Windows
+and Linux downloads are unchanged. Real packaged cross-volume GUI checks remain
+next; preceding `1cd2871f` GUI acceptance retains its own artifact scope.
+Containing-parent renames, unavailable private paths, Windows Move Undo and the
+remaining platform gates are still separate unfinished outcomes.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

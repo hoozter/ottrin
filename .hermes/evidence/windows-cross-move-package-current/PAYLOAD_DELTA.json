@@ -1,0 +1,287 @@
+{
+  "LICENSE": {
+    "old_sha256": "2a92e02a6add5bb40115751ebd78bbcdce35ba40d629136b2cd1f8f3884e80bb",
+    "new_sha256": "2a92e02a6add5bb40115751ebd78bbcdce35ba40d629136b2cd1f8f3884e80bb",
+    "changed": false
+  },
+  "README.md": {
+    "old_sha256": "88db7213730861639e2589e9f119cf0037f8a16c490671750f725f377239e08c",
+    "new_sha256": "88db7213730861639e2589e9f119cf0037f8a16c490671750f725f377239e08c",
+    "changed": false
+  },
+  "RUNNING.md": {
+    "old_sha256": "1a961da86973822997576f49f3e5fbb6ed0d563deb73baaae9028de5dafb2697",
+    "new_sha256": "1a961da86973822997576f49f3e5fbb6ed0d563deb73baaae9028de5dafb2697",
+    "changed": false
+  },
+  "SOURCE_REVISION.txt": {
+    "old_sha256": "d8d55354dbf04720d65301310831bcf06816c3e097fd25dbb8e321c77405b831",
+    "new_sha256": "ac2ce0f71b77118d34ae2e7bdbce971809db26356638fe5994acb3e19214731e",
+    "changed": true
+  },
+  "assets/icon.ico": {
+    "old_sha256": "3db24c16886d05b2ac588e8c0639ddfa440f7778083544c16806a4c088a9dd42",
+    "new_sha256": "3db24c16886d05b2ac588e8c0639ddfa440f7778083544c16806a4c088a9dd42",
+    "changed": false
+  },
+  "assets/icon.png": {
+    "old_sha256": "5d4198a3a9b1acb860e57b3b761e340b2f0c3c2f28a7b9fa5b7cbd830381af04",
+    "new_sha256": "5d4198a3a9b1acb860e57b3b761e340b2f0c3c2f28a7b9fa5b7cbd830381af04",
+    "changed": false
+  },
+  "assets/icon.svg": {
+    "old_sha256": "33746e843fde043387c7ae1f1d2a13c7cab94e9b6bf136cc4144d99f911c94ce",
+    "new_sha256": "33746e843fde043387c7ae1f1d2a13c7cab94e9b6bf136cc4144d99f911c94ce",
+    "changed": false
+  },
+  "assets/logo.svg": {
+    "old_sha256": "f674b933a13c2a506e617774966b635d74f0ffbb01eb808105063b4b1189ff57",
+    "new_sha256": "f674b933a13c2a506e617774966b635d74f0ffbb01eb808105063b4b1189ff57",
+    "changed": false
+  },
+  "bin/dxil.dll": {
+    "old_sha256": "cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df",
+    "new_sha256": "cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df",
+    "changed": false
+  },
+  "bin/libEGL.dll": {
+    "old_sha256": "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b",
+    "new_sha256": "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b",
+    "changed": false
+  },
+  "bin/libGLESv2.dll": {
+    "old_sha256": "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6",
+    "new_sha256": "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6",
+    "changed": false
+  },
+  "bin/libgallium_wgl.dll": {
+    "old_sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+    "new_sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+    "changed": false
+  },
+  "bin/opengl32.dll": {
+    "old_sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+    "new_sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+    "changed": false
+  },
+  "bin/ottrin-indexd.exe": {
+    "old_sha256": "019b863cf055a366bec0b4c4c774426ec304dd07be3fc4719e075a2ac87b3079",
+    "new_sha256": "00ae97554bb041febaf817168a9f0c6f782e986c33473c30bb3963c977c68450",
+    "changed": true
+  },
+  "bin/ottrin-legacy-doc-render.exe": {
+    "old_sha256": "54110da2635e12c49dc2f881424b2e15cdb2b749b659087271e794f7420d461e",
+    "new_sha256": "54110da2635e12c49dc2f881424b2e15cdb2b749b659087271e794f7420d461e",
+    "changed": false
+  },
+  "bin/ottrin-office-render.exe": {
+    "old_sha256": "de18e6cd37359a223a715e4f007d92f3bb335f1dffcd6cd2a115858bf28b0a69",
+    "new_sha256": "de18e6cd37359a223a715e4f007d92f3bb335f1dffcd6cd2a115858bf28b0a69",
+    "changed": false
+  },
+  "bin/ottrin-priv-helper.exe": {
+    "old_sha256": "3d2068bd860bb1f87934c4b97c52ab17bd0769f965862f3a93adf1c66561fe87",
+    "new_sha256": "30417df78bfebf95cf46967587c09ead4227793d9a81d394fe5524976e149ec7",
+    "changed": true
+  },
+  "bin/ottrin.exe": {
+    "old_sha256": "ec178804becae7384b8e850fc8f9c19b3eedb10374435d462b421dec1fae3c48",
+    "new_sha256": "057e6a04a12d6d2cef2269c6b3132744bfeccb1dea9043d9dcd4625f6761735a",
+    "changed": true
+  },
+  "bin/pdfium/LICENSE": {
+    "old_sha256": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b",
+    "new_sha256": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b",
+    "changed": false
+  },
+  "bin/pdfium/licenses/abseil.txt": {
+    "old_sha256": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603",
+    "new_sha256": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603",
+    "changed": false
+  },
+  "bin/pdfium/licenses/agg23.txt": {
+    "old_sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+    "new_sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+    "changed": false
+  },
+  "bin/pdfium/licenses/fast_float.txt": {
+    "old_sha256": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b",
+    "new_sha256": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b",
+    "changed": false
+  },
+  "bin/pdfium/licenses/freetype.txt": {
+    "old_sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+    "new_sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+    "changed": false
+  },
+  "bin/pdfium/licenses/icu.txt": {
+    "old_sha256": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a",
+    "new_sha256": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a",
+    "changed": false
+  },
+  "bin/pdfium/licenses/lcms.txt": {
+    "old_sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+    "new_sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+    "changed": false
+  },
+  "bin/pdfium/licenses/libjpeg_turbo.ijg": {
+    "old_sha256": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704",
+    "new_sha256": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704",
+    "changed": false
+  },
+  "bin/pdfium/licenses/libjpeg_turbo.md": {
+    "old_sha256": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95",
+    "new_sha256": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95",
+    "changed": false
+  },
+  "bin/pdfium/licenses/libopenjpeg.txt": {
+    "old_sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+    "new_sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+    "changed": false
+  },
+  "bin/pdfium/licenses/libpng.txt": {
+    "old_sha256": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511",
+    "new_sha256": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511",
+    "changed": false
+  },
+  "bin/pdfium/licenses/libtiff.txt": {
+    "old_sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+    "new_sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+    "changed": false
+  },
+  "bin/pdfium/licenses/llvm-libc.txt": {
+    "old_sha256": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383",
+    "new_sha256": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383",
+    "changed": false
+  },
+  "bin/pdfium/licenses/pdfium.txt": {
+    "old_sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
+    "new_sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
+    "changed": false
+  },
+  "bin/pdfium/licenses/simdutf.txt": {
+    "old_sha256": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719",
+    "new_sha256": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719",
+    "changed": false
+  },
+  "bin/pdfium/licenses/zlib.txt": {
+    "old_sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+    "new_sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+    "changed": false
+  },
+  "bin/pdfium/pdfium.dll": {
+    "old_sha256": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4",
+    "new_sha256": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4",
+    "changed": false
+  },
+  "bin/rg.exe": {
+    "old_sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680",
+    "new_sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680",
+    "changed": false
+  },
+  "docs/DEVELOPMENT.md": {
+    "old_sha256": "764b7c1f8b1f51b3056eb1344b3d485f03ba102c3be7a14b96f54b9ba39da1cd",
+    "new_sha256": "764b7c1f8b1f51b3056eb1344b3d485f03ba102c3be7a14b96f54b9ba39da1cd",
+    "changed": false
+  },
+  "docs/RELEASE_CHECKLIST.md": {
+    "old_sha256": "26d50f86b365b90f92793c72320b1ab14b238d0c2c1d84b987cb1af651d426ae",
+    "new_sha256": "26d50f86b365b90f92793c72320b1ab14b238d0c2c1d84b987cb1af651d426ae",
+    "changed": false
+  },
+  "docs/RELEASE_NOTES.md": {
+    "old_sha256": "66f14949b6fd6e447f5b1bbf1375abd1726eea97b66bfec402c026f38ae140de",
+    "new_sha256": "66f14949b6fd6e447f5b1bbf1375abd1726eea97b66bfec402c026f38ae140de",
+    "changed": false
+  },
+  "docs/ROADMAP.md": {
+    "old_sha256": "511c8c3f16f56855b6831aeb9807fdb58a3418ca4e2d4390e792ab1569c73b48",
+    "new_sha256": "ad47b1537b1a0f8497ed8827d2419712db70faba212f3816167b1cd2b5293c7f",
+    "changed": true
+  },
+  "docs/USER_GUIDE.md": {
+    "old_sha256": "a51fd754f76eba4f59ac3922658ff5a0607fd3e5fe7bba348daf1b96d337b855",
+    "new_sha256": "a51fd754f76eba4f59ac3922658ff5a0607fd3e5fe7bba348daf1b96d337b855",
+    "changed": false
+  },
+  "third-party-notices/MANIFEST.txt": {
+    "old_sha256": "1789c9fe8d6cdf1f8f351fec9ad49216b9d883c919753b47efc6640bb1994a97",
+    "new_sha256": "1789c9fe8d6cdf1f8f351fec9ad49216b9d883c919753b47efc6640bb1994a97",
+    "changed": false
+  },
+  "third-party-notices/Microsoft-DXC-LICENSE-MS.txt": {
+    "old_sha256": "734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963",
+    "new_sha256": "734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/docs/license.rst": {
+    "old_sha256": "0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615",
+    "new_sha256": "0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0": {
+    "old_sha256": "7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12",
+    "new_sha256": "7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0": {
+    "old_sha256": "9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d",
+    "new_sha256": "9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later": {
+    "old_sha256": "8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4",
+    "new_sha256": "8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/licenses/GPL-2.0-only": {
+    "old_sha256": "6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5",
+    "new_sha256": "6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/licenses/MIT": {
+    "old_sha256": "323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f",
+    "new_sha256": "323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/licenses/SGI-B-2.0": {
+    "old_sha256": "686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7",
+    "new_sha256": "686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7",
+    "changed": false
+  },
+  "third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note": {
+    "old_sha256": "9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f",
+    "new_sha256": "9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f",
+    "changed": false
+  },
+  "third-party-notices/pal1000-LICENSE.txt": {
+    "old_sha256": "9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc",
+    "new_sha256": "9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc",
+    "changed": false
+  },
+  "third-party-notices/ripgrep/COPYING": {
+    "old_sha256": "dfe7d0a6134a17d3de7409762e08dc02133303912875cab40a74ba07a390f85a",
+    "new_sha256": "dfe7d0a6134a17d3de7409762e08dc02133303912875cab40a74ba07a390f85a",
+    "changed": false
+  },
+  "third-party-notices/ripgrep/LICENSE-MIT": {
+    "old_sha256": "970813655a1bf777d2ead189cef71ab73ab92ce04dc864027d61a45de03e6728",
+    "new_sha256": "970813655a1bf777d2ead189cef71ab73ab92ce04dc864027d61a45de03e6728",
+    "changed": false
+  },
+  "third-party-notices/ripgrep/MANIFEST.txt": {
+    "old_sha256": "d19f5761aabe865dcc34da2bccdaf3f75edf704e26d650b4b2ffdb2335b51bc6",
+    "new_sha256": "d19f5761aabe865dcc34da2bccdaf3f75edf704e26d650b4b2ffdb2335b51bc6",
+    "changed": false
+  },
+  "third-party-notices/ripgrep/PCRE2-10.45-LICENCE.md": {
+    "old_sha256": "9cf7ac6976099a1d856826d3ef1b093bd6b84489dc6100628ac79e740cf9885a",
+    "new_sha256": "9cf7ac6976099a1d856826d3ef1b093bd6b84489dc6100628ac79e740cf9885a",
+    "changed": false
+  },
+  "third-party-notices/ripgrep/UNLICENSE": {
+    "old_sha256": "640514163b17f977adc997cb16f51871122cfb0555ebad1a3f01e167b7ba8857",
+    "new_sha256": "640514163b17f977adc997cb16f51871122cfb0555ebad1a3f01e167b7ba8857",
+    "changed": false
+  }
+}

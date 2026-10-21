@@ -1,0 +1,18 @@
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+{
+  "status": "pass",
+  "source_commit": "68962f05b66aaa9b181b378df62912de3fde4e05",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "6b8ced602cfcbc58d10efee0661d142da111165d59144cf9769cf5cf42e44a98",
+    "Ottrin-0.1.0-windows-x64.msi": "48410f82a692ff350cafa4f31a48b690ab9bf16128ed4a43f0de6aa44290233d"
+  },
+  "payload_files": 57,
+  "all_three_payloads_match": true,
+  "five_executables_match_release_outputs": true,
+  "nsis_generated_uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+  "nsis_index_controller_matches": true,
+  "nsis_transaction_script_matches_source": true,
+  "host_nsis_extraction_removed": true,
+  "scope": "Package content and native MSI administrative extraction only; no installation, GUI or daily-driver acceptance"
+}

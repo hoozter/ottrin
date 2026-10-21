@@ -1,0 +1,7 @@
+{
+  "files": {
+    "crates/ottrin-platform/src/move_transaction.rs": "48da6c34cd41bc81cb6570f61ba754f68a6cbc0a325288b6eefe2860b00d35a9"
+  },
+  "scope": "Native cross-volume before-fix reproduction; three corrected regressions, 26 cross-volume cases, combined 72 native Move tests pass as ordinary account. FAT32/power-cut fixtures excluded. Strict Windows platform all-target Clippy passes. Packaged workflow acceptance remains separate.",
+  "evidence": "../windows-cross-move-reuse-current/ACCEPTANCE.json"
+}

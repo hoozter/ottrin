@@ -1,0 +1,7 @@
+{
+  "before": "17G\ttarget/debug/deps\n7.0G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n527M\t.hermes/packaging-tmp\n",
+  "after": "17G\ttarget/debug/deps\n7.0G\ttarget/debug/incremental\n23G\ttarget/x86_64-pc-windows-gnu/debug/deps\n20G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n527M\t.hermes/packaging-tmp\n",
+  "task_fixture_roots_removed": true,
+  "superseded_candidate_removed": true,
+  "public_package_files_checked_unchanged": 63
+}

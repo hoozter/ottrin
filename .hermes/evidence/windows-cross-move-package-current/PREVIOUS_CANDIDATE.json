@@ -1,0 +1,9 @@
+{
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 1cd2871f9bae17edcce3f1cb202f8745dc13be9d\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "0c73bcdfe5d1d4d0d9f1a8bd252d26874cc4af608d326d14f7b0a055143412c0",
+    "Ottrin-0.1.0-windows-x64.msi": "b7fa4c0b7d8000cca5b99ec071c867b426afdc637d351cc96e84c65e3c42755b",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "9a90f21455a5b0125d6abbce7c1c7023e180b7ee1c55b10db90078cf51c5feb1"
+  },
+  "scope": "Superseded generated internal candidate removed only after replacement verification; public Windows files preserved"
+}

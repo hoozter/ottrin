@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-refresh-current/native-package.py", line 37, in <module>
+    observe(r'''$r='C:\OttrinCopyCleanupQA\package-refresh';if(Test-Path $r){throw 'Owned compiler root exists'}
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-refresh-current/native-package.py", line 20, in observe
+    pid = native.start(script)
+          ^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-cleanup-current/transport.py", line 10, in start
+    return qga('guest-exec',{'path':r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe','arg':['-NoProfile','-NonInteractive','-EncodedCommand',base64.b64encode(("$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'\n"+script).encode('utf-16le')).decode()],'capture-output':True})['pid']
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-20261011/guest_exec.py", line 9, in qga
+    raise RuntimeError(f'{command} failed for {DOMAIN}: {result.stderr.strip()}')
+RuntimeError: guest-exec failed for ottrin-copy-cleanup-qa: error: Guest agent is not responding: QEMU guest agent is not connected
