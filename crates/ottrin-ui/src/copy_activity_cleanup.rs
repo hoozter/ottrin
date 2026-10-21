@@ -567,6 +567,8 @@ impl OttrinApp {
                     finalization: None,
                     recovery: None,
                     cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
+                    #[cfg(target_os = "windows")]
+                    recovery_location: None,
                 });
             }
         }
@@ -595,6 +597,8 @@ impl OttrinApp {
                             recovery: None,
                             #[cfg(target_os = "windows")]
                             cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
+                            #[cfg(target_os = "windows")]
+                            recovery_location: None,
                         });
                     }
                     if let Some(owner) = &mut record.retained_copy {

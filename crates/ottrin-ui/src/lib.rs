@@ -1184,6 +1184,8 @@ struct RetainedCopyOwnership {
     recovery: Option<CopyRecoveryAction>,
     #[cfg(target_os = "windows")]
     cleanup_phase: Option<ottrin_platform::WindowsCopyPhase>,
+    #[cfg(target_os = "windows")]
+    recovery_location: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone)]
@@ -1318,6 +1320,7 @@ fn windows_retained_copy_activity(
     recovery_admission: Option<Result<CopyRecoveryAction, PlatformError>>,
 ) -> RestoredCopyActivity {
     use ottrin_platform::{WindowsCopyPhase as Phase, WindowsCopyRecoveryEvidence as Evidence};
+    let recovery_location = entry.transaction.clone();
     let eligible = windows_copy_can_admit(&entry);
     let resumable = windows_copy_can_resume(&entry);
     let releasing = entry.evidence == Evidence::PendingNameRelease;
@@ -1370,7 +1373,7 @@ fn windows_retained_copy_activity(
         Evidence::UnverifiedStage => (
             "Staging incomplete · payload not verified",
             PathMoveUndoState::Unavailable {
-                reason: "The copy was interrupted before payload verification. Retained data is preserved for review.".into(),
+                reason: "Copying stopped before all file contents were verified. Resume and automatic cleanup are unavailable. Retained files and recovery records have been kept.".into(),
             },
         ),
         Evidence::NeedsReview { reason } => (
@@ -1460,8 +1463,6 @@ fn windows_retained_copy_activity(
     let mut detail = format!("{phase} · {evidence}");
     if let Some(location) = location {
         detail.push_str(&format!(" · Data: {}", path_label(&location)));
-    } else if let Some(location) = entry.transaction {
-        detail.push_str(&format!(" · Recovery location: {}", path_label(&location)));
     }
     if let Some(id) = &entry.transaction_id {
         detail.push_str(&format!(" · Transaction: {id}"));
@@ -1474,6 +1475,8 @@ fn windows_retained_copy_activity(
             restored: true,
             finalization: None,
             cleanup_phase: entry.phase,
+            #[cfg(target_os = "windows")]
+            recovery_location,
             recovery,
         },
         detail,
@@ -6329,6 +6332,7 @@ impl OttrinApp {
                 #[cfg(target_os = "windows")]
                 if let Some(owner) = &mut record.retained_copy {
                     owner.recovery = None;
+                    owner.recovery_location = None;
                 }
                 record.path_move_undo = Some(PathMoveUndoState::Unavailable { reason: "Retained Copy evidence is no longer available; data remains owned for review".into() });
             }
@@ -14964,6 +14968,18 @@ impl OttrinApp {
                                 .id_salt(("activity_copy_recovery", record.id))
                                 .show(ui, |ui| {
                                     ui.add(egui::Label::new(RichText::new(&record.detail).color(c.text_muted).size(10.0 * c.font_scale)).wrap().selectable(true));
+                                    #[cfg(target_os = "windows")]
+                                    if let Some(location) = record.retained_copy.as_ref().and_then(|owner| owner.recovery_location.as_ref()) {
+                                        ui.add_space(4.0);
+                                        ui.label(RichText::new("Recovery location").strong().color(c.text).size(10.0 * c.font_scale));
+                                        ui.add(egui::Label::new(RichText::new(path_label(location)).color(c.text_muted).size(10.0 * c.font_scale)).wrap().selectable(true));
+                                        let text = location.to_str();
+                                        if ui.add_enabled(text.is_some(), egui::Button::new("Copy recovery path").themed(&c))
+                                            .on_disabled_hover_text("This native path cannot be represented as clipboard text.")
+                                            .on_hover_text("Copy the observed location of the retained recovery records. This does not resume or change the copy.").clicked() {
+                                            ui.ctx().copy_text(text.unwrap().to_owned());
+                                        }
+                                    }
                                     if let Some(message) = &record.message {
                                         ui.add(egui::Label::new(RichText::new(message).color(c.text).size(10.0 * c.font_scale)).wrap().selectable(true));
                                     } else if let Some(PathMoveUndoState::Unavailable { reason }) = &record.path_move_undo {
@@ -25808,6 +25824,8 @@ mod tests {
             recovery: None,
             #[cfg(target_os = "windows")]
             cleanup_phase: None,
+            #[cfg(target_os = "windows")]
+            recovery_location: None,
         });
         assert_eq!(
             record.timing_label(start),
@@ -25979,7 +25997,11 @@ mod tests {
     }
 
     #[cfg(target_os = "windows")]
-    pub(super) fn click_activity_action(app: &mut OttrinApp, ctx: &Context, label: &str) {
+    pub(super) fn click_activity_action(
+        app: &mut OttrinApp,
+        ctx: &Context,
+        label: &str,
+    ) -> egui::FullOutput {
         let frame = |app: &mut OttrinApp, events| activity_frame(app, ctx, events);
         frame(app, Vec::new());
         let output = frame(app, Vec::new());
@@ -26013,7 +26035,7 @@ mod tests {
                 pressed: false,
                 modifiers: Default::default(),
             }],
-        );
+        )
     }
 
     #[cfg(target_os = "windows")]
@@ -26449,6 +26471,10 @@ mod tests {
                     restored_copy_status(&activity.undo),
                     Some(&activity.undo)
                 ));
+                assert_eq!(
+                    activity.ownership.recovery_location.as_deref(),
+                    Some(Path::new(r"C:\moved\journal"))
+                );
                 assert!(activity.detail.contains(r"C:\moved\actual"));
                 assert!(!activity.detail.contains(r"C:\old"));
                 assert!(activity.detail.contains(&"a".repeat(32)));
@@ -26506,7 +26532,7 @@ mod tests {
             assert!(activity.ownership.transactions.is_empty());
             assert_eq!(activity.title(), "Copy recovery record needs review");
             assert!(activity.receipt.is_none() && activity.ownership.recovery.is_none());
-            assert!(activity.detail.contains("Recovery location:"));
+            assert!(activity.ownership.recovery_location.is_some());
             assert!(!activity.detail.contains("Transaction:"));
             keys.insert(activity.ownership.key);
         }
@@ -26514,6 +26540,61 @@ mod tests {
             keys.len(),
             2,
             "Native names must retain distinct review rows"
+        );
+
+        let root = tempfile::tempdir().unwrap();
+        let journal = root.path().join("Ångström recovery record");
+        std::fs::write(&journal, b"retained recovery bytes").unwrap();
+        let activity = windows_retained_copy_activity(
+            ottrin_platform::WindowsRetainedCopyStatus {
+                transaction_id: Some("c".repeat(32)),
+                phase: Some(Phase::Staging),
+                publication: None,
+                retained: None,
+                owned_location: None,
+                transaction: Some(journal.clone()),
+                source_label: None,
+                evidence: Evidence::UnverifiedStage,
+            },
+            None,
+            None,
+        );
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        app.merge_retained_copy_activity(vec![activity]);
+        let ctx = Context::default();
+        ctx.style_mut(|style| style.animation_time = 0.0);
+        click_activity_action(&mut app, &ctx, "Recovery details");
+        let texts = activity_text(&mut app, &ctx);
+        assert!(texts.iter().any(|text| text == "Recovery location"));
+        assert!(
+            texts
+                .iter()
+                .any(|text| text.contains("Resume and automatic cleanup are unavailable"))
+        );
+        assert!(
+            !texts
+                .iter()
+                .any(|text| text == "Resume copy" || text == "Clear retained Copy data")
+        );
+        let output = click_activity_action(&mut app, &ctx, "Copy recovery path");
+        assert!(output.platform_output.commands.iter().any(|command| {
+            matches!(command, egui::OutputCommand::CopyText(text) if text == journal.to_str().unwrap())
+        }));
+        assert_eq!(std::fs::read(&journal).unwrap(), b"retained recovery bytes");
+        assert_eq!(app.operation_history.len(), 1);
+        assert!(!app.copy_recovery.running() && !app.copy_cleanup.running());
+        assert!(!copy_activity_recovery::can_recover(
+            &app.operation_history[0]
+        ));
+        app.merge_retained_copy_activity(Vec::new());
+        assert!(
+            app.operation_history[0]
+                .retained_copy
+                .as_ref()
+                .unwrap()
+                .recovery_location
+                .is_none()
         );
     }
 
@@ -31964,6 +32045,8 @@ mod tests {
                 recovery: None,
                 #[cfg(target_os = "windows")]
                 cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::Completed),
+                #[cfg(target_os = "windows")]
+                recovery_location: None,
             },
             detail: "restored".into(),
             undo: PathMoveUndoState::Undone,
