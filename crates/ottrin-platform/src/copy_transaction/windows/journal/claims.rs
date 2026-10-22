@@ -46,7 +46,7 @@ impl Claim {
         target: &OsStr,
         transaction: &str,
     ) -> Result<Self, PlatformError> {
-        let creator = security::current_owner()?;
+        let creator = windows_fs::current_owner()?;
         Ok(Self {
             parent: stable_identity_from_handle(parent).map_err(io)?,
             root: stable_identity_from_handle(root.root()).map_err(io)?,
@@ -600,7 +600,7 @@ fn validate_control(
         || first.bucket != stable_identity_from_handle(bucket.root()).map_err(io)?
         || first.bucket_anchor != bucket.anchor_identity()
         || bucket.parent_identity() != first.root
-        || first.creator != security::current_owner()?
+        || first.creator != windows_fs::current_owner()?
     {
         return Err(io("Copy name-claim control belongs to another namespace"));
     }

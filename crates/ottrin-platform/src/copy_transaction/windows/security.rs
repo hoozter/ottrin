@@ -7,16 +7,12 @@ use crate::windows_fs::RelativeOptions;
 use std::{
     ffi::OsStr,
     fs::File,
-    os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle},
+    os::windows::io::{AsRawHandle, OwnedHandle},
     ptr,
 };
-use windows_sys::Win32::Foundation::{ERROR_NO_TOKEN, HANDLE};
 use windows_sys::Win32::Security::Authorization::{SE_FILE_OBJECT, SetSecurityInfo};
 use windows_sys::Win32::Security::*;
 use windows_sys::Win32::Storage::FileSystem::*;
-use windows_sys::Win32::System::Threading::{
-    GetCurrentProcess, GetCurrentThread, OpenProcessToken, OpenThreadToken,
-};
 
 mod tree;
 pub(super) use tree::{
@@ -41,8 +37,8 @@ impl Parts {
     // Structural validation of cached evidence only. Deserialized ACLs never
     // become Windows descriptors; recovery must rederive and compare the plan.
     fn valid_record(&self) -> bool {
-        if !valid_sid(&self.owner)
-            || !valid_sid(&self.group)
+        if !windows_fs::valid_sid(&self.owner)
+            || !windows_fs::valid_sid(&self.group)
             || self.control & !(SE_DACL_PROTECTED | SE_DACL_AUTO_INHERITED) != 0
         {
             return false;
@@ -148,29 +144,12 @@ pub(super) fn owner_group_dacl_digest(file: &File) -> Result<[u8; 32], PlatformE
     super::evidence_digest(&observed)
 }
 
-fn current_token() -> Result<OwnedHandle, PlatformError> {
-    let mut token: HANDLE = ptr::null_mut();
-    if unsafe { OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, 1, &mut token) } == 0 {
-        let error = std::io::Error::last_os_error();
-        if error.raw_os_error() != Some(ERROR_NO_TOKEN as i32) {
-            return Err(io(error));
-        }
-        if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) } == 0 {
-            return Err(io(std::io::Error::last_os_error()));
-        }
-    }
-    Ok(unsafe { OwnedHandle::from_raw_handle(token.cast()) })
-}
-
 /// Private staging security is recorded separately from final destination
 /// inheritance. Serialized ACLs are validated as bytes, never passed to Windows.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub(super) struct PrivateSecurity(Parts);
 
-fn valid_sid(sid: &[u8]) -> bool {
-    sid.len() >= 8 && sid[0] == 1 && sid[1] <= 15 && sid.len() == 8 + usize::from(sid[1]) * 4
-}
 impl PrivateSecurity {
     pub(super) fn valid_for(&self, creator: &[u8]) -> bool {
         let parts = &self.0;
@@ -179,9 +158,9 @@ impl PrivateSecurity {
         };
         // One explicit OWNER RIGHTS full-access ACE. Only its normal child
         // inheritance flags are admitted; inherited/inherit-only ACEs are not.
-        valid_sid(creator)
+        windows_fs::valid_sid(creator)
             && parts.owner == creator
-            && valid_sid(&parts.group)
+            && windows_fs::valid_sid(&parts.group)
             && parts.present
             && parts.control & SE_DACL_PROTECTED != 0
             && parts.control & !(SE_DACL_PROTECTED | SE_DACL_AUTO_INHERITED) == 0
@@ -212,49 +191,6 @@ impl PrivateSecurity {
         }
         Ok(())
     }
-}
-
-pub(super) fn current_owner() -> Result<Vec<u8>, PlatformError> {
-    owner_for_token(&current_token()?)
-}
-fn owner_for_token(token: &OwnedHandle) -> Result<Vec<u8>, PlatformError> {
-    let mut needed = 0;
-    unsafe {
-        GetTokenInformation(
-            token.as_raw_handle().cast(),
-            TokenOwner,
-            ptr::null_mut(),
-            0,
-            &mut needed,
-        );
-    }
-    if needed == 0 || needed > 65536 {
-        return Err(io("invalid effective token owner size"));
-    }
-    let mut storage = vec![0u64; (needed as usize).div_ceil(8)];
-    if unsafe {
-        GetTokenInformation(
-            token.as_raw_handle().cast(),
-            TokenOwner,
-            storage.as_mut_ptr().cast(),
-            needed,
-            &mut needed,
-        )
-    } == 0
-    {
-        return Err(io(std::io::Error::last_os_error()));
-    }
-    let owner = unsafe { &*storage.as_ptr().cast::<TOKEN_OWNER>() }.Owner;
-    if owner.is_null() {
-        return Err(io("effective token has no default owner"));
-    }
-    let sid =
-        unsafe { std::slice::from_raw_parts(owner.cast::<u8>(), GetLengthSid(owner) as usize) }
-            .to_vec();
-    if !valid_sid(&sid) {
-        return Err(io("effective token owner SID is invalid"));
-    }
-    Ok(sid)
 }
 
 struct Derived(PSECURITY_DESCRIPTOR);
@@ -315,7 +251,7 @@ pub(super) struct DestinationSecurity {
 }
 impl DestinationSecurity {
     pub(super) fn capture(parent: &File, directory: bool) -> Result<Self, PlatformError> {
-        Self::capture_with_token(parent, directory, &current_token()?)
+        Self::capture_with_token(parent, directory, &windows_fs::current_token()?)
     }
     fn capture_with_token(
         parent: &File,
@@ -423,6 +359,9 @@ impl DestinationSecurity {
 
 #[cfg(test)]
 mod tests {
+    use std::os::windows::io::FromRawHandle;
+    use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+
     use super::*;
     use crate::windows_fs::LocalSecurity;
     use std::io::Write;
@@ -903,7 +842,7 @@ mod tests {
         let parent = parent(root.path());
         let file = private(&parent, "private", false);
         std::fs::write(root.path().join("private"), b"private bytes").unwrap();
-        let creator = current_owner().unwrap();
+        let creator = windows_fs::current_owner().unwrap();
         let expected = PrivateSecurity::capture(&file, &creator).unwrap();
         assert_ne!(
             expected.0.owner, expected.0.group,

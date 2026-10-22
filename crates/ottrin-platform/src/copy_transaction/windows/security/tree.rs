@@ -204,8 +204,8 @@ impl TreeSecurityPlan {
         if recorded.is_none() && phase != PermissionProgress::default() {
             return Err(io("Copy permission phase has no sealed plan"));
         }
-        let token = current_token()?;
-        let creator = owner_for_token(&token)?;
+        let token = windows_fs::current_token()?;
+        let creator = windows_fs::owner_for_token(&token)?;
         let mut entries: Vec<Entry> = Vec::new();
         let mut names = BTreeSet::new();
         let mut identities = BTreeSet::new();
@@ -351,7 +351,7 @@ impl TreeSecurityPlan {
         if !phase.valid_for(self.entries.len()) {
             return Err(io("Copy permission progress exceeds its graph"));
         }
-        if current_owner()? != self.creator {
+        if windows_fs::current_owner()? != self.creator {
             return Err(io("Copy security plan creator context changed"));
         }
         self.entries[0].policy.validate_parent(&self.parent)?;

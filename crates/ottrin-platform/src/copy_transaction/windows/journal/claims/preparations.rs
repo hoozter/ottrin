@@ -60,7 +60,7 @@ pub(super) fn collect(
             || claim.root != stable_identity_from_handle(root.root()).map_err(io)?
             || claim.anchor != root.anchor_identity()
             || claim.file != stable_identity_from_handle(&file).map_err(io)?
-            || claim.creator != security::current_owner()?
+            || claim.creator != windows_fs::current_owner()?
         {
             continue;
         }

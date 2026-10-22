@@ -92,6 +92,21 @@ fn file(
         sha256: actual.1,
     })
 }
+impl FileEvidence {
+    pub(super) fn verify(&self, file: &File) -> Result<(), PlatformError> {
+        if move_recovery::stable_identity_from_handle(file).map_err(super::io)? != self.identity {
+            return Err(super::io("journal identity changed"));
+        }
+        let mut file = file;
+        file.rewind().map_err(super::io)?;
+        let mut writer = HashWriter::new();
+        io::copy(&mut file, &mut writer).map_err(super::io)?;
+        if writer.finish() != (self.bytes, self.sha256) {
+            return Err(super::io("journal data changed"));
+        }
+        Ok(())
+    }
+}
 impl Owner {
     fn capture(
         root: &Path,

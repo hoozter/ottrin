@@ -57,6 +57,8 @@ use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken}
 #[cfg(target_os = "windows")]
 pub(super) mod windows_completion;
 #[cfg(target_os = "windows")]
+pub use windows_completion::retirement::{WindowsMoveCleanupPlan, WindowsMoveCleanupReport};
+#[cfg(target_os = "windows")]
 pub(super) mod windows_control;
 #[cfg(target_os = "windows")]
 pub(super) mod windows_recovery_plan;
@@ -456,9 +458,7 @@ where
 }
 
 #[cfg(target_os = "windows")]
-fn require_windows_move_without_extended_attributes(
-    file: &std::fs::File,
-) -> Result<(), PlatformError> {
+fn windows_extended_attribute_size(file: &std::fs::File) -> Result<u32, PlatformError> {
     use windows_sys::Wdk::Storage::FileSystem::{
         FILE_EA_INFORMATION, FileEaInformation, NtQueryInformationFile,
     };
@@ -479,7 +479,13 @@ fn require_windows_move_without_extended_attributes(
             std::io::Error::from_raw_os_error(unsafe { RtlNtStatusToDosError(status) } as i32),
         )));
     }
-    if ea.EaSize != 0 {
+    Ok(ea.EaSize)
+}
+#[cfg(target_os = "windows")]
+fn require_windows_move_without_extended_attributes(
+    file: &std::fs::File,
+) -> Result<(), PlatformError> {
+    if windows_extended_attribute_size(file)? != 0 {
         return Err(PlatformError::Io(
             "Windows cross-volume Move cannot preserve extended attributes; source retained".into(),
         ));
@@ -2402,12 +2408,22 @@ fn write_windows_record_file<T: serde::Serialize>(
     let parent = path
         .parent()
         .ok_or_else(|| PlatformError::Io("journal has no parent".to_string()))?;
+    let directory = crate::windows_fs::open_directory(
+        parent,
+        windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_READ
+            | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+    )
+    .map_err(|e| PlatformError::Io(e.to_string()))?;
     if create_only || !path.exists() {
-        let mut file = OpenOptions::new()
-            .create_new(true)
-            .write(true)
-            .open(path)
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let mut file = crate::windows_fs::create_private(
+            &directory,
+            path.file_name().unwrap(),
+            false,
+            windows_sys::Win32::Storage::FileSystem::FILE_SHARE_READ
+                | windows_sys::Win32::Storage::FileSystem::FILE_SHARE_WRITE
+                | windows_sys::Win32::Storage::FileSystem::FILE_SHARE_DELETE,
+        )
+        .map_err(|e| PlatformError::Io(e.to_string()))?;
         file.write_all(&bytes)
             .and_then(|()| file.sync_all())
             .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -2415,11 +2431,15 @@ fn write_windows_record_file<T: serde::Serialize>(
         let mut temp_id = [0_u8; 16];
         getrandom::fill(&mut temp_id).map_err(|error| PlatformError::Io(error.to_string()))?;
         let temporary = parent.join(format!("journal.next-{}", encode_transaction_id(temp_id)));
-        let mut file = OpenOptions::new()
-            .create_new(true)
-            .write(true)
-            .open(&temporary)
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let mut file = crate::windows_fs::create_private(
+            &directory,
+            temporary.file_name().unwrap(),
+            false,
+            windows_sys::Win32::Storage::FileSystem::FILE_SHARE_READ
+                | windows_sys::Win32::Storage::FileSystem::FILE_SHARE_WRITE
+                | windows_sys::Win32::Storage::FileSystem::FILE_SHARE_DELETE,
+        )
+        .map_err(|e| PlatformError::Io(e.to_string()))?;
         file.write_all(&bytes)
             .and_then(|()| file.sync_all())
             .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -2443,6 +2463,9 @@ fn write_windows_record_file<T: serde::Serialize>(
             )));
         }
     }
+    // Creation uses the native parent only until publication. Reacquire the
+    // namespace-flush capability below so a failed flush remains observable.
+    drop(directory);
     #[cfg(test)]
     windows_move_boundary(WindowsMoveBoundary::JournalPublished, path);
     // ReplaceFileW's REPLACEFILE_WRITE_THROUGH flag is unsupported. Both new
@@ -3452,6 +3475,16 @@ fn start_windows_cross_volume_move(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsMoveBoundary {
     BeforeUndoReceipt,
+    RetirementIntentPrepared,
+    RetirementIntentPublished,
+    RetirementIntentFlushed,
+    RetirementAccessFrozen,
+    RetirementLocalRemoved,
+    RetirementDirectoryRemoved,
+    RetirementCentralRemoved,
+    RetirementMarkerPrepared,
+    RetirementMarkerPublished,
+    RetirementMarkerFlushed,
     CompletionPrepared,
     CompletionPublished,
     CompletionFlushed,

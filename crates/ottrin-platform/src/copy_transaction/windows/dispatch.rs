@@ -172,7 +172,7 @@ fn copy_admitted_source(
     {
         return Err(io("Copy registry is not an ordinary directory"));
     }
-    let creator = security::current_owner()?;
+    let creator = windows_fs::current_owner()?;
     let registry_security = security::PrivateSecurity::capture(central, &creator)?;
 
     for location in [&parent_location, &central_location] {

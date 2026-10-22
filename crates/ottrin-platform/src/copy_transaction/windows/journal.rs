@@ -149,7 +149,7 @@ impl DestinationAdmission {
         if self.original_objects.is_empty() {
             return Ok(Vec::new());
         }
-        let creator = security::current_owner()?;
+        let creator = windows_fs::current_owner()?;
         let security = security::PrivateSecurity::capture(central, &creator)?;
         let stamp = super::version(central)?;
         let names =
@@ -1428,7 +1428,7 @@ impl Journal {
                 .map_err(io)?;
         initialization::boundary(initialization::Point::LocalCreated, stage, central)?;
         initialization::boundary(initialization::Point::ControlsCreated, stage, central)?;
-        let creator = security::current_owner()?;
+        let creator = windows_fs::current_owner()?;
         let header = Header {
             stage_security: security::PrivateSecurity::capture(&stage.directory, &creator)?,
             local_security: security::PrivateSecurity::capture(&local, &creator)?,
@@ -2273,7 +2273,7 @@ impl Journal {
             None => return Err(io("Copy writer lost its destination claim")),
         }
         self.header.validate_parent_policy(&self.parent_dir)?;
-        if security::current_owner()? != self.header.creator {
+        if windows_fs::current_owner()? != self.header.creator {
             return Err(io("Copy journal writer creator context changed"));
         }
         namespace::validate_single_link(&self.local)?;
@@ -3300,7 +3300,7 @@ impl Snapshot {
         header.validate_parent_policy(parent)?;
         namespace::validate_single_link(&self.local)?;
         namespace::validate_single_link(&self.mirror)?;
-        if self.requires_creator && security::current_owner()? != header.creator {
+        if self.requires_creator && windows_fs::current_owner()? != header.creator {
             return Err(io(
                 "retained Copy creator does not match the effective token owner",
             ));
@@ -7920,7 +7920,7 @@ mod tests {
             });
             let data = leaf.as_ref().unwrap_or(&target);
             (&*data).write_all(b"target bytes stay intact").unwrap();
-            let creator = security::current_owner().unwrap();
+            let creator = windows_fs::current_owner().unwrap();
             let target_security = security::PrivateSecurity::capture(&target, &creator).unwrap();
             let leaf_security = leaf
                 .as_ref()
@@ -9100,7 +9100,7 @@ mod tests {
                 "D:P(A;OICI;FA;;;OW)(A;;FR;;;WD)"
             };
             super::super::tests::set_dacl(&changed, dacl);
-            let creator = security::current_owner().unwrap();
+            let creator = windows_fs::current_owner().unwrap();
             let changed_handle = owner(&changed);
             if mode == 5 {
                 assert!(security::PrivateSecurity::capture(&changed_handle, &creator).is_ok());

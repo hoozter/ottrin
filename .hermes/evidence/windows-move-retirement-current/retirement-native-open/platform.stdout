@@ -1,0 +1,32 @@
+
+running 9 tests
+test move_transaction::windows_completion::retirement::tests::windows_native_cross_move_cleanup_retires_both_owner_pairs_and_keeps_inverse_history ... ok
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_follows_renamed_parents_and_keeps_a_renamed_private_folder ... ok
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_freeze_blocks_late_stream_and_directory_writes ... ok
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_handles_deleted_private_directory_without_adopting_recreated_names ... FAILED
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_unknown_files_streams_and_child_permissions ... ok
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_writable_mapped_journals_until_unmapped ... ok
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_recovers_after_process_exit ... 
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+FAILED
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_refuses_replaced_modified_and_extended_journals_without_mutation ... ok
+test move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_retires_only_owned_journals_and_empty_directories ... ok
+
+failures:
+
+failures:
+    move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_handles_deleted_private_directory_without_adopting_recreated_names
+    move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_recovers_after_process_exit
+
+test result: FAILED. 7 passed; 2 failed; 0 ignored; 0 measured; 520 filtered out; finished in 4.80s
+

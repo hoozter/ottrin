@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "3da0f432a779681e25df0598d398610bebe7f1fc",
+  "actor": "OttrinCopyQA",
+  "purpose": "Native Move control retirement and queued Activity cleanup validation"
+}

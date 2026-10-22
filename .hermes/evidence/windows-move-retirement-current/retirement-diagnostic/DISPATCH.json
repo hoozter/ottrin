@@ -1,0 +1,7 @@
+{
+  "id": "d4cffa6199de69f8807ee056164cede5",
+  "status": "dispatched",
+  "test_arguments": "move_transaction::windows_completion::retirement:: --include-ignored --nocapture --test-threads=1",
+  "transferred_sha256": "2831966df4e93b408ae84a659e58e6e47a03a95ab8b3a59f1e9abc72f1ed0a97",
+  "watchdog_ms": 600000
+}

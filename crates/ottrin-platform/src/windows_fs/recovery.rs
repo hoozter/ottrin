@@ -47,6 +47,23 @@ impl Volumes {
         access: u32,
         progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<File, PlatformError> {
+        self.resolve_optional(expected, access, progress)?
+            .ok_or_else(|| io("Recovery directory is unavailable"))
+    }
+    pub(crate) fn volume_anchor(
+        &self,
+        expected: WindowsStableIdentity,
+    ) -> Result<&File, PlatformError> {
+        self.anchors
+            .get(&expected.volume_serial_number())
+            .ok_or_else(|| io("Recovery volume is unavailable"))
+    }
+    pub(crate) fn resolve_optional(
+        &mut self,
+        expected: WindowsStableIdentity,
+        access: u32,
+        progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Option<File>, PlatformError> {
         let serial = expected.volume_serial_number();
         if !self.anchors.contains_key(&serial) && !self.enumerated {
             self.enumerated = true;
@@ -86,6 +103,12 @@ impl Volumes {
             .anchors
             .get(&serial)
             .ok_or_else(|| io("Recovery volume is unavailable"))?;
-        open_directory_by_identity(anchor, expected, access).map_err(io)
+        match open_directory_by_identity(anchor, expected, access) {
+            Ok(file) => Ok(Some(file)),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(io(format!(
+                "native recovery directory ID open failed: {error}"
+            ))),
+        }
     }
 }

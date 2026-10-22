@@ -134,7 +134,7 @@ impl Dependencies {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let header = state.header.as_ref().unwrap();
-        let creator = security::current_owner()?;
+        let creator = windows_fs::current_owner()?;
         let security = security::PrivateSecurity::capture(central, &creator)?;
         let stamp = super::super::version(central)?;
         let mut protected: BTreeSet<_> = match &scope {

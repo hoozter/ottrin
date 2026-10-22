@@ -1,0 +1,21 @@
+
+running 16 tests
+test copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults ... ok
+test copy_transaction::windows::security::tests::destination_directory_dacl_and_child_inheritance_match_native_creation ... ok
+test copy_transaction::windows::security::tests::destination_security_refuses_changed_parent_permissions_without_mutation ... ok
+test copy_transaction::windows::security::tests::destination_security_refuses_private_stage_as_publication_parent ... ok
+test copy_transaction::windows::security::tests::destination_security_refuses_wrong_name_identity_and_type ... ok
+test copy_transaction::windows::security::tests::destination_security_reports_write_dac_denial_without_changing_bytes_or_acl ... ok
+test copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ignored, requires SeSecurityPrivilege; selected explicitly in the native SYSTEM audit lane
+test copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_mandatory_label ... ok
+test copy_transaction::windows::security::tests::windows_native_copy_final_link_dacl_does_not_change_populated_targets ... ok
+test copy_transaction::windows::security::tests::windows_native_copy_maximum_allowed_dacl_is_per_object_after_handle_clone ... ok
+test copy_transaction::windows::security::tests::windows_native_copy_permission_handle_rights_do_not_expand_journals_or_sources ... ok
+test copy_transaction::windows::security::tests::windows_native_copy_private_group_drift_is_detected_without_payload_mutation ... ok
+test copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_link_policies_match_native_links_without_targets ... ok
+test copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_projects_final_inheritance_against_kernel_trees ... ok
+test copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_refuses_bad_graphs_and_cancels_without_mutation ... ok
+test copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_revalidates_parent_private_permissions_and_membership ... ok
+
+test result: ok. 15 passed; 0 failed; 1 ignored; 0 measured; 514 filtered out; finished in 0.26s
+

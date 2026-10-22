@@ -548,7 +548,7 @@ impl Plan {
             || windows_fs::location(parent).map_err(io)? != self.parent_location
             || windows_fs::location(central).map_err(io)? != self.central_location
             || security::owner_group_dacl_digest(parent)? != self.parent_security
-            || security::current_owner()? != self.header.creator
+            || windows_fs::current_owner()? != self.header.creator
         {
             return Err(io("Copy cleanup metadata action admission changed"));
         }

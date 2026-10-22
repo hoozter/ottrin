@@ -1,0 +1,64 @@
+native PID 1356
+offline-failure-teardown passed
+offline-original-prepare passed
+native PID 556
+
+
+Attached          : False
+BlockSize         : 33554432
+DevicePath        : 
+FileSize          : 171966464
+ImagePath         : C:\OttrinCopyCleanupQA\cross-move-volume\owned.vhdx
+LogicalSectorSize : 512
+Number            : 
+Size              : 268435456
+StorageType       : 3
+PSComputerName    : 
+
+
+
+
+offline-original-verify passed
+native PID 2076
+native PID 4636
+offline-original-cleanup passed
+native PID 1716
+offline-retired-prepare passed
+native PID 2712
+
+
+Attached          : False
+BlockSize         : 33554432
+DevicePath        : 
+FileSize          : 171966464
+ImagePath         : C:\OttrinCopyCleanupQA\cross-move-volume\owned.vhdx
+LogicalSectorSize : 512
+Number            : 
+Size              : 268435456
+StorageType       : 3
+PSComputerName    : 
+
+
+
+
+native PID 8092
+native PID 1412
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-retirement-current/run-offline.py", line 37, in <module>
+    case(prefix + '-verify', ['--move-completion-offline', 'verify'])
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-retirement-current/run-cases.py", line 19, in case
+    subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-cleanup-current/run-native.py', '--move-completion-offline', 'verify', '--evidence-dir', '/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-retirement-current/offline-retired-verify', '--reuse-binary']' returned non-zero exit status 1.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-retirement-current/run-offline.py", line 43, in <module>
+    case(prefix + '-cleanup', ['--move-completion-offline', 'cleanup'])
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-retirement-current/run-cases.py", line 19, in case
+    subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-cleanup-current/run-native.py', '--move-completion-offline', 'cleanup', '--evidence-dir', '/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-retirement-current/offline-retired-cleanup', '--reuse-binary']' returned non-zero exit status 1.

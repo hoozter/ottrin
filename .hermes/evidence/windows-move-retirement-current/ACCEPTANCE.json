@@ -1,0 +1,71 @@
+{
+  "status": "pass within explicit native API, queued worker, regression and teardown scopes",
+  "base_revision": "3da0f432a779681e25df0598d398610bebe7f1fc",
+  "source_binding": "SOURCE_SHA256.json binds changed source, documentation and harness inputs in this checkpoint",
+  "implemented": [
+    "Explicit completed-Undo Activity cleanup, off-thread capture, complete queue paths and real drive admission",
+    "Native exact-ID/hash/stream/EA/link/private-policy admission and worker revalidation",
+    "Recoverable write exclusion, local-before-central retirement and namespace flushes",
+    "Preservation of payloads, unknown files/streams, renamed folders and inherited child ACLs",
+    "Immutable local cleanup intent/final marker and independent completed Undo history",
+    "NTFS stale-ID normalization only after same-volume live-reference control lookup",
+    "Recorded-binary reuse across native phases without rereading overwritten compiler output"
+  ],
+  "checks": {
+    "native_passed": 176,
+    "cases": "VERIFIED_CASES.json",
+    "platform_binary_sha256": "8fdab2dad236851100432cb26ec05645f6aeb215bf1f8422de7f6654037b20fb",
+    "ui_binary_sha256": "828d81569c2f7c4d2c189b30c3ee80fee18492016577a7dec9374dbb3c1851d8",
+    "linux_ui": {
+      "passed": 395,
+      "ignored": 1,
+      "evidence": "linux-ui-tests.log"
+    },
+    "strict_clippy": [
+      "clippy-windows.log",
+      "clippy-linux.log"
+    ],
+    "formatting": "cargo fmt --all --check passed",
+    "source_whitespace": "git diff --check on changed source/docs/runner passed"
+  },
+  "native_scope": [
+    "134 combined Move/module/receipt-dependency checks",
+    "7 Copy registry checks",
+    "15 ordinary-user shared security checks; privileged audit SACL excluded",
+    "7 fresh-process stages: failure teardown and original/retired prepare, actual detach, offline verify, native identity checked reconnect and cleanup",
+    "13 UI-worker checks including same/cross Replace Undo cleanup with unknown-file preservation; no rendered GUI claim"
+  ],
+  "failed_evidence": {
+    "move-initial": "129 pass, 3 fail: stale directory ID admission and journal flush test handle lifetime",
+    "retirement-diagnostic": "7 pass, 2 fail: stale directory ID API outcome",
+    "retirement-native-open": "7 pass, 2 fail: native alternative did not resolve stale ID semantics and was removed",
+    "retirement-error-provenance": "7 pass, 2 fail: isolated native file-ID lookup error",
+    "offline-retired-verify_and_cleanup": "Harness rejected a compiler image changed between phases before test dispatch; fixture preserved, then verified and cleaned with the original recorded guest binary. Complete final phases rerun against one final platform hash."
+  },
+  "cleanup": {
+    "guest": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "superseded_finalized_compiler_sessions": "CACHE_RETIREMENT.json",
+    "retired_sessions": 17,
+    "owned_native_processes": 0,
+    "owned_test_profiles_or_persistent_fixtures": 0,
+    "owned_vhd_removed": true,
+    "retained_vm": "shut off with unchanged persistent definition",
+    "original_preferences_and_uninstaller": "unchanged hashes",
+    "temporary_host_scripts_and_pid_files": "removed; execution script hashes retained",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt"
+  },
+  "delivery": {
+    "rebuilt_or_promoted_packages": false,
+    "unchanged_packages": "UNCHANGED_PACKAGES.json verifies all seven existing package hashes against their current recorded source receipts"
+  },
+  "limits": [
+    "Source/native checkpoint; actual rendered Activity controls and exact-package acceptance remain required",
+    "Retained forward histories before Undo and unfinished-operation containing-parent rename recovery remain open",
+    "Native API flush and process exits do not establish physical power-loss, real-device, FAT32 or ReFS acceptance",
+    "Full Windows Copy/resource/installer/platform gates and remaining Linux/release roadmap are not accepted by this selection",
+    "One privileged audit SACL native security test and one Linux real mount-replacement test requiring a private mount namespace are excluded; their broader acceptance scopes are unchanged",
+    "Compact completion, retirement intent and final marker remain by design; this action retires exact superseded journals and eligible empty private directories, not all history"
+  ]
+}

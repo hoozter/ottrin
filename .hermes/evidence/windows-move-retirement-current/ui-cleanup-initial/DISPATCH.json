@@ -1,0 +1,7 @@
+{
+  "id": "a08e84c1238c7bb9959e07403baeabcc",
+  "status": "dispatched",
+  "test_arguments": "--exact tests::windows_move_cleanup_requires_captured_admission_and_uses_worker --nocapture --test-threads=1 --include-ignored",
+  "transferred_sha256": "5ee50126d2cd0f0dcd135ac0ba0c9501f84b28ea31ce3d9fa8fe6d7c5dd99a9c",
+  "watchdog_ms": 300000
+}

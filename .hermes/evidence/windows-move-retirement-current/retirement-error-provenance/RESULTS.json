@@ -1,0 +1,14 @@
+{
+    "exit":  101,
+    "native_started_utc":  "2026-10-22T03:58:53.0517161Z",
+    "native_finished_utc":  "2026-10-22T03:58:57.1513194Z",
+    "test_arguments":  "move_transaction::windows_completion::retirement:: --include-ignored --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "0ea6550e5e2e71c92702161c0bbd0b405610f13338e73704acff035319f88eb0",
+    "error":  "Native cleanup observation failed",
+    "stderr_sha256":  "5b9fa78515f87a2e2deb3e7ddf5f6d5729517de2ed43fb84126dd27784580120",
+    "native_process_id":  2496,
+    "status":  "fail",
+    "test_binary_hash":  "3c5041e8714d530720c5c1b11851e2ccf6461ea692e4fc35de2c463bb4b82bbc",
+    "dispatch_id":  "e58930adebefbe38dfb7dad4db13528f"
+}

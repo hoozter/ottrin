@@ -1,5 +1,8 @@
 //! Native single-entry operations shared by Windows file transactions.
+mod identity;
 mod recovery;
+pub(crate) use identity::{current_owner, current_token, owner_for_token, valid_sid};
+pub(crate) mod journal_access;
 pub(crate) use recovery::Volumes;
 use std::ffi::{OsStr, OsString, c_void};
 use std::fs::File;
@@ -258,7 +261,11 @@ pub(crate) fn open_directory_by_identity(
         )
     } == 0
     {
-        return Err(io::Error::last_os_error());
+        let error = io::Error::last_os_error();
+        return Err(io::Error::new(
+            error.kind(),
+            format!("native volume information: {error}"),
+        ));
     }
     let end = filesystem
         .iter()
@@ -292,7 +299,31 @@ pub(crate) fn open_directory_by_identity(
         )
     };
     if raw == windows_sys::Win32::Foundation::INVALID_HANDLE_VALUE {
-        return Err(io::Error::last_os_error());
+        let error = io::Error::last_os_error();
+        // NTFS reports a retired file reference as ERROR_INVALID_PARAMETER,
+        // including after its MFT slot has been reused with a new sequence.
+        // Admit that outcome only for our previously valid recorded ID and
+        // after the identical lookup succeeds for the live anchor on this
+        // same volume. Unsupported parameters/providers and access/sharing
+        // failures remain errors; a recreated pathname is never consulted.
+        let anchor = stable_identity_from_handle(volume_hint).map_err(io::Error::other)?;
+        if filesystem.eq_ignore_ascii_case("NTFS")
+            && error.raw_os_error()
+                == Some(windows_sys::Win32::Foundation::ERROR_INVALID_PARAMETER as i32)
+            && expected != anchor
+        {
+            let control = open_directory_by_identity(volume_hint, anchor, access)?;
+            if stable_identity_from_handle(&control).map_err(io::Error::other)? == anchor {
+                return Err(io::Error::new(
+                    io::ErrorKind::NotFound,
+                    "recorded NTFS directory reference is retired",
+                ));
+            }
+        }
+        return Err(io::Error::new(
+            error.kind(),
+            format!("native file-ID open: {error}"),
+        ));
     }
     let file = unsafe { File::from_raw_handle(raw.cast()) };
     if stable_identity_from_handle(&file).map_err(io::Error::other)? != expected {
@@ -540,6 +571,21 @@ pub(crate) fn record_names(
     }
 }
 
+#[derive(Debug)]
+struct DirectoryBudget;
+impl std::fmt::Display for DirectoryBudget {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("native directory exceeds entry budget")
+    }
+}
+impl std::error::Error for DirectoryBudget {}
+pub(crate) fn directory_is_empty(handle: &File) -> io::Result<bool> {
+    match directory_children_limited(handle, 0) {
+        Ok(_) => Ok(true),
+        Err(error) if error.get_ref().is_some_and(|e| e.is::<DirectoryBudget>()) => Ok(false),
+        Err(error) => Err(error),
+    }
+}
 pub(crate) fn directory_children(handle: &std::fs::File) -> io::Result<Vec<std::ffi::OsString>> {
     directory_children_limited(handle, usize::MAX)
 }
@@ -583,10 +629,7 @@ pub(crate) fn directory_children_limited(handle: &File, limit: usize) -> io::Res
             if name != "." && name != ".." {
                 valid_component(&name)?;
                 if names.len() >= limit {
-                    return Err(io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        "native directory exceeds entry budget",
-                    ));
+                    return Err(io::Error::new(io::ErrorKind::InvalidData, DirectoryBudget));
                 }
                 names.push(name);
             }

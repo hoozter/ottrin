@@ -190,11 +190,14 @@ impl Receipt {
         })
     }
 }
-fn read(parent: &File, id: [u8; 16]) -> Result<Option<Receipt>, PlatformError> {
+fn read_native_record(
+    parent: &File,
+    name: &OsStr,
+) -> Result<Option<(Identity, Vec<u8>)>, PlatformError> {
     let mut file = match unsafe {
         windows_fs::open_relative(
             parent,
-            &name(id),
+            name,
             windows_fs::RelativeOptions {
                 directory: Some(false),
                 create_new: false,
@@ -221,6 +224,13 @@ fn read(parent: &File, id: [u8; 16]) -> Result<Option<Receipt>, PlatformError> {
     if bytes.len() as u64 > MAX_BYTES {
         return Err(io("receipt exceeds size limit"));
     }
+    Ok(Some((identity, bytes)))
+}
+
+fn read(parent: &File, id: [u8; 16]) -> Result<Option<Receipt>, PlatformError> {
+    let Some((identity, bytes)) = read_native_record(parent, &name(id))? else {
+        return Ok(None);
+    };
     let receipt: Receipt = serde_json::from_slice(&bytes).map_err(io)?;
     if receipt.body.version != 2
         || receipt.body.root != move_recovery::stable_identity_from_handle(parent).map_err(io)?
@@ -318,40 +328,97 @@ pub(super) fn publish_prepared(root: &Path, prepared: Prepared) -> Result<(), Pl
     publish(root, prepared.binding.clone(), || Ok(prepared))
 }
 
+#[derive(Clone, Copy)]
+enum RecordKind {
+    Completion,
+    RetirementIntent,
+    RetirementComplete,
+}
+impl RecordKind {
+    fn suffix(self) -> &'static str {
+        match self {
+            Self::Completion => "move-done",
+            Self::RetirementIntent => "move-cleaning",
+            Self::RetirementComplete => "move-clean",
+        }
+    }
+    #[cfg(test)]
+    fn boundary(self, stage: usize, root: &Path) {
+        let boundaries = match self {
+            Self::Completion => [
+                WindowsMoveBoundary::CompletionPrepared,
+                WindowsMoveBoundary::CompletionPublished,
+                WindowsMoveBoundary::CompletionFlushed,
+            ],
+            Self::RetirementIntent => [
+                WindowsMoveBoundary::RetirementIntentPrepared,
+                WindowsMoveBoundary::RetirementIntentPublished,
+                WindowsMoveBoundary::RetirementIntentFlushed,
+            ],
+            Self::RetirementComplete => [
+                WindowsMoveBoundary::RetirementMarkerPrepared,
+                WindowsMoveBoundary::RetirementMarkerPublished,
+                WindowsMoveBoundary::RetirementMarkerFlushed,
+            ],
+        };
+        windows_move_boundary(boundaries[stage], root);
+    }
+}
+fn record_name(id: [u8; 16], kind: RecordKind) -> std::ffi::OsString {
+    format!("{}.{}", encode_transaction_id(id), kind.suffix()).into()
+}
 fn publish_prepared_at(
     root: &Path,
     parent: &File,
     prepared: Prepared,
 ) -> Result<(), PlatformError> {
+    let id = prepared.binding.id()?;
+    write_native_record(root, parent, id, RecordKind::Completion, |root, file| {
+        let body = Body {
+            version: 2,
+            root,
+            file,
+            binding: prepared.binding,
+            controls: prepared.controls,
+        };
+        let receipt = Receipt {
+            checksum: checksum(&body)?,
+            body,
+        };
+        receipt.validate_controls()?;
+        serde_json::to_vec(&receipt).map_err(io)
+    })
+}
+fn write_native_record(
+    root: &Path,
+    parent: &File,
+    id: [u8; 16],
+    kind: RecordKind,
+    build: impl FnOnce(Identity, Identity) -> Result<Vec<u8>, PlatformError>,
+) -> Result<(), PlatformError> {
     if move_recovery::stable_identity_of_entry(root).map_err(io)?
         != move_recovery::stable_identity_from_handle(parent).map_err(io)?
     {
-        return Err(io("completion registry namespace changed"));
+        return Err(io("record registry namespace changed"));
     }
-    let id = prepared.binding.id()?;
-    let mut random = [0_u8; 16];
+    let mut random = [0u8; 16];
     getrandom::fill(&mut random).map_err(io)?;
-    let temporary = format!(".preparing-{}.move-done", encode_transaction_id(random));
+    let temporary = format!(
+        ".preparing-{}.{}",
+        encode_transaction_id(random),
+        kind.suffix()
+    );
     let mut file =
         windows_fs::create_temporary_relative(parent, OsStr::new(&temporary)).map_err(io)?;
-    let body = Body {
-        version: 2,
-        root: move_recovery::stable_identity_from_handle(parent).map_err(io)?,
-        file: move_recovery::stable_identity_from_handle(&file).map_err(io)?,
-        binding: prepared.binding,
-        controls: prepared.controls,
-    };
-    let receipt = Receipt {
-        checksum: checksum(&body)?,
-        body,
-    };
-    receipt.validate_controls()?;
-    file.write_all(&serde_json::to_vec(&receipt).map_err(io)?)
-        .map_err(io)?;
+    file.write_all(&build(
+        move_recovery::stable_identity_from_handle(parent).map_err(io)?,
+        move_recovery::stable_identity_from_handle(&file).map_err(io)?,
+    )?)
+    .map_err(io)?;
     file.sync_all().map_err(io)?;
     #[cfg(test)]
-    windows_move_boundary(WindowsMoveBoundary::CompletionPrepared, root);
-    rename_windows_handle_no_replace(&file, parent, &name(id))?;
+    kind.boundary(0, root);
+    rename_windows_handle_no_replace(&file, parent, &record_name(id, kind))?;
     // Until this cancellation succeeds, even a process exit removes the file.
     // Full paired journals remain the fallback throughout that publication gap.
     let disposition = FILE_DISPOSITION_INFO_EX {
@@ -369,12 +436,12 @@ fn publish_prepared_at(
         return Err(io(std::io::Error::last_os_error()));
     }
     #[cfg(test)]
-    windows_move_boundary(WindowsMoveBoundary::CompletionPublished, root);
+    kind.boundary(1, root);
     file.sync_all()
         .and_then(|()| parent.sync_all())
         .map_err(io)?;
     #[cfg(test)]
-    windows_move_boundary(WindowsMoveBoundary::CompletionFlushed, root);
+    kind.boundary(2, root);
     Ok(())
 }
 
@@ -426,3 +493,5 @@ pub(super) fn cross(root: &Path, record: &WindowsCrossVolumeRecord) -> Result<()
 
 #[cfg(test)]
 mod tests;
+
+pub(super) mod retirement;

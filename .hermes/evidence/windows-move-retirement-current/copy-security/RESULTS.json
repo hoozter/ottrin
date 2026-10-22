@@ -1,0 +1,14 @@
+{
+    "exit":  0,
+    "native_started_utc":  "2026-10-22T04:03:46.3034512Z",
+    "native_finished_utc":  "2026-10-22T04:03:46.6529844Z",
+    "test_arguments":  "copy_transaction::windows::security:: --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "630c8a7a62ba115516f4f9bacb48ff2ece06bb9dba0349e203e2b57e76e928e7",
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_process_id":  5904,
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "d6fc41123849f1285607428f5e912cef6065144adfbc1801736ce16de13206a4",
+    "dispatch_id":  "ab58258640cf6d3f970faff099900765"
+}

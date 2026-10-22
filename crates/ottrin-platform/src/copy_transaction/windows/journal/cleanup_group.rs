@@ -46,7 +46,7 @@ impl Selection {
             }
         }
         let root = super::super::version(central)?;
-        let creator = security::current_owner()?;
+        let creator = windows_fs::current_owner()?;
         let security = security::PrivateSecurity::capture(central, &creator)?;
         let names =
             windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)

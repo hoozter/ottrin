@@ -1,0 +1,7 @@
+
+thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_handles_deleted_private_directory_without_adopting_recreated_names' (1904) panicked at crates/ottrin-platform/src/move_transaction/windows_completion/retirement/tests.rs:52:52:
+called `Result::unwrap()` on an `Err` value: Io("native recovery directory ID open failed: The parameter is incorrect. (os error 87)")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_recovers_after_process_exit' (2172) panicked at crates/ottrin-platform/src/move_transaction/windows_completion/retirement/tests.rs:426:69:
+called `Result::unwrap()` on an `Err` value: Io("native recovery directory ID open failed: The parameter is incorrect. (os error 87)")

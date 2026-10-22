@@ -40,7 +40,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Complete terminal-control lifecycle for containing-parent renames and unavailable volumes, then package and exercise Move Undo, recovery admission and session-history reconciliation through the actual UI. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish containing-parent rename recovery for retained forward histories and unfinished operations, then package and exercise Move Undo, recovery admission, record cleanup and session-history reconciliation through the actual UI. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -429,9 +429,9 @@ another serialized manifest. Captured completed recovery plans carry this proof,
 so acknowledging completion after the folders disappear still requires only the
 local registry. Copied replacement journals and changed bytes do not update the
 original ownership evidence. The current internal receipt format is version 2.
-This is the prerequisite for cleanup admission and worker revalidation; the
-retirement action is still pending. Old journals remain superseded evidence;
-this capture step deletes neither journals nor unknown private files. Native checks and exact
+This ownership evidence now feeds explicit cleanup admission and worker
+revalidation as described below. Capturing completion alone deletes neither
+journals nor unknown private files. Native checks and exact
 remaining acceptance limits are recorded in
 `.hermes/evidence/windows-move-completion-current/ACCEPTANCE.json`.
 
@@ -452,8 +452,47 @@ preparation and verification failures also exercise fixture teardown. This is
 native API acceptance, not rendered/package UI, physical USB removal, sudden
 power loss, FAT32 or ReFS acceptance. Source and exact evidence are recorded in
 `.hermes/evidence/windows-move-offline-current/ACCEPTANCE.json`. Packages remain
-unchanged. Safe reclamation of superseded controls remains the next lifecycle
-step.
+unchanged. The explicit cleanup action below builds on this completion proof.
+
+### Windows completed-Undo recovery-record cleanup
+
+Completed Activity entries now offer **Clean up records**. Read-only admission
+runs off the UI thread; the existing operation queue reserves the actual registry,
+private folders, containing parents and required drives before its worker starts.
+Startup history discovery remains local and does not probe former payload drives.
+The worker rechecks the captured completion, native IDs, journal bytes, streams,
+extended attributes, hard links and known private access policy before mutation.
+
+A durable `.move-cleaning` intent precedes temporary write exclusion on only the
+owned journals and private directories. Their known private policies are rederived
+rather than replaying arbitrary cached ACLs. Per-object handles keep child-file
+permissions unchanged. Native sharing and mapped-view checks protect existing
+writers; ordinary late stream creation is excluded while metadata is retired.
+Local journals are removed and their directories flushed before central journals.
+Only empty, ordinary, unextended folders still bearing their original private
+name under the original native parent may be removed. Renamed folders, unknown
+files and directory streams are preserved, with access restored and flushed.
+Changed/replaced/extended journals refuse cleanup and leave payloads intact.
+
+A compact immutable `.move-clean` marker acknowledges retirement while the
+`.move-done` receipt retains completed Undo history. Both events bind native file
+and registry IDs plus the original completion checksum. Fresh admission resumes
+an interrupted cleanup; already acknowledged cleanup stays local even when the
+old drive is absent. A damaged cleanup marker reports a separate cleanup error
+without invalidating completed Undo. NTFS stale-ID handling requires a positive
+same-volume native lookup control; generic access, sharing, provider or parameter
+failures are not treated as absence.
+
+The final ordinary-user native selection passes 176 checks: 134 combined Move
+checks, seven Copy registry checks, 15 shared security checks, seven fresh-process
+offline/failure stages and 13 UI-worker checks. The privileged audit-SACL test
+remains excluded. Linux UI regression passes 395 tests; strict platform/UI
+all-target Clippy passes on Linux and Windows. These are native API and headless
+worker checks, not rendered UI acceptance. Exact evidence and complete teardown
+are recorded in `.hermes/evidence/windows-move-retirement-current/ACCEPTANCE.json`. This checkpoint
+changes source, not installed packages. Rendered/package acceptance, retained
+forward and unfinished-operation parent renames, hard-power/resource tests,
+other filesystems and the remaining roadmap gates still apply.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

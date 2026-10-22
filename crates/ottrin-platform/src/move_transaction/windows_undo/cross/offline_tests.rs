@@ -191,6 +191,7 @@ fn snapshot(root: &Path) -> Vec<Entry> {
 
 #[derive(Serialize, Deserialize)]
 struct Fixture {
+    retired: bool,
     primary: WindowsStableIdentity,
     secondary: move_recovery::NativePath,
     secondary_identity: WindowsStableIdentity,
@@ -246,6 +247,14 @@ fn create(path: &Path, kind: u8, bytes: &[u8]) {
 #[test]
 #[ignore = "owned persistent fixture; run prepare/detach/verify/attach/cleanup through the native controller"]
 fn windows_native_move_completion_offline_prepare() {
+    prepare(false);
+}
+#[test]
+#[ignore = "owned persistent fixture; requires cleanup before detach and fresh verification"]
+fn windows_native_move_completion_offline_prepare_retired() {
+    prepare(true);
+}
+fn prepare(retired: bool) {
     let root = root();
     let mut primary_owner = OwnedDirectory::create(&root);
     let _recovery = RecoveryRoot::install(&root);
@@ -306,7 +315,25 @@ fn windows_native_move_completion_offline_prepare() {
             saved.push(saved_receipt);
         }
     }
+    if retired {
+        for receipt in &saved {
+            let id = receipt.owners()[0];
+            let plan = crate::WindowsMoveRecoveryPlan::capture_cleanup(id)
+                .unwrap()
+                .unwrap();
+            let report = plan.execute_cleanup().unwrap();
+            let expected = if matches!(receipt, Saved::Same(_)) {
+                1
+            } else {
+                2
+            };
+            assert_eq!(report.journals_removed, expected * 2);
+            assert_eq!(report.directories_kept, expected);
+            assert_eq!(report.directories_removed, 0);
+        }
+    }
     let fixture = Fixture {
+        retired,
         primary: move_recovery::stable_identity_of_entry(&root).unwrap(),
         secondary: move_recovery::NativePath::encode(&secondary),
         secondary_identity: move_recovery::stable_identity_of_entry(&secondary).unwrap(),
@@ -361,6 +388,14 @@ fn windows_native_move_completion_offline_verify() {
             let receipt = saved.receipt(bind_inverse);
             for id in saved.owners() {
                 let plan = crate::WindowsMoveRecoveryPlan::capture(id).unwrap();
+                assert_eq!(plan.cleanup_complete(), fixture.retired);
+                if fixture.retired {
+                    assert!(
+                        crate::WindowsMoveRecoveryPlan::capture_cleanup(id)
+                            .unwrap()
+                            .is_none()
+                    );
+                }
                 assert_eq!(plan.paths(), &[root.join("state")]);
                 assert_eq!(
                     plan.undo_status_for(&receipt),

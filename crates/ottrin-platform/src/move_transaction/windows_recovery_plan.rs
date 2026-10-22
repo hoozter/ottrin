@@ -33,6 +33,9 @@ pub struct WindowsMoveRecoveryPlan {
     transaction_id: [u8; 16],
     evidence: Vec<Evidence>,
     completion: Option<windows_completion::Prepared>,
+    cleanup: Option<Box<WindowsMoveCleanupPlan>>,
+    cleanup_complete: bool,
+    cleanup_error: Option<String>,
     paths: Vec<PathBuf>,
     undo_status: move_recovery::WindowsMoveUndoStatus,
 }
@@ -55,9 +58,16 @@ impl WindowsMoveRecoveryPlan {
             transaction_id,
             evidence: Vec::new(),
             completion: None,
+            cleanup: None,
+            cleanup_complete: false,
+            cleanup_error: None,
             undo_status: move_recovery::WindowsMoveUndoStatus::NotStarted,
         };
         if let Some(done) = windows_completion::find(&plan.root, transaction_id)? {
+            match windows_completion::retirement::complete(&plan.root, &done) {
+                Ok(complete) => plan.cleanup_complete = complete,
+                Err(error) => plan.cleanup_error = Some(error.to_string()),
+            }
             plan.evidence.push(Evidence::Completion(Box::new(done)));
             plan.undo_status = move_recovery::WindowsMoveUndoStatus::Complete;
             return Ok(plan);
@@ -92,6 +102,41 @@ impl WindowsMoveRecoveryPlan {
         Ok(plan)
     }
 
+    /// Explicit cleanup admission; it may read old drives and must run off the UI thread.
+    pub fn capture_cleanup(transaction_id: [u8; 16]) -> Result<Option<Self>, PlatformError> {
+        let Some(cleanup) = WindowsMoveCleanupPlan::capture(transaction_id)? else {
+            return Ok(None);
+        };
+        let mut plan = Self::capture(transaction_id)?;
+        if !plan
+            .evidence
+            .iter()
+            .any(|e| matches!(e,Evidence::Completion(done) if cleanup.matches_completion(done)))
+        {
+            return Err(PlatformError::Io(
+                "Cleanup completion evidence changed".into(),
+            ));
+        }
+        plan.paths = cleanup.paths().to_vec();
+        plan.cleanup = Some(Box::new(cleanup));
+        Ok(Some(plan))
+    }
+    pub fn cleanup_requested(&self) -> bool {
+        self.cleanup.is_some()
+    }
+    pub fn cleanup_complete(&self) -> bool {
+        self.cleanup_complete
+    }
+    pub fn cleanup_error(&self) -> Option<&str> {
+        self.cleanup_error.as_deref()
+    }
+    /// Worker execution shares the normal root lock and all captured drive/path admission.
+    pub fn execute_cleanup(&self) -> Result<WindowsMoveCleanupReport, PlatformError> {
+        self.cleanup
+            .as_ref()
+            .ok_or_else(|| PlatformError::Io("No cleanup was admitted".into()))?
+            .execute()
+    }
     pub fn transaction_id(&self) -> [u8; 16] {
         self.transaction_id
     }
@@ -326,6 +371,9 @@ impl WindowsMoveRecoveryPlan {
     /// Revalidates under the existing shared recovery lock, then invokes the
     /// ordinary engine. A stale plan never updates itself from new evidence.
     pub fn execute(&self) -> Result<(), PlatformError> {
+        if self.cleanup_requested() {
+            return self.execute_cleanup().map(|_| ());
+        }
         let _lock = acquire_windows_recovery_lock()?;
         if windows_recovery_root()? != self.root
             || move_recovery::stable_identity_of_entry(&self.root)

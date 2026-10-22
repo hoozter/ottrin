@@ -203,7 +203,7 @@ impl AnchoredRoot {
             return Err(io("Copy root and anchor names must differ"));
         }
         let parent_location = windows_fs::location(&parent).map_err(io)?;
-        let creator = security::current_owner()?;
+        let creator = windows_fs::current_owner()?;
         let marker = match child(
             &parent,
             anchor_name,
@@ -382,7 +382,7 @@ impl AnchoredRoot {
             || stable_identity_from_handle(&self.parent).map_err(io)? != self.record.parent
             || stable_identity_from_handle(&self.root).map_err(io)? != self.record.root
             || stable_identity_from_handle(&self.marker).map_err(io)? != self.record.marker
-            || security::current_owner()? != self.record.creator
+            || windows_fs::current_owner()? != self.record.creator
         {
             return Err(io("Copy anchored root binding changed"));
         }

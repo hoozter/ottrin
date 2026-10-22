@@ -399,18 +399,52 @@ no-replace rename, and flushes the registry before success. Its native registry
 and file identities plus checksum reject copied or damaged state. Activity and
 recovery use this receipt without reopening former payload folders; retained
 cross-volume controller and inverse IDs resolve to the same completion. Old
-journals are superseded after this handoff and remain pending safe reclamation.
+journals are superseded after this handoff; their explicit retirement uses the
+same receipt ownership proof.
 Receipt format 2 binds their original native file identities, byte counts and
 SHA-256 hashes of canonical default-stream data, and the private directory/parent
 identities. Version 1 was an internal pre-release format and is not accepted by
 the current decoder. The new fields do not authorize deleting unknown streams or
-other files; reclamation still needs native queue-time admission and worker
+other files; reclamation requires native queue-time admission and worker
 revalidation. Completed plan capture preserves the ownership snapshot so receipt
 publication never reopens former private folders after admission.
 This does not provide volume-independent recovery for an unfinished operation.
 
+**Clean up records** explicitly captures a `WindowsMoveCleanupPlan` off-thread
+and carries it through the existing queue's complete path/drive admission. The
+worker holds native namespace/metadata leases, validates original journal IDs,
+streamed hashes, EAs, link counts and the two known private access states, then
+persists an immutable `<transaction>.move-cleaning` intent. Known metadata ACLs
+exclude ordinary late writes; `MAXIMUM_ALLOWED` per-object capabilities prevent
+child propagation. No payload ACL is modified. Native non-POSIX deletion retains
+mapped/open journal protection. Local records and eligible empty directories are
+retired before central records, with namespace flushes. Unknown/renamed folders
+and directory streams remain, and preserved directory access is restored and
+flushed before `<transaction>.move-clean` is published. Immutable intent,
+completion and cleanup markers stay in the local registry; arbitrary journal
+replacements or marker damage never acquire cleanup authority.
+
+A fresh process admits remaining original controls against the same intent after
+interruption. A valid cleanup marker needs no former-volume access. A corrupt
+cleanup marker reports only a cleanup-status error; original completed Undo is
+still recognized. On NTFS, a stale native file reference returns invalid-parameter
+in the owned native tests; classification as retired requires the identical
+lookup to succeed for the live same-volume anchor. Other errors refuse cleanup.
+Native ID lookup never adopts recreated pathnames. This is not a physical
+power-loss or arbitrary-filesystem guarantee.
+
+The canonical native runner adds `--move-retirement`, `--copy-security`, and
+`--ui-move-suite` (the last requires `--crate ottrin_ui` and the owned second
+volume). `.hermes/evidence/windows-move-retirement-current/run-cases.py` preserves failed runs and
+resumes the same observer on timeout. Reused binaries can be pinned using
+`--reuse-receipt CASE/TEST_BINARY.json`, which checks the recorded guest hash
+without rereading a compiler output that another build might replace.
+`run-offline.py --prefix NAME --binary-receipt CASE/TEST_BINARY.json` exercises both original
+completion and cleaned records across detach/reconnect, checking actual volume
+attachment and cleaning identity-owned persistent fixtures in its failure path.
+
 The retained native QA harness has `--move-completion-offline` stages
-`failure_teardown`, `prepare`, `verify`, and `cleanup`. Each uses a fresh ordinary
+`failure_teardown`, `prepare`, `prepare_retired`, `verify`, and `cleanup`. Each uses a fresh ordinary
 actor process with the same exported platform test binary. The fixture deliberately
 persists outside actor TEMP between stages. Observe every actor to terminal state;
 use `scripts/windows-cross-move-qa/volume.ps1 -Action detach` after preparation,

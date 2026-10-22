@@ -1729,6 +1729,11 @@ fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
 }
 
 type RetainedMoveSnapshot = (Vec<RetainedMoveActivity>, Option<String>);
+#[cfg(target_os = "windows")]
+type MoveCleanupPreparation = (
+    [u8; 16],
+    RetainedActivityLoader<Result<Option<ottrin_platform::WindowsMoveRecoveryPlan>, String>>,
+);
 
 /// One background scan at a time. A refresh during a scan invalidates its result
 /// and requests one replacement scan, regardless of how many refreshes arrive.
@@ -3576,6 +3581,8 @@ pub struct OttrinApp {
     retained_move_activity_loader: RetainedActivityLoader<RetainedMoveSnapshot>,
     retained_move_activity: Vec<RetainedMoveActivity>,
     retained_move_activity_error: Option<String>,
+    #[cfg(target_os = "windows")]
+    move_cleanup_preparation: Option<MoveCleanupPreparation>,
     retained_copy_activity_loader: RetainedActivityLoader<RetainedCopySnapshot>,
     retained_copy_activity_error: Option<String>,
     pending_retained_copy_activity: Option<Vec<RestoredCopyActivity>>,
@@ -4524,6 +4531,8 @@ impl OttrinApp {
             retained_move_activity_loader,
             retained_move_activity: Vec::new(),
             retained_move_activity_error,
+            #[cfg(target_os = "windows")]
+            move_cleanup_preparation: None,
             retained_copy_activity_loader,
             retained_copy_activity_error,
             pending_retained_copy_activity: None,
@@ -6409,6 +6418,67 @@ impl OttrinApp {
             self.reconcile_move_undo_history(&activity);
             self.retained_move_activity = activity;
             self.retained_move_activity_error = error;
+        }
+        #[cfg(target_os = "windows")]
+        self.poll_move_cleanup_preparation();
+    }
+
+    #[cfg(target_os = "windows")]
+    fn prepare_move_cleanup(&mut self, id: [u8; 16]) {
+        if self.move_cleanup_preparation.is_some() {
+            return;
+        }
+        if !self.retained_move_activity.iter().any(|entry| {
+            entry.transaction_id == id && entry.recovery == RetainedMoveRecovery::Undone
+        }) {
+            return;
+        }
+        let mut loader = RetainedActivityLoader::spawn_with(move || {
+            ottrin_platform::WindowsMoveRecoveryPlan::capture_cleanup(id).map_err(|e| e.to_string())
+        });
+        if let Err(error) = loader.request() {
+            self.set_status_message(error, false, 6);
+            return;
+        }
+        self.move_cleanup_preparation = Some((id, loader));
+    }
+    #[cfg(target_os = "windows")]
+    fn poll_move_cleanup_preparation(&mut self) {
+        let Some(result) = self
+            .move_cleanup_preparation
+            .as_mut()
+            .and_then(|(_, loader)| loader.poll())
+        else {
+            return;
+        };
+        let (id, _) = self.move_cleanup_preparation.take().unwrap();
+        match result.map_err(str::to_owned).and_then(|value| value) {
+            Ok(Some(plan)) => {
+                let Some(entry) = self
+                    .retained_move_activity
+                    .iter_mut()
+                    .find(|e| e.transaction_id == id && e.recovery == RetainedMoveRecovery::Undone)
+                else {
+                    self.set_status_message(
+                        "Cleanup was not started. Refresh Activity and try again.",
+                        false,
+                        6,
+                    );
+                    return;
+                };
+                entry.plan = Some(plan);
+                self.run_file_op(
+                    FileCommand::RecoverRetainedMove { transaction_id: id },
+                    None,
+                );
+            }
+            Ok(None) => {
+                self.set_status_message("Recovery records are already cleaned.", true, 4);
+                self.refresh_retained_move_activity();
+            }
+            Err(error) => {
+                self.set_status_message(format!("Cleanup was not started: {error}"), false, 6)
+            }
         }
     }
 
@@ -10752,6 +10822,14 @@ impl OttrinApp {
             .find(|record| record.id == op_id)
         {
             record.operation_paths = operation_paths;
+            #[cfg(target_os = "windows")]
+            if recovery_plan
+                .as_ref()
+                .is_some_and(|p| p.cleanup_requested())
+            {
+                record.title = "Clean up recovery records".into();
+                record.detail = "Remove owned journals and eligible empty recovery folders".into();
+            }
         }
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
@@ -10939,16 +11017,27 @@ impl OttrinApp {
                             }
                         }
                         #[cfg(target_os = "windows")]
-                        FileCommand::RecoverRetainedMove { .. } => (
-                            classify_file_op_result(
-                                recovery_plan
-                                    .as_ref()
-                                    .expect("admitted recovery plan")
-                                    .execute(),
-                            ),
-                            Vec::new(),
-                            None,
-                        ),
+                        FileCommand::RecoverRetainedMove { .. } => {
+                            let plan = recovery_plan.as_ref().expect("admitted recovery plan");
+                            let outcome = if plan.cleanup_requested() {
+                                match plan.execute_cleanup() {
+                                    Ok(report) if report.directories_kept > 0 => {
+                                        FileOpOutcome::CompletedWithWarning {
+                                            message: format!(
+                                                "Recovery journals cleaned. Kept {} private folder(s); other files and streams were preserved.",
+                                                report.directories_kept
+                                            ),
+                                            completed_sources: 0,
+                                        }
+                                    }
+                                    Ok(_) => FileOpOutcome::Completed,
+                                    Err(error) => classify_file_op_result(Err(error)),
+                                }
+                            } else {
+                                classify_file_op_result(plan.execute())
+                            };
+                            (outcome, Vec::new(), None)
+                        }
                         _ => (
                             classify_file_op_result(platform.execute_command(&cmd).map(|_| ())),
                             Vec::new(),
@@ -14916,6 +15005,8 @@ impl OttrinApp {
 
         if !self.retained_move_activity.is_empty() {
             let mut recovery_cmd = None;
+            #[cfg(target_os = "windows")]
+            let mut cleanup_request = None;
             let mut recovery_status_message = None;
             for retained in &self.retained_move_activity {
                 Frame::new()
@@ -14967,6 +15058,20 @@ impl OttrinApp {
                                             Some(format!("Queued recovery for {transaction_id}"));
                                     }
                                 } else {
+                                    #[cfg(target_os = "windows")]
+                                    if retained.recovery==RetainedMoveRecovery::Undone && let Some(plan)=&retained.plan {
+                                        if plan.cleanup_complete() {
+                                            ui.label(RichText::new("Recovery records cleaned").color(c.text_muted));
+                                        } else if let Some(error)=plan.cleanup_error() {
+                                            ui.label(RichText::new("Cleanup status unavailable").color(c.error)).on_hover_text(error);
+                                        } else {
+                                            let checking=self.move_cleanup_preparation.as_ref().is_some_and(|(id,_)|*id==retained.transaction_id);
+                                            if ui.add_enabled(self.move_cleanup_preparation.is_none(),egui::Button::new(if checking {"Checking cleanup…"} else {"Clean up records"}).themed(&c))
+                                                .on_hover_text("Removes old journal records and eligible empty recovery folders. Your files and Undo history are kept. Reconnect old drives before cleanup.").clicked() {
+                                                cleanup_request=Some(retained.transaction_id);
+                                            }
+                                        }
+                                    }
                                     ui.label(
                                         RichText::new(if retained.recovery == RetainedMoveRecovery::Undone { "Undo complete" } else { "Not in recoverable state" })
                                             .color(c.text_muted)
@@ -14977,6 +15082,10 @@ impl OttrinApp {
                         });
                     });
                 ui.add_space(6.0);
+            }
+            #[cfg(target_os = "windows")]
+            if let Some(id) = cleanup_request {
+                self.prepare_move_cleanup(id);
             }
             if let Some(cmd) = recovery_cmd {
                 if let Some(message) = recovery_status_message {
@@ -30941,6 +31050,135 @@ mod tests {
             std::fs::read(destination.join("entry.txt")).unwrap(),
             b"displaced destination"
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires the owned secondary volume and isolated native actor profile"]
+    fn windows_move_cleanup_requires_captured_admission_and_uses_worker() {
+        let profile = PathBuf::from(std::env::var_os("LOCALAPPDATA").unwrap());
+        assert!(
+            profile.starts_with(PathBuf::from(std::env::var_os("TEMP").unwrap())),
+            "isolated actor profile required"
+        );
+        for cross in [false, true] {
+            let primary = tempfile::tempdir().unwrap();
+            let secondary = cross.then(|| {
+                tempfile::tempdir_in(PathBuf::from(
+                    std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap(),
+                ))
+                .unwrap()
+            });
+            let source = primary.path().join("source/entry");
+            let destination = secondary.as_ref().map_or_else(
+                || primary.path().join("destination"),
+                |s| s.path().join("destination"),
+            );
+            std::fs::create_dir(source.parent().unwrap()).unwrap();
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::write(&source, b"selected-source").unwrap();
+            std::fs::write(destination.join("entry"), b"displaced-target").unwrap();
+            let (_, receipt) = DefaultPlatform
+                .execute_move_with_undo_receipt(&source, &destination, ConflictAction::Overwrite)
+                .unwrap();
+            let receipt = receipt.unwrap();
+            DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+            let mut app = OttrinApp::default();
+            let (activity, error) = load_retained_move_activity();
+            assert!(error.is_none(), "{error:?}");
+            let row = activity
+                .iter()
+                .find(|row| {
+                    row.plan
+                        .as_ref()
+                        .and_then(|plan| plan.undo_status_for(&receipt))
+                        == Some(ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete)
+                })
+                .unwrap();
+            let id = row.transaction_id;
+            assert!(!row.plan.as_ref().unwrap().cleanup_complete());
+            let preparation = ottrin_platform::WindowsMoveRecoveryPlan::capture_cleanup(id)
+                .unwrap()
+                .unwrap();
+            let expected = preparation.paths().to_vec();
+            let unknown = cross.then(|| {
+                let private = expected
+                    .iter()
+                    .find(|p| {
+                        p.file_name()
+                            .is_some_and(|name| name.to_string_lossy().starts_with(".ottrin-move-"))
+                    })
+                    .unwrap();
+                let path = private.join("unknown-user-file");
+                std::fs::write(&path, b"keep-this").unwrap();
+                path
+            });
+            app.retained_move_activity = activity;
+            app.prepare_move_cleanup(id);
+            assert!(app.move_cleanup_preparation.is_some());
+            assert!(app.operation_history.is_empty());
+            let deadline = Instant::now() + Duration::from_secs(10);
+            while app.move_cleanup_preparation.is_some() {
+                app.poll_move_cleanup_preparation();
+                assert!(Instant::now() < deadline);
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            let record = app.operation_history.front().expect("queued cleanup");
+            assert_eq!(record.title, "Clean up recovery records");
+            assert_eq!(
+                record.operation_paths,
+                expected
+                    .iter()
+                    .cloned()
+                    .map(OperationPath::write)
+                    .collect::<Vec<_>>()
+            );
+            let bindings = capture_required_storage_bindings(
+                expected.iter().map(|p| (p.as_path(), true)),
+                &app.known_storage_locations,
+            )
+            .unwrap();
+            assert!(!bindings.is_empty());
+            if cross {
+                assert!(bindings.len() >= 2);
+            }
+            assert!(app.activity_paths_conflict(
+                u64::MAX,
+                &[(destination.as_path(), destination.as_path())]
+            ));
+            let result = app.op_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+            assert!(result.error.is_none(), "{:?}", result.error);
+            assert_eq!(result.warning.is_some(), cross);
+            app.op_tx.send(result).unwrap();
+            app.poll_op_results();
+            assert_eq!(
+                app.operation_history.front().unwrap().status,
+                OperationStatus::Completed
+            );
+            assert!(!app.activity_paths_conflict(
+                u64::MAX,
+                &[(destination.as_path(), destination.as_path())]
+            ));
+            assert_eq!(std::fs::read(&source).unwrap(), b"selected-source");
+            assert_eq!(
+                std::fs::read(destination.join("entry")).unwrap(),
+                b"displaced-target"
+            );
+            if let Some(unknown) = unknown {
+                assert_eq!(std::fs::read(unknown).unwrap(), b"keep-this");
+            }
+            let current = ottrin_platform::WindowsMoveRecoveryPlan::capture(id).unwrap();
+            assert!(current.cleanup_complete());
+            assert_eq!(
+                current.undo_status_for(&receipt),
+                Some(ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete)
+            );
+            assert!(
+                ottrin_platform::WindowsMoveRecoveryPlan::capture_cleanup(id)
+                    .unwrap()
+                    .is_none()
+            );
+        }
     }
 
     #[cfg(target_os = "windows")]

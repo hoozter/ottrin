@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_ui",
+  "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1 tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker tests::windows_move_cleanup_requires_captured_admission_and_uses_worker tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --include-ignored",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-6b36f1213ec139e1.exe",
+  "compiler_sha256": "13876b0950737fefdc1a0c097bdb4e9f7369116308e3a6d038b84dcd7be3b878",
+  "transferred_sha256": "828d81569c2f7c4d2c189b30c3ee80fee18492016577a7dec9374dbb3c1851d8",
+  "retained_sections": {
+    ".text": "11ff1ba6c00e8f13b0eb7122a281d3360ed664f73d70f21758d2ed1105ef3eff",
+    ".data": "26ddcbaceb48780fddf2ad2de41276c127c57251d17dccc60370bfe6dc52bd09",
+    ".rdata": "f9b27d1952bb37bc81263568be4dae7f51ec4637128a725b307aef5d0e6b4b1a",
+    ".pdata": "cf80fcb4c945e01fc6c84195d198f5bbb52c7540e47e144ae485f552cb7f1f83",
+    ".xdata": "8c44c7c0e8659a9aa67940ba91c705db2c67112412b970ba1de17dc3172ca3a8",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "8382e78af0badfbd21c122a90204af357aee51f8bc0c943176413dcb33a097ba",
+    ".CRT": "1b16a74b4e20e3e3238c18b9e49279a9acd853b152bc2cd578b217bbfe0cd88f",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "42d254506dd49107a7179ea54a676e63770b44f2ea88e5592640c18646d97a04"
+  }
+}

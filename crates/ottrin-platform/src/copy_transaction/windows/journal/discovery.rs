@@ -452,7 +452,7 @@ impl RegisteredJournal {
         if header.transaction != id
             || header.central != stable_identity_from_handle(central).map_err(io)?
             || header.central_file != actual
-            || header.creator != security::current_owner()?
+            || header.creator != windows_fs::current_owner()?
         {
             return Err(io(
                 "Copy central journal identity or creator does not match",
