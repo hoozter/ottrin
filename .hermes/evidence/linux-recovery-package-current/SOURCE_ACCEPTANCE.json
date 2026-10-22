@@ -1,0 +1,29 @@
+{
+  "status": "source checks pass; initial package has a required visible refresh failure",
+  "source_paths": {
+    "crates/ottrin-ui/src/lib.rs": "aff239d861cbd7df6a1055759c9f24df7296f9149a2fdf3b93467e3c976d7ad6",
+    "docs/ROADMAP.md": "6461bceb3cb683022db37171e86ac94886fef69916db42179eab37427ff43064",
+    ".hermes/evidence/copy-activity-current/gui-driver.py": "8a63f83c6b4f2798b9b695f5e2ae15501de62745150cb81d8207cc079421d4ca"
+  },
+  "ui_tests": {
+    "passed": 398,
+    "ignored": 1,
+    "log": "ui-tests.log"
+  },
+  "strict_clippy": [
+    "clippy-linux.log",
+    "clippy-windows.log"
+  ],
+  "initial_package": {
+    "sha256": "41c175ccba8c9db3d3c1fab06f4783b85d58f6a8e66cd1b3ab8f7bbb43457dfc",
+    "source": "3a5bc095d78520bf14b74a07b3e83235e9620ec9",
+    "fixture": "Paired production journal APIs create a staged non-overwrite Move on one filesystem; not real-device or EXDEV acceptance",
+    "stale_journal_refusal": "passed with both original claimed/staged bytes preserved",
+    "recovery_payload": "published and owned recovery state removed",
+    "required_failure": "destination List view still said empty after successful recovery",
+    "evidence": "dark100-initial/recovery-complete.png",
+    "teardown": "Owned app group, daemon pidfd, Xvfb and shared disposable app state removed"
+  },
+  "correction": "Refresh visible admitted recovery directories on both success and failure before queue claims clear; add explicit Activity Refresh; six mode/outcome combinations covered by regression",
+  "delivery": "No current packages replaced; corrected package and rendered checks pending"
+}

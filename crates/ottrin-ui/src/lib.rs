@@ -6960,6 +6960,20 @@ impl OttrinApp {
             if should_refresh_move_activity {
                 self.refresh_retained_move_activity();
             }
+            if matches!(&completed_cmd, FileCommand::RecoverRetainedMove { .. }) {
+                // Recovery carries an ID rather than command path arguments.
+                // Use its admitted directories before finish clears the queue
+                // claims, including failures that may have repaired a phase.
+                let directories = self
+                    .operation_history
+                    .iter()
+                    .find(|record| record.id == res.op_id)
+                    .map(|record| record.operation_paths.clone())
+                    .unwrap_or_default();
+                for directory in directories {
+                    self.refresh_rename_parent(&directory.path, None, &directory.path);
+                }
+            }
             if let Some(err) = res.error {
                 self.finish_operation_record(res.op_id, OperationStatus::Failed, Some(err.clone()));
                 self.command_frame.error = Some(err);
@@ -15109,6 +15123,13 @@ impl OttrinApp {
         let c = self.colors;
         smart_panel_header(ui, &c, MI_HISTORY, "Activity");
         ui.horizontal_wrapped(|ui| {
+            if ui.add_enabled(
+                !self.retained_move_activity_loader.pending && !self.retained_copy_activity_loader.pending && !self.copy_cleanup.running(),
+                egui::Button::new("Refresh").themed(&c),
+            ).on_hover_text("Recheck retained recovery records and connected drives.").clicked() {
+                self.refresh_retained_move_activity();
+                self.refresh_retained_copy_activity();
+            }
             let queued = self
                 .operation_history
                 .iter()
@@ -29993,6 +30014,104 @@ mod tests {
             assert_eq!(clip.sources, vec![after.clone()]);
             assert_eq!(std::fs::read_to_string(after).unwrap(), "clipboard fixture");
             assert!(!before.exists());
+        }
+    }
+
+    #[test]
+    fn retained_move_results_refresh_admitted_directories_in_every_view_mode() {
+        for mode in [ViewMode::List, ViewMode::Grid, ViewMode::Miller] {
+            for failed in [false, true] {
+                let root = tempfile::tempdir().unwrap();
+                let child = root.path().join("child");
+                let publication = root.path().join("recovered.txt");
+                std::fs::create_dir(&child).unwrap();
+                let mut app = OttrinApp::default();
+                let id = app.state.active_tab().id;
+                app.state.active_tab_mut().current_dir = if mode == ViewMode::Miller {
+                    child.clone()
+                } else {
+                    root.path().to_path_buf()
+                };
+                app.state.active_tab_mut().view_mode = mode;
+                if mode == ViewMode::Miller {
+                    assert!(
+                        app.build_miller_model(id)
+                            .0
+                            .iter()
+                            .find(|column| column.dir == root.path())
+                            .is_some_and(|column| !column
+                                .entries
+                                .iter()
+                                .any(|entry| entry.path == publication))
+                    );
+                } else {
+                    app.request_listing(ListingKey::TabMain(id), root.path().to_path_buf());
+                    let deadline = Instant::now() + Duration::from_secs(5);
+                    while app.tab_ui[&id].main.loading {
+                        assert!(Instant::now() < deadline);
+                        app.poll_listing_results();
+                        std::thread::sleep(Duration::from_millis(5));
+                    }
+                }
+                let before = app.tab_ui[&id].main.request_id;
+                let command = FileCommand::RecoverRetainedMove {
+                    transaction_id: [0x95; 16],
+                };
+                let operation = app.queue_operation_record(command.clone());
+                app.operation_history
+                    .iter_mut()
+                    .find(|record| record.id == operation)
+                    .unwrap()
+                    .operation_paths = vec![OperationPath::write(root.path().to_path_buf())];
+                std::fs::write(&publication, b"recovered payload").unwrap();
+                app.op_tx
+                    .send(OpResult {
+                        op_id: operation,
+                        tab_id: None,
+                        cmd: command,
+                        delete_nav: Vec::new(),
+                        error: failed.then(|| "retained cleanup needs another attempt".into()),
+                        warning: None,
+                        retry: None,
+                        clipboard_generation: None,
+                        completed_sources: None,
+                        completed_source_paths: Vec::new(),
+                        move_dispositions: None,
+                        path_move_receipt: None,
+                        path_move_bindings: None,
+                    })
+                    .unwrap();
+                app.poll_op_results();
+                if mode == ViewMode::Miller {
+                    assert!(!app.tab_ui[&id].miller_cache.contains_key(root.path()));
+                    assert!(
+                        app.build_miller_model(id)
+                            .0
+                            .iter()
+                            .find(|column| column.dir == root.path())
+                            .is_some_and(|column| column
+                                .entries
+                                .iter()
+                                .any(|entry| entry.path == publication))
+                    );
+                    assert_eq!(app.state.active_tab().current_dir, child);
+                } else {
+                    assert!(app.tab_ui[&id].main.request_id > before);
+                    let deadline = Instant::now() + Duration::from_secs(5);
+                    while app.tab_ui[&id].main.loading {
+                        assert!(Instant::now() < deadline);
+                        app.poll_listing_results();
+                        std::thread::sleep(Duration::from_millis(5));
+                    }
+                    assert!(
+                        app.tab_ui[&id]
+                            .main
+                            .entries
+                            .iter()
+                            .any(|entry| entry.path == publication)
+                    );
+                }
+            }
         }
     }
 

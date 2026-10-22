@@ -579,6 +579,16 @@ of missing state, queue paths, bound recovery worker completion and missing-plan
 refusal. Strict platform/UI Clippy passes for Linux and Windows. Packages remain
 at their preceding recorded source revisions.
 
+Recovery results now invalidate the admitted directories in all visible file
+views, including when a failed attempt may have repaired durable state. This
+uses the captured queue footprint before completion releases it; a transaction
+ID alone contains no refresh paths. List/Grid listings reload and Miller caches
+invalidate without navigating the user away. Activity also exposes Refresh for
+rechecking retained records and connected drives. The added result regression
+covers successful and failed recovery in all three views; all 398 UI tests pass
+with the existing one namespace exclusion. The first rebuilt `3a5bc095`
+AppImage demonstrated the stale-listing defect and is not accepted for delivery.
+
 ## Windows Copy: end an incomplete attempt without discarding files
 
 Activity now offers “End copy attempt…” only after opaque read-only admission of

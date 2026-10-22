@@ -1,5 +1,5 @@
 import os,sys,subprocess,pathlib,time,json,signal,socket,struct,select,argparse,hashlib,importlib.util
-args=argparse.ArgumentParser();args.add_argument("--artifact",type=pathlib.Path,required=True);args.add_argument("--theme",default="Dark");args.add_argument("--scale",default="1");args.add_argument("--label",default="dark100");args.add_argument("--fixture-bin",type=pathlib.Path);args.add_argument("--flow",choices=["cleanup","ordinary"],default="cleanup");args.add_argument("--evidence-dir",type=pathlib.Path);args=args.parse_args();args.artifact=args.artifact.resolve(strict=True)
+args=argparse.ArgumentParser();args.add_argument("--artifact",type=pathlib.Path,required=True);args.add_argument("--theme",default="Dark");args.add_argument("--scale",default="1");args.add_argument("--label",default="dark100");args.add_argument("--fixture-bin",type=pathlib.Path);args.add_argument("--fixture-seeder",type=pathlib.Path);args.add_argument("--flow",choices=["cleanup","ordinary"],default="cleanup");args.add_argument("--evidence-dir",type=pathlib.Path);args=args.parse_args();args.artifact=args.artifact.resolve(strict=True)
 root=pathlib.Path.cwd();out=(args.evidence_dir or root/'.hermes/evidence/copy-activity-current')/args.label;out.mkdir(parents=True,exist_ok=True)
 spec=importlib.util.spec_from_file_location('ottrin_test_workspace',root/'scripts/test-workspace.py');isolation=importlib.util.module_from_spec(spec);spec.loader.exec_module(isolation)
 state=isolation.isolated_environment(directory=root/'.hermes/qa',prefix='ottrin-ui-');p,env=state.__enter__();app=xvfb=None;peerfd=None;win=None;source_files={}
@@ -38,6 +38,10 @@ try:
   for relative,value in fixtures.items():(p/relative).write_text(value)
   source_files={relative:hashlib.sha256((p/relative).read_bytes()).hexdigest() for relative in fixtures}
   result['source_files_before']=source_files
+
+ if args.fixture_seeder:
+  assert args.flow=='ordinary','Native seeding belongs to the ordinary workflow'
+  subprocess.run([str(args.fixture_seeder.resolve(strict=True)),str(p)],env=env,check=True)
 
  subprocess.run([str(args.artifact),'--appimage-extract'],cwd=p,stdout=subprocess.DEVNULL,check=True)
  result['source_note']=(p/'squashfs-root/usr/share/doc/ottrin/SOURCE_REVISION.txt').read_text();launch=p/'squashfs-root/AppRun';alog=(out/'app.log').open('w');app=subprocess.Popen(['dbus-run-session','--',str(launch),str(p/'destination')],env=env,stdout=alog,stderr=alog,start_new_session=True)

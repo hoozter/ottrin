@@ -1,0 +1,5 @@
+{
+  "change": "append one newline to valid central JSON after Activity captured its plan",
+  "before_sha256": "ac07e9a36d0266305f20e0e9d25dc4be7a667f024aa90d084890858ac1b5ba23",
+  "after_sha256": "0d64f652ed1a99065760cc0be78776a2e41e63622e9f07e899dee6bdfea2e8db"
+}
