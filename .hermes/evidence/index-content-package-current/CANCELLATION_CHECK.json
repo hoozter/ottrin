@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "scope": "Terminated owned QA controller during active quiet sample; its daemon exited and temporary profile was removed; receipt preserved cancellation observations",
+  "controller_exit": 143,
+  "receipt": "CANCELLATION.json"
+}

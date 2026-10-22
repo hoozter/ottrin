@@ -1,0 +1,82 @@
+{
+  "status": "pass within exact packaged private plain-text content and read-only live observation scopes",
+  "base_revision": "1ba6c3b96cd11b6e24e9481b100fd9d3ca59cd94",
+  "runtime_changed": false,
+  "changes": "Extend shared packaged-index QA with content bodies, query comparisons, same-size/mtime-restored edits and unconditional failure/cancellation receipt export; documentation and evidence only",
+  "source_binding": "SOURCE_SHA256.json and per-run driver_sha256",
+  "artifact": {
+    "path": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+    "source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+    "sha256": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6"
+  },
+  "corpus": {
+    "files": 10000,
+    "directories": 100,
+    "bodies": "Small plain text, explicit TextDocuments body policy for private corpus; no personal files or external provider extraction"
+  },
+  "checks": {
+    "full_persisted_body_comparison": "All 10000 cached body rows state=complete and exact filesystem text after initial scan, live burst and offline restart",
+    "content_queries": "Five body-only token groups; exact total and first 500 returned paths including no-hit groups",
+    "metadata_queries": "Complete metadata row sizes and filename query totals/first page",
+    "live_burst": {
+      "renamed": 500,
+      "deleted": 500,
+      "modified": 501,
+      "created": 500,
+      "mutation_ms": 49.749,
+      "all_metadata_and_query_results_match_ms": 10844.914,
+      "generation_unchanged": true,
+      "scan_started_unchanged": true
+    },
+    "same_size_live": {
+      "bytes": 45,
+      "mtime_ns_preserved": true
+    },
+    "same_size_offline": {
+      "bytes": 45,
+      "mtime_ns_preserved": true
+    },
+    "quiet_cpu": {
+      "populated_idle": {
+        "seconds": 30.068,
+        "cpu_ticks": 3,
+        "cpu_percent_one_core": 0.1,
+        "rss_kib_at_end": 9552
+      },
+      "after_burst_idle": {
+        "seconds": 30.066,
+        "cpu_ticks": 3,
+        "cpu_percent_one_core": 0.1,
+        "rss_kib_at_end": 13216
+      },
+      "after_restart_idle": {
+        "seconds": 30.071,
+        "cpu_ticks": 4,
+        "cpu_percent_one_core": 0.133,
+        "rss_kib_at_end": 11140
+      }
+    },
+    "restart": {
+      "ready_with_complete_metadata_and_query_results_ms": 2115.944,
+      "generation_unchanged": false,
+      "startup_validation_completed": true,
+      "watcher_ready": true
+    },
+    "metadata_control": "METADATA_CONTROL.json passes with --quiet-seconds 0; not CPU acceptance",
+    "actual_cancellation": "CANCELLATION_CHECK.json: signal during active owned 600-second sample, exit 143, observations retained and daemon/profile removed"
+  },
+  "live_observation": {
+    "receipt": "LIVE_OBSERVATION.json",
+    "scope": "Read-only older personal metadata-only service, binary differs from current package; mixed background activity, not quiet or current-package home acceptance",
+    "cpu_percent_one_core": 0.09999835054724357,
+    "configuration_or_service_changes": false
+  },
+  "cleanup": "TEARDOWN.json: all four owned profiles removed, no marker processes, operator config/service and existing four package hashes unchanged",
+  "limits": [
+    "End-sample RSS is not peak-memory or whole-application resource acceptance",
+    "Burst/restart times include full cache/metadata comparisons and sequential IPC query groups; not UI latency or storage guarantees",
+    "Private small-file corpus does not accept larger bodies, document/provider extraction, real devices, live-home content or native Windows content indexing",
+    "Positive queries also have the established live fallback; independent complete SQLite body comparisons establish cached freshness",
+    "User acceptance remains deferred; broader roadmap and release gates remain required"
+  ]
+}

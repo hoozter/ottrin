@@ -1,0 +1,9 @@
+{
+  "pid": 1299,
+  "running_binary_sha256": "f229d1f488c6bd450b894ea1a128ce2baf19841d60f40b9dc67cdecfe9785359",
+  "current_packaged_binary_sha256": "2bc95f2ae41d5d0e2051a78208d0e08d8af0d02f78831ef19d8e4f11b1f84c33",
+  "config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "content_enabled": false,
+  "metadata_root_count": 1,
+  "content_root_count": 0
+}

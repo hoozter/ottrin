@@ -1,0 +1,29 @@
+{
+  "scope": "Read-only 30-second observation of existing personal metadata-only daemon, not an isolated idle claim or current-package acceptance; other applications may change watched files",
+  "running_binary_sha256": "f229d1f488c6bd450b894ea1a128ce2baf19841d60f40b9dc67cdecfe9785359",
+  "current_package_binary_matches": false,
+  "seconds": 30.000494843989145,
+  "cpu_percent_one_core": 0.09999835054724357,
+  "end_rss_kib": 25368,
+  "end_swap_kib": 16440,
+  "before": {
+    "status": "Ready",
+    "indexed_items": 121934,
+    "snapshot_revision": 10238,
+    "watcher_ready": true,
+    "watched_root_count": 1,
+    "last_scan_started_unix_secs": 1792649603,
+    "last_scan_completed_unix_secs": 1792650479
+  },
+  "after": {
+    "status": "Ready",
+    "indexed_items": 121934,
+    "snapshot_revision": 10241,
+    "watcher_ready": true,
+    "watched_root_count": 1,
+    "last_scan_started_unix_secs": 1792649603,
+    "last_scan_completed_unix_secs": 1792650519
+  },
+  "service_main_pid_unchanged": true,
+  "mutations": "none; status only before and after sampling"
+}

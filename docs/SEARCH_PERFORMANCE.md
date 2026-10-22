@@ -334,3 +334,54 @@ content-enabled performance acceptance. Current MSI/NSIS native lifecycle,
 login/reboot persistence and GUI acceptance remain separate. All three candidate
 formats were rebuilt and their embedded payloads checked; public Windows
 downloads have not been replaced.
+
+## Current Linux package with content enabled — 2026-10-22
+
+The stable AppImage is from clean `3ed1b303`, SHA-256
+`f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6`.
+A private corpus contains 10,000 small plain-text files in 100 directories, with
+body indexing explicitly enabled for that corpus and scheduled refresh disabled.
+The exact extracted daemon indexes every body. Read-only SQLite comparisons check
+all persisted bodies; five content-query groups check exact totals and the first
+500 returned paths, alongside metadata and filename-query comparisons.
+
+| Observed case | Result |
+| --- | ---: |
+| Populated quiet CPU, 30.068 s | 0.100% of one core |
+| After-burst quiet CPU, 30.066 s | 0.100% of one core |
+| After-restart quiet CPU, 30.071 s | 0.133% of one core |
+| RSS at the ends of those samples | 9,552 / 13,216 / 11,140 KiB |
+| 2,001 live changes through complete verification | 10,844.914 ms |
+| Restart with offline changes through complete verification | 2,115.944 ms |
+
+The live burst renames 500 files, deletes 500, edits 501 and creates 500. One edit
+preserves both size and modification time; an offline edit does the same. Cached
+bodies and query results converge in both cases. Live changes preserve the active
+generation and do not start a full scan. Restart completes the required background
+reconciliation. Timing includes the harness's complete comparisons and sequential
+query groups; it is not GUI startup time or a storage/latency guarantee. Quiet
+samples send no IPC and make no corpus changes. They retain the existing limit
+of less than 0.5% of one core. RSS is sampled at interval ends, not a peak-memory
+claim. Larger files, provider extraction, live-home content indexing, native
+Windows content indexing and whole-application resource acceptance remain open.
+
+The shared runner now exports observations and teardown even when cancelled or
+failing. An actual SIGTERM during a live 600-second quiet sample verifies its
+daemon exits and private profile is removed. A metadata-only control also passes
+with CPU sampling explicitly skipped. Evidence:
+`.hermes/evidence/index-content-package-current/ACCEPTANCE.json`.
+
+```sh
+python3 scripts/index-populated-qa.py \
+  dist/packages/Ottrin-0.1.0-x86_64.AppImage \
+  .hermes/evidence/index-content-package-current/CONTENT.json \
+  --content --offline-changes
+```
+
+A separate read-only 30-second observation of the existing personal service
+measures 0.100% of one core with 121,934 indexed entries and a ready watcher;
+the snapshot revision advances from 10,238 to 10,241. That is mixed background
+activity, not isolated idle. Content indexing is disabled in that personal
+profile, and its running binary differs from the current package; the observation
+does not accept the new package against the user's home. Configuration and the
+running service remain unchanged.

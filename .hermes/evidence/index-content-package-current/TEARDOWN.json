@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "owned_daemon_processes": [],
+  "owned_profiles_removed": 4,
+  "personal_config_hash_unchanged": true,
+  "personal_service_main_pid_unchanged": true,
+  "all_four_linux_artifact_hashes_unchanged": true,
+  "new_compiler_configurations_or_packages": false
+}

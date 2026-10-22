@@ -612,6 +612,27 @@ Windows artifacts remain unchanged. Artifact hashes and scope:
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `.hermes/evidence/linux-recovery-package-current/ACCEPTANCE.json`.
 
+### Linux content-enabled index resource checkpoint
+
+The current exact `3ed1b303` AppImage now passes a private 10,000-file plain-text
+content-enabled run: complete persisted bodies, metadata, query totals and first
+pages agree after indexing, 2,001 live changes, and offline edit/rename/delete/create
+followed by restart. Same-size edits with restored modification time are covered
+both live and offline. Live changes keep the generation and avoid a full scan.
+Three 30-second quiet samples measure 0.100%, 0.100% and 0.133% of one CPU core;
+end-sample RSS is 9,552, 13,216 and 11,140 KiB. Full verification after the live
+burst takes 10.845 seconds, including sequential query/comparison work; it is not
+a UI latency guarantee. The shared runner's actual cancellation and metadata-only
+control also pass and remove owned daemons/profiles.
+
+`docs/SEARCH_PERFORMANCE.md` documents reproduction and measurement limits;
+`.hermes/evidence/index-content-package-current/ACCEPTANCE.json` binds the exact
+artifact and source. The existing personal service is only observed read-only,
+not upgraded or reconfigured. Its distinct older metadata-only binary records
+0.100% of one core during mixed background activity. Larger-body/provider,
+live-home content, Windows content and whole-application resource gates remain
+open; these scoped results do not complete the roadmap. Packages are unchanged.
+
 ## Windows Copy: end an incomplete attempt without discarding files
 
 Activity now offers “End copy attempt…” only after opaque read-only admission of

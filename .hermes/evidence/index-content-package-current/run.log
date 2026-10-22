@@ -1,0 +1,164 @@
+populated_idle: measuring 30 seconds without IPC or file changes
+after_burst_idle: measuring 30 seconds without IPC or file changes
+after_restart_idle: measuring 30 seconds without IPC or file changes
+{
+  "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+  "provenance": {
+    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+    "revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+    "sha256": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
+    "built_from_tracked_clean_source": true
+  },
+  "driver_sha256": "59a24318e0ffd4828c4b3a8332848577c0d09fe547bff3440fd8c1600f0899c6",
+  "scope": "Private 10,000-file plain-text content-enabled corpus; no GUI, login unit or personal files",
+  "initial_diagnostics": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 28672,
+    "wal_bytes": 0,
+    "freelist_pages": 0,
+    "freelist_bytes": 0,
+    "snapshot_revision": 1,
+    "detail": "Ready \u00b7 10100 indexed",
+    "indexed_items": 10100,
+    "last_completed_indexed_items": 10100,
+    "estimated_total_items": null,
+    "last_indexed_path": "/tmp/ottrin-populated-ftyc9xns/corpus/bucket-000/seed-00000.txt",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1792650362,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1792650362,
+    "last_scan_completed_unix_secs": 1792650363,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1792650363,
+    "last_error": null
+  },
+  "initial_generation": 1,
+  "initial_content": {
+    "persisted_bodies_match": true,
+    "query_groups_verified": 5,
+    "files": 10000
+  },
+  "populated_idle": {
+    "seconds": 30.068,
+    "cpu_ticks": 3,
+    "cpu_percent_one_core": 0.1,
+    "rss_kib_at_end": 9552
+  },
+  "live_same_size_edit": {
+    "bytes": 45,
+    "mtime_ns_preserved": true
+  },
+  "burst": {
+    "renamed": 500,
+    "deleted": 500,
+    "modified": 501,
+    "created": 500,
+    "mutation_ms": 49.749,
+    "all_metadata_and_query_results_match_ms": 10844.914,
+    "generation_unchanged": true,
+    "scan_started_unchanged": true
+  },
+  "after_burst_diagnostics": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 13807616,
+    "wal_bytes": 576832,
+    "freelist_pages": 25,
+    "freelist_bytes": 102400,
+    "snapshot_revision": 7,
+    "detail": "Ready \u00b7 10100 indexed",
+    "indexed_items": 10100,
+    "last_completed_indexed_items": 10100,
+    "estimated_total_items": null,
+    "last_indexed_path": "/tmp/ottrin-populated-ftyc9xns/corpus/bucket-000/seed-00000.txt",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1792650362,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1792650362,
+    "last_scan_completed_unix_secs": 1792650406,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1792650406,
+    "last_error": null
+  },
+  "after_burst_content": {
+    "persisted_bodies_match": true,
+    "query_groups_verified": 5,
+    "files": 10000
+  },
+  "after_burst_idle": {
+    "seconds": 30.066,
+    "cpu_ticks": 3,
+    "cpu_percent_one_core": 0.1,
+    "rss_kib_at_end": 13216
+  },
+  "offline_same_size_edit": {
+    "bytes": 45,
+    "mtime_ns_preserved": true
+  },
+  "offline_changes": {
+    "modified": 1,
+    "renamed": 1,
+    "deleted": 1,
+    "created": 1
+  },
+  "restart": {
+    "ready_with_complete_metadata_and_query_results_ms": 2115.944,
+    "generation_unchanged": false,
+    "startup_validation_completed": true,
+    "watcher_ready": true
+  },
+  "restored_diagnostics": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 13807616,
+    "wal_bytes": 4152,
+    "freelist_pages": 25,
+    "freelist_bytes": 102400,
+    "snapshot_revision": 2,
+    "detail": "Ready \u00b7 10100 indexed",
+    "indexed_items": 10100,
+    "last_completed_indexed_items": 10100,
+    "estimated_total_items": null,
+    "last_indexed_path": "/tmp/ottrin-populated-ftyc9xns/corpus/bucket-000/renamed-00000.txt",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1792650441,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1792650441,
+    "last_scan_completed_unix_secs": 1792650441,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1792650441,
+    "last_error": null
+  },
+  "after_restart_content": {
+    "persisted_bodies_match": true,
+    "query_groups_verified": 5,
+    "files": 10000
+  },
+  "after_restart_idle": {
+    "seconds": 30.071,
+    "cpu_ticks": 4,
+    "cpu_percent_one_core": 0.133,
+    "rss_kib_at_end": 11140
+  },
+  "status": "pass",
+  "cleanup": {
+    "daemon_exited": true,
+    "private_profile_removed": true
+  }
+}
