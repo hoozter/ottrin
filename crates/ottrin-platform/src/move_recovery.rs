@@ -2260,13 +2260,10 @@ impl LinuxJournalDirectory {
         &self,
         name: &str,
     ) -> Result<super::copy_recovery::CopyRecord, super::PlatformError> {
-        super::copy_recovery::CopyRecord::parse(&self.read_copy_record_bytes(name)?)
+        super::copy_recovery::CopyRecord::parse(&self.read_record_bytes(name)?)
     }
 
-    pub(super) fn read_copy_record_bytes(
-        &self,
-        name: &str,
-    ) -> Result<Vec<u8>, super::PlatformError> {
+    pub(super) fn read_record_bytes(&self, name: &str) -> Result<Vec<u8>, super::PlatformError> {
         self.read_named(name)
             .map_err(|error| super::PlatformError::Io(error.to_string()))
     }

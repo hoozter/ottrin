@@ -198,6 +198,8 @@ use copy_transaction::CopyPublication;
 use copy_transaction::copy_entry_transactional;
 pub mod move_recovery;
 mod move_transaction;
+#[cfg(target_os = "linux")]
+pub use move_transaction::LinuxMoveRecoveryPlan;
 use move_transaction::move_entry_transactional;
 #[cfg(target_os = "windows")]
 pub use move_transaction::windows_recovery_plan::WindowsMoveRecoveryPlan;

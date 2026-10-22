@@ -351,7 +351,8 @@ Evidence: `.hermes/evidence/windows-move-recovery-admission-current/ACCEPTANCE.j
 This is a source/native checkpoint; packages are unchanged. Session-history
 reconciliation, terminal-control retirement, containing-parent/unavailable-volume
 lifecycle, hard-power/resource and exact-package acceptance remain required.
-Linux retained Move admission still needs its corresponding native-plan work.
+Linux retained Move admission is implemented in the later source checkpoint
+below; exact-package and broader recovery lifecycle acceptance remain required.
 
 ## Windows Move recovery — reconcile session Undo history
 
@@ -536,10 +537,47 @@ are removed; the retained VM is off with its persistent definition unchanged.
 
 This checkpoint does not complete cross-volume parent-rename mutation. Its existing
 strict journal namespace checks remain until the cross-volume engine and recovery
-admission can be converted together. Remaining Linux native-plan work, cross-volume
+admission can be converted together. Linux exact-package recovery acceptance, cross-volume
 namespace work, exact-package GUI checks, hard-power/resource and broader platform
 and release gates stay on the roadmap. All installed/package deliverables retain
 their existing source scopes.
+
+### Linux retained Move recovery admission
+
+Activity now captures an opaque `LinuxMoveRecoveryPlan` on its existing scan
+worker. The plan retains exact central/local journal bytes, validated paired
+phase evidence, original directory identities, deletion/unmount watches and
+Linux unique mount IDs. It reserves source/destination parents, both private
+transaction directories where present, and the registry through the ordinary
+mutation scheduler. Capture creates no recovery files and keeps no directory
+handles between workers. A missing plan refuses queueing with an Activity refresh
+message; failed capture preserves a visible error and exposes no recovery action.
+
+The existing recovery engine checks the captured directories, mounts and exact
+journals under its exclusive lock before repairing a phase gap or mutating files.
+Its initial record comes from the admitted bytes, and reread paired state must
+agree. Stale plans require a fresh scan rather than silently expanding their
+authority. The UI captures actual drive bindings for all admitted paths and
+rechecks them in the operation worker. Ordinary staged cross-filesystem recovery
+now uses the same forward-publication engine as automatic retry, fixing a case
+that incorrectly required displaced-destination evidence for a non-overwrite Move.
+
+Source/native evidence is recorded separately in
+`.hermes/evidence/linux-move-admission-current/ACCEPTANCE.json`. This does not
+accept arbitrary concurrent namespace changes during the existing engine's
+path-based cleanup, physical device removal, power loss or a rebuilt package.
+Published and unsupported retained phases keep their previous Activity action
+availability; no extra cleanup action is enabled by this admission repair.
+
+All 415 regular platform tests and 397 regular UI tests pass. Four platform and
+one UI namespace/resource fixtures are ignored in that regular selection; the
+new directory-admission fixture is separately run and passes in a private
+user/mount namespace. It proves ordinary unmount is possible with the proof
+retained and same-inode bind remount invalidates admission. New regular tests
+exercise both changed journals, replaced destination parents, no initialization
+of missing state, queue paths, bound recovery worker completion and missing-plan
+refusal. Strict platform/UI Clippy passes for Linux and Windows. Packages remain
+at their preceding recorded source revisions.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

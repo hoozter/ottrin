@@ -1,3 +1,7 @@
+#[cfg(target_os = "linux")]
+use ottrin_platform::LinuxMoveRecoveryPlan as NativeMoveRecoveryPlan;
+#[cfg(target_os = "windows")]
+use ottrin_platform::WindowsMoveRecoveryPlan as NativeMoveRecoveryPlan;
 #[cfg(all(test, target_os = "windows"))]
 #[path = "../../../tests/support/windows_oplock.rs"]
 mod test_oplock;
@@ -1081,8 +1085,8 @@ struct RetainedMoveActivity {
     transaction_id: [u8; 16],
     phase: &'static str,
     recovery: RetainedMoveRecovery,
-    #[cfg(target_os = "windows")]
-    plan: Option<ottrin_platform::WindowsMoveRecoveryPlan>,
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    plan: Option<NativeMoveRecoveryPlan>,
 }
 
 impl RetainedMoveActivity {
@@ -1097,33 +1101,48 @@ impl RetainedMoveActivity {
 #[cfg(target_os = "linux")]
 fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) {
     match discover_retained_move_transactions() {
-        Ok(transactions) => (
-            transactions
+        Ok(transactions) => {
+            let mut admission_error = None;
+            let activity = transactions
                 .into_iter()
-                .map(|transaction| RetainedMoveActivity {
-                    transaction_id: transaction.transaction_id,
-                    recovery: if transaction.phase == JournalPhase::PendingDestination {
-                        RetainedMoveRecovery::Forward
-                    } else {
-                        RetainedMoveRecovery::Unavailable
-                    },
-                    phase: match transaction.phase {
-                        JournalPhase::Prepared => "prepared",
-                        JournalPhase::ClaimIntent => "claim intent",
-                        JournalPhase::Claimed => "claimed",
-                        JournalPhase::UnexpectedClaimRetained => "unexpected claim retained",
-                        JournalPhase::PendingDestination => "pending destination",
-                        JournalPhase::Published => "published",
-                        JournalPhase::CleanupPending => "cleanup pending",
-                        JournalPhase::ClaimedSourceDeletionPending => {
-                            "claimed source deletion pending"
+                .map(|transaction| {
+                    let plan = if transaction.phase == JournalPhase::PendingDestination {
+                        match NativeMoveRecoveryPlan::capture(transaction.transaction_id) {
+                            Ok(plan) => Some(plan),
+                            Err(error) => {
+                                admission_error.get_or_insert_with(|| error.to_string());
+                                None
+                            }
                         }
-                        JournalPhase::ClaimedSourceUnlinked => "claimed source unlinked",
-                    },
+                    } else {
+                        None
+                    };
+                    RetainedMoveActivity {
+                        transaction_id: transaction.transaction_id,
+                        recovery: if plan.is_some() {
+                            RetainedMoveRecovery::Forward
+                        } else {
+                            RetainedMoveRecovery::Unavailable
+                        },
+                        plan,
+                        phase: match transaction.phase {
+                            JournalPhase::Prepared => "prepared",
+                            JournalPhase::ClaimIntent => "claim intent",
+                            JournalPhase::Claimed => "claimed",
+                            JournalPhase::UnexpectedClaimRetained => "unexpected claim retained",
+                            JournalPhase::PendingDestination => "pending destination",
+                            JournalPhase::Published => "published",
+                            JournalPhase::CleanupPending => "cleanup pending",
+                            JournalPhase::ClaimedSourceDeletionPending => {
+                                "claimed source deletion pending"
+                            }
+                            JournalPhase::ClaimedSourceUnlinked => "claimed source unlinked",
+                        },
+                    }
                 })
-                .collect(),
-            None,
-        ),
+                .collect();
+            (activity, admission_error)
+        }
         Err(error) => (Vec::new(), Some(error.to_string())),
     }
 }
@@ -1134,7 +1153,7 @@ fn windows_retained_move_activity(
 ) -> RetainedMoveActivity {
     RetainedMoveActivity {
         transaction_id: transaction.transaction_id,
-        #[cfg(target_os = "windows")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         plan: None,
         phase: match transaction.undo_status {
             ottrin_platform::move_recovery::WindowsMoveUndoStatus::Pending => {
@@ -10899,7 +10918,7 @@ impl OttrinApp {
         clipboard_generation: Option<u64>,
         preconfirmed_conflict_action: Option<ConflictAction>,
     ) -> bool {
-        #[cfg(target_os = "windows")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         let recovery_plan = if let FileCommand::RecoverRetainedMove { transaction_id } = &cmd {
             match self
                 .retained_move_activity
@@ -10917,7 +10936,7 @@ impl OttrinApp {
             None
         };
         let operation_paths = operation_paths_for_command(&cmd);
-        #[cfg(target_os = "windows")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         let operation_paths = recovery_plan
             .as_ref()
             .map(|plan| {
@@ -10941,7 +10960,7 @@ impl OttrinApp {
             self.reject_unavailable_location_operation(&cmd, &location);
             return false;
         }
-        #[cfg(target_os = "windows")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         let authoritative_bindings = if let Some(plan) = &recovery_plan {
             Some(capture_required_storage_bindings(
                 plan.paths().iter().map(|path| (path.as_path(), true)),
@@ -10950,7 +10969,7 @@ impl OttrinApp {
         } else {
             authoritative_bindings.map(Ok)
         };
-        #[cfg(not(target_os = "windows"))]
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         let authoritative_bindings = authoritative_bindings.map(Ok);
         let bindings = match authoritative_bindings
             .unwrap_or_else(|| operation_storage_bindings(&cmd, &self.known_storage_locations))
@@ -11183,6 +11202,17 @@ impl OttrinApp {
                                 }
                             }
                         }
+                        #[cfg(target_os = "linux")]
+                        FileCommand::RecoverRetainedMove { .. } => (
+                            classify_file_op_result(
+                                recovery_plan
+                                    .as_ref()
+                                    .expect("admitted recovery plan")
+                                    .execute(),
+                            ),
+                            Vec::new(),
+                            None,
+                        ),
                         #[cfg(target_os = "windows")]
                         FileCommand::RecoverRetainedMove { .. } => {
                             let plan = recovery_plan.as_ref().expect("admitted recovery plan");
@@ -31188,6 +31218,124 @@ mod tests {
         }
     }
 
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_move_recovery_requires_a_captured_plan_before_queueing() {
+        let mut app = OttrinApp::default();
+        let command = FileCommand::RecoverRetainedMove {
+            transaction_id: [0x91; 16],
+        };
+        assert!(!app.run_file_op_bound(command, None, Vec::new(), None, None, None));
+        assert!(app.operation_history.is_empty());
+        assert!(
+            app.status_message
+                .as_ref()
+                .is_some_and(|status| status.text.contains("Refresh Activity"))
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_move_recovery_queues_captured_paths_and_executes_bound_worker() {
+        use ottrin_platform::move_recovery::{
+            LinuxFileType, LinuxJournalDirectory, LinuxSourceParentDirectory, LinuxStableIdentity,
+            PreparedRecord,
+        };
+        use std::os::unix::fs::MetadataExt;
+        let fixture = tempfile::tempdir().unwrap();
+        let root = fixture.path().join("central");
+        let parent_path = fixture.path().join("source-parent");
+        let destination = fixture.path().join("destination");
+        for path in [&root, &parent_path, &destination] {
+            std::fs::create_dir(path).unwrap();
+        }
+        let id = [0x92; 16];
+        let local_name = Path::new(".ottrin-move-92929292929292929292929292929292");
+        let local_path = parent_path.join(local_name);
+        std::fs::create_dir(&local_path).unwrap();
+        let source = parent_path.join("original.txt");
+        std::fs::write(&source, b"source payload").unwrap();
+        let identity = |path: &Path, kind| {
+            let m = std::fs::symlink_metadata(path).unwrap();
+            LinuxStableIdentity::new(m.dev(), m.ino(), kind)
+        };
+        let parent = LinuxSourceParentDirectory::open(&parent_path).unwrap();
+        let local_id = identity(&local_path, LinuxFileType::Directory);
+        let local = parent
+            .open_existing_transaction(local_name, local_id)
+            .unwrap();
+        let central = LinuxJournalDirectory::open_configured(&root).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            id,
+            &parent_path,
+            Path::new("original.txt"),
+            identity(&parent_path, LinuxFileType::Directory),
+            identity(&source, LinuxFileType::Regular),
+            local_name,
+            local_id,
+        )
+        .unwrap();
+        {
+            let mut lock = central.try_lock_recovery().unwrap();
+            lock.prepare_with_local(&local, &prepared).unwrap();
+            lock.advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            lock.claim_source_after_intent(&parent, &local, id).unwrap();
+            lock.advance_to_claimed_with_local(&local, id).unwrap();
+            lock.advance_to_pending_destination_with_local(
+                &local,
+                id,
+                &destination.join("original.txt"),
+            )
+            .unwrap();
+        }
+        drop((local, parent, central));
+        let plan = NativeMoveRecoveryPlan::capture_at(&root, id).unwrap();
+        let paths = plan.paths().to_vec();
+        let mut app = OttrinApp::default();
+        app.retained_move_activity = vec![RetainedMoveActivity {
+            transaction_id: id,
+            phase: "pending destination",
+            recovery: RetainedMoveRecovery::Forward,
+            plan: Some(plan),
+        }];
+        assert!(app.run_file_op_bound(
+            FileCommand::RecoverRetainedMove { transaction_id: id },
+            None,
+            Vec::new(),
+            None,
+            None,
+            None
+        ));
+        assert_eq!(
+            app.operation_history.front().unwrap().operation_paths,
+            paths
+                .into_iter()
+                .map(OperationPath::write)
+                .collect::<Vec<_>>()
+        );
+        for path in [&source, &destination, &local_path, &root] {
+            assert!(app.activity_paths_conflict(u64::MAX, &[(path.as_path(), path.as_path())]));
+        }
+        assert!(
+            !app.activity_paths_conflict(
+                u64::MAX,
+                &[(Path::new("/outside"), Path::new("/outside"))]
+            )
+        );
+        let result = app.op_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+        assert!(result.error.is_none(), "{:?}", result.error);
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+        assert_eq!(
+            app.operation_history.front().unwrap().status,
+            OperationStatus::Completed
+        );
+        assert_eq!(std::fs::read(&source).unwrap(), b"source payload");
+        assert!(!local_path.exists());
+        assert!(!app.activity_paths_conflict(u64::MAX, &[(source.as_path(), source.as_path())]));
+    }
+
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_recovery_requires_captured_paths_and_real_drive_bindings() {
@@ -33274,7 +33422,7 @@ mod tests {
                 release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
                 (
                     vec![RetainedMoveActivity {
-                        #[cfg(target_os = "windows")]
+                        #[cfg(any(target_os = "linux", target_os = "windows"))]
                         plan: None,
                         transaction_id: [scans; 16],
                         phase: "published",
@@ -33855,7 +34003,7 @@ mod tests {
     fn move_batch_warning_refreshes_retained_move_activity_snapshot() {
         let mut app = OttrinApp::default();
         app.retained_move_activity = vec![RetainedMoveActivity {
-            #[cfg(target_os = "windows")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             plan: None,
             transaction_id: [0x55; 16],
             phase: "stale",
@@ -33903,7 +34051,7 @@ mod tests {
     fn failed_move_batch_reconciles_retained_move_activity_snapshot() {
         let mut app = OttrinApp::default();
         app.retained_move_activity = vec![RetainedMoveActivity {
-            #[cfg(target_os = "windows")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             plan: None,
             transaction_id: [0x66; 16],
             phase: "stale",

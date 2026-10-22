@@ -1,0 +1,10 @@
+{
+  "crates/ottrin-platform/src/copy_cleanup.rs": "57ebae337ea7e0ce0fb77f343dfe9cf86aabbfa584944f505c07b287c209ea6d",
+  "crates/ottrin-platform/src/lib.rs": "a29993a3ad1e6bd365c73d0cfe19e4e57befe5fde89703279a66a06c1bb66167",
+  "crates/ottrin-platform/src/move_recovery.rs": "6e0791b1e49b16e037900fc08c0bc070532a44b5748d6db883e5d194a0d3967d",
+  "crates/ottrin-platform/src/move_transaction.rs": "de54fc7228677e1b88bedf50195ff890b08b196f77af9ee3743da09a209fcff8",
+  "crates/ottrin-platform/src/move_transaction/linux_recovery_plan.rs": "8ac93d866c9aaa512121a820b412463b961ff8fd7b2a4655d0e54648a2be7c91",
+  "crates/ottrin-ui/src/lib.rs": "3461303f008417479470ae2df8bb272a6356a9551447e186bcc4380a90850dd4",
+  "docs/DEVELOPMENT.md": "1a7a96ecb3c97c9270cec4d2a449e339fb5b550aab77b2c3bb026bded89a54c0",
+  "docs/ROADMAP.md": "c3020e2899d5dec9ca462816a4fd0e465d7802c7612709007fed2632aabd9bd1"
+}

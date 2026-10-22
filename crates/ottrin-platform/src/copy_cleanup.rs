@@ -1217,7 +1217,7 @@ fn registry_records_cached(
     central
         .discover_copy_records_with(|name| {
             // Fresh bytes and the existing read_named checks are never skipped.
-            parsed.parse(name, central.read_copy_record_bytes(name)?.into())
+            parsed.parse(name, central.read_record_bytes(name)?.into())
         })
         .map_err(journal_error)?
         .into_iter()

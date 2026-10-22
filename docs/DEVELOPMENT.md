@@ -745,6 +745,15 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 
 ### Linux
 
+- Retained Move recovery must carry the `LinuxMoveRecoveryPlan` captured by the
+  background Activity scan into the queue and worker. `capture`/`capture_at` read
+  the anchored registry and paired journals without creating state; `paths()`
+  supplies all affected directories for conflict and drive admission. Execution
+  revalidates exact journal bytes, native directory identities, watches and unique
+  mount IDs under the existing recovery lock. A stale plan requires a refresh.
+  Keep plan lifetimes free of directory handles so ordinary unmount remains
+  possible. Native plan checks do not accept arbitrary pathname races inside the
+  existing recovery engine or replace exact-package GUI/device acceptance.
 - Navigate Miller/List/Grid, tabs, bookmarks, and address bar.
 - Search first index, restart from DB, rebuild, current-folder search, content search, and result actions.
 - Create, rename, copy, trash delete, and permanent delete; verify Linux same-filesystem and cross-filesystem Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem Move must stage and verify the complete destination tree before publication, revalidate before guarded source cleanup, retain explicit recovery evidence on uncertainty, and offer Undo only from identity/content-bound single-entry evidence. On Windows, extend the native same-volume Skip/Rename/Overwrite fixture evidence with crash, adverse ACL/sharing, retained-transaction lifecycle and packaged checks. Windows cross-volume Move uses the verified staged-copy route; unsupported filesystems and unsafe metadata remain refused. Accept its public workflow and exact package separately; cross-compilation alone is not acceptance.

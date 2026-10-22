@@ -1,0 +1,18 @@
+{
+  "command": [
+    "unshare",
+    "--user",
+    "--map-root-user",
+    "--mount",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-274f7976d82372f5",
+    "--exact",
+    "move_transaction::linux_recovery_plan::tests::directory_admission_allows_unmount_and_refuses_same_inode_bind_remount",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit": 0,
+  "parent_namespace": "mnt:[4026531832]",
+  "test_binary_sha256": "9cc96ee2d7dab29a0644b7a1efc48d5127d7328cb44c241ee6899ae9184a82ab",
+  "scope": "Native directory proof permits ordinary tmpfs unmount and rejects same-inode bind remount in an owned child namespace; no full Move/device acceptance"
+}

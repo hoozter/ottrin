@@ -1,0 +1,69 @@
+{
+  "status": "pass within source/native queued recovery admission scopes",
+  "base_revision": "2104de561ae9b08446723f7a5fbb90304e4b9767",
+  "implemented": [
+    "Opaque LinuxMoveRecoveryPlan captures exact central/local journal bytes with paired phase validation and all affected operation directories",
+    "Original native directory identities, shared deletion/unmount watches and non-reused Linux mount IDs; no long-lived directory handles",
+    "Queue refuses missing plans, captures actual drive bindings and participates in ordinary mutation conflict admission",
+    "Worker validates admission under exclusive recovery lock before any engine journal repair; initial records use captured bytes and paired rereads must agree",
+    "Non-overwrite staged recovery uses existing verified automatic-retry publication engine rather than demanding displaced overwrite evidence",
+    "Existing owned no-follow journal reader shared by Move and Copy without duplicate read or authority paths"
+  ],
+  "checks": {
+    "platform": {
+      "passed": 415,
+      "ignored": 4
+    },
+    "ui": {
+      "passed": 397,
+      "ignored": 1
+    },
+    "tests_log": "tests.log",
+    "test_binary_identity": "TEST_BINARIES.json",
+    "private_mount_namespace": {
+      "passed": 1,
+      "receipt": "MOUNT_ADMISSION.json",
+      "log": "mount-admission.log",
+      "scope": "New directory proof allows ordinary tmpfs unmount with live proof and refuses same-inode bind remount"
+    },
+    "clippy": [
+      "clippy-linux.log",
+      "clippy-windows.log"
+    ],
+    "formatting": "cargo fmt --all --check passed",
+    "whitespace": "git diff --check on affected source/docs passed"
+  },
+  "regressions": [
+    "Changed central and local valid journal byte snapshots refuse without mutation, refreshed admission recovers original payload",
+    "Renamed/recreated destination parent refuses and preserves foreign bytes; original namespace restored and fresh recovery succeeds",
+    "Missing registry capture initializes no state",
+    "Unknown transaction without captured Activity plan never queues a worker",
+    "Actual native paired journals queued through app conflict scheduler, real worker restores claimed source, completes Activity and releases claims"
+  ],
+  "failed_evidence": {
+    "build.log": "Initial test compilation found Linux RetainedMoveActivity fixture initializers missing the new plan field; all affected initializers updated",
+    "tests-initial.log": "412 pass, 2 fail: newly covered manual non-overwrite staged recovery incorrectly required displaced destination evidence; fixed by using existing automatic-retry forward publication engine",
+    "tests-corrected.log": "414 platform and 397 UI passes before final paired-state/namespace coverage; final tests.log supersedes this selection"
+  },
+  "cleanup": {
+    "test_state": "scripts/test-workspace.py isolated HOME/XDG/TMP state and tears down its subprocess group on completion",
+    "private_mount_test": "Owned tmpfs and bind mounts explicitly unmounted, tempfile removed and child namespace exited",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "superseded_finalized_sessions_retired": 15,
+    "logical_bytes_retired": 1231565265,
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt"
+  },
+  "delivery": {
+    "packages_rebuilt_or_promoted": false,
+    "existing_package_identity": "UNCHANGED_PACKAGES.json verifies all seven prior artifacts"
+  },
+  "limits": [
+    "No rendered GUI or exact-package acceptance; existing deliverables have preceding source revisions",
+    "Published and unsupported retained phases keep existing Activity action availability",
+    "This admission does not freeze arbitrary concurrent namespace mutations inside existing pathname-based engine cleanup",
+    "Physical device removal, hard-power loss and full recovery/resource/release gates remain open",
+    "Four platform and one UI fixtures ignored in regular selection; new platform mount fixture accepted separately, remaining explicit fixtures not accepted here",
+    "Windows source compatibility passes strict cross-target checks; no new Windows native execution is claimed"
+  ]
+}

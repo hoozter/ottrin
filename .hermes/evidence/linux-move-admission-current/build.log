@@ -1,0 +1,23 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+error[E0063]: missing field `plan` in initializer of `RetainedMoveActivity`
+     --> crates/ottrin-ui/src/lib.rs:33306:26
+      |
+33306 |                     vec![RetainedMoveActivity {
+      |                          ^^^^^^^^^^^^^^^^^^^^ missing `plan`
+
+error[E0063]: missing field `plan` in initializer of `RetainedMoveActivity`
+     --> crates/ottrin-ui/src/lib.rs:33887:43
+      |
+33887 |         app.retained_move_activity = vec![RetainedMoveActivity {
+      |                                           ^^^^^^^^^^^^^^^^^^^^ missing `plan`
+
+error[E0063]: missing field `plan` in initializer of `RetainedMoveActivity`
+     --> crates/ottrin-ui/src/lib.rs:33935:43
+      |
+33935 |         app.retained_move_activity = vec![RetainedMoveActivity {
+      |                                           ^^^^^^^^^^^^^^^^^^^^ missing `plan`
+
+For more information about this error, try `rustc --explain E0063`.
+error: could not compile `ottrin-ui` (lib test) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...

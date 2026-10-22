@@ -54,6 +54,11 @@ use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
+#[cfg(target_os = "linux")]
+mod linux_recovery_plan;
+#[cfg(target_os = "linux")]
+pub use linux_recovery_plan::LinuxMoveRecoveryPlan;
+
 #[cfg(target_os = "windows")]
 pub(super) mod windows_completion;
 #[cfg(target_os = "windows")]
@@ -7131,6 +7136,7 @@ pub(super) fn recover_retained_move_pending_destination(
 fn recover_published_cross_device_move_at(
     recovery_root: &Path,
     transaction_id: [u8; 16],
+    admission: &LinuxMoveRecoveryPlan,
 ) -> Result<(), PlatformError> {
     let transaction_id_hex = transaction_id_hex(&transaction_id);
     let central = move_recovery::LinuxJournalDirectory::open_configured(recovery_root)
@@ -7138,10 +7144,9 @@ fn recover_published_cross_device_move_at(
     let mut recovery = central
         .try_lock_recovery()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let central_journal =
-        std::fs::read(recovery_root.join(format!("{transaction_id_hex}.journal")))
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let published = move_recovery::PublishedRecord::parse(&central_journal).map_err(|error| {
+    admission.validate(&central)?;
+    let central_journal = admission.central_bytes();
+    let published = move_recovery::PublishedRecord::parse(central_journal).map_err(|error| {
         PlatformError::Io(format!("failed to parse published Move journal: {error}"))
     })?;
     let source_parent_path = published
@@ -7169,6 +7174,7 @@ fn recover_published_cross_device_move_at(
         .map_err(|error| {
             PlatformError::Io(format!("failed to resume published Move journals: {error}"))
         })?;
+    let admitted_published = published;
     let published = match central
         .load_published_restart_state(&local, transaction_id)
         .map_err(|error| PlatformError::Io(error.to_string()))?
@@ -7180,6 +7186,11 @@ fn recover_published_cross_device_move_at(
             )));
         }
     };
+    if published != admitted_published {
+        return Err(PlatformError::Io(
+            "Move recovery evidence changed during admission".into(),
+        ));
+    }
     let retained_displaced_identity = published.observed_displaced_destination_identity();
     let destination = published
         .pending_destination_name()
@@ -7322,6 +7333,13 @@ pub(super) fn recover_retained_move_pending_destination_at(
     recovery_root: &Path,
     transaction_id: [u8; 16],
 ) -> Result<(), PlatformError> {
+    LinuxMoveRecoveryPlan::capture_at(recovery_root, transaction_id)?.execute()
+}
+
+#[cfg(target_os = "linux")]
+fn recover_admitted_move(admission: &LinuxMoveRecoveryPlan) -> Result<(), PlatformError> {
+    let recovery_root = admission.root();
+    let transaction_id = admission.transaction_id();
     let transaction_id_hex = transaction_id_hex(&transaction_id);
     let discovered = discover_retained_move_transactions_at(recovery_root)?;
     let discovered_phase = discovered
@@ -7329,7 +7347,7 @@ pub(super) fn recover_retained_move_pending_destination_at(
         .find(|entry| entry.transaction_id == transaction_id)
         .map(|entry| entry.phase);
     if discovered_phase == Some(move_recovery::JournalPhase::Published) {
-        return recover_published_cross_device_move_at(recovery_root, transaction_id);
+        return recover_published_cross_device_move_at(recovery_root, transaction_id, admission);
     }
     if discovered_phase != Some(move_recovery::JournalPhase::PendingDestination) {
         return Err(PlatformError::Io(format!(
@@ -7343,11 +7361,11 @@ pub(super) fn recover_retained_move_pending_destination_at(
         .try_lock_recovery()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
 
-    let central_journal_path = recovery_root.join(format!("{transaction_id_hex}.journal"));
-    let central_journal = std::fs::read(&central_journal_path)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    admission.validate(&central)?;
+
+    let central_journal = admission.central_bytes();
     let pending =
-        move_recovery::PendingDestinationRecord::parse(&central_journal).map_err(|error| {
+        move_recovery::PendingDestinationRecord::parse(central_journal).map_err(|error| {
             PlatformError::Io(format!("failed to parse retained Move journal: {error}"))
         })?;
 
@@ -7386,6 +7404,7 @@ pub(super) fn recover_retained_move_pending_destination_at(
             ))
         })?;
 
+    let admitted_pending = pending;
     let pending = match central
         .load_pending_destination_restart_state(&local, transaction_id)
         .map_err(|error| PlatformError::Io(format!("failed to load pending destination state: {error}")))?
@@ -7405,6 +7424,11 @@ pub(super) fn recover_retained_move_pending_destination_at(
         }
     };
 
+    if pending != admitted_pending {
+        return Err(PlatformError::Io(
+            "Move recovery evidence changed during admission".into(),
+        ));
+    }
     let source_name = pending
         .original_name()
         .map_err(|error| PlatformError::Io(format!("failed to decode original name: {error}")))?;
@@ -7417,6 +7441,41 @@ pub(super) fn recover_retained_move_pending_destination_at(
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
         Err(error) => return Err(PlatformError::Io(error.to_string())),
     };
+    if pending.destination_transaction_identity().is_some()
+        && pending.expected_displaced_destination_identity().is_none()
+    {
+        // Ordinary staged Moves resume forward through the same verified
+        // publication engine as automatic retry. A destination transaction is
+        // not evidence of an overwrite or of a displaced destination.
+        let target = pending
+            .pending_destination_name()
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let destination_dir = target
+            .parent()
+            .filter(|_| target.is_absolute())
+            .ok_or_else(|| {
+                PlatformError::Io("pending destination has no absolute parent".into())
+            })?;
+        let destination_parent = move_recovery::LinuxSourceParentDirectory::open(destination_dir)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let publication = replay_cross_filesystem_pending_destination_with_record(
+            &source_parent_path.join(source_name),
+            &source_parent,
+            &destination_parent,
+            destination_dir,
+            recovery_root,
+            transaction_id,
+            &local_path,
+            &local,
+            &mut recovery,
+            pending,
+            ConflictAction::Skip,
+            &mut |_| Ok(()),
+        )?;
+        return publication.map(|_| ()).ok_or_else(|| {
+            PlatformError::Io("retained staged Move could not resume publication".into())
+        });
+    }
     let mut cross_device_transaction_to_cleanup = None;
     let mut source_already_restored = false;
     if let Some(destination_transaction_identity) = pending.destination_transaction_identity() {
@@ -13466,6 +13525,122 @@ mod tests {
         assert_eq!(
             std::fs::read(destination.join("source")).unwrap(),
             b"payload"
+        );
+    }
+
+    #[test]
+    fn retained_move_plan_captures_all_paths_and_refuses_changed_journals() {
+        for change_local in [false, true] {
+            let dir = TestDir::new("planned-recovery-journal");
+            let source = dir.0.join("source");
+            let destination = dir.0.join("destination");
+            std::fs::write(&source, b"original payload").unwrap();
+            std::fs::create_dir(&destination).unwrap();
+            let interrupted = move_entry_transactional_with_test_hook(
+                &source,
+                &destination,
+                ConflictAction::Skip,
+                |point| match point {
+                    TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                    TestPoint::PendingDestination => Err("stop before publication"),
+                    _ => Ok(()),
+                },
+            );
+            assert!(interrupted.is_err());
+            let root = default_recovery_root().unwrap();
+            let entries = discover_retained_move_transactions_at(&root).unwrap();
+            let id = entries[0].transaction_id;
+            let central_path = root.join(format!("{}.journal", transaction_id_hex(&id)));
+            let bytes = std::fs::read(&central_path).unwrap();
+            let pending = move_recovery::PendingDestinationRecord::parse(&bytes).unwrap();
+            let local_path = dir.0.join(pending.source_transaction_name().unwrap());
+            let local_bytes = std::fs::read(local_path.join("journal")).unwrap();
+            let plan = LinuxMoveRecoveryPlan::capture_at(&root, id).unwrap();
+            assert_eq!(std::fs::read(&central_path).unwrap(), bytes);
+            assert_eq!(
+                std::fs::read(local_path.join("journal")).unwrap(),
+                local_bytes
+            );
+            for path in [&root, &dir.0, &local_path, &destination] {
+                assert!(plan.paths().contains(path), "missing {}", path.display());
+            }
+            let stage = destination.join(pending.destination_transaction_name().unwrap());
+            assert!(plan.paths().contains(&stage));
+            let changed_path = if change_local {
+                local_path.join("journal")
+            } else {
+                central_path.clone()
+            };
+            let mut changed = std::fs::read(&changed_path).unwrap();
+            changed.push(b'\n'); // Valid equivalent JSON must still invalidate the captured snapshot.
+            std::fs::write(&changed_path, &changed).unwrap();
+            assert!(plan.execute().is_err());
+            assert_eq!(std::fs::read(&changed_path).unwrap(), changed);
+            assert!(!source.exists());
+            assert_eq!(
+                std::fs::read(local_path.join("claimed")).unwrap(),
+                b"original payload"
+            );
+            LinuxMoveRecoveryPlan::capture_at(&root, id)
+                .unwrap()
+                .execute()
+                .unwrap();
+            assert!(!source.exists());
+            assert_eq!(
+                std::fs::read(destination.join("source")).unwrap(),
+                b"original payload"
+            );
+            assert!(!local_path.exists());
+        }
+    }
+
+    #[test]
+    fn retained_move_plan_refuses_replaced_destination_parent_without_mutation() {
+        let dir = TestDir::new("planned-recovery-parent");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, b"original payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        assert!(
+            move_entry_transactional_with_test_hook(
+                &source,
+                &destination,
+                ConflictAction::Skip,
+                |point| match point {
+                    TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                    TestPoint::PendingDestination => Err("stop before publication"),
+                    _ => Ok(()),
+                },
+            )
+            .is_err()
+        );
+        let root = default_recovery_root().unwrap();
+        let id = discover_retained_move_transactions_at(&root).unwrap()[0].transaction_id;
+        let plan = LinuxMoveRecoveryPlan::capture_at(&root, id).unwrap();
+        let moved = dir.0.join("renamed-destination");
+        std::fs::rename(&destination, &moved).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("foreign"), b"unrelated").unwrap();
+        let journal = root.join(format!("{}.journal", transaction_id_hex(&id)));
+        let before = std::fs::read(&journal).unwrap();
+        assert!(plan.execute().is_err());
+        assert_eq!(std::fs::read(&journal).unwrap(), before);
+        assert_eq!(
+            std::fs::read(destination.join("foreign")).unwrap(),
+            b"unrelated"
+        );
+        assert!(!source.exists());
+        std::fs::remove_file(destination.join("foreign")).unwrap();
+        std::fs::remove_dir(&destination).unwrap();
+        std::fs::rename(&moved, &destination).unwrap();
+        LinuxMoveRecoveryPlan::capture_at(&root, id)
+            .unwrap()
+            .execute()
+            .unwrap();
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"original payload"
         );
     }
 
