@@ -1,0 +1,25 @@
+{
+  "status": "pass",
+  "source_revision": "62889236081c7299385a3fc1093716a5ffb1a0a3",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "4cfaf7cc30f30ed06b2e1bba20b446f32a60ddcc470e45581fcc460989283f4b",
+    "Ottrin-0.1.0-x86_64.AppImage": "16acff2724a55194fb74bc0cb70665804283a2c09c6ecda78b79b36c3eb9f7d7",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "98f6e5cba08360863b9ace0ba03cdb81cc2d5fb4a763afb9359437c6a1dcc184",
+    "ottrin_0.1.0_amd64.deb": "ccfbd52a7c6dae22237b6e5d150028752d6d83d08c3f13d0566baecce447b62e"
+  },
+  "checks": [
+    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
+    "portable six payload byte identities",
+    "all four formats contain exact current guide and release docs",
+    "clean embedded source revision",
+    "all package runtime identities checked against the actual rebuilt AppImage",
+    "Canonical build-all staged checksums and all-format privileged-helper path verification",
+    "Actual Dark100 AppImage: automatic nonconflicting Copy completion, Copy/Move Escape, Keep both/Undo and Move Replace/Undo; eight file checks",
+    "Actual Light150 AppImage: nonconflicting Copy, correct ready dialog, Copy Replace/Undo; three file checks",
+    "Both owned app/display/bus/daemon/profile groups exited; all original source hashes preserved"
+  ],
+  "scope": "Four-format content and targeted private-X11 ordinary file workflows. Blocked-reader responsiveness, bounded queues and stale-result refusal are controlled source/headless checks, not a native slow-storage test. Whole-Paste performance, native Windows GUI, fresh distro lifecycle and remaining roadmap acceptance stay open.",
+  "verifier_sha256": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
+  "cleanup": "private extractions removed by TemporaryDirectory",
+  "evidence": ".hermes/evidence/transfer-probe-current"
+}

@@ -1,0 +1,11 @@
+{
+  "PKG_CONFIG_PATH": "/home/campbell/Projects/Ottrin/.hermes/tools/gstreamer-dev/usr/lib/x86_64-linux-gnu/pkgconfig",
+  "RPM_wrapper_hashes": {
+    "rpm-bin/rpm": "da64730d763b4c703fa572e12d51023bc30f905f365d7e573e901ab61e9ce2b8",
+    "rpm-bin/rpmbuild": "2ec72ef36a64cfe482e0cd0076be329f5a45635d5323a888a941520f2b38965c"
+  },
+  "RPM_runtime": "/home/campbell/Projects/Ottrin/.hermes/tools/rpm",
+  "source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+  "fixture_binary_removed": true,
+  "wrapper_directory_removed": true
+}

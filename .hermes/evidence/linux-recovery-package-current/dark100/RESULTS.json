@@ -1,0 +1,86 @@
+{
+  "artifact_sha256": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
+  "theme": "Dark",
+  "scale": "1",
+  "flow": "ordinary",
+  "status": "pass",
+  "source_files_before": {
+    "source/note.txt": "ff8c0734f703a26d82ac74f558e090b19bb8a0a93b67d84eec13e38f7caac11f",
+    "source/other.txt": "f957b19529906961933c5c30f8713c500a9bb5d9d0695c40d48c97a26a3594ec",
+    "source/Folder/nested/leaf.txt": "840c2ff3c5325e1305b00fddf2885d4b70688ae357825045b3bb3900803a66c6",
+    "replacement/note.txt": "3cc98e7956d06ebfa0831553878073e5bfb3709934d72ac89aeac35530530fc3"
+  },
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 3ed1b303ab700c6851f414c5e08b51cdd3899c44\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "file_checks": [
+    {
+      "label": "Stale journal admission refuses without changing either payload",
+      "files": {
+        "recovery-source/.ottrin-move-94949494949494949494949494949494/claimed": "RECOVERED MOVE PAYLOAD\n",
+        "destination/.ottrin-move-94949494949494949494949494949494/candidate": "RECOVERED MOVE PAYLOAD\n"
+      },
+      "absent": [
+        "destination/recovered.txt",
+        "recovery-source/recovered.txt"
+      ]
+    },
+    {
+      "label": "Explicit Refresh followed by recovery publishes payload and clears owned transaction state",
+      "files": {
+        "destination/recovered.txt": "RECOVERED MOVE PAYLOAD\n"
+      },
+      "absent": [
+        "recovery-source/recovered.txt",
+        "recovery-source/.ottrin-move-94949494949494949494949494949494",
+        "destination/.ottrin-move-94949494949494949494949494949494",
+        "state/ottrin/moves/94949494949494949494949494949494.journal"
+      ]
+    },
+    {
+      "label": "Packaged batch Copy preserves source tree and publishes all three entries",
+      "files": {
+        "destination/note.txt": "first source\n",
+        "destination/other.txt": "second file\n",
+        "destination/Folder/nested/leaf.txt": "nested source\n",
+        "destination/recovered.txt": "RECOVERED MOVE PAYLOAD\n"
+      },
+      "absent": []
+    },
+    {
+      "label": "Batch Copy Undo removes copied entries and preserves recovered publication",
+      "files": {
+        "destination/recovered.txt": "RECOVERED MOVE PAYLOAD\n"
+      },
+      "absent": [
+        "destination/note.txt",
+        "destination/other.txt",
+        "destination/Folder"
+      ]
+    },
+    {
+      "label": "Packaged Move relocates recovered file with exact bytes",
+      "files": {
+        "moved/recovered.txt": "RECOVERED MOVE PAYLOAD\n"
+      },
+      "absent": [
+        "destination/recovered.txt"
+      ]
+    },
+    {
+      "label": "Move Undo restores original destination pathname and bytes",
+      "files": {
+        "destination/recovered.txt": "RECOVERED MOVE PAYLOAD\n"
+      },
+      "absent": [
+        "moved/recovered.txt"
+      ]
+    }
+  ],
+  "visual_checks": [
+    "Dark 100 percent: recovered.txt appears immediately in destination listing after native staged recovery",
+    "Explicit Activity Refresh is visible and rechecks admission; stale journal refusal and subsequent recovery preserve exact payloads",
+    "Batch Copy and reverse Undo, followed by Move and Undo, complete with coherent Activity states and exact bytes"
+  ],
+  "normal_app_exit": true,
+  "source_files_preserved": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and shared disposable app state removed"
+}

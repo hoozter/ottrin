@@ -1,0 +1,26 @@
+{
+  "status": "pass within Linux package content and scoped private X11 recovery/transfer workflows",
+  "source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d00c66c11eb870ec5e42260a5443614fa81ffdc1f87bdb446ae3e0db491ec7b8",
+    "Ottrin-0.1.0-x86_64.AppImage": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "faf8c7ea61060fffa5f4e6d9577fcbe13977764105e72a20d2ccb4a604f78cb8",
+    "ottrin_0.1.0_amd64.deb": "8f81a8048579a9bf50be72d1653716816738af2b197436d5441d45bb78126747"
+  },
+  "checks": [
+    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
+    "portable six payload byte identities",
+    "all four formats contain exact current guide and release docs",
+    "clean embedded source revision",
+    "all package runtime identities checked against the actual rebuilt AppImage",
+    "Canonical build-all four-format staged checksum and helper-path checks",
+    "Dark100: stale captured journal refuses without payload mutation; explicit Refresh recaptures and staged Move recovery publishes exact bytes and updates visible listing",
+    "Light150: staged recovery and visible listing update; coherent themed controls",
+    "Both actual AppImage runs: native batch Copy and Undo, Move and Undo, source hashes preserved and normal exits",
+    "Owned app/display/bus/daemon/profile processes stopped; all extraction and outer candidate removed"
+  ],
+  "scope": "Package content and targeted private-X11 ordinary workflows. Seeded staged recovery uses production public journal APIs on one filesystem; it does not establish real EXDEV interruption or physical device/power-loss acceptance. Earlier receipts retain their own hashes and scopes; broader platform/resource/installer/release gates remain open.",
+  "evidence": ".hermes/evidence/linux-recovery-package-current",
+  "verifier_sha256": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
+  "cleanup": "PROCESS_CLEANUP.json in both GUI cases; private extractions removed by TemporaryDirectory, candidate removed after hash-checked canonical publication"
+}

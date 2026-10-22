@@ -1,0 +1,81 @@
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/ottrin-linux-final-fdmwuqj7/squashfs-root/usr/libexec/ottrin/rg: OK
+{
+  "binary_sha256": "2bc95f2ae41d5d0e2051a78208d0e08d8af0d02f78831ef19d8e4f11b1f84c33",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": false,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd (deleted)",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    }
+  ],
+  "status": "pass"
+}
+{
+  "binary_sha256": "59f47d054fba3899d4cd56c91f5ee1e64bf01c1e069b06a73ed4e35d3fa758ef",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": false,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd (deleted)",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    }
+  ],
+  "status": "pass"
+}
+{
+  "status": "pass",
+  "source_revision": "3a5bc095d78520bf14b74a07b3e83235e9620ec9",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "54bb74edf19f715cadbb2c8b1e0b0da7a94d04c4c9add8986d76fe066e040972",
+    "Ottrin-0.1.0-x86_64.AppImage": "41c175ccba8c9db3d3c1fab06f4783b85d58f6a8e66cd1b3ab8f7bbb43457dfc",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "ed9088b93786656b8971dee7e405c6c7a83df51e455c1f3158347f0b5544132d",
+    "ottrin_0.1.0_amd64.deb": "415e475bf61416e8e1018ddb6c615c3d427939804191c4356e866ea0646f5448"
+  },
+  "checks": [
+    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
+    "portable six payload byte identities",
+    "all four formats contain exact current guide and release docs",
+    "clean embedded source revision",
+    "all package runtime identities checked against the actual rebuilt AppImage"
+  ],
+  "scope": "Linux package content verification; native runtime acceptance retains separately recorded exact artifact scopes",
+  "verifier_sha256": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
+  "cleanup": "private extractions removed by TemporaryDirectory"
+}

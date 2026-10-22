@@ -1,0 +1,10 @@
+{
+  "crates/ottrin-ui/src/lib.rs": "aff239d861cbd7df6a1055759c9f24df7296f9149a2fdf3b93467e3c976d7ad6",
+  ".hermes/evidence/copy-activity-current/gui-driver.py": "8a63f83c6b4f2798b9b695f5e2ae15501de62745150cb81d8207cc079421d4ca",
+  "scripts/test-workspace.py": "f796a5b0ff6f4feb5c28fc6193ebf37b21d60e4d976246b51ee7a62fc2be1b97",
+  "packaging/verify-release-artifacts.sh": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
+  "build-all.sh": "4703e9262f021683bc52c5c1b0941268bca933071585d2519f187808cf71048f",
+  "packaging/package-lifecycle.sh": "765bcb25c0abcadbf90b3a28a2f27923f77f1e21085c07f07dcbae137545789f",
+  ".hermes/evidence/linux-recovery-package-current/seed.rs": "81a808b23bca5e7402e74432b00c31a351faadd45f86f163e55b616270ab28b1",
+  ".hermes/evidence/linux-recovery-package-current/verify-packages.py": "48163275bbae630f7e745e75ef8fca37f918d4aa242d14f68f3f1b3f3c67e825"
+}

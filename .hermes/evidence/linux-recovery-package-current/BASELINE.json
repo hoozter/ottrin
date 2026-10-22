@@ -1,0 +1,8 @@
+{
+  "source_revision": "3a5bc095d78520bf14b74a07b3e83235e9620ec9",
+  "operator_files": {
+    "/home/campbell/.config/ottrin/config.json": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "/home/campbell/.config/systemd/user/ottrin-index.service": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350"
+  },
+  "windows_candidate_receipt_sha256": "84eef4097b49484daede7275295b138a44326069ab237d17ea8e0b269f040713"
+}

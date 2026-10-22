@@ -1,0 +1,97 @@
+{
+  "status": "verified scoped Linux delivery",
+  "package_source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+  "appimage": {
+    "path": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+    "sha256": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6"
+  },
+  "source_checks": {
+    "ui_passed": 398,
+    "ui_ignored": 1,
+    "strict_linux_windows_ui_clippy": "passed; logs retained",
+    "result_regression": "Successful and failed recovery refresh admitted directories in List, Grid and Miller",
+    "platform_scope": "Native Linux admission checkpoint .hermes/evidence/linux-move-admission-current retains its 415 platform tests and separate private mount proof; platform source unchanged in this UI/package follow-up"
+  },
+  "package_checks": {
+    "identity": "FINAL_PACKAGE_IDENTITIES.json",
+    "four_artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "d00c66c11eb870ec5e42260a5443614fa81ffdc1f87bdb446ae3e0db491ec7b8",
+      "Ottrin-0.1.0-x86_64.AppImage": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "faf8c7ea61060fffa5f4e6d9577fcbe13977764105e72a20d2ccb4a604f78cb8",
+      "ottrin_0.1.0_amd64.deb": "8f81a8048579a9bf50be72d1653716816738af2b197436d5441d45bb78126747"
+    },
+    "canonical_staged_build": "build.log includes all four checksum and privileged-helper path checks; local GStreamer and RPM tools configured",
+    "native_daemon_namespace": [
+      "PACKAGED_NAMESPACE_APPIMAGE.json",
+      "PACKAGED_NAMESPACE_RPM.json"
+    ],
+    "gui": {
+      "dark100": {
+        "file_state_checkpoints": 6,
+        "normal_app_exit": true,
+        "source_files_preserved": true,
+        "visual_checks": [
+          "Dark 100 percent: recovered.txt appears immediately in destination listing after native staged recovery",
+          "Explicit Activity Refresh is visible and rechecks admission; stale journal refusal and subsequent recovery preserve exact payloads",
+          "Batch Copy and reverse Undo, followed by Move and Undo, complete with coherent Activity states and exact bytes"
+        ]
+      },
+      "light150": {
+        "file_state_checkpoints": 5,
+        "normal_app_exit": true,
+        "source_files_preserved": true,
+        "visual_checks": [
+          "Light at 150 percent: themed Refresh and recovery controls remain coherent and readable",
+          "Recovered file appears immediately without navigation or manual listing reload",
+          "Batch Copy, batch Undo, Move and Move Undo display correct state and preserve exact payload bytes"
+        ]
+      }
+    },
+    "gui_scope": "Actual unpacked AppRun and native files from exact hashed AppImage under disposable Xvfb/DBus profiles, software OpenGL; Dark100 and Light150",
+    "recovery_fixture": "Production public APIs create paired pending journals with a staged non-overwrite file on one filesystem. Actual package performs stale-admission refusal, recapture and recovery. No claim of real EXDEV interruption or physical device acceptance."
+  },
+  "required_failures_preserved": {
+    "initial_3a5bc095_package": "Native payload result correct but destination listing stayed empty; SOURCE_ACCEPTANCE.json and dark100-initial preserve evidence. Shared operation result refresh fixed before new clean build and promotion.",
+    "initial_build": "Missing shell pkg-config metadata; existing local GStreamer development tree selected, no host package installation",
+    "verifier_argument": "One invocation passed a mistyped short revision and failed its initial HEAD assertion before extraction; rerun with exact git rev-parse HEAD passed"
+  },
+  "cleanup": {
+    "both_gui_profiles_and_processes": "PROCESS_CLEANUP.json per accepted case",
+    "operator_files_and_windows_candidate": "OPERATOR_PRESERVATION.json confirms unchanged hashes",
+    "staging": "All checker extractions, GUI profiles, standalone seed executable, temporary RPM wrappers and candidate directory removed",
+    "compiler_cache": {
+      "receipt": "CACHE_RETIREMENT.json",
+      "superseded_finalized_sessions": 6,
+      "logical_bytes_retired": 565596531,
+      "useful_release_configurations_retained": true
+    },
+    "storage": [
+      "STORAGE_BEFORE.txt",
+      "STORAGE_AFTER.txt"
+    ]
+  },
+  "promotion": {
+    "status": "pass",
+    "source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+    "artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "d00c66c11eb870ec5e42260a5443614fa81ffdc1f87bdb446ae3e0db491ec7b8",
+      "Ottrin-0.1.0-x86_64.AppImage": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "faf8c7ea61060fffa5f4e6d9577fcbe13977764105e72a20d2ccb4a604f78cb8",
+      "ottrin_0.1.0_amd64.deb": "8f81a8048579a9bf50be72d1653716816738af2b197436d5441d45bb78126747"
+    },
+    "superseded_artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "4cfaf7cc30f30ed06b2e1bba20b446f32a60ddcc470e45581fcc460989283f4b",
+      "Ottrin-0.1.0-x86_64.AppImage": "16acff2724a55194fb74bc0cb70665804283a2c09c6ecda78b79b36c3eb9f7d7",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "98f6e5cba08360863b9ace0ba03cdb81cc2d5fb4a763afb9359437c6a1dcc184",
+      "ottrin_0.1.0_amd64.deb": "ccfbd52a7c6dae22237b6e5d150028752d6d83d08c3f13d0566baecce447b62e"
+    },
+    "candidate_removed": true,
+    "stable_directory": "/home/campbell/Projects/Ottrin/dist/packages",
+    "publication": "Canonical package-lifecycle helper; replace inodes after all four pass content/GUI checks; original operator configuration and service preserved"
+  },
+  "remaining": [
+    "Full physical device, Wayland/GPU, power-loss, resource and fresh-distro lifecycle/release acceptance remain open",
+    "Windows candidate/public artifacts unchanged; native Cross parent-rename and remaining Copy/installer/platform work remain required",
+    "Earlier theme/media/workflow receipts retain their recorded exact artifact scopes; targeted current GUI checks do not reaccept the whole interface"
+  ]
+}

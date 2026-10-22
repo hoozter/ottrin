@@ -1,0 +1,5 @@
+{
+  "change": "append newline to valid central JSON after explicit Activity Refresh captured admission",
+  "before_sha256": "5b0191c45fa01d23cb50dbdc472fb856fae9dd3700d9d2553de211804cb33707",
+  "after_sha256": "629e45d051ff3a257170a71b22f2fde613ad9939d48f4195de8a8a14b0f46826"
+}

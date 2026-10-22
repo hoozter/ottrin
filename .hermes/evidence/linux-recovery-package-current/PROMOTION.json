@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d00c66c11eb870ec5e42260a5443614fa81ffdc1f87bdb446ae3e0db491ec7b8",
+    "Ottrin-0.1.0-x86_64.AppImage": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "faf8c7ea61060fffa5f4e6d9577fcbe13977764105e72a20d2ccb4a604f78cb8",
+    "ottrin_0.1.0_amd64.deb": "8f81a8048579a9bf50be72d1653716816738af2b197436d5441d45bb78126747"
+  },
+  "superseded_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "4cfaf7cc30f30ed06b2e1bba20b446f32a60ddcc470e45581fcc460989283f4b",
+    "Ottrin-0.1.0-x86_64.AppImage": "16acff2724a55194fb74bc0cb70665804283a2c09c6ecda78b79b36c3eb9f7d7",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "98f6e5cba08360863b9ace0ba03cdb81cc2d5fb4a763afb9359437c6a1dcc184",
+    "ottrin_0.1.0_amd64.deb": "ccfbd52a7c6dae22237b6e5d150028752d6d83d08c3f13d0566baecce447b62e"
+  },
+  "candidate_removed": true,
+  "stable_directory": "/home/campbell/Projects/Ottrin/dist/packages",
+  "publication": "Canonical package-lifecycle helper; replace inodes after all four pass content/GUI checks; original operator configuration and service preserved"
+}

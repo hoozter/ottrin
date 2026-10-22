@@ -1,0 +1,8 @@
+{
+  "source": ".hermes/evidence/linux-recovery-package-current/seed.rs",
+  "source_sha256": "81a808b23bca5e7402e74432b00c31a351faadd45f86f163e55b616270ab28b1",
+  "binary_sha256": "f1c9c59efb08c5345c6c18402fbf83c1b51572131410b78bd71d8320f13dc9d1",
+  "platform_rlib": "target/debug/deps/libottrin_platform-abc5c0ac58397732.rlib",
+  "platform_rlib_sha256": "06f82235d9c569846ee51adf514e99dcf6d4b5504567511db051a46f0f5a850c",
+  "scope": "Fixture creation only through production paired journal and claim APIs; packaged app performs recovery"
+}

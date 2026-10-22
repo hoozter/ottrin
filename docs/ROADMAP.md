@@ -18,6 +18,17 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
+The current Linux cohort is built from clean `3ed1b303`. All four formats pass
+payload, source, helper-policy, dependency and embedded-document checks. The
+exact AppImage passes retained Move recovery with immediate visible listing
+refresh, explicit Activity Refresh, batch Copy/Undo and Move/Undo in private
+Dark 100% and Light 150% X11 sessions. The dark run also proves a changed captured
+journal refuses without payload mutation before a refreshed attempt succeeds.
+Source hashes are preserved and both sessions exit normally with owned profiles
+and processes removed. This is targeted package acceptance, not completion of
+the Linux/device/resource or Windows roadmap. Full evidence is in
+`.hermes/evidence/linux-recovery-package-current/ACCEPTANCE.json`.
+
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
 Copy/Paste, conflict renaming, Copy Undo, Rename, Cut/Paste without reselection,
@@ -588,6 +599,18 @@ rechecking retained records and connected drives. The added result regression
 covers successful and failed recovery in all three views; all 398 UI tests pass
 with the existing one namespace exclusion. The first rebuilt `3a5bc095`
 AppImage demonstrated the stale-listing defect and is not accepted for delivery.
+
+The corrected clean `3ed1b303` Linux cohort is now delivered at the stable paths.
+All four package contents and native daemon-ownership namespace checks pass.
+Exact AppImage Dark 100% and Light 150% recovery, live listing refresh, Activity
+Refresh, batch Copy/Undo and Move/Undo pass with original source hashes retained
+and normal exits. The dark run additionally accepts stale-journal refusal before
+an explicit refresh and successful retry. The fixture creates valid staged
+records through production APIs on one filesystem; this does not establish real
+EXDEV interruption, physical device removal or power-loss acceptance. The public
+Windows artifacts remain unchanged. Artifact hashes and scope:
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`.hermes/evidence/linux-recovery-package-current/ACCEPTANCE.json`.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 
