@@ -63,7 +63,14 @@ fn pair(root: &Path, origin: &Origin) -> Result<(Record, bool), PlatformError> {
     .0;
     let central = load_windows_cross_volume_record(&windows_cross_volume_journal_path(root, id))?;
     let directory = path(&binding.directory)?;
-    let local = load_windows_cross_volume_record(&directory.join(WINDOWS_LOCAL_JOURNAL_NAME))?;
+    let held = super::super::super::windows_control::directory(
+        root,
+        binding.identity,
+        &path(&binding.directory)?,
+    )?;
+    let bytes = super::super::super::windows_control::read_local(&held)?
+        .ok_or_else(|| stale(&directory))?;
+    let local = super::super::super::decode_windows_cross_volume_record(&bytes)?;
     let before = path(&origin.original)?;
     let after = path(&origin.publication)?;
     if canonical(&central) != canonical(&local)
@@ -105,7 +112,6 @@ fn pair(root: &Path, origin: &Origin) -> Result<(Record, bool), PlatformError> {
     if !allowed {
         return Err(stale(&directory));
     }
-    let held = parent(&directory, binding.identity)?;
     if observe(&held, OsStr::new(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME))?.is_some() {
         return Err(stale(&directory));
     }
@@ -186,7 +192,7 @@ pub(in crate::move_transaction) fn prepare(
         return Ok(());
     };
     if controller.phase == Phase::Undone {
-        if terminal(inverse)?.is_none() {
+        if terminal(root, inverse)?.is_none() {
             return Err(pending(
                 inverse,
                 "Terminal controller has no terminal inverse proof",
@@ -200,7 +206,7 @@ pub(in crate::move_transaction) fn prepare(
     }
     let origin = origin(inverse)?;
     let binding = origin.retained.as_ref().unwrap();
-    if terminal(inverse)?.is_none()
+    if terminal(root, inverse)?.is_none()
         && observe_windows_identity(&binding.retained_path()?)? != Some(binding.entry)
     {
         return Err(stale(&binding.retained_path()?));
@@ -236,7 +242,12 @@ pub(super) fn inverse_complete(root: &Path, inverse: &Record) -> Result<bool, Pl
         return Ok(false);
     }
     let binding = origin(inverse)?.retained.as_ref().unwrap();
-    if observe_windows_identity(&binding.retained_path()?)?.is_some() {
+    let held = super::super::super::windows_control::directory(
+        root,
+        binding.identity,
+        &path(&binding.directory)?,
+    )?;
+    if observe(&held, OsStr::new(WINDOWS_RETAINED_NAME))?.is_some() {
         return Err(stale(&binding.retained_path()?));
     }
     Ok(true)
@@ -280,7 +291,12 @@ pub(super) fn finish(root: &Path, inverse: &Record) -> Result<(), PlatformError>
     let origin = origin(inverse)?;
     let binding = origin.retained.as_ref().unwrap();
     if controller.phase == Phase::Undone {
-        if observe_windows_identity(&binding.retained_path()?)?.is_some() {
+        let held = super::super::super::windows_control::directory(
+            root,
+            binding.identity,
+            &path(&binding.directory)?,
+        )?;
+        if observe(&held, OsStr::new(WINDOWS_RETAINED_NAME))?.is_some() {
             return Err(stale(&binding.retained_path()?));
         }
         if !paired_done {
@@ -379,7 +395,7 @@ pub(in crate::move_transaction) fn controller_status(
     }
     if controller.phase == Phase::Undone
         && paired_done
-        && terminal(&inverse)?.is_some_and(|(_, paired)| paired)
+        && terminal(root, &inverse)?.is_some_and(|(_, paired)| paired)
         && inverse_complete(root, &inverse)?
     {
         Ok(move_recovery::WindowsMoveUndoStatus::Complete)

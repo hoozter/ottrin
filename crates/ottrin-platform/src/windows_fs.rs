@@ -1,4 +1,6 @@
 //! Native single-entry operations shared by Windows file transactions.
+mod recovery;
+pub(crate) use recovery::Volumes;
 use std::ffi::{OsStr, OsString, c_void};
 use std::fs::File;
 use std::io;

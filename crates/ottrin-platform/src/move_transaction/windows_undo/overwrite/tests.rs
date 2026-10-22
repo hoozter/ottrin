@@ -69,6 +69,91 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn windows_native_completed_replace_undo_follows_private_identity_after_parent_renames() {
+    let fixture = Fixture::new();
+    let (receipt, record) = fixture.moved(0);
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    let central_before = std::fs::read(journal(&record)).unwrap();
+    let local_before = std::fs::read(local(&record)).unwrap();
+    let moved_source = fixture.root.path().join("renamed-source");
+    let moved_destination = fixture.root.path().join("renamed-destination");
+    std::fs::rename(receipt.before_path().parent().unwrap(), &moved_source).unwrap();
+    std::fs::rename(receipt.after_path().parent().unwrap(), &moved_destination).unwrap();
+    std::fs::create_dir(receipt.before_path().parent().unwrap()).unwrap();
+    std::fs::create_dir(receipt.after_path().parent().unwrap()).unwrap();
+    std::fs::write(receipt.before_path(), b"foreign old source").unwrap();
+    std::fs::write(receipt.after_path(), b"foreign old destination").unwrap();
+    std::fs::create_dir(record.transaction_path().unwrap()).unwrap();
+    std::fs::write(local(&record), &local_before).unwrap();
+    std::fs::write(
+        record.replacement_path().unwrap(),
+        b"foreign private candidate",
+    )
+    .unwrap();
+    let plan = crate::WindowsMoveRecoveryPlan::capture(record.transaction_id().unwrap()).unwrap();
+    assert_eq!(
+        plan.undo_status_for(&receipt),
+        Some(move_recovery::WindowsMoveUndoStatus::Complete)
+    );
+    assert_eq!(
+        plan.paths(),
+        &[root()],
+        "completed acknowledgement releases former payload paths"
+    );
+    plan.execute().unwrap();
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    assert_terminal(&record);
+    let unrelated = fixture.root.path().join("unrelated");
+    std::fs::write(&unrelated, b"independent source").unwrap();
+    let (_, undo) = DefaultPlatform
+        .execute_move_with_undo_receipt(
+            &unrelated,
+            receipt.after_path().parent().unwrap(),
+            ConflictAction::Skip,
+        )
+        .unwrap();
+    DefaultPlatform
+        .undo_move_with_receipt(&undo.unwrap())
+        .unwrap();
+    assert_eq!(std::fs::read(unrelated).unwrap(), b"independent source");
+    assert_eq!(
+        std::fs::read(moved_source.join("entry")).unwrap(),
+        b"selected original"
+    );
+    assert_eq!(
+        std::fs::read(moved_destination.join("entry")).unwrap(),
+        b"displaced original"
+    );
+    assert_eq!(
+        std::fs::read(receipt.before_path()).unwrap(),
+        b"foreign old source"
+    );
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"foreign old destination"
+    );
+    assert_eq!(
+        std::fs::read(record.replacement_path().unwrap()).unwrap(),
+        b"foreign private candidate"
+    );
+    assert_eq!(std::fs::read(journal(&record)).unwrap(), central_before);
+    assert_eq!(
+        std::fs::read(
+            moved_destination
+                .join(record.transaction_path().unwrap().file_name().unwrap())
+                .join(WINDOWS_LOCAL_JOURNAL_NAME)
+        )
+        .unwrap(),
+        local_before
+    );
+    assert_eq!(
+        std::fs::read(local(&record)).unwrap(),
+        local_before,
+        "foreign copied journal stays untouched"
+    );
+}
+
+#[test]
 fn windows_native_replace_recovery_plan_refuses_changed_local_evidence() {
     let fixture = Fixture::new();
     let (receipt, record) = fixture.moved(0);

@@ -6,6 +6,21 @@ use super::*;
 enum Evidence {
     Same(PathBuf, Option<Box<WindowsOverwriteRecord>>),
     Cross(PathBuf, Option<Box<WindowsCrossVolumeRecord>>),
+    SameLocal(
+        PathBuf,
+        move_recovery::WindowsStableIdentity,
+        Option<Box<WindowsOverwriteRecord>>,
+    ),
+    CrossLocal(
+        PathBuf,
+        move_recovery::WindowsStableIdentity,
+        Option<Box<WindowsCrossVolumeRecord>>,
+    ),
+    RetiredCrossLocal(
+        PathBuf,
+        move_recovery::WindowsStableIdentity,
+        std::ffi::OsString,
+    ),
 }
 
 /// Read-only recovery admission. Private evidence binds the worker to exactly
@@ -42,6 +57,11 @@ impl WindowsMoveRecoveryPlan {
         let mut visited = std::collections::BTreeSet::new();
         plan.capture_owner(transaction_id, &mut visited)?;
         plan.undo_status = plan.observe_undo_status()?;
+        if plan.undo_status == move_recovery::WindowsMoveUndoStatus::Complete {
+            // A verified completed plan only acknowledges history; it never
+            // mutates its former payload or private directories.
+            plan.paths = vec![plan.root.clone()];
+        }
         plan.paths.sort();
         plan.paths.dedup();
         Ok(plan)
@@ -96,9 +116,10 @@ impl WindowsMoveRecoveryPlan {
                 Evidence::Same(path, Some(record))
                     if *path == windows_journal_path(&self.root, self.transaction_id) =>
                 {
-                    let local_path = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
                     let local = self.evidence.iter().find_map(|entry| match entry {
-                        Evidence::Same(path, Some(local)) if *path == local_path => {
+                        Evidence::SameLocal(_, identity, Some(local))
+                            if *identity == record.transaction_directory_identity =>
+                        {
                             Some(local.as_ref())
                         }
                         _ => None,
@@ -168,14 +189,16 @@ impl WindowsMoveRecoveryPlan {
                     &record.destination_parent_path()?,
                     &record.transaction_path()?,
                 )?;
-                let local_path = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
-                let local = exists(&local_path)?
-                    .then(|| load_windows_overwrite_record(&local_path))
+                let identity = record.transaction_directory_identity;
+                let hint = record.transaction_path()?;
+                let directory = windows_control::directory(&self.root, identity, &hint)?;
+                let local = windows_control::read_local(&directory)?
+                    .map(|bytes| decode_windows_overwrite_record(&bytes))
                     .transpose()?;
                 self.evidence
                     .push(Evidence::Same(same, Some(Box::new(record))));
                 self.evidence
-                    .push(Evidence::Same(local_path, local.map(Box::new)));
+                    .push(Evidence::SameLocal(hint, identity, local.map(Box::new)));
             }
             (false, true) => {
                 let record = load_windows_cross_volume_record(&cross)?;
@@ -189,10 +212,45 @@ impl WindowsMoveRecoveryPlan {
                     &record.destination_parent_path()?,
                     &record.transaction_path()?,
                 )?;
-                let local_path = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
-                let local = exists(&local_path)?
-                    .then(|| load_windows_cross_volume_record(&local_path))
-                    .transpose()?;
+                let identity = record.transaction_directory_identity;
+                let hint = record.transaction_path()?;
+                let local = match windows_control::directory(&self.root, identity, &hint) {
+                    Ok(directory) => {
+                        let local = windows_control::read_local(&directory)?
+                            .map(|bytes| decode_windows_cross_volume_record(&bytes))
+                            .transpose()?;
+                        Evidence::CrossLocal(hint, identity, local.map(Box::new))
+                    }
+                    Err(error) => {
+                        let parent = record.destination_parent_path()?;
+                        let name = std::ffi::OsString::from(format!(
+                            ".ottrin-move-{}",
+                            encode_transaction_id(id)
+                        ));
+                        if record.phase != WindowsCrossVolumePhase::SourceRemoved
+                            || record.undo_origin.is_some()
+                            || record.undo_transaction.is_some()
+                            || record.conflict == ConflictAction::Overwrite
+                            || record.retained_displaced.is_some()
+                            || record.destination_identity.is_some()
+                            || hint != parent.join(&name)
+                            || !windows_control::missing_original(
+                                &parent,
+                                record.destination_parent_identity,
+                                &name,
+                            )?
+                        {
+                            return Err(error);
+                        }
+                        // Forward payload teardown can remove this directory before
+                        // a blocked central-journal deletion becomes retryable.
+                        Evidence::RetiredCrossLocal(
+                            parent,
+                            record.destination_parent_identity,
+                            name,
+                        )
+                    }
+                };
                 let linked = if record.undo_origin.is_some() {
                     windows_undo::cross::retained::presentation_controller(&self.root, &record)?
                 } else {
@@ -200,8 +258,7 @@ impl WindowsMoveRecoveryPlan {
                 };
                 self.evidence
                     .push(Evidence::Cross(cross, Some(Box::new(record))));
-                self.evidence
-                    .push(Evidence::Cross(local_path, local.map(Box::new)));
+                self.evidence.push(local);
                 if let Some(linked) = linked {
                     self.capture_owner(linked, visited)?;
                 }
@@ -263,6 +320,35 @@ impl WindowsMoveRecoveryPlan {
                         .as_ref()
                         == expected.as_deref()
                 }
+                Evidence::SameLocal(hint, identity, expected) => {
+                    if self.undo_status == move_recovery::WindowsMoveUndoStatus::Complete {
+                        true
+                    } else {
+                        let _namespace = windows_control::pin_original(hint, *identity)?;
+                        let directory = windows_control::directory(&self.root, *identity, hint)?;
+                        windows_control::read_local(&directory)?
+                            .map(|bytes| decode_windows_overwrite_record(&bytes))
+                            .transpose()?
+                            .as_ref()
+                            == expected.as_deref()
+                    }
+                }
+                Evidence::CrossLocal(hint, identity, expected) => {
+                    if self.undo_status == move_recovery::WindowsMoveUndoStatus::Complete {
+                        true
+                    } else {
+                        let _namespace = windows_control::pin_original(hint, *identity)?;
+                        let directory = windows_control::directory(&self.root, *identity, hint)?;
+                        windows_control::read_local(&directory)?
+                            .map(|bytes| decode_windows_cross_volume_record(&bytes))
+                            .transpose()?
+                            .as_ref()
+                            == expected.as_deref()
+                    }
+                }
+                Evidence::RetiredCrossLocal(parent, identity, name) => {
+                    windows_control::missing_original(parent, *identity, name)?
+                }
                 Evidence::Cross(path, expected) => {
                     path.try_exists()
                         .map_err(|e| PlatformError::Io(e.to_string()))?
@@ -277,6 +363,9 @@ impl WindowsMoveRecoveryPlan {
                     "Move recovery evidence changed; refresh Activity".into(),
                 ));
             }
+        }
+        if self.undo_status == move_recovery::WindowsMoveUndoStatus::Complete {
+            return Ok(());
         }
         recover_retained_windows_move_transaction_at(&self.root, self.transaction_id)
     }

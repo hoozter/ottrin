@@ -378,6 +378,37 @@ retirement and containing-parent/unavailable-volume lifecycle, Linux native-plan
 admission, hard-power/resource outcomes and exact-package acceptance still remain.
 User acceptance stays deferred while independent work continues.
 
+## Windows completed Move Undo — containing-parent renames
+
+Retained Move control reads now select the recorded native directory object. A
+stored name is accepted only when its directory identity still matches; otherwise
+the shared Windows volume/ID resolver locates the original directory. Copy and
+Move use one resolver implementation. Local journal reads are relative to that
+verified directory handle and reject reparse files.
+
+Completed same-volume Replace and cross-volume Replace Undo remain discoverable
+and retryable after both containing parents are renamed. Recreated old names,
+including copied journals and foreign private candidates, grant no authority.
+Completed recovery plans reserve only the registry and acknowledge already proven
+history without replaying payload paths. Their central snapshots are still checked.
+Pending recovery retains strict original-namespace admission, and every paired
+journal writer pins and verifies the original private directory before writing
+either journal. An already retired non-overwrite forward directory is represented
+by an explicit absence observation under its verified original destination parent,
+so late central-journal teardown remains retryable without adopting a replacement.
+
+Evidence: `.hermes/evidence/windows-move-terminal-parent-current/ACCEPTANCE.json`.
+The first native run passed the new rename cases but exposed that late-forward
+teardown absence; the failed run is retained, and the corrected state distinction
+is checked by the existing sharing/interruption regression.
+
+This is source/native work; packages are unchanged. Durable compact completion
+records, terminal-control reclamation, unavailable-volume/removed-parent behavior
+across restart, renamed retained forward histories before Undo, and renamed
+incomplete-operation recovery remain required. This
+checkpoint does not claim offline restart, FAT32/ReFS, hard-power or package GUI
+acceptance. Linux native-plan and the remaining release roadmap work also remain.
+
 ## Windows Copy: end an incomplete attempt without discarding files
 
 Activity now offers “End copy attempt…” only after opaque read-only admission of

@@ -1,0 +1,11 @@
+{
+    "exit":  0,
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments":  "copy_transaction::windows::registry:: --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "3d06f9fab18cdaae618173edba06ea588bb435f7aa1b9aa12d97dc9048f9aea4",
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "7f7cb71be1e3a185df756efb8699d0aa4cbccfdb238dac4cd1a3c09eb7c99d5d",
+    "dispatch_id":  "d82ad343dc5d50250182b5dbfda06ec4"
+}

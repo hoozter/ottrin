@@ -55,6 +55,8 @@ use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
 #[cfg(target_os = "windows")]
+pub(super) mod windows_control;
+#[cfg(target_os = "windows")]
 pub(super) mod windows_recovery_plan;
 #[cfg(target_os = "windows")]
 pub(super) mod windows_undo;
@@ -2194,9 +2196,7 @@ pub(super) fn discover_retained_windows_move_transactions_at(
             let record_transaction_id = match kind {
                 WindowsJournalKind::SameVolumeOverwrite => {
                     let record = load_windows_overwrite_record(&entry.path())?;
-                    let local = load_windows_overwrite_record(
-                        &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
-                    )?;
+                    let local = windows_control::overwrite(recovery_root, &record)?;
                     if windows_undo::overwrite::has_inverse_intent(&record, &local) {
                         undo_status = if windows_undo::overwrite::completed(
                             recovery_root,
@@ -2441,6 +2441,10 @@ fn persist_windows_overwrite_record(
     recovery_root: &Path,
     record: &WindowsOverwriteRecord,
 ) -> Result<(), PlatformError> {
+    let _private = windows_control::pin_original(
+        &record.transaction_path()?,
+        record.transaction_directory_identity,
+    )?;
     let transaction_id = record.transaction_id()?;
     let local = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
     write_windows_record_file(&local, record, false)?;
@@ -2454,8 +2458,13 @@ fn persist_windows_overwrite_record(
 #[cfg(target_os = "windows")]
 fn load_windows_overwrite_record(path: &Path) -> Result<WindowsOverwriteRecord, PlatformError> {
     let bytes = std::fs::read(path).map_err(|error| PlatformError::Io(error.to_string()))?;
+    decode_windows_overwrite_record(&bytes)
+}
+
+#[cfg(target_os = "windows")]
+fn decode_windows_overwrite_record(bytes: &[u8]) -> Result<WindowsOverwriteRecord, PlatformError> {
     let record: WindowsOverwriteRecord =
-        serde_json::from_slice(&bytes).map_err(|error| PlatformError::Io(error.to_string()))?;
+        serde_json::from_slice(bytes).map_err(|error| PlatformError::Io(error.to_string()))?;
     if record.schema_major != move_recovery::JOURNAL_SCHEMA_MAJOR
         || record.schema_minor > move_recovery::JOURNAL_SCHEMA_MINOR
     {
@@ -2472,8 +2481,15 @@ fn load_windows_cross_volume_record(
     path: &Path,
 ) -> Result<WindowsCrossVolumeRecord, PlatformError> {
     let bytes = std::fs::read(path).map_err(|error| PlatformError::Io(error.to_string()))?;
+    decode_windows_cross_volume_record(&bytes)
+}
+
+#[cfg(target_os = "windows")]
+fn decode_windows_cross_volume_record(
+    bytes: &[u8],
+) -> Result<WindowsCrossVolumeRecord, PlatformError> {
     let record: WindowsCrossVolumeRecord =
-        serde_json::from_slice(&bytes).map_err(|error| PlatformError::Io(error.to_string()))?;
+        serde_json::from_slice(bytes).map_err(|error| PlatformError::Io(error.to_string()))?;
     if record.schema_major != move_recovery::JOURNAL_SCHEMA_MAJOR
         || record.schema_minor > move_recovery::JOURNAL_SCHEMA_MINOR
     {
@@ -2505,9 +2521,7 @@ fn recover_windows_overwrites_before_move(
             == Some(std::ffi::OsStr::new("journal"))
         {
             let record = load_windows_overwrite_record(&path)?;
-            let local = load_windows_overwrite_record(
-                &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
-            )?;
+            let local = windows_control::overwrite(&recovery_root, &record)?;
             if windows_undo::overwrite::has_inverse_intent(&record, &local) {
                 if windows_undo::overwrite::completed(&recovery_root, &record, &local)? {
                     continue;
@@ -2685,6 +2699,10 @@ fn persist_windows_cross_volume_record(
     recovery_root: &Path,
     record: &WindowsCrossVolumeRecord,
 ) -> Result<(), PlatformError> {
+    let _private = windows_control::pin_original(
+        &record.transaction_path()?,
+        record.transaction_directory_identity,
+    )?;
     let transaction_id = record.transaction_id()?;
     write_windows_record_file(
         &windows_cross_volume_journal_path(recovery_root, transaction_id),

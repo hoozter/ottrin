@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-22",
+  "status": "source_native_checkpoint_passed",
+  "source_base": "a4bd3e3dc2c492d86c77d44f1b897a46e2197c82",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Identity-bound retained control reads and completed Windows Move Undo after containing-parent renames; source/native checkpoint, not full terminal retirement or a package release.",
+  "implementation": [
+    "Copy and Move use one native Windows volume/ID resolver; previous Copy implementation and all call sites moved without a compatibility shim",
+    "A stored path is admitted only when it still opens the exact ordinary directory ID; otherwise the shared resolver opens the recorded native object",
+    "Local Move journals are read relative to verified directory handles and reject reparse files",
+    "Completed same-volume Replace and cross-volume inverse/controller proof reads follow original private directory identities rather than recreated old names",
+    "Completed recovery plans retain only the registry footprint and acknowledge verified history after central snapshot checks; they never replay former payload paths",
+    "Pending plan execution pins original private namespaces, and paired writers pin and verify the private directory before either journal write",
+    "Late non-overwrite forward teardown with an already removed private directory captures explicit namespace absence under its verified original destination parent; inverse or retained directories are never inferred retired"
+  ],
+  "verification": {
+    "windows_move_suite": {
+      "passed": 117,
+      "failed": 0,
+      "result": "RESULTS.json",
+      "binary": "TEST_BINARY.json",
+      "scope": "Selected full Move module, native Copy session-receipt/abort-dependency checks, and ignored owned second-volume checks",
+      "new_cases": [
+        "Same-volume Replace Undo with both containing parents renamed; recreated original file names and copied foreign journal/candidate are untouched",
+        "Cross-volume Replace Undo with both parents renamed; discovery, both recovery owner IDs and direct receipt retry remain complete",
+        "Unrelated subsequent Moves/Undo work while original restored entries, foreign names and old journal bytes remain unchanged",
+        "A legal partial terminal write after parent rename refuses both plan and receipt retries without changing central file identity, either journal or foreign private data"
+      ],
+      "regression": "Existing central-journal sharing/teardown interruption check covers retired forward-directory absence and foreign replacement refusal",
+      "excluded": [
+        "windows_native_move_fat32_boundary_preserves_both_entries",
+        "windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite"
+      ]
+    },
+    "native_copy_registry": {
+      "passed": 7,
+      "result": "copy-registry/RESULTS.json",
+      "scope": "Focused Copy registry and ownership checks with the same final platform binary; shared cross-volume directory resolution is additionally exercised by the Move cases. Not a full native Copy regression run."
+    },
+    "windows_ui": {
+      "passed": 12,
+      "cases": {
+        "ui-history": 1,
+        "ui-status": 9,
+        "ui": 1,
+        "ui-same": 1
+      },
+      "scope": "Existing actual headless UI workers/history, real-drive recovery admission, transfer/status and same/cross-volume Move Undo checks; no rendered GUI/package claim"
+    },
+    "linux_ui": {
+      "passed": 395,
+      "failed": 0,
+      "existing_ignored": 1,
+      "log": "ui-linux.log",
+      "later_changes": "Final refinements are Windows-only; strict Linux Clippy includes final source"
+    },
+    "strict_all_target_clippy": [
+      "Windows ottrin-platform",
+      "Windows ottrin-ui",
+      "Linux ottrin-ui"
+    ],
+    "formatting": "cargo fmt --all -- --check; source/roadmap diff check. Raw native logs preserve their bound hashes and original whitespace."
+  },
+  "prior_checks": {
+    "first-native-failure/": "116 passed, one existing teardown retry failed because directory-ID lookup assumed the forward private directory still existed after removal. Full raw failed results/logs/binary metadata retained; corrected explicit retired-forward observation passes full117 rerun.",
+    "clippy-ui-windows-initial.log": "Initial strict check rejected an obsolete Copy import after resolver extraction; removed.",
+    "clippy-platform-unused-helper.log": "Strict check rejected an unused helper; removed instead of suppressing the diagnostic."
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "host": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "retained_guest": "off with unchanged persistent definition",
+    "owned_fixture_profiles_payloads_processes_and_vhd_removed": true,
+    "secondary_fixture_root_contained_only_owner_marker_before_removal": true,
+    "original_disk_inventory_restored": true,
+    "original_preferences_and_installation_hashes_unchanged": true
+  },
+  "delivery": {
+    "packages_promoted": false,
+    "candidate_authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "linux_and_public_windows_deliverables": "unchanged",
+    "rendered_package_gui_acceptance": false
+  },
+  "required_remaining": [
+    "Durable compact terminal completion records and reclamation of superseded private/central controls",
+    "Unavailable-volume and removed-parent behavior across restart",
+    "Renamed retained forward histories before Undo and renamed incomplete-operation mutation recovery",
+    "Linux retained Move native-plan admission",
+    "FAT32/ReFS, hard-power/resource and exact-package GUI acceptance",
+    "Remaining Copy, platform, installer, Linux and release roadmap work; user acceptance deferred"
+  ]
+}

@@ -77,7 +77,10 @@ pub(super) fn issue(
     })
 }
 
-fn observe(parent: &File, name: &OsStr) -> Result<Option<WindowsStableIdentity>, PlatformError> {
+pub(in crate::move_transaction) fn observe(
+    parent: &File,
+    name: &OsStr,
+) -> Result<Option<WindowsStableIdentity>, PlatformError> {
     let file = unsafe {
         windows_fs::open_relative(
             parent,

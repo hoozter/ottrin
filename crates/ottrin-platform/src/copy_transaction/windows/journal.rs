@@ -156,7 +156,7 @@ impl DestinationAdmission {
             windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
                 .map_err(io)?;
         let mut leases = Vec::new();
-        let mut volumes = discovery::Volumes::new(central)?;
+        let mut volumes = windows_fs::Volumes::new(central)?;
         for name in &names {
             progress(0)?;
             if discovery::registry_id(name).is_none() {

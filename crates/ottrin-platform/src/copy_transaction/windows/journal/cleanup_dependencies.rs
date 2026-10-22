@@ -195,7 +195,7 @@ impl Dependencies {
             }
             let pair = if peer.state.aborted {
                 if volumes.is_none() {
-                    volumes = Some(discovery::Volumes::new(central)?);
+                    volumes = Some(windows_fs::Volumes::new(central)?);
                 }
                 let parent = volumes.as_mut().unwrap().resolve(
                     other.parent,

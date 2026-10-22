@@ -30,7 +30,7 @@ impl RetainedCopyAbortPlan {
             AnchoredRoot::open_at(root, false)?.ok_or_else(|| io("Copy registry is missing"))?;
         let record = discovery::RegisteredJournal::open(registry.root(), &name)?;
         let header = record.state.header.as_ref().unwrap();
-        let parent = discovery::Volumes::new(registry.root())?.resolve(
+        let parent = windows_fs::Volumes::new(registry.root())?.resolve(
             header.parent,
             FILE_GENERIC_READ,
             &mut progress,
@@ -91,7 +91,7 @@ impl RetainedCopyAbortPlan {
         {
             return Err(io("Copy staging-end registry binding changed"));
         }
-        let parent = discovery::Volumes::new(registry.root())?.resolve(
+        let parent = windows_fs::Volumes::new(registry.root())?.resolve(
             self.header.parent,
             FILE_GENERIC_READ,
             &mut progress,

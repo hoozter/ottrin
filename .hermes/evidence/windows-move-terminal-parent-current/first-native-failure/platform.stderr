@@ -1,0 +1,4 @@
+
+thread 'move_transaction::windows_source_tests::windows_native_cross_volume_teardown_retries_after_central_journal_sharing_failure' (5344) panicked at crates/ottrin-platform/src/move_transaction.rs:10786:18:
+retry teardown after journal sharing is restored: Io("The parameter is incorrect. (os error 87)")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

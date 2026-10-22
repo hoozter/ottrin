@@ -167,13 +167,20 @@ pub(in crate::move_transaction) fn validate_record(record: &Record) -> Result<()
 
 /// Completion proof is independent of later public-name reuse. This routine
 /// reads only; callers decide whether to converge a terminal paired-write gap.
-fn terminal(record: &Record) -> Result<Option<(Record, bool)>, PlatformError> {
+fn terminal(root: &Path, record: &Record) -> Result<Option<(Record, bool)>, PlatformError> {
     validate_record(record)?;
     let transaction = record.transaction_path()?;
     if !matches!(record.phase, Phase::Published | Phase::SourceRemoved) {
         return Ok(None);
     }
-    let local = load_windows_cross_volume_record(&transaction.join(WINDOWS_LOCAL_JOURNAL_NAME))?;
+    let private = super::super::windows_control::directory(
+        root,
+        record.transaction_directory_identity,
+        &transaction,
+    )?;
+    let bytes =
+        super::super::windows_control::read_local(&private)?.ok_or_else(|| stale(&transaction))?;
+    let local = super::super::decode_windows_cross_volume_record(&bytes)?;
     if record.phase != Phase::SourceRemoved && local.phase != Phase::SourceRemoved {
         return Ok(None);
     }
@@ -181,18 +188,25 @@ fn terminal(record: &Record) -> Result<Option<(Record, bool)>, PlatformError> {
     canonical.phase = Phase::SourceRemoved;
     let mut local_canonical = local.clone();
     local_canonical.phase = Phase::SourceRemoved;
-    let source = record.source_path()?;
+    let source_parent = super::super::windows_control::directory(
+        root,
+        record.source_parent_identity,
+        record
+            .source_path()?
+            .parent()
+            .ok_or_else(|| stale(&transaction))?,
+    )?;
+    let claim = windows_directory_source_claim_path(Path::new(""), record)?;
     if !matches!(local.phase, Phase::Published | Phase::SourceRemoved)
         || canonical != local_canonical
         || record.candidate_identity.is_none()
-        || observe_windows_identity(&transaction)? != Some(record.transaction_directory_identity)
-        || observe_windows_identity(&record.candidate_path()?)?.is_some()
-        || observe_windows_identity(&transaction.join(WINDOWS_RETAINED_NAME))?.is_some()
-        || observe_windows_identity(&windows_directory_source_claim_path(
-            source.parent().ok_or_else(|| stale(&source))?,
-            record,
-        )?)?
+        || observe(
+            &private,
+            OsStr::new(super::super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME),
+        )?
         .is_some()
+        || observe(&private, OsStr::new(WINDOWS_RETAINED_NAME))?.is_some()
+        || observe(&source_parent, claim.as_os_str())?.is_some()
     {
         return Err(stale(&transaction));
     }
@@ -208,7 +222,7 @@ pub(in crate::move_transaction) fn status(
 ) -> Result<move_recovery::WindowsMoveUndoStatus, PlatformError> {
     validate_record(record)?;
     Ok(
-        if terminal(record)?.is_some_and(|(_, paired)| paired)
+        if terminal(root, record)?.is_some_and(|(_, paired)| paired)
             && retained::inverse_complete(root, record)?
         {
             move_recovery::WindowsMoveUndoStatus::Complete
@@ -222,7 +236,7 @@ pub(in crate::move_transaction) fn completed(
     root: &Path,
     record: &mut Record,
 ) -> Result<Option<super::super::MovePublication>, PlatformError> {
-    let Some((canonical, paired)) = terminal(record)? else {
+    let Some((canonical, paired)) = terminal(root, record)? else {
         return Ok(None);
     };
     if !paired {

@@ -411,7 +411,7 @@ impl Observation {
             .ok_or_else(|| io("Configured Copy group registry is missing"))?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
-        let mut volumes = discovery::Volumes::new(&central)?;
+        let mut volumes = windows_fs::Volumes::new(&central)?;
         // Validate every confirmed payload before the first durable begin.
         for member in &self.members {
             if matches!(member, Member::Complete(_)) {
@@ -689,7 +689,7 @@ impl Observation {
         if header.parent.same_object(header.central) {
             central.try_clone().map_err(io)
         } else {
-            discovery::Volumes::new(central)?.resolve(
+            windows_fs::Volumes::new(central)?.resolve(
                 header.parent,
                 FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                 cancel,
@@ -867,7 +867,7 @@ impl Observation {
         {
             central.try_clone().map_err(io)?
         } else {
-            discovery::Volumes::new(&central)?.resolve(
+            windows_fs::Volumes::new(&central)?.resolve(
                 admission.header().parent,
                 FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                 &mut cancel,
@@ -918,7 +918,7 @@ impl Observation {
         let parent = if header.parent.same_object(header.central) {
             central.try_clone().map_err(io)?
         } else {
-            discovery::Volumes::new(&central)?.resolve(
+            windows_fs::Volumes::new(&central)?.resolve(
                 header.parent,
                 FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                 &mut cancel,
@@ -931,7 +931,7 @@ impl Observation {
                 if matches!(member, Member::Complete(_)) {
                     continue;
                 }
-                let peer_parent = discovery::Volumes::new(&central)?.resolve(
+                let peer_parent = windows_fs::Volumes::new(&central)?.resolve(
                     member.header().parent,
                     FILE_GENERIC_READ,
                     &mut cancel,
@@ -1017,7 +1017,7 @@ impl Observation {
             .ok_or_else(|| io("Configured Copy registry is missing"))?;
         let central = manager.root();
         let selection = Selection::capture(central, ids, &mut cancel)?;
-        let mut volumes = discovery::Volumes::new(central)?;
+        let mut volumes = windows_fs::Volumes::new(central)?;
         let mut members = Vec::new();
         let mut protected: BTreeMap<Object, BTreeSet<usize>> = BTreeMap::new();
         let mut retained: BTreeMap<Object, Vec<(usize, usize)>> = BTreeMap::new();

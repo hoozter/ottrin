@@ -190,9 +190,7 @@ pub(in crate::move_transaction) fn undo(
     let root = super::super::windows_recovery_root()?;
     let record =
         load_windows_overwrite_record(&windows_journal_path(&root, expected.transaction_id()?))?;
-    let local = load_windows_overwrite_record(
-        &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
-    )?;
+    let local = super::super::windows_control::overwrite(&root, &record)?;
     if !record.same_transaction_evidence(expected) || !local.same_transaction_evidence(expected) {
         return Err(stale(&record.transaction_path()?));
     }
@@ -202,7 +200,7 @@ pub(in crate::move_transaction) fn undo(
 /// Read-only terminal proof releases public names without probing or mutating
 /// later entries under them. The paired terminal events prove both flushes.
 pub(in crate::move_transaction) fn completed(
-    _root: &Path,
+    root: &Path,
     record: &Record,
     local: &Record,
 ) -> Result<bool, PlatformError> {
@@ -211,7 +209,11 @@ pub(in crate::move_transaction) fn completed(
         return Ok(false);
     }
     let transaction = record.transaction_path()?;
-    let parent = open_parent(&transaction, record.transaction_directory_identity)?;
+    let parent = super::super::windows_control::directory(
+        root,
+        record.transaction_directory_identity,
+        &transaction,
+    )?;
     if observe(&parent, OsStr::new(WINDOWS_REPLACEMENT_NAME))?.is_some()
         || observe(&parent, OsStr::new(WINDOWS_RETAINED_NAME))?.is_some()
     {
@@ -229,6 +231,9 @@ pub(in crate::move_transaction) fn resume(
 ) -> Result<(), PlatformError> {
     topology(&record)?;
     let phase = paired(&record, &local)?;
+    if phase == Phase::Undone && completed(root, &record, &local)? {
+        return Ok(());
+    }
     let source = record.source_path()?;
     let target = record.target_path()?;
     let transaction = record.transaction_path()?;

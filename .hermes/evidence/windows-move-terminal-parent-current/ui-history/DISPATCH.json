@@ -1,0 +1,7 @@
+{
+  "id": "8d9cb5e57ac2997da4537104846d2a00",
+  "status": "dispatched",
+  "test_arguments": "--exact tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker --nocapture --test-threads=1",
+  "transferred_sha256": "3681049ec2440ed915c740f9d70d9ab23cd64fae988fcb741eb5eede16e95958",
+  "watchdog_ms": 300000
+}

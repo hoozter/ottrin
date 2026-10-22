@@ -1,0 +1,11 @@
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+error: unused import: `windows_sys::Win32::Storage::FileSystem::*`
+ --> crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs:5:5
+  |
+5 | use windows_sys::Win32::Storage::FileSystem::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `-D unused-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: could not compile `ottrin-platform` (lib) due to 1 previous error

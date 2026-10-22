@@ -1,0 +1,11 @@
+{
+    "exit":  101,
+    "stderr_sha256":  "809157282e8901922677b9f00b4e275e3514e3c85296904b413f067276c843bf",
+    "test_arguments":  "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "error":  "Native cleanup observation failed",
+    "stdout_sha256":  "ca42ff3c33ed1895476950b48b9e8f3b26ad19966a6348ad294d805b07217315",
+    "status":  "fail",
+    "test_binary_hash":  "f415f38ce670151495e7f6e5ab6cb76d9b2f312ee43396d177329b30bbd39050",
+    "dispatch_id":  "37a6e97010c8d96ebfab9a5270e4dc90"
+}

@@ -188,7 +188,7 @@ impl Observation {
         if current.completed == before.completed && !current.pending {
             return Err(io("Copy peer has lost the recorded pending unlink"));
         }
-        let parent = discovery::Volumes::new(central)?.resolve(
+        let parent = windows_fs::Volumes::new(central)?.resolve(
             header.parent,
             FILE_GENERIC_READ,
             &mut cancel,

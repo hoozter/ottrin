@@ -685,11 +685,10 @@ fn records_absent(parent: &File, central: &File, claim: &Claim) -> Result<bool, 
     )? {
         return Ok(false);
     }
-    let Ok(registry) = discovery::Volumes::new(central)?.resolve(
-        claim.central,
-        FILE_GENERIC_READ,
-        &mut |_| Ok(()),
-    ) else {
+    let Ok(registry) =
+        windows_fs::Volumes::new(central)?
+            .resolve(claim.central, FILE_GENERIC_READ, &mut |_| Ok(()))
+    else {
         return Ok(false);
     };
     vacant(

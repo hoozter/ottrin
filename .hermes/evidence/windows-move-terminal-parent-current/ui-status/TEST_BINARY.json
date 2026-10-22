@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_ui",
+  "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-6b36f1213ec139e1.exe",
+  "compiler_sha256": "0899594eb54666df0fb1f1f9d4b45c5c8b8b0d0b9f8d961706ccf69bbe2d3d84",
+  "transferred_sha256": "3681049ec2440ed915c740f9d70d9ab23cd64fae988fcb741eb5eede16e95958",
+  "retained_sections": {
+    ".text": "a390a0c0745747dcd52f67ca39dc25e722589fe6f003f8aaaae93443404ce3b1",
+    ".data": "1bbb5f4affdefb31a5f453d8f96f5a11e4b1af43a169c590c50421cf40f6a971",
+    ".rdata": "0bfd2ef3dea1130b124cb4063a1ebbc9e968c2d78f4ec8b662071070d223ea09",
+    ".pdata": "d4885f5d309a5877dba56bebf0ee920bc103ca2637f7c463d540319c2e1169af",
+    ".xdata": "9568bc2f4a1754cfa0cf429cd3b03c0715df4de1a51cca711f6026bffb54426a",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "44bd542ea970cffa1c0d502e03a44c84a15b257b02e38c1d9fc41e1cfb7dade1",
+    ".CRT": "9f34002b1a6830deae6b9f2de8a00731da452191aca61947f25a70d643f21e39",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "b3798f68cdb4492b620f9ea7b90d4c1553afe0b88f19c0aa7dcfee11f72f63fe"
+  }
+}

@@ -61,6 +61,178 @@ impl Drop for Fixture {
 fn root() -> PathBuf {
     super::super::super::super::windows_recovery_root().unwrap()
 }
+
+#[test]
+#[ignore = "requires an owned second native Windows volume"]
+fn windows_native_completed_cross_replace_undo_survives_both_parent_renames() {
+    let fixture = Fixture::new();
+    let receipt = fixture.moved(0);
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    let controller = load_windows_cross_volume_record(&central(&receipt)).unwrap();
+    let inverse = load_windows_cross_volume_record(&windows_cross_volume_journal_path(
+        &root(),
+        guard(&receipt)
+            .inverse
+            .get()
+            .unwrap()
+            .transaction_id()
+            .unwrap(),
+    ))
+    .unwrap();
+    let journals = [
+        central(&receipt),
+        local(&receipt),
+        windows_cross_volume_journal_path(&root(), inverse.transaction_id().unwrap()),
+        inverse
+            .transaction_path()
+            .unwrap()
+            .join(WINDOWS_LOCAL_JOURNAL_NAME),
+    ];
+    let bytes = journals.each_ref().map(|path| std::fs::read(path).unwrap());
+    let moved_source = fixture.primary.path().join("renamed-source");
+    let moved_destination = fixture.secondary.path().join("renamed-destination");
+    std::fs::rename(receipt.before_path().parent().unwrap(), &moved_source).unwrap();
+    std::fs::rename(receipt.after_path().parent().unwrap(), &moved_destination).unwrap();
+    std::fs::create_dir(receipt.before_path().parent().unwrap()).unwrap();
+    std::fs::create_dir(receipt.after_path().parent().unwrap()).unwrap();
+    std::fs::write(receipt.before_path(), b"foreign old source").unwrap();
+    std::fs::write(receipt.after_path(), b"foreign old destination").unwrap();
+    for (record, saved) in [(&controller, &bytes[1]), (&inverse, &bytes[3])] {
+        std::fs::create_dir(record.transaction_path().unwrap()).unwrap();
+        std::fs::write(
+            record
+                .transaction_path()
+                .unwrap()
+                .join(WINDOWS_LOCAL_JOURNAL_NAME),
+            saved,
+        )
+        .unwrap();
+        std::fs::write(
+            record.candidate_path().unwrap(),
+            b"foreign private candidate",
+        )
+        .unwrap();
+    }
+    let actual_inverse_local = moved_source
+        .join(inverse.transaction_path().unwrap().file_name().unwrap())
+        .join(WINDOWS_LOCAL_JOURNAL_NAME);
+    let mut gap = inverse.clone();
+    gap.phase = Phase::Published;
+    let gap_bytes = serde_json::to_vec(&gap).unwrap();
+    std::fs::write(&actual_inverse_local, &gap_bytes).unwrap();
+    let central_identity = move_recovery::stable_identity_of_entry(&journals[2]).unwrap();
+    let pending_plan =
+        crate::WindowsMoveRecoveryPlan::capture(inverse.transaction_id().unwrap()).unwrap();
+    assert_eq!(
+        pending_plan.undo_status(),
+        move_recovery::WindowsMoveUndoStatus::Pending
+    );
+    assert!(
+        pending_plan.execute().is_err(),
+        "a write gap cannot write through a foreign old namespace"
+    );
+    assert!(
+        DefaultPlatform.undo_move_with_receipt(&receipt).is_err(),
+        "the direct receipt retry also refuses foreign journal namespaces"
+    );
+    assert_eq!(
+        move_recovery::stable_identity_of_entry(&journals[2]).unwrap(),
+        central_identity,
+        "private namespace admission precedes every journal write"
+    );
+    assert_eq!(std::fs::read(&journals[2]).unwrap(), bytes[2]);
+    assert_eq!(std::fs::read(&actual_inverse_local).unwrap(), gap_bytes);
+    assert_eq!(
+        std::fs::read(
+            inverse
+                .transaction_path()
+                .unwrap()
+                .join(WINDOWS_LOCAL_JOURNAL_NAME)
+        )
+        .unwrap(),
+        bytes[3]
+    );
+    std::fs::write(&actual_inverse_local, &bytes[3]).unwrap();
+    for id in [
+        controller.transaction_id().unwrap(),
+        inverse.transaction_id().unwrap(),
+    ] {
+        let plan = crate::WindowsMoveRecoveryPlan::capture(id).unwrap();
+        assert_eq!(
+            plan.undo_status_for(&receipt),
+            Some(move_recovery::WindowsMoveUndoStatus::Complete)
+        );
+        assert_eq!(plan.paths(), &[root()]);
+        plan.execute().unwrap();
+    }
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    let found = super::super::super::super::discover_retained_windows_move_transactions().unwrap();
+    assert_eq!(found.len(), 1);
+    assert_eq!(
+        found[0].undo_status,
+        move_recovery::WindowsMoveUndoStatus::Complete
+    );
+    let unrelated = fixture.primary.path().join("unrelated");
+    std::fs::write(&unrelated, b"independent source").unwrap();
+    let (_, undo) = DefaultPlatform
+        .execute_move_with_undo_receipt(
+            &unrelated,
+            receipt.after_path().parent().unwrap(),
+            ConflictAction::Skip,
+        )
+        .unwrap();
+    DefaultPlatform
+        .undo_move_with_receipt(&undo.unwrap())
+        .unwrap();
+    assert_eq!(std::fs::read(unrelated).unwrap(), b"independent source");
+    assert_eq!(
+        std::fs::read(moved_source.join("entry")).unwrap(),
+        b"source bytes"
+    );
+    assert_eq!(
+        std::fs::read(moved_destination.join("entry")).unwrap(),
+        b"retained bytes"
+    );
+    assert_eq!(
+        std::fs::read(receipt.before_path()).unwrap(),
+        b"foreign old source"
+    );
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"foreign old destination"
+    );
+    for record in [&controller, &inverse] {
+        assert_eq!(
+            std::fs::read(record.candidate_path().unwrap()).unwrap(),
+            b"foreign private candidate"
+        );
+    }
+    assert_eq!(std::fs::read(&journals[0]).unwrap(), bytes[0]);
+    assert_eq!(std::fs::read(&journals[2]).unwrap(), bytes[2]);
+    for (base, record, saved) in [
+        (&moved_destination, &controller, &bytes[1]),
+        (&moved_source, &inverse, &bytes[3]),
+    ] {
+        assert_eq!(
+            std::fs::read(
+                base.join(record.transaction_path().unwrap().file_name().unwrap())
+                    .join(WINDOWS_LOCAL_JOURNAL_NAME)
+            )
+            .unwrap(),
+            *saved
+        );
+        assert_eq!(
+            std::fs::read(
+                record
+                    .transaction_path()
+                    .unwrap()
+                    .join(WINDOWS_LOCAL_JOURNAL_NAME)
+            )
+            .unwrap(),
+            *saved
+        );
+    }
+}
 fn guard(receipt: &PathMoveUndoReceipt) -> &Guard {
     let Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::CrossVolume(value))) =
         &receipt.windows_undo

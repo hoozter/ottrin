@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "a4bd3e3dc2c492d86c77d44f1b897a46e2197c82",
+  "actor": "OttrinCopyQA",
+  "purpose": "Identity-based retained control reads and completed Move Undo after containing-parent renames; owned VHD removed after consumers exit"
+}
