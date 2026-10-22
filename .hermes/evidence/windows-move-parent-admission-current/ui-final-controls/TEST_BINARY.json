@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_ui",
+  "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1 tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker tests::windows_move_undo_admission_tracks_renamed_parent_paths tests::windows_move_cleanup_requires_captured_admission_and_uses_worker tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --include-ignored",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-6b36f1213ec139e1.exe",
+  "compiler_sha256": "9267ab6888400f1256a606f717b02965cd8e59e5486abae53cdab8ef8dab1e00",
+  "transferred_sha256": "81c1bd719199fa07d10bdd65c68086dcce446c340e1807adddd5a03d66b09442",
+  "retained_sections": {
+    ".text": "bb6924710476fe9bf071dd1c80d9792c1ca12178ff4a010a9075dcb13d5a88b1",
+    ".data": "85de09c1704740c1c2ee47d931bdd82e8ed47c374f138803ae0a8883e8324d61",
+    ".rdata": "26d1453b687528127079517f1d9d06d1280c7f9d39d7b3195f0de992a6dc81e7",
+    ".pdata": "4aced9d4d359cbf4aec762995984b09fdb89216ba95e3026e0c910c60f1cb58d",
+    ".xdata": "2aa7db0ed623b2bb2b4e6bc7ec1f14561da782b5907dc9f9b6499191bc731da1",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "c480b150720e1065b98a9ac08b440dae044646950dbf60851af3a7cf529b25a7",
+    ".CRT": "38fab9c0b1e8e75471a8eb62753f70b7e2c4aad0165096cb4ba25c378a437bc4",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "79f12bcddd00d04a4197bc56e72974f213fe9a383f78fdb66b8cadb6b1170df5"
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "disk_unique_id":  "60022480F8035CF599E8720662273D93",
+    "observed_utc":  "2026-10-22T05:21:07.3100358Z",
+    "volume_unique_id":  "\\\\?\\Volume{cfbc866e-b0f8-4fab-97cc-9deeed582c67}\\",
+    "drive_letter":  "D",
+    "status":  "pass",
+    "native_volume_identity_unchanged":  true,
+    "owner_token":  "67b80aa9a0764ae2a5276b8d409173d7",
+    "owned_vhd_reattached":  true
+}

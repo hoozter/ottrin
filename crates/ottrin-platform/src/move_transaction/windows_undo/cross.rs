@@ -30,6 +30,40 @@ pub(crate) struct Guard {
 }
 
 impl Guard {
+    pub(super) fn directories(
+        &self,
+    ) -> Result<Vec<(std::path::PathBuf, WindowsStableIdentity)>, PlatformError> {
+        self.origin.validate()?;
+        let mut result = vec![
+            (
+                path(&self.origin.original)?
+                    .parent()
+                    .ok_or_else(|| stale(Path::new("")))?
+                    .to_path_buf(),
+                self.origin.original_parent,
+            ),
+            (
+                path(&self.origin.publication)?
+                    .parent()
+                    .ok_or_else(|| stale(Path::new("")))?
+                    .to_path_buf(),
+                self.origin.publication_parent,
+            ),
+        ];
+        if let Some(retained) = &self.origin.retained {
+            result.push((
+                retained.retained_path()?.parent().unwrap().to_path_buf(),
+                retained.directory_identity(),
+            ));
+        }
+        if let Some(inverse) = self.inverse.get() {
+            result.push((
+                inverse.transaction_path()?,
+                inverse.transaction_directory_identity,
+            ));
+        }
+        Ok(result)
+    }
     pub(in crate::move_transaction) fn matches_completion(
         &self,
         origin: &Origin,

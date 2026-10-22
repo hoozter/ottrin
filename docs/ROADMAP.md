@@ -40,7 +40,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish containing-parent rename recovery for retained forward histories and unfinished operations, then package and exercise Move Undo, recovery admission, record cleanup and session-history reconciliation through the actual UI. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish cross-volume containing-parent rename recovery for retained forward histories and unfinished operations, then package and exercise Move Undo, recovery admission, record cleanup and session-history reconciliation through the actual UI. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -391,9 +391,10 @@ and retryable after both containing parents are renamed. Recreated old names,
 including copied journals and foreign private candidates, grant no authority.
 Completed recovery plans reserve only the registry and acknowledge already proven
 history without replaying payload paths. Their central snapshots are still checked.
-Pending recovery retains strict original-namespace admission, and every paired
-journal writer pins and verifies the original private directory before writing
-either journal. An already retired non-overwrite forward directory is represented
+That checkpoint retained strict original-namespace admission for pending recovery
+and journal writes. The later namespace admission below replaces that restriction
+for same-volume operations; cross-volume mutation still requires its corresponding
+conversion. An already retired non-overwrite forward directory is represented
 by an explicit absence observation under its verified original destination parent,
 so late central-journal teardown remains retryable without adopting a replacement.
 
@@ -493,6 +494,52 @@ are recorded in `.hermes/evidence/windows-move-retirement-current/ACCEPTANCE.jso
 changes source, not installed packages. Rendered/package acceptance, retained
 forward and unfinished-operation parent renames, hard-power/resource tests,
 other filesystems and the remaining roadmap gates still apply.
+
+### Windows same-volume Undo and recovery after parent renames
+
+Session Undo now captures a native `WindowsMoveUndoPlan` on a background worker.
+It retains the original receipt and resolves the recorded directory IDs to their
+current names. Activity checks the original drive bindings before and after
+capture, then reserves the actual affected parents, private directory and registry
+through the ordinary operation scheduler. The inverse worker pins those captured
+names before invoking the existing native engine. A queued plan whose directories
+have moved or been replaced is refused; it does not silently change its own
+reservation. Completed durable Undo still admits only the local registry when
+former drives are unavailable.
+
+Atomic same-volume Undo and retained Replace Undo now follow the original native
+parent objects after renames, including before Undo starts. Same-volume unfinished
+Replace recovery uses the same captured namespace for source claim, publication,
+retained data and journal writes. Historical labels and paired journal evidence
+remain unchanged. Foreign files or copied journals recreated at former names
+never select a replacement namespace. Source claims and regular-file publication
+flush their affected namespaces before advancing durable journal state.
+
+Scheduling footprints and visible file pairs have separate responsibilities:
+queue checks include metadata directories, while view refresh and restored pointer
+selection use the current visible file paths. The native plan retains its original
+receipt for exact session-history reconciliation after a failed attempt. Undo and
+record-cleanup preparation keep an idle UI polling without a continuous redraw
+loop. Read-only admission and native worker checks are recorded separately from
+rendered package acceptance in
+`.hermes/evidence/windows-move-parent-admission-current/ACCEPTANCE.json`.
+
+The final ordinary-user Windows selection passes 166 checks: 138 Move and
+receipt-dependency checks, seven Copy registry checks, seven fresh-process
+detached-drive completion stages and 14 UI-worker checks. The new cases exercise
+renamed/recreated parents, stale admission, original object identities,
+interrupted same-volume publication, ancestor rename exclusion and released
+worker handles. Linux UI passes 395 tests with one explicit mount fixture ignored;
+strict platform/UI Clippy passes for both targets. These are native API and
+worker checks, not rendered GUI acceptance. The owned secondary disk and profiles
+are removed; the retained VM is off with its persistent definition unchanged.
+
+This checkpoint does not complete cross-volume parent-rename mutation. Its existing
+strict journal namespace checks remain until the cross-volume engine and recovery
+admission can be converted together. Remaining Linux native-plan work, cross-volume
+namespace work, exact-package GUI checks, hard-power/resource and broader platform
+and release gates stay on the roadmap. All installed/package deliverables retain
+their existing source scopes.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

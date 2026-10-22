@@ -1,0 +1,7 @@
+{
+  "id": "3855d92c99a05abad27a8650ea306db5",
+  "status": "dispatched",
+  "test_arguments": "copy_transaction::windows::registry:: --nocapture --test-threads=1",
+  "transferred_sha256": "3ba0f4f77a13d75f991d1a9beef0eae8c43e116cdeeec6cf08dcd79f70fd4f7a",
+  "watchdog_ms": 600000
+}

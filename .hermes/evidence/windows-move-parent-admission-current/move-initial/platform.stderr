@@ -1,0 +1,17 @@
+
+thread 'move_transaction::windows_undo::cross::retained::tests::windows_native_completed_cross_replace_undo_survives_both_parent_renames' (5188) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs:183:5:
+the direct receipt retry also refuses foreign journal namespaces
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_undo::plan::tests::windows_native_replace_recovery_follows_parent_ids_after_process_exit' (4392) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/plan/tests.rs:183:9:
+expected process interruption
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_undo::plan::tests::windows_native_replace_recovery_follows_parent_ids_after_process_exit' (4780) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/plan/tests.rs:205:13:
+assertion `left == right` failed: 0 FileReplaced
+  left: Some(101)
+ right: Some(87)
+
+thread 'move_transaction::windows_undo::tests::windows_native_move_undo_refuses_changed_entry_or_parent' (5092) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/tests.rs:145:9:
+assertion failed: matches!(DefaultPlatform.undo_move_with_receipt(&receipt),
+    Err(PlatformError::StalePathMoveUndo(_)))

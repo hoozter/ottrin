@@ -1,0 +1,14 @@
+{
+    "exit":  0,
+    "native_started_utc":  "2026-10-22T04:55:20.7196807Z",
+    "native_finished_utc":  "2026-10-22T04:56:27.8733342Z",
+    "test_arguments":  "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "12eed36d5d5d068491650be8df14fc01db4b67b808d065b95918325316799881",
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_process_id":  8184,
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "3ba0f4f77a13d75f991d1a9beef0eae8c43e116cdeeec6cf08dcd79f70fd4f7a",
+    "dispatch_id":  "4bedfcc1d87fd575b6b1f4016a33faeb"
+}

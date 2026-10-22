@@ -1,0 +1,92 @@
+[
+  {
+    "case": "move-owned-volume",
+    "passed": 138,
+    "ignored": 0,
+    "dispatch_id": "b3bc58af51d4eb039dee15cfe04de289",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "61d760255d186b5981a4553ff6bdb72b52444ce58ac6657a39afbc3ff6efc5f1",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "copy-registry-final",
+    "passed": 7,
+    "ignored": 0,
+    "dispatch_id": "de42f0f3c8b7585b711f30ae39491096",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "091b4d3b82063c1e7e58e606a2e4ab02de01ba8b433a6cfef9729e447a4ba80a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "ui-final-controls",
+    "passed": 14,
+    "ignored": 0,
+    "dispatch_id": "3555b1492b646704e2b381fb8b3ca43f",
+    "transferred_sha256": "81c1bd719199fa07d10bdd65c68086dcce446c340e1807adddd5a03d66b09442",
+    "stdout_sha256": "398f6757167b9a88175d99557ec36e0ba2ea9a5d54ac8ffd9be08b892657c92f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "final-offline-failure-teardown",
+    "passed": 1,
+    "ignored": 0,
+    "dispatch_id": "f2170e5b506726740c660805ea922d97",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "74f2eaf59dbe6d3dc101b0b6cb90149e85256a34c04bc79da1ce896c1396b125",
+    "stderr_sha256": "169ab287a63ac556b0339966d6c4f0c85d3a667a2654e1550f4dfea5c783238b"
+  },
+  {
+    "case": "final-offline-original-prepare",
+    "passed": 1,
+    "ignored": 0,
+    "dispatch_id": "c5e7b857b820a32f3a08b4d90218e325",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "82ecf452cedda747f1fb27bfe3dc0b21c4562197846659ef8fbded25c60ec937",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "final-offline-original-verify",
+    "passed": 1,
+    "ignored": 0,
+    "dispatch_id": "7aaecff196d3ac5ffc3e51450f295ea2",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "07aba5b6778b44fef8b4466d66bf5c0800a560a7baa1aa946025c671ecdc265a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "final-offline-original-cleanup",
+    "passed": 1,
+    "ignored": 0,
+    "dispatch_id": "7492133a66b9a0031bcd3a30f85dda3e",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "a94ee59318ea7cb25f20842434c5587518313dc94ca4dba06e0c85ce523828c9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "final-offline-retired-prepare",
+    "passed": 1,
+    "ignored": 0,
+    "dispatch_id": "d11e8b23acfa5267d940bd7a43b3264f",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "90f67d153d8e5b0cd58d95c1eb56d8a551b999aeba40d38754d852e2487d9ac0",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "final-offline-retired-verify",
+    "passed": 1,
+    "ignored": 0,
+    "dispatch_id": "7dba162db936014cbca124f05058b791",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "7b6d6ab617f150ff79674130ec89228bd5eb4ec2190ba9b894c5297d8e18d7ff",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "case": "final-offline-retired-cleanup",
+    "passed": 1,
+    "ignored": 0,
+    "dispatch_id": "89049150616e6f52b35d410d5eb07788",
+    "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "stdout_sha256": "d56379ae3ffa692885ff55c17b16cff3aec87a5183614333d654d8191b0c92f7",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

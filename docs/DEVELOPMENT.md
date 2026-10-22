@@ -410,6 +410,26 @@ revalidation. Completed plan capture preserves the ownership snapshot so receipt
 publication never reopens former private folders after admission.
 This does not provide volume-independent recovery for an unfinished operation.
 
+`WindowsMoveUndoPlan::capture` is read-only and belongs off the UI thread. It keeps
+an immutable session receipt, canonical native namespace paths for scheduling,
+and separate visible file pairs for refresh/selection. `execute` strictly pins the
+captured directory names for the existing inverse; it never resolves a new queue
+footprint at worker time. Drive bindings are checked before admission, after
+admission, and again in the worker. Original receipt ownership remains available
+to history reconciliation after an attempted Undo.
+
+Same-volume atomic and retained Replace inverses resolve original native parents
+rather than adopting a recreated label. Incomplete same-volume Replace recovery
+captures those same current namespaces. Paired writers pin the exact private
+directory and write through its native final name. Source-claim and regular-file
+publication namespace flushes precede their next journal phase. Canonical native
+paths supply mutation/scheduling authority; preserving an existing ordinary path
+spelling is only a presentation decision. The nested-ancestor fixture exercises
+live namespace stability and releases every handle after the inverse, consistent
+with the native [directory rename contract](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fsa/87f86c9b-6c2a-4803-84b7-131a74a434fa).
+Cross-volume mutation still retains its original namespace checks; it must acquire
+the same full admission before parent-rename support is claimed.
+
 **Clean up records** explicitly captures a `WindowsMoveCleanupPlan` off-thread
 and carries it through the existing queue's complete path/drive admission. The
 worker holds native namespace/metadata leases, validates original journal IDs,
@@ -436,10 +456,12 @@ power-loss or arbitrary-filesystem guarantee.
 The canonical native runner adds `--move-retirement`, `--copy-security`, and
 `--ui-move-suite` (the last requires `--crate ottrin_ui` and the owned second
 volume). `.hermes/evidence/windows-move-retirement-current/run-cases.py` preserves failed runs and
-resumes the same observer on timeout. Reused binaries can be pinned using
+resumes the same observer on timeout. Its `case(ROOT, NAME, ARGUMENTS, ...)`
+entry point requires the evidence root explicitly, so later checks do not write
+into an older checkpoint. Reused binaries can be pinned using
 `--reuse-receipt CASE/TEST_BINARY.json`, which checks the recorded guest hash
 without rereading a compiler output that another build might replace.
-`run-offline.py --prefix NAME --binary-receipt CASE/TEST_BINARY.json` exercises both original
+`run-offline.py --evidence-root ROOT --prefix NAME --binary-receipt CASE/TEST_BINARY.json` exercises both original
 completion and cleaned records across detach/reconnect, checking actual volume
 attachment and cleaning identity-owned persistent fixtures in its failure path.
 

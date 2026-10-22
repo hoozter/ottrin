@@ -1,0 +1,49 @@
+{
+    "owned_processes":  [
+
+                        ],
+    "volumes":  [
+                    {
+                        "DriveLetter":  null,
+                        "FileSystemLabel":  "",
+                        "UniqueId":  "\\\\?\\Volume{38542133-82b2-423e-a200-9bff0bd8b8d4}\\"
+                    },
+                    {
+                        "DriveLetter":  null,
+                        "FileSystemLabel":  "",
+                        "UniqueId":  "\\\\?\\Volume{9f9ec7b8-817d-452d-b2ff-cb24a9bcdb47}\\"
+                    },
+                    {
+                        "DriveLetter":  "D",
+                        "FileSystemLabel":  "OttrinMoveQA",
+                        "UniqueId":  "\\\\?\\Volume{cfbc866e-b0f8-4fab-97cc-9deeed582c67}\\"
+                    },
+                    {
+                        "DriveLetter":  "C",
+                        "FileSystemLabel":  "",
+                        "UniqueId":  "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}\\"
+                    }
+                ],
+    "previous_detach":  null,
+    "image_last_write":  "2026-10-22T04:57:21.6265859Z",
+    "disks":  [
+                  {
+                      "Number":  1,
+                      "UniqueId":  "60022480F8035CF599E8720662273D93",
+                      "OperationalStatus":  "Online",
+                      "IsOffline":  false
+                  },
+                  {
+                      "Number":  0,
+                      "UniqueId":  "0000000500000000",
+                      "OperationalStatus":  "Online",
+                      "IsOffline":  false
+                  }
+              ],
+    "image":  {
+                  "ImagePath":  "C:\\OttrinCopyCleanupQA\\cross-move-volume\\owned.vhdx",
+                  "Attached":  true,
+                  "DevicePath":  "\\\\.\\PhysicalDrive1"
+              },
+    "task_state":  "Ready"
+}

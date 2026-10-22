@@ -37,6 +37,7 @@ pub struct WindowsMoveRecoveryPlan {
     cleanup_complete: bool,
     cleanup_error: Option<String>,
     paths: Vec<PathBuf>,
+    namespace: Vec<windows_control::DirectoryBinding>,
     undo_status: move_recovery::WindowsMoveUndoStatus,
 }
 
@@ -57,6 +58,7 @@ impl WindowsMoveRecoveryPlan {
             root_identity,
             transaction_id,
             evidence: Vec::new(),
+            namespace: Vec::new(),
             completion: None,
             cleanup: None,
             cleanup_complete: false,
@@ -255,17 +257,51 @@ impl WindowsMoveRecoveryPlan {
                         "Move recovery transaction ID changed".into(),
                     ));
                 }
-                self.add_paths(
-                    &record.source_path()?,
-                    &record.destination_parent_path()?,
-                    &record.transaction_path()?,
-                )?;
+                windows_undo::overwrite::topology(&record)?;
                 let identity = record.transaction_directory_identity;
                 let hint = record.transaction_path()?;
                 let directory = windows_control::directory(&self.root, identity, &hint)?;
                 let local = windows_control::read_local(&directory)?
                     .map(|bytes| decode_windows_overwrite_record(&bytes))
                     .transpose()?;
+                let terminal = if let Some(local) = &local
+                    && windows_undo::overwrite::has_inverse_intent(&record, local)
+                {
+                    windows_undo::overwrite::completed(&self.root, &record, local)?
+                } else {
+                    false
+                };
+                if !terminal {
+                    let source = record.source_path()?;
+                    for (label, identity) in [
+                        (
+                            source
+                                .parent()
+                                .ok_or_else(|| {
+                                    PlatformError::Io("Move source has no parent".into())
+                                })?
+                                .to_path_buf(),
+                            record.source_parent_identity,
+                        ),
+                        (
+                            record.destination_parent_path()?,
+                            record.destination_parent_identity,
+                        ),
+                        (
+                            record.transaction_path()?,
+                            record.transaction_directory_identity,
+                        ),
+                        (self.root.clone(), self.root_identity),
+                    ] {
+                        let binding = windows_control::DirectoryBinding::capture(
+                            &self.root, &label, identity,
+                        )?;
+                        self.paths.push(binding.path.clone());
+                        self.namespace.push(binding);
+                    }
+                }
+                let hint = crate::windows_fs::location(&directory)
+                    .map_err(|e| PlatformError::Io(e.to_string()))?;
                 self.evidence
                     .push(Evidence::Same(same, Some(Box::new(record))));
                 self.evidence
@@ -384,6 +420,11 @@ impl WindowsMoveRecoveryPlan {
                 "Move recovery root changed; refresh Activity".into(),
             ));
         }
+        let _namespace = self
+            .namespace
+            .iter()
+            .map(windows_control::DirectoryBinding::pin)
+            .collect::<Result<Vec<_>, _>>()?;
         for evidence in &self.evidence {
             let unchanged = match evidence {
                 Evidence::Completion(expected) => {

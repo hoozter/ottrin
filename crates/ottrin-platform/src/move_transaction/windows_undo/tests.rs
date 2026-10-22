@@ -122,7 +122,7 @@ fn windows_native_move_undo_refuses_occupied_name_and_retries_without_repeating(
 }
 
 #[test]
-fn windows_native_move_undo_refuses_changed_entry_or_parent() {
+fn windows_native_move_undo_refuses_changed_entry_and_follows_exact_parent_ids() {
     for mutation in 0..3 {
         let fixture = crate::tests::TestDir::new("native-move-undo-drift");
         let receipt = moved(fixture.path());
@@ -142,30 +142,35 @@ fn windows_native_move_undo_refuses_changed_entry_or_parent() {
                 std::fs::write(receipt.after_path(), b"foreign entry").unwrap();
             }
         }
-        assert!(matches!(
-            DefaultPlatform.undo_move_with_receipt(&receipt),
-            Err(PlatformError::StalePathMoveUndo(_))
-        ));
-        assert!(!receipt.before_path().exists());
-        if mutation == 1 {
-            assert_eq!(
-                std::fs::read(receipt.after_path()).unwrap(),
-                b"moved original"
-            );
-        } else {
+        if mutation == 0 {
+            assert!(matches!(
+                DefaultPlatform.undo_move_with_receipt(&receipt),
+                Err(PlatformError::StalePathMoveUndo(_))
+            ));
+            assert!(!receipt.before_path().exists());
             assert_eq!(
                 std::fs::read(receipt.after_path()).unwrap(),
                 b"foreign entry"
             );
-            assert_eq!(
-                std::fs::read(if mutation == 0 {
-                    parked
-                } else {
-                    parked.join("entry.txt")
-                })
-                .unwrap(),
-                b"moved original"
-            );
+            assert_eq!(std::fs::read(&parked).unwrap(), b"moved original");
+        } else {
+            DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+            let restored = if mutation == 1 {
+                parked.join("entry.txt")
+            } else {
+                receipt.before_path().to_path_buf()
+            };
+            assert_eq!(std::fs::read(restored).unwrap(), b"moved original");
+            if mutation == 1 {
+                assert!(!receipt.before_path().exists());
+                assert!(!receipt.after_path().exists());
+            } else {
+                assert_eq!(
+                    std::fs::read(receipt.after_path()).unwrap(),
+                    b"foreign entry"
+                );
+                assert!(!parked.join("entry.txt").exists());
+            }
         }
     }
 }

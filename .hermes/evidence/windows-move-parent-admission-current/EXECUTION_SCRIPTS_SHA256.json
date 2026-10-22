@@ -1,0 +1,18 @@
+{
+  "copy-registry-final/actor.ps1": "0c3bb03add13281c21cb102d8d9e18221855f63c746d00b1dd0c4b9dbd1fb2d3",
+  "final-offline-retired-verify/actor.ps1": "ead347b5b334e26a8a92ca98714fa62c690148a76b24ab3658a5c70deb3f5c05",
+  "final-offline-original-prepare/actor.ps1": "5aea0d137012550c469aa11688dd1508db26a866efbf24673987e3b199c389c4",
+  "move-owned-volume/actor.ps1": "2948d5d583a4a023fef56cf7f669d4567933c3073f3f2734a5e7412a41d1c6f9",
+  "final-offline-original-verify/actor.ps1": "7fb81127da821f45312594b188570d8c39572dfe504091e5de42bacfe3466d7b",
+  "move-final/actor.ps1": "85b805a6342478bb4ec25fef2d0ffc2f495df7db1468045646f6c9d27fbb0f0a",
+  "final-offline-failure-teardown/actor.ps1": "736c36f38fc7e4a5c9fa75fdc7b660bcc49a8ca64329a537d398458f52f25bd5",
+  "final-offline-original-cleanup/actor.ps1": "f6afb86ea7fdd94c806d6d57eac9a7ac10d24acbb6608f267e060c4295cd7816",
+  "final-offline-retired-cleanup/actor.ps1": "30ad06ea82e06db1168129687d067ee4f812aa10c4db26175d22455a382aeed7",
+  "final-offline-retired-prepare/actor.ps1": "d48aa652dd84f54fc81517632315e8f4430920296a669cbc929b51006bb3054a",
+  "ui-final-controls/actor.ps1": "a7621be3d4899e357fd14fb68709d720bb32b1acc5d23dd3e78911126b513200",
+  "ui-move-final/actor.ps1": "f975b946e004297049908b9dddb18a90bb57f14bbffc2ab4135a9ec6e5095cc9",
+  "ui-move-initial/actor.ps1": "a602372ba27fb284308b33cbbade20bfef81f3c55e37d9f2bacfda3956e37842",
+  "copy-registry/actor.ps1": "cb15a06cb734177f702d4d38db3d2440a7a4595493ec41788cc0fa1467b61d2d",
+  "move-corrected/actor.ps1": "bafd0fbe89cb9590ebb367134fc2ba82f0444cf9827becdcdc008c9ed6bd238d",
+  "move-initial/actor.ps1": "bdd8e3cb77e18c13644cb9c13627ed37e68943d9c7e713e72ddf7b03d998ed5d"
+}

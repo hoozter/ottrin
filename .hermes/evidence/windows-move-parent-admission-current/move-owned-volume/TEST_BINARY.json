@@ -1,0 +1,29 @@
+{
+  "test_crate": "ottrin_platform",
+  "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+  "compiler_sha256": "3e8c5a8fef39af2af32902b2f1a5cfe2bff540428f5b0df5613d30d95d5e52a8",
+  "transferred_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+  "retained_sections": {
+    ".text": "8393061dee6c8c55451df1cdbe31176f968bd4f250f5f68ad82e00552a73ce34",
+    ".data": "eda1a6df1d002d52241f9e0ca71e34f20e2a6210198c24f09a2ff4add8f2e54f",
+    ".rdata": "aa4ffd1e8dc47ef8373654d36fcef027b72fb8a8350c379c56076cff3f9acbac",
+    ".pdata": "d51494982f7ff3a0d9de84dc920afe203708a84a123aa5eb76457e866fcf6a2a",
+    ".xdata": "6cade2c8d535fe7ee32780fbbea6322fee70491353975517030ebfdb74531eb6",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "069f6bc0a943b11babb5fd5951ed66d7ada144ac3933e3a263695daee4dca7d2",
+    ".CRT": "58c9f37ec5a88aed5d7e585a6fccf225b16c32a7c87fef8afed1e54838aa5b0c",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "fc703d103e2a9d6a249a5c898f07a068bb6a5ea78dfd81d3112804989b586cd6"
+  },
+  "reused_from": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-parent-admission-current/move-final/TEST_BINARY.json",
+  "reused_receipt_sha256": "aacb92acc9565c6e4bcf7742c33fce6dd4e8978acbd15a36f9007aa3806c1427"
+}

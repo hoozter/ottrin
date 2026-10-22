@@ -64,6 +64,8 @@ pub(super) mod windows_control;
 pub(super) mod windows_recovery_plan;
 #[cfg(target_os = "windows")]
 pub(super) mod windows_undo;
+#[cfg(target_os = "windows")]
+pub use windows_undo::WindowsMoveUndoPlan;
 
 pub(super) struct MovePublication {
     #[cfg(target_os = "windows")]
@@ -2484,12 +2486,16 @@ fn persist_windows_overwrite_record(
     recovery_root: &Path,
     record: &WindowsOverwriteRecord,
 ) -> Result<(), PlatformError> {
-    let _private = windows_control::pin_original(
+    let private = windows_control::DirectoryBinding::capture(
+        recovery_root,
         &record.transaction_path()?,
         record.transaction_directory_identity,
-    )?;
+    )?
+    .pin()?;
+    let transaction =
+        crate::windows_fs::location(&private).map_err(|e| PlatformError::Io(e.to_string()))?;
     let transaction_id = record.transaction_id()?;
-    let local = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
+    let local = transaction.join(WINDOWS_LOCAL_JOURNAL_NAME);
     write_windows_record_file(&local, record, false)?;
     write_windows_record_file(
         &windows_journal_path(recovery_root, transaction_id),
@@ -3492,6 +3498,9 @@ enum WindowsMoveBoundary {
     CrossRetainedBeforeRestore,
     CrossRetainedRestored,
     CrossRetainedUndoComplete,
+    OverwriteSourceClaimed,
+    OverwriteDisplacedRetained,
+    OverwritePublished,
     OverwriteUndoIntent,
     OverwriteUndoSourceRestored,
     OverwriteUndoDisplacedRestored,
@@ -5597,12 +5606,14 @@ fn resume_windows_overwrite(
     recovery_root: &Path,
     mut record: WindowsOverwriteRecord,
 ) -> Result<MovePublication, PlatformError> {
+    windows_undo::overwrite::topology(&record)?;
     let transaction = record.transaction_path()?;
-    let local_record = load_windows_overwrite_record(&transaction.join(WINDOWS_LOCAL_JOURNAL_NAME))
-        .map_err(|error| PlatformError::ClaimedRecoveryPending {
+    let local_record = windows_control::overwrite(recovery_root, &record).map_err(|error| {
+        PlatformError::ClaimedRecoveryPending {
             transaction: transaction.display().to_string(),
             message: format!("Windows Overwrite local journal could not be validated: {error}"),
-        })?;
+        }
+    })?;
     if !local_record.same_transaction_evidence(&record)
         || record.retained_identity != record.destination_identity
     {
@@ -5620,14 +5631,39 @@ fn resume_windows_overwrite(
             retained_displaced_path: None,
         });
     }
-    let source = record.source_path()?;
-    let source_parent = source
-        .parent()
-        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-    let destination_parent = record.destination_parent_path()?;
-    let target = record.target_path()?;
-    let replacement = record.replacement_path()?;
-    let retained = record.retained_path()?;
+    let source_hint = record.source_path()?;
+    let source_binding = windows_control::DirectoryBinding::capture(
+        recovery_root,
+        source_hint
+            .parent()
+            .ok_or_else(|| PlatformError::InvalidSource(source_hint.display().to_string()))?,
+        record.source_parent_identity,
+    )?;
+    let destination_binding = windows_control::DirectoryBinding::capture(
+        recovery_root,
+        &record.destination_parent_path()?,
+        record.destination_parent_identity,
+    )?;
+    let private_binding = windows_control::DirectoryBinding::capture(
+        recovery_root,
+        &transaction,
+        record.transaction_directory_identity,
+    )?;
+    if private_binding.path.parent() != Some(destination_binding.path.as_path())
+        || private_binding.path.file_name() != transaction.file_name()
+    {
+        return Err(PlatformError::Io("Move private namespace changed".into()));
+    }
+    let _source_pin = source_binding.pin()?;
+    let _destination_pin = destination_binding.pin()?;
+    let _private_pin = private_binding.pin()?;
+    let source = windows_control::child_path(&_source_pin, &source_hint)?;
+    let source_parent = source_binding.path.as_path();
+    let destination_parent = destination_binding.path;
+    let transaction = private_binding.path;
+    let target = windows_control::child_path(&_destination_pin, &record.target_path()?)?;
+    let replacement = transaction.join(WINDOWS_REPLACEMENT_NAME);
+    let retained = transaction.join(WINDOWS_RETAINED_NAME);
     for (path, expected) in [
         (source_parent, record.source_parent_identity),
         (
@@ -5689,6 +5725,13 @@ fn resume_windows_overwrite(
                             .to_string(),
                     });
                 }
+                _source_pin
+                    .sync_all()
+                    .and_then(|()| _private_pin.sync_all())
+                    .map_err(|e| PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!("Move claim namespace flush failed: {e}"),
+                    })?;
                 record.phase = WindowsOverwritePhase::SourceClaimed;
                 persist_windows_overwrite_record(recovery_root, &record).map_err(|error| {
                     PlatformError::ClaimedRecoveryPending {
@@ -5700,6 +5743,8 @@ fn resume_windows_overwrite(
                 })?;
             }
             WindowsOverwriteRestartAction::PublishClaimed => {
+                #[cfg(test)]
+                windows_move_boundary(WindowsMoveBoundary::OverwriteSourceClaimed, &source);
                 let source_kind = windows_same_volume_kind_from_identity(record.source_identity)
                     .ok_or_else(|| PlatformError::ClaimedRecoveryPending {
                         transaction: transaction.display().to_string(),
@@ -5721,6 +5766,13 @@ fn resume_windows_overwrite(
                             record.source_identity,
                             record.destination_identity,
                         )?;
+                        _destination_pin
+                            .sync_all()
+                            .and_then(|()| _private_pin.sync_all())
+                            .map_err(|e| PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!("Move publication namespace flush failed: {e}"),
+                            })?;
                     }
                     WindowsSameVolumeOverwritePublication::RetainedRename => {
                         publish_windows_entry_retaining_displaced_by_rename(
@@ -5733,6 +5785,8 @@ fn resume_windows_overwrite(
                         )?;
                     }
                 }
+                #[cfg(test)]
+                windows_move_boundary(WindowsMoveBoundary::OverwritePublished, &target);
                 record.phase = WindowsOverwritePhase::Published;
                 persist_windows_overwrite_record(recovery_root, &record).map_err(|error| {
                     PlatformError::CommittedCleanupPending {
@@ -5766,6 +5820,8 @@ fn resume_windows_overwrite(
                     record.source_identity,
                     record.destination_identity,
                 )?;
+                #[cfg(test)]
+                windows_move_boundary(WindowsMoveBoundary::OverwritePublished, &target);
                 record.phase = WindowsOverwritePhase::Published;
                 persist_windows_overwrite_record(recovery_root, &record).map_err(|error| {
                     PlatformError::CommittedCleanupPending {
@@ -5792,8 +5848,14 @@ fn resume_windows_overwrite(
                 return Ok(MovePublication {
                     windows_undo: Some(undo),
                     disposition: MoveDisposition::Moved,
-                    published_path: Some(target),
-                    retained_displaced_path: Some(retained),
+                    published_path: Some(windows_control::label_path(
+                        &_destination_pin,
+                        &record.target_path()?,
+                    )?),
+                    retained_displaced_path: Some(windows_control::label_path(
+                        &_private_pin,
+                        &record.retained_path()?,
+                    )?),
                 });
             }
             WindowsOverwriteRestartAction::RetainAmbiguous => {
@@ -5971,6 +6033,8 @@ fn publish_windows_entry_retaining_displaced_by_rename(
             transaction_handle
                 .sync_all()
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
+            #[cfg(test)]
+            windows_move_boundary(WindowsMoveBoundary::OverwriteDisplacedRetained, retained);
         }
         (None, Some(retained_identity)) if retained_identity == expected_displaced => {}
         _ => {

@@ -1,10 +1,9 @@
 //! Durable inverse of a same-volume Replace. Local intent precedes central intent,
 //! and both precede any inverse rename. Forward recovery never consumes inverse intent.
 use super::super::{
-    WINDOWS_LOCAL_JOURNAL_NAME, WINDOWS_REPLACEMENT_NAME, WINDOWS_RETAINED_NAME,
-    WindowsOverwritePhase as Phase, WindowsOverwriteRecord as Record,
-    load_windows_overwrite_record, observe_windows_identity, persist_windows_overwrite_record,
-    rename_windows_handle_no_replace, windows_journal_path,
+    WINDOWS_REPLACEMENT_NAME, WINDOWS_RETAINED_NAME, WindowsOverwritePhase as Phase,
+    WindowsOverwriteRecord as Record, load_windows_overwrite_record,
+    persist_windows_overwrite_record, rename_windows_handle_no_replace, windows_journal_path,
 };
 use super::*;
 
@@ -78,19 +77,12 @@ pub(in crate::move_transaction) fn topology(record: &Record) -> Result<(), Platf
     Ok(())
 }
 
-fn open_parent(path: &Path, expected: WindowsStableIdentity) -> Result<File, PlatformError> {
-    let parent = windows_fs::open_directory_with_sharing(
-        path,
-        move_recovery::WINDOWS_DESTINATION_PARENT_ACCESS_MODE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE,
-    )
-    .map_err(io)?;
-    if move_recovery::stable_identity_from_handle(&parent).map_err(io)? != expected
-        || move_recovery::stable_identity_of_entry(path).map_err(io)? != expected
-    {
-        return Err(stale(path));
-    }
-    Ok(parent)
+fn open_parent(
+    root: &Path,
+    path: &Path,
+    expected: WindowsStableIdentity,
+) -> Result<File, PlatformError> {
+    super::super::windows_control::DirectoryBinding::capture(root, path, expected)?.pin()
 }
 
 fn open_entry(
@@ -129,36 +121,57 @@ pub(in crate::move_transaction) fn issue(
 ) -> Result<PathMoveUndoReceipt, PlatformError> {
     let verify = || -> Result<PathMoveUndoReceipt, PlatformError> {
         topology(record)?;
+        let root = super::super::windows_recovery_root()?;
         let transaction = record.transaction_path()?;
-        let local = load_windows_overwrite_record(&transaction.join(WINDOWS_LOCAL_JOURNAL_NAME))?;
-        let central = load_windows_overwrite_record(&windows_journal_path(
-            &super::super::windows_recovery_root()?,
-            record.transaction_id()?,
-        ))?;
+        let local = super::super::windows_control::overwrite(&root, record)?;
+        let central =
+            load_windows_overwrite_record(&windows_journal_path(&root, record.transaction_id()?))?;
+        let before = record.source_path()?;
+        let after = record.target_path()?;
+        let before_parent = open_parent(
+            &root,
+            before.parent().ok_or_else(|| stale(&before))?,
+            record.source_parent_identity,
+        )?;
+        let after_parent = open_parent(
+            &root,
+            &record.destination_parent_path()?,
+            record.destination_parent_identity,
+        )?;
+        let private = open_parent(&root, &transaction, record.transaction_directory_identity)?;
+        let private_path = windows_fs::location(&private).map_err(io)?;
         if central != *record
             || paired(record, &local)? != Phase::Published
-            || observe_windows_identity(&transaction)?
-                != Some(record.transaction_directory_identity)
-            || observe_windows_identity(&record.replacement_path()?)?.is_some()
-            || observe_windows_identity(&record.retained_path()?)? != Some(record.retained_identity)
+            || private_path.parent()
+                != Some(windows_fs::location(&after_parent).map_err(io)?.as_path())
+            || private_path.file_name() != transaction.file_name()
+            || observe(&after_parent, after.file_name().unwrap())? != Some(record.source_identity)
+            || observe(&private, OsStr::new(WINDOWS_REPLACEMENT_NAME))?.is_some()
+            || observe(&private, OsStr::new(WINDOWS_RETAINED_NAME))?
+                != Some(record.retained_identity)
         {
             return Err(stale(&transaction));
         }
-        let mut receipt = super::issue(
-            &record.source_path()?,
-            &record.target_path()?,
-            record.source_identity,
-            record.source_parent_identity,
-            record.destination_parent_identity,
-        )?;
-        receipt.windows_undo = Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::Replace(
-            Box::new(record.clone()),
-        )));
-        receipt.displaced_identity = Some(PathMoveIdentity {
-            windows: record.retained_identity,
-        });
-        receipt.retained_displaced_path =
-            Some(std::path::absolute(record.retained_path()?).map_err(io)?);
+        // Preserve original receipt labels and immutable journal evidence. The
+        // queue captures current native parent names independently before Undo.
+        let _before_parent = before_parent;
+        let receipt = PathMoveUndoReceipt {
+            windows_undo: Some(WindowsPathUndo::Move(WindowsMoveUndoGuard::Replace(
+                Box::new(record.clone()),
+            ))),
+            before_path: std::path::absolute(before).map_err(io)?,
+            after_path: std::path::absolute(after).map_err(io)?,
+            identity: PathMoveIdentity {
+                windows: record.source_identity,
+            },
+            displaced_identity: Some(PathMoveIdentity {
+                windows: record.retained_identity,
+            }),
+            retained_displaced_path: Some(
+                std::path::absolute(record.retained_path()?).map_err(io)?,
+            ),
+            requirement: PathMoveUndoRequirement::None,
+        };
         Ok(receipt)
     };
     verify().map_err(|error| PlatformError::CommittedCleanupPending {
@@ -245,7 +258,7 @@ pub(in crate::move_transaction) fn resume(
     let source = record.source_path()?;
     let target = record.target_path()?;
     let transaction = record.transaction_path()?;
-    let private_parent = open_parent(&transaction, record.transaction_directory_identity)?;
+    let private_parent = open_parent(root, &transaction, record.transaction_directory_identity)?;
     if observe(&private_parent, OsStr::new(WINDOWS_REPLACEMENT_NAME))?.is_some() {
         return Err(stale(&transaction));
     }
@@ -259,13 +272,23 @@ pub(in crate::move_transaction) fn resume(
             .map_err(|e| pending(&record, e));
     }
     let before_parent = open_parent(
+        root,
         source.parent().ok_or_else(|| stale(&source))?,
         record.source_parent_identity,
     )?;
     let after_parent = open_parent(
+        root,
         &record.destination_parent_path()?,
         record.destination_parent_identity,
     )?;
+    let actual_private = windows_fs::location(&private_parent).map_err(io)?;
+    if actual_private.parent() != Some(windows_fs::location(&after_parent).map_err(io)?.as_path())
+        || actual_private.file_name() != transaction.file_name()
+    {
+        return Err(stale(&transaction));
+    }
+    let source = super::super::windows_control::child_path(&before_parent, &source)?;
+    let target = super::super::windows_control::child_path(&after_parent, &target)?;
     let before_name = source.file_name().ok_or_else(|| stale(&source))?;
     let after_name = target.file_name().ok_or_else(|| stale(&target))?;
     let original = observe(&before_parent, before_name)?;
@@ -354,5 +377,7 @@ pub(in crate::move_transaction) fn resume(
     super::super::windows_completion::same(root, &record).map_err(|e| pending(&record, e))
 }
 
+#[cfg(test)]
+use super::super::WINDOWS_LOCAL_JOURNAL_NAME;
 #[cfg(test)]
 mod tests;

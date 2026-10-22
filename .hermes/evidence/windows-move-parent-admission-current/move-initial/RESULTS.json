@@ -1,0 +1,14 @@
+{
+    "exit":  101,
+    "native_started_utc":  "2026-10-22T04:40:58.4545272Z",
+    "native_finished_utc":  "2026-10-22T04:41:57.2270588Z",
+    "test_arguments":  "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "6779e37f29119489cfa7428c7aed37c9898c12060e011772c75a0002ce5cd236",
+    "error":  "Native cleanup observation failed",
+    "stderr_sha256":  "43a6df1027f9d68d0819278b4492193f5999a6d2dd94784660260f1a40880376",
+    "native_process_id":  7352,
+    "status":  "fail",
+    "test_binary_hash":  "db2e5fd44f8bf15d16031ec83743a5eca1cd253aeee7724317a7c6c28f0874bc",
+    "dispatch_id":  "0870fc07a2dabdbe7b5ce3ef0b5acf31"
+}

@@ -1,0 +1,68 @@
+{
+  "status": "pass within same-volume native API and queued-worker scopes",
+  "base_revision": "5ec0361d9b16a524c7df98da439a7fc77ae6c6b5",
+  "source_binding": "SOURCE_SHA256.json binds changed source/docs and shared QA inputs; PLATFORM_SOURCE_SHA256.json verifies platform source did not drift between native cases",
+  "implemented": [
+    "Read-only Windows Move Undo plan resolves original native parent IDs and reserves their current names before strict worker pins",
+    "Activity performs admission off-thread and revalidates original drive bindings before and after; pending controls show Checking files and drives",
+    "Atomic and same-volume Replace Undo follow original renamed parents while preserving foreign replacements",
+    "Unfinished same-volume Replace recovery binds source/publication/private journal writes to captured native parents",
+    "Original receipt and paired durable labels remain unchanged; visible file paths are separate from scheduler namespace claims",
+    "Native namespace flushes precede source-claim and regular-file publication journal phase advancement",
+    "Completed durable Undo plan admits local registry without opening former drives"
+  ],
+  "checks": {
+    "native_passed": 166,
+    "cases": "VERIFIED_CASES.json",
+    "platform_binary_sha256": "13e06de4abc312dc991d4c5abfe1dcccaedd7f0c815da1e0247f76fc6bf2f889",
+    "ui_binary_sha256": "81c1bd719199fa07d10bdd65c68086dcce446c340e1807adddd5a03d66b09442",
+    "linux_ui": {
+      "passed": 395,
+      "ignored": 1,
+      "evidence": "linux-ui-tests.log"
+    },
+    "strict_clippy": [
+      "clippy-windows.log",
+      "clippy-linux.log"
+    ],
+    "formatting": "cargo fmt --all --check passed",
+    "source_whitespace": "git diff --check on affected crates/docs/QA runners passed"
+  },
+  "native_scope": [
+    "138 Move/module/receipt-dependency checks",
+    "7 Copy registry regressions",
+    "7 fresh-process completion stages including real owned-volume detach/reconnect before and after cleanup",
+    "14 UI-worker checks, including asynchronous renamed-parent Undo, queue conflict names, actual inverse and visible selection refresh",
+    "Native ancestor rename refused while endpoint handles pinned; ancestor rename succeeds after execute releases handles"
+  ],
+  "failed_evidence": {
+    "move-initial": "134 pass, 3 fail: old parent-rename refusal expectation; new process-exit fixture selected a Cross-only boundary; shared Cross journal writer changed without matching Cross admission. Same-volume boundaries and original-object expectation corrected; Cross writer restored to its existing strict implementation. All final checks pass.",
+    "move-final": "Preflight only: filtered Get-Volume -DriveLetter D returned no volume; no native test process started. SYSTEM observation confirmed the same owned disk/volume identity. Canonical guard now enumerates volumes once, selects exactly one by letter and validates unchanged GUID/NTFS/label/actor/token. No remount, retry fallback or weakened ownership check; root cause of filtered query failure not established."
+  },
+  "cleanup": {
+    "guest": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "superseded_finalized_compiler_sessions": "CACHE_RETIREMENT.json",
+    "retired_sessions": 17,
+    "retired_logical_bytes": 2434112882,
+    "owned_native_processes": 0,
+    "owned_test_profiles_or_persistent_fixtures": 0,
+    "retained_vm": "shut off with unchanged persistent definition",
+    "original_preferences_and_uninstaller": "unchanged hashes",
+    "temporary_host_scripts_and_pid_files": "removed; execution script hashes retained",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt"
+  },
+  "delivery": {
+    "rebuilt_or_promoted_packages": false,
+    "unchanged_packages": "UNCHANGED_PACKAGES.json verifies all seven existing packages against recorded exact source receipts"
+  },
+  "limits": [
+    "Source/native checkpoint; rendered Activity and exact-package acceptance remain required",
+    "Cross-volume containing-parent rename mutation remains strict and incomplete; it must be converted with its recovery admission",
+    "Linux native-plan work and broader Copy, resource, installer, platform and release gates remain open",
+    "Process exits and namespace flushes do not establish physical power-loss or real-device/FAT32/ReFS acceptance",
+    "One Linux real mount-replacement UI test requires an explicit private namespace and is ignored in this selection",
+    "Existing app-private cross-process recovery lock serializes all native Undo; queue paths describe captured operation directories, not a newly implemented registry-lock protocol"
+  ]
+}

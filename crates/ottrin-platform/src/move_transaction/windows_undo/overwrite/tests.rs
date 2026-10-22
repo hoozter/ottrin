@@ -296,13 +296,12 @@ fn windows_native_replace_recovery_plan_refuses_changed_local_evidence() {
         "forward recovery is not Undo completion"
     );
     assert!(plan.paths().contains(&root()));
+    assert!(plan.paths().contains(
+        &std::fs::canonicalize(record.source_path().unwrap().parent().unwrap()).unwrap()
+    ));
     assert!(
         plan.paths()
-            .contains(&record.source_path().unwrap().parent().unwrap().to_owned())
-    );
-    assert!(
-        plan.paths()
-            .contains(&record.destination_parent_path().unwrap())
+            .contains(&std::fs::canonicalize(record.destination_parent_path().unwrap()).unwrap())
     );
     let saved = std::fs::read(local(&record)).unwrap();
     let mut changed = record.clone();

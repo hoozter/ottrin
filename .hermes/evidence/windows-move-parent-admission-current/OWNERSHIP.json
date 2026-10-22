@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "5ec0361d9b16a524c7df98da439a7fc77ae6c6b5",
+  "actor": "OttrinCopyQA",
+  "purpose": "Native identity-bound parent rename Undo and same-volume unfinished recovery admission"
+}

@@ -1,0 +1,20 @@
+{
+  ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "aadbf64326494410363a6228c340c455a89ce7ca00c2c81aa004a86b0194c3f1",
+  ".hermes/evidence/windows-move-retirement-current/run-cases.py": "b7cb31d8f1be0bc51308a933cb2bfa2fb5995b3da132684143cd41dba5680345",
+  ".hermes/evidence/windows-move-retirement-current/run-offline.py": "854de114e74805559929c58f5291e63f61002b646bd4f4a4f301a3581d8dee19",
+  "crates/ottrin-platform/src/lib.rs": "74bbb04d6828778eb38e022c0e2b8365d211a8f51e8250e0563d2aceb6cdc733",
+  "crates/ottrin-platform/src/move_transaction.rs": "219a86e969fbce6dfc94932fb70419b4c21ab12a15b1b55da34287268fd5df81",
+  "crates/ottrin-platform/src/move_transaction/windows_control.rs": "2af82900c397ddad5a97ca7f42590978cf2bfcb863ab6244ded84fb5a530bdde",
+  "crates/ottrin-platform/src/move_transaction/windows_recovery_plan.rs": "733e9c4551abbbef766fff250e1403a7bd5a769d3bdd86fceee7fc0f141c74ee",
+  "crates/ottrin-platform/src/move_transaction/windows_undo.rs": "d2a00f6a763b491d30b95ed84e682cf8e04d584fb01555e5905e319541996092",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs": "a1a08c7ac9cfcf1212f22a60a823d882d484f79f19be562ba67e314cc6d1bab2",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross/offline_tests.rs": "b25604a53d0294b00e3479ba549cf91072955594c725b9c20011f5c848a8a6d2",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/overwrite.rs": "c979b72dbecf53cd654b8a66a4e80a93349317b2d61ec4168b3b254577939eb6",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/overwrite/tests.rs": "120a6ae95b0a8c96e7b6304fdd69bb0dc786c962c25c99a73ea570944e8db638",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/plan.rs": "0760eff596f51d6cf3e90305782be73bdd155dadf1e36460e5ab39ce17beef8a",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/plan/tests.rs": "4730059cae8f76a619ae8da95734de71b03fbdb7bd8b681894c8a2feb29e1279",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/tests.rs": "8a677d67042101ef970091b0cc75302381eb2e55be9ead43723315e1f94764eb",
+  "crates/ottrin-ui/src/lib.rs": "5ea596d460410e723ef4035efc23e6ff57a16aa0cbfba6a549f4707f23680421",
+  "docs/DEVELOPMENT.md": "5560323e57a6b373ad1d83787cd68e04bfe12c64c09a3d4043d66e02b9cdbf6d",
+  "docs/ROADMAP.md": "8dc3b2b886455966fb41b2582c337ed2552d6205813017244f7b481ebe059f6a"
+}

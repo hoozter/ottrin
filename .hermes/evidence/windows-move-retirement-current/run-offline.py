@@ -2,19 +2,21 @@
 from pathlib import Path
 import argparse, json, re, runpy, signal, sys
 q = runpy.run_path(str(Path(__file__).with_name('run-cases.py')))
-ROOT, native_case = q['ROOT'], q['case']
+TOOLS, native_case = q['TOOLS'], q['case']
 parser = argparse.ArgumentParser()
+parser.add_argument('--evidence-root', type=Path, required=True)
 parser.add_argument('--binary-receipt', type=Path, required=True)
 parser.add_argument('--prefix', required=True)
 args = parser.parse_args()
+ROOT = args.evidence_root.resolve()
 def cancelled(number, _frame):
     raise SystemExit(128 + number)
 signal.signal(signal.SIGTERM, cancelled)
 assert re.fullmatch(r'[A-Za-z0-9_-]+', args.prefix)
 def case(name, arguments):
-    native_case(args.prefix + '-' + name, arguments, reuse_receipt=args.binary_receipt)
+    native_case(ROOT, args.prefix + '-' + name, arguments, reuse_receipt=args.binary_receipt)
 
-sys.path.insert(0, str(q['TOOLS']))
+sys.path.insert(0, str(TOOLS))
 import transport as n
 
 def volume(action, label):

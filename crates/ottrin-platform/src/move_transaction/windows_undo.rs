@@ -144,26 +144,19 @@ pub(crate) fn undo(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
     windows_fs::valid_component(after_name).map_err(io)?;
     // Native parents stay pinned only during the inverse. No receipt retains a
     // handle that could prevent a later ordinary volume unmount.
-    let access = move_recovery::WINDOWS_DESTINATION_PARENT_ACCESS_MODE;
     let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE;
-    let before_parent =
-        windows_fs::open_directory_with_sharing(before_dir, access, sharing).map_err(io)?;
-    let after_parent =
-        windows_fs::open_directory_with_sharing(after_dir, access, sharing).map_err(io)?;
-    if move_recovery::stable_identity_from_handle(&before_parent).map_err(io)?
-        != before_parent_identity
-        || move_recovery::stable_identity_from_handle(&after_parent).map_err(io)?
-            != after_parent_identity
-    {
-        return Err(stale(before));
-    }
+    let root = super::windows_recovery_root()?;
+    let before_binding = super::windows_control::DirectoryBinding::capture(
+        &root,
+        before_dir,
+        before_parent_identity,
+    )?;
+    let after_binding =
+        super::windows_control::DirectoryBinding::capture(&root, after_dir, after_parent_identity)?;
+    let before_parent = before_binding.pin()?;
+    let after_parent = after_binding.pin()?;
     #[cfg(test)]
     super::windows_move_boundary(super::WindowsMoveBoundary::UndoParentsOpened, before_dir);
-    if move_recovery::stable_identity_of_entry(before_dir).map_err(io)? != before_parent_identity
-        || move_recovery::stable_identity_of_entry(after_dir).map_err(io)? != after_parent_identity
-    {
-        return Err(stale(before));
-    }
     let published = observe(&after_parent, after_name)?;
     let original = observe(&before_parent, before_name)?;
     let flush = || -> Result<(), PlatformError> {
@@ -221,3 +214,6 @@ mod tests;
 pub(in crate::move_transaction) mod overwrite;
 
 pub(in crate::move_transaction) mod cross;
+
+mod plan;
+pub use plan::WindowsMoveUndoPlan;

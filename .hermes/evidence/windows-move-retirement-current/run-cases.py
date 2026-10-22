@@ -1,12 +1,12 @@
 """Owned native cases; observation timeouts resume the same QGA observer."""
 from pathlib import Path
 import os, shutil, subprocess
-ROOT = Path(__file__).resolve().parent
-TOOLS = ROOT.parent / 'windows-copy-cleanup-current'
-def case(name, arguments, *, reuse=True, ui=False, reuse_receipt=None):
-    output = ROOT / name
+TOOLS = Path(__file__).resolve().parent.parent / 'windows-copy-cleanup-current'
+def case(evidence_root, name, arguments, *, reuse=True, ui=False, reuse_receipt=None):
+    root = Path(evidence_root).resolve()
+    output = root / name
     output.mkdir()
-    build = ROOT / 'ui-build' if ui else ROOT
+    build = root / 'ui-build' if ui else root
     for filename in ('build.jsonl', 'build.log'):
         shutil.copy2(build / filename, output / filename)
     command = ['python3', str(TOOLS / 'run-native.py'), *arguments,
