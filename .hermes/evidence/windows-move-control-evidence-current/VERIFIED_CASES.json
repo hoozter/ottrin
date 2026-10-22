@@ -1,0 +1,52 @@
+{
+  "move-suite": {
+    "passed": 124,
+    "result": "move-suite/RESULTS.json",
+    "binary": "move-suite/TEST_BINARY.json"
+  },
+  "copy-registry": {
+    "passed": 7,
+    "result": "copy-registry/RESULTS.json",
+    "binary": "copy-registry/TEST_BINARY.json"
+  },
+  "failure-teardown": {
+    "passed": 1,
+    "result": "failure-teardown/RESULTS.json",
+    "binary": "failure-teardown/TEST_BINARY.json"
+  },
+  "prepare": {
+    "passed": 1,
+    "result": "prepare/RESULTS.json",
+    "binary": "prepare/TEST_BINARY.json"
+  },
+  "offline": {
+    "passed": 1,
+    "result": "offline/RESULTS.json",
+    "binary": "offline/TEST_BINARY.json"
+  },
+  "cleanup": {
+    "passed": 1,
+    "result": "cleanup/RESULTS.json",
+    "binary": "cleanup/TEST_BINARY.json"
+  },
+  "ui-history": {
+    "passed": 1,
+    "result": "ui-history/RESULTS.json",
+    "binary": "ui-history/TEST_BINARY.json"
+  },
+  "ui-status": {
+    "passed": 9,
+    "result": "ui-status/RESULTS.json",
+    "binary": "ui-status/TEST_BINARY.json"
+  },
+  "ui": {
+    "passed": 1,
+    "result": "ui/RESULTS.json",
+    "binary": "ui/TEST_BINARY.json"
+  },
+  "ui-same": {
+    "passed": 1,
+    "result": "ui-same/RESULTS.json",
+    "binary": "ui-same/TEST_BINARY.json"
+  }
+}

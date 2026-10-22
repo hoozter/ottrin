@@ -400,6 +400,13 @@ and file identities plus checksum reject copied or damaged state. Activity and
 recovery use this receipt without reopening former payload folders; retained
 cross-volume controller and inverse IDs resolve to the same completion. Old
 journals are superseded after this handoff and remain pending safe reclamation.
+Receipt format 2 binds their original native file identities, byte counts and
+SHA-256 hashes of canonical default-stream data, and the private directory/parent
+identities. Version 1 was an internal pre-release format and is not accepted by
+the current decoder. The new fields do not authorize deleting unknown streams or
+other files; reclamation still needs native queue-time admission and worker
+revalidation. Completed plan capture preserves the ownership snapshot so receipt
+publication never reopens former private folders after admission.
 This does not provide volume-independent recovery for an unfinished operation.
 
 The retained native QA harness has `--move-completion-offline` stages

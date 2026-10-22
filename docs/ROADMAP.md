@@ -422,8 +422,16 @@ Publication writes and flushes an owner-only delete-on-close preparation, rename
 it without replacement, cancels deletion, then flushes the registry. A failed or
 interrupted preparation cannot become partial canonical state. Receipt damage,
 copy/replay, overlapping owners and wrong-family ID collisions refuse admission.
-Old journals remain superseded evidence pending safe metadata reclamation; this
-change does not delete them or unknown private files. Native checks and exact
+Completion receipts now also retain the original native file IDs, byte counts
+and default-stream hashes of both journals, plus their private directory and
+parent identities. Hashing streams the existing records rather than allocating
+another serialized manifest. Captured completed recovery plans carry this proof,
+so acknowledging completion after the folders disappear still requires only the
+local registry. Copied replacement journals and changed bytes do not update the
+original ownership evidence. The current internal receipt format is version 2.
+This is the prerequisite for cleanup admission and worker revalidation; the
+retirement action is still pending. Old journals remain superseded evidence;
+this capture step deletes neither journals nor unknown private files. Native checks and exact
 remaining acceptance limits are recorded in
 `.hermes/evidence/windows-move-completion-current/ACCEPTANCE.json`.
 

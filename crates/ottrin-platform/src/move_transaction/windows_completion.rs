@@ -10,6 +10,14 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_DISPOSITION_FLAG_ON_CLOSE, FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_SHARE_READ,
 };
 
+pub(in crate::move_transaction) mod controls;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::move_transaction) struct Prepared {
+    binding: Binding,
+    controls: Vec<controls::Owner>,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 enum Binding {
@@ -28,6 +36,7 @@ struct Body {
     root: Identity,
     file: Identity,
     binding: Binding,
+    controls: Vec<controls::Owner>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -41,7 +50,7 @@ fn io(e: impl std::fmt::Display) -> PlatformError {
 }
 fn checksum(body: &Body) -> Result<[u8; 32], PlatformError> {
     let mut hash = Sha256::new();
-    hash.update(b"Ottrin Windows Move completion v1\0");
+    hash.update(b"Ottrin Windows Move completion v2\0");
     hash.update(serde_json::to_vec(body).map_err(io)?);
     Ok(hash.finalize().into())
 }
@@ -96,6 +105,37 @@ impl Binding {
     }
 }
 impl Receipt {
+    fn validate_controls(&self) -> Result<(), PlatformError> {
+        let mut owners = std::collections::BTreeSet::new();
+        for owner in &self.body.controls {
+            owner.validate(self.body.root)?;
+            if !self.covers(owner.transaction, owner.kind)? || !owners.insert(owner.transaction) {
+                return Err(io("completion control owners disagree"));
+            }
+            let matches = match &self.body.binding {
+                Binding::Same(record) => {
+                    owner.transaction == record.transaction_id()?
+                        && owner.identity == record.transaction_directory_identity
+                        && owner.directory == record.transaction_directory
+                        && owner.parent == record.destination_parent
+                        && owner.parent_identity == record.destination_parent_identity
+                }
+                Binding::Cross {
+                    origin,
+                    inverse,
+                    private,
+                } => origin.matches_control(owner, *inverse, *private)?,
+            };
+            if !matches {
+                return Err(io("completion control topology disagrees"));
+            }
+        }
+        let expected = 1 + usize::from(self.body.binding.controller()?.is_some());
+        if owners.len() != expected {
+            return Err(io("completion control evidence is incomplete"));
+        }
+        Ok(())
+    }
     pub(super) fn id(&self) -> Result<[u8; 16], PlatformError> {
         self.body.binding.id()
     }
@@ -182,7 +222,7 @@ fn read(parent: &File, id: [u8; 16]) -> Result<Option<Receipt>, PlatformError> {
         return Err(io("receipt exceeds size limit"));
     }
     let receipt: Receipt = serde_json::from_slice(&bytes).map_err(io)?;
-    if receipt.body.version != 1
+    if receipt.body.version != 2
         || receipt.body.root != move_recovery::stable_identity_from_handle(parent).map_err(io)?
         || receipt.body.file != identity
         || receipt.id()? != id
@@ -191,6 +231,7 @@ fn read(parent: &File, id: [u8; 16]) -> Result<Option<Receipt>, PlatformError> {
         return Err(io("receipt identity or checksum changed"));
     }
     receipt.body.binding.validate()?;
+    receipt.validate_controls()?;
     Ok(Some(receipt))
 }
 
@@ -247,7 +288,11 @@ pub(super) fn find(root: &Path, id: [u8; 16]) -> Result<Option<Receipt>, Platfor
     Ok(None)
 }
 
-fn publish(root: &Path, binding: Binding) -> Result<(), PlatformError> {
+fn publish(
+    root: &Path,
+    binding: Binding,
+    prepare: impl FnOnce() -> Result<Prepared, PlatformError>,
+) -> Result<(), PlatformError> {
     binding.validate()?;
     let id = binding.id()?;
     let parent = windows_fs::open_directory_with_sharing(
@@ -262,27 +307,51 @@ fn publish(root: &Path, binding: Binding) -> Result<(), PlatformError> {
         }
         return parent.sync_all().map_err(io);
     }
+    let prepared = prepare()?;
+    if prepared.binding != binding {
+        return Err(io("prepared completion belongs to another operation"));
+    }
+    publish_prepared_at(root, &parent, prepared)
+}
+
+pub(super) fn publish_prepared(root: &Path, prepared: Prepared) -> Result<(), PlatformError> {
+    publish(root, prepared.binding.clone(), || Ok(prepared))
+}
+
+fn publish_prepared_at(
+    root: &Path,
+    parent: &File,
+    prepared: Prepared,
+) -> Result<(), PlatformError> {
+    if move_recovery::stable_identity_of_entry(root).map_err(io)?
+        != move_recovery::stable_identity_from_handle(parent).map_err(io)?
+    {
+        return Err(io("completion registry namespace changed"));
+    }
+    let id = prepared.binding.id()?;
     let mut random = [0_u8; 16];
     getrandom::fill(&mut random).map_err(io)?;
     let temporary = format!(".preparing-{}.move-done", encode_transaction_id(random));
     let mut file =
-        windows_fs::create_temporary_relative(&parent, OsStr::new(&temporary)).map_err(io)?;
+        windows_fs::create_temporary_relative(parent, OsStr::new(&temporary)).map_err(io)?;
     let body = Body {
-        version: 1,
-        root: move_recovery::stable_identity_from_handle(&parent).map_err(io)?,
+        version: 2,
+        root: move_recovery::stable_identity_from_handle(parent).map_err(io)?,
         file: move_recovery::stable_identity_from_handle(&file).map_err(io)?,
-        binding,
+        binding: prepared.binding,
+        controls: prepared.controls,
     };
     let receipt = Receipt {
         checksum: checksum(&body)?,
         body,
     };
+    receipt.validate_controls()?;
     file.write_all(&serde_json::to_vec(&receipt).map_err(io)?)
         .map_err(io)?;
     file.sync_all().map_err(io)?;
     #[cfg(test)]
     windows_move_boundary(WindowsMoveBoundary::CompletionPrepared, root);
-    rename_windows_handle_no_replace(&file, &parent, &name(id))?;
+    rename_windows_handle_no_replace(&file, parent, &name(id))?;
     // Until this cancellation succeeds, even a process exit removes the file.
     // Full paired journals remain the fallback throughout that publication gap.
     let disposition = FILE_DISPOSITION_INFO_EX {
@@ -310,25 +379,50 @@ fn publish(root: &Path, binding: Binding) -> Result<(), PlatformError> {
 }
 
 /// Caller has just proved paired terminal state under the shared recovery lock.
-pub(super) fn same(root: &Path, record: &WindowsOverwriteRecord) -> Result<(), PlatformError> {
-    publish(root, Binding::Same(Box::new(record.clone())))
+pub(super) fn prepare_same(
+    root: &Path,
+    record: &WindowsOverwriteRecord,
+) -> Result<Prepared, PlatformError> {
+    Ok(Prepared {
+        binding: Binding::Same(Box::new(record.clone())),
+        controls: vec![controls::Owner::same(root, record)?],
+    })
 }
-pub(super) fn cross(root: &Path, record: &WindowsCrossVolumeRecord) -> Result<(), PlatformError> {
+pub(super) fn same(root: &Path, record: &WindowsOverwriteRecord) -> Result<(), PlatformError> {
+    publish(root, Binding::Same(Box::new(record.clone())), || {
+        prepare_same(root, record)
+    })
+}
+fn cross_binding(record: &WindowsCrossVolumeRecord) -> Result<Binding, PlatformError> {
     windows_undo::cross::validate_record(record)?;
     if record.phase != WindowsCrossVolumePhase::SourceRemoved {
         return Err(io("inverse source removal is not complete"));
     }
-    publish(
-        root,
-        Binding::Cross {
-            origin: Box::new(
-                record
-                    .undo_origin
-                    .clone()
-                    .ok_or_else(|| io("missing inverse origin"))?,
-            ),
-            inverse: record.transaction_id()?,
-            private: record.transaction_directory_identity,
-        },
-    )
+    Ok(Binding::Cross {
+        origin: Box::new(
+            record
+                .undo_origin
+                .clone()
+                .ok_or_else(|| io("missing inverse origin"))?,
+        ),
+        inverse: record.transaction_id()?,
+        private: record.transaction_directory_identity,
+    })
 }
+pub(super) fn prepare_cross(
+    root: &Path,
+    record: &WindowsCrossVolumeRecord,
+) -> Result<Prepared, PlatformError> {
+    let binding = cross_binding(record)?;
+    let mut controls = vec![controls::Owner::cross(root, record)?];
+    if let Some(controller) = windows_undo::cross::retained::completed_control(root, record)? {
+        controls.push(controls::Owner::cross(root, &controller)?);
+    }
+    Ok(Prepared { binding, controls })
+}
+pub(super) fn cross(root: &Path, record: &WindowsCrossVolumeRecord) -> Result<(), PlatformError> {
+    publish(root, cross_binding(record)?, || prepare_cross(root, record))
+}
+
+#[cfg(test)]
+mod tests;

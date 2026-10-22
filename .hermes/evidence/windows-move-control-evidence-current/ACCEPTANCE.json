@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-22",
+  "status": "source_native_checkpoint_passed",
+  "source_base": "3b7b7f55da37cae8682c99f59d7f879837d7f3d3",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Immutable original ownership evidence for superseded Windows Move controls. This is a prerequisite for retirement admission and worker revalidation; no old records are deleted by this checkpoint.",
+  "implementation": [
+    "Completion receipt format 2 includes each owner transaction/family, original private directory and parent labels/native IDs, plus the original central/local native file IDs, byte counts and SHA-256 default-stream hashes",
+    "Expected serialized records and opened native file contents are hashed through bounded streaming writers/readers; the control snapshot does not allocate another serialized cross-volume manifest",
+    "Opening a control denies concurrent writes/deletes during its snapshot and rejects nonordinary files; default-stream bytes must match the canonical record already proved complete",
+    "Reader validation binds the complete owner set and private topology back to the original completion binding; current labels or copied replacement files never refresh the original evidence",
+    "A completed recovery plan captures the ownership evidence before reducing its footprint to the local registry; its later receipt publication works after private folders disappear",
+    "Existing sealed completion acknowledgement does not reopen old volumes or files; the snapshot format rejects the superseded internal format 1 without a compatibility path",
+    "Cross-volume retained completion checks share one paired terminal predicate; no parallel recovery or Undo implementation was added"
+  ],
+  "verification": {
+    "native_cases": "VERIFIED_CASES.json",
+    "move_suite_passed": 124,
+    "copy_registry_passed": 7,
+    "offline_and_failure_stages_passed": 4,
+    "ui_worker_checks_passed": 12,
+    "total_native_checks_passed": 147,
+    "new_cases": [
+      "Original central/local file IDs, byte counts and hashes match their actual opened native journals; copied central replacement and later changed local bytes do not alter the immutable evidence or get overwritten",
+      "A completed plan publishes the same captured control identities after both former payload/private containing folders have been removed, retaining its registry-only footprint",
+      "Cross-volume Replace captures both owners on different native volumes, validates each paired journal and rejects changed private identity, parent identity, hash or missing owner even after checksum recomputation"
+    ],
+    "offline": "OFFLINE_PROOF.json records actual owned VHD detach, absent old drive, fresh ordinary process retry and native identity-checked reconnect with six file/directory/raw-link scenarios; restored data, edits, streams and unknown files are unchanged",
+    "failure_teardown": "The deliberate preparation/verification panic checks pass and remove their identity-admitted fixtures; their stderr intentionally contains caught panic messages",
+    "strict_checks": [
+      "Windows platform all-target Clippy with warnings denied: clippy-platform.log",
+      "Windows UI all-target Clippy with warnings denied: clippy-ui-windows.log",
+      "Linux platform/UI all-target Clippy with warnings denied: clippy-linux.log",
+      "cargo fmt --all -- --check",
+      "Source/docs diff whitespace check"
+    ],
+    "limits": [
+      "Native headless API/UI workers, not rendered GUI or exact-package acceptance",
+      "No deletion/retirement worker or cleanup action yet",
+      "Default-stream hashes do not grant authority to delete unknown streams, links or other files",
+      "No new hard-power, physical unplug, FAT32 or ReFS acceptance",
+      "Linux runtime code unchanged apart from an enum serialization derive compiled for parser tests; no new Linux UI runtime test claim"
+    ]
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "domain": "TEARDOWN.json",
+    "owned_vhd": "VOLUME_TEARDOWN.json",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "owned_test_profiles_payloads_processes_and_vhd_removed": true,
+    "retained_guest": "Off, persistent definition and original user configuration/installation hashes unchanged"
+  },
+  "delivery": {
+    "packages_promoted": false,
+    "linux_and_windows_deliverables": "Unchanged",
+    "windows_candidate_authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+  },
+  "next_work": [
+    "Use the captured file/directory evidence in an opaque retirement admission plan and revalidate it in the queued worker with its full path/drive footprint",
+    "Retire only verified old journals and eligible empty private directories while preserving changed/replaced files, unknown streams and other data",
+    "Expose cleanup through Activity without making completed history dependent on unavailable old drives",
+    "Finish renamed retained forward/incomplete recovery and remaining Linux/Windows package/release gates"
+  ]
+}

@@ -66,6 +66,42 @@ fn pending(record: &Record, error: impl std::fmt::Display) -> PlatformError {
 }
 
 impl Origin {
+    pub(in crate::move_transaction) fn matches_control(
+        &self,
+        owner: &super::super::windows_completion::controls::Owner,
+        inverse: [u8; 16],
+        private: WindowsStableIdentity,
+    ) -> Result<bool, PlatformError> {
+        let (directory, identity, parent_identity) = if owner.transaction == inverse {
+            (
+                path(&self.original)?
+                    .parent()
+                    .ok_or_else(|| stale(Path::new("")))?
+                    .join(format!(
+                        ".ottrin-move-{}",
+                        super::super::encode_transaction_id(inverse)
+                    )),
+                private,
+                self.original_parent,
+            )
+        } else if owner.transaction == self.forward_id()? {
+            let Some(binding) = &self.retained else {
+                return Ok(false);
+            };
+            (
+                binding.retained_path()?.parent().unwrap().to_path_buf(),
+                binding.directory_identity(),
+                self.publication_parent,
+            )
+        } else {
+            return Ok(false);
+        };
+        Ok(owner.identity == identity
+            && owner.directory.decode().map_err(io)? == directory
+            && owner.parent.decode().map_err(io)? == directory.parent().unwrap()
+            && owner.parent_identity == parent_identity)
+    }
+
     pub(in crate::move_transaction) fn forward_id(&self) -> Result<[u8; 16], PlatformError> {
         super::super::parse_windows_journal_name(OsStr::new(&format!(
             "{}.cross-journal",

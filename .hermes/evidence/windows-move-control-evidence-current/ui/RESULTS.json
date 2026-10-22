@@ -1,0 +1,14 @@
+{
+    "exit":  0,
+    "native_started_utc":  "2026-10-22T02:29:00.7658520Z",
+    "native_finished_utc":  "2026-10-22T02:29:01.5094635Z",
+    "test_arguments":  "--exact tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry --nocapture --test-threads=1 --include-ignored",
+    "ordinary_user":  true,
+    "stdout_sha256":  "da757e5ccdbea8d7c57d59e475a85e5ed5c43c3f7cab1ee17de95003fd78cf82",
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_process_id":  4172,
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "f41b570d9727277b9bfff18386615bedab8ce5135dfa5359052a094bffaec60a",
+    "dispatch_id":  "f47b72a7986fad223a7febab7aa9bc41"
+}

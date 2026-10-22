@@ -1,0 +1,7 @@
+{
+  "id": "f0ed5656653e8d6116312bcea079b570",
+  "status": "dispatched",
+  "test_arguments": "--exact move_transaction::windows_undo::cross::offline_tests::windows_native_move_completion_offline_cleanup --ignored --nocapture --test-threads=1",
+  "transferred_sha256": "56fd2c90b271449a546869e1282d429b80f5af0c4632b2d28035ec16254ee3ae",
+  "watchdog_ms": 600000
+}

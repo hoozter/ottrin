@@ -2135,7 +2135,9 @@ fn encode_transaction_id(id: [u8; 16]) -> String {
 }
 
 #[cfg(any(target_os = "windows", test))]
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(
+    Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 enum WindowsJournalKind {
     SameVolumeOverwrite,
     CrossVolume,

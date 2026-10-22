@@ -1,0 +1,14 @@
+{
+    "exit":  0,
+    "native_started_utc":  "2026-10-22T02:29:13.4190794Z",
+    "native_finished_utc":  "2026-10-22T02:29:13.7326311Z",
+    "test_arguments":  "--exact tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "e1914d2640566f48f07924a391448d853ce6674f4217538f18f4910c7b576582",
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_process_id":  1880,
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "f41b570d9727277b9bfff18386615bedab8ce5135dfa5359052a094bffaec60a",
+    "dispatch_id":  "138643d7032e59e89ce6cafd5799d283"
+}

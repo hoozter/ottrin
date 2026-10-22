@@ -16,6 +16,10 @@ pub(in crate::move_transaction) struct Binding {
     pub(super) entry: WindowsStableIdentity,
 }
 impl Binding {
+    pub(super) fn directory_identity(&self) -> WindowsStableIdentity {
+        self.identity
+    }
+
     pub(super) fn retained_path(&self) -> Result<std::path::PathBuf, PlatformError> {
         Ok(path(&self.directory)?.join(WINDOWS_RETAINED_NAME))
     }
@@ -234,10 +238,12 @@ pub(in crate::move_transaction) fn prepare(
     Ok(())
 }
 
-pub(super) fn inverse_complete(root: &Path, inverse: &Record) -> Result<bool, PlatformError> {
-    let Some((controller, paired_done)) = bound_controller(root, inverse)? else {
-        return Ok(true);
-    };
+fn pair_complete(
+    root: &Path,
+    inverse: &Record,
+    controller: &Record,
+    paired_done: bool,
+) -> Result<bool, PlatformError> {
     if controller.phase != Phase::Undone || !paired_done {
         return Ok(false);
     }
@@ -251,6 +257,24 @@ pub(super) fn inverse_complete(root: &Path, inverse: &Record) -> Result<bool, Pl
         return Err(stale(&binding.retained_path()?));
     }
     Ok(true)
+}
+pub(super) fn inverse_complete(root: &Path, inverse: &Record) -> Result<bool, PlatformError> {
+    let Some((controller, paired)) = bound_controller(root, inverse)? else {
+        return Ok(true);
+    };
+    pair_complete(root, inverse, &controller, paired)
+}
+pub(in crate::move_transaction) fn completed_control(
+    root: &Path,
+    inverse: &Record,
+) -> Result<Option<Record>, PlatformError> {
+    let Some((controller, paired)) = bound_controller(root, inverse)? else {
+        return Ok(None);
+    };
+    if !pair_complete(root, inverse, &controller, paired)? {
+        return Err(stale(&controller.transaction_path()?));
+    }
+    Ok(Some(controller))
 }
 
 fn pin(

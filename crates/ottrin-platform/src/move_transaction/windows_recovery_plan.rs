@@ -32,6 +32,7 @@ pub struct WindowsMoveRecoveryPlan {
     root_identity: move_recovery::WindowsStableIdentity,
     transaction_id: [u8; 16],
     evidence: Vec<Evidence>,
+    completion: Option<windows_completion::Prepared>,
     paths: Vec<PathBuf>,
     undo_status: move_recovery::WindowsMoveUndoStatus,
 }
@@ -53,6 +54,7 @@ impl WindowsMoveRecoveryPlan {
             root_identity,
             transaction_id,
             evidence: Vec::new(),
+            completion: None,
             undo_status: move_recovery::WindowsMoveUndoStatus::NotStarted,
         };
         if let Some(done) = windows_completion::find(&plan.root, transaction_id)? {
@@ -66,6 +68,23 @@ impl WindowsMoveRecoveryPlan {
         if plan.undo_status == move_recovery::WindowsMoveUndoStatus::Complete {
             // A verified completed plan only acknowledges history; it never
             // mutates its former payload or private directories.
+            for evidence in &plan.evidence {
+                match evidence {
+                    Evidence::Same(_, Some(record))
+                        if record.phase == WindowsOverwritePhase::Undone =>
+                    {
+                        plan.completion =
+                            Some(windows_completion::prepare_same(&plan.root, record)?);
+                        break;
+                    }
+                    Evidence::Cross(_, Some(record)) if record.undo_origin.is_some() => {
+                        plan.completion =
+                            Some(windows_completion::prepare_cross(&plan.root, record)?);
+                        break;
+                    }
+                    _ => {}
+                }
+            }
             plan.paths = vec![plan.root.clone()];
         }
         plan.paths.sort();
@@ -376,6 +395,9 @@ impl WindowsMoveRecoveryPlan {
             }
         }
         if self.undo_status == move_recovery::WindowsMoveUndoStatus::Complete {
+            if let Some(prepared) = &self.completion {
+                return windows_completion::publish_prepared(&self.root, prepared.clone());
+            }
             for evidence in &self.evidence {
                 match evidence {
                     Evidence::Completion(_) => return Ok(()),

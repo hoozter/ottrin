@@ -1,0 +1,33 @@
+{
+  "status": "pass",
+  "fresh_processes": {
+    "prepare": {
+      "native_process_id": 7276,
+      "native_started_utc": "2026-10-22T02:27:00.9284639Z",
+      "native_finished_utc": "2026-10-22T02:27:02.6815112Z"
+    },
+    "offline": {
+      "native_process_id": 8116,
+      "native_started_utc": "2026-10-22T02:27:35.1809639Z",
+      "native_finished_utc": "2026-10-22T02:27:35.7507088Z"
+    },
+    "cleanup": {
+      "native_process_id": 6444,
+      "native_started_utc": "2026-10-22T02:28:05.9577079Z",
+      "native_finished_utc": "2026-10-22T02:28:06.1975358Z"
+    }
+  },
+  "ordered_events": [
+    "2026-10-22T02:27:02.6815112Z",
+    "2026-10-22T02:27:08.0239748Z",
+    "2026-10-22T02:27:35.1809639Z",
+    "2026-10-22T02:27:35.7507088Z",
+    "2026-10-22T02:27:43.0132659Z",
+    "2026-10-22T02:28:05.9577079Z"
+  ],
+  "same_volume_replace_cases": 3,
+  "cross_volume_replace_cases": 3,
+  "old_drive_absent_during_fresh_process": true,
+  "unchanged_volume_identity_on_reconnect": true,
+  "fixture_manifest_sha256": "0892fa93589a3181ba5870ee7bbe935d93e627cd5d10ef189cb45876585158ff"
+}

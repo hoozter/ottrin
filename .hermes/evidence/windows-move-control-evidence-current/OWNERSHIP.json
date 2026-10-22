@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "3b7b7f55da37cae8682c99f59d7f879837d7f3d3",
+  "actor": "OttrinCopyQA",
+  "purpose": "Capture immutable native identities/hash evidence for superseded Move controls without losing volume-independent completion; owned VHD and all test fixtures removed at end"
+}
