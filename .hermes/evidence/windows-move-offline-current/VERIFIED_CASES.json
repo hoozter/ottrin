@@ -1,0 +1,32 @@
+{
+  "failure-teardown": {
+    "passed": 1,
+    "result": "failure-teardown/RESULTS.json",
+    "test_binary": "failure-teardown/TEST_BINARY.json"
+  },
+  "prepare": {
+    "passed": 1,
+    "result": "prepare/RESULTS.json",
+    "test_binary": "prepare/TEST_BINARY.json"
+  },
+  "offline": {
+    "passed": 1,
+    "result": "offline/RESULTS.json",
+    "test_binary": "offline/TEST_BINARY.json"
+  },
+  "cleanup": {
+    "passed": 1,
+    "result": "cleanup/RESULTS.json",
+    "test_binary": "cleanup/TEST_BINARY.json"
+  },
+  "move-suite": {
+    "passed": 121,
+    "result": "move-suite/RESULTS.json",
+    "test_binary": "move-suite/TEST_BINARY.json"
+  },
+  "copy-registry": {
+    "passed": 7,
+    "result": "copy-registry/RESULTS.json",
+    "test_binary": "copy-registry/TEST_BINARY.json"
+  }
+}

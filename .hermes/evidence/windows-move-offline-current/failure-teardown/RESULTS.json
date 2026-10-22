@@ -1,0 +1,14 @@
+{
+    "exit":  0,
+    "native_started_utc":  "2026-10-22T01:56:11.5071265Z",
+    "native_finished_utc":  "2026-10-22T01:56:13.5057200Z",
+    "test_arguments":  "--exact move_transaction::windows_undo::cross::offline_tests::windows_native_move_completion_offline_failure_teardown --ignored --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "0449dc3c75b7b4c81acc0807d2da3907d6ee87b479109fecc481e4115a0acb4e",
+    "stderr_sha256":  "88955952ea2e642a1bf91b6f8cb22983431c8302b5d8013266f4b07f1b60af2c",
+    "native_process_id":  1576,
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "02edaf874ee9bd237485b71150451c7c5588d1f985f954a4418ac64a117c4599",
+    "dispatch_id":  "0b8cf92c13ad866caf5576bb9a40f934"
+}

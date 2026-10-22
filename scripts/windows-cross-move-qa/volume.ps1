@@ -1,15 +1,31 @@
-param([Parameter(Mandatory=$true)][ValidateSet('prepare','remove')][string]$Action,[ValidateSet('OttrinCopyQA','OttrinWindowQA')][string]$Actor='OttrinCopyQA')
+param([Parameter(Mandatory=$true)][ValidateSet('prepare','remove','detach','attach')][string]$Action,[ValidateSet('OttrinCopyQA','OttrinWindowQA')][string]$Actor='OttrinCopyQA')
 $ErrorActionPreference='Stop'
 $r='C:\OttrinCopyCleanupQA\cross-move-volume'
-if($Action-eq'remove'){
+if($Action-ne'prepare'){
  foreach($task in @('Ottrin Copy Cleanup QA','Ottrin Window Input QA')){if([string](Get-ScheduledTask $task -ErrorAction SilentlyContinue).State-in@('Running','Queued')){throw 'Owned actor still live'}}
  if(@(Get-CimInstance Win32_Process|Where-Object{($_.ExecutablePath-like'C:\OttrinCopyCleanupQA\*'-or$_.ExecutablePath-like'C:\OttrinWindowQA\payload\*')}).Count){throw 'Owned native process remains'}
  $v=Get-Content "$r\volume.json" -Raw|ConvertFrom-Json
  if($v.image-ne"$r\owned.vhdx"-or$v.disk_size-ne256MB){throw 'Unexpected fixture ownership'}
- $image=Get-DiskImage -ImagePath $v.image;$disk=$image|Get-Disk;$volume=Get-Volume -DriveLetter $v.drive_letter
+ $image=Get-DiskImage -ImagePath $v.image
+ if($Action-eq'attach'){
+  if($image.Attached){throw 'Owned VHD already attached'}
+  Mount-DiskImage -ImagePath $v.image -Access ReadWrite|Out-Null
+  $image=Get-DiskImage -ImagePath $v.image
+ }
+ if(-not$image.Attached){throw 'Owned VHD is not attached'}
+ $disk=$image|Get-Disk;$volume=Get-Volume -DriveLetter $v.drive_letter
  if(@($disk).Count-ne1-or$disk.Number-ne$v.disk_number-or$disk.UniqueId-ne$v.disk_unique_id-or$disk.IsBoot-or$disk.IsSystem-or$volume.UniqueId-ne$v.volume_unique_id-or$volume.FileSystemLabel-ne'OttrinMoveQA'-or((Get-Content (Join-Path $v.root '.ottrin-owned-secondary-volume') -Raw).Trim()-ne$v.token)){throw 'Owned disk/volume identity changed'}
+ if($Action-eq'attach'){
+  @{status='pass';owned_vhd_reattached=$true;native_volume_identity_unchanged=$true;drive_letter=$v.drive_letter;volume_unique_id=$v.volume_unique_id;disk_unique_id=$v.disk_unique_id;owner_token=$v.token;observed_utc=(Get-Date).ToUniversalTime().ToString('o')}|ConvertTo-Json|Set-Content 'C:\OttrinCopyCleanupQA\CrossMoveVolumeAttach.json'
+  return
+ }
  Dismount-DiskImage -ImagePath $v.image
  if((Get-DiskImage -ImagePath $v.image).Attached){throw 'Owned VHD still attached'}
+ if($Action-eq'detach'){
+  if(Test-Path -LiteralPath ($v.drive_letter+':\')){throw 'Detached drive still resolves'}
+  @{status='pass';owned_vhd_detached=$true;old_drive_absent=$true;image_preserved=$true;drive_letter=$v.drive_letter;volume_unique_id=$v.volume_unique_id;disk_unique_id=$v.disk_unique_id;owner_token=$v.token;observed_utc=(Get-Date).ToUniversalTime().ToString('o')}|ConvertTo-Json|Set-Content 'C:\OttrinCopyCleanupQA\CrossMoveVolumeDetach.json'
+  return
+ }
  Remove-Item -LiteralPath $v.image -Force
  $before=Get-Content "$r\before-disks.json" -Raw|ConvertFrom-Json;$after=@(Get-Disk|Select-Object Number,UniqueId,Size,IsBoot,IsSystem)
  if(@($before).Count-ne$after.Count){throw 'Disk inventory not restored'}

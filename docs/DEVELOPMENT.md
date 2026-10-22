@@ -402,6 +402,19 @@ cross-volume controller and inverse IDs resolve to the same completion. Old
 journals are superseded after this handoff and remain pending safe reclamation.
 This does not provide volume-independent recovery for an unfinished operation.
 
+The retained native QA harness has `--move-completion-offline` stages
+`failure_teardown`, `prepare`, `verify`, and `cleanup`. Each uses a fresh ordinary
+actor process with the same exported platform test binary. The fixture deliberately
+persists outside actor TEMP between stages. Observe every actor to terminal state;
+use `scripts/windows-cross-move-qa/volume.ps1 -Action detach` after preparation,
+then `-Action attach` before cleanup. The controller checks the actual attachment
+state in its cleanup path, including after verification failure. Preparation owns
+its fresh directories until its complete manifest transfers ownership; cleanup
+validates native directory IDs and tokens before removing them, and propagates
+verification failure after teardown. The full Move suite skips these dependent
+stages; run them only through the owned-volume workflow and remove the VHD using
+the existing guarded `remove` action afterward.
+
 Locked-directory verification can be checked independently:
 
 ```powershell

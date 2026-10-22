@@ -404,10 +404,10 @@ is checked by the existing sharing/interruption regression.
 
 This is source/native work; packages are unchanged. The following completion
 receipt work replaces the payload-dependent observation for acknowledged Undo.
-Terminal-control reclamation, unavailable-volume acceptance, renamed retained
-forward histories before Undo, and renamed incomplete-operation recovery remain
-required. FAT32/ReFS, hard-power and package GUI acceptance, Linux native-plan
-and the remaining release roadmap work also remain.
+Terminal-control reclamation, renamed retained forward histories before Undo,
+and renamed incomplete-operation recovery remain required. Bounded detached-volume
+completion acceptance is described below. FAT32/ReFS, hard-power and package GUI
+acceptance, Linux native-plan and the remaining release roadmap work also remain.
 
 ### Self-contained Windows Move Undo completion
 
@@ -426,6 +426,26 @@ Old journals remain superseded evidence pending safe metadata reclamation; this
 change does not delete them or unknown private files. Native checks and exact
 remaining acceptance limits are recorded in
 `.hermes/evidence/windows-move-completion-current/ACCEPTANCE.json`.
+
+### Completed Undo with a detached Windows volume
+
+Fresh ordinary-user processes now exercise six completed Undos: same-volume
+Replace on the secondary drive and cross-volume Replace, each with a regular
+file, directory tree and raw symbolic link. The controller actually detaches the
+owned NTFS VHD and verifies that its drive is absent. A second process discovers
+all completions, admits recovery only against the local registry, retries both
+owner IDs and bound/unbound cross-volume receipts, and performs an unrelated
+Move/Undo while the old drive remains disconnected.
+
+After native volume identity is checked on reconnect, a third process compares
+payload and journal bytes, native identities, raw links, later edits, named
+streams and unknown private files, then removes the owned fixture. Deliberate
+preparation and verification failures also exercise fixture teardown. This is
+native API acceptance, not rendered/package UI, physical USB removal, sudden
+power loss, FAT32 or ReFS acceptance. Source and exact evidence are recorded in
+`.hermes/evidence/windows-move-offline-current/ACCEPTANCE.json`. Packages remain
+unchanged. Safe reclamation of superseded controls remains the next lifecycle
+step.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

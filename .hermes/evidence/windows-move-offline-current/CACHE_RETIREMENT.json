@@ -1,0 +1,22 @@
+{
+  "policy": "Preserve newest finalized session per configuration used this task; retire superseded sessions only with both locks and no live references",
+  "retired": [
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnfoi8knx8-1xxthev-exb1yer3umudi9vior5ksjlm3",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-185qydqrroulz/s-hnfoov4l4g-1fgvylt-ahxd8udfme64mhhc9nnk74azd",
+      "logical_bytes": 1310946480,
+      "hardlinked_files": 177,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    },
+    {
+      "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnfohu2mgc-14gmssb-d2zwi4355xxmygmxoibfsepsz",
+      "replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-2985bqemq9nyx/s-hnfopkrdr5-1dcco0w-2dgi7zzg0nmpxau1btzhzkove",
+      "logical_bytes": 53439264,
+      "hardlinked_files": 0,
+      "exclusive_flock_and_posix_lock": true,
+      "live_consumers": 0
+    }
+  ],
+  "skipped": []
+}

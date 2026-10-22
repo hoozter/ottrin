@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-22",
+  "status": "native_offline_completion_acceptance_passed",
+  "source_base": "50f14ba5a95a5b7b8c896f209f74ab7d3dcdc4c4",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Native completed Windows Move Undo after actual owned NTFS VHD detach, fresh-process retry and identity-checked reconnect. This checkpoint adds verification and QA controls; production behavior is unchanged.",
+  "proof": "OFFLINE_PROOF.json",
+  "fixture_manifest": "PERSISTENT_FIXTURE.json",
+  "native_cases": "VERIFIED_CASES.json",
+  "verification": {
+    "staged_checks_passed": 4,
+    "move_regression_passed": 121,
+    "copy_registry_passed": 7,
+    "scenarios": "Same-volume Replace on the secondary drive and cross-volume Replace, each for a regular file, directory tree and raw symbolic link; six completed Undos",
+    "offline": "A distinct ordinary-user process starts after confirmed VHD detach and drive absence, discovers six completions, admits local-registry-only recovery, retries canonical/controller IDs and bound/unbound cross-volume receipts, and performs an unrelated Move/Undo",
+    "reconnect": "The owned disk/volume IDs and owner token match on reconnect; a third distinct process compares saved registry/payload bytes and native identities, raw link targets, later edits, named streams and unknown private files before removing the fixture",
+    "failure_paths": "A deliberate preparation panic removes its uncommitted owned directories; a missing verification marker makes cleanup fail after removing the identity-admitted fixture. The negative test catches these expected failures and asserts both roots are absent; its stderr intentionally contains the caught panic messages.",
+    "strict_checks": [
+      "Final Windows ottrin-platform all-target Clippy with warnings denied; clippy-platform.log",
+      "cargo fmt --all -- --check",
+      "Python runner py_compile",
+      "Source/script/doc diff whitespace check"
+    ],
+    "production_code_change": false,
+    "prior_ui_acceptance": "The prior checkpoint windows-move-completion-current retains 12 native UI checks and 395 Linux UI tests; they were not rerun for this Windows-only fixture/controller change",
+    "excluded": [
+      "Physical USB/unplug behavior",
+      "Sudden power loss",
+      "Rendered/package UI acceptance",
+      "FAT32/ReFS",
+      "Renamed unfinished operations and retained forward histories before Undo"
+    ]
+  },
+  "qa_changes": [
+    "Explicit prepare/verify/cleanup/failure_teardown stages excluded from the ordinary Move suite",
+    "Native runner records actual child process IDs and start/finish UTC timestamps",
+    "Existing owned-volume controller supports guarded detach and attach without deleting or reformatting the image",
+    "Cleanup observes actual attachment state before reconnecting, rather than relying on an earlier intent flag"
+  ],
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "domain": "TEARDOWN.json",
+    "owned_vhd": "VOLUME_TEARDOWN.json",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "persistent_fixture_roots_and_actor_profiles_removed": true,
+    "temporary_vhd_and_exported_test_binary_removed": true,
+    "superseded_positive_run_artifacts_removed": true,
+    "retained_guest": "Off, persistent domain unchanged, original user config and installation hashes unchanged"
+  },
+  "delivery": {
+    "packages_promoted": false,
+    "linux_and_windows_deliverables": "Unchanged",
+    "windows_candidate_authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+  },
+  "next_work": [
+    "Safely retire superseded terminal controls without deleting unknown/foreign data",
+    "Renamed retained forward histories and unfinished recovery",
+    "Exact-package UI acceptance and the remaining Linux/Windows roadmap"
+  ]
+}

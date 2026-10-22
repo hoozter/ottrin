@@ -1,0 +1,11 @@
+{
+    "old_drive_absent":  true,
+    "volume_unique_id":  "\\\\?\\Volume{cc7b604d-3db8-46ab-a480-97b151b52ac6}\\",
+    "disk_unique_id":  "60022480EB1C526454E8983F53610668",
+    "drive_letter":  "D",
+    "observed_utc":  "2026-10-22T01:56:49.2534661Z",
+    "owner_token":  "c4bce01a63f84cd99abc7d6867dbed65",
+    "image_preserved":  true,
+    "owned_vhd_detached":  true,
+    "status":  "pass"
+}

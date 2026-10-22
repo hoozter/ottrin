@@ -1,0 +1,8 @@
+{
+  ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "e4aaafb3fb87aeb7f987fa88be250d850ef40430b58eb7eb451c56c94a641907",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs": "f9c9ce63dab3cac31d4615ed940f9b93924051c3faef7978a358868ffd4f58a9",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross/offline_tests.rs": "1db51a1edf8dcfb65936de7180ddab86f35083b9892b30bc22cba430737e3689",
+  "docs/DEVELOPMENT.md": "8a949871894dad283560cb97007b574615e1d896e1c478b9357116d5cbd72f2f",
+  "docs/ROADMAP.md": "9e4ec2cac15fa4a70a424edc40be05eb2cb91fdfa9d9e5ae45f11126779c99bb",
+  "scripts/windows-cross-move-qa/volume.ps1": "3775b051ba2fa96b9eb5345178113598bb99612e3df6a015c8160a397b27c027"
+}

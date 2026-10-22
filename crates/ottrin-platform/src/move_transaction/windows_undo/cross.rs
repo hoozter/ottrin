@@ -483,6 +483,8 @@ pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), P
 }
 
 #[cfg(test)]
+mod offline_tests;
+#[cfg(test)]
 mod tests;
 
 pub(in crate::move_transaction) mod retained;

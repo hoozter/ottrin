@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "50f14ba5a95a5b7b8c896f209f74ab7d3dcdc4c4",
+  "actor": "OttrinCopyQA",
+  "purpose": "Fresh-process completed Move Undo with actual owned VHD detach/reconnect; persistent C:/D: fixture must be cleaned before VHD removal"
+}

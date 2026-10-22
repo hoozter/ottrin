@@ -1,0 +1,5 @@
+17G	target/debug/deps
+6.8G	target/debug/incremental
+24G	target/x86_64-pc-windows-gnu/debug/deps
+21G	target/x86_64-pc-windows-gnu/debug/incremental
+527M	.hermes/packaging-tmp
