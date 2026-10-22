@@ -1,0 +1,11 @@
+{
+    "exit":  0,
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments":  "--exact tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "b95fae9c82de5d51c18fa4dee640f6d10d9776697f0c5e0af9d753fe06936a2a",
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "68a87d29be7d763394ad8d7b6c166b3567c9ebcf01f1074ee5cd4dd1457f3e41",
+    "dispatch_id":  "7558395a392e7de873b88e9177e92ed8"
+}

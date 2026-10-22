@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "a33340599382b86d47627bb6288e9039cb4caee9",
+  "actor": "OttrinCopyQA",
+  "purpose": "Self-contained native Windows Move Undo completion receipts; owned second-volume and actor cleanup required"
+}

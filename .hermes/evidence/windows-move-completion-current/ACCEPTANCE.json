@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-22",
+  "status": "source_native_checkpoint_passed",
+  "source_base": "a33340599382b86d47627bb6288e9039cb4caee9",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Self-contained native Windows Move Undo completion; source/native checkpoint, not a package release or full terminal-control lifecycle acceptance.",
+  "implementation": [
+    "After verified paired terminal state, same-volume Replace and cross-volume Undo publish a compact immutable receipt bound to the native registry, receipt file and exact operation",
+    "Discovery, queue-time plans, direct Undo retry and new Move admission use completed receipts without opening former payload/private directories; retained cross-volume controller and inverse IDs share one Activity row",
+    "Receipt checksum detects damage, while native identities reject copied files and replay into another root; the checksum is not authentication",
+    "Receipt creation uses the shared owner-only private-file path with persistent-ACL support checks and atomic delete-on-close creation; complete bytes are flushed before no-replace rename, deletion cancellation and registry flush",
+    "Publication collision or failure preserves foreign files and restored user entries; process exit removes unpublished preparations",
+    "Old full journals remain superseded evidence pending safe metadata reclamation; no unknown private files or user data are deleted"
+  ],
+  "verification": {
+    "native_cases": "VERIFIED_CASES.json",
+    "windows_move_passed": 121,
+    "windows_copy_registry_passed": 7,
+    "windows_ui_passed": 12,
+    "new_native_cases": [
+      "Same-volume completion survives deleting both containing parents/private controls and damaging superseded journals; later Move at original names cannot inherit completion",
+      "Cross-volume Replace completion resolves through either controller or inverse ID after deleting both parents/private controls and damaging both old central journals",
+      "Receipt checksum damage, copied-file identity replacement and replay into another registry refuse admission without repairing the foreign bytes",
+      "Foreign receipt/publication collision preserves user entries and foreign data; failed preparations leave no temporary files",
+      "Same-volume Undo child exits at prepared/published/flushed receipt boundaries recover and leak no preparations; existing pre-completion causal-gap refusal remains covered"
+    ],
+    "linux_ui": {
+      "passed": 395,
+      "failed": 0,
+      "existing_ignored": 1,
+      "log": "ui-linux.log",
+      "later_changes": "Windows-only private creation/schema validation and native test refinements; Linux code unchanged"
+    },
+    "strict_checks": [
+      "Final Windows platform and UI all-target Clippy with warnings denied",
+      "Linux UI all-target Clippy with warnings denied",
+      "cargo fmt --all -- --check",
+      "Source/docs diff whitespace check"
+    ],
+    "limits": [
+      "No rendered/package GUI acceptance",
+      "No actual disconnected-volume restart acceptance yet",
+      "No hard-power, FAT32 or ReFS acceptance in this checkpoint",
+      "Focused Copy registry regression, not a full native Copy run"
+    ]
+  },
+  "prior_checks": {
+    "first-native-failure/": "120 checks passed; one older fixture synthesized a nonterminal journal gap after completion had already been durably handed off. The fixture now removes its owned receipt to model interruption before handoff; prior causal-gap refusal assertions remain.",
+    "before-private-creation-consolidation/": "121 checks passed before private-file creation was consolidated with the existing persistent-ACL checked path; final full121 and UI12 rerun covers the final code"
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "domain": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "owned_profiles_payloads_processes_and_vhd_removed": true,
+    "retained_guest": "Off with unchanged persistent definition; original profile and installation hashes unchanged"
+  },
+  "delivery": {
+    "packages_promoted": false,
+    "windows_candidate_authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "linux_and_public_windows_deliverables": "Unchanged"
+  },
+  "next_work": [
+    "Actual unavailable-volume/fresh-process acceptance",
+    "Safe reclamation of superseded terminal controls",
+    "Renamed retained forward histories before Undo and renamed incomplete recovery",
+    "Exact-package UI validation and the remaining Linux/Windows roadmap work"
+  ]
+}

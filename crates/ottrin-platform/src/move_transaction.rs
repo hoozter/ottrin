@@ -55,6 +55,8 @@ use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
 #[cfg(target_os = "windows")]
+pub(super) mod windows_completion;
+#[cfg(target_os = "windows")]
 pub(super) mod windows_control;
 #[cfg(target_os = "windows")]
 pub(super) mod windows_recovery_plan;
@@ -2172,12 +2174,24 @@ pub(super) fn discover_retained_windows_move_transactions_at(
     };
     let mut discovered = Vec::new();
     #[cfg(target_os = "windows")]
+    let completions = windows_completion::list(recovery_root)?;
+    #[cfg(target_os = "windows")]
     let mut suppressed_controllers = std::collections::BTreeSet::new();
     for entry in entries {
         let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
         let Some((transaction_id, kind)) = parse_windows_journal_name(&entry.file_name()) else {
             continue;
         };
+        #[cfg(target_os = "windows")]
+        {
+            let mut covered = false;
+            for receipt in &completions {
+                covered |= receipt.covers(transaction_id, kind)?;
+            }
+            if covered {
+                continue;
+            }
+        }
         if !entry
             .file_type()
             .map_err(|error| PlatformError::Io(error.to_string()))?
@@ -2250,6 +2264,10 @@ pub(super) fn discover_retained_windows_move_transactions_at(
             kind,
             undo_status,
         });
+    }
+    #[cfg(target_os = "windows")]
+    for receipt in completions {
+        discovered.push(receipt.discovery()?);
     }
     discovered.sort_by_key(|transaction| (transaction.transaction_id, transaction.kind));
     if discovered
@@ -2513,9 +2531,19 @@ fn recover_windows_overwrites_before_move(
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
         Err(error) => return Err(PlatformError::Io(error.to_string())),
     };
+    let completions = windows_completion::list(&recovery_root)?;
     let mut matching = None;
     for entry in entries {
         let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
+        if let Some((id, kind)) = parse_windows_journal_name(&entry.file_name()) {
+            let mut covered = false;
+            for receipt in &completions {
+                covered |= receipt.covers(id, kind)?;
+            }
+            if covered {
+                continue;
+            }
+        }
         let path = entry.path();
         let (is_matching, publication) = if path.extension()
             == Some(std::ffi::OsStr::new("journal"))
@@ -3422,6 +3450,9 @@ fn start_windows_cross_volume_move(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsMoveBoundary {
     BeforeUndoReceipt,
+    CompletionPrepared,
+    CompletionPublished,
+    CompletionFlushed,
     CrossRetainedUndoIntent,
     CrossRetainedBeforeRestore,
     CrossRetainedRestored,

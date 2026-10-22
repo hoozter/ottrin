@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_ui",
+  "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-6b36f1213ec139e1.exe",
+  "compiler_sha256": "9f741f97232c747e92aad7ce7fe2cd130c2ab2aeea18b037a2c88f0ff76471bc",
+  "transferred_sha256": "68a87d29be7d763394ad8d7b6c166b3567c9ebcf01f1074ee5cd4dd1457f3e41",
+  "retained_sections": {
+    ".text": "7aedda026e94e2052fa83a7c5f748b641fd566739c3abf6fdc520c25ee8417f7",
+    ".data": "d3281d0ce2a40d30c4f21eee4d2f197db3d18632d23c73612933e22d2ed434db",
+    ".rdata": "5e356b42867894a655414e5de26bbfbdbbbaa19b7fb5ec7acc38087a15abcb88",
+    ".pdata": "0ac0f8c3ceeee60c8b5716f63fa005b9824ca7f25185fe245da9b5acf9be9a2b",
+    ".xdata": "8ef3bdff8ea8471aa894f45c4c002278b943eeb0a1c35ff989e6d6a5c8e272f9",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "5d90eebbfbf0770dec490417e84fca8e1a2bea7b4779456497b14452491cb096",
+    ".CRT": "76f8bca47379b19ecbd880a6168d87806f310b1842c6fa3eb1f63ae14c403352",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "5698fd229a24cd9b6815a914febf967ff6748532f07c783d7bb357f073f30478"
+  }
+}

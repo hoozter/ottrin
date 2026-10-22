@@ -1,0 +1,32 @@
+{
+  ".": {
+    "passed": 121,
+    "native_binary": "TEST_BINARY.json",
+    "result": "RESULTS.json"
+  },
+  "copy-registry": {
+    "passed": 7,
+    "native_binary": "copy-registry/TEST_BINARY.json",
+    "result": "copy-registry/RESULTS.json"
+  },
+  "ui-history": {
+    "passed": 1,
+    "native_binary": "ui-history/TEST_BINARY.json",
+    "result": "ui-history/RESULTS.json"
+  },
+  "ui-status": {
+    "passed": 9,
+    "native_binary": "ui-status/TEST_BINARY.json",
+    "result": "ui-status/RESULTS.json"
+  },
+  "ui": {
+    "passed": 1,
+    "native_binary": "ui/TEST_BINARY.json",
+    "result": "ui/RESULTS.json"
+  },
+  "ui-same": {
+    "passed": 1,
+    "native_binary": "ui-same/TEST_BINARY.json",
+    "result": "ui-same/RESULTS.json"
+  }
+}

@@ -1,0 +1,6 @@
+
+thread 'move_transaction::windows_undo::cross::retained::tests::windows_native_completed_cross_replace_undo_survives_both_parent_renames' (3964) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs:172:5:
+assertion `left == right` failed
+  left: Complete
+ right: Pending
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

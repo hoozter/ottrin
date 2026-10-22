@@ -1,0 +1,6 @@
+{
+    "status":  "pass",
+    "owned_vhd_detached_and_removed":  true,
+    "original_disk_inventory_restored":  true,
+    "retained_vm_disks_preserved":  true
+}

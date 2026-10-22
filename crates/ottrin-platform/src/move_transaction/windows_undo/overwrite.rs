@@ -36,7 +36,7 @@ fn paired(record: &Record, local: &Record) -> Result<Phase, PlatformError> {
     }
 }
 
-fn topology(record: &Record) -> Result<(), PlatformError> {
+pub(in crate::move_transaction) fn topology(record: &Record) -> Result<(), PlatformError> {
     let source = record.source_path()?;
     let target = record.target_path()?;
     let destination = record.destination_parent_path()?;
@@ -188,6 +188,13 @@ pub(in crate::move_transaction) fn undo(
         ));
     }
     let root = super::super::windows_recovery_root()?;
+    if let Some(done) = super::super::windows_completion::find(&root, expected.transaction_id()?)? {
+        return if done.matches(receipt) {
+            Ok(())
+        } else {
+            Err(stale(&root))
+        };
+    }
     let record =
         load_windows_overwrite_record(&windows_journal_path(&root, expected.transaction_id()?))?;
     let local = super::super::windows_control::overwrite(&root, &record)?;
@@ -232,7 +239,8 @@ pub(in crate::move_transaction) fn resume(
     topology(&record)?;
     let phase = paired(&record, &local)?;
     if phase == Phase::Undone && completed(root, &record, &local)? {
-        return Ok(());
+        return super::super::windows_completion::same(root, &record)
+            .map_err(|e| pending(&record, e));
     }
     let source = record.source_path()?;
     let target = record.target_path()?;
@@ -246,7 +254,9 @@ pub(in crate::move_transaction) fn resume(
             return Err(stale(&transaction));
         }
         record.phase = Phase::Undone;
-        return persist_windows_overwrite_record(root, &record).map_err(|e| pending(&record, e));
+        persist_windows_overwrite_record(root, &record).map_err(|e| pending(&record, e))?;
+        return super::super::windows_completion::same(root, &record)
+            .map_err(|e| pending(&record, e));
     }
     let before_parent = open_parent(
         source.parent().ok_or_else(|| stale(&source))?,
@@ -341,7 +351,7 @@ pub(in crate::move_transaction) fn resume(
         super::super::WindowsMoveBoundary::OverwriteUndoComplete,
         &target,
     );
-    Ok(())
+    super::super::windows_completion::same(root, &record).map_err(|e| pending(&record, e))
 }
 
 #[cfg(test)]

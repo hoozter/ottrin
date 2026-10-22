@@ -392,6 +392,16 @@ cargo test -p ottrin-platform windows_native_move_journal_requires_namespace_flu
 
 This verifies issued flushes and error handling, not physical power-loss survival.
 
+Completed same-volume Replace and cross-volume Move Undo publish a compact
+`<transaction>.move-done` receipt in the same registry. Publication follows
+verified paired terminal state, uses a private delete-on-close preparation and
+no-replace rename, and flushes the registry before success. Its native registry
+and file identities plus checksum reject copied or damaged state. Activity and
+recovery use this receipt without reopening former payload folders; retained
+cross-volume controller and inverse IDs resolve to the same completion. Old
+journals are superseded after this handoff and remain pending safe reclamation.
+This does not provide volume-independent recovery for an unfinished operation.
+
 Locked-directory verification can be checked independently:
 
 ```powershell

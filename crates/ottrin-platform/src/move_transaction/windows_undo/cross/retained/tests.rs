@@ -64,6 +64,52 @@ fn root() -> PathBuf {
 
 #[test]
 #[ignore = "requires an owned second native Windows volume"]
+fn windows_native_cross_replace_completion_survives_deleted_parents_and_both_old_journals() {
+    let fixture = Fixture::new();
+    let receipt = fixture.moved(0);
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    let inverse = guard(&receipt)
+        .inverse
+        .get()
+        .unwrap()
+        .transaction_id()
+        .unwrap();
+    let controller = origin(&receipt).completion_controller().unwrap().unwrap();
+    std::fs::remove_dir_all(receipt.before_path().parent().unwrap()).unwrap();
+    std::fs::remove_dir_all(receipt.after_path().parent().unwrap()).unwrap();
+    for id in [inverse, controller] {
+        std::fs::write(
+            windows_cross_volume_journal_path(&root(), id),
+            b"superseded bytes",
+        )
+        .unwrap();
+        let plan = crate::WindowsMoveRecoveryPlan::capture(id).unwrap();
+        assert_eq!(plan.paths(), &[root()]);
+        assert_eq!(
+            plan.undo_status_for(&receipt),
+            Some(move_recovery::WindowsMoveUndoStatus::Complete)
+        );
+        plan.execute().unwrap();
+    }
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    let found = super::super::super::super::discover_retained_windows_move_transactions().unwrap();
+    assert_eq!(found.len(), 1);
+    assert_eq!(found[0].transaction_id, inverse);
+    let source = fixture.primary.path().join("later");
+    std::fs::write(&source, b"later independent Move").unwrap();
+    let destination = fixture.primary.path().join("later-destination");
+    std::fs::create_dir(&destination).unwrap();
+    DefaultPlatform
+        .execute_move_with_undo_receipt(&source, &destination, ConflictAction::Skip)
+        .unwrap();
+    assert_eq!(
+        std::fs::read(destination.join("later")).unwrap(),
+        b"later independent Move"
+    );
+}
+
+#[test]
+#[ignore = "requires an owned second native Windows volume"]
 fn windows_native_completed_cross_replace_undo_survives_both_parent_renames() {
     let fixture = Fixture::new();
     let receipt = fixture.moved(0);
@@ -79,6 +125,9 @@ fn windows_native_completed_cross_replace_undo_survives_both_parent_renames() {
             .unwrap(),
     ))
     .unwrap();
+    // Model an interruption before compact completion publication. Once a
+    // receipt exists, old journals are superseded and cannot reopen Undo.
+    std::fs::remove_file(root().join(format!("{}.move-done", inverse.transaction_id))).unwrap();
     let journals = [
         central(&receipt),
         local(&receipt),

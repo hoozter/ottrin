@@ -1,0 +1,12 @@
+{
+  "crates/ottrin-platform/src/move_transaction.rs": "2755371d89f0874bd0a56c0cb61720a1c4a88b643a17b36c4f753ad6a455dad4",
+  "crates/ottrin-platform/src/move_transaction/windows_completion.rs": "1d0f0adb1df577321c83606c544b31e638bfb10d3364cb03f97adeaff715e4f2",
+  "crates/ottrin-platform/src/move_transaction/windows_recovery_plan.rs": "f41496a5a1263f3885f8ed851e09cdcbbfb81251e69657aee40c91c94b361132",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs": "bedfbf6c6546372f88544a927ae0cf4cc65bd5da177d8a499a0a950b4c68bc38",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs": "40e747fae64192f2aaabba10db1d2c60a734634cec2bf08addc3eb6e44721266",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/overwrite.rs": "1d33baf38a385c2f77d2f4e9d529ebc43a513bfc617d2f6416763984e2cb6b00",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/overwrite/tests.rs": "30b12913ccd50f92526479368e75b02298729ab0b91c28be813dd58dbd006007",
+  "crates/ottrin-platform/src/windows_fs.rs": "f88db0d9d9d2684057168e67fa04aaa52f75518959f0db0f791be56f7bd031d6",
+  "docs/DEVELOPMENT.md": "8bf1dad02d6c53f3bc8f02dd2fafabbc381ff99af28dfb8b6bb3a9c2c798c053",
+  "docs/ROADMAP.md": "6071a7e5ec38b2a055fdd094b9da19c14fc054bb6ccb750b7d9263eb73dd4ba7"
+}

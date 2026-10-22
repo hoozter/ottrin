@@ -402,12 +402,30 @@ The first native run passed the new rename cases but exposed that late-forward
 teardown absence; the failed run is retained, and the corrected state distinction
 is checked by the existing sharing/interruption regression.
 
-This is source/native work; packages are unchanged. Durable compact completion
-records, terminal-control reclamation, unavailable-volume/removed-parent behavior
-across restart, renamed retained forward histories before Undo, and renamed
-incomplete-operation recovery remain required. This
-checkpoint does not claim offline restart, FAT32/ReFS, hard-power or package GUI
-acceptance. Linux native-plan and the remaining release roadmap work also remain.
+This is source/native work; packages are unchanged. The following completion
+receipt work replaces the payload-dependent observation for acknowledged Undo.
+Terminal-control reclamation, unavailable-volume acceptance, renamed retained
+forward histories before Undo, and renamed incomplete-operation recovery remain
+required. FAT32/ReFS, hard-power and package GUI acceptance, Linux native-plan
+and the remaining release roadmap work also remain.
+
+### Self-contained Windows Move Undo completion
+
+Once paired native terminal state has proved Undo complete, an immutable compact
+receipt records the exact operation, native registry identity and receipt-file
+identity. A checksum detects damaged data; it is not a signature. Discovery,
+queued recovery and direct session retry recognize this receipt without opening
+old payload/private folders. Retained cross-volume controller and inverse IDs
+produce one completed Activity row. Later Moves cannot adopt that completion.
+
+Publication writes and flushes an owner-only delete-on-close preparation, renames
+it without replacement, cancels deletion, then flushes the registry. A failed or
+interrupted preparation cannot become partial canonical state. Receipt damage,
+copy/replay, overlapping owners and wrong-family ID collisions refuse admission.
+Old journals remain superseded evidence pending safe metadata reclamation; this
+change does not delete them or unknown private files. Native checks and exact
+remaining acceptance limits are recorded in
+`.hermes/evidence/windows-move-completion-current/ACCEPTANCE.json`.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

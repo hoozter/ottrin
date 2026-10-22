@@ -30,6 +30,18 @@ pub(crate) struct Guard {
 }
 
 impl Guard {
+    pub(in crate::move_transaction) fn matches_completion(
+        &self,
+        origin: &Origin,
+        inverse: [u8; 16],
+        private: WindowsStableIdentity,
+    ) -> bool {
+        self.origin == *origin
+            && self.inverse.get().is_none_or(|record| {
+                record.transaction_id().ok() == Some(inverse)
+                    && record.transaction_directory_identity == private
+            })
+    }
     // Observation only: another owner may have started this publication's
     // inverse. If this session already bound an inverse, it must match too.
     pub(in crate::move_transaction) fn matches_recovery_record(&self, record: &Record) -> bool {
@@ -54,7 +66,31 @@ fn pending(record: &Record, error: impl std::fmt::Display) -> PlatformError {
 }
 
 impl Origin {
-    fn validate(&self) -> Result<(), PlatformError> {
+    pub(in crate::move_transaction) fn forward_id(&self) -> Result<[u8; 16], PlatformError> {
+        super::super::parse_windows_journal_name(OsStr::new(&format!(
+            "{}.cross-journal",
+            self.forward_transaction_id
+        )))
+        .map(|(id, _)| id)
+        .ok_or_else(|| PlatformError::Io("Invalid inverse forward transaction ID".into()))
+    }
+    pub(in crate::move_transaction) fn inverse_volume(&self) -> u64 {
+        self.original_parent.volume_serial_number()
+    }
+    pub(in crate::move_transaction) fn completion_controller(
+        &self,
+    ) -> Result<Option<[u8; 16]>, PlatformError> {
+        self.validate()?;
+        Ok(self.retained.as_ref().map(|_| {
+            super::super::parse_windows_journal_name(OsStr::new(&format!(
+                "{}.cross-journal",
+                self.forward_transaction_id
+            )))
+            .expect("validated transaction ID")
+            .0
+        }))
+    }
+    pub(in crate::move_transaction) fn validate(&self) -> Result<(), PlatformError> {
         let original = path(&self.original)?;
         let publication = path(&self.publication)?;
         let journal = format!("{}.cross-journal", self.forward_transaction_id);
@@ -244,6 +280,7 @@ pub(in crate::move_transaction) fn completed(
         persist_windows_cross_volume_record(root, record).map_err(|e| pending(record, e))?;
     }
     retained::finish(root, record)?;
+    super::super::windows_completion::cross(root, record).map_err(|e| pending(record, e))?;
     Ok(Some(super::super::MovePublication {
         windows_undo: None,
         disposition: crate::MoveDisposition::Moved,
@@ -357,6 +394,12 @@ pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), P
         ));
     }
     let root = super::super::windows_recovery_root()?;
+    if super::super::windows_completion::list(&root)?
+        .iter()
+        .any(|done| done.matches(receipt))
+    {
+        return Ok(());
+    }
     if let Some(initial) = guard.inverse.get() {
         let central = windows_cross_volume_journal_path(&root, initial.transaction_id()?);
         let mut current = match std::fs::symlink_metadata(&central) {

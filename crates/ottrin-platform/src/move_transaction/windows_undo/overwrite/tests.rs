@@ -69,6 +69,138 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn windows_native_replace_completion_survives_deleted_payload_controls() {
+    let fixture = Fixture::new();
+    let (receipt, record) = fixture.moved(0);
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    let done =
+        super::super::super::windows_completion::find(&root(), record.transaction_id().unwrap())
+            .unwrap()
+            .unwrap();
+    assert!(done.matches(&receipt));
+    std::fs::remove_dir_all(receipt.before_path().parent().unwrap()).unwrap();
+    std::fs::remove_dir_all(receipt.after_path().parent().unwrap()).unwrap();
+    // Superseded controls can be absent or damaged without reserving old names.
+    std::fs::write(journal(&record), b"obsolete journal bytes").unwrap();
+    let found = super::super::super::discover_retained_windows_move_transactions().unwrap();
+    assert_eq!(found.len(), 1);
+    assert_eq!(
+        found[0].undo_status,
+        move_recovery::WindowsMoveUndoStatus::Complete
+    );
+    let plan = crate::WindowsMoveRecoveryPlan::capture(record.transaction_id().unwrap()).unwrap();
+    assert_eq!(plan.paths(), &[root()]);
+    assert_eq!(
+        plan.undo_status_for(&receipt),
+        Some(move_recovery::WindowsMoveUndoStatus::Complete)
+    );
+    plan.execute().unwrap();
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    std::fs::create_dir(receipt.before_path().parent().unwrap()).unwrap();
+    std::fs::create_dir(receipt.after_path().parent().unwrap()).unwrap();
+    std::fs::write(receipt.before_path(), b"later source").unwrap();
+    let (_, later) = DefaultPlatform
+        .execute_move_with_undo_receipt(
+            receipt.before_path(),
+            receipt.after_path().parent().unwrap(),
+            ConflictAction::Skip,
+        )
+        .unwrap();
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"later source"
+    );
+    assert!(plan.undo_status_for(&later.unwrap()).is_none());
+    plan.execute().unwrap();
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"later source"
+    );
+}
+
+#[test]
+fn windows_native_replace_completion_rejects_damage_copy_and_root_replay() {
+    let fixture = Fixture::new();
+    let (receipt, record) = fixture.moved(0);
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+    let name = format!("{}.move-done", record.transaction_id);
+    let path = root().join(&name);
+    let bytes = std::fs::read(&path).unwrap();
+    let plan = crate::WindowsMoveRecoveryPlan::capture(record.transaction_id().unwrap()).unwrap();
+    let original = path.with_extension("held");
+    std::fs::rename(&path, &original).unwrap();
+    std::fs::write(&path, &bytes).unwrap();
+    assert!(plan.execute().is_err());
+    assert!(DefaultPlatform.undo_move_with_receipt(&receipt).is_err());
+    assert_eq!(std::fs::read(&path).unwrap(), bytes);
+    std::fs::remove_file(&path).unwrap();
+    std::fs::rename(&original, &path).unwrap();
+    plan.execute().unwrap();
+    let mut damaged: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    damaged["checksum"][0] = serde_json::json!(999);
+    std::fs::write(&path, serde_json::to_vec(&damaged).unwrap()).unwrap();
+    assert!(plan.execute().is_err());
+    std::fs::write(&path, &bytes).unwrap();
+    let copied_root = fixture.root.path().join("copied-state");
+    std::fs::create_dir(&copied_root).unwrap();
+    std::fs::copy(&path, copied_root.join(name)).unwrap();
+    assert!(super::super::super::windows_completion::list(&copied_root).is_err());
+    plan.execute().unwrap();
+}
+
+#[test]
+fn windows_native_replace_completion_foreign_collision_preserves_data_and_preparations_do_not_leak()
+{
+    let _fixture = Fixture::new();
+    let (receipt, record) = _fixture.moved(0);
+    let path = root().join(format!("{}.move-done", record.transaction_id));
+    std::fs::write(&path, b"foreign receipt").unwrap();
+    // A malformed registry entry prevents mutation before Undo starts.
+    assert!(DefaultPlatform.undo_move_with_receipt(&receipt).is_err());
+    assert!(!receipt.before_path().exists());
+    assert_eq!(std::fs::read(&path).unwrap(), b"foreign receipt");
+    std::fs::remove_file(&path).unwrap();
+    super::super::super::WINDOWS_MOVE_HOOK.with(|hook| {
+        let path = path.clone();
+        *hook.borrow_mut() = Some(Box::new(move |boundary, _| {
+            if boundary == super::super::super::WindowsMoveBoundary::CompletionPrepared {
+                std::fs::write(&path, b"foreign publication collision").unwrap();
+            }
+        }));
+    });
+    let result = DefaultPlatform.undo_move_with_receipt(&receipt);
+    super::super::super::WINDOWS_MOVE_HOOK.with(|hook| *hook.borrow_mut() = None);
+    assert!(matches!(
+        result,
+        Err(PlatformError::CommittedUndoCleanupPending { .. })
+    ));
+    assert_eq!(
+        std::fs::read(receipt.before_path()).unwrap(),
+        b"selected original"
+    );
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"displaced original"
+    );
+    assert_eq!(
+        std::fs::read(&path).unwrap(),
+        b"foreign publication collision"
+    );
+    assert!(!std::fs::read_dir(root()).unwrap().any(|e| {
+        e.unwrap()
+            .file_name()
+            .to_string_lossy()
+            .starts_with(".preparing-")
+    }));
+    std::fs::remove_file(path).unwrap();
+    super::super::super::recover_retained_windows_move_transaction(
+        record.transaction_id().unwrap(),
+    )
+    .unwrap();
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+}
+
+#[test]
 fn windows_native_completed_replace_undo_follows_private_identity_after_parent_renames() {
     let fixture = Fixture::new();
     let (receipt, record) = fixture.moved(0);
@@ -515,6 +647,9 @@ fn windows_native_replace_undo_process_exit_recovers_from_paired_intent() {
         "OverwriteUndoDisplacedRestored",
         "local-complete",
         "OverwriteUndoComplete",
+        "CompletionPrepared",
+        "CompletionPublished",
+        "CompletionFlushed",
     ] {
         let fixture = Fixture::new();
         let (receipt, record) = fixture.moved(0);
@@ -523,6 +658,14 @@ fn windows_native_replace_undo_process_exit_recovers_from_paired_intent() {
             .env("OTTRIN_REPLACE_UNDO_CHILD",serde_json::to_string(&record).unwrap()).env("OTTRIN_REPLACE_UNDO_STOP",stop)
             .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT",root()).status().unwrap();
         assert_eq!(status.code(), Some(87), "{stop}");
+        assert!(
+            !std::fs::read_dir(root()).unwrap().any(|e| e
+                .unwrap()
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".preparing-")),
+            "{stop}: unpublished receipt leaked"
+        );
         let central = load_windows_overwrite_record(&journal(&record)).unwrap();
         let local_record = load_windows_overwrite_record(&local(&record)).unwrap();
         if !completed(&root(), &central, &local_record).unwrap() {

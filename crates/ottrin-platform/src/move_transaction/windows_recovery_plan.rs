@@ -4,6 +4,7 @@ use super::*;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Evidence {
+    Completion(Box<windows_completion::Receipt>),
     Same(PathBuf, Option<Box<WindowsOverwriteRecord>>),
     Cross(PathBuf, Option<Box<WindowsCrossVolumeRecord>>),
     SameLocal(
@@ -54,6 +55,11 @@ impl WindowsMoveRecoveryPlan {
             evidence: Vec::new(),
             undo_status: move_recovery::WindowsMoveUndoStatus::NotStarted,
         };
+        if let Some(done) = windows_completion::find(&plan.root, transaction_id)? {
+            plan.evidence.push(Evidence::Completion(Box::new(done)));
+            plan.undo_status = move_recovery::WindowsMoveUndoStatus::Complete;
+            return Ok(plan);
+        }
         let mut visited = std::collections::BTreeSet::new();
         plan.capture_owner(transaction_id, &mut visited)?;
         plan.undo_status = plan.observe_undo_status()?;
@@ -98,6 +104,7 @@ impl WindowsMoveRecoveryPlan {
         self.evidence
             .iter()
             .any(|evidence| match (guard, evidence) {
+                (_, Evidence::Completion(done)) => done.matches(receipt),
                 (WindowsMoveUndoGuard::Replace(expected), Evidence::Same(_, Some(record))) => {
                     expected.same_transaction_evidence(record)
                 }
@@ -312,6 +319,10 @@ impl WindowsMoveRecoveryPlan {
         }
         for evidence in &self.evidence {
             let unchanged = match evidence {
+                Evidence::Completion(expected) => {
+                    windows_completion::find(&self.root, self.transaction_id)?.as_ref()
+                        == Some(expected)
+                }
                 Evidence::Same(path, expected) => {
                     path.try_exists()
                         .map_err(|e| PlatformError::Io(e.to_string()))?
@@ -365,7 +376,23 @@ impl WindowsMoveRecoveryPlan {
             }
         }
         if self.undo_status == move_recovery::WindowsMoveUndoStatus::Complete {
-            return Ok(());
+            for evidence in &self.evidence {
+                match evidence {
+                    Evidence::Completion(_) => return Ok(()),
+                    Evidence::Same(_, Some(record))
+                        if record.phase == WindowsOverwritePhase::Undone =>
+                    {
+                        return windows_completion::same(&self.root, record);
+                    }
+                    Evidence::Cross(_, Some(record)) if record.undo_origin.is_some() => {
+                        return windows_completion::cross(&self.root, record);
+                    }
+                    _ => {}
+                }
+            }
+            return Err(PlatformError::Io(
+                "Completed Move plan is missing its terminal owner".into(),
+            ));
         }
         recover_retained_windows_move_transaction_at(&self.root, self.transaction_id)
     }

@@ -157,6 +157,28 @@ pub(crate) unsafe fn open_relative(
     name: &OsStr,
     options: RelativeOptions,
 ) -> io::Result<File> {
+    unsafe { open_relative_options(parent, name, options, 0) }
+}
+
+/// An unpublished ordinary file is removed even if its creating process exits.
+/// Publication must cancel delete-on-close only after a no-replace rename.
+pub(crate) fn create_temporary_relative(parent: &File, name: &OsStr) -> io::Result<File> {
+    create_private_with_access(
+        parent,
+        name,
+        false,
+        0,
+        FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
+        FILE_DELETE_ON_CLOSE,
+    )
+}
+
+unsafe fn open_relative_options(
+    parent: &File,
+    name: &OsStr,
+    options: RelativeOptions,
+    create_options: u32,
+) -> io::Result<File> {
     let mut wide = valid_component(name)?;
     let unicode = UNICODE_STRING {
         Length: (wide.len() * 2) as u16,
@@ -187,6 +209,7 @@ pub(crate) unsafe fn open_relative(
                 FILE_OPEN
             },
             FILE_OPEN_REPARSE_POINT
+                | create_options
                 | FILE_SYNCHRONOUS_IO_NONALERT
                 | match options.directory {
                     Some(true) => FILE_DIRECTORY_FILE,
@@ -339,6 +362,7 @@ impl PerObjectFile {
             directory,
             sharing,
             windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED | SYNCHRONIZE,
+            0,
         )
         .map(Self)
     }
@@ -390,6 +414,7 @@ pub(crate) fn create_private(
         directory,
         sharing,
         FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
+        0,
     )
 }
 
@@ -399,6 +424,7 @@ fn create_private_with_access(
     directory: bool,
     sharing: u32,
     access: u32,
+    create_options: u32,
 ) -> io::Result<File> {
     let identity =
         crate::move_recovery::stable_identity_from_handle(parent).map_err(io::Error::other)?;
@@ -433,7 +459,7 @@ fn create_private_with_access(
     let security = LocalSecurity::private()?;
     // The owned descriptor remains alive until NtCreateFile returns.
     unsafe {
-        open_relative(
+        open_relative_options(
             parent,
             name,
             RelativeOptions {
@@ -445,6 +471,7 @@ fn create_private_with_access(
                 sharing,
                 security: security.as_raw().cast(),
             },
+            create_options,
         )
     }
 }
