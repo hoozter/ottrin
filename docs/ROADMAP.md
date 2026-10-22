@@ -40,7 +40,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Complete the remaining inverse recovery admission/lifecycle checks and package and exercise cross-volume Replace Undo through the actual UI, including retained-path lifecycle checks. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Complete terminal-control lifecycle for containing-parent renames and unavailable volumes, then package and exercise Move Undo, recovery admission and session-history reconciliation through the actual UI. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -352,6 +352,31 @@ This is a source/native checkpoint; packages are unchanged. Session-history
 reconciliation, terminal-control retirement, containing-parent/unavailable-volume
 lifecycle, hard-power/resource and exact-package acceptance remain required.
 Linux retained Move admission still needs its corresponding native-plan work.
+
+## Windows Move recovery — reconcile session Undo history
+
+The existing Windows recovery plan now captures a native Undo observation on the
+Activity scan thread. Session reconciliation matches the opaque receipt's original
+transaction, publication and parent identities, retained-entry ownership, and any
+inverse already bound by that session. The same public filenames never match a
+newer transaction. An independently started inverse can still complete the exact
+original publication's session history without granting new mutation authority.
+
+A verified completed observation passes through the ordinary Undo completion
+handler: the original Move becomes Undone, its obsolete retry message and Undo
+action disappear, affected views refresh, and an earlier drive-admission refusal
+does not keep an already completed inverse marked unavailable. A running worker's
+UndoQueued state remains owned by that worker's callback. Move Undo callbacks
+request a background Activity refresh so new durable inverse state is discovered.
+Reconciliation itself performs no filesystem I/O on the UI thread. Activity row
+labels and recovery actions use that same captured observation rather than the
+earlier discovery status, so they cannot diverge during an inverse completion.
+
+Evidence: `.hermes/evidence/windows-move-history-current/ACCEPTANCE.json`.
+This is a source/native checkpoint; packages are unchanged. Terminal-control
+retirement and containing-parent/unavailable-volume lifecycle, Linux native-plan
+admission, hard-power/resource outcomes and exact-package acceptance still remain.
+User acceptance stays deferred while independent work continues.
 
 ## Windows Copy: end an incomplete attempt without discarding files
 

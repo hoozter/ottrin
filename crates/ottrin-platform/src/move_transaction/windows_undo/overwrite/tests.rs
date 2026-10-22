@@ -73,6 +73,11 @@ fn windows_native_replace_recovery_plan_refuses_changed_local_evidence() {
     let fixture = Fixture::new();
     let (receipt, record) = fixture.moved(0);
     let plan = crate::WindowsMoveRecoveryPlan::capture(record.transaction_id().unwrap()).unwrap();
+    assert_eq!(
+        plan.undo_status_for(&receipt),
+        None,
+        "forward recovery is not Undo completion"
+    );
     assert!(plan.paths().contains(&root()));
     assert!(
         plan.paths()
@@ -115,6 +120,26 @@ fn windows_native_replace_recovery_plan_refuses_changed_local_evidence() {
     );
     DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
     assert_terminal(&record);
+    let complete =
+        crate::WindowsMoveRecoveryPlan::capture(record.transaction_id().unwrap()).unwrap();
+    assert_eq!(
+        complete.undo_status_for(&receipt),
+        Some(move_recovery::WindowsMoveUndoStatus::Complete)
+    );
+    let (_, newer) = DefaultPlatform
+        .execute_move_with_undo_receipt(
+            receipt.before_path(),
+            receipt.after_path().parent().unwrap(),
+            ConflictAction::Overwrite,
+        )
+        .unwrap();
+    let newer = newer.unwrap();
+    assert_eq!(
+        complete.undo_status_for(&newer),
+        None,
+        "same names and source identity do not adopt an older transaction's completion"
+    );
+    DefaultPlatform.undo_move_with_receipt(&newer).unwrap();
 }
 fn journal(record: &Record) -> PathBuf {
     windows_journal_path(&root(), record.transaction_id().unwrap())

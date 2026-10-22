@@ -17,6 +17,7 @@ pub struct WindowsMoveRecoveryPlan {
     transaction_id: [u8; 16],
     evidence: Vec<Evidence>,
     paths: Vec<PathBuf>,
+    undo_status: move_recovery::WindowsMoveUndoStatus,
 }
 
 impl WindowsMoveRecoveryPlan {
@@ -36,9 +37,11 @@ impl WindowsMoveRecoveryPlan {
             root_identity,
             transaction_id,
             evidence: Vec::new(),
+            undo_status: move_recovery::WindowsMoveUndoStatus::NotStarted,
         };
         let mut visited = std::collections::BTreeSet::new();
         plan.capture_owner(transaction_id, &mut visited)?;
+        plan.undo_status = plan.observe_undo_status()?;
         plan.paths.sort();
         plan.paths.dedup();
         Ok(plan)
@@ -48,10 +51,89 @@ impl WindowsMoveRecoveryPlan {
         self.transaction_id
     }
 
+    pub fn undo_status(&self) -> move_recovery::WindowsMoveUndoStatus {
+        self.undo_status
+    }
+
     /// All affected parents, private stages and the central journal namespace.
     /// Recovery may select another candidate name within a destination parent.
     pub fn paths(&self) -> &[PathBuf] {
         &self.paths
+    }
+
+    /// The captured native Undo observation, only for the exact session receipt
+    /// that owns this inverse. This performs no I/O on the UI thread. Matching
+    /// public paths never suffices, and a forward recovery never completes Undo.
+    pub fn undo_status_for(
+        &self,
+        receipt: &crate::PathMoveUndoReceipt,
+    ) -> Option<move_recovery::WindowsMoveUndoStatus> {
+        use windows_undo::WindowsMoveUndoGuard;
+        if self.undo_status == move_recovery::WindowsMoveUndoStatus::NotStarted {
+            return None;
+        }
+        let crate::WindowsPathUndo::Move(guard) = receipt.windows_undo.as_ref()? else {
+            return None;
+        };
+        self.evidence
+            .iter()
+            .any(|evidence| match (guard, evidence) {
+                (WindowsMoveUndoGuard::Replace(expected), Evidence::Same(_, Some(record))) => {
+                    expected.same_transaction_evidence(record)
+                }
+                (WindowsMoveUndoGuard::CrossVolume(expected), Evidence::Cross(_, Some(record))) => {
+                    expected.matches_recovery_record(record)
+                }
+                _ => false,
+            })
+            .then_some(self.undo_status)
+    }
+
+    fn observe_undo_status(&self) -> Result<move_recovery::WindowsMoveUndoStatus, PlatformError> {
+        use move_recovery::WindowsMoveUndoStatus;
+        for evidence in &self.evidence {
+            match evidence {
+                Evidence::Same(path, Some(record))
+                    if *path == windows_journal_path(&self.root, self.transaction_id) =>
+                {
+                    let local_path = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
+                    let local = self.evidence.iter().find_map(|entry| match entry {
+                        Evidence::Same(path, Some(local)) if *path == local_path => {
+                            Some(local.as_ref())
+                        }
+                        _ => None,
+                    });
+                    if let Some(local) = local
+                        && windows_undo::overwrite::has_inverse_intent(record, local)
+                    {
+                        return Ok(
+                            if windows_undo::overwrite::completed(&self.root, record, local)? {
+                                WindowsMoveUndoStatus::Complete
+                            } else {
+                                WindowsMoveUndoStatus::Pending
+                            },
+                        );
+                    }
+                    return Ok(WindowsMoveUndoStatus::NotStarted);
+                }
+                Evidence::Cross(path, Some(record))
+                    if *path
+                        == windows_cross_volume_journal_path(&self.root, self.transaction_id) =>
+                {
+                    return if record.undo_origin.is_some() {
+                        windows_undo::cross::status(&self.root, record)
+                    } else if windows_undo::cross::retained::has_intent(record) {
+                        windows_undo::cross::retained::controller_status(&self.root, record)
+                    } else {
+                        Ok(WindowsMoveUndoStatus::NotStarted)
+                    };
+                }
+                _ => {}
+            }
+        }
+        Err(PlatformError::Io(
+            "Move recovery observation is missing its owner".into(),
+        ))
     }
 
     fn capture_owner(

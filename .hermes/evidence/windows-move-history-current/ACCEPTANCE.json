@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-22",
+  "status": "source_native_checkpoint_passed",
+  "source_base": "f92911557dca2cceed11ba589d920ca58558f06f",
+  "source_manifest": "SOURCE_SHA256.json",
+  "scope": "Windows cached native Undo observations and reconciliation of original session Move history. Source/native checkpoint only; full roadmap remains incomplete.",
+  "implementation": [
+    "Existing recovery plans capture native pending/completed Undo proof on the background Activity scan thread",
+    "Opaque receipt matching binds original transaction/publication/parent/private-retained identities and any inverse already bound by this session; paths alone never match",
+    "An independent inverse can reconcile the same native publication even when this session did not start that inverse; this observation grants no mutation authority",
+    "Completed recovery observations pass through the existing Undo result handler, updating original Move to Undone, clearing retry text and disabling its Undo action",
+    "A previous unavailable state can converge to verified completion; queued workers retain ownership of their own callbacks",
+    "Native Move Undo callbacks request background recovery refresh; cached receipt/status lookup does not perform filesystem access",
+    "Activity row phase and recovery actions are derived from the same captured observation as session history, rather than an earlier discovery status",
+    "Unavailable-to-complete success handling is restricted to Move; existing behavior for other Undo kinds is preserved"
+  ],
+  "verification": {
+    "windows_platform": {
+      "passed": 115,
+      "failed": 0,
+      "result": "RESULTS.json",
+      "binary": "TEST_BINARY.json",
+      "scope": "Full selected Move module plus native Copy session-receipt/abort-dependency checks; owned second NTFS volume included",
+      "expanded_cases": [
+        "Same-volume forward recovery never reports Undo completion; completed receipt matches exact original transaction",
+        "New Move at identical names with the same original file identity does not adopt prior completion",
+        "Cross-volume Replace pending/completed proof matches through either controller or inverse",
+        "Fresh independently issued native receipt with no inverse binding matches the exact completed publication",
+        "Cached complete observation remains readable while the central registry directory is renamed away, proving no filesystem access for that lookup"
+      ],
+      "interruption_scope": "Existing 22 retained cross-volume inverse process exits and other Move interruption cases rerun; not hard-power acceptance",
+      "excluded": [
+        "windows_native_move_fat32_boundary_preserves_both_entries",
+        "windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite"
+      ]
+    },
+    "windows_ui_history": {
+      "passed": 1,
+      "result": "ui-history/RESULTS.json",
+      "binary": "ui-history/TEST_BINARY.json",
+      "scope": [
+        "Actual native Replace Move worker produces session Undo receipt",
+        "Original-name collision refuses actual Undo and retains retry; background forward observation does not falsely complete Undo",
+        "Independent native inverse restores both entries",
+        "Intentionally changed captured drive identity is refused before dispatching another worker, producing Unavailable",
+        "Background completion proof changes the exact original session record to Undone, removes obsolete message and disables Undo",
+        "A second actual Move at reused names remains Available when presented with old completion observations",
+        "A completed native Undo with an undelivered callback stays UndoQueued despite concurrent completed background scan; its actual callback then finishes normally",
+        "Selected, displaced and parked-occupant bytes are verified at completion",
+        "An earlier NotStarted discovery status paired with a current completed snapshot produces an Undone row with no recovery action"
+      ],
+      "limits": "Changed drive-binding snapshot is injected to exercise the real admission/refusal handler; this is not actual physical drive replacement or offline-volume acceptance. Headless production methods/workers, not rendered package GUI."
+    },
+    "windows_ui_status_and_admission": {
+      "passed": 9,
+      "result": "ui-status/RESULTS.json",
+      "scope": "Prior real-drive recovery admission check and eight transfer/status checks"
+    },
+    "windows_cross_ui_worker": {
+      "passed": 1,
+      "result": "ui/RESULTS.json",
+      "scope": "Skip/Replace cross-volume Move/Undo collisions, retry and status; explicit empty binding fixture for this separate worker check"
+    },
+    "windows_same_ui_worker": {
+      "passed": 1,
+      "result": "ui-same/RESULTS.json",
+      "scope": "Skip/Replace same-volume Move/Undo collisions and retry"
+    },
+    "linux_ui": {
+      "passed": 395,
+      "failed": 0,
+      "existing_ignored": 1,
+      "log": "ui-linux.log",
+      "later_changes": "Final changes to snapshot row status and Move-only Windows completion handling are Windows-only; strict Linux Clippy includes final source"
+    },
+    "strict_all_target_clippy": [
+      "Windows ottrin-platform",
+      "Windows ottrin-ui",
+      "Linux ottrin-ui"
+    ],
+    "formatting": "cargo fmt --all -- --check; source/roadmap/runner diff whitespace check"
+  },
+  "prior_checks": {
+    "clippy-ui-windows-preliminary.log": "Successful strict check before final test expansion; final strict log covers final source",
+    "PRELIMINARY_CHECKS.json": "Compact receipts for successful 115 native and 12 UI checks before final row/snapshot coherence refinement; superseded generated logs and binaries are replaced by final checks."
+  },
+  "cleanup": {
+    "guest": "TEARDOWN_GUEST.json",
+    "host": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "compiler_sessions": "CACHE_RETIREMENT.json",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt",
+    "retained_guest": "off with unchanged persistent definition",
+    "owned_fixture_profiles_payloads_processes_and_vhd_removed": true,
+    "secondary_fixture_root_contained_only_owner_marker_before_removal": true,
+    "original_disk_inventory_restored": true,
+    "original_preferences_and_installation_hashes_unchanged": true,
+    "preliminary_owned_secondary_volume": "VOLUME_PRELIMINARY_TEARDOWN.json; first owned VHD removed before preparing the final-check owned VHD",
+    "row_refinement_owned_secondary_volume": "VOLUME_ROW_REFINEMENT_TEARDOWN.json; second owned VHD removed before final Move-only UI checks"
+  },
+  "delivery": {
+    "packages_promoted": false,
+    "candidate_authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "linux_and_public_windows_deliverables": "unchanged",
+    "rendered_package_gui_acceptance": false
+  },
+  "required_remaining": [
+    "Terminal inverse-control retirement/lifecycle and containing-parent or unavailable-volume behavior",
+    "Linux retained Move native-plan admission",
+    "Metadata/stream/resource/hard-power and exact-package GUI acceptance",
+    "Remaining Copy, platform, installer, Linux and release roadmap work; user acceptance deferred"
+  ]
+}

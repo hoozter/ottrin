@@ -1,0 +1,3 @@
+native PID 4672
+native PID 5236
+{"status": "pass", "guest": "TEARDOWN_GUEST.json", "domain_state": "shut off", "persistent_domain_definition_unchanged": true, "retained_guest_preserved": true, "additional_hypervisor_disks_or_guests_created": false}

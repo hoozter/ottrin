@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "f92911557dca2cceed11ba589d920ca58558f06f",
+  "actor": "OttrinCopyQA",
+  "purpose": "Native Move completion observations and exact session-history reconciliation; owned VHD removed after consumers exit"
+}

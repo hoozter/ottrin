@@ -29,6 +29,18 @@ pub(crate) struct Guard {
     inverse: Arc<OnceLock<Record>>,
 }
 
+impl Guard {
+    // Observation only: another owner may have started this publication's
+    // inverse. If this session already bound an inverse, it must match too.
+    pub(in crate::move_transaction) fn matches_recovery_record(&self, record: &Record) -> bool {
+        record.undo_origin.as_ref() == Some(&self.origin)
+            && self
+                .inverse
+                .get()
+                .is_none_or(|initial| initial.same_transaction_evidence(record))
+    }
+}
+
 fn path(encoded: &move_recovery::NativePath) -> Result<std::path::PathBuf, PlatformError> {
     encoded.decode().map_err(io)
 }

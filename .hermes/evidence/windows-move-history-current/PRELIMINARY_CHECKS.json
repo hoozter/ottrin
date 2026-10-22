@@ -1,0 +1,58 @@
+{
+  "platform": {
+    "exit": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --nocapture --test-threads=1",
+    "ordinary_user": true,
+    "stdout_sha256": "2e46eb9f1fbec7662ef7897dd430f649aca8b8d9834ea1a46986d7cb78c5559e",
+    "temporary_entries": 0,
+    "status": "pass",
+    "test_binary_hash": "61fc598d8497ce2b5ed4e93f551a2ce5be31b959d0bb288d34ce7414b7a07819",
+    "dispatch_id": "6dd7f9c757c933ad567b20e37b55f389"
+  },
+  "ui-history": {
+    "exit": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments": "--exact tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker --nocapture --test-threads=1",
+    "ordinary_user": true,
+    "stdout_sha256": "5162889971ace596807aa6a6be7974ab76522d0dd06ef652caf62abe1983f18a",
+    "temporary_entries": 0,
+    "status": "pass",
+    "test_binary_hash": "e2d2c15c59659b2baa6a305337dd1b74cff0a94e681797886f315ef2d452d96c",
+    "dispatch_id": "10be58ccaa33a026b39ad06a95277881"
+  },
+  "ui-status": {
+    "exit": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1",
+    "ordinary_user": true,
+    "stdout_sha256": "0a41b60c7f9c7f4fb8368d51979a1ac1266e565cd3e04f1989edd154e396bddb",
+    "temporary_entries": 0,
+    "status": "pass",
+    "test_binary_hash": "e2d2c15c59659b2baa6a305337dd1b74cff0a94e681797886f315ef2d452d96c",
+    "dispatch_id": "cade1fbed0072ea1eeee2c3bd4ec2967"
+  },
+  "ui": {
+    "exit": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments": "--exact tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry --nocapture --test-threads=1 --include-ignored",
+    "ordinary_user": true,
+    "stdout_sha256": "4054cb8fe54444e478919198d3091170b9c1769f70f0c754b33a9b69d699e590",
+    "temporary_entries": 0,
+    "status": "pass",
+    "test_binary_hash": "e2d2c15c59659b2baa6a305337dd1b74cff0a94e681797886f315ef2d452d96c",
+    "dispatch_id": "a12042967ada8157e4e37630738b8de3"
+  },
+  "ui-same": {
+    "exit": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test_arguments": "--exact tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --nocapture --test-threads=1",
+    "ordinary_user": true,
+    "stdout_sha256": "11c8c0b5aba8295563097f1bfdc642d15d61287febcdabe95e07dd68db3cd6ba",
+    "temporary_entries": 0,
+    "status": "pass",
+    "test_binary_hash": "e2d2c15c59659b2baa6a305337dd1b74cff0a94e681797886f315ef2d452d96c",
+    "dispatch_id": "b2c5df3044dd1ef4188c0a1baf6edc49"
+  },
+  "scope": "Successful preliminary history checks before using the captured observation for row status as well. Superseded by final binary checks; no failed run discarded."
+}

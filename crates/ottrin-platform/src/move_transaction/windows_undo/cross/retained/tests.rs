@@ -318,6 +318,12 @@ fn windows_native_cross_replace_undo_target_race_retries_without_copying_back_tw
 fn windows_native_cross_replace_recovery_plan_binds_both_owners_before_mutation() {
     let fixture = Fixture::new();
     let receipt = fixture.moved(0);
+    let independently_issued = super::super::issue_if_owned(
+        &load_windows_cross_volume_record(&central(&receipt)).unwrap(),
+    )
+    .unwrap()
+    .unwrap();
+    assert!(guard(&independently_issued).inverse.get().is_none());
     let before = receipt.before_path().to_path_buf();
     super::super::super::super::WINDOWS_MOVE_HOOK.with(|hook| {
         *hook.borrow_mut() = Some(Box::new(move |boundary, _| {
@@ -339,6 +345,14 @@ fn windows_native_cross_replace_recovery_plan_binds_both_owners_before_mutation(
     let controller_id = controller.transaction_id().unwrap();
     let first = crate::WindowsMoveRecoveryPlan::capture(inverse_id).unwrap();
     let second = crate::WindowsMoveRecoveryPlan::capture(controller_id).unwrap();
+    assert_eq!(
+        first.undo_status_for(&receipt),
+        Some(move_recovery::WindowsMoveUndoStatus::Pending)
+    );
+    assert_eq!(
+        second.undo_status_for(&receipt),
+        first.undo_status_for(&receipt)
+    );
     assert_eq!(first.paths(), second.paths());
     for expected in [
         root(),
@@ -384,6 +398,32 @@ fn windows_native_cross_replace_recovery_plan_binds_both_owners_before_mutation(
     std::fs::rename(receipt.before_path(), &parked).unwrap();
     first.execute().unwrap();
     assert_done(&receipt);
+    let completed_inverse = crate::WindowsMoveRecoveryPlan::capture(inverse_id).unwrap();
+    let completed_controller = crate::WindowsMoveRecoveryPlan::capture(controller_id).unwrap();
+    for plan in [&completed_inverse, &completed_controller] {
+        assert_eq!(
+            plan.undo_status_for(&receipt),
+            Some(move_recovery::WindowsMoveUndoStatus::Complete)
+        );
+        assert_eq!(
+            plan.undo_status_for(&independently_issued),
+            Some(move_recovery::WindowsMoveUndoStatus::Complete),
+            "independent inverse completion matches the exact original native publication"
+        );
+    }
+    assert_eq!(
+        first.undo_status_for(&receipt),
+        Some(move_recovery::WindowsMoveUndoStatus::Pending),
+        "cached observations never read or update themselves on the UI thread"
+    );
+    let parked_registry = root().with_extension("parked");
+    std::fs::rename(root(), &parked_registry).unwrap();
+    assert_eq!(
+        completed_controller.undo_status_for(&independently_issued),
+        Some(move_recovery::WindowsMoveUndoStatus::Complete),
+        "history reconciliation performs no filesystem access"
+    );
+    std::fs::rename(parked_registry, root()).unwrap();
     assert_eq!(
         std::fs::read(parked).unwrap(),
         b"later original-name occupant"

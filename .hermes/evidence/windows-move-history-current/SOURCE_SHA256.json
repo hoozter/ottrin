@@ -1,0 +1,9 @@
+{
+  "crates/ottrin-platform/src/move_transaction/windows_recovery_plan.rs": "5ca17fbd16a93e4f82ff115a1fe93b8b4f772a0984226accd679d6b1433ac2bd",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs": "6b2232b5167aad5d488b1515c50e53eb03d2198a53ce75036eea2f341f11709b",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs": "99b7294bc781ffc1d052236405dbed8ebca254d9eb880d0576f92952d3114be2",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/overwrite/tests.rs": "c0dd59059afa7232a4e363cdb24ec0e120c20893ef40c3c7856f505e1c2b26db",
+  "crates/ottrin-ui/src/lib.rs": "064da1327883d0216aff566738a2da64c01661212259d7dcece2eeaa46ae52b0",
+  "docs/ROADMAP.md": "7c523b1b27807a69f72ab099d0eae0ce3f1c24fb862298d5b01ceabc4e34e3a2",
+  ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "1df1553e3e1be2235ef6e7b597d0d7936bef763705854aac4d63ed844303ea82"
+}

@@ -1026,8 +1026,7 @@ fn rename_selection_for_tab(
 #[cfg_attr(not(any(target_os = "windows", test)), allow(dead_code))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum RetainedMoveRecovery {
-    // Only Linux currently exposes retained forward phases without a recovery action.
-    #[cfg_attr(all(target_os = "windows", not(test)), allow(dead_code))]
+    // Retained evidence that cannot currently be admitted exposes no action.
     Unavailable,
     Forward,
     Undo,
@@ -1139,6 +1138,17 @@ fn windows_retained_move_activity(
 }
 
 #[cfg(target_os = "windows")]
+fn captured_windows_move_activity(
+    mut transaction: ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction,
+    plan: ottrin_platform::WindowsMoveRecoveryPlan,
+) -> RetainedMoveActivity {
+    transaction.undo_status = plan.undo_status();
+    let mut activity = windows_retained_move_activity(transaction);
+    activity.plan = Some(plan);
+    activity
+}
+
+#[cfg(target_os = "windows")]
 fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) {
     match discover_retained_move_transactions() {
         Ok(transactions) => {
@@ -1146,19 +1156,17 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
             let activity = transactions
                 .into_iter()
                 .map(|transaction| {
-                    let mut activity = windows_retained_move_activity(transaction);
-                    if activity.recovery.action_label().is_some() {
-                        match ottrin_platform::WindowsMoveRecoveryPlan::capture(
-                            activity.transaction_id,
-                        ) {
-                            Ok(plan) => activity.plan = Some(plan),
-                            Err(reason) => {
-                                activity.recovery = RetainedMoveRecovery::Unavailable;
-                                error.get_or_insert_with(|| reason.to_string());
-                            }
+                    match ottrin_platform::WindowsMoveRecoveryPlan::capture(
+                        transaction.transaction_id,
+                    ) {
+                        Ok(plan) => captured_windows_move_activity(transaction, plan),
+                        Err(reason) => {
+                            let mut activity = windows_retained_move_activity(transaction);
+                            activity.recovery = RetainedMoveRecovery::Unavailable;
+                            error.get_or_insert_with(|| reason.to_string());
+                            activity
                         }
                     }
-                    activity
                 })
                 .collect();
             (activity, error)
@@ -6397,8 +6405,44 @@ impl OttrinApp {
     fn poll_retained_move_activity(&mut self) {
         if let Some(result) = self.retained_move_activity_loader.poll() {
             let (activity, error) = result.unwrap_or_else(|error| (Vec::new(), Some(error.into())));
+            #[cfg(target_os = "windows")]
+            self.reconcile_move_undo_history(&activity);
             self.retained_move_activity = activity;
             self.retained_move_activity_error = error;
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    fn reconcile_move_undo_history(&mut self, activity: &[RetainedMoveActivity]) {
+        let completed = self
+            .operation_history
+            .iter()
+            .filter(|record| {
+                record.status == OperationStatus::Completed
+                    && record.undo_kind == Some(PathMoveUndoKind::Move)
+                    && matches!(
+                        record.path_move_undo,
+                        Some(PathMoveUndoState::Available | PathMoveUndoState::Unavailable { .. })
+                    )
+            })
+            .filter_map(|record| {
+                let OperationUndoReceipt::PathMove(receipt) =
+                    &record.path_move_undo_token.as_ref()?.receipt
+                else {
+                    return None;
+                };
+                activity
+                    .iter()
+                    .filter_map(|entry| entry.plan.as_ref())
+                    .any(|plan| {
+                        plan.undo_status_for(receipt)
+                            == Some(ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete)
+                    })
+                    .then_some(record.id)
+            })
+            .collect::<Vec<_>>();
+        for id in completed {
+            self.finish_path_move_undo(id, Ok(()), false);
         }
     }
 
@@ -7312,6 +7356,14 @@ impl OttrinApp {
     }
 
     fn finish_path_move_undo(&mut self, op_id: u64, result: Result<(), String>, retryable: bool) {
+        #[cfg(target_os = "windows")]
+        if self.operation_history.iter().any(|record| {
+            record.id == op_id
+                && record.undo_kind == Some(PathMoveUndoKind::Move)
+                && record.path_move_undo == Some(PathMoveUndoState::UndoQueued)
+        }) {
+            self.refresh_retained_move_activity();
+        }
         if self.operation_history.iter().any(|record| {
             record.id == op_id
                 && record.undo_kind == Some(PathMoveUndoKind::Move)
@@ -7345,10 +7397,15 @@ impl OttrinApp {
             .iter_mut()
             .find(|record| record.id == op_id)
             .filter(|record| {
-                matches!(
+                let pending = matches!(
                     record.path_move_undo,
                     Some(PathMoveUndoState::UndoQueued) | Some(PathMoveUndoState::Available)
-                )
+                );
+                let observed_move_completion = cfg!(target_os = "windows")
+                    && record.undo_kind == Some(PathMoveUndoKind::Move)
+                    && result.is_ok()
+                    && matches!(record.path_move_undo, Some(PathMoveUndoState::Unavailable { .. }));
+                pending || observed_move_completion
             })
             .and_then(|record| {
                 let kind = record.undo_kind();
@@ -30884,6 +30941,203 @@ mod tests {
             std::fs::read(destination.join("entry.txt")).unwrap(),
             b"displaced destination"
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_move_history_reconciles_exact_inverse_without_overriding_its_worker() {
+        fn move_once(app: &mut OttrinApp, source: &Path, destination: &Path) -> u64 {
+            assert!(
+                app.run_file_op_bound(
+                    FileCommand::Move {
+                        sources: vec![source.to_owned()],
+                        destination: destination.to_owned(),
+                        conflict: ConflictAction::Overwrite,
+                    },
+                    None,
+                    Vec::new(),
+                    None,
+                    None,
+                    Some(ConflictAction::Overwrite)
+                ),
+                "{:?}",
+                app.status_message
+            );
+            let result = app.op_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+            assert!(result.error.is_none(), "{:?}", result.error);
+            assert!(result.warning.is_none(), "{:?}", result.warning);
+            let id = result.op_id;
+            app.op_tx.send(result).unwrap();
+            app.poll_op_results();
+            assert_eq!(
+                app.operation_history
+                    .iter()
+                    .find(|record| record.id == id)
+                    .unwrap()
+                    .path_move_undo,
+                Some(PathMoveUndoState::Available)
+            );
+            id
+        }
+        let fixture = tempfile::tempdir().unwrap();
+        let source_parent = fixture.path().join("source");
+        let destination = fixture.path().join("destination");
+        std::fs::create_dir(&source_parent).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        let source = source_parent.join("entry");
+        let target = destination.join("entry");
+        std::fs::write(&source, b"selected source").unwrap();
+        std::fs::write(&target, b"displaced destination").unwrap();
+        let mut app = OttrinApp::default();
+        let first = move_once(&mut app, &source, &destination);
+        let OperationUndoReceipt::PathMove(receipt) = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == first)
+            .unwrap()
+            .path_move_undo_token
+            .as_ref()
+            .unwrap()
+            .receipt
+            .clone()
+        else {
+            panic!("native Move receipt")
+        };
+        std::fs::write(&source, b"later occupant").unwrap();
+        app.run_path_move_undo(first);
+        let refused = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(10))
+            .unwrap();
+        assert!(refused.result.is_err());
+        app.finish_path_move_undo(refused.op_id, refused.result, refused.retryable);
+        wait_for_retained_move_activity(&mut app);
+        let record = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == first)
+            .unwrap();
+        assert_eq!(record.path_move_undo, Some(PathMoveUndoState::Available));
+        assert!(record.message.as_ref().unwrap().contains("retry"));
+
+        let parked = fixture.path().join("parked");
+        std::fs::rename(&source, &parked).unwrap();
+        // Another owner completes the native inverse while this session retains
+        // its earlier failed attempt. Only background proof updates that history.
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+        let token = app
+            .operation_history
+            .iter_mut()
+            .find(|record| record.id == first)
+            .unwrap()
+            .path_move_undo_token
+            .as_mut()
+            .unwrap();
+        let binding = token
+            .storage_bindings
+            .iter_mut()
+            .find(|binding| binding.stable_identity.is_some())
+            .expect("real discovered drive binding");
+        binding.stable_identity = Some("different-volume-observation".into());
+        app.run_path_move_undo(first);
+        assert!(
+            matches!(
+                app.operation_history
+                    .iter()
+                    .find(|record| record.id == first)
+                    .unwrap()
+                    .path_move_undo,
+                Some(PathMoveUndoState::Unavailable { .. })
+            ),
+            "stale drive admission refuses another mutation"
+        );
+        assert!(
+            app.path_move_undo_rx.try_recv().is_err(),
+            "no worker was dispatched for the stale drive binding"
+        );
+        app.refresh_retained_move_activity();
+        wait_for_retained_move_activity(&mut app);
+        let record = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == first)
+            .unwrap();
+        assert_eq!(record.path_move_undo, Some(PathMoveUndoState::Undone));
+        assert!(record.message.is_none());
+        assert!(!path_move_undo_action_is_available(
+            record.status,
+            record.path_move_undo.as_ref()
+        ));
+        assert_eq!(std::fs::read(&source).unwrap(), b"selected source");
+        assert_eq!(std::fs::read(&target).unwrap(), b"displaced destination");
+
+        let old_activity = app.retained_move_activity.clone();
+        let completed_plan = old_activity
+            .iter()
+            .filter_map(|entry| entry.plan.as_ref())
+            .find(|plan| {
+                plan.undo_status_for(&receipt)
+                    == Some(ottrin_platform::move_recovery::WindowsMoveUndoStatus::Complete)
+            })
+            .unwrap()
+            .clone();
+        let raced_row = captured_windows_move_activity(
+            ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
+                transaction_id: completed_plan.transaction_id(),
+                kind: WindowsMoveTransactionKind::SameVolumeOverwrite,
+                undo_status: ottrin_platform::move_recovery::WindowsMoveUndoStatus::NotStarted,
+            },
+            completed_plan,
+        );
+        assert_eq!(
+            raced_row.recovery,
+            RetainedMoveRecovery::Undone,
+            "row and session history use the same captured observation"
+        );
+        assert_eq!(raced_row.phase, "Replace undone");
+        assert!(raced_row.recovery.action_label().is_none());
+        let second = move_once(&mut app, &source, &destination);
+        app.reconcile_move_undo_history(&old_activity);
+        assert_eq!(
+            app.operation_history
+                .iter()
+                .find(|record| record.id == second)
+                .unwrap()
+                .path_move_undo,
+            Some(PathMoveUndoState::Available),
+            "reused names do not adopt old completion"
+        );
+        app.run_path_move_undo(second);
+        let completed = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(10))
+            .unwrap();
+        assert!(completed.result.is_ok(), "{:?}", completed.result);
+        // The worker has finished its filesystem work, but its callback still
+        // owns the queued operation. A concurrent scan must not preempt it.
+        app.refresh_retained_move_activity();
+        wait_for_retained_move_activity(&mut app);
+        assert_eq!(
+            app.operation_history
+                .iter()
+                .find(|record| record.id == second)
+                .unwrap()
+                .path_move_undo,
+            Some(PathMoveUndoState::UndoQueued)
+        );
+        app.finish_path_move_undo(completed.op_id, completed.result, completed.retryable);
+        wait_for_retained_move_activity(&mut app);
+        assert_eq!(
+            app.operation_history
+                .iter()
+                .find(|record| record.id == second)
+                .unwrap()
+                .path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        );
+        assert_eq!(std::fs::read(source).unwrap(), b"selected source");
+        assert_eq!(std::fs::read(target).unwrap(), b"displaced destination");
+        assert_eq!(std::fs::read(parked).unwrap(), b"later occupant");
     }
 
     #[test]
