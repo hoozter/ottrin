@@ -1,0 +1,114 @@
+{
+  "status": "pass within native Windows API and queued-worker scopes",
+  "base_revision": "2869490df5f6a8f4a9360503ef3368fea85c3aea",
+  "source_binding": "SOURCE_SHA256.json binds current source/docs and shared QA inputs; VERIFIED_CASES.json binds each final dispatch, compiler executable and raw logs",
+  "implemented": [
+    "Cross-volume forward recovery, inverse Undo, retained Replace controller and paired journal writer resolve original native parent identities together",
+    "Immutable historical labels remain evidence; source/publication/private mutations use current native directory paths",
+    "Queue capture reserves current parents and private evidence; stale captured names and independently moved private directories refuse without writes",
+    "Engine-owned private lease transfers to verified teardown DELETE handle while parent leases remain held",
+    "Missing canonical private child requires original native private ID to be retired on its original volume before central retirement",
+    "Central-only Published write gap re-verifies and flushes publication, converges both journals and only then allows destructive source cleanup",
+    "Central-first empty Rename intent can repair its local journal while preserving an occupied requested name through normal no-replace candidate selection"
+  ],
+  "checks": {
+    "final_native_passed": 163,
+    "move_and_receipt_dependencies": 141,
+    "ui_worker": 15,
+    "fresh_process_detached_volume_stages": 7,
+    "cases": "VERIFIED_CASES.json",
+    "forward_parent_matrix": {
+      "kinds": [
+        "regular file",
+        "directory",
+        "raw symbolic link"
+      ],
+      "conflicts": [
+        "Skip",
+        "Rename (Keep Both)",
+        "Overwrite (Replace)"
+      ],
+      "journal_phases": [
+        "Prepared",
+        "Staged",
+        "Published",
+        "SourceRemoved"
+      ],
+      "cases": 36,
+      "preservation": "Both parents renamed/recreated; copied foreign old journals; stale plan and independent private reparenting refused; exact old occupants retained"
+    },
+    "inverse_exit_matrix": {
+      "kinds": [
+        "regular file",
+        "directory"
+      ],
+      "boundaries": [
+        "Prepared-central",
+        "Prepared-local",
+        "Staged-central",
+        "Published-central",
+        "BeforeSourceCleanup",
+        "SourceRemoved-central",
+        "SourceRemoved-local"
+      ],
+      "namespace_cases": [
+        "unchanged",
+        "both parents renamed/recreated"
+      ],
+      "cases": 28
+    },
+    "before_inverse_parent_rename": {
+      "ordinary_or_keep_both_cases": 6,
+      "retained_replace_cases": 3,
+      "kinds": [
+        "regular file",
+        "directory",
+        "raw symbolic link"
+      ]
+    },
+    "linux_platform": {
+      "passed": 415,
+      "ignored": 4,
+      "log": "linux-platform-tests.log",
+      "scope": "Run before the final Windows-only repairs; no Linux behavior was changed"
+    },
+    "strict_clippy": [
+      "clippy-windows.log",
+      "clippy-linux.log"
+    ],
+    "formatting": "cargo fmt --all --check passed",
+    "source_whitespace": "git diff --check on affected source and docs passed"
+  },
+  "failed_intermediate_evidence": {
+    "move-initial": "138 pass, 3 fail. Two older tests expected path spelling or refusal after parent rename; updated to native identity authority while preserving foreign paths. New process-exit case exposed central-only Published journal convergence failure, repaired before source cleanup.",
+    "move-conflicts-final": "140 pass, 1 fail. Expanded conflict matrix exposed central-first Rename local repair incorrectly rejecting an occupied requested name; repaired through existing no-replace candidate selection. Matrix output selection now identifies the actual selected native publication, including Keep Both."
+  },
+  "intermediate_passes_excluded_from_final_count": "INTERMEDIATE_PASSES.json retains compact receipts; superseded raw observations retired",
+  "cleanup": {
+    "guest": "TEARDOWN.json",
+    "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+    "secondary_namespace_before_retirement": "VOLUME_OBSERVED.json",
+    "original_preferences_and_uninstaller": "Unchanged hashes; BASELINE.json and TEARDOWN_GUEST.json",
+    "owned_native_processes": 0,
+    "owned_temporary_profiles_or_volume_fixtures": 0,
+    "retained_vm": "shut off; persistent definition unchanged",
+    "superseded_finalized_compiler_sessions": "CACHE_RETIREMENT.json",
+    "retired_sessions": 17,
+    "retired_logical_bytes": 3723534428,
+    "current_compiler_configurations": "Existing target/ and test package opt-level=0/debug=0 configurations reused; newest finalized sessions retained",
+    "temporary_generated_scripts_and_pid_files": "Removed; script hashes retained in EXECUTION_SCRIPTS_SHA256.json; build observations compacted",
+    "storage_before": "STORAGE_BEFORE.txt",
+    "storage_after": "STORAGE_AFTER.txt"
+  },
+  "delivery": {
+    "rebuilt_or_promoted_packages": false,
+    "unchanged_packages": "UNCHANGED_PACKAGES.json verifies all seven packages against their existing delivery receipts"
+  },
+  "limits": [
+    "Source/native checkpoint; rendered exact-package Activity/Undo/recovery/cleanup and session-history acceptance remain required",
+    "Process exits and flush observations do not establish physical power-loss or removable-device/FAT32/ReFS acceptance",
+    "Native parent resolution requires the original volumes/directories for unfinished operations; completed compact receipts retain their separate detached-volume scope",
+    "Public Windows Copy remains disabled; remaining transaction/resource/workflow, installer/graphics/platform and release roadmap gates remain open",
+    "Linux platform selection has four explicit environment-dependent ignores; current-package and user desktop acceptance retain their own receipts"
+  ]
+}

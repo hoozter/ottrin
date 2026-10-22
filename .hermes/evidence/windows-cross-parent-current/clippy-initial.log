@@ -1,0 +1,56 @@
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+error: unused import: `WINDOWS_LOCAL_JOURNAL_NAME`
+ --> crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs:5:5
+  |
+5 |     WINDOWS_LOCAL_JOURNAL_NAME, WINDOWS_RETAINED_NAME, WindowsCrossVolumePhase as Phase,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `-D unused-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: unused imports: `FILE_FLAG_BACKUP_SEMANTICS`, `FILE_SHARE_READ`, and `FILE_SHARE_WRITE`
+    --> crates/ottrin-platform/src/move_transaction.rs:2791:17
+     |
+2791 |         DELETE, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^                                ^^^^^^^^^^^^^^^
+2792 |         FILE_SHARE_WRITE,
+     |         ^^^^^^^^^^^^^^^^
+
+error: unused imports: `FILE_FLAG_BACKUP_SEMANTICS`, `FILE_SHARE_READ`, and `FILE_SHARE_WRITE`
+    --> crates/ottrin-platform/src/move_transaction.rs:2791:17
+     |
+2791 |         DELETE, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^                                ^^^^^^^^^^^^^^^
+2792 |         FILE_SHARE_WRITE,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `-D unused-imports` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error[E0061]: this function takes 2 arguments but 1 argument was supplied
+   --> crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs:542:32
+    |
+542 |     let independently_issued = super::super::issue_if_owned(
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+543 |         &load_windows_cross_volume_record(&central(&receipt)).unwrap(),
+    |         -------------------------------------------------------------- argument #1 of type `&std::path::Path` is missing
+    |
+note: function defined here
+   --> crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs:369:36
+    |
+369 | pub(in crate::move_transaction) fn issue_if_owned(
+    |                                    ^^^^^^^^^^^^^^
+370 |     root: &Path,
+    |     -----------
+help: provide the argument
+    |
+542 -     let independently_issued = super::super::issue_if_owned(
+543 -         &load_windows_cross_volume_record(&central(&receipt)).unwrap(),
+544 -     )
+542 +     let independently_issued = super::super::issue_if_owned(/* &std::path::Path */, &load_windows_cross_volume_record(&central(&receipt)).unwrap())
+    |
+
+error: could not compile `ottrin-platform` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+For more information about this error, try `rustc --explain E0061`.
+error: could not compile `ottrin-platform` (lib test) due to 2 previous errors

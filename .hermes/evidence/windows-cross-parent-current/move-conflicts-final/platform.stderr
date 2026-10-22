@@ -1,0 +1,4 @@
+
+thread 'move_transaction::windows_undo::cross::tests::windows_native_cross_recovery_admits_renamed_parents_after_process_exit' (1760) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/tests.rs:736:22:
+called `Result::unwrap()` on an `Err` value: ClaimedRecoveryPending { transaction: "\\\\?\\D:\\OttrinCopyQA\\ottrin-platform-native-cross-undo-5532-246\\destination.renamed\\.ottrin-move-bd9801a6bb0d942bb8748f642ece075f", message: "Windows incomplete initial journal pair has changed or staged entries" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

@@ -1,0 +1,7 @@
+
+thread 'move_transaction::windows_undo::cross::offline_tests::windows_native_move_completion_offline_failure_teardown' (7448) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/offline_tests.rs:509:9:
+expected preparation failure
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_undo::cross::offline_tests::windows_native_move_completion_offline_failure_teardown' (7448) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/offline_tests.rs:453:57:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "The system cannot find the file specified." }

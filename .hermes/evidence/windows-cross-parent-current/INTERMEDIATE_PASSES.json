@@ -1,0 +1,190 @@
+{
+  "move-corrected": {
+    "result": {
+      "stdout_sha256": "6acf85dc99044a3331daa3428595aa2319ceef943371003113f2f1b649df7a01",
+      "exit": 0,
+      "native_volume_unique_id": "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+      "ordinary_user": true,
+      "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+      "temporary_entries": 0,
+      "native_started_utc": "2026-10-22T07:15:23.4212823Z",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_process_id": 3888,
+      "native_finished_utc": "2026-10-22T07:16:43.5931366Z",
+      "status": "pass",
+      "dispatch_id": "c32084f06bfb6fd8fd3fb585be042d9d",
+      "native_volume_matches": 1,
+      "test_binary_hash": "a68fab116c5f6c87ef4863908184516f6640119a4f15a9a12c6070f2883003a9"
+    },
+    "binary": {
+      "test_crate": "ottrin_platform",
+      "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+      "watchdog_ms": 600000,
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+      "compiler_sha256": "b46beac810e0f74a7073bd50e031c1fb46a188c58a4d1ed2e3c0e46fa0994891",
+      "transferred_sha256": "a68fab116c5f6c87ef4863908184516f6640119a4f15a9a12c6070f2883003a9",
+      "retained_sections": {
+        ".text": "3f6474937023967ba5d380ea69fe4befc4f5e1a48d1f7d0ba9d3b313ed912ab5",
+        ".data": "1394e6caca8a476901000e50cea8ccbcd97134b82927a10fe6673f95e0ec425c",
+        ".rdata": "c8ff98165bfbcf0846adec2d7e14f3f5e244c7864a259f03dcef942c8311deae",
+        ".pdata": "27d83e167f4ef6a3a23ac1bb1c09a8938431c4932abfe811bf2906c4e45dca88",
+        ".xdata": "38651c4bd537409fbcd9e9b2d1d9cfcba42ce284d29b16afa1022032f9b1021a",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "90ec1dd28389dbec97318c5714f0334bbf6be070840fc85d0707c95ba0e721b8",
+        ".CRT": "b9a12928d968544a42a93c9b24034b803abd5f214ae5bb5c49f94d6f2091a4c1",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "e0fd7c13fd618a314b17777b581d91e810cec771faec5846ef78b0bf8b37175f"
+      }
+    },
+    "passed": 141,
+    "scope": "Intermediate executable; superseded by final verification; redundant raw logs/build observations retired after final acceptance"
+  },
+  "move-final": {
+    "result": {
+      "stdout_sha256": "fd1ad91b7a14a81f62b2cc2c2628bec45c1d99b0eb89049046c03fc9b789bbc4",
+      "exit": 0,
+      "native_volume_unique_id": "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+      "ordinary_user": true,
+      "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+      "temporary_entries": 0,
+      "native_started_utc": "2026-10-22T07:19:24.1469824Z",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_process_id": 5756,
+      "native_finished_utc": "2026-10-22T07:20:37.8970223Z",
+      "status": "pass",
+      "dispatch_id": "b02b765b2899a1aebe89dd4a74452e6f",
+      "native_volume_matches": 1,
+      "test_binary_hash": "232909f4a5db13b85b0593a7a4034a236df466a36fe3491d634ee6977eabe71e"
+    },
+    "binary": {
+      "test_crate": "ottrin_platform",
+      "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+      "watchdog_ms": 600000,
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+      "compiler_sha256": "1538f804099d136f1a3b51806ce0c5ed0141eb828f695829e29c852686ae4a8a",
+      "transferred_sha256": "232909f4a5db13b85b0593a7a4034a236df466a36fe3491d634ee6977eabe71e",
+      "retained_sections": {
+        ".text": "be02cee2a28103f725e8839c89ca2200d89a4acdbf25ee33a0559378d9fbe601",
+        ".data": "44369ede18636d446f17b26a20a32a3a0c5c7ced20d09a77e54e5d60e5800da9",
+        ".rdata": "38a663761dca26dfcfcd41576afa35c519a8e59ce97b2b4567b92622daa20505",
+        ".pdata": "891f75f63d8d059f1081f17500f0df16828b68645ad171e95f60ea03b12f35e3",
+        ".xdata": "99ecad0c9ecf98e71b88ccd807f6655bf8b280d7f8f8618710f80fa2da2fddf4",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "b41977987b3890e804602ed5bcbcf738f0eca8fa24a916f1871aebaadf0d6f63",
+        ".CRT": "896ee1d6698e11d845938c6c3ccc730de87883af41c4548f4d9f1b88c050150f",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "fdf903325783436bae35fc128d339d3b6bfb31146826ddabf78dbbc8a056ac56"
+      }
+    },
+    "passed": 141,
+    "scope": "Intermediate executable; superseded by final verification; redundant raw logs/build observations retired after final acceptance"
+  },
+  "move-parent-final": {
+    "result": {
+      "stdout_sha256": "9eba7a7063d82c556bc3a7d60f2085507375c967920d6c24a75289329122bc25",
+      "exit": 0,
+      "native_volume_unique_id": "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+      "ordinary_user": true,
+      "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+      "temporary_entries": 0,
+      "native_started_utc": "2026-10-22T07:22:03.8001180Z",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_process_id": 2024,
+      "native_finished_utc": "2026-10-22T07:23:25.0638553Z",
+      "status": "pass",
+      "dispatch_id": "ad8d85b71f998b761439938265c094f1",
+      "native_volume_matches": 1,
+      "test_binary_hash": "822a6e09d296aaeadaca18b6f4afa85ea657b757d96bc8b0b58dbdde5ae6bba1"
+    },
+    "binary": {
+      "test_crate": "ottrin_platform",
+      "test_arguments": "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+      "watchdog_ms": 600000,
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-899e03b7e4facbca.exe",
+      "compiler_sha256": "d00a1c518a818430371a564c899c65050da9a93ca6a1f4354a598102eebef1e4",
+      "transferred_sha256": "822a6e09d296aaeadaca18b6f4afa85ea657b757d96bc8b0b58dbdde5ae6bba1",
+      "retained_sections": {
+        ".text": "f90c82f68c08477552da22126f1c452848b64acbb5529c43a2b67af80d30aafd",
+        ".data": "6db77e236ea691540fdc4db9a5ef80b8e1515307f58f2cdcea282c6d42d8330f",
+        ".rdata": "dfaf7e168437214e5b1c265f0ea79018df2f82032520809df091731aa02e7c8f",
+        ".pdata": "99b48b0c3e905e757cfb2be621cdb09b2e7693b4ea061aef6b36fcfa0842bf34",
+        ".xdata": "9581b3724697a0208f3e7fb113a74bf822a1504bf778454c44266a4431c2e845",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "8c63e67474d10c4e84551a1fd6e4d58e40eba4fe3854211faf322571394ce059",
+        ".CRT": "4f9335613a1acecb7046d52320b4cf73f9fbf246eae9d19d2267f778cfbebdf7",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "0f3a341f02d8a61341809fe455c4cad1a743fe5f32943fe5c0ebf32ccc0d8966"
+      }
+    },
+    "passed": 141,
+    "scope": "Intermediate executable; superseded by final verification; redundant raw logs/build observations retired after final acceptance"
+  },
+  "ui-move": {
+    "result": {
+      "stdout_sha256": "7464212901996e9225b23ac7a7bb3eb1454f0c20b27a24b62b36f94144c4da9d",
+      "exit": 0,
+      "native_volume_unique_id": "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+      "ordinary_user": true,
+      "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1 tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker tests::windows_move_undo_admission_tracks_renamed_parent_paths tests::windows_cross_move_undo_admission_tracks_renamed_parent_paths tests::windows_move_cleanup_requires_captured_admission_and_uses_worker tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --include-ignored",
+      "temporary_entries": 0,
+      "native_started_utc": "2026-10-22T07:17:59.2834657Z",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_process_id": 6252,
+      "native_finished_utc": "2026-10-22T07:18:02.8388128Z",
+      "status": "pass",
+      "dispatch_id": "0f32453ceeebcac61f2736861eaca5d8",
+      "native_volume_matches": 1,
+      "test_binary_hash": "d97d23afd89bd27a23cbffc29ca145b35b3b05ab0b178aa78016dc0f3975845d"
+    },
+    "binary": {
+      "test_crate": "ottrin_ui",
+      "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1 tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker tests::windows_move_undo_admission_tracks_renamed_parent_paths tests::windows_cross_move_undo_admission_tracks_renamed_parent_paths tests::windows_move_cleanup_requires_captured_admission_and_uses_worker tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --include-ignored",
+      "watchdog_ms": 600000,
+      "compiler_profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-c3dc93dc8cf764a2.exe",
+      "compiler_sha256": "1754171f7708ef3c7731754d750b2eb098738dcccdd39f79ccc12ff7a3025d5c",
+      "transferred_sha256": "d97d23afd89bd27a23cbffc29ca145b35b3b05ab0b178aa78016dc0f3975845d",
+      "retained_sections": {
+        ".text": "e04e7412ff5ddcc32287fd087182c8e5a41ccefc94c872d1823f366cd8e779a9",
+        ".data": "f8d16593ee9298478e02242ad34df703fffff72c7c7652019e91ec4fd91a64da",
+        ".rdata": "ed10f977a19519967bd9a0ed056c4ce2b9c4c44f715b33bde33ceac92b09b373",
+        ".pdata": "72fe307ed99dd591c705436b8f04d124f28ddc96fdf1692400f836e10f635c9f",
+        ".xdata": "914df4f4ef3e6ad08676dd8148e34ac5dd7e55df44cc32134c55f33fdc9bb2c6",
+        ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".idata": "7656aa20b77ddf09fd494af1e50cc88c8dd0df64b50325eec7b6beac0a6c6d40",
+        ".CRT": "0bc7cc62aecacff8a4eba654be72751a13fae5a3a4507e9d2c4e437d45f6aa6e",
+        ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        ".reloc": "c332b1e2989922757af42b392d7fc2ecd7b4cde8d942d87c22f17ae8bea2756b"
+      }
+    },
+    "passed": 15,
+    "scope": "Intermediate executable; superseded by final verification; redundant raw logs/build observations retired after final acceptance"
+  }
+}

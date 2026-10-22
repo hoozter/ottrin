@@ -1,0 +1,22 @@
+{
+  "removed_generated_actor_scripts": {
+    "ui-move/actor.ps1": "f3abccd14e2b0d261d2a99817ebe9139068666b4bfc8bce7bb5f12be48827202",
+    "move-conflicts-final/actor.ps1": "310a29cc3641acf290b59fa1a46204a6582f8461f53c44d1eac3c44ad0801d22",
+    "final-offline-retired-verify/actor.ps1": "0a32206187f7027a32f3649abc1f43f2cb4c793c135787afb0bc6ea2a86df810",
+    "final-offline-original-prepare/actor.ps1": "4e1e6c685dcf0cdd3a51177a68f337587ed6a4ad016bfbf74da3838f162db6cd",
+    "final-offline-original-verify/actor.ps1": "a2bd93773f057c85e6366276919d5d4d794e34423214dfaec8d35acd3b8270c3",
+    "move-final/actor.ps1": "8b4e85b8244a5f15068c2735daa2e5f8efa913b136cb0182b4cb6a08c1fe90a4",
+    "final-offline-failure-teardown/actor.ps1": "8d3e209408d69ff044cdf2392748a28c84e882c73f8fc76fd99ecbce0fbdbb46",
+    "final-offline-original-cleanup/actor.ps1": "4af0039a94b1aea50c1f375246ec9576b0eb724cbc907fc6698a630b68152f20",
+    "move-parent-final/actor.ps1": "c20afbcaf56125b48ecbf5cebfb062df04890d48287f6d5b22c2a5122ef786d5",
+    "final-offline-retired-cleanup/actor.ps1": "4b59e86521318cc1ce5e716eeec34564730b95db2a456d6529c0765f39e12da1",
+    "move-policies-final/actor.ps1": "38b03c4bb302af4707a13ed42d72bf7c8c85ece66228f22bd01e0d272adf8769",
+    "final-offline-retired-prepare/actor.ps1": "5dff9ae95a81b1534ab5391998a736509e62e4a3d9812d396e5a60afa2e88eb9",
+    "move-corrected/actor.ps1": "f8c8e1071a33da0282d791f4fe0e0ba496e4cb309c77b54e277f4a9844680ea8",
+    "ui-final/actor.ps1": "4a3071f2dca435aa1dc2a7e650412faa5cf814761f8746f6ecec460b086880c3",
+    "move-initial/actor.ps1": "a12c5e9bc57da24badc75cb37ee27dc212ca18c8bc3114c6001741c221a54b39"
+  },
+  "removed_import_caches": [
+    ".hermes/evidence/windows-move-retirement-current/__pycache__/run-cases.cpython-312.pyc"
+  ]
+}

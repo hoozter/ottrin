@@ -1,0 +1,10 @@
+
+thread 'move_transaction::windows_undo::cross::retained::tests::windows_native_completed_cross_replace_undo_survives_both_parent_renames' (4660) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs:179:5:
+a write gap cannot write through a foreign old namespace
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'move_transaction::windows_undo::cross::retained::tests::windows_native_cross_replace_recovery_plan_binds_both_owners_before_mutation' (7244) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs:585:9:
+missing recovery footprint: C:\OttrinCopyCleanupQA\temp\ottrin-platform-native-cross-replace-undo-3344-171\source
+
+thread 'move_transaction::windows_undo::cross::tests::windows_native_cross_recovery_admits_renamed_parents_after_process_exit' (7672) panicked at crates/ottrin-platform/src/move_transaction/windows_undo/cross/tests.rs:662:28:
+called `Result::unwrap()` on an `Err` value: CommittedCleanupPending { transaction: "\\\\?\\D:\\OttrinCopyQA\\ottrin-platform-native-cross-undo-3344-244\\destination.renamed\\.ottrin-move-0b41ac704fd2ff1f2bdfb078f343b169", message: "Windows completed Move journals disagree" }

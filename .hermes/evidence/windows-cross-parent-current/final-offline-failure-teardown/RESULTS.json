@@ -1,0 +1,16 @@
+{
+    "stdout_sha256":  "ad5c2250fdaf397324a19539c36080babc622190c0b4f4d6dc9e4b8d0f1f5222",
+    "exit":  0,
+    "native_volume_unique_id":  "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+    "ordinary_user":  true,
+    "test_arguments":  "--exact move_transaction::windows_undo::cross::offline_tests::windows_native_move_completion_offline_failure_teardown --ignored --nocapture --test-threads=1",
+    "temporary_entries":  0,
+    "native_started_utc":  "2026-10-22T07:31:44.2293453Z",
+    "stderr_sha256":  "55bd5bc9c841899fd10ecf972a91dfac61da683faef540a926ad77db838ee112",
+    "native_process_id":  4888,
+    "native_finished_utc":  "2026-10-22T07:31:46.1657485Z",
+    "status":  "pass",
+    "dispatch_id":  "6f70e52805c6473f1b21ed03e846ab04",
+    "native_volume_matches":  1,
+    "test_binary_hash":  "df11938ebc89ea8a76638720215e1766ea3c51f5240767e42a48bc128037e4c0"
+}

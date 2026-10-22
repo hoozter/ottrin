@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "source_before": "2869490df5f6a8f4a9360503ef3368fea85c3aea",
+  "actor": "OttrinCopyQA",
+  "purpose": "Cross-volume current-native-parent recovery and Undo verification"
+}

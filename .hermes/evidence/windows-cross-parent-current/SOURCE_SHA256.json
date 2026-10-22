@@ -1,0 +1,20 @@
+{
+  ".hermes/evidence/windows-copy-cleanup-current/observe.py": "ef55c8fe375a80d5e645e7fe82af2ad9e4b15d165e6dbf3054c580c40cc03a75",
+  ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "d11bc9baeaaeb7398bc3fb96849e249fd5983328ea547a203a2fbf2769aba2c1",
+  ".hermes/evidence/windows-copy-cleanup-current/teardown-native.py": "009b582559176b9a9dca4e73cdc05c7971951702bd435165cf6a1428f51ce4af",
+  ".hermes/evidence/windows-copy-cleanup-current/transport.py": "e5200f9ed805f09ea635fb79491c795bffb9e0dffa424dcf0222887eb2d719df",
+  ".hermes/evidence/windows-move-retirement-current/run-cases.py": "b7cb31d8f1be0bc51308a933cb2bfa2fb5995b3da132684143cd41dba5680345",
+  ".hermes/evidence/windows-move-retirement-current/run-offline.py": "854de114e74805559929c58f5291e63f61002b646bd4f4a4f301a3581d8dee19",
+  "crates/ottrin-platform/src/move_transaction.rs": "367849de19dacf00880fc15065e1cd2282b68ae15c6e2d89de56867280b09333",
+  "crates/ottrin-platform/src/move_transaction/windows_control.rs": "b1c059154df14db38138910d962b66ff1dd70ba5147a04e59a8efe641d735a3e",
+  "crates/ottrin-platform/src/move_transaction/windows_cross_namespace.rs": "9304a32cbb7d16f4171cfdb2e191aa106cbcbcad516ad6eca28f08465349f223",
+  "crates/ottrin-platform/src/move_transaction/windows_recovery_plan.rs": "8b89428f115f085e55a1f7c161f02eeecd91d55c464610624849af9c764f85b4",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs": "49c4f3f9176cc086ee6d53c6c10c51d406d57075fb9bdfe18125fda9b7970657",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained.rs": "abfa1b5f285ece5b3785effcceef9c60ae19f12a2250876be90e7d5555fecc9f",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs": "c0ce1384a804af28e90d7ca04939e4565c6a1392833c2dc8df8f02f571ff1b36",
+  "crates/ottrin-platform/src/move_transaction/windows_undo/cross/tests.rs": "8d0f09f642879dfd3171d6f8cae54ffd4515a51399fe8eb0f002b5875356800a",
+  "crates/ottrin-ui/src/lib.rs": "a949babb6fe0cdd2170443ae8fb40d133eea4dd4f1468f18ec6fe55e38a1e168",
+  "docs/DEVELOPMENT.md": "5e5f5db6e2f795f9b7aef0f0a71c2993a517ba0babe7df729e8c941a0da0e3a3",
+  "docs/ROADMAP.md": "a97cee037c89079fe22f39460c745ba93641ba2bc20b09759a5d4aff7c4a9763",
+  "scripts/windows-cross-move-qa/volume.ps1": "3775b051ba2fa96b9eb5345178113598bb99612e3df6a015c8160a397b27c027"
+}

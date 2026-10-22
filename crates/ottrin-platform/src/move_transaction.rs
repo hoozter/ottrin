@@ -66,6 +66,8 @@ pub use windows_completion::retirement::{WindowsMoveCleanupPlan, WindowsMoveClea
 #[cfg(target_os = "windows")]
 pub(super) mod windows_control;
 #[cfg(target_os = "windows")]
+mod windows_cross_namespace;
+#[cfg(target_os = "windows")]
 pub(super) mod windows_recovery_plan;
 #[cfg(target_os = "windows")]
 pub(super) mod windows_undo;
@@ -2763,10 +2765,9 @@ fn persist_windows_cross_volume_record(
     recovery_root: &Path,
     record: &WindowsCrossVolumeRecord,
 ) -> Result<(), PlatformError> {
-    let _private = windows_control::pin_original(
-        &record.transaction_path()?,
-        record.transaction_directory_identity,
-    )?;
+    let (_destination, private) = windows_cross_namespace::pin_destination(recovery_root, record)?;
+    let private_path = crate::windows_fs::location(&private)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
     let transaction_id = record.transaction_id()?;
     write_windows_record_file(
         &windows_cross_volume_journal_path(recovery_root, transaction_id),
@@ -2774,7 +2775,7 @@ fn persist_windows_cross_volume_record(
         false,
     )?;
     write_windows_record_file(
-        &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
+        &private_path.join(WINDOWS_LOCAL_JOURNAL_NAME),
         record,
         false,
     )
@@ -2786,12 +2787,18 @@ fn finish_windows_cross_volume_teardown(
     record: &WindowsCrossVolumeRecord,
 ) -> Result<MovePublication, PlatformError> {
     use windows_sys::Win32::Foundation::GENERIC_READ;
-    use windows_sys::Win32::Storage::FileSystem::{
-        DELETE, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
-        FILE_SHARE_WRITE,
-    };
-    let transaction = record.transaction_path()?;
-    let destination = record.destination_parent_path()?;
+    use windows_sys::Win32::Storage::FileSystem::{DELETE, FILE_FLAG_OPEN_REPARSE_POINT};
+    windows_cross_namespace::validate(record)?;
+    let label_destination = record.destination_parent_path()?;
+    let binding = windows_control::DirectoryBinding::capture(
+        recovery_root,
+        &label_destination,
+        record.destination_parent_identity,
+    )?;
+    let parent = binding.pin()?;
+    let destination = crate::windows_fs::location(&parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let transaction = destination.join(format!(".ottrin-move-{}", record.transaction_id));
     let id = record.transaction_id()?;
     let cleanup_error = |message: String| PlatformError::CommittedCleanupPending {
         transaction: transaction.display().to_string(),
@@ -2803,28 +2810,16 @@ fn finish_windows_cross_volume_teardown(
         || record.candidate_identity.is_none()
         || record.retained_displaced.is_some()
         || transaction != destination.join(format!(".ottrin-move-{}", encode_transaction_id(id)))
-        || !windows_staging_candidate_matches_transaction(&transaction, &record.candidate_path()?)
-        || record.target_path()?.parent() != Some(destination.as_path())
+        || !windows_staging_candidate_matches_transaction(
+            &record.transaction_path()?,
+            &record.candidate_path()?,
+        )
     {
         return Err(cleanup_error(
             "Windows completed Move evidence is inconsistent".into(),
         ));
     }
-    // Keep the verified parent at its recorded name through all teardown flushes.
-    let parent = OpenOptions::new()
-        .access_mode(move_recovery::WINDOWS_DESTINATION_PARENT_ACCESS_MODE)
-        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
-        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
-        .open(&destination)
-        .map_err(|error| cleanup_error(error.to_string()))?;
-    if move_recovery::stable_identity_from_handle(&parent)
-        .map_err(|error| cleanup_error(error.to_string()))?
-        != record.destination_parent_identity
-    {
-        return Err(cleanup_error(
-            "Windows completed Move destination parent changed".into(),
-        ));
-    }
+    // The native parent remains pinned through all teardown namespace flushes.
     match observe_windows_identity(&transaction)? {
         Some(identity) if identity == record.transaction_directory_identity => {
             let directory = move_recovery::open_reparse_safe_cross_volume_candidate(&transaction)
@@ -2894,6 +2889,15 @@ fn finish_windows_cross_volume_teardown(
             );
         }
         None => {
+            if !windows_cross_namespace::private_retired(
+                &parent,
+                record.transaction_directory_identity,
+            )? {
+                return Err(cleanup_error(
+                    "Original private directory was renamed or moved; evidence was preserved"
+                        .into(),
+                ));
+            }
             // The durable SourceRemoved record survives an interrupted final teardown.
             parent
                 .sync_all()
@@ -2905,7 +2909,7 @@ fn finish_windows_cross_volume_teardown(
             ));
         }
     }
-    let undo_receipt = windows_undo::cross::issue_if_owned(record)?;
+    let undo_receipt = windows_undo::cross::issue_if_owned(recovery_root, record)?;
     let central = windows_cross_volume_journal_path(recovery_root, id);
     let central_file = OpenOptions::new()
         .access_mode(GENERIC_READ | DELETE)
@@ -2940,7 +2944,10 @@ fn finish_windows_cross_volume_teardown(
         #[cfg(target_os = "windows")]
         windows_undo: undo_receipt,
         disposition: MoveDisposition::Moved,
-        published_path: Some(record.target_path()?),
+        published_path: Some(windows_control::label_path(
+            &parent,
+            &record.target_path()?,
+        )?),
         retained_displaced_path: None,
     })
 }
@@ -3561,13 +3568,15 @@ fn windows_move_boundary(boundary: WindowsMoveBoundary, path: &Path) {
 /// source metadata is reapplied through the resulting writable handle.
 #[cfg(target_os = "windows")]
 fn prepare_windows_private_candidate_for_reopen(
+    recovery_root: &Path,
     candidate: &Path,
     staged: &mut std::fs::File,
     record: &WindowsCrossVolumeRecord,
 ) -> Result<(), PlatformError> {
     use std::os::windows::fs::MetadataExt;
     use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY};
-    if candidate != record.candidate_path()? {
+    let (_destination, private) = windows_cross_namespace::pin_destination(recovery_root, record)?;
+    if candidate != windows_control::child_path(&private, &record.candidate_path()?)? {
         return Err(PlatformError::Io(
             "metadata preparation requires the private candidate".into(),
         ));
@@ -3618,6 +3627,7 @@ fn prepare_windows_private_candidate_for_reopen(
 
 #[cfg(target_os = "windows")]
 fn reopen_windows_staged_file(
+    recovery_root: &Path,
     candidate: &Path,
     record: &WindowsCrossVolumeRecord,
 ) -> Result<std::fs::File, PlatformError> {
@@ -3633,7 +3643,7 @@ fn reopen_windows_staged_file(
         .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
         .open(candidate)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
-    prepare_windows_private_candidate_for_reopen(candidate, &mut staged, record)?;
+    prepare_windows_private_candidate_for_reopen(recovery_root, candidate, &mut staged, record)?;
     drop(staged);
     move_recovery::open_reparse_safe_cross_volume_candidate(candidate)
         .map_err(|error| PlatformError::Io(error.to_string()))
@@ -3673,7 +3683,16 @@ fn reclaim_windows_readonly_publication(
     source_handle: &mut Option<std::fs::File>,
     target: &Path,
 ) -> Result<(), PlatformError> {
-    let source = record.source_path()?;
+    let bindings = windows_cross_namespace::capture(recovery_root, record)?;
+    let source_parent = bindings[0].pin()?;
+    let destination_handle = bindings[1].pin()?;
+    let transaction_handle = bindings[2].pin()?;
+    let source = windows_control::child_path(&source_parent, &record.source_path()?)?;
+    if target != windows_control::child_path(&destination_handle, &record.target_path()?)? {
+        return Err(PlatformError::Io(
+            "Publication recovery target left its bound parent".into(),
+        ));
+    }
     if source_handle.is_none() {
         *source_handle = Some(
             move_recovery::open_reparse_safe_cross_volume_source(&source)
@@ -3709,12 +3728,6 @@ fn reclaim_windows_readonly_publication(
             .candidate_identity
             .ok_or_else(|| PlatformError::Io("published candidate identity is missing".into()))?,
     )?;
-    let transaction = record.transaction_path()?;
-    let destination = record.destination_parent_path()?;
-    let transaction_handle = move_recovery::open_reparse_safe_directory_for_rename(&transaction)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let destination_handle = move_recovery::open_reparse_safe_directory_for_rename(&destination)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
     for (handle, expected) in [
         (&transaction_handle, record.transaction_directory_identity),
         (&destination_handle, record.destination_parent_identity),
@@ -3743,7 +3756,7 @@ fn reclaim_windows_readonly_publication(
     #[cfg(test)]
     windows_move_boundary(
         WindowsMoveBoundary::PublicationReclaimed,
-        &record.candidate_path()?,
+        &windows_control::child_path(&transaction_handle, &record.candidate_path()?)?,
     );
     Ok(())
 }
@@ -3761,8 +3774,14 @@ fn completed_windows_cross_volume_overwrite(
     {
         return Ok(None);
     }
-    let transaction = record.transaction_path()?;
-    let local = load_windows_cross_volume_record(&transaction.join(WINDOWS_LOCAL_JOURNAL_NAME))?;
+    windows_cross_namespace::validate(record)?;
+    let (_destination, private) = windows_cross_namespace::pin_destination(recovery_root, record)?;
+    let transaction = crate::windows_fs::location(&private)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let bytes = windows_control::read_local(&private)?.ok_or_else(|| {
+        PlatformError::Io("Retained cross-volume local journal is missing".into())
+    })?;
+    let local = decode_windows_cross_volume_record(&bytes)?;
     if record.phase != WindowsCrossVolumePhase::SourceRemoved
         && local.phase != WindowsCrossVolumePhase::SourceRemoved
     {
@@ -3782,30 +3801,31 @@ fn completed_windows_cross_volume_overwrite(
     completed.phase = WindowsCrossVolumePhase::SourceRemoved;
     let mut local_completed = local.clone();
     local_completed.phase = WindowsCrossVolumePhase::SourceRemoved;
-    let destination = record.destination_parent_path()?;
-    let target = record.target_path()?;
-    let retained = record.retained_path()?.ok_or_else(invalid)?;
+    let target = windows_control::label_path(&_destination, &record.target_path()?)?;
+    let retained =
+        windows_control::label_path(&private, &record.retained_path()?.ok_or_else(invalid)?)?;
     let source = record.source_path()?;
-    let source_parent = source.parent().ok_or_else(invalid)?;
+    let source_parent = windows_control::DirectoryBinding::capture(
+        recovery_root,
+        source.parent().ok_or_else(invalid)?,
+        record.source_parent_identity,
+    )?
+    .pin()?;
+    let claim = windows_directory_source_claim_path(Path::new(""), record)?;
     if !matches!(
         local.phase,
         WindowsCrossVolumePhase::Published | WindowsCrossVolumePhase::SourceRemoved
     ) || completed != local_completed
         || record.candidate_identity.is_none()
         || record.destination_identity.is_none()
-        || transaction
-            != destination.join(format!(
-                ".ottrin-move-{}",
-                encode_transaction_id(record.transaction_id()?)
-            ))
-        || target.parent() != Some(destination.as_path())
-        || retained != transaction.join(WINDOWS_RETAINED_NAME)
-        || !windows_staging_candidate_matches_transaction(&transaction, &record.candidate_path()?)
-        || observe_windows_identity(&transaction)? != Some(record.transaction_directory_identity)
-        || observe_windows_identity(&record.candidate_path()?)?.is_some()
-        || observe_windows_identity(&retained)? != record.destination_identity
-        || observe_windows_identity(&windows_directory_source_claim_path(source_parent, record)?)?
-            .is_some()
+        || windows_undo::observe(
+            &private,
+            std::ffi::OsStr::new(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME),
+        )?
+        .is_some()
+        || windows_undo::observe(&private, std::ffi::OsStr::new(WINDOWS_RETAINED_NAME))?
+            != record.destination_identity
+        || windows_undo::observe(&source_parent, claim.as_os_str())?.is_some()
     {
         return Err(invalid());
     }
@@ -3824,7 +3844,7 @@ fn completed_windows_cross_volume_overwrite(
     }
     Ok(Some(MovePublication {
         #[cfg(target_os = "windows")]
-        windows_undo: windows_undo::cross::issue_if_owned(record)?,
+        windows_undo: windows_undo::cross::issue_if_owned(recovery_root, record)?,
         disposition: MoveDisposition::Moved,
         published_path: Some(target),
         retained_displaced_path: Some(retained),
@@ -3854,10 +3874,15 @@ fn resume_windows_cross_volume(
         return finish_windows_cross_volume_teardown(recovery_root, record);
     }
     let mut staged_handle = None;
-    let transaction = record.transaction_path()?;
+    let bindings = windows_cross_namespace::capture(recovery_root, record)?;
+    let source_parent_pin = bindings[0].pin()?;
+    let destination_parent_pin = bindings[1].pin()?;
+    let private_pin = bindings[2].pin()?;
+    let transaction = crate::windows_fs::location(&private_pin)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
     let local_path = transaction.join(WINDOWS_LOCAL_JOURNAL_NAME);
-    let local = match std::fs::read(&local_path) {
-        Ok(bytes) => Some(
+    let local = match windows_control::read_local(&private_pin)? {
+        Some(bytes) => Some(
             serde_json::from_slice::<WindowsCrossVolumeRecord>(&bytes).map_err(|error| {
                 PlatformError::ClaimedRecoveryPending {
                     transaction: transaction.display().to_string(),
@@ -3865,17 +3890,15 @@ fn resume_windows_cross_volume(
                 }
             })?,
         ),
-        Err(error)
-            if error.kind() == std::io::ErrorKind::NotFound
-                && record.phase == WindowsCrossVolumePhase::Prepared
-                && record.candidate_identity.is_none() =>
+        None if record.phase == WindowsCrossVolumePhase::Prepared
+            && record.candidate_identity.is_none() =>
         {
             None
         }
-        Err(error) => {
+        None => {
             return Err(PlatformError::ClaimedRecoveryPending {
                 transaction: transaction.display().to_string(),
-                message: format!("Windows cross-volume local journal read failed: {error}"),
+                message: "Windows cross-volume local journal is missing".into(),
             });
         }
     };
@@ -3912,15 +3935,19 @@ fn resume_windows_cross_volume(
             })?;
         }
     }
-    let source = record.source_path()?;
+    let source = windows_control::child_path(&source_parent_pin, &record.source_path()?)?;
     let source_parent = source
         .parent()
         .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
     let claimed_directory_source = windows_directory_source_claim_path(source_parent, record)?;
-    let destination_parent = record.destination_parent_path()?;
-    let mut target = record.target_path()?;
-    let candidate = record.candidate_path()?;
-    let retained_displaced = record.retained_path()?;
+    let destination_parent = crate::windows_fs::location(&destination_parent_pin)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let mut target = windows_control::child_path(&destination_parent_pin, &record.target_path()?)?;
+    let candidate = windows_control::child_path(&private_pin, &record.candidate_path()?)?;
+    let retained_displaced = record
+        .retained_path()?
+        .map(|path| windows_control::child_path(&private_pin, &path))
+        .transpose()?;
     if !windows_staging_candidate_matches_transaction(&transaction, &candidate) {
         return Err(PlatformError::ClaimedRecoveryPending {
             transaction: transaction.display().to_string(),
@@ -3975,11 +4002,11 @@ fn resume_windows_cross_volume(
         // missing journal or an occupied name.
         use windows_sys::Win32::Foundation::{GENERIC_READ, GENERIC_WRITE};
         use windows_sys::Win32::Storage::FileSystem::{
-            DELETE, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+            FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
             FILE_SHARE_WRITE,
         };
         let directory = OpenOptions::new()
-            .access_mode(GENERIC_READ | GENERIC_WRITE | DELETE)
+            .access_mode(GENERIC_READ | GENERIC_WRITE)
             .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
             .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
             .open(&transaction)
@@ -3996,7 +4023,10 @@ fn resume_windows_cross_volume(
                 .map_err(|error| PlatformError::Io(error.to_string()))?
                 .is_empty()
             || observe_windows_identity(&source)? != Some(record.source_identity)
-            || observe_windows_identity(&target)? != record.destination_identity
+            // Rename does not own an occupant: its normal no-replace
+            // publication will choose a free candidate without modifying it.
+            || (record.conflict != ConflictAction::Rename
+                && observe_windows_identity(&target)? != record.destination_identity)
             || (record.source_kind == WindowsCrossVolumeSourceKind::Directory
                 && observe_windows_identity(&claimed_directory_source)?.is_some())
         {
@@ -4009,6 +4039,13 @@ fn resume_windows_cross_volume(
         write_windows_record_file(&local_path, record, true)?;
     }
 
+    // Central is published before local. A central-only Published phase is
+    // not sufficient authority for source cleanup: verify and flush publication
+    // again, then converge both records through the ordinary recovery action.
+    let mut publication_is_durable = record.phase == WindowsCrossVolumePhase::Published
+        && local
+            .as_ref()
+            .is_some_and(|local| local.phase == WindowsCrossVolumePhase::Published);
     loop {
         let source_observed = observe_windows_identity(&source)?;
         let claimed_directory_source_observed =
@@ -4067,7 +4104,10 @@ fn resume_windows_cross_volume(
             && target_observed != record.candidate_identity
             && candidate_is_still_staged
         {
-            target = advance_windows_cross_volume_rename_target(recovery_root, record)?;
+            target = windows_control::child_path(
+                &destination_parent_pin,
+                &advance_windows_cross_volume_rename_target(recovery_root, record)?,
+            )?;
             continue;
         }
         let action = if record.conflict == ConflictAction::Overwrite {
@@ -4146,10 +4186,7 @@ fn resume_windows_cross_volume(
                 }
             }
         }
-        let action = require_windows_publication_durability(
-            action,
-            record.phase == WindowsCrossVolumePhase::Published,
-        );
+        let action = require_windows_publication_durability(action, publication_is_durable);
         let action = if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
             if claimed_directory_source_observed.is_some()
                 && claimed_directory_source_observed != Some(record.source_identity)
@@ -4384,7 +4421,7 @@ fn resume_windows_cross_volume(
                     && record.source_kind == WindowsCrossVolumeSourceKind::File;
                 let mut staged = match staged_handle.take() {
                     Some(staged) => Ok(staged),
-                    None if recovered_file => reopen_windows_staged_file(&candidate, record),
+                    None if recovered_file => reopen_windows_staged_file(recovery_root, &candidate, record),
                     None => move_recovery::open_reparse_safe_cross_volume_candidate(&candidate)
                         .map_err(|error| PlatformError::Io(error.to_string())),
                 }
@@ -4699,6 +4736,7 @@ fn resume_windows_cross_volume(
                         staged
                     } else {
                         prepare_windows_private_candidate_for_reopen(
+                            recovery_root,
                             &candidate,
                             &mut staged,
                             record,
@@ -4878,7 +4916,10 @@ fn resume_windows_cross_volume(
                     Err(PlatformError::DestinationExists(_))
                         if record.conflict == ConflictAction::Rename =>
                     {
-                        target = advance_windows_cross_volume_rename_target(recovery_root, record)?;
+                        target = windows_control::child_path(
+                            &destination_parent_pin,
+                            &advance_windows_cross_volume_rename_target(recovery_root, record)?,
+                        )?;
                         continue;
                     }
                     Err(error) => {
@@ -4900,6 +4941,7 @@ fn resume_windows_cross_volume(
                         ),
                     }
                 })?;
+                publication_is_durable = true;
                 #[cfg(test)]
                 if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
                     windows_move_boundary(WindowsMoveBoundary::CandidatePublished, &target);
@@ -5128,6 +5170,7 @@ fn resume_windows_cross_volume(
                         })
                     },
                 )?;
+                publication_is_durable = true;
             }
             WindowsCrossVolumeRestartAction::RemoveSource => {
                 #[cfg(test)]
@@ -5480,6 +5523,9 @@ fn resume_windows_cross_volume(
                 })?;
                 #[cfg(test)]
                 windows_move_boundary(WindowsMoveBoundary::TeardownPrepared, &transaction);
+                // Teardown takes the verified private directory's delete handle.
+                // Parent pins keep the admitted namespace fixed across this transfer.
+                drop(private_pin);
                 return finish_windows_cross_volume_teardown(recovery_root, record);
             }
             WindowsCrossVolumeRestartAction::RetainAmbiguous => {

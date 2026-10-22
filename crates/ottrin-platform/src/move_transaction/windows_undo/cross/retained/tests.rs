@@ -169,28 +169,18 @@ fn windows_native_completed_cross_replace_undo_survives_both_parent_renames() {
     gap.phase = Phase::Published;
     let gap_bytes = serde_json::to_vec(&gap).unwrap();
     std::fs::write(&actual_inverse_local, &gap_bytes).unwrap();
-    let central_identity = move_recovery::stable_identity_of_entry(&journals[2]).unwrap();
     let pending_plan =
         crate::WindowsMoveRecoveryPlan::capture(inverse.transaction_id().unwrap()).unwrap();
     assert_eq!(
         pending_plan.undo_status(),
         move_recovery::WindowsMoveUndoStatus::Pending
     );
-    assert!(
-        pending_plan.execute().is_err(),
-        "a write gap cannot write through a foreign old namespace"
-    );
-    assert!(
-        DefaultPlatform.undo_move_with_receipt(&receipt).is_err(),
-        "the direct receipt retry also refuses foreign journal namespaces"
-    );
-    assert_eq!(
-        move_recovery::stable_identity_of_entry(&journals[2]).unwrap(),
-        central_identity,
-        "private namespace admission precedes every journal write"
-    );
+    pending_plan
+        .execute()
+        .expect("converge the original native private journal");
+    DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
     assert_eq!(std::fs::read(&journals[2]).unwrap(), bytes[2]);
-    assert_eq!(std::fs::read(&actual_inverse_local).unwrap(), gap_bytes);
+    assert_eq!(std::fs::read(&actual_inverse_local).unwrap(), bytes[3]);
     assert_eq!(
         std::fs::read(
             inverse
@@ -540,6 +530,7 @@ fn windows_native_cross_replace_recovery_plan_binds_both_owners_before_mutation(
     let fixture = Fixture::new();
     let receipt = fixture.moved(0);
     let independently_issued = super::super::issue_if_owned(
+        &root(),
         &load_windows_cross_volume_record(&central(&receipt)).unwrap(),
     )
     .unwrap()
@@ -582,7 +573,9 @@ fn windows_native_cross_replace_recovery_plan_binds_both_owners_before_mutation(
         controller.transaction_path().unwrap(),
     ] {
         assert!(
-            first.paths().contains(&expected),
+            first
+                .paths()
+                .contains(&std::fs::canonicalize(&expected).unwrap()),
             "missing recovery footprint: {}",
             expected.display()
         );
@@ -963,5 +956,72 @@ fn windows_native_cross_replace_undo_process_exits_resume_either_owner_without_s
             );
             super::super::super::super::recover_retained_windows_move_transaction(id).unwrap();
         }
+    }
+}
+
+#[test]
+#[ignore = "requires an owned second native Windows volume"]
+fn windows_native_cross_replace_undo_follows_both_parent_ids_before_inverse_creation() {
+    for kind in 0..3 {
+        let fixture = Fixture::new();
+        let receipt = fixture.moved(kind);
+        let retained_identity = receipt.displaced_identity.as_ref().unwrap().windows;
+        let stale = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+        let current_before = fixture.primary.path().join("renamed-source");
+        let current_after = fixture.secondary.path().join("renamed-destination");
+        std::fs::rename(receipt.before_path().parent().unwrap(), &current_before).unwrap();
+        std::fs::rename(receipt.after_path().parent().unwrap(), &current_after).unwrap();
+        std::fs::create_dir(receipt.before_path().parent().unwrap()).unwrap();
+        std::fs::create_dir(receipt.after_path().parent().unwrap()).unwrap();
+        std::fs::write(receipt.before_path(), b"foreign source").unwrap();
+        std::fs::write(receipt.after_path(), b"foreign destination").unwrap();
+        assert!(stale.execute().is_err());
+        assert!(guard(&receipt).inverse.get().is_none());
+        let plan = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+        plan.execute().unwrap();
+        let restored = current_before.join("entry");
+        let displaced = current_after.join("entry");
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&displaced).unwrap(),
+            retained_identity
+        );
+        match kind {
+            0 => {
+                assert_eq!(std::fs::read(&restored).unwrap(), b"source bytes");
+                assert_eq!(std::fs::read(&displaced).unwrap(), b"retained bytes");
+            }
+            1 => {
+                assert_eq!(
+                    std::fs::read(restored.join("child")).unwrap(),
+                    b"source bytes"
+                );
+                assert_eq!(
+                    std::fs::read(displaced.join("child")).unwrap(),
+                    b"retained bytes"
+                );
+            }
+            _ => {
+                assert_eq!(
+                    std::fs::read_link(&restored).unwrap(),
+                    Path::new("source-link-target")
+                );
+                assert_eq!(
+                    std::fs::read_link(&displaced).unwrap(),
+                    Path::new("retained-link-target")
+                );
+            }
+        }
+        crate::WindowsMoveUndoPlan::capture(&receipt)
+            .unwrap()
+            .execute()
+            .unwrap();
+        assert_eq!(
+            std::fs::read(receipt.before_path()).unwrap(),
+            b"foreign source"
+        );
+        assert_eq!(
+            std::fs::read(receipt.after_path()).unwrap(),
+            b"foreign destination"
+        );
     }
 }

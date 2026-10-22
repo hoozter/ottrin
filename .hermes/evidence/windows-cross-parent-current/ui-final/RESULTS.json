@@ -1,0 +1,16 @@
+{
+    "stdout_sha256":  "640a8317b75cbf28104ecd0da0a8830c01e4fd1dcf82e6c60142209a7b66ac43",
+    "exit":  0,
+    "native_volume_unique_id":  "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+    "ordinary_user":  true,
+    "test_arguments":  "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1 tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker tests::windows_move_undo_admission_tracks_renamed_parent_paths tests::windows_cross_move_undo_admission_tracks_renamed_parent_paths tests::windows_move_cleanup_requires_captured_admission_and_uses_worker tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --include-ignored",
+    "temporary_entries":  0,
+    "native_started_utc":  "2026-10-22T07:33:37.9638813Z",
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_process_id":  4476,
+    "native_finished_utc":  "2026-10-22T07:33:41.4730123Z",
+    "status":  "pass",
+    "dispatch_id":  "590e0318a5540384d99d1213c89d4dbb",
+    "native_volume_matches":  1,
+    "test_binary_hash":  "bec4c92c1b819ad23f0c7c10f21aadd726bdb543e86877287a5639a5e1867482"
+}

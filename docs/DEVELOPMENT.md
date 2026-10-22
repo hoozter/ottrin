@@ -427,8 +427,26 @@ paths supply mutation/scheduling authority; preserving an existing ordinary path
 spelling is only a presentation decision. The nested-ancestor fixture exercises
 live namespace stability and releases every handle after the inverse, consistent
 with the native [directory rename contract](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fsa/87f86c9b-6c2a-4803-84b7-131a74a434fa).
-Cross-volume mutation still retains its original namespace checks; it must acquire
-the same full admission before parent-rename support is claimed.
+Cross-volume forward recovery, session Undo and retained Replace controllers use
+that same native-parent admission. Serialized paths remain immutable historical
+labels. Current source, destination and canonical private-child paths come from
+the recorded native directory IDs; local journal reads/writes use that original
+private directory. A private directory moved independently of its containing
+parent is refused. Queue plans reserve the captured names and refuse a further
+rename instead of silently resolving a new footprint in the worker.
+
+Cross-volume recovery keeps source/destination parent leases through teardown.
+The engine owns the private-directory lease and releases it before taking its
+verified DELETE handle; an outer recovery-plan lease must not block its own
+teardown. If the canonical private child is absent after SourceRemoved, recovery
+also proves the original private native ID is retired on that original volume.
+A missing old name alone never authorizes retiring the central journal. A
+central-only Published phase re-verifies and flushes the publication and converges
+both journals before destructive source cleanup. Empty central-first Rename
+intent repair allows the requested-name occupant and leaves normal no-replace
+candidate selection to preserve it. Native checks and scope are in
+`.hermes/evidence/windows-cross-parent-current/ACCEPTANCE.json`; exact packaged
+Activity acceptance remains separate.
 
 **Clean up records** explicitly captures a `WindowsMoveCleanupPlan` off-thread
 and carries it through the existing queue's complete path/drive admission. The

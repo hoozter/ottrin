@@ -1,0 +1,21 @@
+{
+  "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json": {
+    "source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+    "artifacts": {
+      "dist/packages/ottrin-0.1.0-1.x86_64.rpm": "d00c66c11eb870ec5e42260a5443614fa81ffdc1f87bdb446ae3e0db491ec7b8",
+      "dist/packages/Ottrin-0.1.0-x86_64.AppImage": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
+      "dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "faf8c7ea61060fffa5f4e6d9577fcbe13977764105e72a20d2ccb4a604f78cb8",
+      "dist/packages/ottrin_0.1.0_amd64.deb": "8f81a8048579a9bf50be72d1653716816738af2b197436d5441d45bb78126747"
+    },
+    "all_current_artifact_hashes_match": true
+  },
+  "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json": {
+    "source_revision": "68962f05b66aaa9b181b378df62912de3fde4e05",
+    "artifacts": {
+      ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-portable.zip": "66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d",
+      ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64-setup.exe": "6b8ced602cfcbc58d10efee0661d142da111165d59144cf9769cf5cf42e44a98",
+      ".hermes/packaging-tmp/windows-activity-candidate/Ottrin-0.1.0-windows-x64.msi": "48410f82a692ff350cafa4f31a48b690ab9bf16128ed4a43f0de6aa44290233d"
+    },
+    "all_current_artifact_hashes_match": true
+  }
+}

@@ -21,6 +21,7 @@ enum Evidence {
         PathBuf,
         move_recovery::WindowsStableIdentity,
         std::ffi::OsString,
+        move_recovery::WindowsStableIdentity,
     ),
 }
 
@@ -314,50 +315,72 @@ impl WindowsMoveRecoveryPlan {
                         "Move recovery transaction ID changed".into(),
                     ));
                 }
-                self.add_paths(
-                    &record.source_path()?,
-                    &record.destination_parent_path()?,
-                    &record.transaction_path()?,
-                )?;
+                let [source, destination] = windows_cross_namespace::parents(&self.root, &record)?;
+                self.paths
+                    .extend([source.path.clone(), destination.path.clone()]);
                 let identity = record.transaction_directory_identity;
                 let hint = record.transaction_path()?;
                 let local = match windows_control::directory(&self.root, identity, &hint) {
                     Ok(directory) => {
+                        let actual = crate::windows_fs::location(&directory)
+                            .map_err(|error| PlatformError::Io(error.to_string()))?;
+                        let expected = destination
+                            .path
+                            .join(format!(".ottrin-move-{}", encode_transaction_id(id)));
+                        if actual != expected {
+                            return Err(PlatformError::Io(
+                                "Cross-volume private directory left its bound parent or name"
+                                    .into(),
+                            ));
+                        }
+                        self.paths.push(actual.clone());
                         let local = windows_control::read_local(&directory)?
                             .map(|bytes| decode_windows_cross_volume_record(&bytes))
                             .transpose()?;
-                        Evidence::CrossLocal(hint, identity, local.map(Box::new))
+                        Evidence::CrossLocal(actual, identity, local.map(Box::new))
                     }
                     Err(error) => {
-                        let parent = record.destination_parent_path()?;
                         let name = std::ffi::OsString::from(format!(
                             ".ottrin-move-{}",
                             encode_transaction_id(id)
                         ));
+                        let parent = windows_control::directory(
+                            &self.root,
+                            record.destination_parent_identity,
+                            &destination.path,
+                        )?;
                         if record.phase != WindowsCrossVolumePhase::SourceRemoved
                             || record.undo_origin.is_some()
                             || record.undo_transaction.is_some()
                             || record.conflict == ConflictAction::Overwrite
                             || record.retained_displaced.is_some()
                             || record.destination_identity.is_some()
-                            || hint != parent.join(&name)
-                            || !windows_control::missing_original(
-                                &parent,
-                                record.destination_parent_identity,
-                                &name,
-                            )?
+                            || windows_undo::observe(&parent, &name)?.is_some()
+                            || !windows_cross_namespace::private_retired(&parent, identity)?
                         {
                             return Err(error);
                         }
-                        // Forward payload teardown can remove this directory before
-                        // a blocked central-journal deletion becomes retryable.
+                        self.paths.push(destination.path.join(&name));
                         Evidence::RetiredCrossLocal(
-                            parent,
+                            destination.path.clone(),
                             record.destination_parent_identity,
                             name,
+                            identity,
                         )
                     }
                 };
+                // Parent leases bound all payload/journal names. The engine
+                // owns the private lease so it can transfer it to a delete
+                // handle during ordinary forward teardown. CrossLocal still
+                // checks that exact captured private name before dispatch.
+                self.namespace.extend([source, destination]);
+                let registry = windows_control::DirectoryBinding::capture(
+                    &self.root,
+                    &self.root,
+                    self.root_identity,
+                )?;
+                self.paths.push(registry.path.clone());
+                self.namespace.push(registry);
                 let linked = if record.undo_origin.is_some() {
                     windows_undo::cross::retained::presentation_controller(&self.root, &record)?
                 } else {
@@ -380,26 +403,6 @@ impl WindowsMoveRecoveryPlan {
                     "Move recovery transaction was not found".into(),
                 ));
             }
-        }
-        Ok(())
-    }
-
-    fn add_paths(
-        &mut self,
-        source: &Path,
-        destination: &Path,
-        transaction: &Path,
-    ) -> Result<(), PlatformError> {
-        let source_parent = source
-            .parent()
-            .ok_or_else(|| PlatformError::Io("Move recovery source has no parent".into()))?;
-        for path in [source_parent, destination, transaction] {
-            if !path.is_absolute() {
-                return Err(PlatformError::Io(
-                    "Move recovery path is not absolute".into(),
-                ));
-            }
-            self.paths.push(path.to_owned());
         }
         Ok(())
     }
@@ -465,8 +468,10 @@ impl WindowsMoveRecoveryPlan {
                             == expected.as_deref()
                     }
                 }
-                Evidence::RetiredCrossLocal(parent, identity, name) => {
-                    windows_control::missing_original(parent, *identity, name)?
+                Evidence::RetiredCrossLocal(parent, identity, name, private) => {
+                    let parent = windows_control::pin_original(parent, *identity)?;
+                    windows_undo::observe(&parent, name)?.is_none()
+                        && windows_cross_namespace::private_retired(&parent, *private)?
                 }
                 Evidence::Cross(path, expected) => {
                     path.try_exists()

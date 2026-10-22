@@ -5,7 +5,7 @@ p=Path(__file__).resolve().parent;sys.path.insert(0,str(p));import transport as 
 UI_CROSS_UNDO_TEST='tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry'
 UI_MOVE_CLEANUP_TEST='tests::windows_move_cleanup_requires_captured_admission_and_uses_worker'
 UI_MOVE_HISTORY_TEST='tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker'
-UI_MOVE_PARENT_TEST='tests::windows_move_undo_admission_tracks_renamed_parent_paths'
+UI_MOVE_PARENT_TEST='tests::windows_move_undo_admission_tracks_renamed_parent_paths tests::windows_cross_move_undo_admission_tracks_renamed_parent_paths'
 
 THROTTLED_TESTS=('copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_io_stop_preserves_data_and_recovers', 'copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_undo_stop_preserves_data_and_recovers', 'copy_transaction::windows::journal::tests::throttled_io::windows_native_copy_throttled_journal_cleanup_stop_preserves_data_and_recovers')
 

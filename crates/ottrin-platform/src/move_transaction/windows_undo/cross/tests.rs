@@ -184,46 +184,20 @@ fn windows_native_cross_undo_original_name_collision_preserves_both_files_and_re
 
 #[test]
 #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on an owned second volume"]
-fn windows_native_cross_undo_refuses_changed_publication_or_parent_before_intent() {
-    for changed in 0..3 {
-        let fixture = Fixture::new();
-        let receipt = fixture.moved(0, false);
-        let replaced = match changed {
-            0 => receipt.after_path().to_path_buf(),
-            1 => receipt.after_path().parent().unwrap().to_path_buf(),
-            _ => receipt.before_path().parent().unwrap().to_path_buf(),
-        };
-        let parked = replaced.with_extension("parked");
-        std::fs::rename(&replaced, &parked).unwrap();
-        if changed == 0 {
-            std::fs::write(&replaced, b"foreign publication").unwrap();
-        } else {
-            std::fs::create_dir(&replaced).unwrap();
-            if changed == 1 {
-                std::fs::write(receipt.after_path(), b"foreign publication").unwrap();
-            }
-        }
-        assert!(DefaultPlatform.undo_move_with_receipt(&receipt).is_err());
-        assert!(guard(&receipt).inverse.get().is_none());
-        if changed < 2 {
-            assert_eq!(
-                std::fs::read(receipt.after_path()).unwrap(),
-                b"foreign publication"
-            );
-            let old_publication = if changed == 0 {
-                parked.clone()
-            } else {
-                parked.join(receipt.after_path().file_name().unwrap())
-            };
-            assert_eq!(std::fs::read(old_publication).unwrap(), b"original content");
-        } else {
-            assert_eq!(
-                std::fs::read(receipt.after_path()).unwrap(),
-                b"original content"
-            );
-        }
-        assert!(!receipt.before_path().exists());
-    }
+fn windows_native_cross_undo_refuses_changed_publication_before_intent() {
+    let fixture = Fixture::new();
+    let receipt = fixture.moved(0, false);
+    let parked = receipt.after_path().with_extension("parked");
+    std::fs::rename(receipt.after_path(), &parked).unwrap();
+    std::fs::write(receipt.after_path(), b"foreign publication").unwrap();
+    assert!(DefaultPlatform.undo_move_with_receipt(&receipt).is_err());
+    assert!(guard(&receipt).inverse.get().is_none());
+    assert_eq!(
+        std::fs::read(receipt.after_path()).unwrap(),
+        b"foreign publication"
+    );
+    assert_eq!(std::fs::read(parked).unwrap(), b"original content");
+    assert!(!receipt.before_path().exists());
 }
 
 #[test]
@@ -428,41 +402,74 @@ fn windows_native_cross_undo_process_exit_recovers_without_session_receipt() {
         panic!("missed cross-volume inverse exit boundary");
     }
     for kind in 0..2 {
-        for stop in [
-            "Prepared-central",
-            "Prepared-local",
-            "Staged-central",
-            "Published-central",
-            "BeforeSourceCleanup",
-            "SourceRemoved-central",
-            "SourceRemoved-local",
-        ] {
-            let fixture = Fixture::new();
-            let receipt = fixture.moved(kind, false);
-            let status=std::process::Command::new(std::env::current_exe().unwrap()).args(["--exact","move_transaction::windows_undo::cross::tests::windows_native_cross_undo_process_exit_recovers_without_session_receipt","--include-ignored","--nocapture"])
+        for renamed in [false, true] {
+            for stop in [
+                "Prepared-central",
+                "Prepared-local",
+                "Staged-central",
+                "Published-central",
+                "BeforeSourceCleanup",
+                "SourceRemoved-central",
+                "SourceRemoved-local",
+            ] {
+                let fixture = Fixture::new();
+                let receipt = fixture.moved(kind, false);
+                let status=std::process::Command::new(std::env::current_exe().unwrap()).args(["--exact","move_transaction::windows_undo::cross::tests::windows_native_cross_undo_process_exit_recovers_without_session_receipt","--include-ignored","--nocapture"])
                 .env("OTTRIN_CROSS_UNDO_CHILD",serde_json::to_string(&guard(&receipt).origin).unwrap()).env("OTTRIN_CROSS_UNDO_STOP",stop).env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT",root()).status().unwrap();
-            assert_eq!(status.code(), Some(87), "{kind}/{stop}");
-            let transactions =
-                super::super::super::discover_retained_windows_move_transactions().unwrap();
-            assert_eq!(transactions.len(), 1);
-            let id = transactions[0].transaction_id;
-            super::super::super::recover_retained_windows_move_transaction(id).unwrap();
-            assert_eq!(
-                if kind == 0 {
-                    std::fs::read(receipt.before_path()).unwrap()
+                assert_eq!(status.code(), Some(87), "{kind}/{stop}");
+                let transactions =
+                    super::super::super::discover_retained_windows_move_transactions().unwrap();
+                assert_eq!(transactions.len(), 1);
+                let id = transactions[0].transaction_id;
+                let (before, after) = if renamed {
+                    let current_before = fixture.primary.path().join("renamed-source");
+                    let current_after = fixture.secondary.join("renamed-destination");
+                    std::fs::rename(receipt.before_path().parent().unwrap(), &current_before)
+                        .unwrap();
+                    std::fs::rename(receipt.after_path().parent().unwrap(), &current_after)
+                        .unwrap();
+                    std::fs::create_dir(receipt.before_path().parent().unwrap()).unwrap();
+                    std::fs::create_dir(receipt.after_path().parent().unwrap()).unwrap();
+                    std::fs::write(receipt.before_path(), b"foreign source").unwrap();
+                    std::fs::write(receipt.after_path(), b"foreign destination").unwrap();
+                    (current_before.join("entry"), current_after.join("entry"))
                 } else {
-                    std::fs::read(receipt.before_path().join("child")).unwrap()
-                },
-                b"original content"
-            );
-            assert!(std::fs::symlink_metadata(receipt.after_path()).is_err());
-            let transactions =
-                super::super::super::discover_retained_windows_move_transactions().unwrap();
-            assert_eq!(
-                transactions[0].undo_status,
-                move_recovery::WindowsMoveUndoStatus::Complete
-            );
-            super::super::super::recover_retained_windows_move_transaction(id).unwrap();
+                    (
+                        receipt.before_path().to_path_buf(),
+                        receipt.after_path().to_path_buf(),
+                    )
+                };
+                crate::WindowsMoveRecoveryPlan::capture(id)
+                    .unwrap()
+                    .execute()
+                    .unwrap();
+                assert_eq!(
+                    if kind == 0 {
+                        std::fs::read(&before).unwrap()
+                    } else {
+                        std::fs::read(before.join("child")).unwrap()
+                    },
+                    b"original content"
+                );
+                assert!(std::fs::symlink_metadata(&after).is_err());
+                let transactions =
+                    super::super::super::discover_retained_windows_move_transactions().unwrap();
+                assert_eq!(
+                    transactions[0].undo_status,
+                    move_recovery::WindowsMoveUndoStatus::Complete
+                );
+                super::super::super::recover_retained_windows_move_transaction(id).unwrap();
+                if renamed {
+                    assert_eq!(
+                        std::fs::read(receipt.before_path()).unwrap(),
+                        b"foreign source"
+                    );
+                    assert_eq!(
+                        std::fs::read(receipt.after_path()).unwrap(),
+                        b"foreign destination"
+                    );
+                }
+            }
         }
     }
 }
@@ -536,4 +543,269 @@ fn windows_native_cross_completed_cleanup_does_not_report_success_for_a_later_so
         std::fs::read(destination.join("entry")).unwrap(),
         b"completed predecessor"
     );
+}
+
+#[test]
+#[ignore = "requires an owned second native Windows volume"]
+fn windows_native_cross_undo_admits_renamed_parents_and_refuses_stale_queue_plan() {
+    for kind in 0..3 {
+        for keep_both in [false, true] {
+            let fixture = Fixture::new();
+            let receipt = fixture.moved(kind, keep_both);
+            let stale = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+            let before_parent = receipt.before_path().parent().unwrap();
+            let after_parent = receipt.after_path().parent().unwrap();
+            let current_before = before_parent.with_extension("renamed");
+            let current_after = after_parent.with_extension("renamed");
+            std::fs::rename(before_parent, &current_before).unwrap();
+            std::fs::rename(after_parent, &current_after).unwrap();
+            std::fs::create_dir(before_parent).unwrap();
+            std::fs::create_dir(after_parent).unwrap();
+            std::fs::write(receipt.before_path(), b"foreign source").unwrap();
+            std::fs::write(receipt.after_path(), b"foreign publication").unwrap();
+            assert!(stale.execute().is_err());
+            assert!(guard(&receipt).inverse.get().is_none());
+            let plan = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+            for parent in [&current_before, &current_after] {
+                assert!(
+                    plan.paths()
+                        .contains(&std::fs::canonicalize(parent).unwrap())
+                );
+            }
+            plan.execute().unwrap();
+            let restored = current_before.join(receipt.before_path().file_name().unwrap());
+            match kind {
+                0 => assert_eq!(std::fs::read(&restored).unwrap(), b"original content"),
+                1 => assert_eq!(
+                    std::fs::read(restored.join("child")).unwrap(),
+                    b"original content"
+                ),
+                _ => assert_eq!(
+                    std::fs::read_link(&restored).unwrap(),
+                    Path::new("untouched-raw-link-target")
+                ),
+            }
+            assert!(
+                std::fs::symlink_metadata(
+                    current_after.join(receipt.after_path().file_name().unwrap())
+                )
+                .is_err()
+            );
+            assert_eq!(
+                std::fs::read(receipt.before_path()).unwrap(),
+                b"foreign source"
+            );
+            assert_eq!(
+                std::fs::read(receipt.after_path()).unwrap(),
+                b"foreign publication"
+            );
+            terminal_record(&receipt);
+            // Once completion is durable, repeat Undo does not touch either namespace.
+            crate::WindowsMoveUndoPlan::capture(&receipt)
+                .unwrap()
+                .execute()
+                .unwrap();
+            assert_eq!(
+                std::fs::read(receipt.before_path()).unwrap(),
+                b"foreign source"
+            );
+            assert_eq!(
+                std::fs::read(receipt.after_path()).unwrap(),
+                b"foreign publication"
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "requires an owned second native Windows volume"]
+fn windows_native_cross_recovery_admits_renamed_parents_after_process_exit() {
+    use crate::move_transaction as moves;
+    if let Some(source) = std::env::var_os("OTTRIN_CROSS_PARENT_SOURCE") {
+        let source = PathBuf::from(source);
+        let destination =
+            PathBuf::from(std::env::var_os("OTTRIN_CROSS_PARENT_DESTINATION").unwrap());
+        let stop = std::env::var("OTTRIN_CROSS_PARENT_PHASE").unwrap();
+        moves::WINDOWS_MOVE_HOOK.with(|hook| {
+            *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
+                if boundary == moves::WindowsMoveBoundary::JournalPublished
+                    && path.extension() == Some(OsStr::new("cross-journal"))
+                    && format!(
+                        "{:?}",
+                        load_windows_cross_volume_record(path).unwrap().phase
+                    ) == stop
+                {
+                    std::process::exit(87);
+                }
+            }));
+        });
+        let conflict = match std::env::var("OTTRIN_CROSS_PARENT_CONFLICT")
+            .unwrap()
+            .as_str()
+        {
+            "Skip" => ConflictAction::Skip,
+            "Rename" => ConflictAction::Rename,
+            "Overwrite" => ConflictAction::Overwrite,
+            _ => panic!("unknown fixture conflict"),
+        };
+        DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination, conflict)
+            .unwrap();
+        panic!("missed durable cross-volume interruption");
+    }
+    for kind in 0..3 {
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Rename,
+            ConflictAction::Overwrite,
+        ] {
+            for phase in ["Prepared", "Staged", "Published", "SourceRemoved"] {
+                let fixture = Fixture::new();
+                let before = fixture.primary.path().join("source");
+                let after = fixture.secondary.join("destination");
+                std::fs::create_dir(&before).unwrap();
+                std::fs::create_dir(&after).unwrap();
+                create(&before.join("entry"), kind, b"original content");
+                let occupant = if conflict != ConflictAction::Skip {
+                    create(&after.join("entry"), kind, b"untouched occupant");
+                    Some(move_recovery::stable_identity_of_entry(&after.join("entry")).unwrap())
+                } else {
+                    None
+                };
+                let child = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "move_transaction::windows_undo::cross::tests::windows_native_cross_recovery_admits_renamed_parents_after_process_exit", "--include-ignored", "--nocapture"])
+                .env("OTTRIN_CROSS_PARENT_SOURCE", before.join("entry"))
+                .env("OTTRIN_CROSS_PARENT_DESTINATION", &after)
+                .env("OTTRIN_CROSS_PARENT_PHASE", phase)
+                .env("OTTRIN_CROSS_PARENT_CONFLICT", format!("{conflict:?}"))
+                .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", root())
+                .status().unwrap();
+                assert_eq!(child.code(), Some(87), "{kind}/{phase}");
+                let transactions = moves::discover_retained_windows_move_transactions().unwrap();
+                assert_eq!(transactions.len(), 1);
+                let id = transactions[0].transaction_id;
+                let record = load_windows_cross_volume_record(&windows_cross_volume_journal_path(
+                    &root(),
+                    id,
+                ))
+                .unwrap();
+                let stale = crate::WindowsMoveRecoveryPlan::capture(id).unwrap();
+                let current_before = before.with_extension("renamed");
+                let current_after = after.with_extension("renamed");
+                std::fs::rename(&before, &current_before).unwrap();
+                std::fs::rename(&after, &current_after).unwrap();
+                std::fs::create_dir(&before).unwrap();
+                std::fs::create_dir(&after).unwrap();
+                std::fs::write(before.join("entry"), b"foreign source").unwrap();
+                std::fs::write(after.join("entry"), b"foreign destination").unwrap();
+                // Plausible copied journals at the historical name must never select
+                // a different private directory, even if its records are byte-identical.
+                let foreign_private = record.transaction_path().unwrap();
+                std::fs::create_dir(&foreign_private).unwrap();
+                let foreign_journal = foreign_private.join(WINDOWS_LOCAL_JOURNAL_NAME);
+                let central_bytes =
+                    std::fs::read(windows_cross_volume_journal_path(&root(), id)).unwrap();
+                std::fs::write(&foreign_journal, &central_bytes).unwrap();
+                std::fs::write(foreign_private.join("foreign"), b"unrelated private data").unwrap();
+                assert!(stale.execute().is_err());
+                let plan = crate::WindowsMoveRecoveryPlan::capture(id).unwrap();
+                for parent in [&current_before, &current_after] {
+                    assert!(
+                        plan.paths()
+                            .contains(&std::fs::canonicalize(parent).unwrap())
+                    );
+                }
+                let current_private =
+                    current_after.join(record.transaction_path().unwrap().file_name().unwrap());
+                let parked_private = current_after.with_extension("parked-private");
+                std::fs::rename(&current_private, &parked_private).unwrap();
+                assert!(plan.execute().is_err(), "captured private name changed");
+                assert!(
+                    crate::WindowsMoveRecoveryPlan::capture(id).is_err(),
+                    "a private directory cannot move independently of its bound parent"
+                );
+                assert!(moves::recover_retained_windows_move_transaction(id).is_err());
+                assert_eq!(
+                    std::fs::read(windows_cross_volume_journal_path(&root(), id)).unwrap(),
+                    central_bytes
+                );
+                std::fs::rename(&parked_private, &current_private).unwrap();
+                crate::WindowsMoveRecoveryPlan::capture(id)
+                    .unwrap()
+                    .execute()
+                    .unwrap_or_else(|error| panic!("{kind}/{conflict:?}/{phase}: {error:?}"));
+                assert!(std::fs::symlink_metadata(current_before.join("entry")).is_err());
+                let published = std::fs::read_dir(&current_after)
+                    .unwrap()
+                    .map(|entry| entry.unwrap().path())
+                    .filter(|path| {
+                        !path
+                            .file_name()
+                            .unwrap()
+                            .to_string_lossy()
+                            .starts_with(".ottrin-move-")
+                    })
+                    .filter(|path| {
+                        conflict != ConflictAction::Rename
+                            || Some(move_recovery::stable_identity_of_entry(path).unwrap())
+                                != occupant
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(published.len(), 1, "one selected public entry");
+                let published = &published[0];
+                if let Some(identity) = record.candidate_identity {
+                    assert_eq!(
+                        move_recovery::stable_identity_of_entry(published).unwrap(),
+                        identity
+                    );
+                }
+                if let Some(identity) = occupant {
+                    let retained = if conflict == ConflictAction::Overwrite {
+                        current_private.join(WINDOWS_RETAINED_NAME)
+                    } else {
+                        current_after.join("entry")
+                    };
+                    assert_eq!(
+                        move_recovery::stable_identity_of_entry(&retained).unwrap(),
+                        identity
+                    );
+                    if kind < 2 {
+                        assert_eq!(
+                            std::fs::read(if kind == 0 {
+                                retained
+                            } else {
+                                retained.join("child")
+                            })
+                            .unwrap(),
+                            b"untouched occupant"
+                        );
+                    }
+                }
+                match kind {
+                    0 => assert_eq!(std::fs::read(published).unwrap(), b"original content"),
+                    1 => assert_eq!(
+                        std::fs::read(published.join("child")).unwrap(),
+                        b"original content"
+                    ),
+                    _ => assert_eq!(
+                        std::fs::read_link(published).unwrap(),
+                        Path::new("untouched-raw-link-target")
+                    ),
+                }
+                assert_eq!(
+                    std::fs::read(before.join("entry")).unwrap(),
+                    b"foreign source"
+                );
+                assert_eq!(
+                    std::fs::read(after.join("entry")).unwrap(),
+                    b"foreign destination"
+                );
+                assert_eq!(std::fs::read(foreign_journal).unwrap(), central_bytes);
+                assert_eq!(
+                    std::fs::read(foreign_private.join("foreign")).unwrap(),
+                    b"unrelated private data"
+                );
+            }
+        }
+    }
 }

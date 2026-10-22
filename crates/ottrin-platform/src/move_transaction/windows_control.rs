@@ -133,15 +133,6 @@ pub(super) fn pin_original(
     Ok(directory)
 }
 
-pub(super) fn missing_original(
-    parent: &Path,
-    identity: move_recovery::WindowsStableIdentity,
-    name: &OsStr,
-) -> Result<bool, PlatformError> {
-    let parent = pin_original(parent, identity)?;
-    Ok(windows_undo::observe(&parent, name)?.is_none())
-}
-
 fn io(error: impl std::fmt::Display) -> PlatformError {
     PlatformError::Io(error.to_string())
 }

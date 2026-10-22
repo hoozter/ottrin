@@ -122,7 +122,7 @@ fn pair(root: &Path, origin: &Origin) -> Result<(Record, bool), PlatformError> {
     Ok((central, local.phase == Phase::Undone))
 }
 
-pub(super) fn bind(record: &Record) -> Result<Binding, PlatformError> {
+pub(super) fn bind(root: &Path, record: &Record) -> Result<Binding, PlatformError> {
     if record.phase != Phase::SourceRemoved
         || record.undo_transaction.is_some()
         || record.undo_origin.is_some()
@@ -130,9 +130,11 @@ pub(super) fn bind(record: &Record) -> Result<Binding, PlatformError> {
     {
         return Err(stale(&record.transaction_path()?));
     }
-    let local = load_windows_cross_volume_record(
-        &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
-    )?;
+    let (_destination, private) =
+        super::super::super::windows_cross_namespace::pin_destination(root, record)?;
+    let bytes = super::super::super::windows_control::read_local(&private)?
+        .ok_or_else(|| stale(&record.transaction_path().unwrap_or_default()))?;
+    let local = super::super::super::decode_windows_cross_volume_record(&bytes)?;
     let retained = record
         .retained_path()?
         .ok_or_else(|| stale(&record.transaction_path().unwrap_or_default()))?;
@@ -140,10 +142,8 @@ pub(super) fn bind(record: &Record) -> Result<Binding, PlatformError> {
         .destination_identity
         .ok_or_else(|| stale(&retained))?;
     if local != *record
-        || observe_windows_identity(&record.transaction_path()?)?
-            != Some(record.transaction_directory_identity)
-        || observe_windows_identity(&retained)? != Some(entry)
-        || observe_windows_identity(&record.candidate_path()?)?.is_some()
+        || observe(&private, OsStr::new(WINDOWS_RETAINED_NAME))? != Some(entry)
+        || observe(&private, OsStr::new(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME))?.is_some()
     {
         return Err(stale(&retained));
     }
@@ -210,15 +210,22 @@ pub(in crate::move_transaction) fn prepare(
     }
     let origin = origin(inverse)?;
     let binding = origin.retained.as_ref().unwrap();
+    let held = super::super::super::windows_control::directory(
+        root,
+        binding.identity,
+        &path(&binding.directory)?,
+    )?;
     if terminal(root, inverse)?.is_none()
-        && observe_windows_identity(&binding.retained_path()?)? != Some(binding.entry)
+        && observe(&held, OsStr::new(WINDOWS_RETAINED_NAME))? != Some(binding.entry)
     {
         return Err(stale(&binding.retained_path()?));
     }
     if controller.phase == Phase::SourceRemoved {
+        let (_destination, private) =
+            super::super::super::windows_cross_namespace::pin_destination(root, inverse)?;
         if inverse.phase != Phase::Prepared
             || inverse.candidate_identity.is_some()
-            || observe_windows_identity(&inverse.candidate_path()?)?.is_some()
+            || observe(&private, OsStr::new(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME))?.is_some()
         {
             return Err(pending(
                 inverse,
@@ -340,6 +347,7 @@ pub(super) fn finish(root: &Path, inverse: &Record) -> Result<(), PlatformError>
     let original = path(&origin.original)?;
     let publication = path(&origin.publication)?;
     let original_parent = parent(
+        root,
         original.parent().ok_or_else(|| stale(&original))?,
         origin.original_parent,
     )?;
@@ -352,10 +360,18 @@ pub(super) fn finish(root: &Path, inverse: &Record) -> Result<(), PlatformError>
         restored_id,
     )?;
     let destination = parent(
+        root,
         publication.parent().ok_or_else(|| stale(&publication))?,
         origin.publication_parent,
     )?;
-    let private = parent(&path(&binding.directory)?, binding.identity)?;
+    let private = parent(root, &path(&binding.directory)?, binding.identity)?;
+    let private_path = windows_fs::location(&private).map_err(io)?;
+    let destination_path = windows_fs::location(&destination).map_err(io)?;
+    if private_path.parent() != Some(destination_path.as_path())
+        || private_path.file_name() != path(&binding.directory)?.file_name()
+    {
+        return Err(stale(&private_path));
+    }
     let target_name = publication.file_name().ok_or_else(|| stale(&publication))?;
     #[cfg(test)]
     super::super::super::windows_move_boundary(

@@ -1,0 +1,6 @@
+
+running 1 test
+test move_transaction::windows_undo::cross::offline_tests::windows_native_move_completion_offline_verify ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 536 filtered out; finished in 0.66s
+

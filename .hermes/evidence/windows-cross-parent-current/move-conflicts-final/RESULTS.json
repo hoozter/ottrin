@@ -1,0 +1,16 @@
+{
+    "stdout_sha256":  "c636ea1aa1f252a013da73a1f61c55329607b6b6fb62ac7e3bcb464373ad2551",
+    "exit":  101,
+    "native_volume_unique_id":  "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+    "ordinary_user":  true,
+    "test_arguments":  "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+    "native_started_utc":  "2026-10-22T07:24:30.4664806Z",
+    "stderr_sha256":  "1138761d75b3b76ca588c1928836ac0871dc9451ec5fba8288ee8dfa17be3aea",
+    "native_process_id":  5532,
+    "native_finished_utc":  "2026-10-22T07:25:39.7902235Z",
+    "error":  "Native cleanup observation failed",
+    "status":  "fail",
+    "dispatch_id":  "781c1939d8c7e0d508d63b8b6b004132",
+    "native_volume_matches":  1,
+    "test_binary_hash":  "c86a48bb71d9a92b2130daeea5f2feec66b8f237ce02df506a245416887edcf1"
+}

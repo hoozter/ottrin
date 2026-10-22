@@ -31663,12 +31663,23 @@ mod tests {
     }
 
     #[cfg(target_os = "windows")]
-    #[test]
-    fn windows_move_undo_admission_tracks_renamed_parent_paths() {
+    fn assert_windows_move_undo_admission_tracks_renamed_parent_paths(cross_volume: bool) {
         for replace in [false, true] {
             let fixture = tempfile::tempdir().unwrap();
+            let secondary = cross_volume.then(|| {
+                tempfile::Builder::new()
+                    .prefix("ottrin-parent-undo-ui-")
+                    .tempdir_in(
+                        std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+                            .expect("owned native second volume"),
+                    )
+                    .unwrap()
+            });
+            let destination_root = secondary
+                .as_ref()
+                .map_or(fixture.path(), |root| root.path());
             let before = fixture.path().join("source");
-            let after = fixture.path().join("destination");
+            let after = destination_root.join("destination");
             std::fs::create_dir(&before).unwrap();
             std::fs::create_dir(&after).unwrap();
             let source = before.join("entry");
@@ -31701,7 +31712,7 @@ mod tests {
             app.op_tx.send(result).unwrap();
             app.poll_op_results();
             let current_before = fixture.path().join("renamed-source");
-            let current_after = fixture.path().join("renamed-destination");
+            let current_after = destination_root.join("renamed-destination");
             std::fs::rename(&before, &current_before).unwrap();
             std::fs::rename(&after, &current_after).unwrap();
             std::fs::create_dir(&before).unwrap();
@@ -31790,6 +31801,19 @@ mod tests {
                 b"foreign-destination"
             );
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_move_undo_admission_tracks_renamed_parent_paths() {
+        assert_windows_move_undo_admission_tracks_renamed_parent_paths(false);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires an owned second native Windows volume"]
+    fn windows_cross_move_undo_admission_tracks_renamed_parent_paths() {
+        assert_windows_move_undo_admission_tracks_renamed_parent_paths(true);
     }
 
     #[cfg(target_os = "windows")]

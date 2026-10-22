@@ -1,0 +1,16 @@
+{
+    "stdout_sha256":  "8a20fb6319780c13cde34d88086dccf99f391c3d778bc452a63ef021668b4b0c",
+    "exit":  0,
+    "native_volume_unique_id":  "\\\\?\\Volume{0fecd22f-e491-4569-9dba-7879a36f7d78}\\",
+    "ordinary_user":  true,
+    "test_arguments":  "move_transaction:: copy_transaction::windows::journal::tests::windows_native_copy_session_receipt copy_transaction::windows::journal::tests::abort_dependencies:: --include-ignored --skip windows_native_move_fat32_boundary_preserves_both_entries --skip windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite --skip windows_native_move_completion_offline_ --nocapture --test-threads=1",
+    "temporary_entries":  0,
+    "native_started_utc":  "2026-10-22T07:30:17.5461703Z",
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_process_id":  1732,
+    "native_finished_utc":  "2026-10-22T07:31:33.7731659Z",
+    "status":  "pass",
+    "dispatch_id":  "56470fdfe9c3e0228f449f51ef9c68b9",
+    "native_volume_matches":  1,
+    "test_binary_hash":  "df11938ebc89ea8a76638720215e1766ea3c51f5240767e42a48bc128037e4c0"
+}

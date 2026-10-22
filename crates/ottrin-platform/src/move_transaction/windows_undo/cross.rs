@@ -1,9 +1,11 @@
 //! An inverse uses the ordinary cross-volume engine with an exact target and an
 //! immutable original-publication binding. Terminal inverse journals remain as
 //! completion proof; they cannot be replayed as a fresh forward Move.
+#[cfg(test)]
+use super::super::WINDOWS_LOCAL_JOURNAL_NAME;
 use super::super::{
-    WINDOWS_LOCAL_JOURNAL_NAME, WINDOWS_RETAINED_NAME, WindowsCrossVolumePhase as Phase,
-    WindowsCrossVolumeRecord as Record, load_windows_cross_volume_record, observe_windows_identity,
+    WINDOWS_RETAINED_NAME, WindowsCrossVolumePhase as Phase, WindowsCrossVolumeRecord as Record,
+    load_windows_cross_volume_record, observe_windows_identity,
     persist_windows_cross_volume_record, resume_windows_cross_volume,
     windows_cross_volume_journal_path, windows_directory_source_claim_path,
 };
@@ -130,9 +132,11 @@ impl Origin {
         } else {
             return Ok(false);
         };
+        let owner_directory = owner.directory.decode().map_err(io)?;
+        let owner_parent = owner.parent.decode().map_err(io)?;
         Ok(owner.identity == identity
-            && owner.directory.decode().map_err(io)? == directory
-            && owner.parent.decode().map_err(io)? == directory.parent().unwrap()
+            && owner_directory.file_name() == directory.file_name()
+            && owner_directory.parent() == Some(owner_parent.as_path())
             && owner.parent_identity == parent_identity)
     }
 
@@ -208,8 +212,10 @@ impl Origin {
         destination_identity: Option<WindowsStableIdentity>,
     ) -> Result<(), PlatformError> {
         self.validate()?;
-        if source != path(&self.publication)?
-            || target != path(&self.original)?
+        if !source.is_absolute()
+            || !target.is_absolute()
+            || source.file_name() != path(&self.publication)?.file_name()
+            || target.file_name() != path(&self.original)?.file_name()
             || source_identity != self.publication_identity
             || source_parent != self.publication_parent
             || destination_parent != self.original_parent
@@ -363,6 +369,7 @@ pub(in crate::move_transaction) fn completed(
 /// never adopted as authority. Historical cleanup may see later names, in which
 /// case it produces no session Undo receipt.
 pub(in crate::move_transaction) fn issue_if_owned(
+    root: &Path,
     record: &Record,
 ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
     if record.undo_origin.is_some() || retained::has_intent(record) {
@@ -373,12 +380,23 @@ pub(in crate::move_transaction) fn issue_if_owned(
     };
     let before = std::path::absolute(record.source_path()?).map_err(io)?;
     let after = std::path::absolute(record.target_path()?).map_err(io)?;
-    if record.phase != Phase::SourceRemoved
-        || observe_windows_identity(&after)? != Some(identity)
-        || observe_windows_identity(before.parent().ok_or_else(|| stale(&before))?)?
-            != Some(record.source_parent_identity)
-        || observe_windows_identity(after.parent().ok_or_else(|| stale(&after))?)?
-            != Some(record.destination_parent_identity)
+    if record.phase != Phase::SourceRemoved {
+        return Ok(None);
+    }
+    let _original_parent = parent(
+        root,
+        before.parent().ok_or_else(|| stale(&before))?,
+        record.source_parent_identity,
+    )?;
+    let publication_parent = parent(
+        root,
+        after.parent().ok_or_else(|| stale(&after))?,
+        record.destination_parent_identity,
+    )?;
+    if observe(
+        &publication_parent,
+        after.file_name().ok_or_else(|| stale(&after))?,
+    )? != Some(identity)
     {
         return Ok(None);
     }
@@ -390,7 +408,7 @@ pub(in crate::move_transaction) fn issue_if_owned(
         publication_parent: record.destination_parent_identity,
         publication_identity: identity,
         retained: if record.conflict == crate::ConflictAction::Overwrite {
-            Some(retained::bind(record)?)
+            Some(retained::bind(root, record)?)
         } else {
             if record.retained_displaced.is_some() {
                 return Err(stale(&after));
@@ -423,19 +441,12 @@ pub(in crate::move_transaction) fn issue_if_owned(
     }))
 }
 
-fn parent(path: &Path, identity: WindowsStableIdentity) -> Result<File, PlatformError> {
-    let file = windows_fs::open_directory_with_sharing(
-        path,
-        move_recovery::WINDOWS_DESTINATION_PARENT_ACCESS_MODE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE,
-    )
-    .map_err(io)?;
-    if move_recovery::stable_identity_from_handle(&file).map_err(io)? != identity
-        || observe_windows_identity(path)? != Some(identity)
-    {
-        return Err(stale(path));
-    }
-    Ok(file)
+fn parent(
+    root: &Path,
+    path: &Path,
+    identity: WindowsStableIdentity,
+) -> Result<File, PlatformError> {
+    super::super::windows_control::DirectoryBinding::capture(root, path, identity)?.pin()
 }
 
 pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), PlatformError> {
@@ -478,16 +489,16 @@ pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), P
                 // A live owner may retry an intent write that failed before either
                 // journal existed. Verify the exact private directory and empty
                 // topology before publishing its already-bound Prepared record.
+                let (_destination, private) =
+                    super::super::windows_cross_namespace::pin_destination(&root, initial)?;
                 if initial.phase != Phase::Prepared
                     || initial.candidate_identity.is_some()
-                    || observe_windows_identity(&initial.transaction_path()?)?
-                        != Some(initial.transaction_directory_identity)
-                    || observe_windows_identity(&initial.candidate_path()?)?.is_some()
-                    || initial
-                        .transaction_path()?
-                        .join(WINDOWS_LOCAL_JOURNAL_NAME)
-                        .try_exists()
-                        .map_err(io)?
+                    || observe(
+                        &private,
+                        OsStr::new(super::super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME),
+                    )?
+                    .is_some()
+                    || super::super::windows_control::read_local(&private)?.is_some()
                 {
                     return Err(pending(initial, "Unpublished inverse intent changed"));
                 }
@@ -506,11 +517,13 @@ pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), P
             .map(|_| ())
             .map_err(|e| pending(initial, e));
     }
-    let _publication_parent = parent(
+    let publication_parent = parent(
+        &root,
         after.parent().ok_or_else(|| stale(&after))?,
         guard.origin.publication_parent,
     )?;
     let original_parent = parent(
+        &root,
         before.parent().ok_or_else(|| stale(&before))?,
         guard.origin.original_parent,
     )?;
@@ -524,6 +537,8 @@ pub(super) fn undo(receipt: &PathMoveUndoReceipt, guard: &Guard) -> Result<(), P
             before.display().to_string(),
         ));
     }
+    let after = super::super::windows_control::child_path(&publication_parent, &after)?;
+    let before = super::super::windows_control::child_path(&original_parent, &before)?;
     let source = move_recovery::open_reparse_safe_cross_volume_source(&after).map_err(io)?;
     if move_recovery::stable_identity_from_handle(&source).map_err(io)?
         != guard.origin.publication_identity
