@@ -51,3 +51,33 @@ volume journals and published for same-volume journals. Close the owned app,
 remove the volume with the same volume helper, remove its descriptor, then run
 normal account/fixture cleanup. The helper refuses live QA tasks or payloads;
 verify the original disk inventory and persistent VM definition after teardown.
+
+For containing-parent lifecycle checks, the actor accepts `fixture-mkdir`,
+`fixture-write` (new files only), `fixture-rename` (no replacement) and
+`fixture-remove` (ordinary files with an exact SHA-256). Paths use the same
+relative fixture/secondary-volume mapping as navigation. Mutation refuses the
+fixture roots and reparse ancestors. These actions model external namespace
+changes between actual packaged UI operations; they are not product operations.
+
+To seed an interrupted cross-volume Move, close the packaged GUI and transfer
+its exact source revision's native platform test executable as `native-tests.exe`.
+Place its verified `source_commit`, original `compiler_sha256`, and transferred
+`transferred_sha256` in `native-seeder.json`. Debug stripping must match the
+previous native verification receipt and preserve every non-debug PE section.
+`seed-move-recovery` accepts relative `source`/`destination`, a `Prepared`, `Staged`
+or `Published` phase, and a lowercase `tag` for diagnostic exports. It invokes
+the production Move engine through the fixed native interruption test and requires
+exit 87 at the selected central journal boundary. Inspect the resulting native
+journal/payload evidence before reopening the package. This is fixture creation;
+only subsequent real Activity input and verified file/journal state establish
+packaged recovery acceptance. Remove the test executable and exports during normal
+owned-root teardown.
+
+`nav` types the fixture path as Unicode input without replacing the native Cut
+clipboard. `submit: false` captures the editor before Enter. Native Unicode
+input follows [SendInput](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)
+and [KEYBDINPUT](https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-keybdinput);
+held modifiers and incomplete insertion refuse the action.
+`inspect-moves` captures read-only journal/completion metadata in the owned profile.
+`dismiss-shell` sends Escape only to the observed temporary-account Start menu or
+Search host, with foreground PID and exact executable/owner checks.

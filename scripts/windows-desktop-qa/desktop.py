@@ -94,7 +94,7 @@ $deadline=[DateTime]::UtcNow.AddSeconds(90)
 do{
  Start-Sleep -Milliseconds 150;$t=Get-ScheduledTask $t.TaskName
  $done=$false
- if(Test-Path C:\OttrinWindowQA\results\desktop.json){$r=Get-Content C:\OttrinWindowQA\results\desktop.json -Raw|ConvertFrom-Json;$done=$r.id-eq'__ID__'}
+ if(Test-Path C:\OttrinWindowQA\results\desktop.json){$stream=[IO.File]::Open('C:\OttrinWindowQA\results\desktop.json',[IO.FileMode]::Open,[IO.FileAccess]::Read,([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete));$reader=[IO.StreamReader]::new($stream);try{$r=$reader.ReadToEnd()|ConvertFrom-Json}finally{$reader.Dispose()};$done=$r.id-eq'__ID__'}
  if($t.State.ToString()-notin@('Running','Queued')-and$done){break}
  if($t.State.ToString()-notin@('Running','Queued')-and(Test-Path C:\OttrinWindowQA\results\actor-error.txt)){throw 'Owned actor failed'}
  if([DateTime]::UtcNow-gt$deadline){throw 'Actor did not publish matching result'}

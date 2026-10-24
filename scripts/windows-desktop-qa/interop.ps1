@@ -17,7 +17,23 @@ public static class CopyActivityDesktop {
   [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h,System.Text.StringBuilder text,int length);
   public delegate bool EnumCallback(IntPtr h,IntPtr p);
   [DllImport("user32.dll")] public static extern bool EnumWindows(EnumCallback callback,IntPtr p);
-  public static IntPtr[] Windows(uint pid) {
+  [StructLayout(LayoutKind.Sequential)] private struct KEYBDINPUT { public ushort key,scan;public uint flags,time;public UIntPtr extra; }
+ [StructLayout(LayoutKind.Sequential)] private struct MOUSEINPUT { public int x,y;public uint data,flags,time;public UIntPtr extra; }
+ [StructLayout(LayoutKind.Explicit)] private struct INPUTDATA { [FieldOffset(0)]public KEYBDINPUT keyboard;[FieldOffset(0)]public MOUSEINPUT mouse; }
+ [StructLayout(LayoutKind.Sequential)] private struct INPUT { public uint type;public INPUTDATA data; }
+ [DllImport("user32.dll",SetLastError=true)] private static extern uint SendInput(uint count,INPUT[] input,int size);
+ [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int key);
+ public static void TypeText(string text) {
+   foreach(int key in new[]{0x10,0x11,0x12,0x5b,0x5c})
+     if((GetAsyncKeyState(key)&0x8000)!=0)throw new InvalidOperationException("A modifier remains held before literal text input");
+   foreach(char character in text) {
+     var down=new INPUT();down.type=1;down.data.keyboard.scan=(ushort)character;down.data.keyboard.flags=4;
+     var up=down;up.data.keyboard.flags=6;
+     if(SendInput(2,new[]{down,up},Marshal.SizeOf(typeof(INPUT)))!=2)
+       throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(),"Unicode text input was not fully inserted");
+   }
+ }
+ public static IntPtr[] Windows(uint pid) {
     var found=new System.Collections.Generic.List<IntPtr>();
     EnumWindows((h,p)=>{uint owner;GetWindowThreadProcessId(h,out owner);if(owner==pid&&IsWindowVisible(h))found.Add(h);return true;},IntPtr.Zero);
     return found.ToArray();

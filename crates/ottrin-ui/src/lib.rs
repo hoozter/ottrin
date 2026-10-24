@@ -14538,190 +14538,211 @@ impl OttrinApp {
             )
             .show(ctx, |ui| {
                 ui.set_height((STATUS_BAR_HEIGHT * c.font_scale).ceil());
-                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                    // Command frame toggle — LEFT side (bar opens at the bottom-left)
-                    let cf_color = if self.command_frame.visible {
-                        c.accent_dim
-                    } else {
-                        bottom_text
+                let mut text_rect = Rect::NOTHING;
+                let mut controls_left = ui.max_rect().right();
+                // Reserve persistent controls before allocating flexible footer text.
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    ui.add_space(4.0);
+                    // Privileged capability + latest operation status
+                    match &self.privileged_status {
+                        Some(st) => {
+                            let (icon, col) = match st.kind {
+                                PrivilegedUiKind::InProgress => (MI_LOCK, bottom_dim),
+                                PrivilegedUiKind::Success => (MI_CHECK, c.accent),
+                                PrivilegedUiKind::Error => (MI_LOCK, c.error),
+                            };
+                            let resp = ui.add(
+                                egui::Button::new(
+                                    RichText::new(icon).size(14.0 * c.font_scale).color(col),
+                                )
+                                .frame(false)
+                                .min_size(Vec2::splat(22.0))
+                                .themed(&c),
+                            );
+                            if resp
+                                .on_hover_text(format!("{} — click to manage services", st.text))
+                                .clicked()
+                            {
+                                self.open_services_settings();
+                            }
+                        }
+                        None => {
+                            let (icon, col, tip) = match &self.privileged_availability {
+                                PrivilegedAvailability::Ready => (
+                                    MI_LOCK,
+                                    bottom_text,
+                                    "Integrated privilege management ready",
+                                ),
+                                PrivilegedAvailability::Misconfigured(msg) => {
+                                    (MI_LOCK, c.error, msg.as_str())
+                                }
+                                PrivilegedAvailability::Unsupported(msg) => {
+                                    (MI_LOCK, bottom_text, msg.as_str())
+                                }
+                            };
+                            let resp = ui.add(
+                                egui::Button::new(
+                                    RichText::new(icon).size(13.0 * c.font_scale).color(col),
+                                )
+                                .frame(false)
+                                .min_size(Vec2::splat(22.0))
+                                .themed(&c),
+                            );
+                            if resp
+                                .on_hover_text(format!("{tip} — click to manage services"))
+                                .clicked()
+                            {
+                                self.open_services_settings();
+                            }
+                        }
+                    }
+                    ui.add_space(2.0);
+                    let search_diag = self.search_service.diagnostics();
+                    let s_col = match search_diag.status {
+                        SearchIndexStatus::Unavailable => c.error,
+                        _ => bottom_text,
                     };
-                    let cf_resp = ui.add(
+                    let s_resp = ui.add(
                         egui::Button::new(
-                            RichText::new(MI_TERMINAL)
+                            RichText::new(MI_SEARCH)
+                                .size(13.0 * c.font_scale)
+                                .color(s_col),
+                        )
+                        .frame(false)
+                        .min_size(Vec2::splat(22.0))
+                        .themed(&c),
+                    );
+                    if s_resp
+                        .on_hover_text(format!(
+                            "{}\nClick to manage the index service",
+                            search_diagnostics_tooltip(
+                                &search_diag,
+                                self.search_ui.scope,
+                                &self.state.active_tab().current_dir,
+                            )
+                        ))
+                        .clicked()
+                    {
+                        self.open_services_settings();
+                    }
+                    ui.add_space(2.0);
+                    // Hidden files toggle — right side
+                    let (hidden_icon, hidden_color) = if self.state.config.show_hidden_files {
+                        (MI_VISIBILITY, c.accent)
+                    } else {
+                        (MI_VISIBILITY_OFF, bottom_text)
+                    };
+                    let hid_resp = ui.add(
+                        egui::Button::new(
+                            RichText::new(hidden_icon)
                                 .size(16.0 * c.font_scale)
-                                .color(cf_color),
+                                .color(hidden_color),
                         )
                         .frame(false)
                         .min_size(Vec2::splat(24.0))
                         .themed(&c),
                     );
-                    if cf_resp.clicked() {
-                        self.command_frame.visible = !self.command_frame.visible;
-                        if self.command_frame.visible {
-                            self.command_frame.request_focus = true;
-                        }
+                    if hid_resp.clicked() {
+                        self.state.config.show_hidden_files = !self.state.config.show_hidden_files;
+                        self.refresh_active_tab();
                     }
-                    cf_resp.on_hover_text("Toggle command bar  (or type any key)");
-                    ui.add_space(4.0);
-
-                    // Item count + selection name
-                    let tab_id = self.state.active_tab().id;
-                    let count = self
-                        .tab_ui
-                        .get(&tab_id)
-                        .map(|s| s.main.entries.len())
-                        .unwrap_or(0);
-                    let sel_name = self
-                        .tab_ui
-                        .get(&tab_id)
-                        .and_then(|s| s.main_sel)
-                        .and_then(|i| self.tab_ui.get(&tab_id)?.main.entries.get(i))
-                        .map(|e| e.name.clone());
-                    let status = if let Some(name) = sel_name {
-                        format!("{} items  ·  {}", count, name)
+                    controls_left = hid_resp.rect.left();
+                    hid_resp.on_hover_text(if self.state.config.show_hidden_files {
+                        "Hide hidden files"
                     } else {
-                        format!("{} items", count)
-                    };
-                    ui.label(
-                        RichText::new(status)
-                            .color(bottom_text)
-                            .size(11.5 * c.font_scale),
-                    );
-                    if let Some(msg) = &self.status_message {
-                        let col = if msg.ok { c.accent } else { c.error };
-                        ui.label(
-                            RichText::new(format!("· {}", msg.text))
-                                .color(col)
-                                .size(11.0 * c.font_scale),
-                        );
-                    }
-
-                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        ui.add_space(4.0);
-                        // Privileged capability + latest operation status
-                        match &self.privileged_status {
-                            Some(st) => {
-                                let (icon, col) = match st.kind {
-                                    PrivilegedUiKind::InProgress => (MI_LOCK, bottom_dim),
-                                    PrivilegedUiKind::Success => (MI_CHECK, c.accent),
-                                    PrivilegedUiKind::Error => (MI_LOCK, c.error),
-                                };
-                                let resp = ui.add(
-                                    egui::Button::new(
-                                        RichText::new(icon).size(14.0 * c.font_scale).color(col),
-                                    )
-                                    .frame(false)
-                                    .min_size(Vec2::splat(22.0))
-                                    .themed(&c),
-                                );
-                                if resp
-                                    .on_hover_text(format!(
-                                        "{} — click to manage services",
-                                        st.text
-                                    ))
-                                    .clicked()
-                                {
-                                    self.open_services_settings();
-                                }
-                            }
-                            None => {
-                                let (icon, col, tip) = match &self.privileged_availability {
-                                    PrivilegedAvailability::Ready => (
-                                        MI_LOCK,
-                                        bottom_text,
-                                        "Integrated privilege management ready",
-                                    ),
-                                    PrivilegedAvailability::Misconfigured(msg) => {
-                                        (MI_LOCK, c.error, msg.as_str())
-                                    }
-                                    PrivilegedAvailability::Unsupported(msg) => {
-                                        (MI_LOCK, bottom_text, msg.as_str())
-                                    }
-                                };
-                                let resp = ui.add(
-                                    egui::Button::new(
-                                        RichText::new(icon).size(13.0 * c.font_scale).color(col),
-                                    )
-                                    .frame(false)
-                                    .min_size(Vec2::splat(22.0))
-                                    .themed(&c),
-                                );
-                                if resp
-                                    .on_hover_text(format!("{tip} — click to manage services"))
-                                    .clicked()
-                                {
-                                    self.open_services_settings();
-                                }
-                            }
-                        }
-                        ui.add_space(2.0);
-                        let search_diag = self.search_service.diagnostics();
-                        let s_col = match search_diag.status {
-                            SearchIndexStatus::Unavailable => c.error,
-                            _ => bottom_text,
-                        };
-                        let s_resp = ui.add(
-                            egui::Button::new(
-                                RichText::new(MI_SEARCH)
-                                    .size(13.0 * c.font_scale)
-                                    .color(s_col),
-                            )
-                            .frame(false)
-                            .min_size(Vec2::splat(22.0))
-                            .themed(&c),
-                        );
-                        if s_resp
-                            .on_hover_text(format!(
-                                "{}\nClick to manage the index service",
-                                search_diagnostics_tooltip(
-                                    &search_diag,
-                                    self.search_ui.scope,
-                                    &self.state.active_tab().current_dir,
-                                )
-                            ))
-                            .clicked()
-                        {
-                            self.open_services_settings();
-                        }
-                        ui.add_space(2.0);
-                        // Hidden files toggle — right side
-                        let (hidden_icon, hidden_color) = if self.state.config.show_hidden_files {
-                            (MI_VISIBILITY, c.accent)
+                        "Show hidden files"
+                    });
+                    ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                        // Command frame toggle — LEFT side (bar opens at the bottom-left)
+                        let cf_color = if self.command_frame.visible {
+                            c.accent_dim
                         } else {
-                            (MI_VISIBILITY_OFF, bottom_text)
+                            bottom_text
                         };
-                        let hid_resp = ui.add(
+                        let cf_resp = ui.add(
                             egui::Button::new(
-                                RichText::new(hidden_icon)
+                                RichText::new(MI_TERMINAL)
                                     .size(16.0 * c.font_scale)
-                                    .color(hidden_color),
+                                    .color(cf_color),
                             )
                             .frame(false)
                             .min_size(Vec2::splat(24.0))
                             .themed(&c),
                         );
-                        if hid_resp.clicked() {
-                            self.state.config.show_hidden_files =
-                                !self.state.config.show_hidden_files;
-                            self.refresh_active_tab();
+                        if cf_resp.clicked() {
+                            self.command_frame.visible = !self.command_frame.visible;
+                            if self.command_frame.visible {
+                                self.command_frame.request_focus = true;
+                            }
                         }
-                        hid_resp.on_hover_text(if self.state.config.show_hidden_files {
-                            "Hide hidden files"
+                        cf_resp.on_hover_text("Toggle command bar  (or type any key)");
+                        ui.add_space(4.0);
+
+                        // Item count + selection name
+                        let tab_id = self.state.active_tab().id;
+                        let count = self
+                            .tab_ui
+                            .get(&tab_id)
+                            .map(|s| s.main.entries.len())
+                            .unwrap_or(0);
+                        let sel_name = self
+                            .tab_ui
+                            .get(&tab_id)
+                            .and_then(|s| s.main_sel)
+                            .and_then(|i| self.tab_ui.get(&tab_id)?.main.entries.get(i))
+                            .map(|e| e.name.clone());
+                        let status = if let Some(name) = sel_name {
+                            format!("{} items  ·  {}", count, name)
                         } else {
-                            "Show hidden files"
-                        });
+                            format!("{} items", count)
+                        };
+                        let neutral = egui::TextFormat {
+                            font_id: FontId::proportional(11.5 * c.font_scale),
+                            color: bottom_text,
+                            ..Default::default()
+                        };
+                        let mut job = egui::text::LayoutJob::default();
+                        let tooltip = if let Some(msg) = &self.status_message {
+                            // Feedback has priority over a potentially long selection.
+                            job.append(
+                                &msg.text.replace(['\r', '\n'], " "),
+                                0.0,
+                                egui::TextFormat {
+                                    font_id: FontId::proportional(11.0 * c.font_scale),
+                                    color: if msg.ok { c.accent } else { c.error },
+                                    ..Default::default()
+                                },
+                            );
+                            job.append("  ·  ", 0.0, neutral.clone());
+                            format!("{}\n{}", msg.text, status)
+                        } else {
+                            status.clone()
+                        };
+                        job.append(&status.replace(['\r', '\n'], " "), 0.0, neutral);
+                        text_rect = ui
+                            .add(
+                                egui::Label::new(job)
+                                    .truncate()
+                                    .show_tooltip_when_elided(false),
+                            )
+                            .on_hover_text(tooltip)
+                            .rect;
                     });
                 });
 
                 // Subtle centered wordmark in the status bar.
                 let logo_size = Vec2::new(82.0, 18.0);
                 let logo_rect = Rect::from_center_size(ui.max_rect().center(), logo_size);
-                ui.put(
-                    logo_rect,
-                    egui::Image::new(egui::include_image!("../../../assets/logo.svg"))
-                        .fit_to_exact_size(logo_size)
-                        .tint(c.border),
-                );
+                if text_rect.right() + 8.0 <= logo_rect.left()
+                    && logo_rect.right() + 8.0 <= controls_left
+                {
+                    ui.put(
+                        logo_rect,
+                        egui::Image::new(egui::include_image!("../../../assets/logo.svg"))
+                            .fit_to_exact_size(logo_size)
+                            .tint(c.border),
+                    );
+                }
             });
     }
 
@@ -15144,7 +15165,7 @@ impl OttrinApp {
                 "Checking retained Move history…".to_owned()
             } else if !self.retained_move_activity.is_empty() {
                 format!(
-                    "{} retained Move journal{}",
+                    "{} Move record{}",
                     self.retained_move_activity.len(),
                     if self.retained_move_activity.len() == 1 {
                         ""
@@ -15242,7 +15263,7 @@ impl OttrinApp {
                             );
                             ui.vertical(|ui| {
                                 ui.label(
-                                    RichText::new("Retained Move recovery")
+                                    RichText::new(if retained.recovery == RetainedMoveRecovery::Undone { "Completed Move Undo" } else { "Retained Move recovery" })
                                         .color(c.text)
                                         .size(12.0 * c.font_scale)
                                         .strong(),
@@ -26583,6 +26604,169 @@ mod tests {
             .collect();
         assert!(texts.iter().any(|text| text == "Duration: 5s"));
         assert!(!texts.iter().any(|text| text.ends_with(" ago")));
+    }
+
+    #[test]
+    fn status_bar_bounds_messages_and_selection_without_hiding_controls() {
+        for width in [320.0, 480.0, 1024.0] {
+            for scale in [1.0, 1.5, 2.0] {
+                let (_root, mut app, _) = clipboard_keyboard_fixture();
+                app.colors.font_scale = scale;
+                let tab_id = app.state.active_tab().id;
+                let tab = app.tab_ui.get_mut(&tab_id).unwrap();
+                tab.main.entries[0].name = "an unusually long selected file name ".repeat(12);
+                tab.main_sel = Some(0);
+                let message = "Recovery journals cleaned. Kept 1 private folder; other files and streams were preserved.";
+                app.set_status_message(message, false, 120);
+                let ctx = Context::default();
+                let mut draw = || {
+                    ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                egui::vec2(width, 240.0),
+                            )),
+                            ..Default::default()
+                        },
+                        |ctx| app.render_status_bar(ctx),
+                    )
+                };
+                draw();
+                let output = draw();
+                let text = output
+                    .shapes
+                    .iter()
+                    .filter_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) => Some((text, shape.clip_rect)),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                let (message, clip) = text
+                    .iter()
+                    .find(|(text, _)| text.galley.job.text.contains(message))
+                    .expect("status feedback remains rendered beside a long selection");
+                assert_eq!(
+                    message.galley.rows.len(),
+                    1,
+                    "footer wraps at width {width}, scale {scale}"
+                );
+                let message_rect = Rect::from_min_size(message.pos, message.galley.size());
+                assert!(
+                    clip.expand(0.5).contains_rect(message_rect),
+                    "status is clipped at width {width}, scale {scale}: {message_rect:?} inside {clip:?}"
+                );
+                for icon in [MI_TERMINAL, MI_LOCK, MI_SEARCH, MI_VISIBILITY_OFF] {
+                    let (text, clip) = text
+                        .iter()
+                        .find(|(text, _)| text.galley.job.text == icon)
+                        .expect("persistent status control is painted");
+                    let rect = Rect::from_min_size(text.pos, text.galley.size());
+                    assert!(
+                        clip.expand(0.5).contains_rect(rect),
+                        "control clipped at width {width}, scale {scale}: {icon}"
+                    );
+                    assert!(
+                        !rect.intersects(message_rect),
+                        "status overlaps a control at width {width}, scale {scale}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn status_bar_tooltip_preserves_full_feedback_and_selected_name() {
+        let (_root, mut app, _) = clipboard_keyboard_fixture();
+        let tab_id = app.state.active_tab().id;
+        let selected = "a long selected filename ".repeat(20);
+        let tab = app.tab_ui.get_mut(&tab_id).unwrap();
+        tab.main.entries[0].name = selected.clone();
+        tab.main_sel = Some(0);
+        let message = "Access was denied.\nOpen Services to check administrator integration.";
+        app.set_status_message(message, false, 120);
+        let ctx = Context::default();
+        ctx.style_mut(|style| style.interaction.tooltip_delay = 0.0);
+        let screen = Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(320.0, 240.0));
+        let mut draw = |events, time| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(screen),
+                    time: Some(time),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| app.render_status_bar(ctx),
+            )
+        };
+        draw(Vec::new(), 0.0);
+        let output = draw(Vec::new(), 0.1);
+        let feedback = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text)
+                    if text.galley.job.text.starts_with("Access was denied.") =>
+                {
+                    assert_eq!(
+                        text.galley.rows.len(),
+                        1,
+                        "multiline feedback stays in the footer row"
+                    );
+                    Some(Rect::from_min_size(text.pos, text.galley.size()).center())
+                }
+                _ => None,
+            })
+            .expect("visible feedback has priority over the selected filename");
+        draw(vec![egui::Event::PointerMoved(feedback)], 0.2);
+        let output = draw(Vec::new(), 1.0);
+        assert!(output.shapes.iter().any(|shape| matches!(&shape.shape,
+            egui::Shape::Text(text) if text.galley.job.text.contains(message) && text.galley.job.text.contains(&selected)
+        )), "hover reveals the original multiline message and complete selected filename");
+    }
+
+    #[test]
+    fn completed_move_records_are_not_reported_as_retained_journals() {
+        let mut app = OttrinApp::default();
+        app.retained_move_activity_loader.pending = false;
+        app.retained_copy_activity_loader.pending = false;
+        app.retained_move_activity = vec![RetainedMoveActivity {
+            transaction_id: [7; 16],
+            phase: "Replace undone",
+            recovery: RetainedMoveRecovery::Undone,
+            plan: None,
+        }];
+        let ctx = Context::default();
+        let mut draw = || {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(640.0, 480.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
+                },
+            )
+        };
+        draw();
+        let output = draw();
+        let texts = output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        assert!(texts.contains(&"1 Move record"));
+        assert!(texts.contains(&"Completed Move Undo"));
+        assert!(
+            !texts
+                .iter()
+                .any(|text| text.contains("retained Move journal"))
+        );
     }
 
     #[test]
