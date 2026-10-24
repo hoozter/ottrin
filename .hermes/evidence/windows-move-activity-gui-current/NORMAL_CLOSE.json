@@ -1,0 +1,13 @@
+﻿{
+    "id":  "3bbb7441265a4b3686e65ea3efd7ef74",
+    "case":  "ordinary",
+    "foreground_pid":  4484,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "op":  "close"
+}

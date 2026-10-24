@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "domain_state": "shut off",
+  "persistent_domain_definition_unchanged": true,
+  "guest_account_profile_credentials": "TEARDOWN_GUEST.json",
+  "owned_secondary_volume": "VOLUME_TEARDOWN.json",
+  "owned_fixture_root_removed": "cleanup observer exited successfully after guarded retirement",
+  "retained_guest_preserved": true
+}

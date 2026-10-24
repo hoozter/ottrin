@@ -34,30 +34,33 @@ their named hashes. Test counts are scoped observations, not completion measures
   The actual portable GUI passes same-volume and cross-volume Move/Replace,
   Undo after both containing folders are renamed, and record cleanup with exact
   file preservation. Unknown private cleanup data is preserved with a warning.
-  These partial results are in
-  `.hermes/evidence/windows-move-activity-gui-current/`; there is no final GUI
-  acceptance or teardown receipt for this run yet.
+  The reopened-package recovery test also passes after both parents are renamed:
+  original/staged bytes are verified, Recover now publishes at the current native
+  destination, retires source/staging/control state, preserves foreign old-path
+  files and refreshes the listing without manual input. All 11 public files pass
+  after normal close. Final scoped GUI evidence and teardown are in
+  `.hermes/evidence/windows-move-activity-gui-current/ACCEPTANCE.json`.
 - **Source checkpoint `6dfd3b00`:** footer text clipping and misleading completed-Move
   journal counts/titles are corrected in source, alongside desktop QA input,
   observation and lifecycle fixes. All 401 Linux UI tests pass (one ignored),
   and the Windows UI test executable builds. Native execution and a rebuilt
   package visual check of these edits remain pending. Neither stable package
   cohort contains them.
-- **Interrupted QA resources:** retained guest `ottrin-copy-cleanup-qa` is running
-  with the owned `C:\OttrinWindowQA` temporary account/profile/payload and owned
-  secondary NTFS volume. The last successful action seeded a Staged recovery
-  transaction (expected child exit 87); it did not recover it through the GUI.
-  Preserve this fixture until observation/recovery evidence is captured, then
-  remove the owned volume, temporary account/profile/credentials and payload and
-  restore the guest's recorded off state. Do not delete the retained guest.
+- **QA resources retired:** the owned secondary NTFS VHD, temporary
+  `OttrinWindowQA` account/profile/credential/payload and processes are removed.
+  Original file hashes, login settings, disk inventory and persistent VM definition
+  match their baselines; retained guest `ottrin-copy-cleanup-qa` is off. Compact
+  acceptance receipts and useful current compiler caches are retained. The old
+  `48fb6c01` stage is held only until the corrected package replacement is verified.
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Observe the existing staged recovery fixture, finish actual GUI recovery after
-   parent renames, and verify public/foreign bytes and visible listing refresh.
-2. Finish owned QA teardown. Complete native verification of the committed UI
-   fixes, then rebuild and verify the corrected packages
-   before replacing the stable candidate. Update package receipts only on success.
+1. Complete native Windows verification of the committed UI fixes, then rebuild
+   and visually accept the corrected packages before replacing the stable
+   candidate. The older `48fb6c01` package now has completed scoped workflow
+   acceptance, but it retains the known footer/Activity defects.
+2. Replace superseded staging after verification; update the stable artifact
+   receipts only on success and finish all owned native/package QA teardown.
 3. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below; then concentrated platform acceptance. Required outcome 4
    (the themed picker and supported folder integration) remains deferred until
@@ -67,7 +70,9 @@ Resume at the unfinished operation, not the start of an older checkpoint:
 The goal's recorded October 22 10:01 Stockholm stop reports
 `server_overloaded` (“Selected model is at capacity”). This is an execution failure,
 not evidence that the roadmap is exhausted or waiting on user approval. Work
-resumed on October 24; the saved goal still reported `blocked` during this audit.
+resumed on October 24; the saved goal reported `blocked` during the earlier audit.
+The owner subsequently requested a new independent-completion goal, which is now
+active with the explicit waiting list below.
 Project documents cannot repair goal scheduling. Record execution failures and
 unfinished resources explicitly; do not describe a stopped run as continuing.
 
@@ -81,6 +86,23 @@ is claimed. Other release gates remain open.
 This audit reconciles documents and existing evidence; it does not rerun product
 acceptance or finish the interrupted QA task. There is no defensible overall
 completion percentage or daily-driver date from the existing checkpoint counts.
+
+## Owner/external waiting list
+
+The active goal is to finish independently executable work. These entries do not
+block source, isolated/native QA, packaging or other dependency-ready outcomes.
+Do not move a fixable implementation or test failure onto this list.
+
+| Waiting item | Needed later | Work that continues now |
+| --- | --- | --- |
+| Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
+| Linux public release signing identity | Owner approves the project identity/public fingerprint and authorizes provisioning its protected signing key. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work; do not invent or publish an identity. |
+| Microsoft Store account/submission | Owner-controlled Store identity, listing and certification after Windows is ready. | Implement/test MSIX packaging and deployment when dependency-ready; unsigned direct ZIP/EXE/MSI remain supported. No paid Windows certificate gate. |
+| Physical-only device/adapter/audio acceptance | A suitable available test device or the owner's later observation for claims virtual fixtures cannot establish. | Native VM/private desktop tests and all reproducible software/resource fixes; record each untested physical claim separately. |
+
+When a new external dependency is established, record the exact missing resource,
+its affected outcome and evidence here. Resume another ready outcome. Keep the
+project's active resume point above current after every verified checkpoint.
 
 ## Current delivery and remaining outcomes
 
@@ -125,7 +147,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish the staged `48fb6c01` GUI recovery run and teardown; rebuild and visually accept the committed footer/Activity fixes before promotion. Same/cross-volume renamed-parent Undo and cleanup now have partial actual-package evidence above. Complete remaining recovery and session-history acceptance. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | The staged `48fb6c01` recovery/Undo/cleanup GUI run and teardown are complete within the scope above. Verify native UI fixes, rebuild and visually accept them before promotion. Complete remaining recovery and session-history acceptance. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 

@@ -1,0 +1,19 @@
+{
+  "source_commit": "48fb6c015225090f2e57ed658c8c23a24af6b9fc",
+  "findings": [
+    {
+      "status": "source-corrected in 6dfd3b00; rebuilt-package visual acceptance pending",
+      "area": "status bar",
+      "problem": "A long completed-with-warning message wraps inside the fixed-height footer and clips below the row at the tested 1024x680 window",
+      "evidence": "status-long-message-clipping.png",
+      "next": "Bound status text and reserve persistent controls; rebuild and verify rendered package before promotion"
+    },
+    {
+      "status": "source-corrected in 6dfd3b00; rebuilt-package visual acceptance pending",
+      "area": "Activity completed history",
+      "problem": "Count says retained Move journals after journals are cleaned; completed Undo rows have generic recovery titles",
+      "evidence": "recovery-before-action.png",
+      "next": "Verify Move record count and Completed Move Undo title in corrected package"
+    }
+  ]
+}

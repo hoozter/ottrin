@@ -1,0 +1,40 @@
+﻿{
+    "id":  "a7c9f279c32e464499a59fd96aea04ba",
+    "case":  "ordinary",
+    "foreground_pid":  5416,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "label":  "Actual recovery follows renamed parents and preserves foreign old paths",
+                         "status":  "pass",
+                         "files":  {
+                                       "secondary\\recovery-destination-current\\payload.txt":  "recovery original selected\n",
+                                       "recovery-source\\payload.txt":  "foreign recovery source\n",
+                                       "secondary\\recovery-destination\\payload.txt":  "foreign recovery destination\n"
+                                   },
+                         "absent":  [
+                                        "recovery-source-current\\payload.txt",
+                                        "secondary\\recovery-destination-current\\.ottrin-move-23fb9730ccdac102aef682436474e76a"
+                                    ]
+                     },
+    "windows":  [
+                    {
+                        "handle":  4522470,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  1638878,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "op":  "verify"
+}

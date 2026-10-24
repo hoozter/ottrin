@@ -1,0 +1,47 @@
+{
+  "status": "pass within exact packaged Windows Move/Undo/recovery/record-cleanup workflows; two UI findings remain source-corrected only",
+  "source_commit": "48fb6c015225090f2e57ed658c8c23a24af6b9fc",
+  "archive_sha256": "8daed3bd9c7306d2d8a1bee8d9c4e09a9e68a965ba779d13c3a6cd6238df0927",
+  "package_identities": "../windows-move-package-current/PACKAGE_IDENTITIES.json",
+  "scope": {
+    "platform": "ordinary temporary Windows account; two owned NTFS volumes; Dark/List100/default renderer",
+    "same_volume": "Actual Cut/Paste Replace, both containing parents renamed/recreated, actual Undo; selected/displaced original bytes restored and foreign old-path occupants preserved",
+    "cross_volume": "Actual Cut/Paste Replace C to D, both parents renamed/recreated, actual Undo; selected/displaced bytes restored and foreign old-path occupants preserved",
+    "cleanup": "Actual Activity cleanup removes known journals; preserves unknown private file with visible warning. Empty cross-volume private folders removed; compact completed-history proofs remain",
+    "recovery": "Exact-source native fixture exits87 at central Staged. Both parents then renamed/recreated. Reopened package discovers it; actual Recover now publishes expected bytes under original native destination, retires source/staging/control evidence, preserves old-path foreign bytes",
+    "view_refresh": "Passive screenshot shows published payload.txt immediately after recovery without navigation or Refresh",
+    "post_close": "11 public files verified after normal app close; recovered source/private stage absent"
+  },
+  "evidence": {
+    "same_volume": [
+      "SAME_MOVE_METADATA.json",
+      "SAME_UNDO_METADATA.json",
+      "SAME_CLEANUP_METADATA.json",
+      "same-undo-passive.png"
+    ],
+    "cross_volume": [
+      "CROSS_MOVE_METADATA.json",
+      "CROSS_UNDO_METADATA.json",
+      "CROSS_CLEANUP_METADATA.json",
+      "cross-undo-passive.png"
+    ],
+    "recovery": [
+      "RECOVERY_SEEDED_METADATA.json.gz",
+      "RECOVERY_FILES.json",
+      "RECOVERY_FINAL_METADATA.json.gz",
+      "recovery-before-action.png",
+      "recovery-after-action.png"
+    ],
+    "post_close": "POST_CLOSE_FILES.json",
+    "trace": "commands.jsonl.gz",
+    "source_bound_seeder": "NATIVE_SEEDER.json",
+    "normal_close": "NORMAL_CLOSE.json"
+  },
+  "open_findings": "GUI_FINDINGS.json; committed source6dfd3b00 corrects footer clipping and misleading completed-history count/title; corrected package visuals remain required",
+  "cleanup": "TEARDOWN.json, TEARDOWN_GUEST.json, VOLUME_TEARDOWN.json; retained VM off and definition unchanged",
+  "limits": [
+    "No final daily-driver/user acceptance",
+    "No installer lifecycle, physical graphics/device or power-loss acceptance",
+    "Old48 package not promoted because source-corrected UI findings require rebuild and verification"
+  ]
+}

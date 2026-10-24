@@ -1,0 +1,33 @@
+﻿{
+    "id":  "fc7f5e614f3f4c96a959d7f8df427287",
+    "case":  "ordinary",
+    "foreground_pid":  4432,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "label":  "All Move Undo recovery public bytes remain correct after normal app close",
+                         "status":  "pass",
+                         "files":  {
+                                       "secondary\\recovery-destination-current\\payload.txt":  "recovery original selected\n",
+                                       "recovery-source\\payload.txt":  "foreign recovery source\n",
+                                       "secondary\\recovery-destination\\payload.txt":  "foreign recovery destination\n",
+                                       "same-source-current\\note.txt":  "source original\n",
+                                       "same-destination-current\\note.txt":  "destination original\n",
+                                       "source\\note.txt":  "foreign source after parent rename\n",
+                                       "destination\\note.txt":  "foreign destination after parent rename\n",
+                                       "cross-source-current\\entry.txt":  "cross-volume selected original\n",
+                                       "secondary\\cross-destination-current\\entry.txt":  "cross-volume displaced original\n",
+                                       "cross-source\\entry.txt":  "foreign cross source\n",
+                                       "secondary\\cross-destination\\entry.txt":  "foreign cross destination\n"
+                                   },
+                         "absent":  [
+                                        "recovery-source-current\\payload.txt",
+                                        "secondary\\recovery-destination-current\\.ottrin-move-23fb9730ccdac102aef682436474e76a"
+                                    ]
+                     },
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "op":  "verify"
+}

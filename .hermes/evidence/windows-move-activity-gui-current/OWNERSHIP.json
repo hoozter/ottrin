@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinWindowQA",
+  "account": "OttrinWindowQA",
+  "package_source": "48fb6c015225090f2e57ed658c8c23a24af6b9fc",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage/Ottrin-0.1.0-windows-x64-portable.zip",
+  "archive_sha256": "8daed3bd9c7306d2d8a1bee8d9c4e09a9e68a965ba779d13c3a6cd6238df0927",
+  "payload_manifest": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-package-current/PAYLOAD.json",
+  "scope": "Exact packaged Move/Undo/recovery/cleanup via ordinary interactive account and owned secondary NTFS volume; no user acceptance claim"
+}
