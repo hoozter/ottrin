@@ -71,11 +71,12 @@ resumed on October 24; the saved goal still reported `blocked` during this audit
 Project documents cannot repair goal scheduling. Record execution failures and
 unfinished resources explicitly; do not describe a stopped run as continuing.
 
-Documentation/release discrepancy still requiring implementation:
-`.github/workflows/release.yml` includes macOS in verification and makes publish
-require `verify-macos-signatures`, despite the agreed deferral. Reconcile the
-workflow with the Linux/Windows scope before release; the updated checklist does
-not change that dependency. No final gate or signing requirement is waived.
+Release scope correction: `.github/workflows/release.yml` now verifies, packages,
+signs and publishes Linux/Windows only. macOS jobs and publish dependencies, and
+macOS requirements in the shared artifact verifier, are removed. Standalone
+macOS packaging/signing scripts remain deferred. Scoped workflow/signing and
+documentation contracts verify this boundary; no hosted release or signing run
+is claimed. Other release gates remain open.
 
 This audit reconciles documents and existing evidence; it does not rerun product
 acceptance or finish the interrupted QA task. There is no defensible overall

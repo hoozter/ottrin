@@ -73,12 +73,7 @@ for literal in \
   'windows-unsigned-stage' \
   'windows-release-artifacts' \
   'verify-windows-signatures:' \
-  'MACOS_SIGNING_CERTIFICATE_BASE64' \
-  'MACOS_SIGNING_CERTIFICATE_PASSWORD' \
-  'MACOS_SIGNING_IDENTITY' \
-  './packaging/macos/sign-and-notarize-release.sh' \
-  'verify-macos-signatures:' \
-  'needs: [package-linux, verify-windows-signatures, verify-macos-signatures]' \
+  'needs: [package-linux, verify-windows-signatures]' \
   'pattern: "*-release-artifacts"'; do
   grep -Fq -- "$literal" "$WORKFLOW" || fail "release workflow omits: $literal"
 done

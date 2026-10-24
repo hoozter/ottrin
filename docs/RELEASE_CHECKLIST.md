@@ -125,15 +125,16 @@ Deferred macOS release requirement:
   the publish dependency verifies the exact downloaded checksums, team
   identifier, code signatures, notarization tickets, and Gatekeeper assessment.
 
-The tag workflow currently requires the following GitHub Actions settings. Its
-macOS job/signing dependency must be reconciled with the deferred platform scope
-before the Linux/Windows release; changing this checklist does not change CI:
+The Linux/Windows tag workflow requires these GitHub Actions settings:
 
 - secret `LINUX_SIGNING_PRIVATE_KEY` and variable
   `LINUX_SIGNING_KEY_FINGERPRINT` (the full 40-hex primary-key fingerprint),
 - secrets `WINDOWS_SIGNING_CERTIFICATE_BASE64` and
   `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`, plus variable
-  `WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT` (the 40-hex certificate thumbprint),
+  `WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT` (the 40-hex certificate thumbprint).
+
+Future macOS signing, when that platform is resumed, requires:
+
 - secrets `MACOS_SIGNING_CERTIFICATE_BASE64`,
   `MACOS_SIGNING_CERTIFICATE_PASSWORD`, `MACOS_NOTARIZATION_APPLE_ID`, and
   `MACOS_NOTARIZATION_PASSWORD`, plus variables `MACOS_SIGNING_IDENTITY`

@@ -43,8 +43,7 @@ for literal in \
   "'Windows portable archive'" \
   "'Windows installer'" \
   "'Linux AppImage'" \
-  "'Linux native package'" \
-  "'macOS app archive'"; do
+  "'Linux native package'"; do
   require_literal "$ARTIFACT_VERIFIER" "$literal"
 done
 

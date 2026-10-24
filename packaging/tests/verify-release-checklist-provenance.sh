@@ -37,7 +37,7 @@ require_line 'Historical local gates and artifact inspection do not establish th
 require_line '- [ ] Exact release artifact checksums verify after rebuilding from the current release commit.'
 require_line '- [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.'
 require_line '- A fresh isolated artifact set was rebuilt and reverified on 2026-07-31, including'
-require_line '- [ ] Linux, Windows, and macOS CI are green for the release commit.'
+require_line '- [ ] Linux and Windows CI are green for the release commit.'
 require_line '- [ ] Portable zip launches on a real Windows desktop.'
 require_line '- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem and cross-filesystem Move support Skip/Rename/Overwrite/Cancel with explicit complete/partial/recovery outcomes.'
 require_line '- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; same-volume and cross-volume Windows Move satisfy the roadmap contract and fail closed for every still-unsupported conflict or entry-kind boundary.'
@@ -174,7 +174,7 @@ fi
 # gates that are still required; otherwise a reader could mistake this
 # candidate for a signed-off release.
 for expected in \
-  'Linux, Windows, and macOS CI' \
+  'Linux and Windows CI' \
   'real Windows desktop' \
   'packaged Linux polkit' \
   'full packaged-workflow smoke tests'; do
@@ -202,7 +202,7 @@ done
 # Signing is a release requirement, not a deferred feature. Public notes must
 # keep native signing acceptance pending, record the completed source
 # integration honestly, and require exact downloaded-artifact verification.
-require_document_line "$RELEASE_NOTES" 'signing acceptance remain pending' 'the pending signing boundary'
+require_document_line "$RELEASE_NOTES" 'Linux and Windows production signing acceptance remains pending' 'the pending signing boundary'
 require_document_line "$ROADMAP" 'Linux and Windows code-signing integration is source-complete; production identities and exact downloaded-artifact verification remain release gates.' 'the source-complete signing-integration boundary'
 require_document_line "$ROADMAP" 'Sign the exact Linux and Windows release artifacts with the approved production identities where required and verify the downloaded signatures.' 'the exact-artifact signing gate'
 

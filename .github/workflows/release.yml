@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -149,43 +149,6 @@ jobs:
             dist/Ottrin-*-windows-x64-portable.zip.sha256
           if-no-files-found: error
 
-  package-macos:
-    name: macOS app archive
-    needs: verify
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
-
-      - name: Package macOS app archive
-        run: ./packaging/macos/package-app.sh
-
-      - name: Sign and notarize macOS release artifacts
-        env:
-          OTTRIN_MACOS_SIGNING_CERTIFICATE_BASE64: ${{ secrets.MACOS_SIGNING_CERTIFICATE_BASE64 }}
-          OTTRIN_MACOS_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_SIGNING_CERTIFICATE_PASSWORD }}
-          OTTRIN_MACOS_SIGNING_IDENTITY: ${{ vars.MACOS_SIGNING_IDENTITY }}
-          OTTRIN_MACOS_TEAM_ID: ${{ vars.MACOS_TEAM_ID }}
-          OTTRIN_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}
-          OTTRIN_MACOS_NOTARIZATION_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
-        run: ./packaging/macos/sign-and-notarize-release.sh dist/Ottrin-*-macos-*.zip
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: macos-release-artifacts
-          path: |
-            dist/Ottrin-*-macos-*.zip
-            dist/Ottrin-*-macos-*.zip.sha256
-            dist/Ottrin-*-macos-*.dmg
-            dist/Ottrin-*-macos-*.dmg.sha256
-          if-no-files-found: error
-
   package-windows-installer:
     name: Windows installer
     needs: package-windows-portable
@@ -294,26 +257,9 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw "Authenticode verification failed for $($file.Name)." }
           }
 
-  verify-macos-signatures:
-    name: Verify downloaded macOS signatures and notarization
-    needs: package-macos
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: macos-release-artifacts
-          path: dist
-
-      - name: Verify exact downloaded macOS identities and tickets
-        env:
-          OTTRIN_MACOS_TEAM_ID: ${{ vars.MACOS_TEAM_ID }}
-        run: ./packaging/macos/verify-release-signatures.sh dist
-
   release:
     name: Publish GitHub release
-    needs: [package-linux, verify-windows-signatures, verify-macos-signatures]
+    needs: [package-linux, verify-windows-signatures]
     runs-on: ubuntu-latest
     permissions:
       contents: write

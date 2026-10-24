@@ -46,17 +46,12 @@ require_installer_literal 'if ($expectedHash -ne $actualHash) { throw "Windows p
 require_installer_literal 'if ($stages.Count -ne 1) { throw "Expected exactly one extracted Windows portable stage for installer packaging." }'
 
 for literal in \
-  'os: [ubuntu-latest, windows-latest, macos-latest]' \
-  'package-macos:' \
-  'runs-on: macos-latest' \
-  './packaging/macos/package-app.sh' \
-  'dist/Ottrin-*-macos-*.zip' \
-  'verify-macos-signatures:' \
+  'os: [ubuntu-latest, windows-latest]' \
   'needs: package-windows-portable' \
   'needs: package-windows-installer' \
-  'needs: [package-linux, verify-windows-signatures, verify-macos-signatures]'; do
+  'needs: [package-linux, verify-windows-signatures]'; do
   if ! grep -Fq -- "$literal" "$WORKFLOW"; then
-    printf 'Release workflow omits the macOS source-package path: %s\n' "$literal" >&2
+    printf 'Release workflow omits the Linux/Windows dependency: %s\n' "$literal" >&2
     exit 1
   fi
 done
@@ -80,5 +75,12 @@ done
 
 if [[ "$(grep -Fc 'contents: write' "$WORKFLOW")" -ne 1 ]]; then
   printf 'Release workflow must grant contents: write to exactly one job\n' >&2
+  exit 1
+fi
+
+# Deferred macOS must not be pulled back into either the job graph or the
+# shared publish-time artifact verifier.
+if grep -Eiq 'macos' "$WORKFLOW" "$ROOT/packaging/verify-release-artifacts.sh"; then
+  printf 'Deferred macOS is still required by the active release pipeline\n' >&2
   exit 1
 fi
