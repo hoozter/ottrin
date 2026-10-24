@@ -72,7 +72,7 @@ Project documents cannot repair goal scheduling. Record execution failures and
 unfinished resources explicitly; do not describe a stopped run as continuing.
 
 Release scope correction: `.github/workflows/release.yml` now verifies, packages,
-signs and publishes Linux/Windows only. macOS jobs and publish dependencies, and
+publishes Linux/Windows only, signing Linux with the project OpenPGP key. macOS jobs and publish dependencies, and
 macOS requirements in the shared artifact verifier, are removed. Standalone
 macOS packaging/signing scripts remain deferred. Scoped workflow/signing and
 documentation contracts verify this boundary; no hosted release or signing run
@@ -127,7 +127,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
 | Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish the staged `48fb6c01` GUI recovery run and teardown; commit, rebuild and visually accept the open footer/Activity fixes before promotion. Same/cross-volume renamed-parent Undo and cleanup now have partial actual-package evidence above. Complete remaining recovery and session-history acceptance. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
-| Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
+| Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
 User acceptance is deferred. Continue independently executable work; each
 checkpoint below retains its recorded source and artifact scope. These outcomes
@@ -2378,7 +2378,7 @@ This snapshot reconciles the roadmap with local source, package provenance and r
 - Source-complete macOS app-bundle ZIP and DMG with one staging layout for the GUI, index daemon, bundle metadata, icon, release documentation, and source provenance. The release workflow uses an ephemeral keychain to Developer ID sign the app, notarizes and staples the app and DMG, publishes fresh checksums, and verifies downloaded identities, tickets, and Gatekeeper assessment. Native construction, launch, Finder behavior, and production-identity acceptance remain pending on macOS.
 - Source-complete Unix Administrator profile with visibly identified application and save surfaces, index-free direct file use, process-scoped temporary indexing, and a separately confirmed persistent root service isolated in protected root-owned configuration, state, database, lock and socket namespaces.
 - Source-complete storage locations: Linux mounted/removable roots and Windows fixed, removable, optical and mapped-network drives are discovered with stable identities; attachment/removal refresh retains unavailable locations without redirecting operations; direct browsing remains independent from explicit indexed-volume opt-in.
-- Source-complete release signing: the tag workflow imports an approved Linux OpenPGP identity, creates armored detached signatures for the portable tarball and AppImage, signs Windows payload binaries before packaging and the final portable/MSI/installer artifacts afterward, and Developer ID signs, notarizes, and staples the macOS app and DMG. It recomputes checksums after signing and verifies downloaded Linux signatures, Windows Authenticode identities, and macOS team identities/tickets/Gatekeeper assessment before publication. Production identities and exact-artifact acceptance remain in final platform QA.
+- Release signing/distribution follows the current [signing policy](#signing-and-windows-distribution): Linux OpenPGP, unsigned Windows direct downloads and later Store-signed MSIX. Earlier Authenticode/macOS integration is historical and is not an active release requirement.
 
 ## Remaining work
 
@@ -2533,10 +2533,21 @@ Start this phase after outcomes 1–3 are complete, before starting deferred out
 - Exercise native WGPU and bundled Mesa OpenGL on adapters that need each path. Confirm Automatic selection, saved preference, diagnostic override, startup log and loaded-DLL provenance.
 - Exercise same-volume and cross-volume Move with Skip/Rename/Overwrite/Cancel handling, interrupted work, edited-output Undo refusal, removable drives, and explicit partial/recovery outcomes.
 
-### Signing
+### Signing and Windows distribution
 
-- Linux and Windows code-signing integration is source-complete; production identities and exact downloaded-artifact verification remain release gates.
-- Sign the exact Linux and Windows release artifacts with the approved production identities where required and verify the downloaded signatures.
+- Linux portable/AppImage release signing uses a project-owned OpenPGP key and
+  detached signatures; no paid certificate is needed. Provision the protected key,
+  publish its public key/fingerprint and verify exact downloaded artifacts.
+- Direct Windows ZIP/EXE/MSI downloads remain unsigned by owner decision. Keep
+  checksums and explicit unsigned-publisher/SmartScreen disclosures; buying an
+  Authenticode certificate is not a release gate.
+- Once Windows is ready for release, implement and accept a Microsoft Store MSIX
+  package, including package identity, helper/elevation, background indexing,
+  updates and uninstall behavior under MSIX deployment. The Store signs accepted
+  MSIX submissions. This is not an existing package or accepted integration and
+  does not provide signatures for the separate direct EXE/MSI downloads.
+- Store submission/account work waits for readiness and the owner; independently
+  executable implementation and unsigned direct-download acceptance continue.
 
 ## Release candidate gate
 
@@ -2554,7 +2565,7 @@ Run this gate once the implementation outcomes above are source-complete and exa
 - Known limitations match observed behavior.
 - `README.md`, `USER_GUIDE.md`, `ROADMAP.md` and `RELEASE_NOTES.md` agree with the exact artifacts.
 - Version, artifact names, checksums and generated release notes agree.
-- Required signatures verify after download.
+- Linux signatures and all artifact checksums verify after download; unsigned Windows direct downloads are labeled explicitly.
 - David reviews the release notes and any remaining known limitations. No blocker is waived without a written decision.
 
 ### Windows MSI desktop integration — 2026-10-12

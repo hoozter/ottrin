@@ -167,12 +167,8 @@ jobs:
           choco install nsis --yes --no-progress
           dotnet tool install --global wix --version 5.*
 
-      - name: Sign portable payload and package Windows installers
+      - name: Package unsigned Windows installers
         shell: powershell
-        env:
-          OTTRIN_WINDOWS_SIGNING_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_BASE64 }}
-          OTTRIN_WINDOWS_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
-          OTTRIN_WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT: ${{ vars.WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT }}
         run: |
           $archives = @(Get-ChildItem dist\Ottrin-*-windows-x64-portable.zip -File)
           if ($archives.Count -ne 1) { throw "Expected exactly one Windows portable archive for installer packaging." }
@@ -186,16 +182,6 @@ jobs:
           $stages = @(Get-ChildItem dist\installer-payload -Directory)
           if ($stages.Count -ne 1) { throw "Expected exactly one extracted Windows portable stage for installer packaging." }
           $stage = $stages[0]
-          .\packaging\windows\sign-release-artifacts.ps1 -Files @(
-            (Join-Path $stage.FullName 'bin\ottrin.exe'),
-            (Join-Path $stage.FullName 'bin\ottrin-priv-helper.exe')
-          )
-
-          Remove-Item -LiteralPath $archive.FullName, $checksumFiles[0].FullName -Force
-          Compress-Archive -LiteralPath $stage.FullName -DestinationPath $archive.FullName
-          $portableHash = (Get-FileHash -Algorithm SHA256 $archive.FullName).Hash.ToLowerInvariant()
-          "$portableHash  $($archive.Name)" | Set-Content -Encoding ascii "$($archive.FullName).sha256"
-
           .\packaging\windows\package-installer.ps1 -Stage $stage.FullName
           .\packaging\windows\package-msi.ps1 -Stage $stage.FullName
           $installers = @(
@@ -203,13 +189,12 @@ jobs:
             Get-ChildItem dist\Ottrin-*-windows-x64.msi -File
           )
           if ($installers.Count -ne 2) { throw "Expected one EXE installer and one MSI installer for signing." }
-          .\packaging\windows\sign-release-artifacts.ps1 -Files $installers.FullName
           foreach ($installer in $installers) {
             $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLowerInvariant()
             "$hash  $($installer.Name)" | Set-Content -Encoding ascii "$($installer.FullName).sha256"
           }
 
-      - name: Upload signed Windows release artifacts
+      - name: Upload unsigned Windows release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: windows-release-artifacts
@@ -222,8 +207,8 @@ jobs:
             dist/Ottrin-*-windows-x64.msi.sha256
           if-no-files-found: error
 
-  verify-windows-signatures:
-    name: Verify downloaded Windows signatures
+  verify-windows-artifacts:
+    name: Verify downloaded unsigned Windows artifacts
     needs: package-windows-installer
     runs-on: windows-latest
     steps:
@@ -232,34 +217,30 @@ jobs:
           name: windows-release-artifacts
           path: dist
 
-      - name: Verify exact downloaded Authenticode signatures
+      - name: Verify exact downloaded artifact checksums
         shell: powershell
-        env:
-          OTTRIN_WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT: ${{ vars.WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT }}
         run: |
-          $expectedThumbprint = ([string]$env:OTTRIN_WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT -replace '\s', '').ToUpperInvariant()
-          if ($expectedThumbprint -notmatch '^[0-9A-F]{40}$') { throw "The approved Windows signing certificate thumbprint is missing or invalid." }
           $archives = @(Get-ChildItem dist\Ottrin-*-windows-x64-portable.zip -File)
           $setups = @(Get-ChildItem dist\Ottrin-*-windows-x64-setup.exe -File)
           $msis = @(Get-ChildItem dist\Ottrin-*-windows-x64.msi -File)
           if ($archives.Count -ne 1 -or $setups.Count -ne 1 -or $msis.Count -ne 1) {
             throw "Expected one downloaded portable archive, EXE installer, and MSI installer."
           }
-          Expand-Archive -Path $archives[0].FullName -DestinationPath dist\signature-verification
-          $portableExecutables = @(Get-ChildItem dist\signature-verification\*\bin\ottrin*.exe -File)
-          if ($portableExecutables.Count -ne 2) { throw "Expected two Ottrin executables in the signed portable archive." }
-          foreach ($file in @($portableExecutables) + @($setups[0], $msis[0])) {
-            $signature = Get-AuthenticodeSignature -LiteralPath $file.FullName
-            if (-not $signature.SignerCertificate -or $signature.SignerCertificate.Thumbprint.ToUpperInvariant() -ne $expectedThumbprint) {
-              throw "Authenticode signer identity does not match the approved certificate for $($file.Name)."
+          foreach ($file in @($archives[0], $setups[0], $msis[0])) {
+            $sidecar = "$($file.FullName).sha256"
+            $entries = @(Get-Content -LiteralPath $sidecar | Where-Object { $_.Trim() })
+            if ($entries.Count -ne 1) { throw "Expected exactly one checksum entry for $($file.Name)." }
+            $parts = $entries[0].Trim() -split '\s+', 2
+            if ($parts.Count -ne 2 -or $parts[0] -notmatch '^[0-9a-fA-F]{64}$' -or $parts[1] -cne $file.Name) {
+              throw "Invalid checksum sidecar for $($file.Name)."
             }
-            & signtool.exe verify /pa /all $file.FullName
-            if ($LASTEXITCODE -ne 0) { throw "Authenticode verification failed for $($file.Name)." }
+            $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $file.FullName).Hash
+            if ($actual -ine $parts[0]) { throw "Downloaded checksum mismatch for $($file.Name)." }
           }
 
   release:
     name: Publish GitHub release
-    needs: [package-linux, verify-windows-signatures]
+    needs: [package-linux, verify-windows-artifacts]
     runs-on: ubuntu-latest
     permissions:
       contents: write

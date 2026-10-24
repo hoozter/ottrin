@@ -49,7 +49,7 @@ for literal in \
   'os: [ubuntu-latest, windows-latest]' \
   'needs: package-windows-portable' \
   'needs: package-windows-installer' \
-  'needs: [package-linux, verify-windows-signatures]'; do
+  'needs: [package-linux, verify-windows-artifacts]'; do
   if ! grep -Fq -- "$literal" "$WORKFLOW"; then
     printf 'Release workflow omits the Linux/Windows dependency: %s\n' "$literal" >&2
     exit 1

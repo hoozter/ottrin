@@ -111,10 +111,13 @@ scope: `.hermes/evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
 - [ ] Known limitations are complete and plainly worded.
 - [ ] Version, artifact names, checksums, and generated release notes agree for the exact release artifacts.
 - [ ] No release-blocking item is waived without a written rationale.
-- [ ] Windows artifacts are Authenticode-signed with an approved production
-  identity and verified after download. Current rebuilt artifacts are unsigned;
-  SmartScreen reputation warnings remain a release blocker and must not be
-  bypassed or claimed as trusted.
+- [ ] Direct Windows portable ZIP/EXE/MSI downloads are explicitly labeled
+  unsigned, with verified checksums and an honest explanation of publisher and
+  SmartScreen warnings. A paid Authenticode certificate is not required.
+- [ ] When Windows is ready, build and accept a separate Microsoft Store MSIX
+  submission. The Store signs MSIX after certification; it does not sign the
+  direct EXE/MSI downloads. Store submission is deferred until readiness and is
+  not a prerequisite for the unsigned direct-download channel.
 - [ ] Linux portable and AppImage artifacts have armored detached signatures;
   the publish job verifies the exact downloaded files against the approved
   primary-key fingerprint before creating the release.
@@ -128,10 +131,7 @@ Deferred macOS release requirement:
 The Linux/Windows tag workflow requires these GitHub Actions settings:
 
 - secret `LINUX_SIGNING_PRIVATE_KEY` and variable
-  `LINUX_SIGNING_KEY_FINGERPRINT` (the full 40-hex primary-key fingerprint),
-- secrets `WINDOWS_SIGNING_CERTIFICATE_BASE64` and
-  `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`, plus variable
-  `WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT` (the 40-hex certificate thumbprint).
+  `LINUX_SIGNING_KEY_FINGERPRINT` (the full 40-hex primary-key fingerprint).
 
 Future macOS signing, when that platform is resumed, requires:
 

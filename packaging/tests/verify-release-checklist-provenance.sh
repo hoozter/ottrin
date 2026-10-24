@@ -202,8 +202,8 @@ done
 # Signing is a release requirement, not a deferred feature. Public notes must
 # keep native signing acceptance pending, record the completed source
 # integration honestly, and require exact downloaded-artifact verification.
-require_document_line "$RELEASE_NOTES" 'Linux and Windows production signing acceptance remains pending' 'the pending signing boundary'
-require_document_line "$ROADMAP" 'Linux and Windows code-signing integration is source-complete; production identities and exact downloaded-artifact verification remain release gates.' 'the source-complete signing-integration boundary'
-require_document_line "$ROADMAP" 'Sign the exact Linux and Windows release artifacts with the approved production identities where required and verify the downloaded signatures.' 'the exact-artifact signing gate'
+require_document_line "$RELEASE_NOTES" 'Linux production signing acceptance remains pending' 'the pending signing boundary'
+require_document_line "$ROADMAP" 'Direct Windows ZIP/EXE/MSI downloads remain unsigned by owner decision.' 'the source-complete signing-integration boundary'
+require_document_line "$ROADMAP" 'detached signatures; no paid certificate is needed.' 'the exact-artifact signing gate'
 
 printf 'Verified release checklist evidence provenance.\n'

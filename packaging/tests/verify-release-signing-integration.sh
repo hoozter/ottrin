@@ -67,21 +67,26 @@ for literal in \
   'LINUX_SIGNING_KEY_FINGERPRINT' \
   './packaging/linux/sign-release-artifacts.sh' \
   'dist/*.asc' \
-  'OTTRIN_WINDOWS_SIGNING_CERTIFICATE_BASE64' \
-  'OTTRIN_WINDOWS_SIGNING_CERTIFICATE_PASSWORD' \
-  '.\packaging\windows\sign-release-artifacts.ps1' \
   'windows-unsigned-stage' \
   'windows-release-artifacts' \
-  'verify-windows-signatures:' \
-  'needs: [package-linux, verify-windows-signatures]' \
+  'verify-windows-artifacts:' \
+  'needs: [package-linux, verify-windows-artifacts]' \
   'pattern: "*-release-artifacts"'; do
   grep -Fq -- "$literal" "$WORKFLOW" || fail "release workflow omits: $literal"
 done
 
-sign_line="$(grep -nF '.\packaging\windows\sign-release-artifacts.ps1' "$WORKFLOW" | head -n1 | cut -d: -f1)"
-installer_line="$(grep -nF '.\packaging\windows\package-installer.ps1' "$WORKFLOW" | head -n1 | cut -d: -f1)"
-[[ -n "$sign_line" && -n "$installer_line" && "$sign_line" -lt "$installer_line" ]] || \
-  fail "portable executables are not signed before installer construction"
+# Direct Windows downloads intentionally remain unsigned. Require transfer
+# integrity checks, and reject a return to paid-certificate publication gates.
+for literal in \
+  'Upload unsigned Windows release artifacts' \
+  'Verify exact downloaded artifact checksums' \
+  'Downloaded checksum mismatch' \
+  'Get-FileHash -Algorithm SHA256 -LiteralPath $file.FullName'; do
+  grep -Fq -- "$literal" "$WORKFLOW" || fail "unsigned Windows release omits: $literal"
+done
+if grep -Eq 'WINDOWS_SIGNING_|Get-AuthenticodeSignature|signtool|sign-release-artifacts.ps1' "$WORKFLOW"; then
+  fail "direct Windows release still requires Authenticode signing"
+fi
 
 for script in \
   packaging/linux/sign-release-artifacts.sh \

@@ -61,5 +61,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the required sign-off matrix. Reproducible index measurements, methodology, and limitations are recorded in [SEARCH_PERFORMANCE.md](SEARCH_PERFORMANCE.md).
 
-Linux and Windows production signing acceptance remains pending until approved
-identities sign the exact artifacts and downloaded signatures are verified.
+Linux production signing acceptance remains pending until the project OpenPGP
+key signs the exact artifacts and downloaded signatures are verified. Direct
+Windows ZIP/EXE/MSI downloads will be unsigned with checksums and explicit
+publisher/SmartScreen disclosures; no paid signing certificate is required.
+A Store-signed MSIX is planned once Windows is ready; no Store acceptance is claimed.
