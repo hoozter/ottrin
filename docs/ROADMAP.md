@@ -1,12 +1,85 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-22
+Last updated: 2026-10-24
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
 Linux is the primary implementation and daily-driver platform. Windows follows the same product contract in parallel where that does not materially slow Linux, and both ship in the same release. Further macOS implementation and acceptance are deferred until the Linux and Windows roadmap is complete.
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
+
+## Current checkpoint and next work — audited 2026-10-24
+
+This section and the current delivery table below define the working state.
+Subsequent checkpoint narratives are historical evidence: their “next”, “pending”,
+“current” and cleanup statements apply to their recorded revision and run, not
+necessarily to the present checkout. Artifact receipts define acceptance only for
+their named hashes. Test counts are scoped observations, not completion measures.
+
+- **Committed source:** `48fb6c01`. Windows containing-parent rename recovery
+  passes 163 native API/worker checks; see
+  `.hermes/evidence/windows-cross-parent-current/ACCEPTANCE.json`.
+- **Delivered Linux:** clean `3ed1b303`, all four stable packages. The current
+  receipt's four artifact hashes were rechecked on October 24 and match.
+  The packaged content-enabled index resource run measures 0.10–0.13% of one CPU
+  core in its private 10,000-file fixture; it is not whole-application or personal
+  service acceptance. The existing user service was not upgraded by that test.
+- **Accepted internal Windows candidate:** still `68962f05` at
+  `.hermes/packaging-tmp/windows-activity-candidate/`. Its three hashes match
+  `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Public Windows Copy remains gated.
+- **New Windows build under test:** clean `48fb6c01` at
+  `.hermes/packaging-tmp/.windows-refresh-stage/`. All 57 payload files match
+  across portable/NSIS/MSI extraction; native loader/CLI checks pass. It is not
+  promoted. `.hermes/evidence/windows-move-package-current/` records identities.
+  The actual portable GUI passes same-volume and cross-volume Move/Replace,
+  Undo after both containing folders are renamed, and record cleanup with exact
+  file preservation. Unknown private cleanup data is preserved with a warning.
+  These partial results are in
+  `.hermes/evidence/windows-move-activity-gui-current/`; there is no final GUI
+  acceptance or teardown receipt for this run yet.
+- **Uncommitted work:** footer text clipping and misleading completed-Move
+  journal counts/titles are corrected in source, alongside desktop QA input,
+  observation and lifecycle fixes. All 401 Linux UI tests pass (one ignored),
+  and the Windows UI test executable builds. Native execution and a rebuilt
+  package visual check of these edits remain pending. Neither stable package
+  cohort contains them.
+- **Interrupted QA resources:** retained guest `ottrin-copy-cleanup-qa` is running
+  with the owned `C:\OttrinWindowQA` temporary account/profile/payload and owned
+  secondary NTFS volume. The last successful action seeded a Staged recovery
+  transaction (expected child exit 87); it did not recover it through the GUI.
+  Preserve this fixture until observation/recovery evidence is captured, then
+  remove the owned volume, temporary account/profile/credentials and payload and
+  restore the guest's recorded off state. Do not delete the retained guest.
+
+Resume at the unfinished operation, not the start of an older checkpoint:
+
+1. Observe the existing staged recovery fixture, finish actual GUI recovery after
+   parent renames, and verify public/foreign bytes and visible listing refresh.
+2. Finish owned QA teardown. Complete native verification of the uncommitted UI
+   fixes, review and commit them, then rebuild and verify the corrected packages
+   before replacing the stable candidate. Update package receipts only on success.
+3. Continue dependency-ready preview/editing, file-operation and packaging
+   outcomes below; then concentrated platform acceptance. Required outcome 4
+   (the themed picker and supported folder integration) remains deferred until
+   the preceding work is complete. User testing remains deferred and does not
+   block independently executable work.
+
+The goal's recorded October 22 10:01 Stockholm stop reports
+`server_overloaded` (“Selected model is at capacity”). This is an execution failure,
+not evidence that the roadmap is exhausted or waiting on user approval. Work
+resumed on October 24; the saved goal still reported `blocked` during this audit.
+Project documents cannot repair goal scheduling. Record execution failures and
+unfinished resources explicitly; do not describe a stopped run as continuing.
+
+Documentation/release discrepancy still requiring implementation:
+`.github/workflows/release.yml` includes macOS in verification and makes publish
+require `verify-macos-signatures`, despite the agreed deferral. Reconcile the
+workflow with the Linux/Windows scope before release; the updated checklist does
+not change that dependency. No final gate or signing requirement is waived.
+
+This audit reconciles documents and existing evidence; it does not rerun product
+acceptance or finish the interrupted QA task. There is no defensible overall
+completion percentage or daily-driver date from the existing checkpoint counts.
 
 ## Current delivery and remaining outcomes
 
@@ -43,7 +116,7 @@ not prove the follow-up is packaged.
 
 The Linux build entry point stages all formats and validates their checksums before
 promotion. Regression cases prove a later build failure or corrupted staged checksum
-preserves the prior deliverables. The real staged build passed. Linux UI checks pass
+preserves the prior deliverables. The real staged build passed. An earlier Linux UI checkpoint passed
 394 tests; four explicit mount/resource fixtures also pass in private namespaces,
 with host mounts unchanged. These checks do not replace physical desktop, device,
 fresh-distro lifecycle or full-application resource acceptance.
@@ -51,7 +124,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Package and exercise the native-verified cross-volume containing-parent rename changes, Move Undo, recovery admission, record cleanup and session-history reconciliation through the actual UI. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish the staged `48fb6c01` GUI recovery run and teardown; commit, rebuild and visually accept the open footer/Activity fixes before promotion. Same/cross-volume renamed-parent Undo and cleanup now have partial actual-package evidence above. Complete remaining recovery and session-history acceptance. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Production signing identities, exact downloaded signatures, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
@@ -2261,7 +2334,7 @@ This snapshot reconciles the roadmap with local source, package provenance and r
 
 ## How to use this roadmap
 
-- Work on the first dependency-ready outcome in the order below.
+- Resume from the audited current checkpoint above, then work on the first dependency-ready outcome in the order below. Historical checkpoint next steps do not create a second task queue.
 - Prefer the smallest user-visible or release-enabling slice.
 - During implementation, run focused tests for the behavior changed. Run broad workspace, package and platform matrices only at an integration milestone or against the exact release candidate.
 - Complete source outcomes before physical QA. Batch desktop, device and exact-artifact acceptance near the end. Run an earlier physical check only when runtime evidence is required to choose or unblock the implementation; unavailable hardware does not justify synthetic QA infrastructure.

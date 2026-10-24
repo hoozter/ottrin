@@ -2,6 +2,12 @@
 
 Every item must be checked against the exact artifact intended for release. A source-tree test does not count as packaged desktop validation.
 
+Current scope is the Linux/Windows release defined in the [roadmap](ROADMAP.md).
+macOS construction, acceptance and signing are deferred; the future macOS checks
+below do not block this release. For current source/package progress and the
+unfinished QA handoff, use the [audited checkpoint](ROADMAP.md#current-checkpoint-and-next-work--audited-2026-10-24).
+Unchecked final gates do not mean no scoped implementation or QA has occurred.
+
 ## UI coherence gate
 
 - [ ] Shared theme roles and text/icon alignment meet [UI consistency requirements](DEVELOPMENT.md#ui-consistency-requirements) across main window, menus/submenus, Settings, theme editor, Inspector, and dialogs; checked, unchecked, iconless, and disabled rows retain common columns in Light/Dark at 100%/150% scaling and enlarged text.
@@ -14,7 +20,7 @@ Every item must be checked against the exact artifact intended for release. A so
 - [ ] `cargo check --workspace --all-targets`
 - [ ] `cargo test --workspace`
 - [ ] `cargo clippy --workspace --all-targets -- -D warnings`
-- [ ] Linux, Windows, and macOS CI are green for the release commit.
+- [ ] Linux and Windows CI are green for the release commit.
 - [ ] Exact release artifact checksums verify after rebuilding from the current release commit.
 - [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.
 - [ ] Live-content search works in exact installed and standalone artifacts without a preinstalled ripgrep. Required provider binaries/notices are delivered or installed as declared dependencies; missing/damaged providers produce an actionable error instead of empty content matches.
@@ -112,11 +118,16 @@ scope: `.hermes/evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
 - [ ] Linux portable and AppImage artifacts have armored detached signatures;
   the publish job verifies the exact downloaded files against the approved
   primary-key fingerprint before creating the release.
+
+Deferred macOS release requirement:
+
 - [ ] The macOS app ZIP and DMG are Developer ID signed, notarized, and stapled;
   the publish dependency verifies the exact downloaded checksums, team
   identifier, code signatures, notarization tickets, and Gatekeeper assessment.
 
-The tag workflow fails closed unless these GitHub Actions settings are present:
+The tag workflow currently requires the following GitHub Actions settings. Its
+macOS job/signing dependency must be reconciled with the deferred platform scope
+before the Linux/Windows release; changing this checklist does not change CI:
 
 - secret `LINUX_SIGNING_PRIVATE_KEY` and variable
   `LINUX_SIGNING_KEY_FINGERPRINT` (the full 40-hex primary-key fingerprint),

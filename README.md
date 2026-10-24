@@ -19,9 +19,10 @@ v0.1.0 source tree remains a release candidate; no exact-current-commit
 artifact is claimed as published or accepted. See the
 [Release Checklist](docs/RELEASE_CHECKLIST.md) for outstanding gates.
 
-The intended first release formats are Linux AppImage and portable tarball,
-Windows portable zip, per-user installer and per-user MSI, plus an unsigned
-macOS app-bundle archive. Windows MSI packages have been built and tested
+The intended first release formats are Linux AppImage, portable tarball, DEB
+and RPM, and Windows portable zip, per-user installer and per-user MSI. macOS
+implementation and acceptance are deferred until the Linux/Windows roadmap is
+complete. Windows MSI packages have been built and tested
 natively for normal installation, upgrade, repair and removal. Failed-transaction
 MSI registration rollback still fails native tests and blocks acceptance; see the
 [roadmap](docs/ROADMAP.md) for exact artifact scopes. Native macOS construction
