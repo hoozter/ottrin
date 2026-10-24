@@ -37,7 +37,7 @@ their named hashes. Test counts are scoped observations, not completion measures
   These partial results are in
   `.hermes/evidence/windows-move-activity-gui-current/`; there is no final GUI
   acceptance or teardown receipt for this run yet.
-- **Uncommitted work:** footer text clipping and misleading completed-Move
+- **Source checkpoint `6dfd3b00`:** footer text clipping and misleading completed-Move
   journal counts/titles are corrected in source, alongside desktop QA input,
   observation and lifecycle fixes. All 401 Linux UI tests pass (one ignored),
   and the Windows UI test executable builds. Native execution and a rebuilt
@@ -55,8 +55,8 @@ Resume at the unfinished operation, not the start of an older checkpoint:
 
 1. Observe the existing staged recovery fixture, finish actual GUI recovery after
    parent renames, and verify public/foreign bytes and visible listing refresh.
-2. Finish owned QA teardown. Complete native verification of the uncommitted UI
-   fixes, review and commit them, then rebuild and verify the corrected packages
+2. Finish owned QA teardown. Complete native verification of the committed UI
+   fixes, then rebuild and verify the corrected packages
    before replacing the stable candidate. Update package receipts only on success.
 3. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below; then concentrated platform acceptance. Required outcome 4
@@ -125,7 +125,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish the staged `48fb6c01` GUI recovery run and teardown; commit, rebuild and visually accept the open footer/Activity fixes before promotion. Same/cross-volume renamed-parent Undo and cleanup now have partial actual-package evidence above. Complete remaining recovery and session-history acceptance. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | Finish the staged `48fb6c01` GUI recovery run and teardown; rebuild and visually accept the committed footer/Activity fixes before promotion. Same/cross-volume renamed-parent Undo and cleanup now have partial actual-package evidence above. Complete remaining recovery and session-history acceptance. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 
