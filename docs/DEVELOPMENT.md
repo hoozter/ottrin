@@ -61,6 +61,15 @@ The corpus test defines the required filenames and independent rendered-text mar
 
 Ubuntu 24.04 can deny Bubblewrap namespace setup under its default AppArmor policy. The fresh cloud guest reproduced `net_admin` denial before provider startup. Its configured-provider acceptance uses the distribution's `apparmor-profiles` package and restrictive `bwrap-userns-restrict` extra profile, loaded by the guest administrator; the user-namespace restriction remains enabled. This setup is not installed by Ottrin and must not be mistaken for default-install acceptance. Follow [Ubuntu's documented Bubblewrap policy guidance](https://discourse.ubuntu.com/t/understanding-apparmor-user-namespace-restriction/58007), preserving administrator-owned policy. Do not disable AppArmor or global user-namespace restrictions to make a test pass.
 
+Hosted Linux verification explicitly installs Bubblewrap, the systemd user-bus
+package and Ubuntu's restrictive AppArmor profile. The CI-only
+`scripts/ci/prepare-linux-isolation.sh` starts the runner's real user manager and
+checks a bounded namespace-isolated transient service before tests. It refuses
+ordinary developer environments and does not disable namespace restrictions.
+This provisions disposable CI; it does not install policy on an Ottrin user's
+machine or establish default-install Office-provider acceptance.
+
+
 A configured native probe also exposed a missing `/bin` sandbox mount: `/usr/lib/libreoffice/program/soffice` exists but its `/bin/sh` interpreter cannot execute. The launcher now exposes `/bin` read-only alongside `/usr`, with the existing network, filesystem and resource boundaries intact.
 
 ## Build And Verify

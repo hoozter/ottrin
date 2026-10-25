@@ -6,6 +6,21 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORKFLOW="${1:-$ROOT/.github/workflows/release.yml}"
 
+# The mandatory Linux Office boundary tests need actual namespace/cgroup support.
+for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
+  verify_job="$(awk '/^  verify:/ { active=1; next } active && /^  [a-zA-Z_-]+:/ { exit } active { print }' "$verification")"
+  for dependency in bubblewrap dbus-user-session apparmor-profiles; do
+    if ! grep -Eq "(^|[[:space:]])$dependency($|[[:space:]])" <<<"$verify_job"; then
+      printf 'Linux verification omits isolation dependency: %s (%s)\n' "$dependency" "$verification" >&2
+      exit 1
+    fi
+  done
+  if ! grep -Fq './scripts/ci/prepare-linux-isolation.sh' <<<"$verify_job"; then
+    printf 'Linux verification omits real process-isolation provisioning: %s\n' "$verification" >&2
+    exit 1
+  fi
+done
+
 # The publishing verifier requires all four Linux formats. Keep production,
 # transfer, signatures and inspection tools in the same release job contract.
 linux_job="$(awk '/^  package-linux:/ { active=1 } active && /^  package-windows-portable:/ { exit } active { print }' "$WORKFLOW")"

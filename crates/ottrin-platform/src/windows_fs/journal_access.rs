@@ -146,7 +146,13 @@ impl Policy {
             directory,
         };
         if !policy.valid() {
-            return Err(io("unrecognized principal; object preserved"));
+            return Err(io(format!(
+                "unrecognized principal {}; owner {}; flags {}; directory {}; object preserved",
+                sid_text(&policy.sid)?,
+                sid_text(&policy.owner)?,
+                policy.flags,
+                policy.directory,
+            )));
         }
         let state = if ace.Mask == mask(directory, State::Full) {
             State::Full

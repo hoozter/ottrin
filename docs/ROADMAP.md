@@ -77,7 +77,10 @@ their named hashes. Test counts are scoped observations, not completion measures
   this. Linux's original platform failures are resolved; two Office process-
   isolation tests fail with `InvalidRequest`. Provision Bubblewrap and a real
   systemd user manager with the distribution's restrictive AppArmor policy;
-  preserve the host's user-namespace restrictions. These are engineering work,
+  preserve the host's user-namespace restrictions. Source provisioning and eight
+  deliberate missing-prerequisite contracts now pass; actual hosted verification
+  is pending. Windows rejection diagnostics now include observed owner/principal
+  SIDs, flags and object kind; no admission condition is relaxed. These are engineering work,
   not owner waiting items. Search-performance CI passes. No hosted release or
   signing run is claimed. Release production/signature/upload/verification now
   covers all four Linux formats; omission contracts pass.

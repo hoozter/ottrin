@@ -1,0 +1,79 @@
+{
+  "status": "pass within source/guard scope",
+  "checks": [
+    {
+      "guard_environment": {},
+      "exit": 1,
+      "diagnostic": "Linux isolation provisioning requires a disposable GitHub-hosted Linux runner."
+    },
+    {
+      "guard_environment": {
+        "GITHUB_ACTIONS": "true",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ENVIRONMENT": "self-hosted"
+      },
+      "exit": 1,
+      "diagnostic": "Linux isolation provisioning requires a disposable GitHub-hosted Linux runner."
+    },
+    {
+      "guard_environment": {
+        "GITHUB_ACTIONS": "true",
+        "RUNNER_OS": "Windows",
+        "RUNNER_ENVIRONMENT": "github-hosted"
+      },
+      "exit": 1,
+      "diagnostic": "Linux isolation provisioning requires a disposable GitHub-hosted Linux runner."
+    },
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "bubblewrap",
+      "exit": 1,
+      "diagnostic": "Linux verification omits isolation dependency: bubblewrap (/tmp/ottrin-ci-contract-x4ixlnj7/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "dbus-user-session",
+      "exit": 1,
+      "diagnostic": "Linux verification omits isolation dependency: dbus-user-session (/tmp/ottrin-ci-contract-x4ixlnj7/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "apparmor-profiles",
+      "exit": 1,
+      "diagnostic": "Linux verification omits isolation dependency: apparmor-profiles (/tmp/ottrin-ci-contract-x4ixlnj7/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "./scripts/ci/prepare-linux-isolation.sh",
+      "exit": 1,
+      "diagnostic": "Linux verification omits real process-isolation provisioning: /tmp/ottrin-ci-contract-x4ixlnj7/ci.yml"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "bubblewrap",
+      "exit": 1,
+      "diagnostic": "Linux verification omits isolation dependency: bubblewrap (/tmp/ottrin-ci-contract-x4ixlnj7/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "dbus-user-session",
+      "exit": 1,
+      "diagnostic": "Linux verification omits isolation dependency: dbus-user-session (/tmp/ottrin-ci-contract-x4ixlnj7/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "apparmor-profiles",
+      "exit": 1,
+      "diagnostic": "Linux verification omits isolation dependency: apparmor-profiles (/tmp/ottrin-ci-contract-x4ixlnj7/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "./scripts/ci/prepare-linux-isolation.sh",
+      "exit": 1,
+      "diagnostic": "Linux verification omits real process-isolation provisioning: /tmp/ottrin-ci-contract-x4ixlnj7/release.yml"
+    }
+  ],
+  "hosted_real_runtime": "pending; privileged provisioning deliberately not run on operator host",
+  "windows_cross_clippy": "all targets passed, diagnostic-only Windows error change; not native acceptance",
+  "log_sha256": "cec490bcb2a5b4ec1be0fc2cb7c6d02bb89a2b3d8d6d2a1c8265b26f9732f7f6"
+}
