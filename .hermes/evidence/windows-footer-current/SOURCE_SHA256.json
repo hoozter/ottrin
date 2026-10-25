@@ -1,0 +1,9 @@
+{
+  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "files": {
+    "crates/ottrin-ui/src/lib.rs": "d4f8926c5ec66e978709e54fe92f728ce59a9f7f200db9a2f705c86a5ce16f46",
+    "crates/ottrin-preview/src/lib.rs": "9a650159741122fbfbacc3679be9c934dbc471dfcb5592a6bf04363952b69acc",
+    ".hermes/evidence/windows-copy-cleanup-current/run-native.py": "7729e145493489355a2d291a3a3d35ddf5797dc392af5b87be92adcd990194ed",
+    "scripts/windows-cross-move-qa/volume.ps1": "3775b051ba2fa96b9eb5345178113598bb99612e3df6a015c8160a397b27c027"
+  }
+}

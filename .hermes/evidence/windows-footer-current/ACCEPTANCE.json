@@ -1,0 +1,26 @@
+{
+  "status": "pass within native Windows UI and Move-worker scopes",
+  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "source_identity": "SOURCE_SHA256.json",
+  "binary_identity": "native-ui/TEST_BINARY.json",
+  "native_result": "native-ui/RESULTS.json",
+  "observer": "native-ui/OBSERVER.json",
+  "checks": {
+    "passed": 18,
+    "failed": 0,
+    "ignored": 0,
+    "scope": "Actual ordinary-account Windows test executable: composed footer single-line layout and preserved controls at320/480/1024 and scales1/1.5/2; actual hovered full multiline feedback/selection tooltip; completed Move count/title; queued Move Undo/recovery/cleanup, clipboard and admission regressions"
+  },
+  "cleanup": "TEARDOWN_NATIVE.json and VOLUME_TEARDOWN.json; guest transferred to owned package compiler phase for final closure",
+  "limits": [
+    "Composed egui/native worker proof; not rendered packaged main window or physical graphics acceptance",
+    "No user daily-driver acceptance",
+    "Corrected package rebuild/visual verification required before promotion"
+  ],
+  "native_raw_logs": {
+    "stdout": "native-ui/platform.stdout.gz",
+    "stderr": "native-ui/platform.stderr.gz",
+    "integrity": "Decompress and compare to the corresponding SHA256 in native-ui/RESULTS.json; original bytes preserved."
+  },
+  "domain_baseline": "DOMAIN_BEFORE.xml.gz"
+}

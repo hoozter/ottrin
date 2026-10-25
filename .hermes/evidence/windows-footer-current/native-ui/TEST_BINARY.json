@@ -1,0 +1,27 @@
+{
+  "test_crate": "ottrin_ui",
+  "test_arguments": "--exact tests::blocked_destination_probe_keeps_the_modal_and_escape_responsive tests::completed_cancelled_probe_cannot_start_a_newer_transfer transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish tests::rename_refresh_keeps_pointer_selection_available_to_native_cut tests::clipboard_native_copy_and_cut_events_capture_selected_file tests::clipboard_native_cut_paste_conflict_requires_confirmation tests::windows_retained_move_activity_exposes_both_transaction_kinds tests::windows_retained_move_activity_distinguishes_pending_and_completed_undo tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings --nocapture --test-threads=1 tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker tests::windows_move_undo_admission_tracks_renamed_parent_paths tests::windows_cross_move_undo_admission_tracks_renamed_parent_paths tests::status_bar_bounds_messages_and_selection_without_hiding_controls tests::status_bar_tooltip_preserves_full_feedback_and_selected_name tests::completed_move_records_are_not_reported_as_retained_journals tests::windows_move_cleanup_requires_captured_admission_and_uses_worker tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry tests::file_operation_worker_move_undo_preserves_collision_and_allows_retry --include-ignored",
+  "watchdog_ms": 600000,
+  "compiler_profile": {
+    "opt_level": "0",
+    "debuginfo": 0,
+    "debug_assertions": true,
+    "overflow_checks": true,
+    "test": true
+  },
+  "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-c3dc93dc8cf764a2.exe",
+  "compiler_sha256": "761c5920d2d8ea25218081d6305ced9356db46161ab4c1e8c72961a4010ade8e",
+  "transferred_sha256": "d46b82d97e91cbf4753a4fc8d9adda6931032af2881c1f9cb4a5b490a7c8c098",
+  "retained_sections": {
+    ".text": "0c385282d2ee6773e1f8ce155a6c2920248854c08a39d20cd8204db8a556f044",
+    ".data": "521782fa96be8df5d629ba4ecea18b69fc021ea12fd585c44b8e0e907da261bf",
+    ".rdata": "16d44f3d59718e5421664245647726e777dc3e0b748f1dfeece4ec1ab5a6ce54",
+    ".pdata": "45d54547b1a99cfab70a276a890689d183c3c31e5a6bc862d66a1c613e865d23",
+    ".xdata": "68b44c4fb90f221a7e2f327d5487fedfbb1b6d9b1e032d0aed20f47055dd50fc",
+    ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".idata": "86d4e3b15d6ec9489818f8ac57509f1ba7872419e82d70af10729cb44b0e0a39",
+    ".CRT": "70d59ff0a80a3ee27139c38edcc1d113f158104bb761b0270f638d261f110ac6",
+    ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    ".reloc": "e22464b1a9a8fd14bc7095d52b68db6a31c55e818d542a00972b993e9ca2d7cc"
+  }
+}

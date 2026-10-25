@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "domain_state": "shut off",
+  "persistent_definition_unchanged": true,
+  "ordinary_account_profile_credential_task_and_payload_removed": "TEARDOWN_GUEST.json",
+  "original_config_uninstaller_and_login_values_preserved": true,
+  "extra_completed_native_and_console_exports_removed": true,
+  "retained_guest_preserved": true
+}

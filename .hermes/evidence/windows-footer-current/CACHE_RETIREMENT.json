@@ -1,0 +1,9 @@
+{
+  "retired": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3uzv5rko2f0t6/s-hnibjdsri6-1smiv5e-09vbrrw7scjy7pjji6pw3pv76",
+  "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3uzv5rko2f0t6/s-hnirv092lm-1220aqm-09vbrrw7scjy7pjji6pw3pv76",
+  "reason": "Older finalized session of the exact Windows UI test configuration rebuilt and native-verified this turn; newer session retained",
+  "verified_flock_and_posix_locks_clear": true,
+  "accessible_consumers": [],
+  "logical_bytes": 143231107,
+  "note": "Hard-linked shared cache data may remain through the replacement; logical bytes are not reclaimed-space measurement. Other configurations remain untouched."
+}

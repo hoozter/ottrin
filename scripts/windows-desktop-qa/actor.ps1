@@ -175,13 +175,13 @@ if($c.op-eq'prepare'){
  if($foregroundPid-ne$c.foreground_pid-or$foreground.ExecutablePath-ine"$env:windir\system32\wwahost.exe"-or(Invoke-CimMethod $foreground -MethodName GetOwner).User-ne$owner.account){throw 'Owned Windows onboarding surface changed'}
  $screen=[Windows.Forms.SystemInformation]::VirtualScreen;if(-not$screen.Contains([int]$c.x,[int]$c.y)){throw 'Onboarding point outside console'}
  $null=[CopyActivityDesktop]::SetCursorPos([int]$c.x,[int]$c.y);[CopyActivityDesktop]::mouse_event(2,0,0,0,[UIntPtr]::Zero);[CopyActivityDesktop]::mouse_event(4,0,0,0,[UIntPtr]::Zero);Start-Sleep -Milliseconds 700
-}elseif($c.op-in@('focus','click','key','type','nav')){
+}elseif($c.op-in@('focus','hover','click','key','type','nav')){
  if($processes.Count-ne1){throw 'Owned GUI missing'}
  $p=Get-Process -Id $processes[0].ProcessId;$p.Refresh()
  [uint32]$foregroundPid=0;$window=[CopyActivityDesktop]::GetForegroundWindow();$null=[CopyActivityDesktop]::GetWindowThreadProcessId($window,[ref]$foregroundPid)
  if($c.window){$window=[IntPtr][long]$c.window}elseif($foregroundPid-ne$p.Id){$window=$p.MainWindowHandle}
  [uint32]$windowPid=0;$null=[CopyActivityDesktop]::GetWindowThreadProcessId($window,[ref]$windowPid);if($windowPid-ne$p.Id){throw 'Target window is not owned'}
- if($c.op-in@('click','focus')){
+ if($c.op-in@('click','focus','hover')){
   $point=New-Object CopyActivityDesktop+POINT;$point.X=[int]$c.x;$point.Y=[int]$c.y
   [uint32]$pointPid=0;$null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::WindowFromPoint($point),[ref]$pointPid)
   if($pointPid-ne$p.Id){throw 'Visible input point is not owned'}
@@ -189,7 +189,8 @@ if($c.op-eq'prepare'){
   $null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($foregroundPid-ne$p.Id){throw 'Owned app did not receive pointer focus'}
   # Refresh native pointer position after focus changes, including an unchanged target point.
   $null=[CopyActivityDesktop]::SetCursorPos($point.X+1,$point.Y);Start-Sleep -Milliseconds 50
-  $null=[CopyActivityDesktop]::SetCursorPos($point.X,$point.Y);Start-Sleep -Milliseconds 75;[CopyActivityDesktop]::mouse_event(2,0,0,0,[UIntPtr]::Zero);Start-Sleep -Milliseconds 75;[CopyActivityDesktop]::mouse_event(4,0,0,0,[UIntPtr]::Zero)
+  $null=[CopyActivityDesktop]::SetCursorPos($point.X,$point.Y);Start-Sleep -Milliseconds 75
+  if($c.op-eq'hover'){Start-Sleep -Milliseconds 1100}else{[CopyActivityDesktop]::mouse_event(2,0,0,0,[UIntPtr]::Zero);Start-Sleep -Milliseconds 75;[CopyActivityDesktop]::mouse_event(4,0,0,0,[UIntPtr]::Zero)}
  }else{
   $null=[CopyActivityDesktop]::SetForegroundWindow($window);Start-Sleep -Milliseconds 100
   $null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($foregroundPid-ne$p.Id){throw 'Owned app did not receive focus'}
@@ -215,5 +216,5 @@ $windows=@();foreach($process in $processes){foreach($h in [CopyActivityDesktop]
 $screen=[Windows.Forms.SystemInformation]::VirtualScreen;$bitmap=New-Object Drawing.Bitmap($screen.Width,$screen.Height);$g=[Drawing.Graphics]::FromImage($bitmap)
 try{$g.CopyFromScreen($screen.Left,$screen.Top,0,0,$bitmap.Size);$bitmap.Save("$root\results\desktop.png",[Drawing.Imaging.ImageFormat]::Png)}finally{$g.Dispose();$bitmap.Dispose()}
 [uint32]$foregroundPid=0;$null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid)
-@{id=$c.id;op=$c.op;case=$c.case;ordinary_user=$true;windows=$windows;foreground_pid=$foregroundPid;verification=$verification;screen_width=$screen.Width;screen_height=$screen.Height}|ConvertTo-Json -Depth 12|Set-Content -Encoding UTF8 "$root\results\desktop.json.tmp"
+@{id=$c.id;op=$c.op;case=$c.case;ordinary_user=$true;windows=$windows;foreground_pid=$foregroundPid;cursor_x=[Windows.Forms.Cursor]::Position.X;cursor_y=[Windows.Forms.Cursor]::Position.Y;verification=$verification;screen_width=$screen.Width;screen_height=$screen.Height}|ConvertTo-Json -Depth 12|Set-Content -Encoding UTF8 "$root\results\desktop.json.tmp"
 Move-Item -LiteralPath "$root\results\desktop.json.tmp" -Destination "$root\results\desktop.json" -Force

@@ -1,0 +1,7 @@
+{
+  "original_preferences_and_uninstaller_hashes_unchanged": true,
+  "status": "pass",
+  "native_processes": 0,
+  "msi_service_baseline_restored": true,
+  "compiler_payload_and_extractions_removed": true
+}

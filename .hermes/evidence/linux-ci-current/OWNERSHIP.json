@@ -1,0 +1,6 @@
+{
+  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "purpose": "Reproduce Ubuntu CI platform failures with temporary fixtures on the repository filesystem",
+  "temporary_root": "/home/campbell/Projects/Ottrin/.hermes/qa/linux-ci-current",
+  "expected_known_failure": "Existing cross_filesystem_retry test assumes std temp and repository use different devices"
+}

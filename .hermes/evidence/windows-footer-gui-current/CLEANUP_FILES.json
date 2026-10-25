@@ -1,0 +1,41 @@
+{
+  "id": "b3caec76e54e4305ba8298fb41b72454",
+  "case": "ordinary",
+  "foreground_pid": 6220,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Cleanup preserves restored originals, selected long filename and unknown private file",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n",
+      "source\\other.txt": "other original\n",
+      "source\\zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename .txt": "long selection original\n",
+      "destination\\.ottrin-move-1aaca7881e4384a86f4776ecf71569ea\\foreign-extra.txt": "preserve unknown cleanup data\n"
+    },
+    "absent": [
+      "destination\\.ottrin-move-1aaca7881e4384a86f4776ecf71569ea\\journal"
+    ]
+  },
+  "windows": [
+    {
+      "handle": 393874,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 328342,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "op": "verify"
+}

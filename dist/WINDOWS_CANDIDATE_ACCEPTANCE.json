@@ -1,12 +1,12 @@
 {
-  "status": "pass within package content, native loader/CLI and scoped portable GUI cross-volume Move checks",
-  "source_commit": "68962f05b66aaa9b181b378df62912de3fde4e05",
+  "status": "pass within package content, native loader/CLI, 18 native UI checks and scoped exact portable GUI footer/Move/Undo/cleanup checks",
+  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "6b8ced602cfcbc58d10efee0661d142da111165d59144cf9769cf5cf42e44a98",
-    "Ottrin-0.1.0-windows-x64.msi": "48410f82a692ff350cafa4f31a48b690ab9bf16128ed4a43f0de6aa44290233d"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "679e7e9a9ac8d0499568016548a630fe11e580f6ac6a86daad63064424dfc826",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ecf8ec9bee6c594dba82595f52c5ab16699adde52612e43a862636a7a50d9f28",
+    "Ottrin-0.1.0-windows-x64.msi": "48504f2ce16c2d26cc3e0d68e4704a4eda6491f291d79550570f660c024259b7"
   },
   "payload_files": 57,
   "package_identity": "PACKAGE_IDENTITIES.json",
@@ -38,55 +38,38 @@
     "identity": "NT AUTHORITY\\SYSTEM"
   },
   "source_checks": {
-    "evidence": "SOURCE_REVIEW.json",
-    "production_files_byte_identical_to_recorded_source": true,
-    "scope": "Native cross-volume before-fix reproduction; three corrected regressions, 26 cross-volume cases, combined 72 native Move tests pass as ordinary account. FAT32/power-cut fixtures excluded. Strict Windows platform all-target Clippy passes. Packaged workflow acceptance remains separate."
+    "evidence": "../windows-footer-current/ACCEPTANCE.json",
+    "native_passed": 18,
+    "source_identity": "SOURCE_REVIEW.json"
+  },
+  "portable_gui_acceptance": {
+    "evidence": "../windows-footer-gui-current/ACCEPTANCE.json",
+    "scope": {
+      "desktop": "ordinary temporary Windows account; default renderer; Dark/List100; actual1024x680 main window",
+      "workflow": "Native Cut/Paste Replace, displaced preservation, actual Activity Undo, cleanup with unknown private file retained, six file contents checked after normal app close",
+      "footer": "190-character selected basename stays in one truncated row; controls remain visible and wordmark does not overlap; actual hover shows complete filename in bounded tooltip",
+      "activity": "Completed Move Undo title;1 Move record count before/after cleanup; paired journals removed and three bound compact intent/completion records retained",
+      "warning": "Cleanup warning visible in Activity and adjacent command frame with input row; no clipping observed in this run. Native composed tests separately prove long transient footer feedback and full multiline tooltip."
+    }
   },
   "payload_delta": "PAYLOAD_DELTA.json",
-  "unchanged_office_and_graphics_bytes": "Both Office helpers and all bundled runtimes match the preceding candidate; this is byte identity, not fresh main-window/Office GUI acceptance",
+  "office_sections": "OFFICE_SECTION_COMPARISON.json: both Office helpers have matching raw PE sections despite whole-file differences; no fresh Office GUI acceptance inferred",
   "promotion": "PROMOTION.json",
+  "validation_correction": "FINAL_VALIDATION_CORRECTION.json",
   "cleanup": {
-    "status": "pass",
-    "domain_state": "shut off",
-    "persistent_domain_definition_unchanged": true,
-    "guest": "TEARDOWN_GUEST.json",
-    "retained_guests_preserved": true
+    "package_compiler": "TEARDOWN.json",
+    "native_ui": "../windows-footer-current/TEARDOWN.json",
+    "portable_gui": "../windows-footer-gui-current/TEARDOWN.json"
   },
-  "guest_preservation_scope": "Original config.json and Uninstall.exe hashes plus prior MSI service state; not whole profile/installation inventory",
-  "storage": "STORAGE.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-footer-package-current",
   "public_windows_files_unchanged": true,
   "linux_packages_unchanged": true,
-  "tools_sha256": {
-    "native-package.py": "ee4bb03f99c1a2752ac379704040b848c7065fed0f3b15a8fd3f15d6e05cc59d",
-    "verify-host.py": "3f64ba27d4964acf0b0c901b99a5c5c3d417b863b7c20b704d24207feb01190a",
-    "promote.py": "833758cdff838e5fb2962518a157a5877ec78fc6cc08f36000d5809b14d891a8"
-  },
   "limits": [
-    "Native CLI ran as SYSTEM, not ordinary-account GUI or service-lifecycle acceptance",
-    "Native MSI compilation/administrative extraction is not installation, upgrade, repair, rollback or uninstall acceptance",
-    "Recorded source checks remain separate from packaged window/OS clipboard acceptance",
-    "Schema 18 preserves older recovery bytes for review without conversion",
-    "Incomplete-payload reclamation and remaining transaction/storage/interruption/resource/workflow gates remain; public Windows Copy stays disabled",
-    "No user acceptance, release readiness or daily-driver readiness claim"
-  ],
-  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cross-move-package-current",
-  "changed_payload_files": [
-    "SOURCE_REVISION.txt",
-    "bin/ottrin-indexd.exe",
-    "bin/ottrin-priv-helper.exe",
-    "bin/ottrin.exe",
-    "docs/ROADMAP.md"
-  ],
-  "packaged_documentation_snapshot": "Packaged documentation records clean 68962f05 source and its then-pending packaging status. Current artifact hashes and post-build acceptance are recorded here and in the workspace roadmap.",
-  "prior_gui_acceptance": {
-    "source_commit": "1cd2871f9bae17edcce3f1cb202f8745dc13be9d",
-    "evidence": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-move-reuse-gui-current/ACCEPTANCE.json",
-    "scope": "Earlier same-volume GUI receipt retains its original 1cd2871f artifact scope; current cross-volume GUI acceptance is recorded separately."
-  },
-  "portable_gui_cross_volume_acceptance": {
-    "source_commit": "68962f05b66aaa9b181b378df62912de3fde4e05",
-    "archive_sha256": "66cb66a146291e449f3d31bdeba2be7bae25a92498b1be73081017fece0d259d",
-    "evidence": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cross-move-gui-current/ACCEPTANCE.json",
-    "scope": "Ordinary account Dark/List100/default renderer: cross-volume Replace, source-name reuse/Keep Both, target Move, later source/target name reuse and unrelated Moves; seven file-state checks including post-close and six identical paired journal/displaced-data snapshots. QA input correction is recorded separately."
-  }
+    "No native installer install/upgrade/repair/rollback/uninstall acceptance for these new hashes",
+    "Actual desktop scope Dark/List100/default renderer1024x680; additional scales/widths have native composed tests only",
+    "Earlier cross-volume GUI checks retain their earlier source/artifact scopes",
+    "Public Windows Copy remains disabled; native Copy and remaining transaction/resource/workflow gates unfinished",
+    "Hosted Ubuntu tests and Windows compiler failed; CI_FAILURES.json records independently fixable follow-up",
+    "No production release, Store submission or user daily-driver acceptance"
+  ]
 }

@@ -1,0 +1,132 @@
+{
+  "temporary_account_absent": true,
+  "console": "DESKTOP-81GHP8U\\campbell",
+  "processes": [
+    {
+      "Name": "sihost.exe",
+      "ProcessId": 3648,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ProcessId": 3772,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ProcessId": 4124,
+      "SessionId": 1
+    },
+    {
+      "Name": "taskhostw.exe",
+      "ProcessId": 4272,
+      "SessionId": 1
+    },
+    {
+      "Name": "explorer.exe",
+      "ProcessId": 4412,
+      "SessionId": 1
+    },
+    {
+      "Name": "ShellHost.exe",
+      "ProcessId": 4440,
+      "SessionId": 1
+    },
+    {
+      "Name": "CrossDeviceResume.exe",
+      "ProcessId": 4920,
+      "SessionId": 1
+    },
+    {
+      "Name": "StartMenuExperienceHost.exe",
+      "ProcessId": 4368,
+      "SessionId": 1
+    },
+    {
+      "Name": "SearchHost.exe",
+      "ProcessId": 4460,
+      "SessionId": 1
+    },
+    {
+      "Name": "RuntimeBroker.exe",
+      "ProcessId": 5160,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ProcessId": 5168,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ProcessId": 5884,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ProcessId": 5972,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ProcessId": 5784,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ProcessId": 5780,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ProcessId": 1212,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ProcessId": 3960,
+      "SessionId": 1
+    },
+    {
+      "Name": "ctfmon.exe",
+      "ProcessId": 6376,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ProcessId": 6652,
+      "SessionId": 1
+    },
+    {
+      "Name": "SecurityHealthSystray.exe",
+      "ProcessId": 6324,
+      "SessionId": 1
+    },
+    {
+      "Name": "smartscreen.exe",
+      "ProcessId": 6312,
+      "SessionId": 1
+    },
+    {
+      "Name": "CMFNSS6.EXE",
+      "ProcessId": 7020,
+      "SessionId": 1
+    },
+    {
+      "Name": "pCloud.exe",
+      "ProcessId": 6840,
+      "SessionId": 1
+    },
+    {
+      "Name": "Everything.exe",
+      "ProcessId": 7104,
+      "SessionId": 1
+    },
+    {
+      "Name": "CnTnrStsTask.exe",
+      "ProcessId": 7400,
+      "SessionId": 1
+    }
+  ],
+  "owned_gui_root_absent": true
+}

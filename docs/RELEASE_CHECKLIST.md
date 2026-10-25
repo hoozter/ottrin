@@ -5,7 +5,7 @@ Every item must be checked against the exact artifact intended for release. A so
 Current scope is the Linux/Windows release defined in the [roadmap](ROADMAP.md).
 macOS construction, acceptance and signing are deferred; the future macOS checks
 below do not block this release. For current source/package progress and the
-unfinished QA handoff, use the [audited checkpoint](ROADMAP.md#current-checkpoint-and-next-work--audited-2026-10-24).
+unfinished QA handoff, use the [audited checkpoint](ROADMAP.md#current-checkpoint-and-next-work).
 Unchecked final gates do not mean no scoped implementation or QA has occurred.
 
 ## UI coherence gate

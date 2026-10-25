@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "domain_state": "shut off",
+  "persistent_domain_definition_unchanged": true,
+  "guest": "TEARDOWN_GUEST.json",
+  "retained_guests_preserved": true,
+  "domain_baseline": "DOMAIN_BEFORE.xml.gz"
+}

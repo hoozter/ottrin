@@ -738,7 +738,7 @@ Windows MSI from the same extracted portable payload (requires WiX Toolset 5):
 ./packaging/windows/package-msi.sh ./dist/windows-payload/Ottrin-0.1.0-windows-x64
 ```
 
-Linux portable, AppImage, `.deb`, and `.rpm` package sources are available. Windows has portable zip, NSIS per-user installer, and per-user MSI package sources. macOS has an unsigned app-bundle ZIP package source. Native Windows MSI construction, administrative extraction and scoped installation/upgrade/repair/removal have recorded acceptance; failed-transaction registration rollback remains unresolved. Native macOS archive construction and platform acceptance are deferred until the Linux/Windows roadmap is complete. See the [current roadmap checkpoint](ROADMAP.md#current-checkpoint-and-next-work--audited-2026-10-24) for current artifacts and unfinished work. Exact native package installation and desktop acceptance remain part of the final Linux candidate pass.
+Linux portable, AppImage, `.deb`, and `.rpm` package sources are available. Windows has portable zip, NSIS per-user installer, and per-user MSI package sources. macOS has an unsigned app-bundle ZIP package source. Native Windows MSI construction, administrative extraction and scoped installation/upgrade/repair/removal have recorded acceptance; failed-transaction registration rollback remains unresolved. Native macOS archive construction and platform acceptance are deferred until the Linux/Windows roadmap is complete. See the [current roadmap checkpoint](ROADMAP.md#current-checkpoint-and-next-work) for current artifacts and unfinished work. Exact native package installation and desktop acceptance remain part of the final Linux candidate pass.
 
 ## Privileged Helper Model
 

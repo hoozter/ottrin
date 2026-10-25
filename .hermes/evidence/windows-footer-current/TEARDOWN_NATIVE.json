@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "native_processes": 0,
+  "temporary_profiles_and_volume_removed": true,
+  "original_actor_preferences_and_installation_hashes_preserved": true,
+  "guest_still_running_for": "../windows-footer-package-current native compiler and payload verification; later package teardown owns final shutdown"
+}

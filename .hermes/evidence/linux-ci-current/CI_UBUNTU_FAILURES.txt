@@ -1,0 +1,65 @@
+2026-10-24T21:14:48.6869820Z ---- directory_watch::tests::large_batches_share_one_instance_and_releasing_one_owner_keeps_other_proofs stdout ----
+2026-10-24T21:14:48.6870060Z
+2026-10-24T21:14:48.6870380Z thread 'directory_watch::tests::large_batches_share_one_instance_and_releasing_one_owner_keeps_other_proofs' (16914) panicked at crates/ottrin-platform/src/directory_watch.rs:186:74:
+2026-10-24T21:14:48.6870898Z called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "directory watch identity invalidated" }
+2026-10-24T21:14:48.6871229Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-24T21:14:48.6871395Z
+2026-10-24T21:14:48.6871610Z ---- move_recovery::tests::cross_device_overwrite_exchange_interruption_retains_all_entries_with_matching_published_evidence stdout ----
+2026-10-24T21:14:48.6871883Z
+2026-10-24T21:14:48.6872216Z thread 'move_recovery::tests::cross_device_overwrite_exchange_interruption_retains_all_entries_with_matching_published_evidence' (16955) panicked at crates/ottrin-platform/src/move_recovery.rs:11176:9:
+2026-10-24T21:14:48.6872692Z assertion `left == right` failed
+2026-10-24T21:14:48.6872949Z   left: Err(UnexpectedDescendant([106, 111, 117, 114, 110, 97, 108, 45, 98, 97, 99, 107, 117, 112]))
+2026-10-24T21:14:48.6873194Z  right: Err(JournalNotRegular)
+2026-10-24T21:14:48.6873286Z
+2026-10-24T21:14:48.6873457Z ---- move_transaction::tests::cross_filesystem_retry_through_public_api_recovers_claimed_source stdout ----
+2026-10-24T21:14:48.6873672Z
+2026-10-24T21:14:48.6873958Z thread 'move_transaction::tests::cross_filesystem_retry_through_public_api_recovers_claimed_source' (17104) panicked at crates/ottrin-platform/src/move_transaction.rs:13182:9:
+2026-10-24T21:14:48.6874492Z assertion `left != right` failed: test requires repository storage and the system temporary directory on distinct filesystems
+2026-10-24T21:14:48.6874789Z   left: 66305
+2026-10-24T21:14:48.6874900Z  right: 66305
+2026-10-24T21:14:48.6874967Z
+2026-10-24T21:14:48.6875107Z ---- tests::copy_receipt_is_not_issued_for_an_entry_replaced_after_publication stdout ----
+2026-10-24T21:14:48.6875292Z
+2026-10-24T21:14:48.6875687Z thread 'tests::copy_receipt_is_not_issued_for_an_entry_replaced_after_publication' (17179) panicked at crates/ottrin-platform/src/lib.rs:5977:9:
+2026-10-24T21:14:48.6879105Z assertion failed: matches!(result, Err(PlatformError::CommittedCleanupPending { .. }))
+2026-10-24T21:14:48.6879299Z
+2026-10-24T21:14:48.6879462Z ---- tests::open_with_hides_nodisplay_handlers_in_an_isolated_gio_environment stdout ----
+2026-10-24T21:14:48.6879742Z
+2026-10-24T21:14:48.6880086Z thread 'tests::open_with_hides_nodisplay_handlers_in_an_isolated_gio_environment' (17219) panicked at crates/ottrin-platform/src/lib.rs:4427:9:
+2026-10-24T21:14:48.6880593Z isolated GIO child test failed
+2026-10-24T21:14:48.6880730Z
+2026-10-24T21:14:48.6880921Z ---- tests::overwritten_copy_undo_refuses_a_replaced_displaced_destination stdout ----
+2026-10-24T21:14:48.6881252Z
+2026-10-24T21:14:48.6881662Z thread 'tests::overwritten_copy_undo_refuses_a_replaced_displaced_destination' (17228) panicked at crates/ottrin-platform/src/lib.rs:5418:9:
+2026-10-24T21:14:48.6882296Z assertion failed: matches!(result, Err(PlatformError::StalePathMoveUndo(_)))
+2026-10-24T21:14:48.6882555Z
+2026-10-24T21:14:48.6882729Z ---- tests::symlink_undo_refuses_to_withdraw_a_pathname_replacement stdout ----
+2026-10-24T21:14:48.6882991Z
+2026-10-24T21:14:48.6883312Z thread 'tests::symlink_undo_refuses_to_withdraw_a_pathname_replacement' (17256) panicked at crates/ottrin-platform/src/lib.rs:5542:9:
+2026-10-24T21:14:48.6883899Z assertion failed: matches!(DefaultPlatform.undo_symlink_with_receipt(&receipt),
+2026-10-24T21:14:48.6884273Z     Err(PlatformError::StalePathMoveUndo(_)))
+2026-10-24T21:14:48.6884619Z
+2026-10-24T21:14:48.6884622Z
+2026-10-24T21:14:48.6884692Z failures:
+2026-10-24T21:14:48.6885029Z     directory_watch::tests::large_batches_share_one_instance_and_releasing_one_owner_keeps_other_proofs
+2026-10-24T21:14:48.6885661Z     move_recovery::tests::cross_device_overwrite_exchange_interruption_retains_all_entries_with_matching_published_evidence
+2026-10-24T21:14:48.6886270Z     move_transaction::tests::cross_filesystem_retry_through_public_api_recovers_claimed_source
+2026-10-24T21:14:48.6886737Z     tests::copy_receipt_is_not_issued_for_an_entry_replaced_after_publication
+2026-10-24T21:14:48.6887167Z     tests::open_with_hides_nodisplay_handlers_in_an_isolated_gio_environment
+2026-10-24T21:14:48.6887584Z     tests::overwritten_copy_undo_refuses_a_replaced_displaced_destination
+2026-10-24T21:14:48.6888132Z     tests::symlink_undo_refuses_to_withdraw_a_pathname_replacement
+2026-10-24T21:14:48.6888348Z
+2026-10-24T21:14:48.6888574Z test result: FAILED. 408 passed; 7 failed; 4 ignored; 0 measured; 0 filtered out; finished in 2.32s
+2026-10-24T21:14:48.6888888Z
+2026-10-24T21:14:48.6889369Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-platform --lib`
+2026-10-24T21:14:48.6987643Z ##[error]Process completed with exit code 101.
+2026-10-24T21:14:48.7125028Z Post job cleanup.
+2026-10-24T21:14:48.9122249Z [command]/usr/bin/git version
+2026-10-24T21:14:48.9188642Z git version 2.55.0
+2026-10-24T21:14:48.9249139Z Temporarily overriding HOME='/home/runner/work/_temp/492e8a66-4a0c-452e-93ce-3a91ac9f101f' before making global git config changes
+2026-10-24T21:14:48.9269173Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T21:14:48.9278757Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ottrin/ottrin
+2026-10-24T21:14:48.9339033Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T21:14:48.9428388Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T21:14:48.9798978Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T21:14:48.9838509Z http.https://github.com/.extraheader

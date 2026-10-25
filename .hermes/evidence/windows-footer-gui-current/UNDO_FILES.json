@@ -1,0 +1,38 @@
+{
+  "id": "0d15c512b14543ee950f60653d897c2b",
+  "case": "ordinary",
+  "foreground_pid": 5972,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Actual corrected-package Undo restores both originals and preserves long-name file",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n",
+      "source\\other.txt": "other original\n",
+      "source\\zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename .txt": "long selection original\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 393874,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 328342,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "op": "verify"
+}

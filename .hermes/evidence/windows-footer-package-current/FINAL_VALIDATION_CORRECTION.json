@@ -1,0 +1,11 @@
+{
+  "issue": "Final receipt script incorrectly required two compact records and its shell continued to promotion after assertion failure",
+  "actual_expected_records": [
+    "1aaca7881e4384a86f4776ecf71569ea.move-clean",
+    "1aaca7881e4384a86f4776ecf71569ea.move-cleaning",
+    "1aaca7881e4384a86f4776ecf71569ea.move-done"
+  ],
+  "implementation": "retirement.rs writes immutable intent then completion without removing the intent; both bind the same completion receipt",
+  "revalidation": "Original actual UI/file/cleanup checks pass; all three retained metadata records have expected phases and bindings; all57 candidate files and three artifact hashes reverified; public baseline unchanged",
+  "improvement": "Use fail-fast shell sequencing for final receipt/publication steps"
+}

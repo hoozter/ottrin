@@ -1,0 +1,30 @@
+{
+  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "run": "https://github.com/hoozter/ottrin/actions/runs/40132684848",
+  "ubuntu": {
+    "result": "408 passed;7 failed;4 ignored",
+    "missing_dependency": "update-desktop-database (desktop-file-utils)",
+    "fixture_errors": [
+      "Cross-filesystem public retry assumes crate storage and std temp use distinct devices and leaks its source fixture on assertion failure",
+      "Journal symlink test also leaves a backup descendant, making its exact error assertion depend on directory enumeration order"
+    ],
+    "remaining_refusals": [
+      "Directory-watch registration under concurrent identity recycling",
+      "Copy/Undo/symlink replaced-entry identity/refusal behavior needs direct reproduction and actual returned-error inspection"
+    ]
+  },
+  "windows": {
+    "stage": "Compile ottrin-platform lib test; no successful workspace test acceptance",
+    "failure": "rustc-LLVM ERROR: out of memory; process exits STATUS_ILLEGAL_INSTRUCTION",
+    "next": "Use a bounded, authoritative test compilation profile for large platform/UI crates and runner compilation concurrency; retain all test assertions"
+  },
+  "local_same_filesystem_reproduction": {
+    "evidence": "../linux-ci-current/platform-ext4.log.gz",
+    "passed": 405,
+    "failed": 10,
+    "ignored": 4,
+    "limits": "Includes two additional Unix-domain socket fixture path-length failures caused by the longer disposable root. Use a short owned same-filesystem root for further reproduction.",
+    "cleanup": "../linux-ci-current/TEARDOWN.json"
+  },
+  "policy": "These are dependency-ready engineering repairs, not owner-wait items. Do not disable tests or waive data-preservation assertions."
+}

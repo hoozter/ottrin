@@ -1,0 +1,60 @@
+{
+  "ottrin-office-render.exe": {
+    "all_raw_section_hashes_match": true,
+    "changed_sections": [],
+    "old": {
+      ".text": "4b672b2ab161392112b17affa60928bb047d7a76fc9bd38b3f7485e21afeb35a",
+      ".data": "284159e8d8952930318431555893c91a26c7a1aa62ae141a0a3fb240cae16f7c",
+      ".rdata": "25545d60f70406654ad4c057e6f985b0c0ddf9b050e7c157956a7395d059c930",
+      ".pdata": "da07ad43eeea4cb47adec071a623b0f204749c28c2e8ab513ec1c02de8423b01",
+      ".xdata": "164bb44fbf30c7dbab5fcf19b38dcf81195bdff55a6b29b99769c4e2c928ea04",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "11344a95b41beac5a632b8c757a567c6a936c633353e4dd65360ac3ce0e15e70",
+      ".CRT": "900f0bd85c1744b9a77513f2bf6e2a1e45d9611e1543a441a0d41d96fa9300a8",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "b45982777c69690dd690f34428c5f7bed43746b73f72c48242bfcc67954b8dd6"
+    },
+    "new": {
+      ".text": "4b672b2ab161392112b17affa60928bb047d7a76fc9bd38b3f7485e21afeb35a",
+      ".data": "284159e8d8952930318431555893c91a26c7a1aa62ae141a0a3fb240cae16f7c",
+      ".rdata": "25545d60f70406654ad4c057e6f985b0c0ddf9b050e7c157956a7395d059c930",
+      ".pdata": "da07ad43eeea4cb47adec071a623b0f204749c28c2e8ab513ec1c02de8423b01",
+      ".xdata": "164bb44fbf30c7dbab5fcf19b38dcf81195bdff55a6b29b99769c4e2c928ea04",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "11344a95b41beac5a632b8c757a567c6a936c633353e4dd65360ac3ce0e15e70",
+      ".CRT": "900f0bd85c1744b9a77513f2bf6e2a1e45d9611e1543a441a0d41d96fa9300a8",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "b45982777c69690dd690f34428c5f7bed43746b73f72c48242bfcc67954b8dd6"
+    },
+    "scope": "PE section byte comparison; not a fresh Office GUI/provider acceptance"
+  },
+  "ottrin-legacy-doc-render.exe": {
+    "all_raw_section_hashes_match": true,
+    "changed_sections": [],
+    "old": {
+      ".text": "701f81bfad92af5a21d2fbc1962c1d29802f2627c0681e78b71479a166528bbb",
+      ".data": "67a687c8b24fb5fb98bcd45e20d1eec0bdec8799fff7f3a5cb4d3781de7f0994",
+      ".rdata": "ce1fc9ae433154eca380bfcb5056ab188efad1ce4c30af8fe1659f82b050a6e8",
+      ".pdata": "510c944e3fcef60c546fcb9e04208639f5610a9c38a53ca16b1011753c0a5de5",
+      ".xdata": "df2766495801f36cafbb0fd20d4a20b4cf8ac400f48b047d95f4fa309179dabf",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "e58a5dfd3d80af7e2b76bbd4651fbcf77c5a68df879e79fa9e0493d4459ac81c",
+      ".CRT": "48fb5ff0a46df3f6f4c8298db3f60d154a1a4c32a42433dda9a02e5b1ae75543",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "b3d34029b2537b538a1e27c6c45fd97045ff9da35452f04452de773ddee9d9e1"
+    },
+    "new": {
+      ".text": "701f81bfad92af5a21d2fbc1962c1d29802f2627c0681e78b71479a166528bbb",
+      ".data": "67a687c8b24fb5fb98bcd45e20d1eec0bdec8799fff7f3a5cb4d3781de7f0994",
+      ".rdata": "ce1fc9ae433154eca380bfcb5056ab188efad1ce4c30af8fe1659f82b050a6e8",
+      ".pdata": "510c944e3fcef60c546fcb9e04208639f5610a9c38a53ca16b1011753c0a5de5",
+      ".xdata": "df2766495801f36cafbb0fd20d4a20b4cf8ac400f48b047d95f4fa309179dabf",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "e58a5dfd3d80af7e2b76bbd4651fbcf77c5a68df879e79fa9e0493d4459ac81c",
+      ".CRT": "48fb5ff0a46df3f6f4c8298db3f60d154a1a4c32a42433dda9a02e5b1ae75543",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "b3d34029b2537b538a1e27c6c45fd97045ff9da35452f04452de773ddee9d9e1"
+    },
+    "scope": "PE section byte comparison; not a fresh Office GUI/provider acceptance"
+  }
+}

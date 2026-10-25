@@ -1,0 +1,27 @@
+{
+  "cursor_x": 420,
+  "id": "c3cbd7d7141f4b5bba3aa68bf7317a56",
+  "case": "ordinary",
+  "foreground_pid": 132,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Post-close originals, unrelated files, long selected name and unknown cleanup data preserved",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n",
+      "source\\other.txt": "other original\n",
+      "source\\zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename .txt": "long selection original\n",
+      "destination\\.ottrin-move-1aaca7881e4384a86f4776ecf71569ea\\foreign-extra.txt": "preserve unknown cleanup data\n",
+      "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+    },
+    "absent": [
+      "destination\\.ottrin-move-1aaca7881e4384a86f4776ecf71569ea\\journal"
+    ]
+  },
+  "windows": [],
+  "ordinary_user": true,
+  "cursor_y": 704,
+  "op": "verify"
+}

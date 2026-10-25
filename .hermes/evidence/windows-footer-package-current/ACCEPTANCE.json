@@ -1,0 +1,75 @@
+{
+  "status": "pass within package content, native loader/CLI, 18 native UI checks and scoped exact portable GUI footer/Move/Undo/cleanup checks",
+  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "679e7e9a9ac8d0499568016548a630fe11e580f6ac6a86daad63064424dfc826",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "ecf8ec9bee6c594dba82595f52c5ab16699adde52612e43a862636a7a50d9f28",
+    "Ottrin-0.1.0-windows-x64.msi": "48504f2ce16c2d26cc3e0d68e4704a4eda6491f291d79550570f660c024259b7"
+  },
+  "payload_files": 57,
+  "package_identity": "PACKAGE_IDENTITIES.json",
+  "native_deployment": "DEPLOYMENT.json",
+  "native_msi_administrative_extraction": "MSI_PAYLOAD.json",
+  "native_loader_cli": {
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status": "pass",
+    "runs": [
+      {
+        "exit": 0,
+        "stdout_sha256": "daecf3c1dfcbfebc72eb2108cfb1b1cc0650f8427e18b1bd23560d600da9b972",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "executable": "ottrin.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+        "executable": "ottrin-indexd.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+        "executable": "ottrin-priv-helper.exe"
+      }
+    ],
+    "identity": "NT AUTHORITY\\SYSTEM"
+  },
+  "source_checks": {
+    "evidence": "../windows-footer-current/ACCEPTANCE.json",
+    "native_passed": 18,
+    "source_identity": "SOURCE_REVIEW.json"
+  },
+  "portable_gui_acceptance": {
+    "evidence": "../windows-footer-gui-current/ACCEPTANCE.json",
+    "scope": {
+      "desktop": "ordinary temporary Windows account; default renderer; Dark/List100; actual1024x680 main window",
+      "workflow": "Native Cut/Paste Replace, displaced preservation, actual Activity Undo, cleanup with unknown private file retained, six file contents checked after normal app close",
+      "footer": "190-character selected basename stays in one truncated row; controls remain visible and wordmark does not overlap; actual hover shows complete filename in bounded tooltip",
+      "activity": "Completed Move Undo title;1 Move record count before/after cleanup; paired journals removed and three bound compact intent/completion records retained",
+      "warning": "Cleanup warning visible in Activity and adjacent command frame with input row; no clipping observed in this run. Native composed tests separately prove long transient footer feedback and full multiline tooltip."
+    }
+  },
+  "payload_delta": "PAYLOAD_DELTA.json",
+  "office_sections": "OFFICE_SECTION_COMPARISON.json: both Office helpers have matching raw PE sections despite whole-file differences; no fresh Office GUI acceptance inferred",
+  "promotion": "PROMOTION.json",
+  "validation_correction": "FINAL_VALIDATION_CORRECTION.json",
+  "cleanup": {
+    "package_compiler": "TEARDOWN.json",
+    "native_ui": "../windows-footer-current/TEARDOWN.json",
+    "portable_gui": "../windows-footer-gui-current/TEARDOWN.json"
+  },
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-footer-package-current",
+  "public_windows_files_unchanged": true,
+  "linux_packages_unchanged": true,
+  "limits": [
+    "No native installer install/upgrade/repair/rollback/uninstall acceptance for these new hashes",
+    "Actual desktop scope Dark/List100/default renderer1024x680; additional scales/widths have native composed tests only",
+    "Earlier cross-volume GUI checks retain their earlier source/artifact scopes",
+    "Public Windows Copy remains disabled; native Copy and remaining transaction/resource/workflow gates unfinished",
+    "Hosted Ubuntu tests and Windows compiler failed; CI_FAILURES.json records independently fixable follow-up",
+    "No production release, Store submission or user daily-driver acceptance"
+  ]
+}

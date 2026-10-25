@@ -1,0 +1,38 @@
+{
+  "id": "0379780191e84d169b14afbc0b72e35e",
+  "case": "ordinary",
+  "foreground_pid": 3380,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Replace preserves displaced bytes with paired completion journals",
+    "status": "pass",
+    "matches": [
+      {
+        "displaced_sha256": "B9F9ECCB9BBA3C5A67D19293F4C4E3E5E508A1B39AAE18DEAC635915FA920D47",
+        "central_sha256": "CE431AE90100C9AC91C2906172529DCB5855A6E672C4D1A38F38B30648008C5A",
+        "local_sha256": "CE431AE90100C9AC91C2906172529DCB5855A6E672C4D1A38F38B30648008C5A"
+      }
+    ]
+  },
+  "windows": [
+    {
+      "handle": 393874,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 328342,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "op": "verify-retained"
+}

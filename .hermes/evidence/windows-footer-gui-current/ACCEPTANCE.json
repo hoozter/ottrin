@@ -1,0 +1,45 @@
+{
+  "status": "pass within scoped exact portable Windows Move/Undo/cleanup and rendered footer/Activity checks",
+  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "archive_sha256": "679e7e9a9ac8d0499568016548a630fe11e580f6ac6a86daad63064424dfc826",
+  "artifact_path_at_test": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-refresh-stage/Ottrin-0.1.0-windows-x64-portable.zip",
+  "current_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "native_ui_checks": "../windows-footer-current/ACCEPTANCE.json",
+  "package_contents": "../windows-footer-package-current/PACKAGE_IDENTITIES.json",
+  "scope": {
+    "desktop": "ordinary temporary Windows account; default renderer; Dark/List100; actual1024x680 main window",
+    "workflow": "Native Cut/Paste Replace, displaced preservation, actual Activity Undo, cleanup with unknown private file retained, six file contents checked after normal app close",
+    "footer": "190-character selected basename stays in one truncated row; controls remain visible and wordmark does not overlap; actual hover shows complete filename in bounded tooltip",
+    "activity": "Completed Move Undo title;1 Move record count before/after cleanup; paired journals removed and three bound compact intent/completion records retained",
+    "warning": "Cleanup warning visible in Activity and adjacent command frame with input row; no clipping observed in this run. Native composed tests separately prove long transient footer feedback and full multiline tooltip."
+  },
+  "evidence": {
+    "undo": [
+      "UNDO_FILES.json",
+      "UNDO_METADATA.json.gz",
+      "completed-move-undo.png"
+    ],
+    "cleanup": [
+      "CLEANUP_FILES.json",
+      "CLEANUP_METADATA.json.gz",
+      "cleanup-warning-activity.png"
+    ],
+    "footer": [
+      "long-selection-before-cleanup.png",
+      "footer-full-text-tooltip.png",
+      "HOVER_RESULT.json"
+    ],
+    "final_files": "POST_CLOSE_FILES.json",
+    "close": "NORMAL_CLOSE.json",
+    "teardown": "TEARDOWN.json",
+    "input_trace": "commands.jsonl.gz"
+  },
+  "qa_notes": "Bare retained-VM desktop/process checks precede original session logoff. First-login onboarding completed for disposable account. Canonical guarded hover and actual cursor coordinates distinguish hover from click suppression.",
+  "validation_correction": "../windows-footer-package-current/FINAL_VALIDATION_CORRECTION.json",
+  "limits": [
+    "Targeted portable GUI checks, not installer lifecycle or daily-driver acceptance",
+    "Native tests cover widths320/480/1024 and scales1/1.5/2; actual desktop scope is1024x680 Dark100",
+    "Prior48 package cross-volume GUI proof retains its own artifact scope",
+    "Hosted Linux/Windows CI failed separately; no final release acceptance"
+  ]
+}

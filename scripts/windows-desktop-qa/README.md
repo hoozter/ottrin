@@ -16,7 +16,7 @@ different package; preserve the earlier receipt's scope.
    saves protected restoration data, creates the account, verifies and
    extracts the exact candidate. Reboot the guest once into the temporary account.
 2. Finish the temporary account's first-login onboarding before launching Ottrin.
-   JSON operations `prepare`, `launch`, `observe`, `probe`, `click`, `key`, `nav`, `verify`
+   JSON operations `prepare`, `launch`, `observe`, `probe`, `click`, `hover`, `key`, `nav`, `verify`
    and `close` drive/check that account. Window input checks the target process;
    inspect screenshots before choosing coordinates. `probe` reports native point
    ownership without sending input. First-login onboarding input
@@ -81,3 +81,8 @@ held modifiers and incomplete insertion refuse the action.
 `inspect-moves` captures read-only journal/completion metadata in the owned profile.
 `dismiss-shell` sends Escape only to the observed temporary-account Start menu or
 Search host, with foreground PID and exact executable/owner checks.
+
+`hover` uses the same owned visible-point/focus guards as click, moves the native
+pointer without pressing a button and waits for tooltip presentation. Results
+include actual cursor coordinates so a hover assertion can distinguish pointer
+placement from a missing product tooltip.

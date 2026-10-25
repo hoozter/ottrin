@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "native_fixture": "TEARDOWN_NATIVE.json",
+  "final_guest_shutdown_and_original_definition": "../windows-footer-package-current/TEARDOWN.json",
+  "note": "Native UI phase transferred its restored running guest to the package compiler phase, which removed its fixture and restored the guest off before a separate GUI phase started.",
+  "domain_baseline": "DOMAIN_BEFORE.xml.gz"
+}

@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-24
+Last updated: 2026-10-25
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -8,7 +8,9 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
-## Current checkpoint and next work — audited 2026-10-24
+## Current checkpoint and next work
+
+Audited: 2026-10-25
 
 This section and the current delivery table below define the working state.
 Subsequent checkpoint narratives are historical evidence: their “next”, “pending”,
@@ -16,55 +18,65 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
-- **Committed source:** `48fb6c01`. Windows containing-parent rename recovery
-  passes 163 native API/worker checks; see
-  `.hermes/evidence/windows-cross-parent-current/ACCEPTANCE.json`.
+- **Source and verification:** committed footer/Activity source `6dfd3b00` is
+  included in clean package source `1777733f`. All 18 selected native Windows UI
+  and Move-worker tests pass. Windows parent-recovery engine proof remains bound
+  to its original `48fb6c01` source and 163 native checks.
 - **Delivered Linux:** clean `3ed1b303`, all four stable packages. The current
   receipt's four artifact hashes were rechecked on October 24 and match.
   The packaged content-enabled index resource run measures 0.10–0.13% of one CPU
   core in its private 10,000-file fixture; it is not whole-application or personal
   service acceptance. The existing user service was not upgraded by that test.
-- **Accepted internal Windows candidate:** still `68962f05` at
-  `.hermes/packaging-tmp/windows-activity-candidate/`. Its three hashes match
-  `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Public Windows Copy remains gated.
-- **New Windows build under test:** clean `48fb6c01` at
-  `.hermes/packaging-tmp/.windows-refresh-stage/`. All 57 payload files match
-  across portable/NSIS/MSI extraction; native loader/CLI checks pass. It is not
-  promoted. `.hermes/evidence/windows-move-package-current/` records identities.
-  The actual portable GUI passes same-volume and cross-volume Move/Replace,
-  Undo after both containing folders are renamed, and record cleanup with exact
-  file preservation. Unknown private cleanup data is preserved with a warning.
-  The reopened-package recovery test also passes after both parents are renamed:
-  original/staged bytes are verified, Recover now publishes at the current native
-  destination, retires source/staging/control state, preserves foreign old-path
-  files and refreshes the listing without manual input. All 11 public files pass
-  after normal close. Final scoped GUI evidence and teardown are in
-  `.hermes/evidence/windows-move-activity-gui-current/ACCEPTANCE.json`.
-- **Source checkpoint `6dfd3b00`:** footer text clipping and misleading completed-Move
-  journal counts/titles are corrected in source, alongside desktop QA input,
-  observation and lifecycle fixes. All 401 Linux UI tests pass (one ignored),
-  and the Windows UI test executable builds. Native execution and a rebuilt
-  package visual check of these edits remain pending. Neither stable package
-  cohort contains them.
-- **QA resources retired:** the owned secondary NTFS VHD, temporary
-  `OttrinWindowQA` account/profile/credential/payload and processes are removed.
-  Original file hashes, login settings, disk inventory and persistent VM definition
-  match their baselines; retained guest `ottrin-copy-cleanup-qa` is off. Compact
-  acceptance receipts and useful current compiler caches are retained. The old
-  `48fb6c01` stage is held only until the corrected package replacement is verified.
+- **Current internal Windows candidate:** clean `1777733f` at
+  `.hermes/packaging-tmp/windows-activity-candidate/`. Portable, NSIS and native
+  MSI extraction agree on all 57 payload files; native loader/CLI checks pass.
+  Exact portable Dark/List100/default-renderer checks pass Move/Replace, Undo,
+  unknown-data-preserving record cleanup, the completed-record count/title,
+  single-row long selection, and full native-hover tooltip. Six file contents
+  remain correct after normal close. Actual cleanup warning/command input and
+  footer controls render without clipping in this run. Broader widths/scales
+  have composed native UI tests, not new physical-desktop acceptance.
+  `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` records exact hashes and limitations.
+- **Completed older package workflows:** `48fb6c01` same/cross-volume parent-
+  rename Undo and reopened recovery retain their exact earlier artifact scope in
+  `.hermes/evidence/windows-move-activity-gui-current/ACCEPTANCE.json`. They are
+  not automatically acceptance of the newer package. Earlier `68962f05` receipts
+  are historical; its superseded generated internal candidate is removed.
+- **Cleanup:** all owned native-test, compiler and desktop fixtures, temporary
+  account/profile/credentials and secondary NTFS volume are removed. Checked
+  original files, login values, disks and VM definition are preserved. The
+  retained guest is off, the temporary package stage is absent, and current
+  compiler caches remain. Only the obsolete finalized Windows UI test session
+  from the rebuilt configuration was retired after lock/consumer checks.
+- **Hosted CI requires repair:** source `1777733f` fails seven Ubuntu platform
+  tests; Windows test compilation runs out of LLVM memory. A short-path-aware
+  same-filesystem local reproduction is the next step. Full details and fixture
+  limitations are in
+  `.hermes/evidence/windows-footer-package-current/CI_FAILURES.json`. These are
+  engineering tasks, not owner-dependent blockers. Public Windows Copy and the
+  final platform/resource/installer/release gates remain open. Linux packages and
+  public Windows downloads are unchanged by this candidate refresh.
+- **Receipt-script correction:** a local final assertion incorrectly expected
+  two compact cleanup records; the implementation retains intent, completion and
+  completed-Undo proof. Its shell continued to the internal swap after that
+  assertion failed. The three expected record bindings, all 57 candidate files,
+  all artifact hashes, six post-close contents and full teardown were then
+  revalidated before acceptance was recorded. Public downloads were unchanged.
+  See `FINAL_VALIDATION_CORRECTION.json` in the package evidence directory.
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Complete native Windows verification of the committed UI fixes, then rebuild
-   and visually accept the corrected packages before replacing the stable
-   candidate. The older `48fb6c01` package now has completed scoped workflow
-   acceptance, but it retains the known footer/Activity defects.
-2. Replace superseded staging after verification; update the stable artifact
-   receipts only on success and finish all owned native/package QA teardown.
+1. Repair the hosted CI failures: reproduce Linux identity/Undo refusals on a
+   short owned ordinary filesystem root, fix the invalid filesystem and journal
+   fixtures and their teardown, declare the GIO fixture dependency, and bound
+   Windows test compilation memory without disabling assertions.
+2. Verify the resulting source on both platforms, rebuild affected Linux/Windows
+   artifacts, rerun affected exact-package paths, and update receipts only on
+   success. Commit and push verified checkpoints.
 3. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below; then concentrated platform acceptance. Required outcome 4
    (the themed picker and supported folder integration) remains deferred until
-   the preceding work is complete. User testing remains deferred and does not
+   the preceding work is complete. User testing stays deferred and does not
    block independently executable work.
 
 The goal's recorded October 22 10:01 Stockholm stop reports
@@ -147,7 +159,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | The internal portable/NSIS/MSI candidate is refreshed from clean `68962f05`, including cross-volume completed Replace name reuse; all 57 payload files match and native loader/CLI checks pass. The corrected native Move module passes 72 tests. The exact portable GUI now passes cross-volume Replace/name reuse and subsequent Moves, with seven file-state checks including post-close and six unchanged retained/journal snapshots. Earlier same-volume GUI acceptance retains its `1cd2871f` scope. [Windows candidate acceptance](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact hashes and scopes. | The staged `48fb6c01` recovery/Undo/cleanup GUI run and teardown are complete within the scope above. Verify native UI fixes, rebuild and visually accept them before promotion. Complete remaining recovery and session-history acceptance. Finish native Copy and remaining transaction/resource/workflow, installer lifecycle, graphics and platform gates. Public Windows Copy remains gated. |
+| Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Repair hosted test compilation, finish native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 

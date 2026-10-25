@@ -1,0 +1,11 @@
+{
+  "private_root_removed": true,
+  "new_known_failed_cross_fixture_removed": [
+    "crates/ottrin-platform/target/test-state/ottrin-move-public-retry-14759074732095724605"
+  ],
+  "note": "Cargo runs the library test in its package directory. The same-filesystem assertion leaked this newly created seven-byte fixture under crates/ottrin-platform/target/test-state; exact path/time/owner/content were verified before deletion. No compiler target tree or pre-existing data removed. Fix the fixture producer before repeating.",
+  "empty_fixture_parents_removed": [
+    "crates/ottrin-platform/target/test-state",
+    "crates/ottrin-platform/target"
+  ]
+}

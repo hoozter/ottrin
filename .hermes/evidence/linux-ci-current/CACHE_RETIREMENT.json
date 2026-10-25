@@ -1,0 +1,9 @@
+{
+  "retired": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_platform-1qnmh6yaagvee/s-hnfxetix4t-0svudqy-2w0vb0mp65s3fo5i43yfdye3c",
+  "replacement": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_platform-1qnmh6yaagvee/s-hnisggwrh9-1d9bwjz-04rzlf9x6m97jvv1qzrfnkn9y",
+  "reason": "Superseded finalized session of the exact Linux platform test configuration rebuilt for same-filesystem CI reproduction; current compiled configuration retained despite recorded runtime test failures",
+  "flock_and_posix_locks_clear": true,
+  "accessible_consumers": [],
+  "logical_bytes": 365184362,
+  "note": "Shared hard links can retain physical blocks; no blanket cache/configuration cleanup."
+}

@@ -1,0 +1,13 @@
+native PID 7444
+Owned ordinary account ready; protected restoration data saved.
+
+uploaded interop.ps1
+uploaded actor.ps1
+uploaded cleanup.ps1
+uploaded config-template.json
+uploaded payload-manifest.json
+uploaded payload.zip
+native PID 3568
+Scripts parsed; exact candidate extracted.
+
+Prepared. Reboot once to enter the owned console.
