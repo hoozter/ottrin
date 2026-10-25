@@ -22,32 +22,36 @@ their named hashes. Test counts are scoped observations, not completion measures
   included in clean package source `1777733f`. All 18 selected native Windows UI
   and Move-worker tests pass. Windows parent-recovery engine proof remains bound
   to its original `48fb6c01` source and 163 native checks.
-- **Delivered Linux:** clean `7d5eee59`, all four stable packages. AppImage
-  SHA-256 starts `d813e0e1e418a281`; the current receipt records all four hashes.
-  Production payload/runtime/helper/font-notice/source checks pass in every
-  format. The actual Dark/List100 AppImage starts normally, exposes native icon
-  pixels matching the Ottrin asset, opens a read-only VCF preview, closes it
-  with Space without changing file bytes, and exits normally through product
-  Close while preserving Dark/List. All owned display/bus/WM/daemon/profile
-  fixtures, package extractions and completed stages are removed. The preview
-  core-dump limit and private HTML workspace fix are included; the restricted-
-  host HTML launcher remains a separate unfinished integration. Current receipt:
-  `linux-sandbox-package-current/ACCEPTANCE.json`.
-  Earlier `1b6e5138` Undo refusal/27 B-to-3 B refresh/singular footer checks,
-  402 Linux UI checks and broader `fb6fbdf4` workflows retain their exact source
-  and artifact scopes; they are not new whole-suite acceptance of this cohort.
-- **Actual personal index service:** the enabled service was stopped cleanly
-  since October24. It is now restarted through the delivered AppImage under the
-  owner's existing restart authorization and remains enabled/running. The actual
-  process is **ottrin-indexd**, with the same verified daemon bytes as the earlier
-  measured cohorts. Its real **121,050-item** index reports ready and watcher
-  ready. Complete-service cgroup CPU measured **0.193% over 20 seconds** and
-  **0.138% over 60 seconds**, each as a percentage of one core; main-process RSS
-  was about **39 MiB**. Cgroup totals also charge reclaimable filesystem/page/slab
-  caches and are recorded separately. Configuration, unit and launcher bytes
-  are unchanged; primary user files were not edited. This is bounded real-state
-  observation, not long-duration/load/physical-device or final owner acceptance.
-  Receipt: `personal-index-runtime-current/ACCEPTANCE.json`.
+- **Delivered Linux:** clean `d54e1933`, all four stable formats. AppImage
+  SHA-256 starts `35892243f2a0bd7a`; the current receipt records all hashes.
+  Production payload/runtime/helper-policy/font/source checks pass. The actual
+  AppImage passes Dark/List100 startup, exact native icon pixels, read-only VCF
+  Space-close/byte preservation, themed Settings/Services inspection, normal
+  product Close and persisted settings. Its exact release HTML helper renders
+  expected pixels with scripts blocked on the unrestricted host. All owned
+  GUI/profile/extraction/staging/wrapper fixtures are removed. Receipt:
+  `linux-html-package-current/ACCEPTANCE.json`.
+- **Production Linux HTML and full source verification:** hosted run
+  `40239453234` accepts production helper installation, real browser pixels,
+  blocked private preload after a working control, six renderer confinement
+  observations, and complete integration teardown with namespace restriction1
+  unchanged. The full Linux workspace, strict lint and release build pass,
+  including 205 preview, 17 provider and 402 UI checks (one existing UI exclusion).
+  Global unconfined-profile-change policy remains an explicitly recorded OS
+  limitation; Ottrin does not change it. Earlier operation workflows retain
+  their original hashes/scopes. No fresh distro or personal helper installation
+  is claimed by this source acceptance.
+- **Actual personal index service:** restarted from the new stable AppImage
+  under the owner's existing authorization; remains enabled and running as
+  **ottrin-indexd**, with unchanged daemon bytes. Its real **121,056-item** index
+  reports ready and active watching. The first minute after restart used about
+  **25 CPU seconds** (41.3% of one core); the later 60-second steady observation
+  is **0.127% of one core**, with about **89 MB** charged to the service cgroup.
+  Startup revalidation cost is open engineering work, not an idle success or
+  owner dependency. Configuration, unit and wrapper hashes are unchanged;
+  primary user files were not edited. Receipt:
+  `personal-index-package-current/ACCEPTANCE.json`. Earlier 20/60-second samples
+  retain their scopes in `personal-index-runtime-current/`.
 - **Current internal Windows candidate:** clean `1777733f` at
   `.hermes/packaging-tmp/windows-activity-candidate/`. Portable, NSIS and native
   MSI extraction agree on all 57 payload files; native loader/CLI checks pass.
@@ -194,51 +198,36 @@ their named hashes. Test counts are scoped observations, not completion measures
   revalidated before acceptance was recorded. Public downloads were unchanged.
   See `FINAL_VALIDATION_CORRECTION.json` in the package evidence directory.
 
-Current Linux HTML repair is implemented in source and awaiting hosted execution:
-the fixed-protocol root-owned renderer, one shared namespace builder, complete
-system-integration setup, Services status, four package recipes, an 8 MiB expanded
-document bound, and hosted production installation/render/preload/teardown checks.
-Local installer/staging, HTML admission/sanitization, UI strict lint and all 17
-Linux provider contracts pass. Local real HTML rendering was **not exercised**
-because the new system helper is not installed on this machine. The existing
-`7d5eee59` deliverables remain authoritative until a new exact cohort is accepted.
+Production Linux HTML repair is delivered and hosted source verification passes.
+The personal system helper remains optional setup in Settings → Services; it has
+not been installed on the personal machine during this QA.
 
-The completed `cb2e2f69` hosted run passed the repaired Windows Office contracts
-and progressed to native AppContainer/Job Object fixtures: four of ten active
-checks fail (descendant launch, aggregate descendant memory, inherited-handle
-probe). Those are engineering work, not owner waiting. A fresh retained-guest GNU
-Windows run passes all ten native boundary cases under both an ordinary loaded
-interactive token and its linked elevated token; both leave zero temporary
-fixtures. The SYSTEM/unloaded-profile controls are explicitly unaccepted. The
-owned root and disposable account are removed, original profiles and guest
-definition preserved, and the guest is off. That result does not accept MSVC or
-the hosted Windows Server runner: read-only mitigation/NUL/executable diagnostics
-and a native boundary preflight now precede the full suite. See
-`windows-job-fixtures-current/ACCEPTANCE.json`.
- Linux failed the two old
-real HTML checks; the new production helper is intended to resolve that boundary
-without disabling either sandbox. Search performance passed.
+The Windows hosted native boundary still fails four fixtures. Read-only
+`d54e1933` diagnostics establish two causes: NUL opens are denied inside the
+runner's AppContainer, and its permanent strict-handle policy raises on the
+invalid-handle probe. The retained Win11 GNU baseline passes all ten cases under
+ordinary and linked elevated interactive tokens; that does not accept the hosted
+server/MSVC lane. Fixtures are being corrected to inherit already-admitted I/O
+and inspect the valid handle table with a positive control, preserving all
+containment, process, memory and teardown assertions. No test exclusion or
+production-policy relaxation is introduced. `windows-job-fixtures-current/`
+records the baseline and hosted diagnostics; the corrected fixtures now pass all ten cases under both guest tokens with strict-handle policy0x3 unchanged. Owned root/processes are removed and the retained guest is off. See `windows-job-fixtures-fixed-current/ACCEPTANCE.json`. Hosted Server/MSVC acceptance remains required.
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. The corrected MSVC platform suite and both elevated/ordinary-token targeted
-   ownership scopes pass. Verify the full workspace after the Office fixture
-   repair, including search/UI and strict lint. Current-candidate GUI and broader
-   ordinary desktop acceptance remain separate.
-   Repair Ubuntu HTML sandbox composition while preserving real-browser fidelity
-   and both isolation boundaries. Reach the mandatory hosted Office suite.
-2. The fresh Windows ZIP/NSIS/MSI cohort and exact bundled-font payload
-   checks pass. Complete actual current GUI and full Windows CI acceptance;
-   retain public Copy gating and resolve failed-uninstall rollback.
-   Commit and push verified checkpoints. Linux's `7d5eee59` four-format cohort is
-   delivered; hosted release/signing execution remains unaccepted.
-3. The earlier `1b6e5138` footer/metadata source is included in delivered Linux
-   `7d5eee59`; its earlier workflow receipts retain their named artifact scope.
-   Continue dependency-ready preview/editing,
-   file-operation and packaging outcomes below, then platform acceptance.
-   Required outcome 4 (the themed picker and supported folder integration) stays
-   deferred until preceding work is complete. Owner testing does not block
-   independently executable work.
+1. Verify the corrected Windows native sandbox fixtures, then reach full
+   workspace/search/UI/lint acceptance on hosted MSVC. Current-candidate GUI and
+   broader ordinary desktop acceptance remain separate. Linux `d54e1933` is
+   delivered; hosted release publication/signing remains unaccepted.
+2. Profile and reduce the personal index's startup revalidation CPU while
+   preserving missed-offline-change detection and watcher coverage. Steady idle
+   passes separately. Complete current Windows candidate GUI, retain public Copy
+   gating and resolve failed-uninstall registration rollback.
+3. Continue dependency-ready preview/editing, file-operation and packaging
+   outcomes below, then platform acceptance. Earlier `1b6e5138`/`fb6fbdf4`
+   workflows retain their named scopes. Required outcome 4 (the themed picker and
+   supported folder integration) stays deferred until preceding work is complete.
+   Owner testing does not block independently executable work.
 
 The goal's recorded October 22 10:01 Stockholm stop reports
 `server_overloaded` (“Selected model is at capacity”). This is an execution failure,
@@ -270,6 +259,7 @@ Do not move a fixable implementation or test failure onto this list.
 | --- | --- | --- |
 | Privileged cleanup of owned X11 test core | Remove only `/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst` (4,096,895 bytes). Noninteractive sudo requires a password; ownership is recorded in `linux-ci-package-current/dark100/CORE_CLEANUP.json`. | All engineering; private profiles, processes, mounts and package extractions are already removed. |
 | Privileged cleanup of owned Chrome diagnostic core | Remove only `/var/lib/systemd/coredump/core.chrome.1000.eeed43c73b3a47998b6355d43295a2ad.2138656.1792952026000000.zst` (2,509,878 bytes). Noninteractive sudo requires a password; `hosted-isolation-current/CORE_CLEANUP.json` records ownership and LimitCORE=0 producer correction. | All engineering; synthetic profile and transient unit are gone. |
+| Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
 | Linux public release signing identity | Owner approves the project identity/public fingerprint and authorizes provisioning its protected signing key. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work; do not invent or publish an identity. |
 | Microsoft Store account/submission | Owner-controlled Store identity, listing and certification after Windows is ready. | Implement/test MSIX packaging and deployment when dependency-ready; unsigned direct ZIP/EXE/MSI remain supported. No paid Windows certificate gate. |

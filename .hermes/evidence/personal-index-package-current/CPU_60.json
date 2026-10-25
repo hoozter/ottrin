@@ -1,0 +1,326 @@
+{
+  "scope": "Actual configured enabled personal service after authorized restart; complete cgroup CPU includes launcher/FUSE/daemon descendants; observation window only",
+  "identity": {
+    "pid": 2225008,
+    "comm": "ottrin-indexd",
+    "exe": "/tmp/.mount_OttrinDLcUEa/usr/bin/ottrin-indexd",
+    "exe_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+    "status": {
+      "VmHWM": "7288 kB",
+      "VmRSS": "7288 kB",
+      "VmSwap": "0 kB",
+      "Threads": "2"
+    }
+  },
+  "elapsed_seconds": 60.56798327999422,
+  "cpu_percent_of_one_core": 41.335325437968564,
+  "samples": [
+    {
+      "elapsed_seconds": 1.0073155630379915,
+      "service_cpu_ns": 505546000,
+      "memory_current_bytes": 45674496
+    },
+    {
+      "elapsed_seconds": 2.0172931289998814,
+      "service_cpu_ns": 1005805000,
+      "memory_current_bytes": 74862592
+    },
+    {
+      "elapsed_seconds": 3.0274456250481308,
+      "service_cpu_ns": 1491453000,
+      "memory_current_bytes": 103403520
+    },
+    {
+      "elapsed_seconds": 4.036764321033843,
+      "service_cpu_ns": 1974570000,
+      "memory_current_bytes": 130355200
+    },
+    {
+      "elapsed_seconds": 5.046597636013757,
+      "service_cpu_ns": 2456253000,
+      "memory_current_bytes": 156295168
+    },
+    {
+      "elapsed_seconds": 6.056992579018697,
+      "service_cpu_ns": 2963965000,
+      "memory_current_bytes": 185581568
+    },
+    {
+      "elapsed_seconds": 7.067130558018107,
+      "service_cpu_ns": 3452082000,
+      "memory_current_bytes": 212582400
+    },
+    {
+      "elapsed_seconds": 8.076464543992188,
+      "service_cpu_ns": 3939086000,
+      "memory_current_bytes": 238620672
+    },
+    {
+      "elapsed_seconds": 9.082436689001042,
+      "service_cpu_ns": 4426863000,
+      "memory_current_bytes": 265224192
+    },
+    {
+      "elapsed_seconds": 10.091750027029775,
+      "service_cpu_ns": 4921101000,
+      "memory_current_bytes": 291962880
+    },
+    {
+      "elapsed_seconds": 11.099906496005133,
+      "service_cpu_ns": 5431230000,
+      "memory_current_bytes": 325902336
+    },
+    {
+      "elapsed_seconds": 12.107575828034896,
+      "service_cpu_ns": 5913406000,
+      "memory_current_bytes": 347828224
+    },
+    {
+      "elapsed_seconds": 13.114713007991668,
+      "service_cpu_ns": 6585121000,
+      "memory_current_bytes": 391294976
+    },
+    {
+      "elapsed_seconds": 14.132000422046985,
+      "service_cpu_ns": 7433903000,
+      "memory_current_bytes": 429314048
+    },
+    {
+      "elapsed_seconds": 15.1393822330283,
+      "service_cpu_ns": 8283624000,
+      "memory_current_bytes": 467972096
+    },
+    {
+      "elapsed_seconds": 16.146555131999776,
+      "service_cpu_ns": 9206390000,
+      "memory_current_bytes": 489795584
+    },
+    {
+      "elapsed_seconds": 17.15395183203509,
+      "service_cpu_ns": 10154304000,
+      "memory_current_bytes": 499728384
+    },
+    {
+      "elapsed_seconds": 18.162221645994578,
+      "service_cpu_ns": 11080580000,
+      "memory_current_bytes": 512425984
+    },
+    {
+      "elapsed_seconds": 19.170143496012315,
+      "service_cpu_ns": 12000662000,
+      "memory_current_bytes": 520585216
+    },
+    {
+      "elapsed_seconds": 20.177583648008294,
+      "service_cpu_ns": 12888947000,
+      "memory_current_bytes": 532480000
+    },
+    {
+      "elapsed_seconds": 21.185018922027666,
+      "service_cpu_ns": 13771049000,
+      "memory_current_bytes": 543297536
+    },
+    {
+      "elapsed_seconds": 22.192496385017876,
+      "service_cpu_ns": 14659169000,
+      "memory_current_bytes": 551936000
+    },
+    {
+      "elapsed_seconds": 23.19991566904355,
+      "service_cpu_ns": 15567671000,
+      "memory_current_bytes": 564678656
+    },
+    {
+      "elapsed_seconds": 24.206594769028015,
+      "service_cpu_ns": 16352604000,
+      "memory_current_bytes": 599162880
+    },
+    {
+      "elapsed_seconds": 25.213616674998775,
+      "service_cpu_ns": 17198910000,
+      "memory_current_bytes": 579387392
+    },
+    {
+      "elapsed_seconds": 26.220792732026894,
+      "service_cpu_ns": 18092243000,
+      "memory_current_bytes": 591831040
+    },
+    {
+      "elapsed_seconds": 27.228454141994007,
+      "service_cpu_ns": 18976331000,
+      "memory_current_bytes": 613265408
+    },
+    {
+      "elapsed_seconds": 28.23578113404801,
+      "service_cpu_ns": 19866277000,
+      "memory_current_bytes": 618004480
+    },
+    {
+      "elapsed_seconds": 29.24307983199833,
+      "service_cpu_ns": 20731516000,
+      "memory_current_bytes": 650895360
+    },
+    {
+      "elapsed_seconds": 30.250401845027227,
+      "service_cpu_ns": 21601018000,
+      "memory_current_bytes": 678981632
+    },
+    {
+      "elapsed_seconds": 31.25797112303553,
+      "service_cpu_ns": 22471133000,
+      "memory_current_bytes": 716611584
+    },
+    {
+      "elapsed_seconds": 32.26514466601657,
+      "service_cpu_ns": 23353811000,
+      "memory_current_bytes": 740581376
+    },
+    {
+      "elapsed_seconds": 33.27171402203385,
+      "service_cpu_ns": 24122833000,
+      "memory_current_bytes": 765706240
+    },
+    {
+      "elapsed_seconds": 34.27998336899327,
+      "service_cpu_ns": 24631340000,
+      "memory_current_bytes": 870187008
+    },
+    {
+      "elapsed_seconds": 35.292649597045965,
+      "service_cpu_ns": 25075943000,
+      "memory_current_bytes": 819388416
+    },
+    {
+      "elapsed_seconds": 36.29993012303021,
+      "service_cpu_ns": 25082000000,
+      "memory_current_bytes": 819712000
+    },
+    {
+      "elapsed_seconds": 37.306886709004175,
+      "service_cpu_ns": 25083616000,
+      "memory_current_bytes": 819470336
+    },
+    {
+      "elapsed_seconds": 38.31402401602827,
+      "service_cpu_ns": 25085690000,
+      "memory_current_bytes": 819699712
+    },
+    {
+      "elapsed_seconds": 39.32103553600609,
+      "service_cpu_ns": 25086654000,
+      "memory_current_bytes": 820219904
+    },
+    {
+      "elapsed_seconds": 40.32871132704895,
+      "service_cpu_ns": 25087222000,
+      "memory_current_bytes": 820187136
+    },
+    {
+      "elapsed_seconds": 41.335889250040054,
+      "service_cpu_ns": 25088169000,
+      "memory_current_bytes": 820187136
+    },
+    {
+      "elapsed_seconds": 42.343331401993055,
+      "service_cpu_ns": 25088771000,
+      "memory_current_bytes": 819924992
+    },
+    {
+      "elapsed_seconds": 43.35035327204969,
+      "service_cpu_ns": 25089319000,
+      "memory_current_bytes": 819515392
+    },
+    {
+      "elapsed_seconds": 44.36385850200895,
+      "service_cpu_ns": 25090108000,
+      "memory_current_bytes": 819777536
+    },
+    {
+      "elapsed_seconds": 45.371475254010875,
+      "service_cpu_ns": 25091295000,
+      "memory_current_bytes": 819798016
+    },
+    {
+      "elapsed_seconds": 46.384524716006126,
+      "service_cpu_ns": 25092329000,
+      "memory_current_bytes": 819535872
+    },
+    {
+      "elapsed_seconds": 47.398253516992554,
+      "service_cpu_ns": 25093600000,
+      "memory_current_bytes": 819535872
+    },
+    {
+      "elapsed_seconds": 48.41082593303872,
+      "service_cpu_ns": 25094818000,
+      "memory_current_bytes": 819359744
+    },
+    {
+      "elapsed_seconds": 49.424322469043545,
+      "service_cpu_ns": 25096100000,
+      "memory_current_bytes": 819359744
+    },
+    {
+      "elapsed_seconds": 50.43756799201947,
+      "service_cpu_ns": 25097361000,
+      "memory_current_bytes": 819359744
+    },
+    {
+      "elapsed_seconds": 51.45098906400381,
+      "service_cpu_ns": 25098653000,
+      "memory_current_bytes": 819359744
+    },
+    {
+      "elapsed_seconds": 52.46391550800763,
+      "service_cpu_ns": 25100034000,
+      "memory_current_bytes": 819359744
+    },
+    {
+      "elapsed_seconds": 53.47696044499753,
+      "service_cpu_ns": 25101222000,
+      "memory_current_bytes": 819359744
+    },
+    {
+      "elapsed_seconds": 54.48926655901596,
+      "service_cpu_ns": 25102432000,
+      "memory_current_bytes": 819101696
+    },
+    {
+      "elapsed_seconds": 55.50224144203821,
+      "service_cpu_ns": 25103633000,
+      "memory_current_bytes": 819101696
+    },
+    {
+      "elapsed_seconds": 56.515197711007204,
+      "service_cpu_ns": 25104981000,
+      "memory_current_bytes": 819101696
+    },
+    {
+      "elapsed_seconds": 57.5282003780012,
+      "service_cpu_ns": 25106189000,
+      "memory_current_bytes": 818880512
+    },
+    {
+      "elapsed_seconds": 58.54115790099604,
+      "service_cpu_ns": 25107456000,
+      "memory_current_bytes": 818622464
+    },
+    {
+      "elapsed_seconds": 59.554631145030726,
+      "service_cpu_ns": 25108648000,
+      "memory_current_bytes": 818405376
+    },
+    {
+      "elapsed_seconds": 60.567971007025335,
+      "service_cpu_ns": 25109945000,
+      "memory_current_bytes": 818405376
+    }
+  ],
+  "config_unit_wrapper_unchanged": {
+    "config": true,
+    "unit": true,
+    "wrapper": true
+  },
+  "primary_user_files_not_modified_by_agent": true,
+  "service_left_enabled_and_running": true
+}

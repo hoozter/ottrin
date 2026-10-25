@@ -1,0 +1,18 @@
+{
+  "scope": "Superseded same-profile native test executable, paired dep-info and fingerprint only; prior manifest references are historical, all retained guests off and no compiler/test consumer",
+  "replacement": "target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-bc3632b4250f206c.exe",
+  "replacement_passed_native_cases": 20,
+  "preserved_other_profile": "windows_job_native-d126374b8b123e5b.exe",
+  "removed": [
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-e83d66d508be7299.exe",
+      "bytes": 440715390,
+      "sha256": "d8440e03cdfb9b5c620cc9efa84cf243650032cc59aafe326eefc967ee1dd780"
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-e83d66d508be7299.d",
+      "bytes": 544,
+      "sha256": "0dc840c291055ca411a2de0c93749e1a2ea7cc77ba9c87b013711df794458be7"
+    }
+  ]
+}

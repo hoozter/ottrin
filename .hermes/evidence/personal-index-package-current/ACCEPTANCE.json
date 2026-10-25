@@ -1,0 +1,25 @@
+{
+  "status": "New stable AppImage service startup and observed idle accepted; startup revalidation cost remains engineering work",
+  "artifact_sha256": "35892243f2a0bd7a5bc391ecab9cca24a9f18c72a3bc5966665712d79748fcd5",
+  "process": "ottrin-indexd",
+  "pid": 2225008,
+  "indexd_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+  "startup_first60_cpu_percent_of_one_core": 41.335325437968564,
+  "startup_first60_cpu_seconds": 25.035973,
+  "steady_60_cpu_percent_of_one_core": 0.12663245889113986,
+  "steady_cgroup_memory_bytes": 89436160,
+  "main_process_status": {
+    "VmHWM": "44344 kB",
+    "VmRSS": "21736 kB",
+    "Threads": "3"
+  },
+  "status_text": "Index: ready\nIndexed: 121056 files\nRoots configured: 1\nRoots watched: 1\nFilesystem watching: active\nDatabase: 873177088 bytes\nWAL: 115392 bytes\nFree pages: 163300 (668876800 bytes)\nDetail: Ready \u00b7 121056 indexed\n",
+  "configuration_unit_wrapper_unchanged": {
+    "config": true,
+    "unit": true,
+    "wrapper": true
+  },
+  "service_left_enabled_and_running": true,
+  "primary_user_files_not_modified_by_agent": true,
+  "next": "Profile startup/revalidation CPU separately; do not describe first-minute activity as steady idle or place a fixable performance investigation on owner waiting"
+}

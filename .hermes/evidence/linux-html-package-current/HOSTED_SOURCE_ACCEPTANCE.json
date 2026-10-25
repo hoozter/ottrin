@@ -1,0 +1,105 @@
+{
+  "source": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+  "run": 40239453234,
+  "linux_job": 121307916999,
+  "linux_conclusion": "success",
+  "steps": [
+    {
+      "name": "Set up job",
+      "conclusion": "success"
+    },
+    {
+      "name": "Checkout",
+      "conclusion": "success"
+    },
+    {
+      "name": "Setup Rust",
+      "conclusion": "success"
+    },
+    {
+      "name": "Cache Rust build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install Linux system dependencies",
+      "conclusion": "success"
+    },
+    {
+      "name": "Prepare Linux process isolation",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install Windows test dependencies",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Cargo check",
+      "conclusion": "success"
+    },
+    {
+      "name": "Prepare production Linux HTML sandbox",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify production HTML pixels and executable mapping policy",
+      "conclusion": "success"
+    },
+    {
+      "name": "Check Windows Move ownership before workspace suite",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Check Windows Office contracts before workspace suite",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Check Windows native preview boundary before workspace suite",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Cargo test",
+      "conclusion": "success"
+    },
+    {
+      "name": "Cargo clippy",
+      "conclusion": "success"
+    },
+    {
+      "name": "Release build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Prepare release-build artifact",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload release-build artifact",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload Windows native boundary failure diagnostics",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Retire production Linux HTML integration",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload Linux HTML sandbox evidence",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Cache Rust build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Checkout",
+      "conclusion": "success"
+    },
+    {
+      "name": "Complete job",
+      "conclusion": "success"
+    }
+  ],
+  "windows": "Native fixture diagnostic gate failed; full Windows suite not accepted"
+}

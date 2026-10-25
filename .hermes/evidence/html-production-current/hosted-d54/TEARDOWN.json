@@ -1,0 +1,17 @@
+{
+  "owned_files": {
+    "/usr/libexec/ottrin/ottrin-html-render": "4e304ad90f089689327d4463093dec5f6c48bb6b20497279f4b2b07ac75677a4",
+    "/usr/libexec/ottrin/ottrin-priv-helper": "351586a15f95aa868ae3423a88316e6a80f9e353b9cf552183552428c77eb425",
+    "/usr/share/ottrin/ottrin-html-render.apparmor": "a8f6c1bc4e4e610aa955b0cce20432df14fdbaef754766bd98923a0d64e39d2d",
+    "/etc/apparmor.d/ottrin-html-render": "a8f6c1bc4e4e610aa955b0cce20432df14fdbaef754766bd98923a0d64e39d2d",
+    "/usr/share/polkit-1/actions/org.ottrin.filesystem.policy": "2df13b82cd905acb38b3be589dacdf3d9b7ea0cffb1126997b751766c64cb969"
+  },
+  "new_directories": [
+    "/usr/libexec/ottrin",
+    "/usr/share/ottrin"
+  ],
+  "restriction": "1",
+  "browser_sha256": "9bfb381296dffe75f3419d07b6cc64525105ed117d1453a4ef3b291cb97d2b58",
+  "status": "cleaned",
+  "profile_unloaded": true
+}

@@ -1,0 +1,14 @@
+{
+  "status": "agent visually inspected actual packaged Settings window",
+  "source_revision": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+  "artifact_sha256": "35892243f2a0bd7a5bc391ecab9cca24a9f18c72a3bc5966665712d79748fcd5",
+  "observed": [
+    "Settings navigation and header use the app theme",
+    "Administrator helper: green installed-and-ready state",
+    "HTML preview sandbox: setup-needed status and setup action",
+    "Index: green running/index-ready state, automatic sign-in startup off, Enable automatic startup action",
+    "All three integration sections and current controls visible at 920x640 without clipping"
+  ],
+  "screenshot_sha256": "207cb370dd311d44faddd93a9ec86e1bfff9808a9f9896c1fd34f4662c986714",
+  "limits": "No administrator prompt or system installation triggered; no index-management mutation; hosted CLI installation/rendering acceptance is separate"
+}

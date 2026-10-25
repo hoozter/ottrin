@@ -1,0 +1,6 @@
+{
+  "status": "accepted from actual application exit and owned teardown",
+  "observation": "The final xdotool click returned nonzero as the product window was destroyed; the app exited zero, retained Dark/List, and all owned processes/profile were removed. Preview and icon checks completed before the close. Original tool error retained in gui-smoke.log.",
+  "normal_app_exit": true,
+  "profile_removed": true
+}

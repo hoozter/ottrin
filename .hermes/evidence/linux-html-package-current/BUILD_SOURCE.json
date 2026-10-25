@@ -1,0 +1,12 @@
+{
+  "source_revision": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-html-stage",
+  "jobs": 1,
+  "pending_consumers": [
+    "four-format production content/closure/helper-policy verification",
+    "actual AppImage Services/Inspector/icon/theme startup checks"
+  ],
+  "changes": "Production fixed-protocol HTML sandbox, coherent root setup/status, bounded expanded document and shared renderer lifetime guard",
+  "public_deliverables": "preserved until replacement acceptance gates pass"
+}

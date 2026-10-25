@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-html-extract",
+  "source": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+  "pending_consumers": [
+    "production package content/closure verification",
+    "Dark100/Light150 native GUI and file operations"
+  ],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks"
+}

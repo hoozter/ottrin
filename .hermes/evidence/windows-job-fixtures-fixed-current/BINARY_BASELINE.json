@@ -1,0 +1,11 @@
+{
+  "source": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+  "binary_sha256": "bd600a0f314fd6c9c4cd70bbed52a7c8066875b853ab88ae74dbf25ec61c5f98",
+  "scope": "Actual admitted-I/O and PSS-handle-table fixture changes, based on d54e1933; guest execution pending",
+  "compiled_source_delta": [
+    "crates/ottrin-preview/Cargo.toml",
+    "crates/ottrin-preview/tests/windows_job_native.rs"
+  ],
+  "test_source_sha256": "41f08227e02377d10a9b045bf84f4340d718e51b170479baf3f3a324c95e9d19",
+  "manifest_sha256": "1f5faf6f85d6d5fa3547d89246fb651b712e14c335d6c0b9f037ad9c1514139e"
+}

@@ -1,0 +1,57 @@
+{
+  "status": "Both native guest token scopes pass; hosted Server/MSVC acceptance pending",
+  "base_revision": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+  "source_identity": {
+    "source": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+    "binary_sha256": "bd600a0f314fd6c9c4cd70bbed52a7c8066875b853ab88ae74dbf25ec61c5f98",
+    "scope": "Actual admitted-I/O and PSS-handle-table fixture changes, based on d54e1933; guest execution pending",
+    "compiled_source_delta": [
+      "crates/ottrin-preview/Cargo.toml",
+      "crates/ottrin-preview/tests/windows_job_native.rs"
+    ],
+    "test_source_sha256": "41f08227e02377d10a9b045bf84f4340d718e51b170479baf3f3a324c95e9d19",
+    "manifest_sha256": "1f5faf6f85d6d5fa3547d89246fb651b712e14c335d6c0b9f037ad9c1514139e"
+  },
+  "ordinary": {
+    "tempEntries": 0,
+    "administrator": false,
+    "owner": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+    "exit": 0,
+    "phase": "interactive",
+    "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+  },
+  "elevated": {
+    "tempEntries": 0,
+    "administrator": true,
+    "owner": "S-1-5-32-544",
+    "exit": 0,
+    "phase": "elevated-interactive",
+    "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+  },
+  "active_cases_per_token": 10,
+  "fixture_entry_points": 3,
+  "positive_control": "Parent handle exists in its PSS handle-table snapshot; it is absent in the contained child snapshot",
+  "strict_handles": "Native child diagnostics report policy0x3; not changed by the fixture",
+  "fixes": [
+    "Descendants inherit the broker-admitted bounded standard I/O instead of opening denied NUL objects",
+    "Enumerate valid current-process handles instead of provoking permanent strict invalid-handle exceptions"
+  ],
+  "not_changed": [
+    "Production AppContainer policy",
+    "Job memory/process/output limits",
+    "Timeout/cancellation descendant assertions",
+    "Filesystem/network/IPC containment assertions",
+    "No test exclusions added"
+  ],
+  "teardown": {
+    "originalProfilesPreserved": true,
+    "ownedProcesses": 0,
+    "ownedRootRemoved": true,
+    "disposableAccountRemoved": true,
+    "noLogonSettingsOrMachinePolicyChanges": true,
+    "status": "pass"
+  },
+  "guest_final_state": "shut off",
+  "shutdown_observation": "QGA disconnected during powerdown; libvirt independently confirms off",
+  "scope": "Actual current GNU Windows fixture execution, not full MSVC/server, current Windows package or LibreOffice GUI acceptance"
+}

@@ -1,0 +1,7 @@
+{
+  "config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+  "wrapper_sha256": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d",
+  "service_before": "MainPID=2193788\nActiveState=active\nUnitFileState=enabled\n",
+  "new_artifact_sha256": "35892243f2a0bd7a5bc391ecab9cca24a9f18c72a3bc5966665712d79748fcd5"
+}
