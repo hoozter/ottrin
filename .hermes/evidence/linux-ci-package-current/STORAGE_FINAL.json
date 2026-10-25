@@ -1,0 +1,8 @@
+{
+  "linux_debug_deps": "24 GiB",
+  "linux_incremental": "9.9 GiB",
+  "windows_debug_deps": "25 GiB",
+  "windows_incremental": "21 GiB",
+  "evidence": "2.7 MiB",
+  "note": "Current canonical caches retained; no additional build configuration created by packaging. Runtime fixture/extraction cleanup is in FINAL_TEARDOWN.json."
+}

@@ -1,0 +1,10 @@
+{
+  "profile_removed": true,
+  "stopped_owned_children": [],
+  "foreign_unreadable_processes_preserved": 5,
+  "owned_portal_mount": [
+    "55 34 0:61 / /home/campbell/.opqa-wh_sfooc/runtime/doc rw,nosuid,nodev,relatime shared:60 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "unmount": "normal fusermount -u; exact owned fuse.portal UID and path verified",
+  "reason": "Test used xdotool windowclose, which destroys X11 windows and caused a winit panic; normal close must be tested through Ottrin close control. Proc ownership scan then hit unreadable foreign process and left private portal mount. Original failure retained."
+}

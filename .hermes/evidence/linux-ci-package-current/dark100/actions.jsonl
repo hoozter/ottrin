@@ -1,0 +1,66 @@
+{"time": 1792947331.1305535, "key": "ctrl+c"}
+{"time": 1792947331.4534316, "key": "ctrl+l"}
+{"time": 1792947331.8443604, "key": "Return"}
+{"time": 1792947332.494734, "navigate": "/home/campbell/.opqa-wh_sfooc/fixture/copy"}
+{"time": 1792947332.561059, "key": "ctrl+v"}
+{"time": 1792947332.8118732, "file_checkpoint": "copy-complete", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "copy/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": []}
+{"time": 1792947332.929112, "capture": "copy-complete"}
+{"time": 1792947333.006778, "key": "ctrl+z"}
+{"time": 1792947333.396704, "capture": "copy-activity"}
+{"time": 1792947407.723364, "click": [704, 230]}
+{"time": 1792947408.1240587, "file_checkpoint": "copy-undo", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["copy/note.txt"]}
+{"time": 1792947408.2421362, "capture": "copy-undo"}
+{"time": 1792947408.3139977, "key": "ctrl+l"}
+{"time": 1792947408.7102554, "key": "Return"}
+{"time": 1792947409.360668, "navigate": "/home/campbell/.opqa-wh_sfooc/fixture/source"}
+{"time": 1792947409.4550283, "key": "ctrl+a"}
+{"time": 1792947409.7750514, "key": "ctrl+x"}
+{"time": 1792947410.0943193, "key": "ctrl+l"}
+{"time": 1792947410.490874, "key": "Return"}
+{"time": 1792947411.1412456, "navigate": "/home/campbell/.opqa-wh_sfooc/fixture/move"}
+{"time": 1792947411.2091124, "key": "ctrl+v"}
+{"time": 1792947411.466132, "file_checkpoint": "move-complete", "files": {"move/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["source/note.txt"]}
+{"time": 1792947411.594119, "capture": "move-complete"}
+{"time": 1792947411.6681962, "key": "ctrl+z"}
+{"time": 1792947412.0225995, "capture": "move-activity"}
+{"time": 1792947531.7187123, "click": [707, 230]}
+{"time": 1792947532.1326702, "file_checkpoint": "move-undo", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["move/note.txt"]}
+{"time": 1792947532.2347596, "capture": "move-undo"}
+{"time": 1792947532.3067276, "key": "ctrl+l"}
+{"time": 1792947532.7081854, "key": "Return"}
+{"time": 1792947533.358574, "navigate": "/home/campbell/.opqa-wh_sfooc/fixture/source"}
+{"time": 1792947533.428447, "key": "ctrl+a"}
+{"time": 1792947533.7451577, "key": "ctrl+c"}
+{"time": 1792947534.0665977, "key": "ctrl+l"}
+{"time": 1792947534.4670074, "key": "Return"}
+{"time": 1792947535.1173248, "navigate": "/home/campbell/.opqa-wh_sfooc/fixture/stale"}
+{"time": 1792947535.1860907, "key": "ctrl+v"}
+{"time": 1792947535.5204833, "key": "ctrl+z"}
+{"time": 1792947535.867723, "capture": "replacement-before-undo"}
+{"time": 1792947678.0560305, "click": [702, 230]}
+{"time": 1792947679.4637263, "file_checkpoint": "replaced-copy-refused", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "3c284286d75a5067da967ca06b376cfcc392be9edbb7db40a5eba8c082e1e07f"}, "absent": []}
+{"time": 1792947679.6143785, "capture": "replaced-copy-refused"}
+{"time": 1792947897.6957717, "click": [715, 276]}
+{"time": 1792947898.2241428, "capture": "replacement-details"}
+{"time": 1792947898.2970734, "key": "ctrl+l"}
+{"time": 1792947898.6940503, "key": "Return"}
+{"time": 1792947899.344411, "navigate": "/home/campbell/.opqa-wh_sfooc/fixture/long"}
+{"time": 1792947899.4166157, "key": "ctrl+a"}
+{"time": 1792947899.875797, "capture": "long-selection"}
+{"time": 1792947901.186241, "hover": [330, 787]}
+{"time": 1792947901.3043635, "capture": "long-selection-tooltip"}
+{"time": 1792947901.3762138, "key": "ctrl+l"}
+{"time": 1792947901.7834086, "key": "Return"}
+{"time": 1792947902.4337769, "navigate": "/home/campbell/.opqa-wh_sfooc/fixture/contact"}
+{"time": 1792947902.5046966, "key": "ctrl+a"}
+{"time": 1792947902.8136523, "key": "space"}
+{"time": 1792947903.118899, "capture": "vcf-read-only"}
+{"time": 1792947903.178193, "key": "space"}
+{"time": 1792948036.5564952, "key": "space"}
+{"time": 1792948037.8123555, "delayed_space_inspector_visible": true}
+{"time": 1792948089.5602229, "key": "space"}
+{"time": 1792948090.2715209, "key": "space"}
+{"time": 1792948091.0772865, "capture": "vcf-read-only"}
+{"time": 1792948091.1351027, "key": "space"}
+{"time": 1792948091.4006987, "file_checkpoint": "vcf-space-closed", "files": {"contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92", "source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "3c284286d75a5067da967ca06b376cfcc392be9edbb7db40a5eba8c082e1e07f"}, "absent": []}
+{"time": 1792948091.5020556, "capture": "vcf-space-closed"}

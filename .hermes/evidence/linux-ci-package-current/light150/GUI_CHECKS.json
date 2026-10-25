@@ -1,0 +1,22 @@
+{
+  "status": "pass within recorded scope",
+  "scope": "actual exact AppImage, Light150, ordinary owned fixture, same filesystem",
+  "checks": [
+    "Copy and actual Undo copy button",
+    "Move and actual Undo move button",
+    "publication recreated with reused device/inode pair; actual Undo refuses and preserves replacement/source",
+    "long filename footer/native hover captured",
+    "VCF read-only Space closes Inspector and source bytes are unchanged",
+    "actual main/view menus captured"
+  ],
+  "files_verified_before_normal_close": true,
+  "driver_sha256": "98f654530181e039abcbf83991cc39ed11054fc73053d42e98092de7dfe63af4",
+  "actor_sha256": "b9d566694ed35143e314c172fe8d2b7c286949f8f6720ff743257a2702081994",
+  "visual_review": [
+    "Footer selection remains one row; native tooltip contains complete long name and controls stay visible",
+    "Activity Copy/Move states and Undo buttons are coherent",
+    "Replacement refusal visible with source/replacement preserved",
+    "Read-only VCF Inspector uses themed full-width title bar and Space closes it",
+    "Main menu has compact action/icon alignment; view/sort/list-column choice rows have meaningful icons and consistent label starts"
+  ]
+}

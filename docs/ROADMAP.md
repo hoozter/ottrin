@@ -22,11 +22,18 @@ their named hashes. Test counts are scoped observations, not completion measures
   included in clean package source `1777733f`. All 18 selected native Windows UI
   and Move-worker tests pass. Windows parent-recovery engine proof remains bound
   to its original `48fb6c01` source and 163 native checks.
-- **Delivered Linux:** clean `3ed1b303`, all four stable packages. The current
-  receipt's four artifact hashes were rechecked on October 24 and match.
-  The packaged content-enabled index resource run measures 0.10–0.13% of one CPU
-  core in its private 10,000-file fixture; it is not whole-application or personal
-  service acceptance. The existing user service was not upgraded by that test.
+- **Delivered Linux:** clean `fb6fbdf4`, all four stable packages, with exact
+  bundled-font notices. AppImage SHA-256 starts `7ba0f45e8784b54c`; the current
+  receipt records all four complete hashes. The actual AppImage passes Copy/Undo,
+  Move/Undo and replacement refusal after immediate device/inode reuse in private
+  Dark 100% and Light 150% sessions. Long-name layout/tooltips, read-only VCF
+  Space-close, window-icon pixels and actual `ottrin-indexd` process name pass.
+  Light 150% exits normally with public file hashes verified; Dark operations and
+  a separate normal-close run retain their distinct scopes. In the private
+  10,000-file content-enabled index fixture, three 30-second idle samples measure
+  **0.067–0.100% of one core**, about 10–14 MiB RSS. This does not upgrade or accept
+  the personal service. Exact package evidence is in
+  `.hermes/evidence/linux-ci-package-current/ACCEPTANCE.json`.
 - **Current internal Windows candidate:** clean `1777733f` at
   `.hermes/packaging-tmp/windows-activity-candidate/`. Portable, NSIS and native
   MSI extraction agree on all 57 payload files; native loader/CLI checks pass.
@@ -63,26 +70,21 @@ their named hashes. Test counts are scoped observations, not completion measures
   journal mutations. Linux CI declares its GIO dependency. The complete isolated Linux workspace run passes **1,369 tests,
   zero failures, 15 explicit ignores**, including platform 418, search 239 and UI
   401. Ignored resource/native-environment gates remain open.
-- **Hosted verification and delivery remain pending:** the large platform/UI test
-  crates use the canonical unoptimized/no-debug-data test profile and hosted
-  test compilation uses two workers. This addresses the known LLVM memory
-  cause; a passing hosted Windows run is still required. Release Linux jobs now
-  declare the development libraries required by all-feature lint and the media
-  helper. The release job now builds, signs, uploads and verifies the same four
-  Linux formats, and declares RPM/native inspection tools. Source contracts and
-  four deliberate omission cases pass; no hosted release/signing run is claimed.
-  Source checks are recorded in
-  `.hermes/evidence/linux-ci-current/CI_REPAIR_ACCEPTANCE.json`; they do not
-  establish new package or personal-service acceptance. Current Linux and
-  public Windows downloads remain unchanged. The original `1777733f` hosted
-  failures remain in the earlier `CI_FAILURES.json` as historical evidence.
-- **Font-notice producer prepared:** Linux portable/AppImage/native and Windows
-  portable recipes now copy the existing authoritative font notice unchanged;
-  NSIS/MSI derive their payload from that portable tree. The release verifier
-  compares the notice bytes in portable archives, NSIS, AppImage, DEB and RPM.
-  Current/stale/missing notice cases and staged-build preservation checks pass.
-  Actual rebuilt-package delivery, including native MSI payload equality, is
-  pending in `.hermes/evidence/linux-ci-package-current/`.
+- **Hosted CI follow-up:** run `40211384586` for `0f8011f6` now compiles
+  and executes Windows tests: **449 passed, nine failed, 79 ignored**. The previous
+  compiler-memory failure is resolved. Native journal cleanup/admission reports
+  an unrecognized principal; ownership guards must remain intact while diagnosing
+  this. Linux's original platform failures are resolved; two Office process-
+  isolation tests fail with `InvalidRequest`. Provision Bubblewrap and a real
+  systemd user manager with the distribution's restrictive AppArmor policy;
+  preserve the host's user-namespace restrictions. These are engineering work,
+  not owner waiting items. Search-performance CI passes. No hosted release or
+  signing run is claimed. Release production/signature/upload/verification now
+  covers all four Linux formats; omission contracts pass.
+- **Font-notice delivery:** all four current Linux packages contain the exact
+  authoritative font notice. Windows producer/verifier support is prepared, but
+  the existing 57-file internal Windows candidate predates this change. A fresh
+  Windows ZIP/NSIS/MSI cohort and native MSI payload equality remain required.
 - **Receipt-script correction:** a local final assertion incorrectly expected
   two compact cleanup records; the implementation retains intent, completion and
   completed-Undo proof. Its shell continued to the internal swap after that
@@ -93,20 +95,18 @@ their named hashes. Test counts are scoped observations, not completion measures
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Verify this source checkpoint in hosted CI, especially native MSVC test
-   compilation/execution. Diagnose any remaining failure without weakening
-   assertions or converting unsupported fixtures into passing skips.
-2. Rebuild affected Linux/Windows artifacts with the newly wired bundled-font
-   notice, rerun exact-package file-operation
-   and UI paths, and update receipts only on success. The DEB/RPM production,
-   signature and upload mismatch is source-fixed; hosted release execution stays
-   unaccepted. Commit and push verified checkpoints; preserve current usable
-   packages until their replacements pass.
-3. Continue dependency-ready preview/editing, file-operation and packaging
-   outcomes below; then concentrated platform acceptance. Required outcome 4
-   (the themed picker and supported folder integration) remains deferred until
-   the preceding work is complete. User testing stays deferred and does not
-   block independently executable work.
+1. Repair hosted Linux isolation provisioning and diagnose the nine native
+   Windows principal/admission failures without weakening assertions or security.
+2. Build and accept a fresh Windows ZIP/NSIS/MSI candidate with bundled-font
+   notices; retain public Copy gating and resolve failed-uninstall rollback.
+   Commit and push verified checkpoints. Linux's new four-format cohort is
+   delivered; hosted release/signing execution remains unaccepted.
+3. Fix the observed single-item footer grammar and stale file-size display after
+   external replacement/refused Undo. Continue dependency-ready preview/editing,
+   file-operation and packaging outcomes below, then platform acceptance.
+   Required outcome 4 (the themed picker and supported folder integration) stays
+   deferred until preceding work is complete. Owner testing does not block
+   independently executable work.
 
 The goal's recorded October 22 10:01 Stockholm stop reports
 `server_overloaded` (“Selected model is at capacity”). This is an execution failure,
@@ -124,9 +124,9 @@ macOS packaging/signing scripts remain deferred. Scoped workflow/signing and
 documentation contracts verify this boundary; no hosted release or signing run
 is claimed. Other release gates remain open.
 
-This audit reconciles documents and existing evidence; it does not rerun product
-acceptance or finish the interrupted QA task. There is no defensible overall
-completion percentage or daily-driver date from the existing checkpoint counts.
+Current evidence includes rebuilt Linux packages and targeted actual-package QA.
+It does not establish full roadmap or personal daily-driver acceptance. There is
+no defensible overall completion percentage or completion date from test counts.
 
 ## Owner/external waiting list
 
@@ -136,6 +136,7 @@ Do not move a fixable implementation or test failure onto this list.
 
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
+| Privileged cleanup of owned X11 test core | Remove only `/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst` (4,096,895 bytes). Noninteractive sudo requires a password; ownership is recorded in `linux-ci-package-current/dark100/CORE_CLEANUP.json`. | All engineering; private profiles, processes, mounts and package extractions are already removed. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
 | Linux public release signing identity | Owner approves the project identity/public fingerprint and authorizes provisioning its protected signing key. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work; do not invent or publish an identity. |
 | Microsoft Store account/submission | Owner-controlled Store identity, listing and certification after Windows is ready. | Implement/test MSIX packaging and deployment when dependency-ready; unsigned direct ZIP/EXE/MSI remain supported. No paid Windows certificate gate. |
@@ -155,16 +156,17 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `3ed1b303`. All four formats pass
-payload, source, helper-policy, dependency and embedded-document checks. The
-exact AppImage passes retained Move recovery with immediate visible listing
-refresh, explicit Activity Refresh, batch Copy/Undo and Move/Undo in private
-Dark 100% and Light 150% X11 sessions. The dark run also proves a changed captured
-journal refuses without payload mutation before a refreshed attempt succeeds.
-Source hashes are preserved and both sessions exit normally with owned profiles
-and processes removed. This is targeted package acceptance, not completion of
-the Linux/device/resource or Windows roadmap. Full evidence is in
-`.hermes/evidence/linux-recovery-package-current/ACCEPTANCE.json`.
+The current Linux cohort is built from clean `fb6fbdf4`. All four formats pass
+payload, source, helper-policy, dependency, embedded-document and bundled-font
+notice checks. The exact AppImage passes Copy/Undo, Move/Undo and generation-
+bound replacement refusal in private Dark 100% and Light 150% X11 sessions.
+Light completes normal close and post-close file checks; Dark has separate
+operation and normal-close records. The original Dark harness destroyed an X11
+window and caused an abort; that attempt is explicitly not normal-close
+acceptance. Owned runtime fixtures/extractions are removed; the exact privileged
+core cleanup is on the waiting list above. This is targeted package acceptance,
+not completion of Linux/device/resource, Office/picker or Windows outcomes.
+Full evidence is in `.hermes/evidence/linux-ci-package-current/ACCEPTANCE.json`.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes

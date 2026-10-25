@@ -1,0 +1,16 @@
+{
+  "owner_waiting": [
+    {
+      "action": "Remove only the task-owned X11 test crash core from the root-owned systemd coredump directory",
+      "path": "/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst",
+      "bytes": 4096895,
+      "reason": "Noninteractive sudo requires a password; original exact PID/executable/source/cleanup proof is in dark100/CORE_CLEANUP.json",
+      "blocks_other_work": false
+    }
+  ],
+  "engineering_ready": [
+    "Provision hosted Linux Bubblewrap and systemd user runtime for Office isolation tests; keep real sandbox assertions",
+    "Review singular-item footer grammar and external-replacement row metadata refresh"
+  ],
+  "scope": "Additional findings from current package QA; does not replace roadmap owner/external waiting list"
+}

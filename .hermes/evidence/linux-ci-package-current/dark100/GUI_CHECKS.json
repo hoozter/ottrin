@@ -1,0 +1,21 @@
+{
+  "status": "pass within recorded scope",
+  "scope": "actual exact AppImage, Dark100, ordinary owned fixture, same filesystem",
+  "checks": [
+    "Copy and actual Undo copy button",
+    "Move and actual Undo move button",
+    "recreated publication reuses same device/inode pair; actual Undo refuses and preserves replacement/source",
+    "long filename footer and native hover captured",
+    "VCF stays read-only; Space closes Inspector without an edit prompt and preserves bytes"
+  ],
+  "selector_correction": "Initial Inspector query used xdotool default OR matching and misreported the main window as Inspector; repeated exact --all PID/title selection proves actual close",
+  "files_verified_before_normal_close": true,
+  "driver_sha256": "00550e3dc840580c3326c36d63010413900b7486fe4a2d3b25ce2dc8e3b04c76",
+  "actor_sha256": "b9d566694ed35143e314c172fe8d2b7c286949f8f6720ff743257a2702081994",
+  "visual_review": [
+    "Footer selection remains one row; native tooltip contains complete long name and controls stay visible",
+    "Activity Copy/Move states and Undo buttons are coherent",
+    "Replacement refusal visible with source/replacement preserved",
+    "Read-only VCF Inspector uses themed full-width title bar and Space closes it"
+  ]
+}

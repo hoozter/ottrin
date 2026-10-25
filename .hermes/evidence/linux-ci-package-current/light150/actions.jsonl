@@ -1,0 +1,65 @@
+{"time": 1792948740.2351804, "key": "ctrl+c"}
+{"time": 1792948740.5570521, "key": "ctrl+l"}
+{"time": 1792948740.9563599, "key": "Return"}
+{"time": 1792948741.606778, "navigate": "/home/campbell/.opqa-676ecy5l/fixture/copy"}
+{"time": 1792948741.6817324, "key": "ctrl+v"}
+{"time": 1792948741.9323587, "file_checkpoint": "copy-complete", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "copy/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": []}
+{"time": 1792948742.1978614, "capture": "copy-complete"}
+{"time": 1792948742.2700245, "key": "ctrl+z"}
+{"time": 1792948742.7319922, "capture": "copy-activity"}
+{"time": 1792948997.1139147, "click": [1057, 346]}
+{"time": 1792948997.5149193, "file_checkpoint": "copy-undo", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["copy/note.txt"]}
+{"time": 1792948997.7545185, "capture": "copy-undo"}
+{"time": 1792948997.8348923, "key": "ctrl+l"}
+{"time": 1792948998.2594283, "key": "Return"}
+{"time": 1792948998.9098134, "navigate": "/home/campbell/.opqa-676ecy5l/fixture/source"}
+{"time": 1792948998.9975286, "key": "ctrl+a"}
+{"time": 1792948999.3265452, "key": "ctrl+x"}
+{"time": 1792948999.6464095, "key": "ctrl+l"}
+{"time": 1792949000.073193, "key": "Return"}
+{"time": 1792949000.7235854, "navigate": "/home/campbell/.opqa-676ecy5l/fixture/move"}
+{"time": 1792949000.7924755, "key": "ctrl+v"}
+{"time": 1792949001.0431173, "file_checkpoint": "move-complete", "files": {"move/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["source/note.txt"]}
+{"time": 1792949001.2928622, "capture": "move-complete"}
+{"time": 1792949001.3659284, "key": "ctrl+z"}
+{"time": 1792949001.8739684, "capture": "move-activity"}
+{"time": 1792949002.0225875, "click": [1057, 346]}
+{"time": 1792949002.4232597, "file_checkpoint": "move-undo", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["move/note.txt"]}
+{"time": 1792949002.6974025, "capture": "move-undo"}
+{"time": 1792949002.7740464, "key": "ctrl+l"}
+{"time": 1792949003.1999176, "key": "Return"}
+{"time": 1792949003.8502886, "navigate": "/home/campbell/.opqa-676ecy5l/fixture/source"}
+{"time": 1792949003.9353426, "key": "ctrl+a"}
+{"time": 1792949004.272555, "key": "ctrl+c"}
+{"time": 1792949004.603358, "key": "ctrl+l"}
+{"time": 1792949004.9951582, "key": "Return"}
+{"time": 1792949005.645502, "navigate": "/home/campbell/.opqa-676ecy5l/fixture/stale"}
+{"time": 1792949005.7178745, "key": "ctrl+v"}
+{"time": 1792949006.0479066, "key": "ctrl+z"}
+{"time": 1792949006.5172377, "capture": "replacement-before-undo"}
+{"time": 1792949006.6622212, "click": [1057, 346]}
+{"time": 1792949008.0628138, "file_checkpoint": "replaced-copy-refused", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "3c284286d75a5067da967ca06b376cfcc392be9edbb7db40a5eba8c082e1e07f"}, "absent": []}
+{"time": 1792949008.3279452, "capture": "replaced-copy-refused"}
+{"time": 1792949227.7424798, "key": "ctrl+l"}
+{"time": 1792949228.1593535, "key": "Return"}
+{"time": 1792949228.8097744, "navigate": "/home/campbell/.opqa-676ecy5l/fixture/long"}
+{"time": 1792949228.8833606, "key": "ctrl+a"}
+{"time": 1792949229.3505712, "capture": "long-selection"}
+{"time": 1792949230.6546795, "hover": [495, 1180]}
+{"time": 1792949230.88315, "capture": "long-selection-tooltip"}
+{"time": 1792949230.957749, "key": "ctrl+l"}
+{"time": 1792949231.384091, "key": "Return"}
+{"time": 1792949232.0344627, "navigate": "/home/campbell/.opqa-676ecy5l/fixture/contact"}
+{"time": 1792949232.1102562, "key": "ctrl+a"}
+{"time": 1792949232.421752, "key": "space"}
+{"time": 1792949233.3074248, "capture": "vcf-read-only"}
+{"time": 1792949233.3638766, "key": "space"}
+{"time": 1792949233.6261866, "file_checkpoint": "vcf-space-closed", "files": {"contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92", "source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "3c284286d75a5067da967ca06b376cfcc392be9edbb7db40a5eba8c082e1e07f"}, "absent": []}
+{"time": 1792949233.86678, "capture": "vcf-space-closed"}
+{"time": 1792949234.0256855, "click": [1610, 81]}
+{"time": 1792949234.6977184, "capture": "main-menu"}
+{"time": 1792949234.7622573, "key": "Escape"}
+{"time": 1792949235.1748827, "click": [1512, 81]}
+{"time": 1792949235.8039458, "capture": "view-menu"}
+{"time": 1792949235.8656287, "key": "Escape"}
+{"time": 1792949236.2624147, "click": [1608, 27]}

@@ -1,0 +1,8 @@
+{
+  "pid": 2103444,
+  "peer_uid": 1000,
+  "process_name": "ottrin-indexd",
+  "executable": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-ci-extract/squashfs-root/usr/bin/ottrin-indexd",
+  "sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+  "exact_packaged_indexd": true
+}

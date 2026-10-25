@@ -1,0 +1,11 @@
+{
+  "before": {
+    "dev": 66306,
+    "ino": 4981511
+  },
+  "after": {
+    "dev": 66306,
+    "ino": 4981511
+  },
+  "inode_pair_reused": true
+}

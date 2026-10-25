@@ -1,0 +1,12 @@
+{
+  "before": {
+    "dev": 66306,
+    "ino": 4981519
+  },
+  "after": {
+    "dev": 66306,
+    "ino": 4981519
+  },
+  "inode_pair_reused": true,
+  "injection": "owned fixture publication unlinked and recreated before actual UI Undo"
+}

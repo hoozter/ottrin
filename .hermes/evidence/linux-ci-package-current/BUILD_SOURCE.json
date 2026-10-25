@@ -1,0 +1,9 @@
+{
+  "source_revision": "fb6fbdf45aad030638ac3a2f10a9cb58b701301a",
+  "tracked_tree": "clean",
+  "untracked_user_AGENTS_preserved": true,
+  "jobs": 1,
+  "reason": "one compiler worker while other host work remains active; no profile/RUSTFLAGS changes",
+  "PKG_CONFIG_PATH": "/home/campbell/Projects/Ottrin/.hermes/tools/gstreamer-dev/usr/lib/x86_64-linux-gnu/pkgconfig",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-ci-repair-stage"
+}

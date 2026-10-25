@@ -1,0 +1,9 @@
+{
+  "task_pid": 2095619,
+  "source": "systemd-coredump metadata identifies exact owned extracted AppRun --select private fixture",
+  "path": "/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst",
+  "logical_bytes": 4096895,
+  "removed": false,
+  "exit_code": 1,
+  "diagnostic": "sudo: a password is required"
+}

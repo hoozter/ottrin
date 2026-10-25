@@ -1,0 +1,35 @@
+{
+  "source": "fb6fbdf45aad030638ac3a2f10a9cb58b701301a",
+  "artifact_sha256": "7ba0f45e8784b54c48a5366ab93b797ce122400c7c65213afc22f4e460cf134b",
+  "theme": "Dark",
+  "scale": "1",
+  "normal_app_exit": false,
+  "profile": "/home/campbell/.opqa-wh_sfooc",
+  "daemon_cleanup": {
+    "pid": 2095623,
+    "peer_uid": 1000,
+    "pidfd_exit_observed": true
+  },
+  "owned_processes_reaped": [
+    {
+      "pid": 2095562,
+      "exit": 0
+    },
+    {
+      "pid": 2095565,
+      "exit": 0
+    },
+    {
+      "pid": 2095566,
+      "exit": 15
+    },
+    {
+      "pid": 2095619,
+      "exit": -6
+    }
+  ],
+  "status": "failed",
+  "error": "OSError(107, 'Transport endpoint is not connected')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/campbell/Projects/Ottrin/.hermes/evidence/linux-ci-package-current/native-session.py\", line 91, in <module>\n    assert app.returncode==0,app.returncode;report['normal_app_exit']=True;break\n           ^^^^^^^^^^^^^^^^^\nAssertionError: -6\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/campbell/Projects/Ottrin/scripts/test-workspace.py\", line 87, in isolated_environment\n    yield profile, env\n  File \"/home/campbell/Projects/Ottrin/.hermes/evidence/linux-ci-package-current/native-session.py\", line 101, in <module>\n    report['additional_owned_children_stopped']=cleanup_profile_children(profile)\n                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/campbell/Projects/Ottrin/.hermes/evidence/linux-ci-package-current/native-session.py\", line 48, in cleanup_profile_children\n    entries=(path/'environ').read_bytes().split(b'\\0')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nPermissionError: [Errno 13] Permission denied: '/proc/1203/environ'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/campbell/Projects/Ottrin/.hermes/evidence/linux-ci-package-current/native-session.py\", line 60, in <module>\n    with m.isolated_environment(directory='/home/campbell',prefix='.opqa-') as (profile,env):\n  File \"/usr/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/campbell/Projects/Ottrin/scripts/test-workspace.py\", line 66, in isolated_environment\n    with tempfile.TemporaryDirectory(prefix=prefix, dir=directory) as temporary:\n  File \"/usr/lib/python3.12/tempfile.py\", line 1085, in __exit__\n    self.cleanup()\n  File \"/usr/lib/python3.12/tempfile.py\", line 1089, in cleanup\n    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)\n  File \"/usr/lib/python3.12/tempfile.py\", line 1069, in _rmtree\n    _rmtree(name, onexc=onexc)\n  File \"/usr/lib/python3.12/shutil.py\", line 785, in rmtree\n    _rmtree_safe_fd(fd, path, onexc)\n  File \"/usr/lib/python3.12/shutil.py\", line 686, in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onexc)\n  File \"/usr/lib/python3.12/shutil.py\", line 675, in _rmtree_safe_fd\n    onexc(os.lstat, fullname, err)\n  File \"/usr/lib/python3.12/shutil.py\", line 672, in _rmtree_safe_fd\n    orig_st = entry.stat(follow_symlinks=False)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nOSError: [Errno 107] Transport endpoint is not connected: 'doc'\n",
+  "profile_removed": false
+}

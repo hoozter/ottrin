@@ -1,0 +1,8 @@
+{
+  "case": "light150",
+  "status": "pass",
+  "post_close_public_files_checked": 4,
+  "copy_and_move_publications_absent_after_undo": true,
+  "normal_app_exit": true,
+  "view_mode_and_theme_persisted": true
+}

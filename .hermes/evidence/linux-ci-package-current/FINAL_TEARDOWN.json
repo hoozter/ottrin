@@ -1,0 +1,18 @@
+{
+  "status": "owned runtime fixtures removed; exact root-owned core on owner waiting list",
+  "all_gui_profiles_removed": true,
+  "owned_app_display_bus_daemon_processes_reaped": "per-case TEARDOWN and original Dark correction",
+  "all_owned_portal_mounts_unmounted": true,
+  "AppImage_and_native_extractions_removed": true,
+  "package_candidate_removed": true,
+  "RPM_wrapper_sha256_removed": {
+    "rpm-bin/rpm": "da64730d763b4c703fa572e12d51023bc30f905f365d7e573e901ab61e9ce2b8",
+    "rpm-bin/rpmbuild": "2ec72ef36a64cfe482e0cd0076be329f5a45635d5323a888a941520f2b38965c",
+    "rpm-bin/rpm2cpio": "945dd506777af09eb84b9525ff4de86e59b47b51979137d83ef4558ae20b92b7"
+  },
+  "temporary_bytecode_removed": true,
+  "private_index_fixture_cleanup": "INDEX_POPULATED_CONTENT.json",
+  "large_fixture_remaining": [],
+  "privileged_cleanup_waiting": "WAITING.json: exact 4096895-byte X11 harness core, noninteractive sudo denied",
+  "retained_scripts": "Small source QA drivers retained as reproducible evidence; no extracted runtime/test profile remains"
+}

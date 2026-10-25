@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "path": "index-populated.log",
+      "gzip": "index-populated.log.gz",
+      "original_bytes": 5105,
+      "uncompressed_sha256": "44551ac58d624c8d99064dbe4ad53fdaa771865285b0a996952e94b23cd51405"
+    },
+    {
+      "path": "build.log",
+      "gzip": "build.log.gz",
+      "original_bytes": 11604,
+      "uncompressed_sha256": "dde9d32d27ea01db99d9c20293ad4bf84ddfc21cb7735dd4c928e39b8f103c9f"
+    },
+    {
+      "path": "CI_UBUNTU_JOB.log",
+      "gzip": "CI_UBUNTU_JOB.log.gz",
+      "original_bytes": 297209,
+      "uncompressed_sha256": "9784c9f46a5ae99f04722bbe48da50b066d6b3fc14e885f50279d7fa82e7c385"
+    },
+    {
+      "path": "native-dark100-normal-close.log",
+      "gzip": "native-dark100-normal-close.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "INDEX_POPULATED_CONTENT.log",
+      "gzip": "INDEX_POPULATED_CONTENT.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native-dark100.log",
+      "gzip": "native-dark100.log.gz",
+      "original_bytes": 2885,
+      "uncompressed_sha256": "efd1323a811276b36a996ffbbd06a704dc3d1d5bcd2c67745921b090a8265f5e"
+    },
+    {
+      "path": "native-light150.log",
+      "gzip": "native-light150.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verify-packages.log",
+      "gzip": "verify-packages.log.gz",
+      "original_bytes": 3187,
+      "uncompressed_sha256": "1fc29c54ccef7805027329953d738efeae029b44e80c203a8123b9232c95a016"
+    },
+    {
+      "path": "CI_WINDOWS_JOB.log",
+      "gzip": "CI_WINDOWS_JOB.log.gz",
+      "original_bytes": 268392,
+      "uncompressed_sha256": "35090b7c2586d13af15b5a0c59db49440c14bf67ecb11fad3bd8996a82a46af5"
+    },
+    {
+      "path": "dark100-normal-close/dbus.log",
+      "gzip": "dark100-normal-close/dbus.log.gz",
+      "original_bytes": 4278,
+      "uncompressed_sha256": "79b23de7526d33d68c22bb96bd7f2f9565ff6d13cc5c55ec00ea837dae1aa238"
+    },
+    {
+      "path": "dark100-normal-close/app.log",
+      "gzip": "dark100-normal-close/app.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dark100-normal-close/wm.log",
+      "gzip": "dark100-normal-close/wm.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dark100-normal-close/xvfb.log",
+      "gzip": "dark100-normal-close/xvfb.log.gz",
+      "original_bytes": 1534,
+      "uncompressed_sha256": "6086a595c360bd3953442d99e68ba4f6e91325bdafb4a5f88b891c1b0e1a7a89"
+    },
+    {
+      "path": "dark100/dbus.log",
+      "gzip": "dark100/dbus.log.gz",
+      "original_bytes": 4278,
+      "uncompressed_sha256": "2f38e32bf048a620ae292b8275182e329e8e76a2f0f09caa6364ee7b3d220aae"
+    },
+    {
+      "path": "dark100/app.log",
+      "gzip": "dark100/app.log.gz",
+      "original_bytes": 479,
+      "uncompressed_sha256": "3c605099144349111b628ce81838b94168fe5751a1afd4a3e1767ce0739c6d4b"
+    },
+    {
+      "path": "dark100/wm.log",
+      "gzip": "dark100/wm.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dark100/xvfb.log",
+      "gzip": "dark100/xvfb.log.gz",
+      "original_bytes": 1534,
+      "uncompressed_sha256": "6086a595c360bd3953442d99e68ba4f6e91325bdafb4a5f88b891c1b0e1a7a89"
+    },
+    {
+      "path": "light150/dbus.log",
+      "gzip": "light150/dbus.log.gz",
+      "original_bytes": 4278,
+      "uncompressed_sha256": "29dcc703b56214241ae9f9f04e9c1280759b23f12fb9750c7fc771103fb56bb1"
+    },
+    {
+      "path": "light150/app.log",
+      "gzip": "light150/app.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "light150/wm.log",
+      "gzip": "light150/wm.log.gz",
+      "original_bytes": 0,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "light150/xvfb.log",
+      "gzip": "light150/xvfb.log.gz",
+      "original_bytes": 1534,
+      "uncompressed_sha256": "6086a595c360bd3953442d99e68ba4f6e91325bdafb4a5f88b891c1b0e1a7a89"
+    }
+  ]
+}

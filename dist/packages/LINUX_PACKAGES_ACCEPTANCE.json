@@ -1,26 +1,43 @@
 {
-  "status": "pass within Linux package content and scoped private X11 recovery/transfer workflows",
-  "source_revision": "3ed1b303ab700c6851f414c5e08b51cdd3899c44",
+  "status": "pass within scoped Linux package/UI/file-operation/index resource acceptance",
+  "source_revision": "fb6fbdf45aad030638ac3a2f10a9cb58b701301a",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "d00c66c11eb870ec5e42260a5443614fa81ffdc1f87bdb446ae3e0db491ec7b8",
-    "Ottrin-0.1.0-x86_64.AppImage": "f320f2253392437f08acfb9854441f2e38d9fcde25c940595072e5ed98e1c5e6",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "faf8c7ea61060fffa5f4e6d9577fcbe13977764105e72a20d2ccb4a604f78cb8",
-    "ottrin_0.1.0_amd64.deb": "8f81a8048579a9bf50be72d1653716816738af2b197436d5441d45bb78126747"
+    "ottrin-0.1.0-1.x86_64.rpm": "ff8b3c726860669e8a7c244a1f56e025f8d4df7a1849e85902f684863247c341",
+    "Ottrin-0.1.0-x86_64.AppImage": "7ba0f45e8784b54c48a5366ab93b797ce122400c7c65213afc22f4e460cf134b",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2c0f3448cfb987c2e019d8a4da945b3e0fbff4be6478eb54c2c53a5751d7a802",
+    "ottrin_0.1.0_amd64.deb": "a0efc4288898b9861c4a23bd369c984b77e0c64861c8f3dfa6a43f2e066d33bd"
   },
+  "evidence": ".hermes/evidence/linux-ci-package-current",
+  "verifier_sha256": "20c43e5f88fde5dbfd21c14aa551d7b03569c6c8ed92a9c6a826b576a1f09438",
+  "source_checks": ".hermes/evidence/linux-ci-current/CI_REPAIR_ACCEPTANCE.json",
   "checks": [
-    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
-    "portable six payload byte identities",
-    "all four formats contain exact current guide and release docs",
-    "clean embedded source revision",
-    "all package runtime identities checked against the actual rebuilt AppImage",
-    "Canonical build-all four-format staged checksum and helper-path checks",
-    "Dark100: stale captured journal refuses without payload mutation; explicit Refresh recaptures and staged Move recovery publishes exact bytes and updates visible listing",
-    "Light150: staged recovery and visible listing update; coherent themed controls",
-    "Both actual AppImage runs: native batch Copy and Undo, Move and Undo, source hashes preserved and normal exits",
-    "Owned app/display/bus/daemon/profile processes stopped; all extraction and outer candidate removed"
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "six matching portable/AppImage runtime payloads",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks",
+    "Exact AppImage Dark100 and Light150: Copy/actual Undo, Move/actual Undo",
+    "Both scopes: recreated copied publication reuses the exact device/inode pair; actual Undo refuses without modifying source or replacement",
+    "Long selected-name footer is one row; real hover tooltip contains the full name; controls stay visible",
+    "Read-only VCF Space opens/closes Inspector and preserves bytes",
+    "Exact Linux window icon pixels match source PNG; actual private daemon name is ottrin-indexd",
+    "List mode and theme persist through normal close; Light150 four public file hashes match after exit",
+    "Current 10000-file content-enabled index verifies freshness/bursts/offline changes/restart; 30-second idle samples use 0.067-0.100 percent of one core, about 10-14 MiB RSS"
   ],
-  "scope": "Package content and targeted private-X11 ordinary workflows. Seeded staged recovery uses production public journal APIs on one filesystem; it does not establish real EXDEV interruption or physical device/power-loss acceptance. Earlier receipts retain their own hashes and scopes; broader platform/resource/installer/release gates remain open.",
-  "evidence": ".hermes/evidence/linux-recovery-package-current",
-  "verifier_sha256": "f5a29ee96a812f0c88c4434cebc5c0116c897f3804b546b9258158224bf69f45",
-  "cleanup": "PROCESS_CLEANUP.json in both GUI cases; private extractions removed by TemporaryDirectory, candidate removed after hash-checked canonical publication"
+  "scope": "Targeted private X11/DBus/software rendering and owned same-filesystem operations, package content/namespace proofs and populated index fixture; not personal-service, native distribution install/upgrade, full Office/picker, physical desktop, signing or final user acceptance. Historical receipts retain only their named artifact scope.",
+  "ci_followup": {
+    "source": "0f8011f6",
+    "linux": "original platform failures resolved; two Office isolation tests fail because runtime prerequisites need provisioning",
+    "windows": "test compilation now completes; 449 passed, 9 native cleanup/admission failures, 79 ignored; diagnose principal/DACL behavior without weakening guards"
+  },
+  "corrections": {
+    "dark_original_close": "Harness XDestroyWindow caused winit abort; it is not accepted as normal close. Separate Dark normal-close run and complete Light run use product Close control.",
+    "window_selector": "Initial OR PID/title query falsely reported Inspector presence; corrected --all selector confirms real Space close."
+  },
+  "cleanup": {
+    "private_gui_profiles_processes_displays_buses_daemons_portals": "removed; per-case teardown and original Dark correction retained",
+    "source_stage": "removed after verified publication",
+    "root_owned_test_core": "3.9 MiB exact task core requires privileged cleanup; WAITING.json. Other work continues."
+  }
 }
