@@ -1,0 +1,4 @@
+{
+  "state": "shut off",
+  "note": "QGA disconnected while completing powerdown; libvirt confirms shutdown. No retry or force-off was needed."
+}

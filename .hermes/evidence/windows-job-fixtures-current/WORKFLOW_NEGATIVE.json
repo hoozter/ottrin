@@ -1,0 +1,92 @@
+[
+  {
+    "workflow": "release.yml",
+    "missing": "cache-on-failure: true",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "python3 scripts/ci/linux-html-sandbox.py prepare",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "/usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "python3 scripts/ci/linux-html-sandbox.py cleanup",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "cargo test -p ottrin-preview --test office_provider_contract -- --nocapture",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "cargo test -p ottrin-preview --test windows_job_native -- --nocapture",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "windows_native_move_cleanup",
+    "refused": true
+  },
+  {
+    "workflow": "release.yml",
+    "missing": "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "cache-on-failure: true",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "python3 scripts/ci/linux-html-sandbox.py prepare",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "/usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "python3 scripts/ci/linux-html-sandbox.py cleanup",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "cargo test -p ottrin-preview --test office_provider_contract -- --nocapture",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "cargo test -p ottrin-preview --test windows_job_native -- --nocapture",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "windows_native_move_cleanup",
+    "refused": true
+  },
+  {
+    "workflow": "ci.yml",
+    "missing": "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+    "refused": true
+  }
+]

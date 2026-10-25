@@ -77,6 +77,14 @@ jobs:
           CARGO_BUILD_JOBS: 2
         run: cargo test -p ottrin-preview --test office_provider_contract -- --nocapture
 
+      - name: Check Windows native preview boundary before workspace suite
+        if: runner.os == 'Windows'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: |
+          cargo test -p ottrin-preview --test windows_job_native -- --nocapture 2>&1 | Tee-Object -FilePath windows-job-fixtures.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Cargo test
         env:
           CARGO_BUILD_JOBS: 2
@@ -107,6 +115,15 @@ jobs:
           path: ci-artifacts/*
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload Windows native boundary failure diagnostics
+        if: failure() && runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-native-boundary-failure
+          path: windows-job-fixtures.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Retire production Linux HTML integration
         if: always() && runner.os == 'Linux'

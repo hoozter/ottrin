@@ -15,6 +15,7 @@ for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
     '/usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py' \
     'python3 scripts/ci/linux-html-sandbox.py cleanup' \
     'cargo test -p ottrin-preview --test office_provider_contract -- --nocapture' \
+    'cargo test -p ottrin-preview --test windows_job_native -- --nocapture' \
     'windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent' \
     'windows_native_move_cleanup' \
     'windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names'; do

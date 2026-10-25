@@ -1,0 +1,39 @@
+{
+  "status": "targeted guest baseline accepted; hosted regression unresolved",
+  "source": "7cac0228697dfbc9c1edb97da9d99d0056daf12d",
+  "ordinary_interactive": {
+    "tempEntries": 0,
+    "administrator": false,
+    "owner": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+    "exit": 0,
+    "phase": "interactive",
+    "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+  },
+  "elevated_interactive": {
+    "tempEntries": 0,
+    "administrator": true,
+    "owner": "S-1-5-32-544",
+    "exit": 0,
+    "phase": "elevated-interactive",
+    "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+  },
+  "cases_per_token": 10,
+  "fixture_entry_points": 3,
+  "no_test_exclusion_added": true,
+  "scope": "Actual GNU Windows AppContainer/Job Object test execution on retained guest, including descendant teardown, memory/process limits, handles, IPC, filesystem and network containment. Not MSVC/server or current package acceptance.",
+  "controls": {
+    "SYSTEM": "not a valid ordinary desktop acceptance context; DLL initialization failed before fixture bodies",
+    "unloaded_disposable_profile": "AppContainer profile creation unavailable; no product acceptance claimed",
+    "elevated_disposable_logon": "filtered token refused by fixture; no elevated acceptance claimed"
+  },
+  "teardown": {
+    "originalProfilesPreserved": true,
+    "ownedProcesses": 0,
+    "ownedRootRemoved": true,
+    "disposableAccountRemoved": true,
+    "noLogonSettingsOrMachinePolicyChanges": true,
+    "status": "pass"
+  },
+  "next": "Read-only hosted diagnostics and early native preview gate added; determine Windows runner difference without weakening containment.",
+  "guest_final_state": "shut off"
+}

@@ -22,7 +22,8 @@ use windows_sys::Win32::System::Pipes::{
     CreateNamedPipeW, PIPE_READMODE_MESSAGE, PIPE_TYPE_MESSAGE, PIPE_UNLIMITED_INSTANCES,
 };
 use windows_sys::Win32::System::Threading::{
-    GetCurrentProcess, OpenProcess, PROCESS_SYNCHRONIZE, WaitForSingleObject,
+    GetCurrentProcess, GetProcessMitigationPolicy, OpenProcess, PROCESS_SYNCHRONIZE,
+    ProcessStrictHandleCheckPolicy, WaitForSingleObject,
 };
 
 struct Fixture {
@@ -105,6 +106,23 @@ fn fixture_root() {
         0
     );
     assert_ne!(in_job, 0, "the fixture must start inside the Job Object");
+    let mut strict_handles = 0_u32;
+    // SAFETY: the documented strict-handle policy is a single DWORD. This is a
+    // read-only diagnostic; the fixture never changes process mitigations.
+    let mitigation_read = unsafe {
+        GetProcessMitigationPolicy(
+            GetCurrentProcess(),
+            ProcessStrictHandleCheckPolicy,
+            (&mut strict_handles as *mut u32).cast(),
+            std::mem::size_of::<u32>(),
+        )
+    };
+    eprintln!(
+        "Native fixture {mode}: strict_handle_query={mitigation_read}, strict_handles={strict_handles:#x}, NUL_read={:?}, NUL_write={:?}, executable_read={:?}",
+        fs::File::open("NUL").map(|_| ()),
+        fs::OpenOptions::new().write(true).open("NUL").map(|_| ()),
+        fs::File::open(std::env::current_exe().unwrap()).map(|_| ()),
+    );
     match mode.as_str() {
         "ipc" => {
             let errors = [pipe_creation_error(""), pipe_creation_error("LOCAL\\")];

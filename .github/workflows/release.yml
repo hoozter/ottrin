@@ -89,6 +89,14 @@ jobs:
           CARGO_BUILD_JOBS: 2
         run: cargo test -p ottrin-preview --test office_provider_contract -- --nocapture
 
+      - name: Check Windows native preview boundary before workspace suite
+        if: runner.os == 'Windows'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: |
+          cargo test -p ottrin-preview --test windows_job_native -- --nocapture 2>&1 | Tee-Object -FilePath windows-job-fixtures.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Test workspace
         env:
           CARGO_BUILD_JOBS: 2
@@ -96,6 +104,15 @@ jobs:
 
       - name: Lint workspace
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Upload Windows native boundary failure diagnostics
+        if: failure() && runner.os == 'Windows'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-native-boundary-failure
+          path: windows-job-fixtures.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Retire production Linux HTML integration
         if: always() && runner.os == 'Linux'

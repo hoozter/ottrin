@@ -206,7 +206,16 @@ because the new system helper is not installed on this machine. The existing
 The completed `cb2e2f69` hosted run passed the repaired Windows Office contracts
 and progressed to native AppContainer/Job Object fixtures: four of ten active
 checks fail (descendant launch, aggregate descendant memory, inherited-handle
-probe). Those are engineering work, not owner waiting. Linux failed the two old
+probe). Those are engineering work, not owner waiting. A fresh retained-guest GNU
+Windows run passes all ten native boundary cases under both an ordinary loaded
+interactive token and its linked elevated token; both leave zero temporary
+fixtures. The SYSTEM/unloaded-profile controls are explicitly unaccepted. The
+owned root and disposable account are removed, original profiles and guest
+definition preserved, and the guest is off. That result does not accept MSVC or
+the hosted Windows Server runner: read-only mitigation/NUL/executable diagnostics
+and a native boundary preflight now precede the full suite. See
+`windows-job-fixtures-current/ACCEPTANCE.json`.
+ Linux failed the two old
 real HTML checks; the new production helper is intended to resolve that boundary
 without disabling either sandbox. Search performance passed.
 
