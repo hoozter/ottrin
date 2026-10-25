@@ -44,6 +44,7 @@ mkdir -p \
 
 package_linux_pdfium "$DEST/usr/libexec/ottrin/pdfium"
 package_search_runtime linux-x86_64 "$DEST/usr/libexec/ottrin" "$DEST/usr/share/doc/ottrin/third-party-notices/ripgrep"
+install -D -m 0644 "$ROOT/crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md" "$DEST/usr/share/doc/ottrin/third-party-notices/BUNDLED_FONTS.md"
 
 install -m 0755 "$BUILD_DIR/ottrin-app" "$DEST/usr/bin/ottrin"
 install -m 0755 "$BUILD_DIR/ottrin-indexd" "$DEST/usr/bin/ottrin-indexd"

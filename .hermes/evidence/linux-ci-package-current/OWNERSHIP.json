@@ -1,0 +1,8 @@
+{
+  "purpose": "Rebuild and accept current Linux packages after CI identity/Undo repair and font-notice delivery",
+  "source_base": "0f8011f6c3fd0737d5ba7a2a1df2b445d5652e33",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-ci-repair-stage",
+  "public_packages": "/home/campbell/Projects/Ottrin/dist/packages",
+  "preserve_current_until_acceptance": true,
+  "state": "pre-build source verification"
+}

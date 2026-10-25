@@ -76,6 +76,13 @@ their named hashes. Test counts are scoped observations, not completion measures
   establish new package or personal-service acceptance. Current Linux and
   public Windows downloads remain unchanged. The original `1777733f` hosted
   failures remain in the earlier `CI_FAILURES.json` as historical evidence.
+- **Font-notice producer prepared:** Linux portable/AppImage/native and Windows
+  portable recipes now copy the existing authoritative font notice unchanged;
+  NSIS/MSI derive their payload from that portable tree. The release verifier
+  compares the notice bytes in portable archives, NSIS, AppImage, DEB and RPM.
+  Current/stale/missing notice cases and staged-build preservation checks pass.
+  Actual rebuilt-package delivery, including native MSI payload equality, is
+  pending in `.hermes/evidence/linux-ci-package-current/`.
 - **Receipt-script correction:** a local final assertion incorrectly expected
   two compact cleanup records; the implementation retains intent, completion and
   completed-Undo proof. Its shell continued to the internal swap after that
@@ -89,8 +96,8 @@ Resume at the unfinished operation, not the start of an older checkpoint:
 1. Verify this source checkpoint in hosted CI, especially native MSVC test
    compilation/execution. Diagnose any remaining failure without weakening
    assertions or converting unsupported fixtures into passing skips.
-2. Finish shipping the existing bundled-font notice in the package recipes,
-   rebuild affected Linux/Windows artifacts, rerun exact-package file-operation
+2. Rebuild affected Linux/Windows artifacts with the newly wired bundled-font
+   notice, rerun exact-package file-operation
    and UI paths, and update receipts only on success. The DEB/RPM production,
    signature and upload mismatch is source-fixed; hosted release execution stays
    unaccepted. Commit and push verified checkpoints; preserve current usable

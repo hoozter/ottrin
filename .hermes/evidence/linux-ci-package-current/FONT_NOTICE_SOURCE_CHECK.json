@@ -1,0 +1,23 @@
+{
+  "source_notice_sha256": "1a571bfe17cd21d6acc3a7a0c66f03b85a1ad6da062bd06c7e4861a51df468cd",
+  "production_verifier_cases": [
+    {
+      "case": "current",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "case": "stale",
+      "exit_code": 1,
+      "diagnostic": "fixture has a missing or stale bundled-font notice."
+    },
+    {
+      "case": "missing",
+      "exit_code": 1,
+      "diagnostic": "fixture has a missing or stale bundled-font notice."
+    }
+  ],
+  "scope": "production notice comparator and packaging source; actual seven-format delivery still pending",
+  "fixture_removed": true,
+  "staged_build_controller": "existing verify-build-all-staging.sh passes all four Linux formats, failed-build preservation and teardown"
+}

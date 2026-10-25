@@ -653,6 +653,12 @@ cases. Fault hooks exist only in test builds.
 
 ## Packaging
 
+Bundled-font notices come from `crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md`.
+Package recipes copy it unchanged to `third-party-notices/BUNDLED_FONTS.md`
+(under `usr/share/doc/ottrin` for AppImage/native Linux). Windows installers
+inherit the portable tree. Verify notice bytes in extracted packages and native
+MSI payload comparison; a source copy instruction alone is not delivery proof.
+
 End-user packages must run without Cargo.
 
 Build all release artifacts available on the current machine:

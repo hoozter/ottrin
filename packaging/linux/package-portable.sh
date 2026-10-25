@@ -45,6 +45,7 @@ EOF
 chmod 0755 "$STAGE/bin/ottrin"
 package_linux_pdfium "$STAGE/libexec/ottrin/pdfium"
 package_search_runtime linux-x86_64 "$STAGE/libexec/ottrin" "$STAGE/third-party-notices/ripgrep"
+install -D -m 0644 "$ROOT/crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md" "$STAGE/third-party-notices/BUNDLED_FONTS.md"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
   "$ROOT/packaging/linux/ottrin.appdata.xml" \

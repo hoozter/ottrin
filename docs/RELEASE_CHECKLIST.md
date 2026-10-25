@@ -23,6 +23,7 @@ Unchecked final gates do not mean no scoped implementation or QA has occurred.
 - [ ] Linux and Windows CI are green for the release commit.
 - [ ] Exact release artifact checksums verify after rebuilding from the current release commit.
 - [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.
+- [ ] Every rebuilt format includes the exact bundled-font notice from `crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md`; native Windows MSI/NSIS payload comparison includes this file.
 - [ ] Live-content search works in exact installed and standalone artifacts without a preinstalled ripgrep. Required provider binaries/notices are delivered or installed as declared dependencies; missing/damaged providers produce an actionable error instead of empty content matches.
 - [ ] Native DEB/RPM checksums, source revision, helper policy and executable code match the release AppImage; generated dependencies include the payload-derived minimum libc and administrator authentication runtime.
   The release workflow produces, signs and uploads these formats alongside the

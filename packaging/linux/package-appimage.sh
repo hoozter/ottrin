@@ -42,6 +42,7 @@ install -m 0755 "$ROOT/target/release/ottrin-indexd" "$APPDIR/usr/bin/ottrin-ind
 install -m 0755 "$ROOT/target/release/ottrin-priv-helper" "$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
 package_linux_pdfium "$APPDIR/usr/bin/pdfium"
 package_search_runtime linux-x86_64 "$APPDIR/usr/libexec/ottrin" "$APPDIR/usr/share/doc/ottrin/third-party-notices/ripgrep"
+install -D -m 0644 "$ROOT/crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md" "$APPDIR/usr/share/doc/ottrin/third-party-notices/BUNDLED_FONTS.md"
 install -m 0644 "$ROOT/assets/icon.svg" "$APPDIR/usr/share/icons/hicolor/scalable/apps/ottrin.svg"
 install -m 0644 "$ROOT/assets/icon.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/ottrin.png"
 install -m 0644 "$ROOT/packaging/linux/ottrin.appdata.xml" "$APPDIR/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml"

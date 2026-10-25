@@ -80,8 +80,21 @@ for artifact in "$LINUX_ARCHIVE" "$LINUX_APPIMAGE" "$WINDOWS_ARCHIVE" "$WINDOWS_
   )
 done
 
+verify_bundled_font_notice() {
+  local artifact="$1"
+  local notice="$2"
+  if ! cmp -s "$notice" "$ROOT/crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md"; then
+    printf '%s has a missing or stale bundled-font notice.\n' "$artifact" >&2
+    exit 1
+  fi
+}
+
 LINUX_CONTENTS="$(tar -tzf "$LINUX_ARCHIVE")"
 WINDOWS_CONTENTS="$(unzip -Z1 "$WINDOWS_ARCHIVE")"
+verify_bundled_font_notice 'Linux portable archive' \
+  <(tar -xOf "$LINUX_ARCHIVE" "Ottrin-$VERSION-linux-x86_64/third-party-notices/BUNDLED_FONTS.md")
+verify_bundled_font_notice 'Windows portable archive' \
+  <(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/third-party-notices/BUNDLED_FONTS.md")
 
 require_tar_entry() {
   local pattern="$1"
@@ -426,6 +439,9 @@ if ! command -v 7z >/dev/null 2>&1; then
   exit 1
 fi
 
+verify_bundled_font_notice 'Windows installer' \
+  <(7z x -so "$WINDOWS_INSTALLER" 'third-party-notices/BUNDLED_FONTS.md' 2>/dev/null)
+
 if ! INSTALLER_CONTENTS="$(7z l "$WINDOWS_INSTALLER")"; then
   printf 'Windows installer is not a readable NSIS archive: %s\n' "$WINDOWS_INSTALLER" >&2
   exit 1
@@ -557,6 +573,8 @@ PORTABLE_EXTRACT_DIR="$APPIMAGE_EXTRACT_DIR/linux-portable"
 mkdir -p "$PORTABLE_EXTRACT_DIR"
 tar -xzf "$LINUX_ARCHIVE" -C "$PORTABLE_EXTRACT_DIR"
 PORTABLE_STAGE="$PORTABLE_EXTRACT_DIR/Ottrin-$VERSION-linux-x86_64"
+verify_bundled_font_notice 'Linux AppImage' \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/BUNDLED_FONTS.md"
 verify_linux_runtime_closure \
   'Linux portable archive' \
   "$PORTABLE_STAGE" \
@@ -673,6 +691,8 @@ PYSEARCH
 printf '%s  %s\n' "$SEARCH_BINARY_SHA256" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/libexec/ottrin/rg" | sha256sum -c -
 for stage in "$DEB_STAGE" "$RPM_STAGE"; do
+  verify_bundled_font_notice "Native Linux package $stage" \
+    "$stage/usr/share/doc/ottrin/third-party-notices/BUNDLED_FONTS.md"
   for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
     usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
     usr/libexec/ottrin/ottrin-priv-helper usr/libexec/ottrin/rg \
