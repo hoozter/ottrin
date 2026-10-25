@@ -49,7 +49,7 @@ jobs:
             libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
             libxkbcommon-dev libssl-dev libgtk-3-dev desktop-file-utils \
             libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-            bubblewrap dbus-user-session apparmor-profiles
+            bubblewrap dbus-user-session apparmor-profiles python3-pil
 
       - name: Prepare Linux process isolation
         if: runner.os == 'Linux'
@@ -61,6 +61,16 @@ jobs:
 
       - name: Check all targets
         run: cargo check --workspace --all-targets
+
+      - name: Prepare production Linux HTML sandbox
+        if: runner.os == 'Linux'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: python3 scripts/ci/linux-html-sandbox.py prepare
+
+      - name: Verify production HTML pixels and executable mapping policy
+        if: runner.os == 'Linux'
+        run: /usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py
 
       - name: Check Windows Move ownership before workspace suite
         if: runner.os == 'Windows'
@@ -86,6 +96,19 @@ jobs:
 
       - name: Lint workspace
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Retire production Linux HTML integration
+        if: always() && runner.os == 'Linux'
+        run: python3 scripts/ci/linux-html-sandbox.py cleanup
+
+      - name: Upload Linux HTML sandbox evidence
+        if: always() && runner.os == 'Linux'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: linux-html-sandbox
+          path: html-sandbox-evidence/
+          if-no-files-found: ignore
+          retention-days: 7
 
   package-linux:
     name: Linux portable, AppImage, DEB and RPM

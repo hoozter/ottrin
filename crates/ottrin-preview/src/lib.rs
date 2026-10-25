@@ -39,6 +39,10 @@ mod folder_size_windows;
 mod html_visual;
 mod isolated_process;
 #[cfg(target_os = "linux")]
+mod linux_html;
+#[cfg(target_os = "linux")]
+mod linux_namespace;
+#[cfg(target_os = "linux")]
 mod media_playback;
 mod mesh_visual;
 mod obj_visual;
@@ -67,6 +71,10 @@ pub use html_visual::{
 pub use isolated_process::LinuxBubblewrapIsolation;
 #[cfg(target_os = "windows")]
 pub use isolated_process::WindowsJobObjectIsolation;
+#[cfg(target_os = "linux")]
+pub use linux_html::{
+    HtmlPreviewRuntimeStatus, html_preview_runtime_status, run_html_renderer_helper,
+};
 #[cfg(all(target_os = "linux", feature = "system-gstreamer"))]
 pub use media_playback::run_media_playback_helper;
 #[cfg(target_os = "linux")]
@@ -11109,6 +11117,12 @@ mod tests {
     #[test]
     fn html_system_renderer_preserves_local_relative_stylesheets() {
         if !html_preview_runtime_available() {
+            assert!(
+                std::env::var_os("OTTRIN_REQUIRE_HTML_RENDERER").is_none(),
+                "Required production HTML runtime is unavailable: {}",
+                html_preview_runtime_status().message()
+            );
+            eprintln!("HTML runtime unavailable locally; actual rendering was not exercised");
             return;
         }
         let fixture = tempfile::tempdir().expect("create HTML fixture directory");
@@ -11137,6 +11151,12 @@ mod tests {
     #[test]
     fn html_system_renderer_renders_inline_layout_without_executing_scripts() {
         if !html_preview_runtime_available() {
+            assert!(
+                std::env::var_os("OTTRIN_REQUIRE_HTML_RENDERER").is_none(),
+                "Required production HTML runtime is unavailable: {}",
+                html_preview_runtime_status().message()
+            );
+            eprintln!("HTML runtime unavailable locally; actual rendering was not exercised");
             return;
         }
         let fixture = tempfile::tempdir().expect("create HTML fixture directory");

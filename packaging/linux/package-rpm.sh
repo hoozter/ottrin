@@ -75,6 +75,7 @@ fi
 /usr/bin/ottrin-legacy-doc-render
 /usr/bin/ottrin-media-playback
 /usr/libexec/ottrin/ottrin-priv-helper
+/usr/libexec/ottrin/ottrin-html-render
 /usr/libexec/ottrin/rg
 /usr/libexec/ottrin/native-package-lifecycle
 /usr/libexec/ottrin/pdfium
@@ -84,6 +85,7 @@ fi
 /usr/share/metainfo/org.ottrin.Ottrin.appdata.xml
 /usr/share/polkit-1/actions/org.ottrin.filesystem.policy
 /usr/share/ottrin/ottrin-index.service.in
+/usr/share/ottrin/ottrin-html-render.apparmor
 /usr/share/doc/ottrin
 EOF
 

@@ -194,6 +194,22 @@ their named hashes. Test counts are scoped observations, not completion measures
   revalidated before acceptance was recorded. Public downloads were unchanged.
   See `FINAL_VALIDATION_CORRECTION.json` in the package evidence directory.
 
+Current Linux HTML repair is implemented in source and awaiting hosted execution:
+the fixed-protocol root-owned renderer, one shared namespace builder, complete
+system-integration setup, Services status, four package recipes, an 8 MiB expanded
+document bound, and hosted production installation/render/preload/teardown checks.
+Local installer/staging, HTML admission/sanitization, UI strict lint and all 17
+Linux provider contracts pass. Local real HTML rendering was **not exercised**
+because the new system helper is not installed on this machine. The existing
+`7d5eee59` deliverables remain authoritative until a new exact cohort is accepted.
+
+The completed `cb2e2f69` hosted run passed the repaired Windows Office contracts
+and progressed to native AppContainer/Job Object fixtures: four of ten active
+checks fail (descendant launch, aggregate descendant memory, inherited-handle
+probe). Those are engineering work, not owner waiting. Linux failed the two old
+real HTML checks; the new production helper is intended to resolve that boundary
+without disabling either sandbox. Search performance passed.
+
 Resume at the unfinished operation, not the start of an older checkpoint:
 
 1. The corrected MSVC platform suite and both elevated/ordinary-token targeted

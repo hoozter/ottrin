@@ -1,0 +1,27 @@
+{
+  "scope": "production HTML sandbox source checkpoint; hosted execution pending",
+  "local": {
+    "installer_tests": 3,
+    "staging_tests": 3,
+    "html_structural_checks": 9,
+    "html_real_rendering": "not exercised; system helper not installed locally",
+    "linux_provider_contracts": 17,
+    "ui_strict_lint": "pass",
+    "preview_platform_strict_lint": "pass",
+    "native_package_fixture": "pass",
+    "package_replacement_fixture": "pass",
+    "workflow_negative_omissions_refused": 16
+  },
+  "delivered_packages": "unchanged 7d5eee59 cohort",
+  "host_system_integration": "unchanged; no root helper or AppArmor policy installed",
+  "production_index_service": "active; retained",
+  "open_hosted_regressions": {
+    "source": "cb2e2f69",
+    "windows": "four native AppContainer/Job fixture failures after Office contracts passed",
+    "linux": "two old HTML renderer failures; production helper implementation awaiting execution"
+  },
+  "limitations": [
+    "Per-application policy does not promise to prevent direct unconfined profile changes when OS policy permits them.",
+    "No new package or real HTML acceptance claimed."
+  ]
+}

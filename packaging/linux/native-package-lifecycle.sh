@@ -129,6 +129,13 @@ case "${1-}" in
         [ "$#" -eq 1 ] || exit 2
         [ "$(id -u)" -eq 0 ] || { echo 'Native package lifecycle requires root' >&2; exit 1; }
         operation=$1
+        if [ "$operation" = refresh ]; then
+            if [ -f /etc/apparmor.d/abi/4.0 ] && command -v apparmor_parser >/dev/null 2>&1; then
+                /usr/libexec/ottrin/ottrin-priv-helper --configure-html-sandbox
+            elif [ "$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo 0)" = 1 ]; then
+                echo 'HTML previews need AppArmor policy tools; finish setup in Settings > Services.'
+            fi
+        fi
         self=$(readlink -f -- "$0")
         accounts=$(getent passwd)
         # Resolve every standard registration before changing any of them.
@@ -155,6 +162,9 @@ EOF
         [ ! -d /run/systemd/system ] || manager=online
         service_operation "$phase" "$manager"
         done
+        if [ "$operation" = remove ]; then
+            /usr/libexec/ottrin/ottrin-priv-helper --remove-html-sandbox-policy
+        fi
         ;;
     *) echo 'Usage: native-package-lifecycle.sh remove|refresh' >&2; exit 2 ;;
 esac

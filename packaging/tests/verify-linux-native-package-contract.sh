@@ -58,7 +58,7 @@ chmod +x "$TMP/tools/curl" "$TMP/tools/sha256sum"
 ORIGINAL_PATH="$PATH"
 export PATH="$TMP/tools:$PATH"
 
-for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback ottrin-legacy-doc-render; do
+for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback ottrin-legacy-doc-render ottrin-html-render; do
   printf '#!/bin/sh\nexit 0\n' > "$BIN/$executable"
   chmod 0755 "$BIN/$executable"
 done
@@ -72,6 +72,7 @@ for executable in \
   usr/bin/ottrin-media-playback \
   usr/libexec/ottrin/rg \
   usr/libexec/ottrin/ottrin-priv-helper \
+  usr/libexec/ottrin/ottrin-html-render \
   usr/libexec/ottrin/native-package-lifecycle; do
   test -x "$STAGE/$executable"
 done
@@ -82,6 +83,7 @@ for payload in \
   usr/share/metainfo/org.ottrin.Ottrin.appdata.xml \
   usr/share/polkit-1/actions/org.ottrin.filesystem.policy \
   usr/share/ottrin/ottrin-index.service.in \
+  usr/share/ottrin/ottrin-html-render.apparmor \
   usr/share/doc/ottrin/SOURCE_REVISION.txt \
   usr/libexec/ottrin/pdfium/lib/libpdfium.so \
   usr/libexec/ottrin/pdfium/LICENSE \
@@ -133,7 +135,7 @@ done
 grep -Fq 'Linux native package contract' "$PREFLIGHT"
 
 # Exercise the generated dependency, rather than only checking script text.
-for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback ottrin-legacy-doc-render; do
+for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback ottrin-legacy-doc-render ottrin-html-render; do
   cp /bin/true "$BIN/$executable"
 done
 expected_libc="$(objdump -T /bin/true | sed -nE '/\*UND\*/s/.*\(GLIBC_([0-9]+(\.[0-9]+)+)\).*/\1/p' | sort -Vu | tail -n 1)"

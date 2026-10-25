@@ -20,7 +20,7 @@ cd "$ROOT"
 if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
     cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
     cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
-    cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
+    cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render --bin ottrin-html-render
 fi
 
 rm -rf "$STAGE"
@@ -31,9 +31,10 @@ install -m 0755 "$BUILD_DIR/ottrin-app" "$STAGE/libexec/ottrin/ottrin"
 install -m 0755 "$BUILD_DIR/ottrin-legacy-doc-render" "$STAGE/libexec/ottrin/ottrin-legacy-doc-render"
 install -m 0755 "$BUILD_DIR/ottrin-media-playback" "$STAGE/libexec/ottrin/ottrin-media-playback"
 install -m 0755 "$BUILD_DIR/ottrin-indexd" "$STAGE/libexec/ottrin/ottrin-indexd"
-install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$STAGE/bin/ottrin-priv-helper"
+install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$STAGE/libexec/ottrin/ottrin-priv-helper"
+install -m 0755 "$BUILD_DIR/ottrin-html-render" "$STAGE/libexec/ottrin/ottrin-html-render"
 bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$STAGE" "$STAGE/third-party-notices/linux-runtime" \
-  "$BUILD_DIR/ottrin-legacy-doc-render"
+  "$BUILD_DIR/ottrin-legacy-doc-render" "$BUILD_DIR/ottrin-html-render"
 cat > "$STAGE/bin/ottrin" <<'EOF'
 #!/bin/sh
 OTTRIN_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
@@ -48,6 +49,7 @@ package_search_runtime linux-x86_64 "$STAGE/libexec/ottrin" "$STAGE/third-party-
 install -D -m 0644 "$ROOT/crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md" "$STAGE/third-party-notices/BUNDLED_FONTS.md"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
+  "$ROOT/packaging/linux/ottrin-html-render.apparmor" \
   "$ROOT/packaging/linux/ottrin.appdata.xml" \
   "$ROOT/packaging/linux/ottrin-index.service.in" "$STAGE/packaging/linux/"
 cp "$ROOT/README.md" "$ROOT/LICENSE" "$STAGE/" 2>/dev/null || cp "$ROOT/README.md" "$STAGE/"
@@ -67,11 +69,16 @@ Run:
 
 This launcher uses the artifact-local Linux runtime libraries in `./lib/`.
 
-Optional privileged helper setup:
+Optional system integration:
+
+Open Settings → Services to set up the administrator helper and HTML preview
+sandbox. Ottrin stages the complete bundled payload and opens the administrator
+permission prompt. Normal file browsing does not require this setup.
+
+For terminal setup, run the same bundled installer:
 
 ```sh
-sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
-sudo install -m 0644 ./packaging/linux/org.ottrin.filesystem.policy /usr/share/polkit-1/actions/
+sudo ./libexec/ottrin/ottrin-priv-helper --install
 ```
 
 Without the helper, normal user-owned file operations still work.

@@ -12,6 +12,7 @@ INSTALLED_HELPER=/$HELPER_REL
 
 check_payload() {
   local label="$1" policy="$2" helper="$3"
+  test -x "$(dirname "$helper")/ottrin-html-render" || { echo "$label: bundled HTML sandbox missing" >&2; exit 1; }
   test -x "$helper" || { echo "$label: helper missing or not executable: $helper" >&2; exit 1; }
   python3 - "$policy" "$INSTALLED_HELPER" "$label" <<'PY'
 import sys
@@ -38,8 +39,8 @@ for argument in "$@"; do
     portable)
       tar -xzf "$artifact" -C "$destination"
       stage="$(find "$destination" -mindepth 1 -maxdepth 1 -type d -print -quit)"
-      check_payload "$format" "$stage/packaging/linux/org.ottrin.filesystem.policy" "$stage/bin/ottrin-priv-helper"
-      grep -Fq "install -D -m 0755 ./bin/ottrin-priv-helper $INSTALLED_HELPER" "$stage/RUNNING.md"
+      check_payload "$format" "$stage/packaging/linux/org.ottrin.filesystem.policy" "$stage/libexec/ottrin/ottrin-priv-helper"
+      grep -Fq "sudo ./libexec/ottrin/ottrin-priv-helper --install" "$stage/RUNNING.md"
       grep -Fq -- "OTTRIN_PRIV_HELPER=$INSTALLED_HELPER" "$stage/bin/ottrin"
       ;;
     appimage)

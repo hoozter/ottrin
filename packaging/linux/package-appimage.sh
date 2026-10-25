@@ -21,7 +21,7 @@ cd "$ROOT"
 if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
     cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
     cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
-    cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
+    cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render --bin ottrin-html-render
 fi
 
 rm -rf "$APPDIR"
@@ -40,6 +40,7 @@ install -m 0755 "$ROOT/target/release/ottrin-legacy-doc-render" "$APPDIR/usr/bin
 install -m 0755 "$ROOT/target/release/ottrin-media-playback" "$APPDIR/usr/bin/ottrin-media-playback"
 install -m 0755 "$ROOT/target/release/ottrin-indexd" "$APPDIR/usr/bin/ottrin-indexd"
 install -m 0755 "$ROOT/target/release/ottrin-priv-helper" "$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
+install -m 0755 "$BUILD_DIR/ottrin-html-render" "$APPDIR/usr/libexec/ottrin/ottrin-html-render"
 package_linux_pdfium "$APPDIR/usr/bin/pdfium"
 package_search_runtime linux-x86_64 "$APPDIR/usr/libexec/ottrin" "$APPDIR/usr/share/doc/ottrin/third-party-notices/ripgrep"
 install -D -m 0644 "$ROOT/crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md" "$APPDIR/usr/share/doc/ottrin/third-party-notices/BUNDLED_FONTS.md"
@@ -48,6 +49,7 @@ install -m 0644 "$ROOT/assets/icon.png" "$APPDIR/usr/share/icons/hicolor/256x256
 install -m 0644 "$ROOT/packaging/linux/ottrin.appdata.xml" "$APPDIR/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml"
 install -m 0644 "$ROOT/packaging/linux/org.ottrin.filesystem.policy" "$APPDIR/usr/share/polkit-1/actions/"
 install -m 0644 "$ROOT/packaging/linux/ottrin-index.service.in" "$APPDIR/usr/share/ottrin/"
+install -m 0644 "$ROOT/packaging/linux/ottrin-html-render.apparmor" "$APPDIR/usr/share/ottrin/"
 install -m 0644 "$ROOT/README.md" "$ROOT/LICENSE" "$APPDIR/usr/share/doc/ottrin/"
 install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$ROOT/docs/ROADMAP.md" "$ROOT/docs/RELEASE_NOTES.md" \
@@ -55,7 +57,7 @@ install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$APPDIR/usr/share/doc/ottrin/"
 bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$APPDIR/usr" \
   "$APPDIR/usr/share/doc/ottrin/third-party-notices/linux-runtime" \
-  "$BUILD_DIR/ottrin-legacy-doc-render"
+  "$BUILD_DIR/ottrin-legacy-doc-render" "$BUILD_DIR/ottrin-html-render"
 ottrin_write_source_revision "$ROOT" "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt" "$VERSION"
 
 cat > "$APPDIR/org.ottrin.Ottrin.desktop" <<'DESKTOP'

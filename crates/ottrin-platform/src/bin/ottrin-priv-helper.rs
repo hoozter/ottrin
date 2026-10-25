@@ -30,6 +30,25 @@ fn main() {
         }
         return;
     }
+    #[cfg(target_os = "linux")]
+    if std::env::args().skip(1).eq(["--configure-html-sandbox"]) {
+        if let Err(error) = setup::configure_html_sandbox() {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    #[cfg(target_os = "linux")]
+    if std::env::args()
+        .skip(1)
+        .eq(["--remove-html-sandbox-policy"])
+    {
+        if let Err(error) = setup::remove_html_policy() {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     let mode = parse_mode(std::env::args().skip(1).collect());
     let mode = match mode {
         Ok(m) => m,

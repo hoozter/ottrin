@@ -20,7 +20,7 @@ for expected in \
   "'/RUNNING\\.md$'" \
   'verify_linux_portable_running_instructions() {' \
   'Linux portable archive RUNNING.md' \
-  'sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper' \
+  'sudo ./libexec/ottrin/ottrin-priv-helper --install' \
   'Without the helper, normal user-owned file operations still work.'; do
   require_literal "$expected"
 done

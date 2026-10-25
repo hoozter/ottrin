@@ -28,10 +28,23 @@ fn install_with(
     std::fs::copy(package_helper, &helper)
         .and_then(|_| std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o755)))
         .map_err(|error| format!("Cannot prepare the bundled helper: {error}"))?;
+    let html = package_helper
+        .parent()
+        .expect("helper has parent")
+        .join("ottrin-html-render");
+    let staged_html = directory.path().join("ottrin-html-render");
+    std::fs::copy(&html, &staged_html)
+        .and_then(|_| {
+            std::fs::set_permissions(&staged_html, std::fs::Permissions::from_mode(0o755))
+        })
+        .map_err(|error| format!("Cannot prepare the bundled HTML sandbox: {error}"))?;
     let output = run(&helper)
         .map_err(|error| format!("Cannot open administrator authentication: {error}"))?;
     if output.status.success() {
-        Ok("Administrator helper installed and ready.".to_string())
+        Ok(
+            "System integration installed: administrator helper and HTML preview sandbox."
+                .to_string(),
+        )
     } else if output.status.code() == Some(126) {
         Err("Helper setup was cancelled.".to_string())
     } else {
@@ -67,10 +80,19 @@ mod tests {
         let package = tempfile::tempdir().unwrap();
         let original = package.path().join("helper");
         std::fs::write(&original, b"packaged executable").unwrap();
+        std::fs::write(
+            package.path().join("ottrin-html-render"),
+            b"HTML sandbox executable",
+        )
+        .unwrap();
         for code in [0, 126, 127] {
             let mut staged = None;
             let result = install_with(&original, |helper| {
                 assert_ne!(helper, original);
+                assert_eq!(
+                    std::fs::read(helper.parent().unwrap().join("ottrin-html-render")).unwrap(),
+                    b"HTML sandbox executable"
+                );
                 assert_eq!(std::fs::read(helper).unwrap(), b"packaged executable");
                 assert_eq!(
                     std::fs::metadata(helper).unwrap().permissions().mode() & 0o777,
@@ -101,10 +123,27 @@ mod tests {
     }
 
     #[test]
+    fn missing_html_companion_fails_before_authentication() {
+        let package = tempfile::tempdir().unwrap();
+        let helper = package.path().join("ottrin-priv-helper");
+        std::fs::write(&helper, b"packaged helper").unwrap();
+        let error = install_with(&helper, |_| {
+            panic!("Incomplete payload must not authenticate")
+        })
+        .unwrap_err();
+        assert!(error.contains("Cannot prepare the bundled HTML sandbox"));
+    }
+
+    #[test]
     fn launch_failure_retains_cause_and_removes_staging() {
         let package = tempfile::tempdir().unwrap();
         let original = package.path().join("helper");
         std::fs::write(&original, b"executable").unwrap();
+        std::fs::write(
+            package.path().join("ottrin-html-render"),
+            b"HTML sandbox executable",
+        )
+        .unwrap();
         let mut staged = None;
         let error = install_with(&original, |helper| {
             staged = Some(helper.to_path_buf());

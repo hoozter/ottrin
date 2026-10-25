@@ -58,6 +58,7 @@ ottrin_native_glibc_requirement() {
       "$stage/usr/bin/ottrin-legacy-doc-render" \
       "$stage/usr/bin/ottrin-media-playback" \
       "$stage/usr/libexec/ottrin/ottrin-priv-helper" \
+      "$stage/usr/libexec/ottrin/ottrin-html-render" \
       "$stage/usr/libexec/ottrin/pdfium/lib/libpdfium.so" \
       | sed -nE '/\*UND\*/s/.*\(GLIBC_([0-9]+(\.[0-9]+)+)\).*/\1/p' \
       | sort -Vu | tail -n 1

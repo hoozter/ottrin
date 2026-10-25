@@ -47,14 +47,13 @@ chmod +x Ottrin-*.AppImage
 ./Ottrin-*.AppImage
 ```
 
-For system integration (polkit privilege helper), install the helper and policy
-from the portable archive at the paths below. For the AppImage, extract it with
-`--appimage-extract` and use the corresponding files under `squashfs-root/usr/`.
+For optional administrator file operations and the offline HTML sandbox, open
+Settings → Services. Setup stages the complete bundled integration and opens
+your administrator permission prompt. Terminal users of the portable archive
+can invoke the same installer:
 
 ```sh
-sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
-sudo install -m 0644 packaging/linux/org.ottrin.filesystem.policy \
-    /usr/share/polkit-1/actions/
+sudo ./libexec/ottrin/ottrin-priv-helper --install
 ```
 
 ### Windows

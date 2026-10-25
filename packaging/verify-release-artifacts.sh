@@ -114,7 +114,8 @@ require_zip_entry() {
 
 for entry in \
   '/bin/ottrin$' \
-  '/bin/ottrin-priv-helper$' \
+  '/libexec/ottrin/ottrin-priv-helper$' \
+  '/libexec/ottrin/ottrin-html-render$' \
   '/libexec/ottrin/ottrin-legacy-doc-render$' \
   '/libexec/ottrin/ottrin-media-playback$' \
   '/libexec/ottrin/pdfium/lib/libpdfium\.so$' \
@@ -236,7 +237,7 @@ verify_linux_portable_running_instructions() {
   local instructions="$1"
   local expected
   for expected in \
-    'sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper' \
+    'sudo ./libexec/ottrin/ottrin-priv-helper --install' \
     'Without the helper, normal user-owned file operations still work.'; do
     if ! grep -Fq "$expected" <<<"$instructions"; then
       printf 'Linux portable archive RUNNING.md is missing the runtime instruction: %s\n' \
@@ -695,6 +696,7 @@ for stage in "$DEB_STAGE" "$RPM_STAGE"; do
     "$stage/usr/share/doc/ottrin/third-party-notices/BUNDLED_FONTS.md"
   for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
     usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
+    usr/libexec/ottrin/ottrin-html-render \
     usr/libexec/ottrin/ottrin-priv-helper usr/libexec/ottrin/rg \
     usr/libexec/ottrin/native-package-lifecycle; do
     test -x "$stage/$executable" || {
@@ -714,6 +716,7 @@ for stage in "$DEB_STAGE" "$RPM_STAGE"; do
   # Compare actual release code as well as the separately staged source note.
   for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
     usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
+    usr/libexec/ottrin/ottrin-html-render \
     usr/libexec/ottrin/ottrin-priv-helper usr/libexec/ottrin/rg \
     usr/libexec/ottrin/pdfium/lib/libpdfium.so; do
     expected="$APPIMAGE_EXTRACT_DIR/squashfs-root/$executable"

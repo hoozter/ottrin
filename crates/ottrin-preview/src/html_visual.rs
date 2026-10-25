@@ -1,25 +1,16 @@
-use crate::{
-    IsolatedProcessFailure, IsolatedProcessInput, IsolatedProcessLauncher, IsolatedProcessRequest,
-    LinuxBubblewrapIsolation,
-};
+use crate::linux_html::{self, LinuxHtmlIsolation};
+use crate::{IsolatedProcessFailure, IsolatedProcessLauncher};
 use image::GenericImageView;
 use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
-use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const MAX_HTML_INPUT_BYTES: u64 = 2 * 1024 * 1024;
-const MAX_HTML_OUTPUT_BYTES: u64 = 16 * 1024 * 1024;
-const HTML_RENDER_TIMEOUT: Duration = Duration::from_secs(8);
-const MAX_HTML_RENDER_MEMORY_BYTES: u64 = 512 * 1024 * 1024;
-// Chromium's process tree also counts renderer threads against systemd TasksMax.
-// Keep the ceiling finite while allowing a single headless page to initialize.
-const MAX_HTML_RENDER_PROCESSES: u64 = 256;
 const MAX_LOCAL_STYLESHEET_BYTES: u64 = 256 * 1024;
 const BLOCKED_ELEMENTS: &str = "script,iframe,frame,object,embed,audio,video,source,track,svg";
 const CONTENT_SECURITY_POLICY: &str = "<meta charset=\"utf-8\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src 'none'; form-action 'none'; base-uri 'none'\">";
@@ -36,7 +27,9 @@ pub enum HtmlVisualError {
     Read(String),
     #[error("HTML preview source is not UTF-8")]
     UnsafeText,
-    #[error("no supported system HTML renderer and sandbox are installed")]
+    #[error(
+        "HTML previews need a supported system browser and sandbox setup in Settings > Services"
+    )]
     RuntimeUnavailable,
     #[error("HTML preview could not be sanitized: {0}")]
     Sanitize(String),
@@ -56,22 +49,8 @@ impl Drop for RenderDirectory {
     }
 }
 
-fn browser_path() -> Option<&'static Path> {
-    [
-        "/opt/google/chrome/chrome",
-        "/usr/lib/chromium/chromium",
-        "/usr/lib/chromium-browser/chromium-browser",
-    ]
-    .into_iter()
-    .map(Path::new)
-    .find(|path| path.is_file())
-}
-
 pub fn html_preview_runtime_available() -> bool {
-    Path::new("/usr/bin/bwrap").is_file()
-        && Path::new("/usr/bin/systemd-run").is_file()
-        && Path::new("/usr/bin/systemctl").is_file()
-        && browser_path().is_some()
+    linux_html::runtime_available()
 }
 
 fn is_html_path(path: &Path) -> bool {
@@ -190,6 +169,14 @@ fn read_local_stylesheet(source_path: &Path, reference: &str) -> Option<String> 
 }
 
 fn inert_offline_document(source_path: &Path, source: &str) -> Result<String, HtmlVisualError> {
+    if source.len() as u64 > MAX_HTML_INPUT_BYTES {
+        return Err(HtmlVisualError::InputTooLarge {
+            actual: source.len() as u64,
+            limit: MAX_HTML_INPUT_BYTES,
+        });
+    }
+    let mut stylesheet_budget =
+        linux_html::MAX_DOCUMENT_BYTES as usize - source.len() - CONTENT_SECURITY_POLICY.len();
     let stylesheet_source = source_path.to_path_buf();
     let sanitized = rewrite_str(
         source,
@@ -221,6 +208,13 @@ fn inert_offline_document(source_path: &Path, source: &str) -> Result<String, Ht
                     .and_then(|_| element.get_attribute("href"))
                     .and_then(|reference| read_local_stylesheet(&stylesheet_source, &reference));
                 if let Some(stylesheet) = stylesheet {
+                    let expanded = stylesheet.len() + "<style></style>".len();
+                    if expanded > stylesheet_budget {
+                        return Err(
+                            "HTML stylesheet expansion exceeds the preview document limit".into(),
+                        );
+                    }
+                    stylesheet_budget -= expanded;
                     element.replace(&format!("<style>{stylesheet}</style>"), ContentType::Html);
                 } else {
                     element.remove();
@@ -305,7 +299,7 @@ pub fn render_html_content_preview_png(
     render_html_content_preview_png_with_launcher(
         path,
         target_dim,
-        &LinuxBubblewrapIsolation,
+        &LinuxHtmlIsolation,
         &AtomicBool::new(false),
     )
 }
@@ -319,7 +313,7 @@ fn render_html_content_preview_png_with_launcher(
     if !is_html_path(path) {
         return Err(HtmlVisualError::UnsupportedFormat);
     }
-    let browser = browser_path().ok_or(HtmlVisualError::RuntimeUnavailable)?;
+    let browser = linux_html::browser_path().ok_or(HtmlVisualError::RuntimeUnavailable)?;
     if !html_preview_runtime_available() {
         return Err(HtmlVisualError::RuntimeUnavailable);
     }
@@ -357,43 +351,14 @@ fn render_html_content_preview_png_with_launcher_and_browser(
     let output_directory = render_dir.0.join("output");
     launcher
         .run(
-            &IsolatedProcessRequest {
-                executable: browser.to_path_buf(),
-                arguments: vec![
-                    OsString::from("--headless=new"),
-                    OsString::from("--disable-gpu"),
-                    OsString::from("--disable-javascript"),
-                    OsString::from("--disable-background-networking"),
-                    OsString::from("--disable-component-update"),
-                    OsString::from("--disable-default-apps"),
-                    OsString::from("--disable-extensions"),
-                    OsString::from("--disable-sync"),
-                    OsString::from("--metrics-recording-only"),
-                    OsString::from("--no-first-run"),
-                    OsString::from("--no-default-browser-check"),
-                    OsString::from("--user-data-dir=/profile"),
-                    OsString::from("--screenshot=/output/output.png"),
-                    OsString::from(format!("--window-size={dimension},{dimension}")),
-                    OsString::from("file:///input/document.html"),
-                ],
-                input: Some(IsolatedProcessInput {
-                    host_path: input,
-                    sandbox_path: PathBuf::from("/input/document.html"),
-                }),
-                private_profile_dir: render_dir.0.join("profile"),
-                private_output_dir: output_directory.clone(),
-                timeout: HTML_RENDER_TIMEOUT,
-                max_memory_bytes: MAX_HTML_RENDER_MEMORY_BYTES,
-                max_processes: MAX_HTML_RENDER_PROCESSES,
-                max_output_bytes: MAX_HTML_OUTPUT_BYTES,
-            },
+            &linux_html::request(&render_dir.0, browser, dimension),
             cancelled,
         )
         .map_err(map_process_failure)?;
 
     let output = output_directory.join("output.png");
     let metadata = std::fs::metadata(&output).map_err(|_| HtmlVisualError::InvalidOutput)?;
-    if metadata.len() == 0 || metadata.len() > MAX_HTML_OUTPUT_BYTES {
+    if metadata.len() == 0 || metadata.len() > linux_html::MAX_OUTPUT {
         return Err(HtmlVisualError::InvalidOutput);
     }
     let bytes = std::fs::read(output).map_err(|_| HtmlVisualError::InvalidOutput)?;
@@ -474,6 +439,21 @@ mod tests {
         std::fs::write(root.join("output/output.png"), "private image").unwrap();
         drop(directory);
         assert!(!root.exists());
+    }
+
+    #[test]
+    fn repeated_local_stylesheets_have_one_document_expansion_budget() {
+        let fixture = tempfile::tempdir().unwrap();
+        let css = format!(
+            "/*{}*/",
+            "x".repeat(MAX_LOCAL_STYLESHEET_BYTES as usize - 4)
+        );
+        std::fs::write(fixture.path().join("page.css"), css).unwrap();
+        let path = fixture.path().join("page.html");
+        let source = "<link rel=stylesheet href=page.css>".repeat(40);
+        assert!(
+            matches!(inert_offline_document(&path, &source), Err(HtmlVisualError::Sanitize(message)) if message.contains("document limit"))
+        );
     }
 
     #[test]

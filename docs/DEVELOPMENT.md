@@ -773,8 +773,10 @@ Privileged operations are per action, never a global root/admin mode.
 Linux packaging should install:
 
 ```sh
-sudo install -D -m 0755 ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
-sudo install -m 0644 packaging/linux/org.ottrin.filesystem.policy /usr/share/polkit-1/actions/
+cargo build --release -p ottrin-platform --bin ottrin-priv-helper
+cargo build --release -p ottrin-preview --bin ottrin-html-render
+# The platform helper and HTML helper must be adjacent in the setup payload.
+sudo ./target/release/ottrin-priv-helper --install
 ```
 
 Runtime helper discovery checks explicit override, environment variable, app directory, standard install paths, and finally `PATH`.
@@ -1651,3 +1653,21 @@ try to re-enable it on populated directories. Windows imposes
 on those transitions. A fixture setup refusal is a failed run, never a passing
 policy test or an implicit skip. Sources and journal/publication bytes must remain
 unchanged when authority is refused.
+
+### Linux HTML sandbox policy
+
+HTML rendering uses the installed, root-owned `ottrin-html-render` fixed-protocol
+entry, the shared Bubblewrap filesystem/network namespace, Chromium's own
+sandbox, and a bounded user-systemd unit. It accepts only a private sanitized
+HTML workspace and image dimensions. Setup never changes global AppArmor or
+user-namespace sysctls, and never adds permissions to the generic Bubblewrap
+profile. Caller-controlled executable mappings are denied under the rendering
+profile; the hosted check proves its preload attack works before testing denial.
+
+The separate OS policy `kernel.apparmor_restrict_unprivileged_unconfined`
+controls whether an already-unconfined process can change its own AppArmor
+profile. Ottrin cannot promise to prevent that system-wide operation when the
+host permits it. Hosted evidence records the setting and direct-transition
+result; on hosts where the setting is 1, the transition must be denied. This
+policy distinction does not disable Chromium's sandbox or allow original HTML
+scripts, network access or arbitrary helper commands.

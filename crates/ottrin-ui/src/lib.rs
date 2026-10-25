@@ -21605,12 +21605,35 @@ impl OttrinApp {
             }
             ui.label("Lets Ottrin request administrator permission when a file operation needs it. Setup requires your administrator password.");
             #[cfg(target_os = "linux")]
+            ui.label("Setup also installs the HTML preview sandbox from this package.");
+            #[cfg(target_os = "linux")]
             if ui.add(egui::Button::new(if matches!(self.privileged_availability, PrivilegedAvailability::Ready) { "Update / reinstall helper" } else { "Set up administrator helper" }).themed(&c)).clicked() {
                 self.begin_service_action(ui.ctx(), ottrin_platform::install_privileged_helper);
             }
             ui.add_space(14.0);
             ui.separator();
             ui.add_space(10.0);
+            #[cfg(target_os = "linux")]
+            {
+                use ottrin_preview::HtmlPreviewRuntimeStatus;
+                let id = egui::Id::new("html-sandbox-status");
+                let cached = ui.data_mut(|data| data.get_temp::<(std::time::Instant, HtmlPreviewRuntimeStatus)>(id));
+                let status = cached.filter(|(at,_)| at.elapsed() < std::time::Duration::from_secs(5))
+                    .map(|(_,status)|status).unwrap_or_else(|| {
+                        let status=ottrin_preview::html_preview_runtime_status();
+                        ui.data_mut(|data|data.insert_temp(id,(std::time::Instant::now(),status)));
+                        status
+                    });
+                ui.label(RichText::new("HTML preview sandbox").strong().color(c.text));
+                Self::render_service_status(ui, status.message(), if status==HtmlPreviewRuntimeStatus::Ready { ready_color } else { c.text_muted });
+                ui.label("Uses your system browser to render offline HTML with isolated files, no network and a time/memory limit. System setup requires administrator permission once.");
+                let can_setup=matches!(status,HtmlPreviewRuntimeStatus::Ready|HtmlPreviewRuntimeStatus::NeedsSetup);
+                if ui.add_enabled(can_setup,egui::Button::new(if status==HtmlPreviewRuntimeStatus::Ready { "Update / reinstall HTML sandbox" } else { "Set up HTML sandbox" }).themed(&c)).clicked() {
+                    self.begin_service_action(ui.ctx(),ottrin_platform::install_privileged_helper);
+                    ui.data_mut(|data|data.remove::<(std::time::Instant,HtmlPreviewRuntimeStatus)>(id));
+                }
+                ui.add_space(14.0);ui.separator();ui.add_space(10.0);
+            }
             ui.label(RichText::new("Background index service").strong().color(c.text));
             if is_administrator_session() {
                 ui.label("Manage the Administrator index from Search settings.");

@@ -11,6 +11,9 @@ for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
   verify_job="$(awk '/^  verify:/ { active=1; next } active && /^  [a-zA-Z_-]+:/ { exit } active { print }' "$verification")"
   for literal in \
     'cache-on-failure: true' \
+    'python3 scripts/ci/linux-html-sandbox.py prepare' \
+    '/usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py' \
+    'python3 scripts/ci/linux-html-sandbox.py cleanup' \
     'cargo test -p ottrin-preview --test office_provider_contract -- --nocapture' \
     'windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent' \
     'windows_native_move_cleanup' \
