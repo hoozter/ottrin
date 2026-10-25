@@ -4,6 +4,7 @@ set -euo pipefail
 # Check produced packages, not just the staging recipes. Each argument is
 # FORMAT=ARTIFACT, where FORMAT is portable, appimage, deb, or rpm.
 (( $# > 0 )) || { echo "usage: $0 FORMAT=ARTIFACT [...]" >&2; exit 2; }
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf -- "$WORK"' EXIT
 POLICY_REL=usr/share/polkit-1/actions/org.ottrin.filesystem.policy
@@ -11,7 +12,8 @@ HELPER_REL=usr/libexec/ottrin/ottrin-priv-helper
 INSTALLED_HELPER=/$HELPER_REL
 
 check_payload() {
-  local label="$1" policy="$2" helper="$3"
+  local label="$1" policy="$2" helper="$3" html_policy="$4"
+  cmp -- "$ROOT/packaging/linux/ottrin-html-render.apparmor" "$html_policy" || { echo "$label: HTML sandbox policy does not match the package source" >&2; exit 1; }
   test -x "$(dirname "$helper")/ottrin-html-render" || { echo "$label: bundled HTML sandbox missing" >&2; exit 1; }
   test -x "$helper" || { echo "$label: helper missing or not executable: $helper" >&2; exit 1; }
   python3 - "$policy" "$INSTALLED_HELPER" "$label" <<'PY'
@@ -39,23 +41,23 @@ for argument in "$@"; do
     portable)
       tar -xzf "$artifact" -C "$destination"
       stage="$(find "$destination" -mindepth 1 -maxdepth 1 -type d -print -quit)"
-      check_payload "$format" "$stage/packaging/linux/org.ottrin.filesystem.policy" "$stage/libexec/ottrin/ottrin-priv-helper"
+      check_payload "$format" "$stage/packaging/linux/org.ottrin.filesystem.policy" "$stage/libexec/ottrin/ottrin-priv-helper" "$stage/packaging/linux/ottrin-html-render.apparmor"
       grep -Fq "sudo ./libexec/ottrin/ottrin-priv-helper --install" "$stage/RUNNING.md"
       grep -Fq -- "OTTRIN_PRIV_HELPER=$INSTALLED_HELPER" "$stage/bin/ottrin"
       ;;
     appimage)
       (cd "$destination" && "$artifact" --appimage-extract >/dev/null)
       stage="$destination/squashfs-root"
-      check_payload "$format" "$stage/$POLICY_REL" "$stage/$HELPER_REL"
+      check_payload "$format" "$stage/$POLICY_REL" "$stage/$HELPER_REL" "$stage/usr/share/ottrin/ottrin-html-render.apparmor"
       grep -Fq -- "OTTRIN_PRIV_HELPER=$INSTALLED_HELPER" "$stage/AppRun"
       ;;
     deb)
       dpkg-deb -x "$artifact" "$destination"
-      check_payload "$format" "$destination/$POLICY_REL" "$destination/$HELPER_REL"
+      check_payload "$format" "$destination/$POLICY_REL" "$destination/$HELPER_REL" "$destination/usr/share/ottrin/ottrin-html-render.apparmor"
       ;;
     rpm)
       (cd "$destination" && 7z x -so "$artifact" | cpio -idm --quiet)
-      check_payload "$format" "$destination/$POLICY_REL" "$destination/$HELPER_REL"
+      check_payload "$format" "$destination/$POLICY_REL" "$destination/$HELPER_REL" "$destination/usr/share/ottrin/ottrin-html-render.apparmor"
       ;;
     *) echo "Unknown format: $format" >&2; exit 2 ;;
   esac

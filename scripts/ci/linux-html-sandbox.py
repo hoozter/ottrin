@@ -26,7 +26,11 @@ def cleanup():
         if not path.exists():continue
         assert not path.is_symlink() and sha(path)==expected, 'Owned integration file changed: '+name
         run(['sudo','rm','--',name])
-    for name in reversed(state['new_directories']):run(['sudo','rmdir','--',name])
+    for name in reversed(state['new_directories']):
+        path=Path(name)
+        if not path.exists():continue  # Partial setup may never have created it.
+        assert path.is_dir() and not path.is_symlink(),name
+        run(['sudo','rmdir','--',name])
     assert Path('/proc/sys/kernel/apparmor_restrict_unprivileged_userns').read_text().strip()==state['restriction']
     state['status']='cleaned';state['profile_unloaded']=not label_loaded();assert state['profile_unloaded']
     (out/'TEARDOWN.json').write_text(json.dumps(state,indent=2)+'\n');state_path.unlink()
@@ -43,6 +47,14 @@ browser=Path('/opt/google/chrome/chrome');before=sha(browser)
 for directory in ['/opt','/opt/google','/opt/google/chrome']:assert Path(directory).stat().st_uid==0
 run(['sudo','chmod','go-w','/opt','/opt/google'])
 run(['sudo','chmod','-R','go-w','/opt/google/chrome']);assert sha(browser)==before
+# Hosted images also make system integration parents writable. Preserve the
+# production installer's refusal and repair only these disposable prerequisites.
+namespaces=['/usr','/usr/share','/usr/libexec','/usr/share/polkit-1','/usr/share/polkit-1/actions','/etc','/etc/apparmor.d']
+metadata={name:{'uid':Path(name).stat().st_uid,'mode':oct(Path(name).stat().st_mode & 0o7777)} for name in namespaces if Path(name).exists()}
+(out/'PREREQUISITES.json').write_text(json.dumps({'directories_before':metadata,'browser_sha256':before,'scope':'Disposable hosted runner only; production installer validation remains unchanged'},indent=2)+'\n')
+for name in metadata:
+    assert not Path(name).is_symlink() and Path(name).stat().st_uid==0, 'Unprotected hosted system namespace: '+name
+    run(['sudo','chmod','go-w',name])
 try:
     run(['cargo','build','-p','ottrin-preview','--bin','ottrin-html-render'])
     run(['cargo','build','-p','ottrin-platform','--bin','ottrin-priv-helper'])
@@ -69,5 +81,9 @@ try:
     assert label_loaded()
     state['status']='ready';(out/'SETUP.json').write_text(json.dumps(state,indent=2)+'\n')
     with Path(os.environ['GITHUB_ENV']).open('a') as f:f.write('OTTRIN_REQUIRE_HTML_RENDERER=1\n')
-except BaseException:
-    cleanup();raise
+except BaseException as error:
+    (out/'SETUP_FAILURE.json').write_text(json.dumps({'error':repr(error)},indent=2)+'\n')
+    try:cleanup()
+    except BaseException as cleanup_error:
+        (out/'CLEANUP_FAILURE.json').write_text(json.dumps({'error':repr(cleanup_error)},indent=2)+'\n')
+    raise
