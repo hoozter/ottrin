@@ -7643,6 +7643,7 @@ impl OttrinApp {
                 ),
             }
         }
+        let undo_succeeded = result.is_ok();
         let affected_paths: Vec<_> = self
             .operation_history
             .iter()
@@ -7715,10 +7716,18 @@ impl OttrinApp {
                             reason: reason.clone(),
                         });
                         record.message = None;
+                        let refresh = (
+                            token.receipt.before_path().to_path_buf(),
+                            token.receipt.after_path().to_path_buf(),
+                            None,
+                            kind,
+                        );
                         if kind == PathMoveUndoKind::TextEdit {
                             record.path_move_undo_token = None;
                         }
-                        None
+                        // Refusal can mean the user replaced an entry externally.
+                        // Refresh metadata, retaining the current selection.
+                        Some(refresh)
                     }
                 }
             })
@@ -7734,7 +7743,7 @@ impl OttrinApp {
                 let restores_source_parent = before_path.parent() == Some(parent.as_path());
                 self.refresh_rename_parent(
                     &parent,
-                    if restores_source_parent {
+                    if restores_source_parent && undo_succeeded {
                         origin_tab_id
                     } else {
                         None
@@ -7747,7 +7756,8 @@ impl OttrinApp {
                 );
             }
         }
-        if undo_kind == PathMoveUndoKind::TextEdit
+        if undo_succeeded
+            && undo_kind == PathMoveUndoKind::TextEdit
             && self.preview.path.as_ref() == Some(&after_path)
         {
             self.preview.data = None;
@@ -14692,9 +14702,9 @@ impl OttrinApp {
                             .and_then(|i| self.tab_ui.get(&tab_id)?.main.entries.get(i))
                             .map(|e| e.name.clone());
                         let status = if let Some(name) = sel_name {
-                            format!("{} items  ·  {}", count, name)
+                            format!("{count} item{}  ·  {name}", plural_s(count))
                         } else {
-                            format!("{} items", count)
+                            format!("{count} item{}", plural_s(count))
                         };
                         let neutral = egui::TextFormat {
                             font_id: FontId::proportional(11.5 * c.font_scale),
@@ -26645,6 +26655,10 @@ mod tests {
                     .iter()
                     .find(|(text, _)| text.galley.job.text.contains(message))
                     .expect("status feedback remains rendered beside a long selection");
+                assert!(
+                    message.galley.job.text.contains("1 item  ·  "),
+                    "single-entry count must be singular in the actual footer"
+                );
                 assert_eq!(
                     message.galley.rows.len(),
                     1,
@@ -32566,6 +32580,110 @@ mod tests {
             "original bytes"
         );
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn terminal_undo_refusal_refreshes_replaced_metadata_and_preserves_selection() {
+        for mode in [ViewMode::List, ViewMode::Grid, ViewMode::Miller] {
+            let root = tempfile::tempdir().unwrap();
+            let before = root.path().join("before.txt");
+            let after = root.path().join("after.txt");
+            std::fs::write(&before, b"original bytes").unwrap();
+            let receipt = DefaultPlatform
+                .execute_rename_with_undo_receipt(&before, "after.txt")
+                .unwrap()
+                .expect("Linux receipt");
+            let mut app = OttrinApp::default();
+            let id = app.state.active_tab().id;
+            app.state.active_tab_mut().current_dir = root.path().to_path_buf();
+            app.state.active_tab_mut().view_mode = mode;
+            let command = FileCommand::Rename {
+                source: before.clone(),
+                new_name: "after.txt".into(),
+            };
+            let operation = app.queue_operation_record(command.clone());
+            app.op_tx
+                .send(OpResult {
+                    op_id: operation,
+                    tab_id: Some(id),
+                    cmd: command,
+                    delete_nav: Vec::new(),
+                    error: None,
+                    warning: None,
+                    retry: None,
+                    clipboard_generation: None,
+                    completed_sources: None,
+                    completed_source_paths: Vec::new(),
+                    move_dispositions: None,
+                    path_move_receipt: Some(OperationUndoReceipt::PathMove(receipt)),
+                    path_move_bindings: Some(Vec::new()),
+                })
+                .unwrap();
+            app.poll_op_results();
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while app.tab_ui[&id].main.loading {
+                assert!(Instant::now() < deadline);
+                app.poll_listing_results();
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            assert_eq!(
+                app.tab_ui[&id]
+                    .main
+                    .entries
+                    .iter()
+                    .find(|e| e.path == after)
+                    .unwrap()
+                    .size_bytes,
+                Some(14)
+            );
+            if mode == ViewMode::Miller {
+                app.build_miller_model(id);
+            }
+            std::fs::remove_file(&after).unwrap();
+            std::fs::write(&after, b"new").unwrap();
+            app.run_path_move_undo(operation);
+            let result = app
+                .path_move_undo_rx
+                .recv_timeout(Duration::from_secs(5))
+                .unwrap();
+            assert!(result.result.is_err());
+            assert!(!result.retryable);
+            app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+            assert!(
+                app.tab_ui[&id].main.loading,
+                "terminal refusal must request new metadata"
+            );
+            if mode == ViewMode::Miller {
+                assert!(!app.tab_ui[&id].miller_cache.contains_key(root.path()));
+            }
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while app.tab_ui[&id].main.loading {
+                assert!(Instant::now() < deadline);
+                app.poll_listing_results();
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            assert_eq!(
+                app.tab_ui[&id]
+                    .main
+                    .entries
+                    .iter()
+                    .find(|e| e.path == after)
+                    .unwrap()
+                    .size_bytes,
+                Some(3)
+            );
+            assert_eq!(
+                app.tab_ui[&id].selected_paths,
+                HashSet::from([after.clone()])
+            );
+            assert!(matches!(
+                app.operation_history.front().unwrap().path_move_undo,
+                Some(PathMoveUndoState::Unavailable { .. })
+            ));
+            assert!(!before.exists());
+            assert_eq!(std::fs::read(&after).unwrap(), b"new");
+        }
     }
 
     #[test]

@@ -34,6 +34,13 @@ their named hashes. Test counts are scoped observations, not completion measures
   **0.067–0.100% of one core**, about 10–14 MiB RSS. This does not upgrade or accept
   the personal service. Exact package evidence is in
   `.hermes/evidence/linux-ci-package-current/ACCEPTANCE.json`.
+- **UI follow-up source verified, packaging pending:** terminal Undo refusal now
+  refreshes affected metadata in all three views, retaining the selected replaced
+  file and its bytes. The footer uses “1 item”. The full isolated Linux UI suite
+  passes **402 tests, zero failures, one ignore**; Linux/Windows cross-target
+  strict lint passes. `linux-undo-refresh-current/SOURCE_ACCEPTANCE.json` records
+  the real replacement regression and composed footer checks. This follow-up is
+  not yet included in the delivered `fb6fbdf4` packages.
 - **Current internal Windows candidate:** clean `1777733f` at
   `.hermes/packaging-tmp/windows-activity-candidate/`. Portable, NSIS and native
   MSI extraction agree on all 57 payload files; native loader/CLI checks pass.
@@ -104,8 +111,8 @@ Resume at the unfinished operation, not the start of an older checkpoint:
    notices; retain public Copy gating and resolve failed-uninstall rollback.
    Commit and push verified checkpoints. Linux's new four-format cohort is
    delivered; hosted release/signing execution remains unaccepted.
-3. Fix the observed single-item footer grammar and stale file-size display after
-   external replacement/refused Undo. Continue dependency-ready preview/editing,
+3. Package and accept the verified single-item footer/terminal-refusal metadata
+   fixes. Continue dependency-ready preview/editing,
    file-operation and packaging outcomes below, then platform acceptance.
    Required outcome 4 (the themed picker and supported folder integration) stays
    deferred until preceding work is complete. Owner testing does not block
@@ -193,7 +200,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Repair hosted test compilation, finish native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
+| Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Resolve the nine hosted native ownership/admission failures, finish native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 

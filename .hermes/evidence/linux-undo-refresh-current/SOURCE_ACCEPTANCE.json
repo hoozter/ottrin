@@ -1,0 +1,14 @@
+{
+  "status": "source checks pass; new package pending",
+  "production": "terminal Undo refusal refreshes affected listings and invalidates Miller metadata without selecting an inverse that did not happen; singular footer item count",
+  "verification": [
+    "actual filesystem replacement and terminal native Undo refusal refreshes 14-byte original to 3-byte replacement in List/Grid/Miller, preserving bytes and selection",
+    "402 Linux UI tests passed, zero failed, one explicit ignore",
+    "actual composed footer singular text and non-overlap across three widths and font scales",
+    "Linux UI all-target strict clippy passed",
+    "Windows GNU UI all-target strict clippy passed; not native Windows acceptance"
+  ],
+  "source_sha256": "f87bd30e194928d812566c8301f52c08f5c4fa2a2ac0651e6b63da1ecb94b08e",
+  "cleanup": "isolated runner exited and removed its profile; no new QA desktop or VM started",
+  "package": "current delivered fb6fbdf4 cohort remains stable until clean replacement acceptance"
+}
