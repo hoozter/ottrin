@@ -27,6 +27,8 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          cache-on-failure: true
 
       - name: Verify tag matches package version
         if: runner.os == 'Linux'
@@ -60,6 +62,17 @@ jobs:
       - name: Check all targets
         run: cargo check --workspace --all-targets
 
+      - name: Check Windows Move ownership before workspace suite
+        if: runner.os == 'Windows'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: >-
+          cargo test -p ottrin-platform --
+          windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent
+          windows_native_move_cleanup
+          windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names
+          --nocapture
+
       - name: Test workspace
         env:
           CARGO_BUILD_JOBS: 2
@@ -89,6 +102,8 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          cache-on-failure: true
 
       - name: Package Linux portable tarball
         run: ./packaging/linux/package-portable.sh
@@ -158,6 +173,8 @@ jobs:
           targets: x86_64-pc-windows-gnu
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          cache-on-failure: true
 
       - name: Package Windows portable zip
         run: ./packaging/windows/package-portable.sh

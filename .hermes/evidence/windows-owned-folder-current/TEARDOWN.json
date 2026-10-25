@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "retained_guest": "off",
+  "inactive_definition_unchanged": true,
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "owned_guest_fixture": "removed, TEARDOWN_GUEST.json",
+  "extra_disks_or_new_guests": "none",
+  "large_staging_remaining": "none; current Windows candidate remains retained deliverable"
+}

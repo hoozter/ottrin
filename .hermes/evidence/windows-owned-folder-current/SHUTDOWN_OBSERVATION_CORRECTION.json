@@ -1,0 +1,6 @@
+{
+  "qga_response": "agent disappeared while executing guest-shutdown",
+  "authoritative_state": "shut off",
+  "source_patch": "previous script aborted before patching; its following Cargo command merely rechecked the old source and is not accepted as a fixed-source build",
+  "correction": "verified guest off, applied patch explicitly, rebuilt with fail-fast shell"
+}

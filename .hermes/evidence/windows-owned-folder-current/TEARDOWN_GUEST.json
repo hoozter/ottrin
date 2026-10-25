@@ -1,0 +1,11 @@
+{
+  "original_disks_preserved": true,
+  "task_removed": true,
+  "original_profile_bindings_preserved": true,
+  "original_user_bindings_preserved": true,
+  "payload_and_fixture_removed": true,
+  "native_processes_absent": true,
+  "status": "pass",
+  "account_removed": true,
+  "profile_removed": true
+}

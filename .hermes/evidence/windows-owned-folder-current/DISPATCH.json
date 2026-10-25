@@ -1,0 +1,6 @@
+{
+  "task": "Ottrin Owned Folder QA",
+  "phase": "elevated",
+  "source": "7fc8d7680476ebb32e49b76bd6113b213d5e8404",
+  "status": "dispatched; observe same scheduled task/result, never restart on observation timeout"
+}

@@ -5515,6 +5515,10 @@ fn start_windows_same_volume_overwrite(
             source.display().to_string(),
         ));
     }
+    // Native creation grants DELETE. Release that capability before the
+    // journal writer pins the directory without delete sharing; later opens
+    // revalidate the captured identity rather than adopting a reused path.
+    drop(transaction_handle);
     let replacement = transaction_path.join(WINDOWS_REPLACEMENT_NAME);
     let retained_displaced = transaction_path.join(WINDOWS_RETAINED_NAME);
     let record = WindowsOverwriteRecord {

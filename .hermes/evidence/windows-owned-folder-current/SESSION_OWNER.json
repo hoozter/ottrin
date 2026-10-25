@@ -1,0 +1,10 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "started_for": "elevated Move ownership/security test; exact current source",
+  "root": "C:\\OttrinOwnedFolderQA",
+  "temporary_user": "OttrinOwnedFolderQA",
+  "test_binary_pending": "build.jsonl",
+  "qga_ready": true,
+  "cleanup": "Remove only marked task/account/profile/fixture; shut down retained guest and verify inactive definition unchanged"
+}

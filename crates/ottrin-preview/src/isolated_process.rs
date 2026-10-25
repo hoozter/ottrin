@@ -115,6 +115,7 @@ mod linux {
             .arg("--property=Type=exec")
             .arg(format!("--property=TasksMax={}", request.max_processes))
             .arg(format!("--property=MemoryMax={}", request.max_memory_bytes))
+            .arg("--property=LimitCORE=0")
             .arg(format!("--property=LimitFSIZE={file_size}"))
             .arg(format!("--property=LimitCPU={cpu_seconds}s"))
             .arg(BWRAP)

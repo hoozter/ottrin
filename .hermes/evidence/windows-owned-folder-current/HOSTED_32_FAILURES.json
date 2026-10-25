@@ -1,0 +1,267 @@
+{
+  "source": "7fc8d768",
+  "run": 40220888977,
+  "passed": 427,
+  "failed": 32,
+  "ignored": 79,
+  "tests": [
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_damaged_or_replayed_marker_does_not_poison_undo",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_follows_renamed_parents_and_keeps_a_renamed_private_folder",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_freeze_blocks_late_stream_and_directory_writes",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_handles_deleted_private_directory_without_adopting_recreated_names",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_unknown_files_streams_and_child_permissions",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_writable_mapped_journals_until_unmapped",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_recovers_after_process_exit",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_refuses_replaced_modified_and_extended_journals_without_mutation",
+    "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_retires_only_owned_journals_and_empty_directories",
+    "move_transaction::windows_completion::tests::windows_native_completed_plan_publishes_captured_control_ids_after_private_folders_disappear",
+    "move_transaction::windows_completion::tests::windows_native_completion_controls_keep_original_file_ids_after_replacement_and_data_change",
+    "move_transaction::windows_source_tests::windows_native_completed_overwrite_does_not_own_reused_source_or_target_names",
+    "move_transaction::windows_source_tests::windows_native_completed_overwrite_keeps_ambiguous_private_evidence_blocked",
+    "move_transaction::windows_source_tests::windows_native_same_volume_overwrite_rejects_replaced_selection",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_completed_replace_undo_follows_private_identity_after_parent_renames",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_foreign_collision_preserves_data_and_preparations_do_not_leak",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_rejects_damage_copy_and_root_replay",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_survives_deleted_payload_controls",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_recovery_plan_refuses_changed_local_evidence",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_collision_is_non_mutating_and_retryable",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_pins_names_and_preserves_a_raced_original_collision",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_process_exit_recovers_from_paired_intent",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_refuses_replaced_retained_entry_and_parent",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_rejects_noncausal_or_changed_journals",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_both_entries_and_later_edits",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_mixed_entry_kinds",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_sharing_refuses_before_intent_and_retries",
+    "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_terminal_history_releases_later_public_names",
+    "move_transaction::windows_undo::plan::tests::windows_native_replace_recovery_follows_parent_ids_after_process_exit",
+    "move_transaction::windows_undo::plan::tests::windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+    "tests::windows_same_volume_directory_conflicts_preserve_data",
+    "tests::windows_same_volume_overwrite_retains_exact_displaced_entries"
+  ],
+  "diagnostics": [
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_damaged_or_replayed_marker_does_not_poison_undo",
+      "evidence": [
+        "2026-10-25T19:07:10.0817602Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_damaged_or_replayed_marker_does_not_poison_undo' (7344) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0819388Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_follows_renamed_parents_and_keeps_a_renamed_private_folder",
+      "evidence": [
+        "2026-10-25T19:07:10.0822861Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_follows_renamed_parents_and_keeps_a_renamed_private_folder' (1808) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0824137Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_freeze_blocks_late_stream_and_directory_writes",
+      "evidence": [
+        "2026-10-25T19:07:10.0826165Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_freeze_blocks_late_stream_and_directory_writes' (7352) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0827750Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_handles_deleted_private_directory_without_adopting_recreated_names",
+      "evidence": [
+        "2026-10-25T19:07:10.0829967Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_handles_deleted_private_directory_without_adopting_recreated_names' (4316) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0831245Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_unknown_files_streams_and_child_permissions",
+      "evidence": [
+        "2026-10-25T19:07:10.0833608Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_unknown_files_streams_and_child_permissions' (1880) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0835008Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_writable_mapped_journals_until_unmapped",
+      "evidence": [
+        "2026-10-25T19:07:10.0837402Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_preserves_writable_mapped_journals_until_unmapped' (2272) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0838630Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_recovers_after_process_exit",
+      "evidence": [
+        "2026-10-25T19:07:10.0840503Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_recovers_after_process_exit' (9208) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0841722Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_refuses_replaced_modified_and_extended_journals_without_mutation",
+      "evidence": [
+        "2026-10-25T19:07:10.0843867Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_refuses_replaced_modified_and_extended_journals_without_mutation' (2188) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0845112Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_retires_only_owned_journals_and_empty_directories",
+      "evidence": [
+        "2026-10-25T19:07:10.0847410Z thread 'move_transaction::windows_completion::retirement::tests::windows_native_move_cleanup_retires_only_owned_journals_and_empty_directories' (9148) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\retirement\\tests.rs:33:14:",
+        "2026-10-25T19:07:10.0848631Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::tests::windows_native_completed_plan_publishes_captured_control_ids_after_private_folders_disappear",
+      "evidence": [
+        "2026-10-25T19:07:10.0850833Z thread 'move_transaction::windows_completion::tests::windows_native_completed_plan_publishes_captured_control_ids_after_private_folders_disappear' (484) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\tests.rs:12:10:",
+        "2026-10-25T19:07:10.0852060Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_completion::tests::windows_native_completion_controls_keep_original_file_ids_after_replacement_and_data_change",
+      "evidence": [
+        "2026-10-25T19:07:10.0854955Z thread 'move_transaction::windows_completion::tests::windows_native_completion_controls_keep_original_file_ids_after_replacement_and_data_change' (1208) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_completion\\tests.rs:12:10:",
+        "2026-10-25T19:07:10.0856146Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_source_tests::windows_native_completed_overwrite_does_not_own_reused_source_or_target_names",
+      "evidence": [
+        "2026-10-25T19:07:10.0857982Z thread 'move_transaction::windows_source_tests::windows_native_completed_overwrite_does_not_own_reused_source_or_target_names' (1412) panicked at crates\\ottrin-platform\\src\\move_transaction.rs:9340:18:",
+        "2026-10-25T19:07:10.0859063Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_source_tests::windows_native_completed_overwrite_keeps_ambiguous_private_evidence_blocked",
+      "evidence": [
+        "2026-10-25T19:07:10.0860857Z thread 'move_transaction::windows_source_tests::windows_native_completed_overwrite_keeps_ambiguous_private_evidence_blocked' (2772) panicked at crates\\ottrin-platform\\src\\move_transaction.rs:9399:22:",
+        "2026-10-25T19:07:10.0861959Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_source_tests::windows_native_same_volume_overwrite_rejects_replaced_selection",
+      "evidence": [
+        "2026-10-25T19:07:10.0863668Z thread 'move_transaction::windows_source_tests::windows_native_same_volume_overwrite_rejects_replaced_selection' (7896) panicked at crates\\ottrin-platform\\src\\move_transaction.rs:9261:9:"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_completed_replace_undo_follows_private_identity_after_parent_renames",
+      "evidence": [
+        "2026-10-25T19:07:10.0867044Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_completed_replace_undo_follows_private_identity_after_parent_renames' (6036) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0868367Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_foreign_collision_preserves_data_and_preparations_do_not_leak",
+      "evidence": [
+        "2026-10-25T19:07:10.0870828Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_foreign_collision_preserves_data_and_preparations_do_not_leak' (4548) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0872045Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_rejects_damage_copy_and_root_replay",
+      "evidence": [
+        "2026-10-25T19:07:10.0873941Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_rejects_damage_copy_and_root_replay' (8944) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0875126Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_survives_deleted_payload_controls",
+      "evidence": [
+        "2026-10-25T19:07:10.0877017Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_completion_survives_deleted_payload_controls' (4932) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0878210Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_recovery_plan_refuses_changed_local_evidence",
+      "evidence": [
+        "2026-10-25T19:07:10.0880123Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_recovery_plan_refuses_changed_local_evidence' (2664) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0881269Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_collision_is_non_mutating_and_retryable",
+      "evidence": [
+        "2026-10-25T19:07:10.0883114Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_collision_is_non_mutating_and_retryable' (2884) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0884259Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_pins_names_and_preserves_a_raced_original_collision",
+      "evidence": [
+        "2026-10-25T19:07:10.0886389Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_pins_names_and_preserves_a_raced_original_collision' (1244) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0888165Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_process_exit_recovers_from_paired_intent",
+      "evidence": [
+        "2026-10-25T19:07:10.0890057Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_process_exit_recovers_from_paired_intent' (1016) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0891232Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_refuses_replaced_retained_entry_and_parent",
+      "evidence": [
+        "2026-10-25T19:07:10.0893109Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_refuses_replaced_retained_entry_and_parent' (556) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0894260Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_rejects_noncausal_or_changed_journals",
+      "evidence": [
+        "2026-10-25T19:07:10.0896122Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_rejects_noncausal_or_changed_journals' (2192) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0897280Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_both_entries_and_later_edits",
+      "evidence": [
+        "2026-10-25T19:07:10.0899380Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_both_entries_and_later_edits' (7708) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0900552Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_mixed_entry_kinds",
+      "evidence": [
+        "2026-10-25T19:07:10.0902428Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_restores_mixed_entry_kinds' (4736) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0903549Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_sharing_refuses_before_intent_and_retries",
+      "evidence": [
+        "2026-10-25T19:07:10.0905732Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_sharing_refuses_before_intent_and_retries' (3976) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0907225Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_terminal_history_releases_later_public_names",
+      "evidence": [
+        "2026-10-25T19:07:10.0909156Z thread 'move_transaction::windows_undo::overwrite::tests::windows_native_replace_undo_terminal_history_releases_later_public_names' (156) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\overwrite\\tests.rs:51:14:",
+        "2026-10-25T19:07:10.0910318Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::plan::tests::windows_native_replace_recovery_follows_parent_ids_after_process_exit",
+      "evidence": [
+        "2026-10-25T19:07:10.0912136Z thread 'move_transaction::windows_undo::plan::tests::windows_native_replace_recovery_follows_parent_ids_after_process_exit' (9212) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\plan\\tests.rs:205:13:",
+        "2026-10-25T19:07:10.0913246Z assertion `left == right` failed: 0 JournalPublished",
+        "2026-10-25T19:07:10.0913643Z   left: Some(101)",
+        "2026-10-25T19:07:10.0913867Z  right: Some(87)"
+      ]
+    },
+    {
+      "test": "move_transaction::windows_undo::plan::tests::windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+      "evidence": [
+        "2026-10-25T19:07:10.0915321Z thread 'move_transaction::windows_undo::plan::tests::windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names' (1548) panicked at crates\\ottrin-platform\\src\\move_transaction\\windows_undo\\plan\\tests.rs:125:14:",
+        "2026-10-25T19:07:10.0916497Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "tests::windows_same_volume_directory_conflicts_preserve_data",
+      "evidence": [
+        "2026-10-25T19:07:10.0917888Z thread 'tests::windows_same_volume_directory_conflicts_preserve_data' (4572) panicked at crates\\ottrin-platform\\src\\lib.rs:7865:52:",
+        "2026-10-25T19:07:10.0918814Z called `Result::unwrap()` on an `Err` value: Io(\"durable Windows Overwrite intent failed before source mutation: filesystem operation failed: The process cannot access the file because it is being used by another process. (os error 32)\")"
+      ]
+    },
+    {
+      "test": "tests::windows_same_volume_overwrite_retains_exact_displaced_entries",
+      "evidence": [
+        "2026-10-25T19:07:10.0920340Z thread 'tests::windows_same_volume_overwrite_retains_exact_displaced_entries' (500) panicked at crates\\ottrin-platform\\src\\lib.rs:7473:37:"
+      ]
+    }
+  ]
+}

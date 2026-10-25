@@ -9,6 +9,16 @@ WORKFLOW="${1:-$ROOT/.github/workflows/release.yml}"
 # The mandatory Linux Office boundary tests need actual namespace/cgroup support.
 for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
   verify_job="$(awk '/^  verify:/ { active=1; next } active && /^  [a-zA-Z_-]+:/ { exit } active { print }' "$verification")"
+  for literal in \
+    'cache-on-failure: true' \
+    'windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent' \
+    'windows_native_move_cleanup' \
+    'windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names'; do
+    if ! grep -Fq -- "$literal" <<<"$verify_job"; then
+      printf 'Verification omits dependency-cache or native ownership preflight: %s (%s)\n' "$literal" "$verification" >&2
+      exit 1
+    fi
+  done
   for dependency in bubblewrap dbus-user-session apparmor-profiles; do
     if ! grep -Eq "(^|[[:space:]])$dependency($|[[:space:]])" <<<"$verify_job"; then
       printf 'Linux verification omits isolation dependency: %s (%s)\n' "$dependency" "$verification" >&2

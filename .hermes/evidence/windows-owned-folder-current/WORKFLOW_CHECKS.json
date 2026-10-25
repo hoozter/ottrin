@@ -1,0 +1,72 @@
+{
+  "status": "source contracts pass; actual hosted preflight/cache reuse pending",
+  "omission_checks": [
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "cache-on-failure: true",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: cache-on-failure: true (/tmp/ottrin-ci-ownership-contract-i61iggll/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent (/tmp/ottrin-ci-ownership-contract-i61iggll/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "windows_native_move_cleanup",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: windows_native_move_cleanup (/tmp/ottrin-ci-ownership-contract-i61iggll/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "deliberate_omission": "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names (/tmp/ottrin-ci-ownership-contract-i61iggll/ci.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "cache-on-failure: true",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: cache-on-failure: true (/tmp/ottrin-ci-ownership-contract-i61iggll/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent (/tmp/ottrin-ci-ownership-contract-i61iggll/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "windows_native_move_cleanup",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: windows_native_move_cleanup (/tmp/ottrin-ci-ownership-contract-i61iggll/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "deliberate_omission": "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+      "status": "rejected",
+      "diagnostic": "Verification omits dependency-cache or native ownership preflight: windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names (/tmp/ottrin-ci-ownership-contract-i61iggll/release.yml)"
+    }
+  ],
+  "libtest_FILTERS": "Rust 1.94 native harness help confirms multiple filters; full workspace suite remains mandatory",
+  "upstream_cache_metadata": "https://raw.githubusercontent.com/Swatinem/rust-cache/6323deb102c322ba6fcbdcafc7e3dddab59af2b6/action.yml",
+  "why_cache_change": "cache-on-failure defaults false; a later test failure prevented dependency-cache save. Enable it without changing targets/compiler profiles or accepting failing tests.",
+  "parsed_yaml_checks": [
+    {
+      "workflow": "ci.yml",
+      "yaml": "parsed",
+      "native_preflight_precedes_full_suite": true,
+      "native_filter_count": 3,
+      "cache_on_failure": true
+    },
+    {
+      "workflow": "release.yml",
+      "yaml": "parsed",
+      "native_preflight_precedes_full_suite": true,
+      "native_filter_count": 3,
+      "cache_on_failure": true
+    }
+  ]
+}

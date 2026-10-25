@@ -1,0 +1,15 @@
+{
+  "status": "native elevated repair and Linux resource checks pass; broad/native/package gates remain open",
+  "native_elevated": "11 passed, zero failed; NATIVE_ACCEPTANCE.json",
+  "ordinary_native": "not accepted: initial token remained admin and later scheduled launches never executed native tests. No product pass inferred; temporary actor/account/profile/payload removed.",
+  "source_scope": "main source hash bound to FIXED_TEST_BINARY.json; base7fc8d768 plus DELETE-handle handoff correction",
+  "linux_resource_boundary": "17 contract tests passed including actual child LimitCORE zero and descendant timeout cleanup; isolated fixture exited and removed",
+  "lint": [
+    "Windows platform all targets strict passed",
+    "Linux preview all targets strict passed"
+  ],
+  "workflow": "both YAMLs parse, native gate precedes full suite, cache-on-failure true; eight omission cases rejected",
+  "hosted_7fc": "427 passed,32 failed,79 ignored before handle handoff; full log and failure list retained. Full corrected MSVC run pending.",
+  "cleanup": "Retained guest off with unchanged definition; original disk/user/profile bindings preserved. Owned account, profile, scheduled task/stored credential, binaries/fixtures and host staging removed. No new core generated. Existing prior diagnostic cores retain owner waiting status.",
+  "packages": "Windows candidate remains1777733f, Linux remains1b6e5138. Core-limit fix and Windows handoff require later rebuilt packages; no implicit acceptance."
+}

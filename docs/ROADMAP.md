@@ -80,17 +80,40 @@ their named hashes. Test counts are scoped observations, not completion measures
   creation, checks the pinned parent, removes the old token/ACL implementation,
   and adds a native replacement-parent/policy regression. Strict Windows cross-
   lint and 418 Linux platform unit tests pass; new native Windows execution is
-  still required. No ownership guard was relaxed.
+  still required. No ownership guard was relaxed. The elevated native fixture
+  then exposed a DELETE-capable creation handle blocking journal pinning. The
+  corrected handoff releases that handle after identity capture, before journal
+  publication. **11 targeted native Windows cases now pass** with a distinct
+  user/default-owner SID, including interrupted cleanup recovery and Undo parent
+  admission. The attempted ordinary-account scheduler fixture did not execute
+  native checks and is not accepted; that scope remains engineer-owned QA.
   Hosted run `40218714811` passes the real Linux systemd/Bubblewrap setup probe
   with namespace restriction **1**. It now fails two HTML image-rendering tests
   (199 preview unit tests pass). A local bounded reproduction proves that denying
-  nested user namespaces makes Chrome abort its internal sandbox; hosted stderr
-  remains needed to confirm the exact same cause. Test-only provider diagnostics
+  nested user namespaces makes Chrome abort its internal sandbox. The newer
+  `7fc8d768` hosted log now confirms the same sandbox failure and exit 134. Test-only provider diagnostics
   now retain bounded failure stderr, and the HTML fixtures use RAII teardown on
   panic. This is engineering work, not an owner prerequisite or a passing skip.
   No browser sandbox or global kernel restriction is disabled. Hosted Office
-  integration has not yet been reached/accepted by this run. Search-performance
-  CI passes. Source/diagnostic evidence is in `hosted-isolation-current`.
+  integration has not yet been reached/accepted by this run. The isolated Linux
+  provider now requests LimitCORE=0; all **17 provider/boundary contract tests
+  pass**, including an actual child check that its core limit is zero and
+  timeout-descendant teardown. This resource fix is source-verified; a new Linux
+  package containing it remains pending. Search-performance CI passes. Source/diagnostic evidence is in `hosted-isolation-current`.
+- **CI iteration repair:** dependency caches will be saved after a later test
+  failure, using the cache action's supported input. Windows verification first
+  runs the three ownership/cleanup/Undo admission filters, then the full workspace
+  suite. Both workflows and eight deliberate-omission contracts pass; actual
+  hosted cache reuse and MSVC preflight remain pending. The superseded `5be5524d`
+  run was cancelled deliberately after scoped native diagnosis; its partial logs
+  show continuing fault-prefix tests, not an inferred hang or a passing run.
+  The `7fc8d768` run has now completed: **427 Windows platform tests passed,
+  32 failed, 79 ignored** before the corrected DELETE-handle handoff. Native
+  elevated checks accept 11 targeted cases on the corrected source; the full
+  corrected MSVC result remains required. All owned native account/profile/task/
+  credential/payload fixtures are removed, original bindings are preserved, and
+  the retained guest is off with unchanged definition. Current source/native
+  evidence is in `windows-owned-folder-current`.
 - **Font-notice delivery:** all four current Linux packages contain the exact
   authoritative font notice. Windows producer/verifier support is prepared, but
   the existing 57-file internal Windows candidate predates this change. A fresh
@@ -105,9 +128,11 @@ their named hashes. Test counts are scoped observations, not completion measures
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Verify the shared native Windows Move-folder repair in hosted/native tests.
-   Diagnose and repair Ubuntu HTML sandbox composition; preserve the real browser
-   and outer isolation checks. Reach the mandatory Office boundary suite.
+1. Verify the early MSVC ownership gate and full workspace suite for the new
+   native Windows handle handoff/CI/resource checkpoint. Native elevated
+   ownership checks pass; ordinary-account/candidate acceptance remains separate.
+   Repair Ubuntu HTML sandbox composition while preserving real-browser fidelity
+   and both isolation boundaries. Reach the mandatory hosted Office suite.
 2. Build and accept a fresh Windows ZIP/NSIS/MSI candidate with bundled-font
    notices; retain public Copy gating and resolve failed-uninstall rollback.
    Commit and push verified checkpoints. Linux's new four-format cohort is

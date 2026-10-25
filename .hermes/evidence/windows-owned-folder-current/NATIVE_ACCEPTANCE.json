@@ -1,0 +1,42 @@
+{
+  "status": "pass within elevated native ownership/cleanup/Undo scope",
+  "base_revision": "7fc8d7680476ebb32e49b76bd6113b213d5e8404",
+  "additional_source_patch": "Release DELETE-capable creation handle after identity capture, before namespace pinning/journal publication",
+  "source_file_sha256": "6e87cf37c3308e28c58fb928ea6a5c77db49272a8c53ffd83a4fc877b6e7ab02",
+  "transferred_binary_sha256": "f8dc4d1cafd27a77fc4caa911aba4f7bfe117af24688e401f4c371d62e15dd05",
+  "platform": "Retained Windows guest, GNU test executable with every retained PE section verified equal after debug stripping",
+  "principal": {
+    "user_sid": "S-1-5-21-3183210791-1673105385-3262580894-1038",
+    "default_owner_sid": "S-1-5-32-544",
+    "administrator": true
+  },
+  "cases": [
+    {
+      "filter": "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "filter": "windows_native_move_cleanup",
+      "passed": 9,
+      "failed": 0
+    },
+    {
+      "filter": "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "checks": [
+    "atomic private-folder owner policy admitted",
+    "replaced parent refused without adopting its name",
+    "cleanup/freeze/unknown data and stream preservation",
+    "real interrupted cleanup recovery",
+    "Undo admits native current parents without rebinding foreign names",
+    "test temporary directory empty after completion"
+  ],
+  "negative_control": "7fc8d768 original creation handle caused nine sharing violations before source mutation; ELEVATED_RESULT.json. Corrected source passes all targeted cases.",
+  "ordinary_scope": "Not accepted in this run: task/account fixture failed before native execution; no ordinary passing tests claimed. Existing ordinary packaged scopes remain historical.",
+  "hosted_scope": "Native MSVC preflight/full workspace pending; this is not a passing hosted CI claim.",
+  "package_scope": "No new Windows package yet; current internal candidate remains 1777733f."
+}

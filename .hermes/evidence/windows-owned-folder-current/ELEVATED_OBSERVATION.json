@@ -1,0 +1,29 @@
+{
+    "result":  {
+                   "checks":  [
+                                  {
+                                      "filter":  "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+                                      "stdout":  "elevated-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stdout",
+                                      "stderr":  "elevated-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stderr",
+                                      "exit":  0
+                                  },
+                                  {
+                                      "filter":  "windows_native_move_cleanup",
+                                      "stdout":  "elevated-windows_native_move_cleanup.stdout",
+                                      "stderr":  "elevated-windows_native_move_cleanup.stderr",
+                                      "exit":  101
+                                  }
+                              ],
+                   "phase":  "elevated",
+                   "error":  "Native test failed: windows_native_move_cleanup, exit 101",
+                   "owner":  "S-1-5-32-544",
+                   "status":  "fail",
+                   "administrator":  true,
+                   "user":  "S-1-5-21-3183210791-1673105385-3262580894-1038"
+               },
+    "info":  {
+                 "LastRunTime":  "\/Date(1792953193000)\/",
+                 "LastTaskResult":  1
+             },
+    "state":  "Ready"
+}

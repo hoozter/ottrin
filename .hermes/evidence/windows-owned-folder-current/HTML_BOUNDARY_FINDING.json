@@ -1,0 +1,9 @@
+{
+  "status": "confirmed hosted failure; engineering repair required",
+  "source": "7fc8d768, hosted run 40220888977 job 121252013491",
+  "failure": "Both actual HTML renders exit134: Chrome cannot initialize its sandbox and aborts; exact bounded stderr is in CI_LINUX_DIAGNOSTIC.log",
+  "matched_local_reproduction": "hosted-isolation-current/HTML_NESTED_NAMESPACE_REPRO.json",
+  "constraint": "Retain real-browser fidelity, browser sandbox and external filesystem/network/resource isolation. No no-sandbox flag, permissive namespace sysctl or passing skip.",
+  "next_work": "Repair composition of the trusted browser launcher and host policy; files-existing runtime detection alone is insufficient. Keep this as engineer-owned work while Windows delivery continues.",
+  "resource_fix": "Linux isolated providers now request LimitCORE=0; actual boundary check asserts ulimit -c equals0. Verification/package receipt pending."
+}

@@ -1,0 +1,8 @@
+{
+  "initial_failure": "icacls numeric user SID lacked required asterisk prefix; setup halted before task/profile/binary creation",
+  "correction": "verified exact ownership marker and non-baseline account SID; removed only partial owned root/account, fixed numeric SID syntax and marker placeholder, then prepared cleanly",
+  "source": "prepare.py",
+  "limited_task_update": "Task Scheduler requires credentials when changing run level; failed update ran no tests. Renewed only the marked temporary account password and re-registered its own task at Limited.",
+  "ordinary_role": "Guest supplies a full administrator token even at scheduler Limited. Initial actor refused before running any tests. Removed only the marked temporary account from Administrators, then dispatched a fresh limited-fixed phase; ordinary-token assertion remains mandatory.",
+  "ordinary_Users_membership": "New-LocalUser did not add Users automatically; after administrator demotion PowerShell exited before loading the actor. Verified no Users membership, added only the marked account to builtin Users, retained non-administrator assertion, dispatched limited-users."
+}

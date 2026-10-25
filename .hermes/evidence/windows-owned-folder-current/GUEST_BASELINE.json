@@ -1,0 +1,193 @@
+{
+    "originalUsers":  [
+                          {
+                              "Name":  "Administrator",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-500"
+                                      }
+                          },
+                          {
+                              "Name":  "campbell",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-1001"
+                                      }
+                          },
+                          {
+                              "Name":  "CodexSandboxOffline",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-1003"
+                                      }
+                          },
+                          {
+                              "Name":  "CodexSandboxOnline",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-1004"
+                                      }
+                          },
+                          {
+                              "Name":  "DefaultAccount",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-503"
+                                      }
+                          },
+                          {
+                              "Name":  "Guest",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-501"
+                                      }
+                          },
+                          {
+                              "Name":  "OttrinCopyQA",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-1031"
+                                      }
+                          },
+                          {
+                              "Name":  "WDAGUtilityAccount",
+                              "SID":  {
+                                          "BinaryLength":  28,
+                                          "AccountDomainSid":  {
+                                                                   "BinaryLength":  24,
+                                                                   "AccountDomainSid":  {
+                                                                                            "BinaryLength":  24,
+                                                                                            "AccountDomainSid":  {
+                                                                                                                     "BinaryLength":  24,
+                                                                                                                     "AccountDomainSid":  "S-1-5-21-3183210791-1673105385-3262580894",
+                                                                                                                     "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                                                 },
+                                                                                            "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                                                        },
+                                                                   "Value":  "S-1-5-21-3183210791-1673105385-3262580894"
+                                                               },
+                                          "Value":  "S-1-5-21-3183210791-1673105385-3262580894-504"
+                                      }
+                          }
+                      ],
+    "disks":  [
+                  {
+                      "Number":  0,
+                      "UniqueId":  "0000000500000000",
+                      "Size":  68719476736
+                  }
+              ],
+    "originalProfiles":  [
+                             {
+                                 "SID":  "S-1-5-21-3183210791-1673105385-3262580894-1031",
+                                 "LocalPath":  "C:\\Users\\OttrinCopyQA"
+                             },
+                             {
+                                 "SID":  "S-1-5-21-3183210791-1673105385-3262580894-1001",
+                                 "LocalPath":  "C:\\Users\\campbell"
+                             },
+                             {
+                                 "SID":  "S-1-5-20",
+                                 "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\NetworkService"
+                             },
+                             {
+                                 "SID":  "S-1-5-19",
+                                 "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\LocalService"
+                             },
+                             {
+                                 "SID":  "S-1-5-18",
+                                 "LocalPath":  "C:\\WINDOWS\\system32\\config\\systemprofile"
+                             }
+                         ]
+}

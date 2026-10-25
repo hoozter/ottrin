@@ -1,0 +1,8 @@
+{
+  "old_run": 40218714811,
+  "old_status": "cancelled deliberately after exact-source native diagnosis; partial log retained",
+  "newer_run": 40220888977,
+  "newer_status": "completed failure before cancellation was requested; full logs retained",
+  "reason": "Current code includes the corrected handoff natively proven against the earlier sharing failures. Fresh push runs early MSVC preflight and full suite.",
+  "not_claimed": "Neither cancelled nor failing runs are passing; no restart was triggered solely by observation timeout."
+}

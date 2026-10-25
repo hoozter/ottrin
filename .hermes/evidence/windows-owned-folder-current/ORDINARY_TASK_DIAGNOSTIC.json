@@ -1,0 +1,144 @@
+{
+    "taskInfo":  {
+                     "LastRunTime":  "\/Date(1792953971000)\/",
+                     "LastTaskResult":  1
+                 },
+    "logEnabled":  false,
+    "events":  [
+
+               ],
+    "guestTime":  {
+                      "value":  "\/Date(1792954941244)\/",
+                      "DisplayHint":  2,
+                      "DateTime":  "Sunday, October 25, 2026 8:02:21 PM"
+                  },
+    "action":  [
+                   {
+                       "CimClass":  {
+                                        "CimSuperClassName":  "MSFT_TaskAction",
+                                        "CimSuperClass":  {
+                                                              "CimSuperClassName":  null,
+                                                              "CimSuperClass":  null,
+                                                              "CimClassProperties":  [
+                                                                                         {
+                                                                                             "Name":  "Id",
+                                                                                             "Value":  null,
+                                                                                             "CimType":  14,
+                                                                                             "Flags":  "Property, NullValue",
+                                                                                             "Qualifiers":  [
+
+                                                                                                            ],
+                                                                                             "ReferenceClassName":  null
+                                                                                         }
+                                                                                     ],
+                                                              "CimClassQualifiers":  [
+
+                                                                                     ],
+                                                              "CimClassMethods":  [
+
+                                                                                  ],
+                                                              "CimSystemProperties":  {
+                                                                                          "Namespace":  "ROOT/Microsoft/Windows/TaskScheduler",
+                                                                                          "ServerName":  "DESKTOP-81GHP8U",
+                                                                                          "ClassName":  "MSFT_TaskAction",
+                                                                                          "Path":  null
+                                                                                      }
+                                                          },
+                                        "CimClassProperties":  [
+                                                                   {
+                                                                       "Name":  "Id",
+                                                                       "Value":  null,
+                                                                       "CimType":  14,
+                                                                       "Flags":  "Property, NullValue",
+                                                                       "Qualifiers":  [
+
+                                                                                      ],
+                                                                       "ReferenceClassName":  null
+                                                                   },
+                                                                   {
+                                                                       "Name":  "Arguments",
+                                                                       "Value":  null,
+                                                                       "CimType":  14,
+                                                                       "Flags":  "Property, NullValue",
+                                                                       "Qualifiers":  [
+
+                                                                                      ],
+                                                                       "ReferenceClassName":  null
+                                                                   },
+                                                                   {
+                                                                       "Name":  "Execute",
+                                                                       "Value":  null,
+                                                                       "CimType":  14,
+                                                                       "Flags":  "Property, NullValue",
+                                                                       "Qualifiers":  [
+
+                                                                                      ],
+                                                                       "ReferenceClassName":  null
+                                                                   },
+                                                                   {
+                                                                       "Name":  "WorkingDirectory",
+                                                                       "Value":  null,
+                                                                       "CimType":  14,
+                                                                       "Flags":  "Property, NullValue",
+                                                                       "Qualifiers":  [
+
+                                                                                      ],
+                                                                       "ReferenceClassName":  null
+                                                                   }
+                                                               ],
+                                        "CimClassQualifiers":  [
+
+                                                               ],
+                                        "CimClassMethods":  [
+
+                                                            ],
+                                        "CimSystemProperties":  {
+                                                                    "Namespace":  "Root/Microsoft/Windows/TaskScheduler",
+                                                                    "ServerName":  "DESKTOP-81GHP8U",
+                                                                    "ClassName":  "MSFT_TaskExecAction",
+                                                                    "Path":  null
+                                                                }
+                                    },
+                       "CimInstanceProperties":  [
+                                                     {
+                                                         "Name":  "Id",
+                                                         "Value":  null,
+                                                         "CimType":  14,
+                                                         "Flags":  "Property, NotModified, NullValue",
+                                                         "IsValueModified":  false
+                                                     },
+                                                     {
+                                                         "Name":  "Arguments",
+                                                         "Value":  "/d /c C:\\OttrinOwnedFolderQA\\run-actor.cmd",
+                                                         "CimType":  14,
+                                                         "Flags":  "Property, NotModified",
+                                                         "IsValueModified":  false
+                                                     },
+                                                     {
+                                                         "Name":  "Execute",
+                                                         "Value":  "C:\\Windows\\System32\\cmd.exe",
+                                                         "CimType":  14,
+                                                         "Flags":  "Property, NotModified",
+                                                         "IsValueModified":  false
+                                                     },
+                                                     {
+                                                         "Name":  "WorkingDirectory",
+                                                         "Value":  null,
+                                                         "CimType":  14,
+                                                         "Flags":  "Property, NotModified, NullValue",
+                                                         "IsValueModified":  false
+                                                     }
+                                                 ],
+                       "CimSystemProperties":  {
+                                                   "Namespace":  "Root/Microsoft/Windows/TaskScheduler",
+                                                   "ServerName":  "DESKTOP-81GHP8U",
+                                                   "ClassName":  "MSFT_TaskExecAction",
+                                                   "Path":  null
+                                               }
+                   }
+               ],
+    "user":  {
+                 "Enabled":  true,
+                 "Name":  "OttrinOwnedFolderQA"
+             }
+}

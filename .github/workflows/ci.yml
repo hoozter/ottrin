@@ -27,6 +27,8 @@ jobs:
 
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
@@ -47,6 +49,17 @@ jobs:
 
       - name: Cargo check
         run: cargo check --workspace --all-targets
+
+      - name: Check Windows Move ownership before workspace suite
+        if: runner.os == 'Windows'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: >-
+          cargo test -p ottrin-platform --
+          windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent
+          windows_native_move_cleanup
+          windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names
+          --nocapture
 
       - name: Cargo test
         env:
@@ -93,6 +106,8 @@ jobs:
 
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
 
       - name: Release benchmark smoke test
         run: |

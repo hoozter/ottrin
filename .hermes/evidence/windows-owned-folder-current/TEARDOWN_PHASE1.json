@@ -1,0 +1,6 @@
+{
+  "status": "guest off, owned scheduled task and stored credential removed",
+  "pending_consumer": "one cleanup-only boot to remove marked account, unloaded profile and C:\\OttrinOwnedFolderQA payload",
+  "reason": "Profile still loaded after task completion; preserve it until normal shutdown releases handles",
+  "ordinary_native_acceptance": "not achieved: initial limited token remained admin; later ordinary launches never advanced LastRunTime and produced no native result. This is a fixture issue, not a passing test or user blocker."
+}

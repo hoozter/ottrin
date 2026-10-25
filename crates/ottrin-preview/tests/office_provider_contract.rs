@@ -610,7 +610,11 @@ fn installed_libreoffice_conversion_rejects_changed_source_metadata() {
 #[cfg(target_os = "linux")]
 #[test]
 fn linux_process_boundary_exposes_only_mapped_input_profile_output_and_sanitized_environment() {
-    let root = temp_dir("linux-isolation");
+    let fixture = tempfile::Builder::new()
+        .prefix("ottrin-linux-isolation-")
+        .tempdir()
+        .expect("create owned isolation fixture");
+    let root = fixture.path();
     let script = root.join("check.sh");
     let profile = root.join("profile");
     let output = root.join("output");
@@ -618,7 +622,7 @@ fn linux_process_boundary_exposes_only_mapped_input_profile_output_and_sanitized
     std::fs::create_dir(&output).expect("create output");
     std::fs::write(
         &script,
-        b"set -eu\ntest \"$HOME\" = /profile\ntest ! -e /home/campbell\ntest \"$(cat /input/check.sh | wc -c)\" -gt 0\nprintf isolated > /output/result\nprintf boundary-ok\n",
+        b"set -eu\ntest \"$(ulimit -c)\" = 0\ntest \"$HOME\" = /profile\ntest ! -e /home/campbell\ntest \"$(cat /input/check.sh | wc -c)\" -gt 0\nprintf isolated > /output/result\nprintf boundary-ok\n",
     )
     .expect("write script");
     let request = IsolatedProcessRequest {
@@ -646,13 +650,16 @@ fn linux_process_boundary_exposes_only_mapped_input_profile_output_and_sanitized
         std::fs::read_to_string(output.join("result")).expect("read isolated output"),
         "isolated"
     );
-    std::fs::remove_dir_all(root).expect("remove temporary directory");
 }
 
 #[cfg(target_os = "linux")]
 #[test]
 fn linux_process_boundary_timeout_kills_descendants_and_removes_controller_logs() {
-    let root = temp_dir("linux-timeout-cleanup");
+    let fixture = tempfile::Builder::new()
+        .prefix("ottrin-linux-timeout-")
+        .tempdir()
+        .expect("create owned timeout fixture");
+    let root = fixture.path();
     let script = root.join("timeout.sh");
     let profile = root.join("profile");
     let output = root.join("output");
@@ -693,7 +700,6 @@ fn linux_process_boundary_timeout_kills_descendants_and_removes_controller_logs(
         !output.join("late").exists(),
         "descendant escaped timeout cleanup"
     );
-    std::fs::remove_dir_all(root).expect("remove temporary directory");
 }
 
 struct FallbackLauncher {
