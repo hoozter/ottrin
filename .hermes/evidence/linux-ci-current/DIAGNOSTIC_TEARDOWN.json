@@ -1,0 +1,5 @@
+{
+  "removed": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-8a1c6f506a8d577d.long-type-10056183750098216381.txt",
+  "reason": "task-owned compiler diagnostic from corrected panic-teardown test type error",
+  "sha256": "92a1078d3652dd8bb285fe74588d06cbd27743378fe14f98cab4c38401144c6a"
+}

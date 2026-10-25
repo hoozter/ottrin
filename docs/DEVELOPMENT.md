@@ -86,7 +86,7 @@ Linux development dependencies on Debian/Ubuntu:
 ```sh
 sudo apt-get install -y \
     libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-    libxkbcommon-dev libssl-dev libglib2.0-dev \
+    libxkbcommon-dev libssl-dev libglib2.0-dev desktop-file-utils \
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
 
@@ -857,6 +857,27 @@ refusal, changed ancestors and unavailable-volume tombstones. As with existing
 volume checks, pathname mutation after the last worker check remains an OS race;
 transaction-level source/publication identity checks still apply.
 
+## Linux pathname Undo identity
+
+A device/inode pair alone is not entry-lifetime evidence: local filesystems can
+reuse an inode immediately after unlink, including for symlinks. Session pathname
+Undo binds the filesystem generation handle captured through a short-lived
+`O_PATH | O_NOFOLLOW` descriptor. Renames and in-place edits retain that identity;
+a recreated entry does not. The proof retains bytes, not an open filesystem
+handle. Missing generation evidence cannot authorize a pathname inverse. Chmod
+has its separate retained-descriptor protection.
+
+Copy journal schema 5 stores generation inside each pathname identity rather
+than a second parent/transaction handle field. Older schemas are refused without
+mutation or a compatibility reader; their user data and retained records stay in
+place for review. Restoring an interrupted Undo binds the verified current
+published/withdrawn topology before issuing the session receipt. Content checks
+and mount/directory ownership guards still apply independently.
+
+A fresh directory-watch generation may replace an invalidated registration;
+clones of the old proof stay invalid. Dropping an old proof must never remove the
+new generation's watch.
+
 ## Batch Copy receipt ownership
 
 Copy batch dispatch has one platform loop, returning a completed-source count,
@@ -877,9 +898,11 @@ been reclaimed. Native Windows has journaled completion evidence and a private c
 implementation. Public Copy receipts and UI integration remain gated;
 cross-compilation does not establish Windows Copy acceptance.
 
-Native backend correctness tests use the workspace `target/` and the unoptimized
-test profile: `CARGO_PROFILE_TEST_OPT_LEVEL=0 cargo test -p ottrin-platform
---target x86_64-pc-windows-gnu --no-run --message-format=json`. Keep the offline
+Native backend correctness tests use the workspace `target/` and the canonical
+per-package test profile in `Cargo.toml` (platform/UI optimization and debug data
+both disabled): `cargo test -p ottrin-platform --target x86_64-pc-windows-gnu
+--no-run --message-format=json`. Hosted test jobs limit compilation to two workers
+to avoid simultaneous large LLVM jobs exhausting Windows runner memory. Keep the offline
 Windows QA VM stopped during compilation on memory-constrained hosts, then start
 it for native execution. Optimized resource measurements are a separate scope;
 do not spend an optimized backend test build on ordinary correctness fixtures.

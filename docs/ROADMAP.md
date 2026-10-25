@@ -47,15 +47,35 @@ their named hashes. Test counts are scoped observations, not completion measures
   original files, login values, disks and VM definition are preserved. The
   retained guest is off, the temporary package stage is absent, and current
   compiler caches remain. Only the obsolete finalized Windows UI test session
-  from the rebuilt configuration was retired after lock/consumer checks.
-- **Hosted CI requires repair:** source `1777733f` fails seven Ubuntu platform
-  tests; Windows test compilation runs out of LLVM memory. A short-path-aware
-  same-filesystem local reproduction is the next step. Full details and fixture
-  limitations are in
-  `.hermes/evidence/windows-footer-package-current/CI_FAILURES.json`. These are
-  engineering tasks, not owner-dependent blockers. Public Windows Copy and the
-  final platform/resource/installer/release gates remain open. Linux packages and
-  public Windows downloads are unchanged by this candidate refresh.
+  from the rebuilt configuration was retired after lock/consumer checks. This
+  CI repair also retires the superseded Linux optimized/debug test executable,
+  fingerprint and incremental configuration after both lock/consumer checks;
+  the canonical unoptimized test replacements and useful caches remain.
+- **CI repair source checkpoint:** the short-path, same-filesystem reproduction
+  confirmed immediate device/inode reuse for files and symlinks. Linux pathname
+  Undo now binds filesystem generation evidence; invalidated directory watches
+  admit a fresh generation without reviving the old proof. Copy schema 5 keeps
+  one parent/transaction generation binding and refuses older records without
+  mutation. Interrupted Undo restoration follows its verified current topology.
+  Cross-filesystem/journal fixtures and their teardown are corrected, daemon
+  tests own short socket paths and join on panic, and the real Activity
+  discovery/refresh comparisons run in private child profiles to avoid parallel
+  journal mutations. Linux CI declares its GIO dependency. The complete isolated Linux workspace run passes **1,369 tests,
+  zero failures, 15 explicit ignores**, including platform 418, search 239 and UI
+  401. Ignored resource/native-environment gates remain open.
+- **Hosted verification and delivery remain pending:** the large platform/UI test
+  crates use the canonical unoptimized/no-debug-data test profile and hosted
+  test compilation uses two workers. This addresses the known LLVM memory
+  cause; a passing hosted Windows run is still required. Release Linux jobs now
+  declare the development libraries required by all-feature lint and the media
+  helper. The release job now builds, signs, uploads and verifies the same four
+  Linux formats, and declares RPM/native inspection tools. Source contracts and
+  four deliberate omission cases pass; no hosted release/signing run is claimed.
+  Source checks are recorded in
+  `.hermes/evidence/linux-ci-current/CI_REPAIR_ACCEPTANCE.json`; they do not
+  establish new package or personal-service acceptance. Current Linux and
+  public Windows downloads remain unchanged. The original `1777733f` hosted
+  failures remain in the earlier `CI_FAILURES.json` as historical evidence.
 - **Receipt-script correction:** a local final assertion incorrectly expected
   two compact cleanup records; the implementation retains intent, completion and
   completed-Undo proof. Its shell continued to the internal swap after that
@@ -66,13 +86,15 @@ their named hashes. Test counts are scoped observations, not completion measures
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Repair the hosted CI failures: reproduce Linux identity/Undo refusals on a
-   short owned ordinary filesystem root, fix the invalid filesystem and journal
-   fixtures and their teardown, declare the GIO fixture dependency, and bound
-   Windows test compilation memory without disabling assertions.
-2. Verify the resulting source on both platforms, rebuild affected Linux/Windows
-   artifacts, rerun affected exact-package paths, and update receipts only on
-   success. Commit and push verified checkpoints.
+1. Verify this source checkpoint in hosted CI, especially native MSVC test
+   compilation/execution. Diagnose any remaining failure without weakening
+   assertions or converting unsupported fixtures into passing skips.
+2. Finish shipping the existing bundled-font notice in the package recipes,
+   rebuild affected Linux/Windows artifacts, rerun exact-package file-operation
+   and UI paths, and update receipts only on success. The DEB/RPM production,
+   signature and upload mismatch is source-fixed; hosted release execution stays
+   unaccepted. Commit and push verified checkpoints; preserve current usable
+   packages until their replacements pass.
 3. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below; then concentrated platform acceptance. Required outcome 4
    (the themed picker and supported folder integration) remains deferred until

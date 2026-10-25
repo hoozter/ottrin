@@ -21,15 +21,7 @@ pub use cleanup::{
     resume_cleanup, resume_finalization,
 };
 
-/// Identity-only filesystem evidence, scoped by the record's boot and unique
-/// mount IDs. Its filesystem-defined identifier can distinguish reused inode
-/// numbers. No descriptor is retained between sessions.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct ObjectHandle {
-    kind: i32,
-    bytes: Vec<u8>,
-}
+use super::local_storage::ObjectHandle;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -99,64 +91,6 @@ fn valid_objects(content: &SourceTreeSnapshot, objects: &[TreeObject]) -> bool {
         })
 }
 
-impl ObjectHandle {
-    fn capture(fd: &impl rustix::fd::AsFd) -> std::io::Result<Option<Self>> {
-        use rustix::fd::AsRawFd;
-        // file_handle has a flexible byte array. This storage supplies its
-        // correctly aligned header and Linux's current MAX_HANDLE_SZ capacity.
-        #[repr(C)]
-        struct Storage {
-            size: libc::c_uint,
-            kind: libc::c_int,
-            bytes: [u8; 128],
-        }
-        let mut storage = Storage {
-            size: 128,
-            kind: 0,
-            bytes: [0; 128],
-        };
-        let mut mount_id = 0;
-        // SAFETY: fd is live; the empty C string and both output buffers remain
-        // valid for the call. Storage matches file_handle's header layout and
-        // provides the advertised byte capacity. AT_EMPTY_PATH addresses the
-        // opened object, including a symlink opened with O_PATH | O_NOFOLLOW.
-        let result = unsafe {
-            libc::syscall(
-                libc::SYS_name_to_handle_at,
-                fd.as_fd().as_raw_fd(),
-                c"".as_ptr(),
-                &mut storage as *mut Storage,
-                &mut mount_id as *mut libc::c_int,
-                // Linux UAPI AT_HANDLE_FID aliases AT_REMOVEDIR (0x200).
-                libc::AT_EMPTY_PATH | libc::AT_REMOVEDIR,
-            )
-        };
-        if result != 0 {
-            let error = std::io::Error::last_os_error();
-            return match error.raw_os_error() {
-                Some(libc::EOPNOTSUPP | libc::ENOSYS) => Ok(None),
-                // An unchanged capacity means this particular object cannot
-                // supply a handle; an increased capacity is a real size error.
-                Some(libc::EOVERFLOW) if storage.size <= 128 => Ok(None),
-                _ => Err(error),
-            };
-        }
-        if storage.size == 0 || storage.size > 128 {
-            return Err(std::io::Error::other(
-                "invalid filesystem object handle size",
-            ));
-        }
-        Ok(Some(Self {
-            kind: storage.kind,
-            bytes: storage.bytes[..storage.size as usize].to_vec(),
-        }))
-    }
-
-    fn valid(&self) -> bool {
-        !self.bytes.is_empty() && self.bytes.len() <= 128
-    }
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum CopyPhase {
@@ -212,8 +146,6 @@ pub(super) struct CopyRecord {
     transaction_identity: PathMoveIdentity,
     parent_mount: u64,
     transaction_mount: u64,
-    parent_handle: Option<ObjectHandle>,
-    transaction_handle: Option<ObjectHandle>,
     boot_id: String,
     publication_content: SourceTreeSnapshot,
     publication_objects: Vec<TreeObject>,
@@ -235,13 +167,13 @@ impl CopyRecord {
             (
                 &self.parent_identity,
                 self.parent_mount,
-                &self.parent_handle,
+                &self.parent_identity.generation,
             )
         } else {
             (
                 &self.transaction_identity,
                 self.transaction_mount,
-                &self.transaction_handle,
+                &self.transaction_identity.generation,
             )
         };
         let metadata = rustix::fs::fstat(fd).map_err(journal_error)?;
@@ -281,12 +213,7 @@ impl CopyRecord {
         use rustix::fd::AsRawFd;
         let mut bindings = Vec::with_capacity(2);
         for (path, directory) in [parent, transaction].into_iter().zip(directories) {
-            let observed = rustix::fs::fstat(directory)
-                .map_err(|error| PlatformError::Io(error.to_string()))?;
-            let identity = PathMoveIdentity {
-                device: observed.st_dev,
-                inode: observed.st_ino,
-            };
+            let identity = super::path_move_identity(directory).map_err(journal_error)?;
             let mount = super::local_storage::local_path_mount_identity(
                 &std::path::PathBuf::from(format!("/proc/self/fd/{}", directory.as_raw_fd())),
                 true,
@@ -302,12 +229,11 @@ impl CopyRecord {
                     "Copy journal directory binding changed".into(),
                 ));
             }
-            let handle = ObjectHandle::capture(directory).map_err(journal_error)?;
-            bindings.push((identity, mount, handle));
+            bindings.push((identity, mount));
         }
         let [
-            (parent_identity, parent_mount, parent_handle),
-            (transaction_identity, transaction_mount, transaction_handle),
+            (parent_identity, parent_mount),
+            (transaction_identity, transaction_mount),
         ] = <[_; 2]>::try_from(bindings).expect("two verified Copy directories");
         let source_parent = source
             .parent()
@@ -332,7 +258,7 @@ impl CopyRecord {
         });
         operation.validate()?;
         Ok(Self {
-            schema: 4,
+            schema: 5,
             phase: CopyPhase::PublicationIntent,
             operation,
             source: NativePath::encode(&source),
@@ -342,8 +268,6 @@ impl CopyRecord {
             transaction_identity,
             parent_mount,
             transaction_mount,
-            parent_handle,
-            transaction_handle,
             boot_id: std::fs::read_to_string("/proc/sys/kernel/random/boot_id")
                 .map_err(|error| PlatformError::Io(error.to_string()))?
                 .trim()
@@ -399,7 +323,7 @@ impl CopyRecord {
         let transaction = self.transaction.decode().map_err(journal_error)?;
         self.operation.validate()?;
         cleanup::validate_progress(self)?;
-        if self.schema != 4
+        if self.schema != 5
             || !valid_objects(&self.publication_content, &self.publication_objects)
             || self.displaced_content.is_some() != self.displaced_objects.is_some()
             || self
@@ -407,10 +331,13 @@ impl CopyRecord {
                 .as_ref()
                 .zip(self.displaced_objects.as_ref())
                 .is_some_and(|(content, objects)| !valid_objects(content, objects))
-            || [&self.parent_handle, &self.transaction_handle]
-                .into_iter()
-                .flatten()
-                .any(|handle| !handle.valid())
+            || [
+                &self.parent_identity.generation,
+                &self.transaction_identity.generation,
+            ]
+            .into_iter()
+            .flatten()
+            .any(|handle| !handle.valid())
             || [
                 source.as_path(),
                 publication.as_path(),
@@ -508,11 +435,12 @@ fn restore_bound_receipt(
     }
     let guard = super::RetainedCopyTransaction::from_opened(&parent, &stage, &transaction, true)
         .map_err(journal_error)?;
-    match record.phase {
-        CopyPhase::Published => record.validate_published_data(&stage)?,
-        CopyPhase::UndoIntent => {
-            record.undo_topology(&stage)?;
+    let topology = match record.phase {
+        CopyPhase::Published => {
+            record.validate_published_data(&stage)?;
+            UndoTopology::Published
         }
+        CopyPhase::UndoIntent => record.undo_topology(&stage)?,
         CopyPhase::PublicationIntent => {
             return Err(PlatformError::NotAvailable(
                 "Copy publication needs reconciliation before Undo",
@@ -524,28 +452,22 @@ fn restore_bound_receipt(
         CopyPhase::CleanupPending | CopyPhase::CleanupComplete => {
             return Err(PlatformError::NotAvailable("Copy cleanup has revoked Undo"));
         }
-    }
+    };
     record.validate_namespace()?;
     record.validate_opened_directory(&parent, true)?;
     record.validate_opened_directory(&stage, false)?;
     guard.validate_path(&transaction)?;
     guard.validate_publication_parent(&publication)?;
-    let identity = record
-        .publication_content
-        .root_path_identity()
-        .ok_or_else(|| {
-            PlatformError::InvalidPathMoveUndoReceipt("Copy snapshot has no root identity".into())
-        })?;
+    let candidate = transaction.join(super::copy_transaction::CANDIDATE);
+    let (published_object, displaced_object) = match topology {
+        UndoTopology::Published => (&publication, &candidate),
+        UndoTopology::Withdrawn => (&candidate, &publication),
+    };
+    let identity = super::rename_identity(published_object).map_err(journal_error)?;
     let displaced_identity = record
         .displaced_content
         .as_ref()
-        .map(|content| {
-            content.root_path_identity().ok_or_else(|| {
-                PlatformError::InvalidPathMoveUndoReceipt(
-                    "Copy backup snapshot has no root identity".into(),
-                )
-            })
-        })
+        .map(|_| super::rename_identity(displaced_object).map_err(journal_error))
         .transpose()?;
     Ok(super::PathMoveUndoReceipt {
         before_path: transaction.join(super::copy_transaction::CANDIDATE),
@@ -1318,8 +1240,8 @@ fn discover_entries(
 
 impl CopyRecord {
     fn require_object_evidence(&self) -> Result<(), PlatformError> {
-        if self.parent_handle.is_none()
-            || self.transaction_handle.is_none()
+        if self.parent_identity.generation.is_none()
+            || self.transaction_identity.generation.is_none()
             || self
                 .publication_objects
                 .iter()
@@ -2126,7 +2048,7 @@ mod tests {
                 "missing" => {
                     value.as_object_mut().unwrap().remove("operation");
                 }
-                "old-schema" => value["schema"] = 3.into(),
+                "old-schema" => value["schema"] = 4.into(),
                 _ => unreachable!(),
             }
             let encoded = serde_json::to_vec(&value).unwrap();

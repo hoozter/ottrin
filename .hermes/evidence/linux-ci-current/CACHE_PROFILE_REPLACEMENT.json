@@ -1,0 +1,26 @@
+{
+  "reason": "Superseded opt-level=1/debug=2 Linux platform test configuration, replaced by canonical package test profile opt-level=0/debug=0",
+  "replacement_binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-f1839937b05b6fe2",
+  "replacement_sha256": "7aa989e4687d1b4318cf44032417650368cb8744c578846bcf970a16ae8c143a",
+  "accessible_consumers": [],
+  "retired": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_platform-1qnmh6yaagvee",
+      "logical_bytes": 730900649
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-1b88e0c53f3a82a7",
+      "logical_bytes": 117512424
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-1b88e0c53f3a82a7.d",
+      "logical_bytes": 2695
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-1b88e0c53f3a82a7",
+      "logical_bytes": 1980
+    }
+  ],
+  "note": "Logical sizes only; shared hard links may retain physical blocks. Other feature/configuration caches remain.",
+  "flock_and_posix_locks_clear": true
+}

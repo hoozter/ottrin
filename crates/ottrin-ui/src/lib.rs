@@ -859,7 +859,7 @@ enum CopyBatchUndoReceipt {
         remaining: usize,
     },
     #[cfg(any(target_os = "linux", target_os = "windows"))]
-    Retained(ottrin_platform::RetainedCopyUndoPlan),
+    Retained(Box<ottrin_platform::RetainedCopyUndoPlan>),
 }
 
 impl CopyBatchUndoReceipt {
@@ -1563,7 +1563,7 @@ fn windows_retained_copy_activity(
                 };
                 location = Some(plan.observed_location().to_path_buf());
                 undo = PathMoveUndoState::Available;
-                receipt = Some(CopyBatchUndoReceipt::Retained(plan));
+                receipt = Some(CopyBatchUndoReceipt::Retained(Box::new(plan)));
             }
             Some(Err(error)) => {
                 undo = PathMoveUndoState::Unavailable {
@@ -1714,7 +1714,7 @@ fn group_retained_copy_activity(
             match ottrin_platform::restore_retained_copy_undo_plan(&entries) {
                 Ok(plan) if plan.transaction_ids() == entries.iter()
                     .filter(|entry| entry.phase != Some(ottrin_platform::CopyPhase::Undone))
-                    .map(|entry| entry.transaction_id.as_str()).collect::<Vec<_>>() => Some(CopyBatchUndoReceipt::Retained(plan)),
+                    .map(|entry| entry.transaction_id.as_str()).collect::<Vec<_>>() => Some(CopyBatchUndoReceipt::Retained(Box::new(plan))),
                 Ok(_) => { reason = Some("Copy batch changed during Activity restoration; refresh its status".into()); None },
                 Err(error) => { reason = Some(error.to_string()); None },
             }
@@ -34316,8 +34316,64 @@ mod tests {
         }
     }
 
+    // These compare two real discovery snapshots. Other parallel tests create
+    // and retire journals, so each comparison needs its own process/state root.
+    fn private_move_activity_process(test: &str) -> bool {
+        const CHILD: &str = "OTTRIN_TEST_PRIVATE_MOVE_ACTIVITY";
+        if std::env::var(CHILD).as_deref() == Ok(test) {
+            return false;
+        }
+        struct Child(std::process::Child);
+        impl Drop for Child {
+            fn drop(&mut self) {
+                if !matches!(self.0.try_wait(), Ok(Some(_))) {
+                    let _ = self.0.kill();
+                    let _ = self.0.wait();
+                }
+            }
+        }
+        let root = tempfile::tempdir().expect("private Activity profile");
+        let mut command = std::process::Command::new(std::env::current_exe().unwrap());
+        command
+            .args(["--exact", &format!("tests::{test}"), "--nocapture"])
+            .env(CHILD, test);
+        for (key, name) in [
+            ("HOME", "home"),
+            ("USERPROFILE", "home"),
+            ("XDG_STATE_HOME", "state"),
+            ("XDG_CONFIG_HOME", "config"),
+            ("XDG_CACHE_HOME", "cache"),
+            ("XDG_DATA_HOME", "data"),
+            ("APPDATA", "roaming"),
+            ("LOCALAPPDATA", "local"),
+        ] {
+            let directory = root.path().join(name);
+            std::fs::create_dir_all(&directory).unwrap();
+            command.env(key, directory);
+        }
+        let mut child = Child(command.spawn().expect("start private Activity test"));
+        let deadline = Instant::now() + Duration::from_secs(20);
+        loop {
+            if let Some(status) = child.0.try_wait().expect("poll private Activity test") {
+                assert!(
+                    status.success(),
+                    "private Activity test failed: {test}: {status}"
+                );
+                return true;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "private Activity test timed out: {test}"
+            );
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    }
+
     #[test]
     fn startup_loads_retained_move_activity_from_discovery() {
+        if private_move_activity_process("startup_loads_retained_move_activity_from_discovery") {
+            return;
+        }
         let mut app = OttrinApp::default();
         wait_for_retained_move_activity(&mut app);
         let (discovered_activity, discovered_error) = load_retained_move_activity();
@@ -34328,6 +34384,11 @@ mod tests {
 
     #[test]
     fn move_batch_warning_refreshes_retained_move_activity_snapshot() {
+        if private_move_activity_process(
+            "move_batch_warning_refreshes_retained_move_activity_snapshot",
+        ) {
+            return;
+        }
         let mut app = OttrinApp::default();
         app.retained_move_activity = vec![RetainedMoveActivity {
             #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -34376,6 +34437,11 @@ mod tests {
 
     #[test]
     fn failed_move_batch_reconciles_retained_move_activity_snapshot() {
+        if private_move_activity_process(
+            "failed_move_batch_reconciles_retained_move_activity_snapshot",
+        ) {
+            return;
+        }
         let mut app = OttrinApp::default();
         app.retained_move_activity = vec![RetainedMoveActivity {
             #[cfg(any(target_os = "linux", target_os = "windows"))]

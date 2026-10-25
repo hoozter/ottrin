@@ -94,12 +94,13 @@ impl DirectoryWatch {
                 .registrations
                 .get(&identity)
                 .and_then(|record| record.valid.upgrade())
+                .filter(|valid| valid.load(Ordering::SeqCst))
             {
-                if !valid.load(Ordering::SeqCst) {
-                    return Err(io::Error::other("directory watch identity invalidated"));
-                }
                 valid
             } else {
+                // An invalidated proof remains invalid, but must not prevent a
+                // fresh proof for a recycled inode (or after queue overflow).
+                // Drop only removes this generation, never its replacement.
                 // Watch the already-open object, not its possibly redirected name.
                 let path = format!("/proc/self/fd/{}", directory.as_raw_fd());
                 let wd = inotify::add_watch(
@@ -145,6 +146,10 @@ impl Drop for DirectoryWatch {
     fn drop(&mut self) {
         if let Ok(mut state) = self.registry.0.lock()
             && Arc::strong_count(&self.valid) == 1
+            && state
+                .registrations
+                .get(&self.identity)
+                .is_some_and(|record| record.valid.ptr_eq(&Arc::downgrade(&self.valid)))
             && let Some(record) = state.registrations.remove(&self.identity)
         {
             // Kernel removal can already have happened after deletion/unmount.
@@ -174,6 +179,23 @@ mod tests {
         std::fs::create_dir(&original).unwrap();
         assert!(clone.validate().is_err());
         other_watch.validate().unwrap();
+    }
+
+    #[test]
+    fn fresh_watch_after_invalidation_survives_old_generation_drop() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = File::open(root.path()).unwrap();
+        let old = DirectoryWatch::new(&directory).unwrap();
+        old.valid.store(false, Ordering::SeqCst);
+        assert!(old.validate().is_err());
+        let fresh = DirectoryWatch::new(&directory).unwrap();
+        assert!(!Arc::ptr_eq(&old.valid, &fresh.valid));
+        assert!(old.validate().is_err());
+        drop(old);
+        fresh.validate().unwrap();
+        drop(directory);
+        std::fs::remove_dir(root.path()).unwrap();
+        assert!(fresh.validate().is_err());
     }
 
     #[test]

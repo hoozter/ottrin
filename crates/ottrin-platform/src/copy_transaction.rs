@@ -1736,14 +1736,17 @@ mod tests {
                 "generation" | "empty-handle" => {
                     let mut value: serde_json::Value =
                         serde_json::from_slice(&std::fs::read(&journal).unwrap()).unwrap();
-                    if value["transaction_handle"].is_null() {
+                    if value["transaction_identity"]["generation"].is_null() {
                         continue;
                     }
                     if damage == "empty-handle" {
-                        value["transaction_handle"]["bytes"] = serde_json::json!([]);
+                        value["transaction_identity"]["generation"]["bytes"] =
+                            serde_json::json!([]);
                     } else {
-                        let byte = value["transaction_handle"]["bytes"][0].as_u64().unwrap();
-                        value["transaction_handle"]["bytes"][0] = (byte ^ 1).into();
+                        let byte = value["transaction_identity"]["generation"]["bytes"][0]
+                            .as_u64()
+                            .unwrap();
+                        value["transaction_identity"]["generation"]["bytes"][0] = (byte ^ 1).into();
                     }
                     let encoded = serde_json::to_vec(&value).unwrap();
                     std::fs::write(&journal, &encoded).unwrap();
@@ -1999,7 +2002,7 @@ mod tests {
             ));
             let encoded = std::fs::read(stage.join("copy-journal")).unwrap();
             let record: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
-            assert_eq!(record["schema"], 4);
+            assert_eq!(record["schema"], 5);
             assert_eq!(record["operation"]["item_index"], 0);
             assert_eq!(record["operation"]["item_count"], 1);
             assert_eq!(

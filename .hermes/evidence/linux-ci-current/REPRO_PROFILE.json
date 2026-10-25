@@ -1,0 +1,5 @@
+{
+  "path": "/home/campbell/.ot-ci-oay6a3z4",
+  "device": 66306,
+  "reason": "short UNIX socket paths on checkout filesystem; removed by context manager"
+}

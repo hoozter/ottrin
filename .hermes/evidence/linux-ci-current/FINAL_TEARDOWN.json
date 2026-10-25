@@ -1,0 +1,16 @@
+{
+  "status": "complete",
+  "canonical_workspace_runner_exit": 0,
+  "temporary_profiles": "removed through successful canonical runner context finalizers",
+  "daemon_fixture_panic_teardown": "passed in complete workspace run",
+  "private_activity_children": "bounded, waited/reaped before private profiles drop",
+  "superseded_configuration": "CACHE_PROFILE_REPLACEMENT.json",
+  "compiler_diagnostic": "DIAGNOSTIC_TEARDOWN.json",
+  "guest": "retained Windows QA guest not started or changed during CI repair",
+  "package_artifacts": "unchanged; fresh artifact acceptance is pending",
+  "retained_current_caches": {
+    "target/debug": "canonical Linux package tests and all-feature lint; upcoming source/package QA",
+    "target/x86_64-pc-windows-gnu/debug": "current Windows cross-check and native QA configurations; upcoming native/package work"
+  },
+  "large_task_owned_fixtures_remaining": []
+}

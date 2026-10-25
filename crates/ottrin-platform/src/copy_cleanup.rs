@@ -154,14 +154,10 @@ impl Ledger {
             Mode::RUSR | Mode::WUSR,
         )
         .map_err(journal_error)?;
-        let metadata = rustix::fs::fstat(&fd).map_err(journal_error)?;
         let handle = ObjectHandle::capture(&fd)
             .map_err(journal_error)?
             .ok_or_else(|| refusal("Cleanup ledger generation evidence is unavailable"))?;
-        let identity = PathMoveIdentity {
-            device: metadata.st_dev,
-            inode: metadata.st_ino,
-        };
+        let identity = crate::path_move_identity(&fd).map_err(journal_error)?;
         let header = origin_digest(record)?;
         let mut file = std::fs::File::from(fd);
         file.write_all(format!("{header}\n").as_bytes())
@@ -1114,8 +1110,8 @@ fn possible_reference(owner: &CopyRecord, retained: &[TreeObject]) -> Result<boo
     // its backup even when that older publication has already been deleted.
     // Whole-tree publication comparisons cannot establish absence of a reference.
     let mut roots = vec![
-        owner.parent_handle.as_ref(),
-        owner.transaction_handle.as_ref(),
+        owner.parent_identity.generation.as_ref(),
+        owner.transaction_identity.generation.as_ref(),
     ];
     if owner.phase != CopyPhase::Undone {
         roots.push(
@@ -1450,7 +1446,7 @@ mod tests {
         monitor.full_revalidation = true;
         let mut value: serde_json::Value =
             serde_json::from_slice(&std::fs::read(&canonical).unwrap()).unwrap();
-        value["parent_handle"] =
+        value["parent_identity"]["generation"] =
             serde_json::to_value(&selected.displaced_objects.as_ref().unwrap()[0].handle).unwrap();
         std::fs::write(&canonical, serde_json::to_vec(&value).unwrap()).unwrap();
         // Model remote writes that do not generate local notification events.
@@ -1990,7 +1986,7 @@ mod tests {
         std::fs::hard_link(&canonical, &alias).unwrap();
         let original = std::fs::read(&canonical).unwrap();
         let mut changed: serde_json::Value = serde_json::from_slice(&original).unwrap();
-        changed["parent_handle"] = serde_json::to_value(reference).unwrap();
+        changed["parent_identity"]["generation"] = serde_json::to_value(reference).unwrap();
         let bytes = serde_json::to_vec(&changed).unwrap();
         let quarantine = stage(&receipt).join(QUARANTINE);
         let mut attacked = false;

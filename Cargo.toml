@@ -33,6 +33,17 @@ egui_extras = { version = "0.33", features = ["svg", "image"] }
 [profile.dev]
 opt-level = 1
 
+# The platform/UI test crates are large. Optimizing them with full debug data
+# exhausts LLVM memory on hosted Windows runners. Assertions stay enabled;
+# release benchmarks and shipped binaries keep their separate release profile.
+[profile.test.package.ottrin-platform]
+opt-level = 0
+debug = 0
+
+[profile.test.package.ottrin-ui]
+opt-level = 0
+debug = 0
+
 [profile.release]
 codegen-units = 1
 lto = "thin"

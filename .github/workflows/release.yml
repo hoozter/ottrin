@@ -45,7 +45,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libxkbcommon-dev libssl-dev libgtk-3-dev
+            libxkbcommon-dev libssl-dev libgtk-3-dev desktop-file-utils \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 
       - name: Check formatting
         if: runner.os == 'Linux'
@@ -55,13 +56,15 @@ jobs:
         run: cargo check --workspace --all-targets
 
       - name: Test workspace
+        env:
+          CARGO_BUILD_JOBS: 2
         run: cargo test --workspace
 
       - name: Lint workspace
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
   package-linux:
-    name: Linux portable and AppImage
+    name: Linux portable, AppImage, DEB and RPM
     needs: verify
     runs-on: ubuntu-latest
     steps:
@@ -72,8 +75,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libxkbcommon-dev libssl-dev libgtk-3-dev \
-            fuse libfuse2
+            libxkbcommon-dev libssl-dev libgtk-3-dev desktop-file-utils \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            fuse libfuse2 rpm cpio binutils
 
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
@@ -86,6 +90,13 @@ jobs:
 
       - name: Package Linux AppImage
         run: ./packaging/linux/package-appimage.sh
+
+      - name: Package native Linux formats
+        env:
+          OTTRIN_SKIP_BUILD: 1
+        run: |
+          ./packaging/linux/package-deb.sh
+          ./packaging/linux/package-rpm.sh
 
       - name: Import Linux release signing key
         env:
@@ -102,7 +113,9 @@ jobs:
         run: |
           ./packaging/linux/sign-release-artifacts.sh \
             dist/Ottrin-*-linux-x86_64-portable.tar.gz \
-            dist/Ottrin-*-x86_64.AppImage
+            dist/Ottrin-*-x86_64.AppImage \
+            dist/ottrin_*_amd64.deb \
+            dist/ottrin-*.x86_64.rpm
           gpg --batch --armor --export "$OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT" \
             > dist/Ottrin-linux-release-key.asc
 
@@ -115,6 +128,10 @@ jobs:
             dist/Ottrin-*-linux-x86_64-portable.tar.gz.sha256
             dist/Ottrin-*-x86_64.AppImage
             dist/Ottrin-*-x86_64.AppImage.sha256
+            dist/ottrin_*_amd64.deb
+            dist/ottrin_*_amd64.deb.sha256
+            dist/ottrin-*.x86_64.rpm
+            dist/ottrin-*.x86_64.rpm.sha256
             dist/*.asc
           if-no-files-found: error
 
@@ -250,7 +267,7 @@ jobs:
       - name: Install release artifact inspection tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y p7zip-full
+          sudo apt-get install -y p7zip-full rpm cpio binutils
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -277,7 +294,9 @@ jobs:
           ./packaging/linux/verify-release-signatures.sh \
             dist/Ottrin-linux-release-key.asc \
             dist/Ottrin-*-linux-x86_64-portable.tar.gz \
-            dist/Ottrin-*-x86_64.AppImage
+            dist/Ottrin-*-x86_64.AppImage \
+            dist/ottrin_*_amd64.deb \
+            dist/ottrin-*.x86_64.rpm
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2

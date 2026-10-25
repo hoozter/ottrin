@@ -108,6 +108,20 @@ pub fn run_search_daemon(
     store_path: PathBuf,
     socket_path: PathBuf,
 ) -> Result<(), String> {
+    run_search_daemon_with_shutdown(
+        config,
+        store_path,
+        socket_path,
+        Arc::new(AtomicBool::new(false)),
+    )
+}
+
+fn run_search_daemon_with_shutdown(
+    config: SearchConfig,
+    store_path: PathBuf,
+    socket_path: PathBuf,
+    shutdown: Arc<AtomicBool>,
+) -> Result<(), String> {
     let listener = bind_socket(&socket_path)?;
     listener
         .set_nonblocking(true)
@@ -126,7 +140,6 @@ pub fn run_search_daemon(
 
     let service = Arc::new(Mutex::new(service));
     let search = Arc::new(service.lock().expect("search service").handle());
-    let shutdown = Arc::new(AtomicBool::new(false));
     let active_clients = Arc::new(AtomicUsize::new(0));
 
     while !shutdown.load(Ordering::Acquire) {
@@ -300,18 +313,74 @@ mod tests {
             Ok(PathBuf::from("/run/ottrin-administrator/index-v1.sock"))
         );
     }
-    use std::time::{SystemTime, UNIX_EPOCH};
+
+    struct TestDaemon {
+        shutdown: Arc<AtomicBool>,
+        worker: Option<thread::JoinHandle<Result<(), String>>>,
+    }
+
+    impl TestDaemon {
+        fn start(config: SearchConfig, store: PathBuf, socket: PathBuf) -> Self {
+            let shutdown = Arc::new(AtomicBool::new(false));
+            let signal = shutdown.clone();
+            Self {
+                shutdown,
+                worker: Some(thread::spawn(move || {
+                    run_search_daemon_with_shutdown(config, store, socket, signal)
+                })),
+            }
+        }
+
+        fn join(mut self) -> Result<(), String> {
+            self.worker
+                .take()
+                .unwrap()
+                .join()
+                .expect("join test daemon")
+        }
+    }
+
+    impl Drop for TestDaemon {
+        fn drop(&mut self) {
+            self.shutdown.store(true, Ordering::Release);
+            if let Some(worker) = self.worker.take() {
+                let result = worker.join();
+                if !thread::panicking() {
+                    result
+                        .expect("join test daemon during teardown")
+                        .expect("test daemon clean teardown");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn daemon_fixture_stops_and_joins_during_panic() {
+        let fixture = tempfile::tempdir().expect("create teardown fixture");
+        let files = fixture.path().join("files");
+        fs::create_dir(&files).unwrap();
+        let socket = fixture.path().join("runtime/index-v1.sock");
+        let config = SearchConfig {
+            include_roots: vec![files],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let daemon = TestDaemon::start(config, fixture.path().join("search.db"), socket.clone());
+        wait_for_socket(&socket);
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
+            let _owned = daemon;
+            panic!("simulate failed assertion with live daemon");
+        }));
+        assert!(result.is_err());
+        assert!(!socket.exists(), "daemon must exit before fixture removal");
+    }
 
     #[test]
     fn client_reports_the_connected_daemon_process() {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("clock")
-            .as_nanos();
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-daemon-peer-{}-{unique}",
-            std::process::id()
-        ));
+        let fixture = tempfile::tempdir().expect("create short owned daemon fixture");
+        let root = fixture.path();
         let files = root.join("files");
         let store = root.join("search.db");
         let socket = root.join("runtime/index-v1.sock");
@@ -324,7 +393,7 @@ mod tests {
             ..SearchConfig::default()
         };
         let daemon_socket = socket.clone();
-        let daemon = thread::spawn(move || run_search_daemon(config, store, daemon_socket));
+        let daemon = TestDaemon::start(config, store, daemon_socket);
         wait_for_socket(&socket);
         let client = SearchDaemonClient::new(socket);
 
@@ -336,11 +405,7 @@ mod tests {
         );
 
         client.shutdown().expect("shutdown daemon");
-        daemon
-            .join()
-            .expect("join daemon")
-            .expect("daemon clean exit");
-        let _ = fs::remove_dir_all(root);
+        daemon.join().expect("daemon clean exit");
         assert_eq!(reported_pid, Ok(std::process::id()));
         #[cfg(target_os = "linux")]
         assert_eq!(foreign_probe, (Ok(false), Ok(())));
@@ -348,14 +413,8 @@ mod tests {
 
     #[test]
     fn daemon_rejects_a_protocol_mismatch_with_the_server_version() {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("clock")
-            .as_nanos();
-        let store = std::env::temp_dir().join(format!(
-            "ottrin-daemon-protocol-{}-{unique}.db",
-            std::process::id()
-        ));
+        let fixture = tempfile::tempdir().expect("create protocol fixture");
+        let store = fixture.path().join("search.db");
         let service = Arc::new(Mutex::new(SearchService::new_with_store_path(
             SearchConfig::default(),
             store,
@@ -418,14 +477,8 @@ mod tests {
 
     #[test]
     fn daemon_survives_client_exit_watches_changes_and_restarts_from_its_snapshot() {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("clock")
-            .as_nanos();
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-daemon-integration-{}-{unique}",
-            std::process::id()
-        ));
+        let fixture = tempfile::tempdir().expect("create short owned daemon fixture");
+        let root = fixture.path();
         let files = root.join("files");
         let store = root.join("search.db");
         let socket = root.join("runtime").join("index-v1.sock");
@@ -442,8 +495,7 @@ mod tests {
         let first_config = config.clone();
         let first_store = store.clone();
         let first_socket = socket.clone();
-        let first =
-            thread::spawn(move || run_search_daemon(first_config, first_store, first_socket));
+        let first = TestDaemon::start(first_config, first_store, first_socket);
         wait_for_socket(&socket);
         let client_a = SearchDaemonClient::new(socket.clone());
         wait_until(Duration::from_secs(5), || {
@@ -471,13 +523,10 @@ mod tests {
         client_b
             .prepare_upgrade()
             .expect("prepare first daemon for upgrade");
-        first
-            .join()
-            .expect("join first daemon")
-            .expect("first daemon clean exit");
+        first.join().expect("first daemon clean exit");
 
         let second_socket = socket.clone();
-        let second = thread::spawn(move || run_search_daemon(config, store, second_socket));
+        let second = TestDaemon::start(config, store, second_socket);
         wait_for_socket(&socket);
         let restarted = SearchDaemonClient::new(socket.clone());
         wait_until(Duration::from_secs(5), || {
@@ -486,24 +535,14 @@ mod tests {
                 .is_ok_and(|result| result.response.total == 1)
         });
         restarted.shutdown().expect("shutdown restarted daemon");
-        second
-            .join()
-            .expect("join restarted daemon")
-            .expect("restarted daemon clean exit");
-        let _ = fs::remove_dir_all(root);
+        second.join().expect("restarted daemon clean exit");
     }
 
     #[test]
     fn daemon_returns_a_protocol_error_when_the_request_capacity_is_full() {
         const BLOCKED_CLIENTS: usize = MAX_ACTIVE_CLIENTS;
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("clock")
-            .as_nanos();
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-daemon-request-capacity-{}-{unique}",
-            std::process::id()
-        ));
+        let fixture = tempfile::tempdir().expect("create short owned daemon fixture");
+        let root = fixture.path();
         let files = root.join("files");
         let store = root.join("search.db");
         let socket = root.join("runtime/index-v1.sock");
@@ -518,7 +557,7 @@ mod tests {
             ..SearchConfig::default()
         };
         let daemon_socket = socket.clone();
-        let daemon = thread::spawn(move || run_search_daemon(config, store, daemon_socket));
+        let daemon = TestDaemon::start(config, store, daemon_socket);
         wait_for_socket(&socket);
         let mut blocked = Vec::with_capacity(BLOCKED_CLIENTS);
         for _ in 0..BLOCKED_CLIENTS {
@@ -537,10 +576,6 @@ mod tests {
         wait_until(Duration::from_secs(1), || {
             SearchDaemonClient::new(socket.clone()).shutdown().is_ok()
         });
-        daemon
-            .join()
-            .expect("join daemon")
-            .expect("daemon clean exit");
-        let _ = fs::remove_dir_all(root);
+        daemon.join().expect("daemon clean exit");
     }
 }

@@ -13163,25 +13163,30 @@ mod tests {
     #[test]
     fn cross_filesystem_retry_through_public_api_recovers_claimed_source() {
         let destination_root = TestDir::new("public-retry");
-        let source_root = std::env::current_dir()
-            .unwrap()
-            .join("target")
-            .join("test-state")
-            .join(format!(
-                "ottrin-move-public-retry-{}",
-                getrandom::u64().unwrap()
-            ));
-        std::fs::create_dir_all(&source_root).unwrap();
+        // Own both fixtures through RAII, including assertion/panic paths.
+        // CI's /tmp commonly shares the checkout filesystem; /dev/shm supplies
+        // the explicitly verified second filesystem rather than relying on /tmp.
+        let source_fixture = tempfile::tempdir_in(
+            if std::fs::metadata(&destination_root.0).unwrap().dev()
+                == std::fs::metadata("/dev/shm").unwrap().dev()
+            {
+                "/var/tmp"
+            } else {
+                "/dev/shm"
+            },
+        )
+        .unwrap();
+        let source_root = source_fixture.path();
         let source = source_root.join("source");
         let destination = destination_root.0.join("destination");
         std::fs::write(&source, "payload").unwrap();
         std::fs::create_dir(&destination).unwrap();
 
-        let source_device = std::fs::symlink_metadata(&source_root).unwrap().dev();
+        let source_device = std::fs::symlink_metadata(source_root).unwrap().dev();
         let destination_device = std::fs::symlink_metadata(&destination).unwrap().dev();
         assert_ne!(
             source_device, destination_device,
-            "test requires repository storage and the system temporary directory on distinct filesystems"
+            "cross-filesystem retry requires two verified distinct fixture filesystems"
         );
 
         let interrupted = move_entry_transactional_with_test_hook(
@@ -13212,8 +13217,7 @@ mod tests {
             b"payload"
         );
         assert!(!source.exists());
-        assert!(!has_local_transaction_dir(&source_root));
-        std::fs::remove_dir_all(source_root).unwrap();
+        assert!(!has_local_transaction_dir(source_root));
     }
 
     #[test]

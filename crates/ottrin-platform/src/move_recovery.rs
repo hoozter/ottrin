@@ -108,12 +108,8 @@ impl SourceTreeSnapshot {
     }
 
     pub(super) fn root_matches_path_identity(&self, identity: &super::PathMoveIdentity) -> bool {
-        self.root_path_identity().as_ref() == Some(identity)
-    }
-    pub(super) fn root_path_identity(&self) -> Option<super::PathMoveIdentity> {
-        self.entries.first().map(|entry| super::PathMoveIdentity {
-            device: entry.identity.device,
-            inode: entry.identity.inode,
+        self.entries.first().is_some_and(|entry| {
+            entry.identity.device == identity.device && entry.identity.inode == identity.inode
         })
     }
     pub(super) fn relative_paths(&self) -> Result<Vec<PathBuf>, JournalError> {
@@ -11170,7 +11166,9 @@ mod tests {
             )
         );
         std::fs::remove_file(local_path.join("unexpected-descendant")).unwrap();
-        let local_journal_backup = local_path.join("journal-backup");
+        // Keep the backup outside the inspected transaction so this case
+        // tests a non-regular journal without a second, order-dependent defect.
+        let local_journal_backup = local_path.parent().unwrap().join("journal-backup");
         std::fs::rename(&local_journal, &local_journal_backup).unwrap();
         std::os::unix::fs::symlink(&local_journal_backup, &local_journal).unwrap();
         assert_eq!(

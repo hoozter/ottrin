@@ -1,0 +1,22 @@
+{
+  "passed": 1369,
+  "failed": 0,
+  "ignored": 15,
+  "ignored_lines": [
+    "test copy_recovery::cleanup::finalization::tests::finalization_scaling_profile ... ignored, explicit multi-size resource profile",
+    "test copy_recovery::cleanup::finalization::tests::mount_rebinding_invalidates_finalization_before_any_metadata_is_removed ... ignored, requires unprivileged private mount namespaces",
+    "test move_transaction::linux_recovery_plan::tests::directory_admission_allows_unmount_and_refuses_same_inode_bind_remount ... ignored, requires an explicitly owned private user and mount namespace",
+    "test tests::copy_receipt_does_not_pin_mount_and_refuses_after_unmount_and_replacement ... ignored, requires an explicitly owned private user/mount namespace",
+    "test native_installed_office_cancels_after_provider_start_and_releases_files ... ignored, requires installed LibreOffice",
+    "test native_installed_office_converts_and_cleans_private_state ... ignored, requires installed LibreOffice and a packaged PDFium runtime",
+    "test native_installed_office_preserves_representative_layout ... ignored, requires installed LibreOffice/PDFium and an owned OTTRIN_NATIVE_OFFICE_FIDELITY_OUTPUT",
+    "test native_installed_office_renders_each_advertised_format ... ignored, requires OTTRIN_NATIVE_OFFICE_FIXTURES and installed LibreOffice/PDFium",
+    "test debug_runtime_discovers_packaged_pdfium_automatically ... ignored, requires the development package produced by build-all.sh",
+    "test packaged_runtime_renders_a_selected_page_and_rejects_out_of_bounds_page ... ignored, requires the pinned packaged PDFium runtime",
+    "test packaged_runtime_renders_bounded_non_blank_first_page_png ... ignored, requires the pinned packaged PDFium runtime",
+    "test packaged_runtime_renders_more_than_one_pdf_per_process ... ignored, requires the pinned packaged PDFium runtime",
+    "test db::generation_tests::equal_sized_path_fts_replacement_keeps_aggregate_storage_bounded ... ignored, measurement fixture: run explicitly when evaluating path FTS storage layout",
+    "test db::generation_tests::full_generation_replacement_reports_fts_write_and_cleanup_cost ... ignored, measurement fixture: run explicitly when evaluating FTS storage layout",
+    "test tests::local_storage_binding_rejects_real_mount_replacement_under_discovered_parent ... ignored, requires an explicitly owned private user/mount namespace"
+  ]
+}

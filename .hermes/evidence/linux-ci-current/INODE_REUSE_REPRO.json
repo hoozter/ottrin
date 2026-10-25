@@ -1,0 +1,21 @@
+{
+  "reused_identities": [
+    {
+      "kind": "file",
+      "attempt": 0,
+      "device": 66306,
+      "inode": 5246090,
+      "original_ctime_ns": 1792942855647323592,
+      "replacement_ctime_ns": 1792942855647656681
+    },
+    {
+      "kind": "symlink",
+      "attempt": 0,
+      "device": 66306,
+      "inode": 5246090,
+      "original_ctime_ns": 1792942855647740429,
+      "replacement_ctime_ns": 1792942855647877147
+    }
+  ],
+  "fixture_removed": true
+}

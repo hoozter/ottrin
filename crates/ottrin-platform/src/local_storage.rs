@@ -193,3 +193,71 @@ mod tests {
         assert!(local_path_mount_identity(Path::new("bad\0path"), false).is_err());
     }
 }
+
+/// Identity-only filesystem evidence, scoped by the record's boot and unique
+/// mount IDs. Its filesystem-defined identifier can distinguish reused inode
+/// numbers. No descriptor is retained between sessions.
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ObjectHandle {
+    kind: i32,
+    bytes: Vec<u8>,
+}
+
+impl ObjectHandle {
+    pub(crate) fn capture(fd: &impl rustix::fd::AsFd) -> std::io::Result<Option<Self>> {
+        use rustix::fd::AsRawFd;
+        // file_handle has a flexible byte array. This storage supplies its
+        // correctly aligned header and Linux's current MAX_HANDLE_SZ capacity.
+        #[repr(C)]
+        struct Storage {
+            size: libc::c_uint,
+            kind: libc::c_int,
+            bytes: [u8; 128],
+        }
+        let mut storage = Storage {
+            size: 128,
+            kind: 0,
+            bytes: [0; 128],
+        };
+        let mut mount_id = 0;
+        // SAFETY: fd is live; the empty C string and both output buffers remain
+        // valid for the call. Storage matches file_handle's header layout and
+        // provides the advertised byte capacity. AT_EMPTY_PATH addresses the
+        // opened object, including a symlink opened with O_PATH | O_NOFOLLOW.
+        let result = unsafe {
+            libc::syscall(
+                libc::SYS_name_to_handle_at,
+                fd.as_fd().as_raw_fd(),
+                c"".as_ptr(),
+                &mut storage as *mut Storage,
+                &mut mount_id as *mut libc::c_int,
+                // Linux UAPI AT_HANDLE_FID aliases AT_REMOVEDIR (0x200).
+                libc::AT_EMPTY_PATH | libc::AT_REMOVEDIR,
+            )
+        };
+        if result != 0 {
+            let error = std::io::Error::last_os_error();
+            return match error.raw_os_error() {
+                Some(libc::EOPNOTSUPP | libc::ENOSYS) => Ok(None),
+                // An unchanged capacity means this particular object cannot
+                // supply a handle; an increased capacity is a real size error.
+                Some(libc::EOVERFLOW) if storage.size <= 128 => Ok(None),
+                _ => Err(error),
+            };
+        }
+        if storage.size == 0 || storage.size > 128 {
+            return Err(std::io::Error::other(
+                "invalid filesystem object handle size",
+            ));
+        }
+        Ok(Some(Self {
+            kind: storage.kind,
+            bytes: storage.bytes[..storage.size as usize].to_vec(),
+        }))
+    }
+
+    pub(crate) fn valid(&self) -> bool {
+        !self.bytes.is_empty() && self.bytes.len() <= 128
+    }
+}

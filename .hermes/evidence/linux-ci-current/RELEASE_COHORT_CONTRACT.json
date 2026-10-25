@@ -1,0 +1,28 @@
+{
+  "production_contract": "pass",
+  "signing_contract": "pass",
+  "negative_cases": [
+    {
+      "case": "missing_rpm_build",
+      "exit_code": 1,
+      "diagnostic": "Linux release job omits a required native artifact: ./packaging/linux/package-rpm.sh"
+    },
+    {
+      "case": "missing_deb_signing",
+      "exit_code": 1,
+      "diagnostic": "Native Linux artifact missing from Sign Linux release artifacts: dist/ottrin_*_amd64.deb"
+    },
+    {
+      "case": "missing_rpm_upload_checksum",
+      "exit_code": 1,
+      "diagnostic": "Linux release job omits a required native artifact: dist/ottrin-*.x86_64.rpm.sha256"
+    },
+    {
+      "case": "missing_rpm_inspection_tool",
+      "exit_code": 1,
+      "diagnostic": "Linux release build/inspection job omits tool: rpm"
+    }
+  ],
+  "fixture_removed": true,
+  "scope": "source contract, not a hosted release or production signing run"
+}

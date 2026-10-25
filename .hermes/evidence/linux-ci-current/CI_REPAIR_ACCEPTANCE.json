@@ -1,0 +1,67 @@
+{
+  "status": "source verification passed; packages and hosted runs pending",
+  "source_base": "d11286a29beffc6e7bb8d7b3be1b320c3f7645f2",
+  "source_sha256": "WORKSPACE_SOURCE_SHA256.json",
+  "linux_workspace": {
+    "passed": 1369,
+    "failed": 0,
+    "ignored": 15,
+    "receipt": "WORKSPACE_RESULT.json"
+  },
+  "lint": {
+    "linux_workspace_all_targets_all_features": "passed",
+    "windows_gnu_platform_ui_all_targets": "passed; cross-compilation only",
+    "format": "passed",
+    "linux_sdk": "Existing .hermes/tools/gstreamer-dev; no system install"
+  },
+  "release_contract": "RELEASE_COHORT_CONTRACT.json",
+  "changes": [
+    "Filesystem generation handles bind Linux pathname Undo without long-lived filesystem descriptors",
+    "Invalidated directory-watch generations do not block fresh proof or remove replacements on drop",
+    "Copy schema 5 uses one parent/transaction generation binding; older schemas refused without mutation",
+    "Interrupted Undo receipts bind current verified topology",
+    "Cross-device and journal fixtures own deterministic independent conditions and RAII storage",
+    "Daemon fixtures use short socket paths and stop/join through panic",
+    "Real Activity discovery comparisons use private bounded child processes/profiles",
+    "Canonical platform/UI test optimization/debug settings and two hosted compiler workers",
+    "Complete DEB/RPM build/sign/upload/verify release wiring and tool dependencies"
+  ],
+  "scope_exclusions": [
+    "No new package or personal-service acceptance",
+    "Hosted MSVC execution/memory result still pending",
+    "No real signing key use, hosted release, Store submission or final user acceptance",
+    "Ignored native/environment/resource gates remain open"
+  ],
+  "cleanup": {
+    "superseded_test_configuration": "CACHE_PROFILE_REPLACEMENT.json",
+    "private_profiles": "Canonical runner exited successfully after process-group and temporary-profile finalizers",
+    "failed_compiler_diagnostic": "DIAGNOSTIC_TEARDOWN.json",
+    "exact_diagnostics_gzipped": "LOG_ARCHIVE.json"
+  },
+  "corrections_preserved": [
+    "Immediate inode reuse repro and original CI failures",
+    "Intermediate schema/teardown compile corrections",
+    "Detected Activity shared-state race; original assertions retained under isolation"
+  ],
+  "working_changes_sha256": {
+    ".github/workflows/ci.yml": "5c21b1e3f08e3121865b808ca82b5ae01861def9e67c9848fc7a34eaccc00cef",
+    ".github/workflows/release.yml": "1baa8fa72161c196d53bf81c13abc3e2cfe0657a6f70cdbd21e129639cd140b2",
+    "Cargo.toml": "717b3b45e9ce47a815ad34b7fff18a3cdfa51af21f5a4233812cf035cc8f170b",
+    "crates/ottrin-platform/src/copy_cleanup.rs": "a8839d282167d8a20d12c6d47fd0e220579952544700248d661b77dae7f0bc26",
+    "crates/ottrin-platform/src/copy_finalization.rs": "4ccd9a31fb64ba1152320bd712a2ea9c0387c180a0aa1f037be676a80d36ac42",
+    "crates/ottrin-platform/src/copy_recovery.rs": "15d3d3855bfa87e4244c1ee871bb4be2bfc50b26197a416985233db7e45e9592",
+    "crates/ottrin-platform/src/copy_transaction.rs": "936d6873a17e33fa25adbeaff6ac310fd7d0a5548ecfb09060f2497dd2aadcb5",
+    "crates/ottrin-platform/src/directory_watch.rs": "2b9759d11e2b34fd4763b4373be503ce3b19cf4dd2cf5fe5fc1e89e02fb7ec16",
+    "crates/ottrin-platform/src/lib.rs": "2828c1e57c1a6d3a01b0d268fa03c856fec69434c77f3551a340a6c227cd4c78",
+    "crates/ottrin-platform/src/local_storage.rs": "6438000b8ab7b884b19b1a2f57ed58c83014cd8a2ca97f7329073ce205432ebf",
+    "crates/ottrin-platform/src/move_recovery.rs": "77eecca54feb52bfe13f7f47b2a1c9b5a1d2697ee621bc9f8b4d193c108603ee",
+    "crates/ottrin-platform/src/move_transaction.rs": "39221fc81483a5e107843cd6a4f41e6862b5d1f9399a1244d7ac5f9c4d4b729d",
+    "crates/ottrin-search/src/daemon.rs": "977d616916d816e320905bc85617daa9c028d2104bb421040c99a26a9339febd",
+    "crates/ottrin-ui/src/lib.rs": "266ecb11db23c4db6c69a37410060fa4825c0be92ceb4fe89da6e60db2f88a7a",
+    "docs/DEVELOPMENT.md": "f2c45f66ae6d6477e2da20970715235cb8758988a244e55acc789723719e1cc3",
+    "docs/RELEASE_CHECKLIST.md": "7c822c919b90f4e51791a9133d62ba1ba737eb1a49b97920fcde48c46d903bc4",
+    "docs/ROADMAP.md": "48dea9fbbfa1abcb69a49df862b0ce328355dd4dd8f5c49a382f398be4e2fd0f",
+    "packaging/tests/verify-release-workflow-dependencies.sh": "75a1fdf6d40cda6c0ae296d721009b5ec3691a8cf7f8d26ac095f1fc5420aaca"
+  },
+  "workflow_yaml_parse": "passed"
+}

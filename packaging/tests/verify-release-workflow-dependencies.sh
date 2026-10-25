@@ -6,6 +6,43 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORKFLOW="${1:-$ROOT/.github/workflows/release.yml}"
 
+# The publishing verifier requires all four Linux formats. Keep production,
+# transfer, signatures and inspection tools in the same release job contract.
+linux_job="$(awk '/^  package-linux:/ { active=1 } active && /^  package-windows-portable:/ { exit } active { print }' "$WORKFLOW")"
+for literal in \
+  './packaging/linux/package-deb.sh' \
+  './packaging/linux/package-rpm.sh' \
+  'dist/ottrin_*_amd64.deb' \
+  'dist/ottrin_*_amd64.deb.sha256' \
+  'dist/ottrin-*.x86_64.rpm' \
+  'dist/ottrin-*.x86_64.rpm.sha256'; do
+  if ! grep -Fq -- "$literal" <<<"$linux_job"; then
+    printf 'Linux release job omits a required native artifact: %s\n' "$literal" >&2
+    exit 1
+  fi
+done
+for step in 'Sign Linux release artifacts' 'Verify exact downloaded Linux signatures'; do
+  body="$(awk -v step="$step" '
+    $0 ~ "      - name: " step "$" { active=1; next }
+    active && /^      - / { exit }
+    active { print }
+  ' "$WORKFLOW")"
+  for artifact in 'dist/ottrin_*_amd64.deb' 'dist/ottrin-*.x86_64.rpm'; do
+    if ! grep -Fq -- "$artifact" <<<"$body"; then
+      printf 'Native Linux artifact missing from %s: %s\n' "$step" "$artifact" >&2
+      exit 1
+    fi
+  done
+done
+for tool in rpm cpio binutils; do
+  for job in "$linux_job" "$(sed -n '/^  release:/,$p' "$WORKFLOW")"; do
+    if ! grep -Eq "(^|[[:space:]])$tool($|[[:space:]])" <<<"$job"; then
+      printf 'Linux release build/inspection job omits tool: %s\n' "$tool" >&2
+      exit 1
+    fi
+  done
+done
+
 # The Linux Windows-portable job extracts the checksum-pinned Mesa archive with
 # `7z`. Keep that binary an explicit job dependency rather than relying on the
 # mutable hosted-runner image.

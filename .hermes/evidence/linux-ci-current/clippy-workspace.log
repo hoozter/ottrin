@@ -1,0 +1,22 @@
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling glib-sys v0.20.10
+   Compiling x11-dl v2.21.0
+   Compiling gobject-sys v0.20.10
+   Compiling gio-sys v0.20.10
+    Checking fontique v0.11.1
+    Checking parley v0.11.1
+    Checking glib v0.20.12
+    Checking rwml v0.1.4
+    Checking winit v0.30.12
+    Checking glutin_glx_sys v0.6.1
+    Checking glutin v0.32.3
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Checking egui-wgpu v0.33.3
+    Checking egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+    Checking glutin-winit v0.5.0
+    Checking eframe v0.33.3
+    Checking gio v0.20.12
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Checking ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 27.65s

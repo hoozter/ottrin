@@ -410,8 +410,9 @@ pub fn is_windows_reserved_creation_name(name: &str) -> bool {
 
 /// Native entry identity captured for a reversible pathname publication.
 ///
-/// On Linux this is `symlink_metadata`'s device and inode pair, so it binds a
-/// symlink entry rather than the symlink target. It is intentionally opaque to
+/// On Linux this binds the device, inode and filesystem generation handle of a
+/// symlink entry rather than its target, without retaining a mount-pinning handle.
+/// Filesystems without generation evidence cannot authorize session Undo. It is opaque to
 /// callers: only this crate may compare it before an inverse rename. Windows
 /// receipts bind native volume/file identities, with an admitted Copy journal
 /// plan or a short-lived Move namespace guard.
@@ -425,6 +426,8 @@ pub struct PathMoveIdentity {
     device: u64,
     #[cfg(target_os = "linux")]
     inode: u64,
+    #[cfg(target_os = "linux")]
+    generation: Option<local_storage::ObjectHandle>,
 }
 
 #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
@@ -1445,6 +1448,9 @@ impl PlatformOps for DefaultPlatform {
             let before_identity = rename_identity(&original_path)
                 .map_err(|_| PlatformError::InvalidSource(target.display().to_string()))?;
             self.delete_path(&original_path, DeleteMode::Trash)?;
+            if before_identity.generation.is_none() {
+                return Ok(None);
+            }
             Ok(exact_trash_undo_receipt(
                 &original_path,
                 &before_identity,
@@ -1463,7 +1469,7 @@ impl PlatformOps for DefaultPlatform {
             let current_identity = rename_identity(&receipt.item.trash_path).map_err(|_| {
                 PlatformError::StalePathMoveUndo(receipt.item.trash_path.display().to_string())
             })?;
-            if current_identity != receipt.identity {
+            if receipt.identity.generation.is_none() || current_identity != receipt.identity {
                 return Err(PlatformError::StalePathMoveUndo(
                     receipt.item.trash_path.display().to_string(),
                 ));
@@ -1500,7 +1506,7 @@ impl PlatformOps for DefaultPlatform {
             let after_path = rename_in_same_parent(source, new_name)?;
             let after_identity = rename_identity(&after_path).ok();
             Ok(after_identity
-                .filter(|identity| identity == &before_identity)
+                .filter(|identity| identity == &before_identity && identity.generation.is_some())
                 .map(|identity| PathMoveUndoReceipt {
                     before_path: source.to_path_buf(),
                     after_path,
@@ -1935,6 +1941,13 @@ impl PlatformOps for DefaultPlatform {
                     })
                 }
             };
+            let receipt = receipt.filter(|receipt| {
+                receipt.identity.generation.is_some()
+                    && receipt
+                        .displaced_identity
+                        .as_ref()
+                        .is_none_or(|identity| identity.generation.is_some())
+            });
             Ok((publication.disposition, receipt))
         }
         #[cfg(target_os = "windows")]
@@ -2697,12 +2710,21 @@ fn rename_in_same_parent(source: &Path, new_name: &str) -> Result<PathBuf, Platf
 
 #[cfg(target_os = "linux")]
 fn rename_identity(path: &Path) -> std::io::Result<PathMoveIdentity> {
-    use std::os::unix::fs::MetadataExt;
+    let descriptor = rustix::fs::open(
+        path,
+        rustix::fs::OFlags::PATH | rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::CLOEXEC,
+        rustix::fs::Mode::empty(),
+    )?;
+    path_move_identity(&descriptor)
+}
 
-    let metadata = std::fs::symlink_metadata(path)?;
+#[cfg(target_os = "linux")]
+fn path_move_identity(descriptor: &impl std::os::fd::AsFd) -> std::io::Result<PathMoveIdentity> {
+    let stat = rustix::fs::fstat(descriptor)?;
     Ok(PathMoveIdentity {
-        device: metadata.dev(),
-        inode: metadata.ino(),
+        device: stat.st_dev,
+        inode: stat.st_ino,
+        generation: local_storage::ObjectHandle::capture(descriptor)?,
     })
 }
 
@@ -2723,6 +2745,14 @@ fn undo_receipt_for_published_identity(
                 "{operation} completed, but its published entry identity could not be verified: {error}"
             ),
         })?;
+    if published_identity.generation.is_none() {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: retained_transaction.display().to_string(),
+            message: format!(
+                "{operation} completed, but filesystem generation evidence is unavailable for safe Undo"
+            ),
+        });
+    }
     if observed_identity != published_identity {
         return Err(PlatformError::CommittedCleanupPending {
             transaction: retained_transaction.display().to_string(),
@@ -2747,7 +2777,7 @@ fn undo_receipt_for_published_identity(
                 ),
             }
         })?;
-        if &observed_displaced != expected_displaced {
+        if expected_displaced.generation.is_none() || &observed_displaced != expected_displaced {
             return Err(PlatformError::CommittedCleanupPending {
                 transaction: retained_transaction.display().to_string(),
                 message: format!(
@@ -2795,6 +2825,16 @@ fn validate_receipt_content(
 
 #[cfg(target_os = "linux")]
 fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+    if receipt.identity.generation.is_none()
+        || receipt
+            .displaced_identity
+            .as_ref()
+            .is_some_and(|identity| identity.generation.is_none())
+    {
+        return Err(PlatformError::StalePathMoveUndo(
+            receipt.after_path.display().to_string(),
+        ));
+    }
     if let Some(directory) = receipt.retained_copy_directory.as_ref() {
         directory.validate_path(receipt.before_path.parent().ok_or_else(|| {
             PlatformError::InvalidPathMoveUndoReceipt(
@@ -4068,10 +4108,7 @@ fn chmod_descriptor_state(
         ));
     }
     Ok((
-        PathMoveIdentity {
-            device: stat.st_dev,
-            inode: stat.st_ino,
-        },
+        path_move_identity(descriptor).map_err(|error| PlatformError::Io(error.to_string()))?,
         stat.st_mode & 0o7777,
     ))
 }
@@ -4125,10 +4162,8 @@ fn undo_chmod_linux(receipt: &ChmodUndoReceipt) -> Result<(), PlatformError> {
 
     let path_metadata = std::fs::symlink_metadata(&receipt.path)
         .map_err(|_| PlatformError::StaleChmodUndo(receipt.path.display().to_string()))?;
-    let path_identity = PathMoveIdentity {
-        device: std::os::unix::fs::MetadataExt::dev(&path_metadata),
-        inode: std::os::unix::fs::MetadataExt::ino(&path_metadata),
-    };
+    let path_identity = rename_identity(&receipt.path)
+        .map_err(|_| PlatformError::StaleChmodUndo(receipt.path.display().to_string()))?;
     let path_mode = path_metadata.permissions().mode() & 0o7777;
     let (descriptor_identity, descriptor_mode) = chmod_descriptor_state(&receipt.descriptor)?;
     if path_metadata.file_type().is_symlink()
@@ -5950,6 +5985,43 @@ mod tests {
                 .success()
         );
         drop(mount);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pathname_identity_tracks_generation_across_rename_and_content_changes() {
+        let dir = TestDir::new("entry-generation");
+        let source = dir.path().join("source");
+        let moved = dir.path().join("moved");
+        std::fs::write(&source, "original").unwrap();
+        let identity = rename_identity(&source).unwrap();
+        assert!(identity.generation.is_some());
+        std::fs::rename(&source, &moved).unwrap();
+        std::fs::write(&moved, "edited original").unwrap();
+        assert_eq!(rename_identity(&moved).unwrap(), identity);
+        std::fs::remove_file(&moved).unwrap();
+        std::fs::write(&moved, "replacement").unwrap();
+        assert_ne!(rename_identity(&moved).unwrap(), identity);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn undo_without_generation_evidence_refuses_without_mutation() {
+        let dir = TestDir::new("undo-no-generation");
+        let source = dir.path().join("source");
+        let moved = dir.path().join("moved");
+        std::fs::write(&source, "original").unwrap();
+        let mut receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&source, "moved")
+            .unwrap()
+            .unwrap();
+        receipt.identity.generation = None;
+        assert!(matches!(
+            DefaultPlatform.undo_rename_with_receipt(&receipt),
+            Err(PlatformError::StalePathMoveUndo(_))
+        ));
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&moved).unwrap(), b"original");
     }
 
     #[cfg(target_os = "linux")]

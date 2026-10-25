@@ -216,10 +216,7 @@ impl FileProof {
             return Err(refusal("Copy finalization metadata changed while reading"));
         }
         let proof = Self {
-            identity: PathMoveIdentity {
-                device: stat.st_dev,
-                inode: stat.st_ino,
-            },
+            identity: crate::path_move_identity(&file).map_err(journal_error)?,
             handle,
             length: bytes.len() as u64,
             digest: digest(&bytes),
@@ -690,7 +687,7 @@ impl RetainedCopyFinalization {
             let stage_object = TreeObject {
                 path: NativePath::encode(Path::new("")),
                 mount: record.transaction_mount,
-                handle: record.transaction_handle.clone(),
+                handle: record.transaction_identity.generation.clone(),
             };
             for other in &outside {
                 if other.operation.id == record.operation.id {
@@ -821,7 +818,6 @@ pub(super) fn begin(
         LinuxJournalDirectory::open_copy_registry(&plan.root, false).map_err(journal_error)?;
     let _creation_lock = central.try_lock_recovery().map_err(journal_error)?;
     let registry = central.duplicate_copy_directory().map_err(journal_error)?;
-    let stat = rustix::fs::fstat(&registry).map_err(journal_error)?;
     let registry_mount = mount(&registry)?;
     let mut entries = BTreeMap::new();
     for (id, record) in &plan.records {
@@ -851,10 +847,7 @@ pub(super) fn begin(
     }
     let manifest = Manifest {
         schema: 1,
-        registry_identity: PathMoveIdentity {
-            device: stat.st_dev,
-            inode: stat.st_ino,
-        },
+        registry_identity: crate::path_move_identity(&registry).map_err(journal_error)?,
         registry_handle: ObjectHandle::capture(&registry)
             .map_err(journal_error)?
             .ok_or_else(|| refusal("Copy registry generation is unavailable"))?,
@@ -1350,7 +1343,8 @@ mod tests {
         let before = std::fs::read(current.join(LEDGER)).unwrap();
         let mut value: serde_json::Value =
             serde_json::from_slice(&std::fs::read(&canonical).unwrap()).unwrap();
-        value["parent_handle"] = serde_json::to_value(&entry.record.transaction_handle).unwrap();
+        value["parent_identity"]["generation"] =
+            serde_json::to_value(&entry.record.transaction_identity.generation).unwrap();
         let changed = serde_json::to_vec(&value).unwrap();
         require_monitor(&finalization);
         let mut attacked = false;

@@ -1,0 +1,125 @@
+{
+  "reason": "Preserve exact diagnostic bytes while retaining compact evidence",
+  "files": [
+    {
+      "original": "repair-platform.log",
+      "gzip": "repair-platform.log.gz",
+      "bytes": 49244,
+      "uncompressed_sha256": "e5abf5bacb68416c620aa43a52b44d938b41821820e581da56f11638da532471"
+    },
+    {
+      "original": "identity-check.log",
+      "gzip": "identity-check.log.gz",
+      "bytes": 1252,
+      "uncompressed_sha256": "9d46d00be627d3ac491eca5ae63785a3033c3039d5dca4e7451d6381b1521ad5"
+    },
+    {
+      "original": "identity-compile-correction.log",
+      "gzip": "identity-compile-correction.log.gz",
+      "bytes": 2426,
+      "uncompressed_sha256": "ee6680aaaf6f4c8b7e73d92019fa974219916b1b03259a0fe9e4174bb1746cbf"
+    },
+    {
+      "original": "identity-platform.log",
+      "gzip": "identity-platform.log.gz",
+      "bytes": 48508,
+      "uncompressed_sha256": "29a6b75fa3f35313f53516df14690d922e1311767d294d24d46ca25df9009636"
+    },
+    {
+      "original": "bounded-platform.log",
+      "gzip": "bounded-platform.log.gz",
+      "bytes": 47931,
+      "uncompressed_sha256": "c7bd0d8e63aed24ef0063fe2c7341a91ebcec2dce78eb9013602edaac2540b70"
+    },
+    {
+      "original": "clippy-workspace-missing-sdk.log",
+      "gzip": "clippy-workspace-missing-sdk.log.gz",
+      "bytes": 6584,
+      "uncompressed_sha256": "d5371f98fbb1c1b21f7b3ed6392fd8bb29617280ba2e9643937107340584d0ad"
+    },
+    {
+      "original": "clippy-before-receipt-size-fix.log",
+      "gzip": "clippy-before-receipt-size-fix.log.gz",
+      "bytes": 3533,
+      "uncompressed_sha256": "d407fbcf8b457f09924ffea573c721ec11e722ddaf7b9c738ca725cb2935a4c9"
+    },
+    {
+      "original": "workspace-before-socket-fixture-repair.log",
+      "gzip": "workspace-before-socket-fixture-repair.log.gz",
+      "bytes": 97848,
+      "uncompressed_sha256": "12375585f92d3f2d7fe6485f527cfab87f8d46753f3ba91021b063eafbfb8090"
+    },
+    {
+      "original": "daemon-teardown-compile-correction.log",
+      "gzip": "daemon-teardown-compile-correction.log.gz",
+      "bytes": 3123,
+      "uncompressed_sha256": "5653e1aa41f8beed3b9f040bf9941bcb317265231ba1a6683d94d7d80ea59441"
+    },
+    {
+      "original": "workspace-before-receipt-boxing.log",
+      "gzip": "workspace-before-receipt-boxing.log.gz",
+      "bytes": 134175,
+      "uncompressed_sha256": "64a07046643cec8df91ef671fceb016e4c075ad6b45f472f796cc633158be9c9"
+    },
+    {
+      "original": "verified-platform.log",
+      "gzip": "verified-platform.log.gz",
+      "bytes": 47245,
+      "uncompressed_sha256": "ab63410a3919ac797bdf6cacdfc62c6d574845684276b2f605af9c1381d7a844"
+    },
+    {
+      "original": "WORKSPACE_BEFORE_SOCKET_FIX.json",
+      "gzip": "WORKSPACE_BEFORE_SOCKET_FIX.json.gz",
+      "bytes": 21196,
+      "uncompressed_sha256": "1859c2e9de26ca332288878856245c3c7c00a7aaa69808c1130bad7f94ac6034"
+    },
+    {
+      "original": "DAEMON_TEARDOWN_COMPILE_CORRECTION.json",
+      "gzip": "DAEMON_TEARDOWN_COMPILE_CORRECTION.json.gz",
+      "bytes": 21197,
+      "uncompressed_sha256": "515255d53843e931fb0d192f935d964993a0c4cc5a1b001b2e902491dbecb17c"
+    },
+    {
+      "original": "WORKSPACE_BEFORE_RECEIPT_BOXING.json",
+      "gzip": "WORKSPACE_BEFORE_RECEIPT_BOXING.json.gz",
+      "bytes": 21195,
+      "uncompressed_sha256": "9a4cc2e1fe790d962bb454ede3ddae7ad88254368f16a4058dc15c726da12524"
+    },
+    {
+      "original": "IDENTITY_COMPILE_CORRECTION.json",
+      "gzip": "IDENTITY_COMPILE_CORRECTION.json.gz",
+      "bytes": 12479,
+      "uncompressed_sha256": "afe2a5d99c1b88e69d67b9b85ca9fcc8e955f0ad92be1641feef8fbda9440680"
+    },
+    {
+      "original": "workspace-tests.log",
+      "gzip": "workspace-tests.log.gz",
+      "bytes": 134660,
+      "uncompressed_sha256": "bfd51fdfed6cc8a46671da16038026723998bdd83a1f378effe7fd4837d1319f"
+    },
+    {
+      "original": "workspace-activity-race.log",
+      "gzip": "workspace-activity-race.log.gz",
+      "bytes": 151688,
+      "uncompressed_sha256": "6158cea9205cfa1bc15d6d0f0352264f7fb5f9514101bfb7a3f4e1029a06ba24"
+    },
+    {
+      "original": "WORKSPACE_ACTIVITY_RACE.json",
+      "gzip": "WORKSPACE_ACTIVITY_RACE.json.gz",
+      "bytes": 21196,
+      "uncompressed_sha256": "38e6838f5ff246bb303b4d6d6e543d5ef6c7a4c95e0d9d56312276faf1bfa03d"
+    },
+    {
+      "original": "daemon-fixtures.log",
+      "gzip": "daemon-fixtures.log.gz",
+      "bytes": 796,
+      "uncompressed_sha256": "411594df5380f536620df2d249169e23c696cef129abf1cbb5f491a33bee5352"
+    },
+    {
+      "original": "ui-isolated-activity.log",
+      "gzip": "ui-isolated-activity.log.gz",
+      "bytes": 36684,
+      "uncompressed_sha256": "596872e2dd41ed1e4a684ce32a1ac3b9c9f60e936df24794dd964139c246ed06"
+    }
+  ]
+}
