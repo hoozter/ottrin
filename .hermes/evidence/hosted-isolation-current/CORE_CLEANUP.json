@@ -1,0 +1,9 @@
+{
+  "status": "privileged cleanup waiting; does not block engineering",
+  "path": "/var/lib/systemd/coredump/core.chrome.1000.eeed43c73b3a47998b6355d43295a2ad.2138656.1792952026000000.zst",
+  "bytes": 2509878,
+  "ownership_evidence": "coredumpctl PID 2138656: Chrome in exact ottrin-html-diagnostic-2138650.service, owned synthetic input",
+  "attempt": "sudo -n rm -- exact path failed: a password is required",
+  "producer_correction": "HTML diagnostic and hosted isolation probes now set systemd LimitCORE=0; no broad coredump policy change",
+  "privacy": "core was not copied into evidence or Git"
+}

@@ -1,0 +1,21 @@
+{
+  "profile": "/home/campbell/.opqa-lw7e3w3i",
+  "fixture": "/home/campbell/.opqa-lw7e3w3i/fixture",
+  "app_pid": 2135518,
+  "app_start_time": "44636790",
+  "window": "8388611",
+  "source_revision": "1b6e5138aa79c4a4250888b27642f02972909efe",
+  "artifact_sha256": "2f95c39aa2f20c7b93a75bcb735dcf5ce538b6e33d8909071ba81a9f56210331",
+  "theme": "Dark",
+  "scale": "1.0",
+  "environment": {
+    "DISPLAY": ":1",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-O0bLgrF7m3,guid=bbab89ccffd7392dcfeadda06ade4551",
+    "HOME": "/home/campbell/.opqa-lw7e3w3i/home",
+    "XDG_CONFIG_HOME": "/home/campbell/.opqa-lw7e3w3i/config",
+    "XDG_CACHE_HOME": "/home/campbell/.opqa-lw7e3w3i/cache",
+    "XDG_DATA_HOME": "/home/campbell/.opqa-lw7e3w3i/data",
+    "XDG_STATE_HOME": "/home/campbell/.opqa-lw7e3w3i/state",
+    "XDG_RUNTIME_DIR": "/home/campbell/.opqa-lw7e3w3i/runtime"
+  }
+}

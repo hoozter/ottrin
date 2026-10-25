@@ -19,7 +19,7 @@ use std::os::windows::{ffi::OsStrExt, fs::OpenOptionsExt, io::AsRawHandle};
 use std::path::{Path, PathBuf};
 #[cfg(target_os = "windows")]
 use std::{
-    fs::OpenOptions,
+    fs::{File, OpenOptions},
     io::{Read, Seek, Write},
     mem, ptr,
 };
@@ -29,30 +29,18 @@ use windows_sys::Wdk::Storage::FileSystem::{
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Foundation::{
-    CloseHandle, ERROR_HANDLE_EOF, ERROR_INSUFFICIENT_BUFFER, ERROR_MORE_DATA, HANDLE, LocalFree,
-    RtlNtStatusToDosError, STATUS_OBJECT_NAME_COLLISION,
-};
-#[cfg(target_os = "windows")]
-use windows_sys::Win32::Security::Authorization::{
-    EXPLICIT_ACCESS_W, GRANT_ACCESS, SE_FILE_OBJECT, SetEntriesInAclW, SetNamedSecurityInfoW,
-    TRUSTEE_IS_SID, TRUSTEE_IS_USER,
-};
-#[cfg(target_os = "windows")]
-use windows_sys::Win32::Security::{
-    DACL_SECURITY_INFORMATION, GetTokenInformation, PROTECTED_DACL_SECURITY_INFORMATION,
-    SUB_CONTAINERS_AND_OBJECTS_INHERIT, TOKEN_QUERY, TOKEN_USER, TokenUser,
+    ERROR_HANDLE_EOF, ERROR_INSUFFICIENT_BUFFER, ERROR_MORE_DATA, HANDLE, RtlNtStatusToDosError,
+    STATUS_OBJECT_NAME_COLLISION,
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Storage::FileSystem::{
-    FILE_ALL_ACCESS, FILE_BASIC_INFO, FILE_DISPOSITION_FLAG_DELETE,
-    FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
-    FILE_DISPOSITION_INFO_EX, FILE_STREAM_INFO, FileBasicInfo, FileDispositionInfoEx,
-    FileStreamInfo, GetFileInformationByHandleEx, ReplaceFileW, SetFileInformationByHandle,
+    FILE_BASIC_INFO, FILE_DISPOSITION_FLAG_DELETE, FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE,
+    FILE_DISPOSITION_FLAG_POSIX_SEMANTICS, FILE_DISPOSITION_INFO_EX, FILE_STREAM_INFO,
+    FileBasicInfo, FileDispositionInfoEx, FileStreamInfo, GetFileInformationByHandleEx,
+    ReplaceFileW, SetFileInformationByHandle,
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
-#[cfg(target_os = "windows")]
-use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
 #[cfg(target_os = "linux")]
 mod linux_recovery_plan;
@@ -2312,99 +2300,42 @@ fn windows_journal_path(root: &Path, transaction_id: [u8; 16]) -> PathBuf {
 }
 
 #[cfg(target_os = "windows")]
-fn restrict_windows_transaction_directory(path: &Path) -> Result<(), PlatformError> {
-    let mut token = ptr::null_mut();
-    if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) } == 0 {
-        return Err(PlatformError::Io(format!(
-            "current-user token open failed: {}",
-            std::io::Error::last_os_error()
-        )));
-    }
-    struct TokenHandle(HANDLE);
-    impl Drop for TokenHandle {
-        fn drop(&mut self) {
-            unsafe {
-                CloseHandle(self.0);
-            }
-        }
-    }
-    let token = TokenHandle(token);
-    let mut required = 0_u32;
-    unsafe {
-        GetTokenInformation(token.0, TokenUser, ptr::null_mut(), 0, &mut required);
-    }
-    if std::io::Error::last_os_error()
-        .raw_os_error()
-        .map(|code| code as u32)
-        != Some(ERROR_INSUFFICIENT_BUFFER)
-        || required < mem::size_of::<TOKEN_USER>() as u32
+fn create_windows_transaction_directory(
+    destination: &Path,
+    expected_parent: move_recovery::WindowsStableIdentity,
+) -> Result<([u8; 16], PathBuf, File), PlatformError> {
+    use windows_sys::Win32::Storage::FileSystem::{
+        FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
+    };
+    let parent =
+        crate::windows_fs::open_directory(destination, FILE_GENERIC_READ | FILE_GENERIC_WRITE)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if move_recovery::stable_identity_from_handle(&parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        != expected_parent
     {
         return Err(PlatformError::Io(
-            "current-user token size query failed".to_string(),
+            "Move destination parent changed before private creation".into(),
         ));
     }
-    let mut token_user = vec![0_u64; (required as usize).div_ceil(mem::size_of::<u64>())];
-    if unsafe {
-        GetTokenInformation(
-            token.0,
-            TokenUser,
-            token_user.as_mut_ptr().cast(),
-            required,
-            &mut required,
-        )
-    } == 0
-    {
-        return Err(PlatformError::Io(format!(
-            "current-user token query failed: {}",
-            std::io::Error::last_os_error()
-        )));
-    }
-    let user = unsafe { &*token_user.as_ptr().cast::<TOKEN_USER>() };
-    let access = EXPLICIT_ACCESS_W {
-        grfAccessPermissions: FILE_ALL_ACCESS,
-        grfAccessMode: GRANT_ACCESS,
-        grfInheritance: SUB_CONTAINERS_AND_OBJECTS_INHERIT,
-        Trustee: windows_sys::Win32::Security::Authorization::TRUSTEE_W {
-            TrusteeForm: TRUSTEE_IS_SID,
-            TrusteeType: TRUSTEE_IS_USER,
-            ptstrName: user.User.Sid.cast(),
-            ..Default::default()
-        },
-    };
-    let mut acl = ptr::null_mut();
-    let status = unsafe { SetEntriesInAclW(1, &access, ptr::null(), &mut acl) };
-    if status != 0 {
-        return Err(PlatformError::Io(format!(
-            "private transaction ACL creation failed with status {status}"
-        )));
-    }
-    struct LocalAcl(*mut windows_sys::Win32::Security::ACL);
-    impl Drop for LocalAcl {
-        fn drop(&mut self) {
-            unsafe {
-                LocalFree(self.0.cast());
-            }
+    loop {
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let name = format!(".ottrin-move-{}", encode_transaction_id(transaction_id));
+        // Apply the shared owner-rights policy atomically at native creation.
+        // TokenUser can differ from the default owner for elevated processes.
+        match crate::windows_fs::create_private(
+            &parent,
+            std::ffi::OsStr::new(&name),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        ) {
+            Ok(file) => return Ok((transaction_id, destination.join(name), file)),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(error) => return Err(PlatformError::Io(error.to_string())),
         }
     }
-    let acl = LocalAcl(acl);
-    let mut wide = windows_wide_path(path)?;
-    let status = unsafe {
-        SetNamedSecurityInfoW(
-            wide.as_mut_ptr(),
-            SE_FILE_OBJECT,
-            DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
-            ptr::null_mut(),
-            ptr::null_mut(),
-            acl.0,
-            ptr::null(),
-        )
-    };
-    if status != 0 {
-        return Err(PlatformError::Io(format!(
-            "private transaction ACL application failed with status {status}"
-        )));
-    }
-    Ok(())
 }
 
 #[cfg(target_os = "windows")]
@@ -3422,26 +3353,11 @@ fn start_windows_cross_volume_move(
     let recovery_root = windows_recovery_root()?;
     std::fs::create_dir_all(&recovery_root)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let (transaction_id, transaction_path) = loop {
-        let mut transaction_id = [0_u8; 16];
-        getrandom::fill(&mut transaction_id)
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        let candidate = destination_dir.join(format!(
-            ".ottrin-move-{}",
-            encode_transaction_id(transaction_id)
-        ));
-        match std::fs::create_dir(&candidate) {
-            Ok(()) => break (transaction_id, candidate),
-            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-            Err(error) => return Err(PlatformError::Io(error.to_string())),
-        }
-    };
-    if let Err(error) = restrict_windows_transaction_directory(&transaction_path) {
-        let _ = std::fs::remove_dir(&transaction_path);
-        return Err(error);
-    }
-    let transaction_identity = move_recovery::stable_identity_of_entry(&transaction_path)
+    let (transaction_id, transaction_path, transaction_handle) =
+        create_windows_transaction_directory(destination_dir, destination_parent_identity)?;
+    let transaction_identity = move_recovery::stable_identity_from_handle(&transaction_handle)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
+    drop(transaction_handle);
     let mut record = WindowsCrossVolumeRecord {
         schema_major: move_recovery::JOURNAL_SCHEMA_MAJOR,
         schema_minor: move_recovery::JOURNAL_SCHEMA_MINOR,
@@ -5587,27 +5503,8 @@ fn start_windows_same_volume_overwrite(
     let recovery_root = windows_recovery_root()?;
     std::fs::create_dir_all(&recovery_root)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let (transaction_id, transaction_path) = loop {
-        let mut transaction_id = [0_u8; 16];
-        getrandom::fill(&mut transaction_id)
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        let candidate = destination_dir.join(format!(
-            ".ottrin-move-{}",
-            encode_transaction_id(transaction_id)
-        ));
-        match std::fs::create_dir(&candidate) {
-            Ok(()) => break (transaction_id, candidate),
-            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-            Err(error) => return Err(PlatformError::Io(error.to_string())),
-        }
-    };
-    if let Err(error) = restrict_windows_transaction_directory(&transaction_path) {
-        let _ = std::fs::remove_dir(&transaction_path);
-        return Err(error);
-    }
-    let transaction_handle =
-        move_recovery::open_reparse_safe_directory_for_rename(&transaction_path)
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let (transaction_id, transaction_path, transaction_handle) =
+        create_windows_transaction_directory(destination_dir, destination_parent_identity)?;
     let transaction_directory_identity =
         move_recovery::stable_identity_from_handle(&transaction_handle)
             .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -8798,6 +8695,48 @@ mod windows_source_tests {
     fn windows_move_route_distinguishes_same_and_cross_volume_paths() {
         assert_eq!(windows_move_route(41, 41), WindowsMoveRoute::SameVolume);
         assert_eq!(windows_move_route(41, 42), WindowsMoveRoute::CrossVolume);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent() {
+        use crate::windows_fs::journal_access::{Policy, State};
+        use std::io::Write;
+        let root = crate::tests::TestDir::new("move-owned-directory");
+        let parent = root.path().join("destination");
+        std::fs::create_dir(&parent).unwrap();
+        let expected = move_recovery::stable_identity_of_entry(&parent).unwrap();
+        let (_, path, directory) =
+            super::create_windows_transaction_directory(&parent, expected).unwrap();
+        let (policy, state) = Policy::observe(&directory, true).unwrap();
+        assert!(policy.valid());
+        assert_eq!(state, State::Full);
+        let mut journal = crate::windows_fs::create_private(
+            &directory,
+            std::ffi::OsStr::new("owned.journal"),
+            false,
+            0,
+        )
+        .unwrap();
+        journal.write_all(b"owned evidence").unwrap();
+        assert_eq!(Policy::observe(&journal, false).unwrap().1, State::Full);
+        drop(journal);
+        drop(directory);
+        let retained = root.path().join("renamed");
+        std::fs::rename(&parent, &retained).unwrap();
+        std::fs::create_dir(&parent).unwrap();
+        let error = super::create_windows_transaction_directory(&parent, expected).unwrap_err();
+        assert!(error.to_string().contains("destination parent changed"));
+        assert_eq!(std::fs::read_dir(&parent).unwrap().count(), 0);
+        assert_eq!(
+            std::fs::read(
+                retained
+                    .join(path.file_name().unwrap())
+                    .join("owned.journal")
+            )
+            .unwrap(),
+            b"owned evidence"
+        );
     }
 
     #[test]

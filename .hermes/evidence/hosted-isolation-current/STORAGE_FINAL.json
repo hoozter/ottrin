@@ -1,0 +1,8 @@
+{
+  "linux_debug_deps": "26 GiB",
+  "linux_incremental": "9.5 GiB after scoped retirement",
+  "windows_debug_deps": "25 GiB",
+  "windows_incremental": "21 GiB",
+  "retired_logical_bytes": 1502143800,
+  "notes": "No independent Cargo tree/profile/RUSTFLAGS introduced. Current per-package test/lint feature configurations and useful release/runtime caches retained; no cargo clean. Finalized replacements are identified in CACHE_RETIREMENT.json."
+}

@@ -1,0 +1,10 @@
+{
+  "unit": "ottrin-html-diagnostic-2138650",
+  "scope": "nested namespaces disabled only inside owned Bubblewrap; host policy unchanged",
+  "exit": 134,
+  "stdout": "",
+  "stderr": "[1025/191346.882086:WARNING:chrome/app/chrome_main_linux.cc:84] Read channel stable from /opt/google/chrome/CHROME_VERSION_EXTRA\n[2:2:1025/191346.952687:FATAL:sandbox/linux/suid/client/setuid_sandbox_host.cc:172] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /opt/google/chrome/chrome-sandbox is owned by root and has mode 4755.\n[1025/191346.957343:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/online: No such file or directory (2)\n[1025/191346.965627:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq: No such file or directory (2)\n[1025/191346.965643:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq: No such file or directory (2)\n",
+  "output_exists": false,
+  "unit_stop_exit": 5,
+  "private_profile_removed": true
+}

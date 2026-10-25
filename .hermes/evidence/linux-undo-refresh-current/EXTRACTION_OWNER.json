@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-undo-refresh-extract",
+  "source": "1b6e5138aa79c4a4250888b27642f02972909efe",
+  "pending_consumers": [
+    "production package content/closure verification",
+    "Dark100/Light150 native GUI and file operations"
+  ],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks"
+}

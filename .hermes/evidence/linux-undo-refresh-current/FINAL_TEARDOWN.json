@@ -1,0 +1,29 @@
+{
+  "status": "owned build/GUI fixtures removed",
+  "profile_removed": true,
+  "extraction_removed": true,
+  "stage_removed": true,
+  "temporary_RPM_wrappers_removed": true,
+  "bytecode_removed": true,
+  "logs": "closed logs gzip-preserved byte-exact",
+  "owned_processes_reaped": [
+    {
+      "pid": 2135455,
+      "exit": 0
+    },
+    {
+      "pid": 2135458,
+      "exit": 0
+    },
+    {
+      "pid": 2135459,
+      "exit": 15
+    },
+    {
+      "pid": 2135518,
+      "exit": 0
+    }
+  ],
+  "portal_mounts": [],
+  "prior_root_owned_core": "unchanged, explicit owner waiting; no new core permitted in this bounded QA process tree"
+}

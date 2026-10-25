@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "normal_exit": true,
+  "post_close_public_files_verified": 2,
+  "profile_removed": true,
+  "owned_processes_reaped": true,
+  "preferences_persisted": [
+    "Dark",
+    "List"
+  ],
+  "indexd_binary_hash_comparison": {
+    "previous": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+    "current": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4"
+  },
+  "prior_resource_evidence": ".hermes/evidence/linux-ci-package-current/INDEX_POPULATED_CONTENT.json",
+  "resource_scope": "Previous populated resource run retains its original artifact scope; matching daemon bytes, if equal, are recorded rather than claiming a new resource run."
+}

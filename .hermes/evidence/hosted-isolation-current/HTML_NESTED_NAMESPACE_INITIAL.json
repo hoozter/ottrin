@@ -1,0 +1,10 @@
+{
+  "unit": "ottrin-html-diagnostic-2138574",
+  "scope": "bounded local Chrome reproduction with nested user namespaces disabled only inside the private Bubblewrap namespace; host policy unchanged",
+  "exit": 1,
+  "stdout": "",
+  "stderr": "bwrap: --disable-userns requires --unshare-user\n",
+  "output_exists": false,
+  "unit_stop_exit": 5,
+  "private_profile_removed": true
+}

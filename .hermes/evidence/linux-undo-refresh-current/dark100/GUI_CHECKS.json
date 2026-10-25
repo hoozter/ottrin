@@ -1,0 +1,14 @@
+{
+  "status": "pass within targeted actual-AppImage scope",
+  "source": "1b6e5138aa79c4a4250888b27642f02972909efe",
+  "artifact": "2f95c39aa2f20c7b93a75bcb735dcf5ce538b6e33d8909071ba81a9f56210331",
+  "visual_checks": [
+    "actual Undo copy button refuses replacement, renders Undo unavailable",
+    "file-size cell changes from 27 B to 3 B after refusal",
+    "footer renders 1 item",
+    "no clipped control/overlap in recorded Dark100 window"
+  ],
+  "data_checks": "source and replacement bytes verified; post-close hashes/cleanup pending teardown receipt",
+  "correction": "Ctrl+Z opens Activity; original refusal-refresh screenshot precedes actual Undo button and is not accepted as a completed action",
+  "limits": "List/Dark100/software X11 only; Grid/Miller and other font scales covered by scoped source/composed tests"
+}

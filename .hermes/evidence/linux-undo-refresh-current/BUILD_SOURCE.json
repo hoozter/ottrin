@@ -1,0 +1,11 @@
+{
+  "source_revision": "1b6e5138aa79c4a4250888b27642f02972909efe",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-undo-refresh-stage",
+  "jobs": 1,
+  "pending_consumers": [
+    "production package verification",
+    "targeted actual AppImage UI regression"
+  ],
+  "public_deliverables": "preserved until all replacement gates pass"
+}

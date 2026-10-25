@@ -1,0 +1,31 @@
+{
+  "status": "verified source repair; native Windows and hosted HTML resolution still pending",
+  "windows_repair": "Both Move private-folder paths now use one shared, handle-relative atomic private creator and parent-identity check. Legacy TokenUser DACL code removed; cleanup admission unchanged. New native test requires policy admission and refuses a replaced parent without touching retained evidence.",
+  "checks": {
+    "windows_platform_all_target_clippy": "pass",
+    "linux_platform_unit": "418 passed, zero failed, four explicit ignores",
+    "linux_platform_integration": "7 passed",
+    "linux_platform_doc": "5 passed",
+    "local_HTML_actual_render": "2 passed; host namespace restriction is 0, not hosted restricted-policy acceptance",
+    "preview_all_target_strict_clippy": "pass",
+    "format_and_release_workflow_dependency_contract": "pass"
+  },
+  "hosted": {
+    "run": 40218714811,
+    "linux_job": 121245391464,
+    "probe": "real systemd/Bubblewrap namespace setup passes, restriction stays 1",
+    "failure": "two HTML unit renders fail RenderFailed; 199 other preview unit tests pass",
+    "Office_boundary_tests": "not reached, not accepted",
+    "windows": "still running at checkpoint; earlier source has diagnostic detail, not current private-folder repair"
+  },
+  "local_HTML_reproduction": "Nested-userns-disabled sandbox makes Chrome abort its internal sandbox. This points to a composition issue but hosted failure stderr is still needed. No sandbox is disabled to make tests pass.",
+  "diagnostics": "Test-only bounded provider stderr retained on failed exit. HTML fixtures now RAII-clean on panic. Diagnostic/CI probes set LimitCORE=0.",
+  "initial_compile_correction": "New Windows helper initially lacked File/test helper/Write imports; compiler failures preserved, final strict check passes.",
+  "source_sha256": {
+    "crates/ottrin-platform/src/move_transaction.rs": "6c4a28bf2361c557ba52789455cbe14123fdded2ef7b698c02270f5c4f0088bb",
+    "crates/ottrin-preview/src/isolated_process.rs": "54e98d8ee95466a6c2670683bc3c258a747eaf723c5eb6218a05296a29579d1c",
+    "crates/ottrin-preview/src/lib.rs": "d8d9a48a14083463f0f5dda0db28a23800eb3467164f55f0aeb4ef821252bd02",
+    "scripts/ci/prepare-linux-isolation.sh": "b63f0fc0309bbba2fd60bf145c2cfb339641b38064399a9aee276760030ce41c"
+  },
+  "cleanup": "No task compiler, isolated desktop/profile/provider/unit remains. Retained Windows QA guest stayed off. Rebuilt current caches retained; 17 superseded finalized sessions retired with lock/consumer checks (CACHE_RETIREMENT.json). Exact root-owned diagnostic core is waiting for privileged cleanup (CORE_CLEANUP.json)."
+}

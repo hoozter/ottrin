@@ -51,7 +51,7 @@ done
 sandbox+=(--proc /proc --dev /dev --tmpfs /tmp /usr/bin/true)
 timeout 20s systemd-run --user --wait --collect --pipe --quiet \
   --unit="$unit" --property=Type=exec --property=TasksMax=32 \
-  --property=MemoryMax=256M --property=RuntimeMaxSec=15s "${sandbox[@]}"
+  --property=MemoryMax=256M --property=RuntimeMaxSec=15s --property=LimitCORE=0 "${sandbox[@]}"
 if [[ -f "$restriction" ]]; then
   [[ "$(cat "$restriction")" == "$before" ]]
 fi

@@ -1,0 +1,17 @@
+{"time": 1792951685.6512532, "key": "ctrl+c"}
+{"time": 1792951685.9695816, "key": "ctrl+l"}
+{"time": 1792951686.3710752, "key": "Return"}
+{"time": 1792951687.0214207, "navigate": "/home/campbell/.opqa-lw7e3w3i/fixture/stale"}
+{"time": 1792951687.0907886, "key": "ctrl+v"}
+{"time": 1792951687.3414052, "file_checkpoint": "copied-original", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": []}
+{"time": 1792951687.4277797, "capture": "copied-original"}
+{"time": 1792951687.4975207, "key": "ctrl+z"}
+{"time": 1792951688.7480412, "file_checkpoint": "refusal-refresh", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"}, "absent": []}
+{"time": 1792951688.8501627, "capture": "refusal-refresh"}
+{"time": 1792951707.346991, "correction": "Ctrl+Z opens Activity; explicit Undo copy button is the mutation action, screenshot before that is not a completed refusal"}
+{"time": 1792951707.4937763, "click": [702, 230]}
+{"time": 1792951708.8942387, "file_checkpoint": "actual-refusal-refresh", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"}, "absent": []}
+{"time": 1792951708.9754515, "capture": "actual-refusal-refresh"}
+{"time": 1792951742.1431656, "file_checkpoint": "before-normal-close", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"}, "absent": []}
+{"time": 1792951742.2245321, "capture": "before-normal-close"}
+{"time": 1792951742.3716729, "click": [1072, 18]}

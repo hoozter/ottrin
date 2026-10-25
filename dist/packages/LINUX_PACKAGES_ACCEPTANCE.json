@@ -1,15 +1,13 @@
 {
-  "status": "pass within scoped Linux package/UI/file-operation/index resource acceptance",
-  "source_revision": "fb6fbdf45aad030638ac3a2f10a9cb58b701301a",
+  "status": "pass within targeted Linux package and refusal-refresh UI scope",
+  "source_revision": "1b6e5138aa79c4a4250888b27642f02972909efe",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "ff8b3c726860669e8a7c244a1f56e025f8d4df7a1849e85902f684863247c341",
-    "Ottrin-0.1.0-x86_64.AppImage": "7ba0f45e8784b54c48a5366ab93b797ce122400c7c65213afc22f4e460cf134b",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2c0f3448cfb987c2e019d8a4da945b3e0fbff4be6478eb54c2c53a5751d7a802",
-    "ottrin_0.1.0_amd64.deb": "a0efc4288898b9861c4a23bd369c984b77e0c64861c8f3dfa6a43f2e066d33bd"
+    "ottrin-0.1.0-1.x86_64.rpm": "aa1dfe30dec238dcb015a8d6cd2470b1b128f6a5404f54d8050ce208fce85df8",
+    "Ottrin-0.1.0-x86_64.AppImage": "2f95c39aa2f20c7b93a75bcb735dcf5ce538b6e33d8909071ba81a9f56210331",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "0d1431311fac78339b19b45e9cf81c37b6017c836901950f04d07886963aac76",
+    "ottrin_0.1.0_amd64.deb": "52abdde2c66d0804d0608a3f82eb5bf0ec998bfaff55d1227238cdd8aca69904"
   },
-  "evidence": ".hermes/evidence/linux-ci-package-current",
-  "verifier_sha256": "20c43e5f88fde5dbfd21c14aa551d7b03569c6c8ed92a9c6a826b576a1f09438",
-  "source_checks": ".hermes/evidence/linux-ci-current/CI_REPAIR_ACCEPTANCE.json",
+  "evidence": ".hermes/evidence/linux-undo-refresh-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,27 +15,15 @@
     "six matching portable/AppImage runtime payloads",
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks",
-    "Exact AppImage Dark100 and Light150: Copy/actual Undo, Move/actual Undo",
-    "Both scopes: recreated copied publication reuses the exact device/inode pair; actual Undo refuses without modifying source or replacement",
-    "Long selected-name footer is one row; real hover tooltip contains the full name; controls stay visible",
-    "Read-only VCF Space opens/closes Inspector and preserves bytes",
-    "Exact Linux window icon pixels match source PNG; actual private daemon name is ottrin-indexd",
-    "List mode and theme persist through normal close; Light150 four public file hashes match after exit",
-    "Current 10000-file content-enabled index verifies freshness/bursts/offline changes/restart; 30-second idle samples use 0.067-0.100 percent of one core, about 10-14 MiB RSS"
+    "Exact AppImage Dark100: actual Undo copy refuses replaced file, preserves source/replacement, refreshes size from 27 B to 3 B",
+    "Footer renders 1 item",
+    "Normal product Close exits zero, preserves List/Dark, and post-close public hashes match",
+    "402 Linux UI tests, zero failures, one explicit ignore; actual native refusal refreshes List/Grid/Miller metadata without changing selection; composed footer across widths/scales",
+    "Linux/Windows cross-target strict UI lint passes"
   ],
-  "scope": "Targeted private X11/DBus/software rendering and owned same-filesystem operations, package content/namespace proofs and populated index fixture; not personal-service, native distribution install/upgrade, full Office/picker, physical desktop, signing or final user acceptance. Historical receipts retain only their named artifact scope.",
-  "ci_followup": {
-    "source": "0f8011f6",
-    "linux": "original platform failures resolved; two Office isolation tests fail because runtime prerequisites need provisioning",
-    "windows": "test compilation now completes; 449 passed, 9 native cleanup/admission failures, 79 ignored; diagnose principal/DACL behavior without weakening guards"
-  },
-  "corrections": {
-    "dark_original_close": "Harness XDestroyWindow caused winit abort; it is not accepted as normal close. Separate Dark normal-close run and complete Light run use product Close control.",
-    "window_selector": "Initial OR PID/title query falsely reported Inspector presence; corrected --all selector confirms real Space close."
-  },
-  "cleanup": {
-    "private_gui_profiles_processes_displays_buses_daemons_portals": "removed; per-case teardown and original Dark correction retained",
-    "source_stage": "removed after verified publication",
-    "root_owned_test_core": "3.9 MiB exact task core requires privileged cleanup; WAITING.json. Other work continues."
-  }
+  "scope": "Actual package UI acceptance is Dark100/List/software X11. Earlier broader Dark/Light operation/icon/VCF/resource receipts retain their named artifact scopes. Not personal-service, whole-theme, full Office/picker, installed distribution lifecycle, physical desktop, signing, native Windows or final owner acceptance.",
+  "indexd_binary_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+  "indexd_resource_evidence": "Previous fb6fbdf4 actual AppImage populated-content fixture reports 0.067\u20130.100 percent of one core; daemon binary is byte-identical in this cohort. No new resource run claimed.",
+  "source_followup": "Windows private-folder creation now being repaired separately; not included in this clean Linux build",
+  "cleanup": "All owned build/GUI fixtures, extraction, stage, temporary RPM wrappers and bytecode removed; compact logs/screenshots retained. Prior root-owned 3.9 MiB harness core remains owner waiting."
 }

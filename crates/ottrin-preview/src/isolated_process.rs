@@ -219,6 +219,12 @@ mod linux {
         let _ = std::fs::remove_file(stdout_path);
         let _ = std::fs::remove_file(stderr_path);
         if !status.success() {
+            #[cfg(test)]
+            eprintln!(
+                "Isolated test provider {:?} exited {status}: {}",
+                request.executable,
+                String::from_utf8_lossy(&diagnostics)
+            );
             return if diagnostics.windows(8).any(|window| window == b"oom-kill")
                 || diagnostics
                     .windows(14)

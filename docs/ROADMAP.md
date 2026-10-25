@@ -22,25 +22,20 @@ their named hashes. Test counts are scoped observations, not completion measures
   included in clean package source `1777733f`. All 18 selected native Windows UI
   and Move-worker tests pass. Windows parent-recovery engine proof remains bound
   to its original `48fb6c01` source and 163 native checks.
-- **Delivered Linux:** clean `fb6fbdf4`, all four stable packages, with exact
-  bundled-font notices. AppImage SHA-256 starts `7ba0f45e8784b54c`; the current
-  receipt records all four complete hashes. The actual AppImage passes Copy/Undo,
-  Move/Undo and replacement refusal after immediate device/inode reuse in private
-  Dark 100% and Light 150% sessions. Long-name layout/tooltips, read-only VCF
-  Space-close, window-icon pixels and actual `ottrin-indexd` process name pass.
-  Light 150% exits normally with public file hashes verified; Dark operations and
-  a separate normal-close run retain their distinct scopes. In the private
-  10,000-file content-enabled index fixture, three 30-second idle samples measure
-  **0.067–0.100% of one core**, about 10–14 MiB RSS. This does not upgrade or accept
-  the personal service. Exact package evidence is in
-  `.hermes/evidence/linux-ci-package-current/ACCEPTANCE.json`.
-- **UI follow-up source verified, packaging pending:** terminal Undo refusal now
-  refreshes affected metadata in all three views, retaining the selected replaced
-  file and its bytes. The footer uses “1 item”. The full isolated Linux UI suite
-  passes **402 tests, zero failures, one ignore**; Linux/Windows cross-target
-  strict lint passes. `linux-undo-refresh-current/SOURCE_ACCEPTANCE.json` records
-  the real replacement regression and composed footer checks. This follow-up is
-  not yet included in the delivered `fb6fbdf4` packages.
+- **Delivered Linux:** clean `1b6e5138`, all four stable packages. AppImage
+  SHA-256 starts `2f95c39aa2f20c7b`; the current receipt records all four hashes.
+  All formats pass production payload/helper/runtime/font-notice/source checks.
+  The actual Dark100/List AppImage refuses Undo after external file replacement,
+  preserves source/replacement bytes, refreshes the cell from **27 B to 3 B**, and
+  renders **“1 item”**. Product Close exits normally, saves List/Dark and preserves
+  post-close public hashes. Full isolated Linux UI passes **402 tests, zero
+  failures, one ignore**; List/Grid/Miller metadata refusal and composed footer
+  checks pass. Linux/Windows cross-target UI lint passes. Earlier broader
+  Dark/Light/VCF/icon acceptance retains its `fb6fbdf4` artifact scope. The index
+  daemon is byte-identical between both cohorts; the earlier 10,000-file run
+  measured **0.067–0.100% of one core**, about 10–14 MiB RSS. No new resource or
+  personal-service run is claimed. Current evidence is in
+  `.hermes/evidence/linux-undo-refresh-current/ACCEPTANCE.json`.
 - **Current internal Windows candidate:** clean `1777733f` at
   `.hermes/packaging-tmp/windows-activity-candidate/`. Portable, NSIS and native
   MSI extraction agree on all 57 payload files; native loader/CLI checks pass.
@@ -77,20 +72,25 @@ their named hashes. Test counts are scoped observations, not completion measures
   journal mutations. Linux CI declares its GIO dependency. The complete isolated Linux workspace run passes **1,369 tests,
   zero failures, 15 explicit ignores**, including platform 418, search 239 and UI
   401. Ignored resource/native-environment gates remain open.
-- **Hosted CI follow-up:** run `40211384586` for `0f8011f6` now compiles
-  and executes Windows tests: **449 passed, nine failed, 79 ignored**. The previous
-  compiler-memory failure is resolved. Native journal cleanup/admission reports
-  an unrecognized principal; ownership guards must remain intact while diagnosing
-  this. Linux's original platform failures are resolved; two Office process-
-  isolation tests fail with `InvalidRequest`. Provision Bubblewrap and a real
-  systemd user manager with the distribution's restrictive AppArmor policy;
-  preserve the host's user-namespace restrictions. Source provisioning and eight
-  deliberate missing-prerequisite contracts now pass; actual hosted verification
-  is pending. Windows rejection diagnostics now include observed owner/principal
-  SIDs, flags and object kind; no admission condition is relaxed. These are engineering work,
-  not owner waiting items. Search-performance CI passes. No hosted release or
-  signing run is claimed. Release production/signature/upload/verification now
-  covers all four Linux formats; omission contracts pass.
+- **Hosted CI follow-up:** run `40211384586` for `0f8011f6` compiled and
+  executed Windows tests: **449 passed, nine failed, 79 ignored**. Compiler memory
+  failure is resolved. Move's older private-folder ACL granted TokenUser while
+  cleanup admits the effective owner; these can differ under elevation. Source
+  now creates both Move folder types atomically through shared native owner-rights
+  creation, checks the pinned parent, removes the old token/ACL implementation,
+  and adds a native replacement-parent/policy regression. Strict Windows cross-
+  lint and 418 Linux platform unit tests pass; new native Windows execution is
+  still required. No ownership guard was relaxed.
+  Hosted run `40218714811` passes the real Linux systemd/Bubblewrap setup probe
+  with namespace restriction **1**. It now fails two HTML image-rendering tests
+  (199 preview unit tests pass). A local bounded reproduction proves that denying
+  nested user namespaces makes Chrome abort its internal sandbox; hosted stderr
+  remains needed to confirm the exact same cause. Test-only provider diagnostics
+  now retain bounded failure stderr, and the HTML fixtures use RAII teardown on
+  panic. This is engineering work, not an owner prerequisite or a passing skip.
+  No browser sandbox or global kernel restriction is disabled. Hosted Office
+  integration has not yet been reached/accepted by this run. Search-performance
+  CI passes. Source/diagnostic evidence is in `hosted-isolation-current`.
 - **Font-notice delivery:** all four current Linux packages contain the exact
   authoritative font notice. Windows producer/verifier support is prepared, but
   the existing 57-file internal Windows candidate predates this change. A fresh
@@ -105,14 +105,15 @@ their named hashes. Test counts are scoped observations, not completion measures
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Repair hosted Linux isolation provisioning and diagnose the nine native
-   Windows principal/admission failures without weakening assertions or security.
+1. Verify the shared native Windows Move-folder repair in hosted/native tests.
+   Diagnose and repair Ubuntu HTML sandbox composition; preserve the real browser
+   and outer isolation checks. Reach the mandatory Office boundary suite.
 2. Build and accept a fresh Windows ZIP/NSIS/MSI candidate with bundled-font
    notices; retain public Copy gating and resolve failed-uninstall rollback.
    Commit and push verified checkpoints. Linux's new four-format cohort is
    delivered; hosted release/signing execution remains unaccepted.
-3. Package and accept the verified single-item footer/terminal-refusal metadata
-   fixes. Continue dependency-ready preview/editing,
+3. The single-item footer/terminal-refusal metadata fixes are delivered in Linux
+   `1b6e5138`. Continue dependency-ready preview/editing,
    file-operation and packaging outcomes below, then platform acceptance.
    Required outcome 4 (the themed picker and supported folder integration) stays
    deferred until preceding work is complete. Owner testing does not block
@@ -147,6 +148,7 @@ Do not move a fixable implementation or test failure onto this list.
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
 | Privileged cleanup of owned X11 test core | Remove only `/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst` (4,096,895 bytes). Noninteractive sudo requires a password; ownership is recorded in `linux-ci-package-current/dark100/CORE_CLEANUP.json`. | All engineering; private profiles, processes, mounts and package extractions are already removed. |
+| Privileged cleanup of owned Chrome diagnostic core | Remove only `/var/lib/systemd/coredump/core.chrome.1000.eeed43c73b3a47998b6355d43295a2ad.2138656.1792952026000000.zst` (2,509,878 bytes). Noninteractive sudo requires a password; `hosted-isolation-current/CORE_CLEANUP.json` records ownership and LimitCORE=0 producer correction. | All engineering; synthetic profile and transient unit are gone. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
 | Linux public release signing identity | Owner approves the project identity/public fingerprint and authorizes provisioning its protected signing key. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work; do not invent or publish an identity. |
 | Microsoft Store account/submission | Owner-controlled Store identity, listing and certification after Windows is ready. | Implement/test MSIX packaging and deployment when dependency-ready; unsigned direct ZIP/EXE/MSI remain supported. No paid Windows certificate gate. |
@@ -166,17 +168,15 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `fb6fbdf4`. All four formats pass
-payload, source, helper-policy, dependency, embedded-document and bundled-font
-notice checks. The exact AppImage passes Copy/Undo, Move/Undo and generation-
-bound replacement refusal in private Dark 100% and Light 150% X11 sessions.
-Light completes normal close and post-close file checks; Dark has separate
-operation and normal-close records. The original Dark harness destroyed an X11
-window and caused an abort; that attempt is explicitly not normal-close
-acceptance. Owned runtime fixtures/extractions are removed; the exact privileged
-core cleanup is on the waiting list above. This is targeted package acceptance,
-not completion of Linux/device/resource, Office/picker or Windows outcomes.
-Full evidence is in `.hermes/evidence/linux-ci-package-current/ACCEPTANCE.json`.
+The current Linux cohort is built from clean `1b6e5138`. Its production content
+checks and targeted Dark100/List normal-close UI acceptance are summarized above
+and in `.hermes/evidence/linux-undo-refresh-current/ACCEPTANCE.json`. Earlier
+`fb6fbdf4` Copy/Move/Undo, same-inode replacement refusal, Dark100/Light150,
+VCF/icon and populated-index observations retain their original package hashes;
+the new cohort does not silently inherit broader GUI acceptance. All owned new
+GUI/build/extraction fixtures are removed. Exact privileged diagnostic-core
+cleanup remains on the waiting list. This is targeted package acceptance,
+not completion of Linux, Office/picker or Windows outcomes.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes

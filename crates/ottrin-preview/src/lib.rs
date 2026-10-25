@@ -11111,8 +11111,8 @@ mod tests {
         if !html_preview_runtime_available() {
             return;
         }
-        let directory = temp_path("html-relative-assets");
-        std::fs::create_dir(&directory).expect("create HTML fixture directory");
+        let fixture = tempfile::tempdir().expect("create HTML fixture directory");
+        let directory = fixture.path();
         let path = directory.join("saved-page.html");
         std::fs::write(
             directory.join("page.css"),
@@ -11131,8 +11131,6 @@ mod tests {
             .expect("decode HTML preview")
             .to_rgb8();
         assert_eq!(image.get_pixel(1, 1).0, [0x24, 0x68, 0xac]);
-
-        std::fs::remove_dir_all(directory).expect("remove HTML fixture directory");
     }
 
     #[cfg(target_os = "linux")]
@@ -11141,7 +11139,8 @@ mod tests {
         if !html_preview_runtime_available() {
             return;
         }
-        let path = temp_path("offline-layout.html");
+        let fixture = tempfile::tempdir().expect("create HTML fixture directory");
+        let path = fixture.path().join("offline-layout.html");
         std::fs::write(
             &path,
             r#"<!doctype html><style>html,body{margin:0;background:#123456}.card{margin:24px;width:120px;height:80px;background:#abcdef}</style><div class="card"></div><script>document.body.style.background='#ff0000'</script>"#,
@@ -11156,7 +11155,6 @@ mod tests {
         assert_eq!(image.dimensions(), (256, 256));
         assert_eq!(image.get_pixel(1, 1).0, [0x12, 0x34, 0x56]);
         assert_eq!(image.get_pixel(30, 30).0, [0xab, 0xcd, 0xef]);
-        let _ = std::fs::remove_file(path);
     }
 
     #[test]
