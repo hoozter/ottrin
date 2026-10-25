@@ -1,0 +1,6 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "root": "C:\\OttrinOfficeContractQA",
+  "purpose": "Native Windows execution of 16 mock Office contract cases, including six process-private adapter-present/absent fixture children; not actual Office runtime acceptance",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626"
+}

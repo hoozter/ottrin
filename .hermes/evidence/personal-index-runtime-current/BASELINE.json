@@ -1,0 +1,8 @@
+{
+  "service_state": "MainPID=0\nActiveState=inactive\nSubState=dead\nUnitFileState=enabled\nInactiveEnterTimestamp=Sat 2026-10-24 23:43:19 CEST\n",
+  "config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+  "wrapper_sha256": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d",
+  "artifact_sha256": "d813e0e1e418a2815975489698795c4ab535851b3a75a54689895a23d1de9e50",
+  "intent": "Start and measure configured enabled background service using earlier explicit index restart authorization; preserve configuration and primary user files. Existing wrapper is the current AppImage service producer, not a stale daemon copy."
+}

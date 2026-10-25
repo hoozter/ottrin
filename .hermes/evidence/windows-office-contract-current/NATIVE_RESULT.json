@@ -1,0 +1,9 @@
+{
+    "tempEntries":  0,
+    "nestedFixtureChildren":  6,
+    "contractCases":  16,
+    "identity":  "NT AUTHORITY\\SYSTEM",
+    "exit":  0,
+    "status":  "pass",
+    "scope":  "Native GNU Windows mock-provider contract execution; includes adapter staging and explicit missing-adapter refusal; not actual LibreOffice/AppContainer/Office GUI acceptance"
+}

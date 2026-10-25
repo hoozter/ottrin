@@ -1,0 +1,25 @@
+{
+  "run": 40225986422,
+  "source_revision": "a230fa2c7b8f8389bd9ddf3a33331388f4febdef",
+  "platform": {
+    "passed": 459,
+    "failed": 0,
+    "ignored": 79
+  },
+  "preview_unit": {
+    "passed": 199,
+    "failed": 0
+  },
+  "office_contract": {
+    "passed": 10,
+    "failed": 5,
+    "cause": "Windows provider requires staging its adapter even for injected mock launchers; these fixtures supply no adapter path so fail before mocked execution"
+  },
+  "native_office_boundary": {
+    "passed": 1,
+    "ignored": 6,
+    "native_runtime_acceptance": false
+  },
+  "dependency_cache_save": "passed on Windows and Ubuntu after downstream test failure",
+  "repair": "Drafted while clean Linux package build consumes 7d5; apply only after all formats finish source snapshot capture. No ignored/skipped test added and no production guard relaxed."
+}

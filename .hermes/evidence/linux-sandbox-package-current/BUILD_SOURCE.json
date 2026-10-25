@@ -1,0 +1,12 @@
+{
+  "source_revision": "7d5eee591cf1e101d9a16f69874730ad8bd05229",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage",
+  "jobs": 1,
+  "pending_consumers": [
+    "production four-format content/closure/source/font-notice verification",
+    "actual AppImage regression and source-resource/private-directory checks"
+  ],
+  "changes": "LimitCORE=0 preview boundary from a230 and private HTML workspace permissions/RAII from 7d5; fixed trusted restricted-host HTML launcher remains prototype-only",
+  "public_deliverables": "preserved until all replacement gates pass"
+}

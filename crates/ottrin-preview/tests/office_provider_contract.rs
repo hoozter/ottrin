@@ -14,19 +14,93 @@ use ottrin_preview::{
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::AtomicBool;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 
-fn temp_dir(name: &str) -> PathBuf {
-    let unique = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("time")
-        .as_nanos();
-    let path = std::env::temp_dir().join(format!(
-        "ottrin-office-provider-{}-{unique}-{name}",
-        std::process::id()
+fn temp_dir(name: &str) -> tempfile::TempDir {
+    tempfile::Builder::new()
+        .prefix(&format!("ot-ofc-{name}-"))
+        .tempdir()
+        .expect("create owned Office contract fixture")
+}
+
+// These launcher contracts deliberately mock provider execution. Windows still
+// stages its adapter before invoking that mock, so supply a fixture adapter in
+// a private child process rather than changing the parallel suite's environment.
+#[cfg(target_os = "windows")]
+fn run_with_fixture_office_adapter(test: &str, available: bool) -> bool {
+    use std::process::{Child, Command};
+    use std::time::Instant;
+
+    const CHILD: &str = "OTTRIN_OFFICE_CONTRACT_CHILD";
+    if std::env::var(CHILD).as_deref() == Ok(test) {
+        return false;
+    }
+    struct OwnedChild(Child);
+    impl Drop for OwnedChild {
+        fn drop(&mut self) {
+            if !matches!(self.0.try_wait(), Ok(Some(_))) {
+                let _ = self.0.kill();
+            }
+            let _ = self.0.wait();
+        }
+    }
+    let fixture = temp_dir("adapter");
+    let helper = fixture.path().join("ottrin-office-render.exe");
+    if available {
+        std::fs::write(&helper, b"mock Office adapter; never executed")
+            .expect("write fixture adapter");
+    }
+    let mut child = OwnedChild(
+        Command::new(std::env::current_exe().expect("contract test executable"))
+            .args(["--exact", test, "--nocapture"])
+            .env(CHILD, test)
+            .env("OTTRIN_OFFICE_HELPER", &helper)
+            .spawn()
+            .expect("start private Office contract child"),
+    );
+    let deadline = Instant::now() + Duration::from_secs(40);
+    loop {
+        if let Some(status) = child.0.try_wait().expect("observe Office contract child") {
+            assert!(status.success(), "Office contract child failed: {test}");
+            return true;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "Office contract child timed out: {test}"
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    }
+}
+
+#[cfg(target_os = "windows")]
+#[test]
+fn installed_libreoffice_probe_refuses_a_missing_windows_adapter() {
+    if run_with_fixture_office_adapter(
+        "installed_libreoffice_probe_refuses_a_missing_windows_adapter",
+        false,
+    ) {
+        return;
+    }
+    struct MustNotRun;
+    impl IsolatedProcessLauncher for MustNotRun {
+        fn run(
+            &self,
+            _request: &IsolatedProcessRequest,
+            _cancelled: &AtomicBool,
+        ) -> Result<IsolatedProcessOutput, IsolatedProcessFailure> {
+            panic!("a missing Windows adapter must not reach the provider launcher");
+        }
+    }
+    let fixture = temp_dir("missing-adapter");
+    let executable = fixture.path().join("soffice.exe");
+    std::fs::write(&executable, b"fixture executable").unwrap();
+    assert!(matches!(
+        probe_installed_libreoffice_at(&executable, &MustNotRun, &AtomicBool::new(false)),
+        OfficeProviderProbeResult::Unavailable {
+            reason: OfficeProviderUnavailableReason::Unhealthy,
+            ..
+        }
     ));
-    std::fs::create_dir_all(&path).expect("create temporary directory");
-    path
 }
 
 fn write_one_page_pdf(path: &Path) {
@@ -110,6 +184,13 @@ fn production_provider_format_mapping_accepts_only_the_bounded_office_contract()
 
 #[test]
 fn installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_formats() {
+    #[cfg(target_os = "windows")]
+    if run_with_fixture_office_adapter(
+        "installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_formats",
+        true,
+    ) {
+        return;
+    }
     struct ProbeLauncher {
         requests: Mutex<Vec<IsolatedProcessRequest>>,
     }
@@ -131,7 +212,8 @@ fn installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_fo
         }
     }
 
-    let root = temp_dir("libreoffice-probe");
+    let fixture = temp_dir("libreoffice-probe");
+    let root = fixture.path();
     let executable = root.join("soffice");
     std::fs::write(&executable, b"fixture executable").expect("write executable fixture");
     let launcher = ProbeLauncher {
@@ -184,6 +266,13 @@ fn installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_fo
 
 #[test]
 fn installed_libreoffice_detection_skips_missing_candidates_and_returns_canonical_executable() {
+    #[cfg(target_os = "windows")]
+    if run_with_fixture_office_adapter(
+        "installed_libreoffice_detection_skips_missing_candidates_and_returns_canonical_executable",
+        true,
+    ) {
+        return;
+    }
     struct DetectionLauncher;
 
     impl IsolatedProcessLauncher for DetectionLauncher {
@@ -199,7 +288,8 @@ fn installed_libreoffice_detection_skips_missing_candidates_and_returns_canonica
         }
     }
 
-    let root = temp_dir("libreoffice-detection");
+    let fixture = temp_dir("libreoffice-detection");
+    let root = fixture.path();
     let executable = root.join("program/soffice.bin");
     std::fs::create_dir_all(executable.parent().expect("executable parent"))
         .expect("create executable parent");
@@ -231,7 +321,8 @@ fn installed_libreoffice_detection_skips_missing_candidates_and_returns_canonica
 
 #[test]
 fn installed_libreoffice_candidates_include_both_launch_names_from_each_search_directory() {
-    let root = temp_dir("libreoffice-search-path");
+    let fixture = temp_dir("libreoffice-search-path");
+    let root = fixture.path();
     let primary = root.join("primary");
     let secondary = root.join("secondary");
     let search_path = std::env::join_paths([&primary, &secondary]).expect("construct search path");
@@ -273,7 +364,8 @@ fn legacy_doc_extraction_is_bounded_isolated_and_sanitized() {
         }
     }
 
-    let root = temp_dir("legacy-doc-extraction");
+    let fixture = temp_dir("legacy-doc-extraction");
+    let root = fixture.path();
     let executable = root.join("catdoc");
     let source = root.join("document.doc");
     std::fs::write(&executable, b"fixture executable").expect("write executable fixture");
@@ -340,7 +432,8 @@ fn native_legacy_doc_rendering_uses_an_isolated_helper_and_rejects_oversized_pdf
         }
     }
 
-    let root = temp_dir("native-legacy-doc-rendering");
+    let fixture = temp_dir("native-legacy-doc-rendering");
+    let root = fixture.path();
     let executable = root.join("ottrin-legacy-doc-render");
     let source = root.join("document.doc");
     std::fs::write(&executable, b"fixture executable").expect("write executable fixture");
@@ -400,6 +493,13 @@ fn native_legacy_doc_rendering_uses_an_isolated_helper_and_rejects_oversized_pdf
 
 #[test]
 fn installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_output() {
+    #[cfg(target_os = "windows")]
+    if run_with_fixture_office_adapter(
+        "installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_output",
+        true,
+    ) {
+        return;
+    }
     struct ConversionLauncher {
         requests: Mutex<Vec<IsolatedProcessRequest>>,
     }
@@ -423,7 +523,8 @@ fn installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_outp
         }
     }
 
-    let root = temp_dir("libreoffice-conversion");
+    let fixture = temp_dir("libreoffice-conversion");
+    let root = fixture.path();
     let executable = root.join("soffice");
     let source = root.join("project brief.docx");
     let output = root.join("output");
@@ -494,6 +595,13 @@ fn installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_outp
 
 #[test]
 fn installed_libreoffice_conversion_rejects_a_changed_source_generation() {
+    #[cfg(target_os = "windows")]
+    if run_with_fixture_office_adapter(
+        "installed_libreoffice_conversion_rejects_a_changed_source_generation",
+        true,
+    ) {
+        return;
+    }
     struct MutatingLauncher;
 
     impl IsolatedProcessLauncher for MutatingLauncher {
@@ -513,7 +621,8 @@ fn installed_libreoffice_conversion_rejects_a_changed_source_generation() {
         }
     }
 
-    let root = temp_dir("libreoffice-source-generation");
+    let fixture = temp_dir("libreoffice-source-generation");
+    let root = fixture.path();
     let executable = root.join("soffice");
     let source = root.join("source.docx");
     let output = root.join("output");
@@ -548,6 +657,13 @@ fn installed_libreoffice_conversion_rejects_a_changed_source_generation() {
 
 #[test]
 fn installed_libreoffice_conversion_rejects_changed_source_metadata() {
+    #[cfg(target_os = "windows")]
+    if run_with_fixture_office_adapter(
+        "installed_libreoffice_conversion_rejects_changed_source_metadata",
+        true,
+    ) {
+        return;
+    }
     struct MetadataMutatingLauncher;
 
     impl IsolatedProcessLauncher for MetadataMutatingLauncher {
@@ -570,7 +686,8 @@ fn installed_libreoffice_conversion_rejects_changed_source_metadata() {
         }
     }
 
-    let root = temp_dir("libreoffice-source-metadata");
+    let fixture = temp_dir("libreoffice-source-metadata");
+    let root = fixture.path();
     let executable = root.join("soffice");
     let source = root.join("source.docx");
     let output = root.join("output");
@@ -805,7 +922,8 @@ fn provider_timeout_is_typed_and_falls_back_without_losing_attempt_evidence() {
         }
     }
 
-    let root = temp_dir("timeout-fallback");
+    let fixture = temp_dir("timeout-fallback");
+    let root = fixture.path();
     let source = root.join("source.docx");
     let output = root.join("output");
     std::fs::write(&source, b"bounded source fixture").expect("write source fixture");
@@ -874,7 +992,8 @@ fn provider_output_rejects_encrypted_pdf_before_falling_back() {
         }
     }
 
-    let root = temp_dir("encrypted-output");
+    let fixture = temp_dir("encrypted-output");
+    let root = fixture.path();
     let source = root.join("source.docx");
     let output = root.join("output");
     std::fs::write(&source, b"bounded source fixture").expect("write source fixture");
@@ -910,7 +1029,8 @@ fn provider_output_rejects_encrypted_pdf_before_falling_back() {
 
 #[test]
 fn office_rendering_uses_deterministic_fallback_order_and_provider_cache_identity() {
-    let root = temp_dir("fallback-order");
+    let fixture = temp_dir("fallback-order");
+    let root = fixture.path();
     let source = root.join("source.docx");
     let output = root.join("output");
     std::fs::write(&source, b"bounded source fixture").expect("write source fixture");
@@ -962,7 +1082,8 @@ fn office_rendering_uses_deterministic_fallback_order_and_provider_cache_identit
 
 #[test]
 fn production_page_orchestration_renders_only_the_validated_provider_pdf_and_reports_provenance() {
-    let root = temp_dir("production-page");
+    let fixture = temp_dir("production-page");
+    let root = fixture.path();
     let source = root.join("source.docx");
     let output = root.join("output");
     std::fs::write(&source, b"bounded source fixture").expect("write source fixture");

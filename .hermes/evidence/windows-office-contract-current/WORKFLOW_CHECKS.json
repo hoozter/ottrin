@@ -1,0 +1,56 @@
+{
+  "positive": "pass",
+  "yaml_parse_and_early_order": "pass",
+  "negative_omissions": [
+    {
+      "file": ".github/workflows/release.yml",
+      "omission": "cache-on-failure: true",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/release.yml",
+      "omission": "cargo test -p ottrin-preview --test office_provider_contract -- --nocapture",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/release.yml",
+      "omission": "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/release.yml",
+      "omission": "windows_native_move_cleanup",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/release.yml",
+      "omission": "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "omission": "cache-on-failure: true",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "omission": "cargo test -p ottrin-preview --test office_provider_contract -- --nocapture",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "omission": "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "omission": "windows_native_move_cleanup",
+      "refused": true
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "omission": "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+      "refused": true
+    }
+  ]
+}

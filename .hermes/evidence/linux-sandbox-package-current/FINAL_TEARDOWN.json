@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "profile_removed": true,
+  "app_exit_zero": true,
+  "owned_processes_reaped": [
+    {
+      "pid": 2189396,
+      "exit": 0
+    },
+    {
+      "pid": 2189399,
+      "exit": 0
+    },
+    {
+      "pid": 2189400,
+      "exit": 15
+    },
+    {
+      "pid": 2189456,
+      "exit": 0
+    }
+  ],
+  "daemon_cleanup": {
+    "pid": 2189460,
+    "peer_uid": 1000,
+    "pidfd_exit_observed": true
+  },
+  "portal_mounts_unmounted": [],
+  "extract_removed": true,
+  "stage_removed": true,
+  "rpm_wrappers_removed": true,
+  "current_deliverables_preserved": true,
+  "previous_root_owned_cores": "Remain on explicit owner waiting list; no new core created under LimitCORE0 harness"
+}

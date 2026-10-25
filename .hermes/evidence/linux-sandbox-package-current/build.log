@@ -1,0 +1,157 @@
+
+==> Building Linux portable tarball
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 5m 48s
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 39.81s
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 1m 11s
+/tmp/tmp.q6vEp4sHz7/pdfium.tgz: OK
+/tmp/tmp.wvf7VtyseJ/archive: OK
+/tmp/tmp.wvf7VtyseJ/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+
+==> Building Linux AppImage
+    Finished `release` profile [optimized] target(s) in 0.30s
+    Finished `release` profile [optimized] target(s) in 0.21s
+    Finished `release` profile [optimized] target(s) in 0.20s
+/tmp/tmp.4L8ountIKX/pdfium.tgz: OK
+/tmp/tmp.yRBWSkU5tt/archive: OK
+/tmp/tmp.yRBWSkU5tt/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/dist/appimagetool-x86_64.AppImage: OK
+appimagetool, continuous build (commit 5735cc5), build <local dev build> built on 2023-03-08 22:52:04 UTC
+Using architecture x86_64
+Deleting pre-existing .DirIcon
+Creating .DirIcon symlink based on information from desktop file
+AppStream upstream metadata found in usr/share/metainfo/org.ottrin.Ottrin.appdata.xml
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.appimage.ZQNKSY/AppDir should be packaged as /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.appimage.ZQNKSY/Ottrin-0.1.0-x86_64.AppImage
+Trying to validate AppStream information with the appstreamcli tool
+In case of issues, please refer to https://github.com/ximion/appstream
+org.ottrin.Ottrin.appdata.xml
+
+✔ Validation was successful: pedantic: 1
+Generating squashfs...
+Parallel mksquashfs: Using 16 processors
+Creating 4.0 filesystem on /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.appimage.ZQNKSY/Ottrin-0.1.0-x86_64.AppImage, block size 131072.
+[===============================================================/] 645/645 100%
+
+Exportable Squashfs 4.0 filesystem, gzip compressed, data block size 131072
+	compressed data, compressed metadata, compressed fragments,
+	compressed xattrs, compressed ids
+	duplicates are removed
+Filesystem size 30488.44 Kbytes (29.77 Mbytes)
+	42.68% of uncompressed filesystem size (71438.91 Kbytes)
+Inode table size 3103 bytes (3.03 Kbytes)
+	47.07% of uncompressed inode table size (6592 bytes)
+Directory table size 1651 bytes (1.61 Kbytes)
+	50.46% of uncompressed directory table size (3272 bytes)
+Number of duplicate files found 7
+Number of inodes 136
+Number of files 109
+Number of fragments 15
+Number of symbolic links  1
+Number of device nodes 0
+Number of fifo nodes 0
+Number of socket nodes 0
+Number of directories 26
+Number of ids (unique uids + gids) 1
+Number of uids 1
+	root (0)
+Number of gids 1
+	root (0)
+Embedding ELF...
+Marking the AppImage as executable...
+Embedding MD5 digest
+Success
+
+Please consider submitting your AppImage to AppImageHub, the crowd-sourced
+central directory of available AppImages, by opening a pull request
+at https://github.com/AppImage/appimage.github.io
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/Ottrin-0.1.0-x86_64.AppImage
+
+==> Building native Debian package
+/tmp/tmp.CGF4UcjF7k/pdfium.tgz: OK
+/tmp/tmp.AVkvPJDdDT/archive: OK
+/tmp/tmp.AVkvPJDdDT/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.deb.UT53k3/package
+dpkg-deb: building package 'ottrin' in '/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.deb.UT53k3/ottrin_0.1.0_amd64.deb'.
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/ottrin_0.1.0_amd64.deb
+
+==> Building native RPM package
+/tmp/tmp.GaeYWIx1Ra/pdfium.tgz: OK
+/tmp/tmp.DPXFIcPR5a/archive: OK
+/tmp/tmp.DPXFIcPR5a/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/SOURCES/stage
+Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.towccv
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.xyIiIB
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.ARszVN
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ /bin/mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT
++ /bin/mkdir /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ cp -a /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/SOURCES/stage/. /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-compress /usr
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-elfperms
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-static-archive /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-remove-la-files
+Processing files: ottrin-0.1.0-1.x86_64
+warning: Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+Provides: ottrin = 0.1.0-1 ottrin(x86-64) = 0.1.0-1
+Requires(interp): /bin/sh /bin/sh
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+Requires(preun): /bin/sh
+Requires(posttrans): /bin/sh
+Checking for unpackaged file(s): /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/check-files /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
+Wrote: /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/RPMS/x86_64/ottrin-0.1.0-1.x86_64.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.tROxgX
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(rmbuild): /bin/sh -e /var/tmp/rpm-tmp.WYnBWu
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+    Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/.rpm.iBLaYV/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+
+RPM build warnings:
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/.build-all.KDcTxs/linux/ottrin-0.1.0-1.x86_64.rpm
+portable: packaged helper and policy path PASS
+appimage: packaged helper and policy path PASS
+deb: packaged helper and policy path PASS
+rpm: packaged helper and policy path PASS
+Ottrin-0.1.0-linux-x86_64-portable.tar.gz: OK
+Ottrin-0.1.0-x86_64.AppImage: OK
+ottrin_0.1.0_amd64.deb: OK
+ottrin-0.1.0-1.x86_64.rpm: OK
+
+Built artifacts:
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/Ottrin-0.1.0-x86_64.AppImage
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/Ottrin-0.1.0-x86_64.AppImage.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/ottrin_0.1.0_amd64.deb
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/ottrin_0.1.0_amd64.deb.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/ottrin-0.1.0-1.x86_64.rpm
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-stage/ottrin-0.1.0-1.x86_64.rpm.sha256

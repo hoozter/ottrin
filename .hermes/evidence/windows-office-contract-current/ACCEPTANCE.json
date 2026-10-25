@@ -1,0 +1,24 @@
+{
+  "status": "pass within fixture repair and native contract scope",
+  "base_revision": "7d5eee591cf1e101d9a16f69874730ad8bd05229",
+  "contract_source_sha256": "e131d6baecc562dde7080fd61b692496aa8a500e4a1bf9d534e468aaa85a9f8f",
+  "native_windows_contract_cases": 16,
+  "nested_process_fixtures": 6,
+  "linux_provider_boundary_contract_cases": 17,
+  "strict_windows_cross_target_clippy": "pass",
+  "format": "pass",
+  "production_provider_guards": "unchanged; explicit Windows missing-adapter refusal executes and passes",
+  "fixture_ownership": "Private per-test child environment supplies mock adapter; every common fixture root uses TempDir RAII and explicit successful cleanup; zero native temp entries remain",
+  "workflow": "Both verify jobs execute Office contracts before the full workspace suite; positive, YAML/order and 10 omission negatives pass",
+  "full_msvc_a230": {
+    "platform_passed": 459,
+    "platform_failed": 0,
+    "platform_ignored": 79,
+    "preview_unit_passed": 199,
+    "office_contract_failed_before_repair": 5,
+    "scope": "Full workspace stopped at Office contracts; search/UI/remaining steps not accepted by that run"
+  },
+  "full_repaired_msvc": "Pending pushed CI run; native GNU and cross compilation do not replace it",
+  "actual_office_runtime": "No new LibreOffice/AppContainer/Office GUI acceptance claimed; six native-runtime gate ignores remain engineering work",
+  "teardown": "TEARDOWN.json: all guest fixtures and children removed; guest off; original profiles/disks/definition preserved; transfer copies removed"
+}

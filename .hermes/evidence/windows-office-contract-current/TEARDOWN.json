@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "guest_off": true,
+  "definition_unchanged": true,
+  "guest_fixture_removed": true,
+  "owned_host_transfer_removed": true,
+  "current_compiler_caches_preserved": true
+}

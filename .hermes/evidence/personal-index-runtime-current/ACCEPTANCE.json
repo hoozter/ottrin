@@ -1,0 +1,32 @@
+{
+  "status": "pass within actual personal-service observation window",
+  "authorization": "Earlier explicit user authorization to interrupt/restart the index; configured service was enabled but stopped cleanly since October24",
+  "action": "Restarted configured service through newly delivered AppImage index service-restart; existing wrapper already points to stable current AppImage; no legacy migration was inferred or applied",
+  "artifact_sha256": "d813e0e1e418a2815975489698795c4ab535851b3a75a54689895a23d1de9e50",
+  "daemon_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+  "process_name": "ottrin-indexd",
+  "indexed_items": 121050,
+  "watcher_ready": true,
+  "cpu_percent_of_one_core_20_seconds": 0.1934983669375957,
+  "cpu_percent_of_one_core_60_seconds": 0.13817511360407175,
+  "rss_at_sample_start": "39672 kB",
+  "memory_accounting": {
+    "scope": "Main-process RSS is distinct from cgroup charges, which also include reclaimable filesystem/page/slab caches",
+    "cgroup_sample_end_bytes": 917856256,
+    "later_memory_stat": {
+      "anon": 34603008,
+      "file": 693145600,
+      "kernel": 189919232,
+      "slab_reclaimable": 183569968,
+      "slab_unreclaimable": 5980592
+    }
+  },
+  "config_unit_wrapper_bytes_unchanged": {
+    "config": true,
+    "unit": true,
+    "wrapper": true
+  },
+  "primary_user_file_bytes_not_edited_by_agent": true,
+  "final_state": "Enabled and running; production runtime and AppImage mount deliberately retained as the requested background service",
+  "limits": "Two bounded observation windows on the actual121050-item index; not long-duration idle/load/real-device or final owner acceptance"
+}

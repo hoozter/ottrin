@@ -1,0 +1,126 @@
+{
+  "scope": "Actual configured enabled personal service after authorized restart; complete cgroup CPU includes launcher/FUSE/daemon descendants; observation window only",
+  "identity": {
+    "pid": 2193788,
+    "comm": "ottrin-indexd",
+    "exe": "/tmp/.mount_Ottrin3VTaju/usr/bin/ottrin-indexd",
+    "exe_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+    "status": {
+      "VmHWM": "43908 kB",
+      "VmRSS": "39644 kB",
+      "VmSwap": "0 kB",
+      "Threads": "3"
+    }
+  },
+  "elapsed_seconds": 20.24719930201536,
+  "cpu_percent_of_one_core": 0.1934983669375957,
+  "samples": [
+    {
+      "elapsed_seconds": 1.0128323300159536,
+      "service_cpu_ns": 25312359000,
+      "memory_current_bytes": 929415168
+    },
+    {
+      "elapsed_seconds": 2.0261742679867893,
+      "service_cpu_ns": 25313313000,
+      "memory_current_bytes": 929415168
+    },
+    {
+      "elapsed_seconds": 3.0390805960050784,
+      "service_cpu_ns": 25314604000,
+      "memory_current_bytes": 929304576
+    },
+    {
+      "elapsed_seconds": 4.052016358007677,
+      "service_cpu_ns": 25315858000,
+      "memory_current_bytes": 929304576
+    },
+    {
+      "elapsed_seconds": 5.065014938998502,
+      "service_cpu_ns": 25317063000,
+      "memory_current_bytes": 929304576
+    },
+    {
+      "elapsed_seconds": 6.078029111027718,
+      "service_cpu_ns": 25318343000,
+      "memory_current_bytes": 929304576
+    },
+    {
+      "elapsed_seconds": 7.091170521976892,
+      "service_cpu_ns": 25319580000,
+      "memory_current_bytes": 929304576
+    },
+    {
+      "elapsed_seconds": 8.10324586398201,
+      "service_cpu_ns": 25320728000,
+      "memory_current_bytes": 929304576
+    },
+    {
+      "elapsed_seconds": 9.113909725972917,
+      "service_cpu_ns": 25321339000,
+      "memory_current_bytes": 929304576
+    },
+    {
+      "elapsed_seconds": 10.12664016202325,
+      "service_cpu_ns": 25322198000,
+      "memory_current_bytes": 929103872
+    },
+    {
+      "elapsed_seconds": 11.135776808019727,
+      "service_cpu_ns": 25323582000,
+      "memory_current_bytes": 929103872
+    },
+    {
+      "elapsed_seconds": 12.147658244997729,
+      "service_cpu_ns": 25324838000,
+      "memory_current_bytes": 929103872
+    },
+    {
+      "elapsed_seconds": 13.161021945998073,
+      "service_cpu_ns": 25326112000,
+      "memory_current_bytes": 929103872
+    },
+    {
+      "elapsed_seconds": 14.17420263797976,
+      "service_cpu_ns": 25327355000,
+      "memory_current_bytes": 929103872
+    },
+    {
+      "elapsed_seconds": 15.188239605980925,
+      "service_cpu_ns": 25328865000,
+      "memory_current_bytes": 929112064
+    },
+    {
+      "elapsed_seconds": 16.201021888002288,
+      "service_cpu_ns": 25335734000,
+      "memory_current_bytes": 929992704
+    },
+    {
+      "elapsed_seconds": 17.21398117399076,
+      "service_cpu_ns": 25336833000,
+      "memory_current_bytes": 929992704
+    },
+    {
+      "elapsed_seconds": 18.227125770994462,
+      "service_cpu_ns": 25337956000,
+      "memory_current_bytes": 929554432
+    },
+    {
+      "elapsed_seconds": 19.240025104023516,
+      "service_cpu_ns": 25338856000,
+      "memory_current_bytes": 929554432
+    },
+    {
+      "elapsed_seconds": 20.247194322990254,
+      "service_cpu_ns": 25340125000,
+      "memory_current_bytes": 930594816
+    }
+  ],
+  "config_unit_wrapper_unchanged": {
+    "config": true,
+    "unit": true,
+    "wrapper": true
+  },
+  "primary_user_files_not_modified_by_agent": true,
+  "service_left_enabled_and_running": true
+}

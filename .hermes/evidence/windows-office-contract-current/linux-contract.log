@@ -1,0 +1,24 @@
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `test` profile [optimized + debuginfo] target(s) in 8.98s
+     Running tests/office_provider_contract.rs (target/debug/deps/office_provider_contract-99b408d5cea89da2)
+
+running 17 tests
+test cancelled_office_rendering_stops_before_request_or_provider_work ... ok
+test installed_libreoffice_candidates_include_both_launch_names_from_each_search_directory ... ok
+test production_provider_format_mapping_accepts_only_the_bounded_office_contract ... ok
+test provider_probe_exposes_capability_only_when_available ... ok
+test legacy_doc_extraction_is_bounded_isolated_and_sanitized ... ok
+test installed_libreoffice_conversion_rejects_a_changed_source_generation ... ok
+test installed_libreoffice_detection_skips_missing_candidates_and_returns_canonical_executable ... ok
+test installed_libreoffice_conversion_rejects_changed_source_metadata ... ok
+test installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_output ... ok
+test installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_formats ... ok
+test production_page_orchestration_renders_only_the_validated_provider_pdf_and_reports_provenance ... ok
+test provider_timeout_is_typed_and_falls_back_without_losing_attempt_evidence ... ok
+test office_rendering_uses_deterministic_fallback_order_and_provider_cache_identity ... ok
+test provider_output_rejects_encrypted_pdf_before_falling_back ... ok
+test linux_process_boundary_exposes_only_mapped_input_profile_output_and_sanitized_environment ... ok
+test linux_process_boundary_timeout_kills_descendants_and_removes_controller_logs ... ok
+test native_legacy_doc_rendering_uses_an_isolated_helper_and_rejects_oversized_pdf_output ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.81s

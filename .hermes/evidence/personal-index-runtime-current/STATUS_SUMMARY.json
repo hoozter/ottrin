@@ -1,0 +1,11 @@
+{
+  "status": "ready",
+  "indexed_items": 121050,
+  "configured_roots": 1,
+  "watcher_ready": true,
+  "watched_roots": 1,
+  "database_bytes": 873132032,
+  "freelist_bytes": 668995584,
+  "wal_bytes": 24752,
+  "last_scan_completed_unix_secs": 1792961135
+}

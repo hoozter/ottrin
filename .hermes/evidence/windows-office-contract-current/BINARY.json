@@ -1,0 +1,72 @@
+{
+  "base_revision": "7d5eee591cf1e101d9a16f69874730ad8bd05229",
+  "compiled_code_delta": [
+    "crates/ottrin-preview/tests/office_provider_contract.rs"
+  ],
+  "contract_source_sha256": "e131d6baecc562dde7080fd61b692496aa8a500e4a1bf9d534e468aaa85a9f8f",
+  "raw_test_sha256": "e1e095c320865a761df0ce269a506c1707caaabbad1bb3983e2ba84f6b0e9695",
+  "transferred_sha256": "f7c4edaeb47a9db50031712e0f55a12b06ec26de1603f7438a8f4769d6d227a8",
+  "retained_pe_sections_equal": true,
+  "retained_sections": {
+    ".text": {
+      "virtual_size": 28143864,
+      "virtual_address": 4096,
+      "flags": 1610612832,
+      "raw_sha256": "88dc14496967f11d60a515b92b5f042df32c119bf1098af038b141becc8904be"
+    },
+    ".data": {
+      "virtual_size": 29120,
+      "virtual_address": 28151808,
+      "flags": 3221225536,
+      "raw_sha256": "ba70eaf59879fda1c6281c87c8e10475b223fc8848f64fccf687bd114a92bfe0"
+    },
+    ".rdata": {
+      "virtual_size": 9968192,
+      "virtual_address": 28184576,
+      "flags": 1073741888,
+      "raw_sha256": "24b886023a58f192ddd06f4c0908fb2ee4a2e5ac70f19309b9e476f3a0777799"
+    },
+    ".pdata": {
+      "virtual_size": 888600,
+      "virtual_address": 38154240,
+      "flags": 1073741888,
+      "raw_sha256": "eb8897ada3433977e8fb59193f82d2bc21a6cae5785c046423b680697ce18b0b"
+    },
+    ".xdata": {
+      "virtual_size": 2091964,
+      "virtual_address": 39043072,
+      "flags": 1073741888,
+      "raw_sha256": "449685b50e80e286be85a2c758165afe4f3d7b9733715ec90461b63012036721"
+    },
+    ".bss": {
+      "virtual_size": 800,
+      "virtual_address": 41136128,
+      "flags": 3221225600,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    ".idata": {
+      "virtual_size": 12648,
+      "virtual_address": 41140224,
+      "flags": 3221225536,
+      "raw_sha256": "b114d9868a778bb09165c3ab52d0b87c675e93db5806b3b97d10b63447d231f0"
+    },
+    ".CRT": {
+      "virtual_size": 104,
+      "virtual_address": 41156608,
+      "flags": 3221225536,
+      "raw_sha256": "bcc318b5a2b692020a2ba8847113f2b6bf18fa8dbae45495bbcf1473bc03e1eb"
+    },
+    ".tls": {
+      "virtual_size": 16,
+      "virtual_address": 41160704,
+      "flags": 3221225536,
+      "raw_sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+    },
+    ".reloc": {
+      "virtual_size": 151860,
+      "virtual_address": 41164800,
+      "flags": 1107296320,
+      "raw_sha256": "46fe7c90ce21c996621a307f65bd6efc6aa2624ca220e1e97df958ec1ad4a5df"
+    }
+  }
+}

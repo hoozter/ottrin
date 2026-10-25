@@ -1,0 +1,9 @@
+26G	target/debug/deps
+9.7G	target/debug/incremental
+26G	target/x86_64-pc-windows-gnu/debug/deps
+21G	target/x86_64-pc-windows-gnu/debug/incremental
+272K	.hermes/evidence/linux-sandbox-package-current
+176K	.hermes/evidence/windows-office-contract-current
+269M	.hermes/packaging-tmp/.windows-ci-stage
+
+Only extra staged package cohort: .hermes/packaging-tmp/.windows-ci-stage (a230,269MiB), pending current native Windows GUI and full pipeline acceptance. New raw Office contract executable is current target cache, retained for subsequent native QA. Production index service and its active AppImage mount deliberately remain running.

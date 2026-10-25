@@ -61,6 +61,12 @@ jobs:
           windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names
           --nocapture
 
+      - name: Check Windows Office contracts before workspace suite
+        if: runner.os == 'Windows'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: cargo test -p ottrin-preview --test office_provider_contract -- --nocapture
+
       - name: Cargo test
         env:
           CARGO_BUILD_JOBS: 2

@@ -1,0 +1,10 @@
+{
+  "scope": "Only same-config Office contract sessions replaced during this build task; both compiler lock styles acquired; no active contract compiler; useful configurations and current native test executable retained",
+  "removed": [
+    {
+      "removed": "target/debug/incremental/office_provider_contract-1dcklp9hj1s6w/s-hnjsg13zwh-1p7427y-0y4nfbavec56hhudt7d9tz736",
+      "current_replacement": "target/debug/incremental/office_provider_contract-1dcklp9hj1s6w/s-hnjufnemh7-1e741rz-dku7dtkp554hh4ypq7uqbxg9p",
+      "logical_bytes": 11455421
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{"time": 1792960159.6490893, "key": "ctrl+l"}
+{"time": 1792960160.0286613, "key": "Return"}
+{"time": 1792960160.6792133, "navigate": "/home/campbell/.opqa-1poaafm6/fixture/contact"}
+{"time": 1792960160.73614, "key": "Home"}
+{"time": 1792960161.044343, "key": "space"}
+{"time": 1792960198.220438, "capture": "preview-startup-observation"}
+{"time": 1792960217.8920772, "key": "ctrl+l"}
+{"time": 1792960218.2874312, "key": "Return"}
+{"time": 1792960218.937842, "navigate": "/home/campbell/.opqa-1poaafm6/fixture/contact"}
+{"time": 1792960219.0869179, "click": [150, 115]}
+{"time": 1792960219.5507782, "key": "space"}
+{"time": 1792960220.2991586, "capture": "after-readonly-preview"}
+{"time": 1792960220.3681462, "key": "alt+F4"}
+{"time": 1792960319.2062473, "click": [1072, 18]}
+{"time": 1792960319.6067314, "close": "Clicked the observed product title-bar Close button; standalone KWin session did not dispatch Alt+F4"}

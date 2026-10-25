@@ -11,11 +11,12 @@ for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
   verify_job="$(awk '/^  verify:/ { active=1; next } active && /^  [a-zA-Z_-]+:/ { exit } active { print }' "$verification")"
   for literal in \
     'cache-on-failure: true' \
+    'cargo test -p ottrin-preview --test office_provider_contract -- --nocapture' \
     'windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent' \
     'windows_native_move_cleanup' \
     'windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names'; do
     if ! grep -Fq -- "$literal" <<<"$verify_job"; then
-      printf 'Verification omits dependency-cache or native ownership preflight: %s (%s)\n' "$literal" "$verification" >&2
+      printf 'Verification omits dependency-cache or native Windows preflight: %s (%s)\n' "$literal" "$verification" >&2
       exit 1
     fi
   done

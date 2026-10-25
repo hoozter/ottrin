@@ -1,0 +1,8 @@
+{
+  "comm": "ottrin-indexd",
+  "pid": 2193788,
+  "cpu_percent_of_one_core": 0.1934983669375957,
+  "elapsed_seconds": 20.24719930201536,
+  "memory_current_bytes": 930594816,
+  "exe_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4"
+}

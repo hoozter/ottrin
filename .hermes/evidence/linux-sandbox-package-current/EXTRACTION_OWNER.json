@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-sandbox-extract",
+  "source": "7d5eee591cf1e101d9a16f69874730ad8bd05229",
+  "pending_consumers": [
+    "production package content/closure verification",
+    "Dark100/Light150 native GUI and file operations"
+  ],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks"
+}
