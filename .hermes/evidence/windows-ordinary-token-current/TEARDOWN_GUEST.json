@@ -1,0 +1,11 @@
+{
+    "ownedAccountRemoved":  true,
+    "scope":  "No scheduled task, machine/user execution-policy change, stored credential, user logon setting or original profile changes",
+    "ownedProfileWasCreated":  false,
+    "ownedRootRemoved":  true,
+    "profileLoadRequested":  false,
+    "originalProfileBindingsPreserved":  true,
+    "disksPreserved":  true,
+    "ownedProcesses":  0,
+    "status":  "pass"
+}

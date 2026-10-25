@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "5.0.2+aa65968c\r\n{\r\n    \"scope\":  \"native exact portable extraction and compiler validation\",\r\n    \"status\":  \"pass\",\r\n    \"payloadFiles\":  58\r\n}\r\n",
+  "correction": "Reused completed preparation after Python observer Path name error; corrected PSObject property enumeration before acceptance"
+}

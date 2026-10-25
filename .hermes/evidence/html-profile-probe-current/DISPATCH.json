@@ -1,0 +1,12 @@
+{
+  "branch": "branch/html-sandbox-profile-probe-20261025",
+  "commit": "0ba8738eac92540f143a34965cedb0d79bfd6d9d",
+  "base": "a230fa2c7b8f8389bd9ddf3a33331388f4febdef",
+  "purpose": "CI-only fixed trusted launcher sandbox experiment; main source unchanged",
+  "cleanup": "delete owned remote/local branch after evidence capture",
+  "prior_commits": [
+    "f655bc86d3414193beb0e400fff4eddc9ef025d7",
+    "3681c47ac1fb6fb2addda807db3cdb81c5f33120",
+    "c2ae9f90de149fecf659ea6b45281bdb9d5bcbe7"
+  ]
+}

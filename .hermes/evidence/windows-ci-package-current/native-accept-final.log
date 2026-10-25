@@ -1,0 +1,34 @@
+native PID 2432
+{
+    "entries_checked":  58,
+    "status":  "pass",
+    "msi_sha256":  "cb0845a208e0f6006aad72636b1789f7016257395eb79e19c1171e6b268fa523",
+    "scope":  "Native administrative extraction only; no installation, upgrade or rollback acceptance"
+}
+
+{
+    "scope":  "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status":  "pass",
+    "runs":  [
+                 {
+                     "exit":  0,
+                     "stdout_sha256":  "7b9185bef772d9d1468581812446aadcb5c10d621a430a9b18e07ed23f8a46ae",
+                     "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                     "executable":  "ottrin.exe"
+                 },
+                 {
+                     "exit":  2,
+                     "stdout_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                     "stderr_sha256":  "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+                     "executable":  "ottrin-indexd.exe"
+                 },
+                 {
+                     "exit":  2,
+                     "stdout_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                     "stderr_sha256":  "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+                     "executable":  "ottrin-priv-helper.exe"
+                 }
+             ],
+    "identity":  "NT AUTHORITY\\SYSTEM"
+}
+

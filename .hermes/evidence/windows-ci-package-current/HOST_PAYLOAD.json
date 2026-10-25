@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "files": 58,
+  "portable_and_nsis_match": true,
+  "font_notice_exact": true,
+  "source_revision": "a230fa2c7b8f8389bd9ddf3a33331388f4febdef",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "149170701af1ce4015858986ef2d451161925fb3d1de97bd60678010ba381f52",
+    "Ottrin-0.1.0-windows-x64.msi": "cb0845a208e0f6006aad72636b1789f7016257395eb79e19c1171e6b268fa523",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "67b61daf7d6b354bf0223f25a473960482b6ad77fb379f84eae616f1faa10208"
+  },
+  "temporary_nsis_extraction_removed": true
+}

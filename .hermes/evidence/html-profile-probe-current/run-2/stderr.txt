@@ -1,0 +1,1 @@
+untrusted browser uid=0 mode=100777

@@ -1,0 +1,36 @@
+{
+    "profiles":  [
+                     {
+                         "SID":  "S-1-5-21-3183210791-1673105385-3262580894-1031",
+                         "LocalPath":  "C:\\Users\\OttrinCopyQA",
+                         "Loaded":  false
+                     },
+                     {
+                         "SID":  "S-1-5-21-3183210791-1673105385-3262580894-1001",
+                         "LocalPath":  "C:\\Users\\campbell",
+                         "Loaded":  true
+                     },
+                     {
+                         "SID":  "S-1-5-20",
+                         "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\NetworkService",
+                         "Loaded":  true
+                     },
+                     {
+                         "SID":  "S-1-5-19",
+                         "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\LocalService",
+                         "Loaded":  true
+                     },
+                     {
+                         "SID":  "S-1-5-18",
+                         "LocalPath":  "C:\\WINDOWS\\system32\\config\\systemprofile",
+                         "Loaded":  true
+                     }
+                 ],
+    "disks":  [
+                  {
+                      "Number":  0,
+                      "UniqueId":  "0000000500000000",
+                      "Size":  68719476736
+                  }
+              ]
+}

@@ -1,0 +1,13 @@
+{
+  "source_revision": "a230fa2c7b8f8389bd9ddf3a33331388f4febdef",
+  "tracked_tree": "clean",
+  "jobs": 1,
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage",
+  "target": "x86_64-pc-windows-gnu",
+  "pending_consumers": [
+    "ZIP/NSIS/MSI production payload verification",
+    "native MSI extraction and CLI/GUI acceptance"
+  ],
+  "delivery": "Current internal candidate and public downloads preserved until replacement acceptance",
+  "memory": "Retained native guest stays off while compiling; no profile or RUSTFLAGS changes"
+}

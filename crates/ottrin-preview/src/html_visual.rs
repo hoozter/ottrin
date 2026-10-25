@@ -8,7 +8,7 @@ use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 use std::os::fd::AsRawFd;
-use std::os::unix::fs::OpenOptionsExt;
+use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -281,12 +281,21 @@ fn create_render_directory() -> Result<RenderDirectory, HtmlVisualError> {
         "ottrin-html-preview-{}-{unique}",
         std::process::id()
     ));
-    std::fs::create_dir(&path).map_err(|error| HtmlVisualError::Read(error.to_string()))?;
-    std::fs::create_dir(path.join("profile"))
+    let mut builder = std::fs::DirBuilder::new();
+    builder.mode(0o700);
+    builder
+        .create(&path)
         .map_err(|error| HtmlVisualError::Read(error.to_string()))?;
-    std::fs::create_dir(path.join("output"))
-        .map_err(|error| HtmlVisualError::Read(error.to_string()))?;
-    Ok(RenderDirectory(path))
+    // Own cleanup before creating children so a partially prepared render never
+    // leaves document data behind. Restrict access from the first mkdir, rather
+    // than relying on the caller's umask or changing permissions afterward.
+    let directory = RenderDirectory(path);
+    for child in ["profile", "output"] {
+        builder
+            .create(directory.0.join(child))
+            .map_err(|error| HtmlVisualError::Read(error.to_string()))?;
+    }
+    Ok(directory)
 }
 
 pub fn render_html_content_preview_png(
@@ -446,6 +455,25 @@ mod tests {
                 diagnostics: Vec::new(),
             })
         }
+    }
+
+    #[test]
+    fn render_directories_are_private_and_clean_up_document_data() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let directory = create_render_directory().unwrap();
+        let root = directory.0.clone();
+        for path in [root.clone(), root.join("profile"), root.join("output")] {
+            assert_eq!(
+                std::fs::metadata(path).unwrap().permissions().mode() & 0o777,
+                0o700
+            );
+        }
+        std::fs::write(root.join("input.html"), "private document").unwrap();
+        std::fs::write(root.join("profile/state"), "private profile").unwrap();
+        std::fs::write(root.join("output/output.png"), "private image").unwrap();
+        drop(directory);
+        assert!(!root.exists());
     }
 
     #[test]

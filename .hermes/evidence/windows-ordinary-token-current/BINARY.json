@@ -1,0 +1,10 @@
+{
+  "source_revision": "a230fa2c7b8f8389bd9ddf3a33331388f4febdef",
+  "source_sha256": "6e87cf37c3308e28c58fb928ea6a5c77db49272a8c53ffd83a4fc877b6e7ab02",
+  "original_test_sha256": "4c1da491da765c4fac1e01a3857e952fbdc552dbcc324c9fac846a18fd61e6d4",
+  "transferred_sha256": "7c1a77ddc1d270b6586b360e8d5bc385bd92899c3934bec02601abc50f2c117e",
+  "kept_sections_equal": true,
+  "prior_stripped_hash": "f8dc4d1cafd27a77fc4caa911aba4f7bfe117af24688e401f4c371d62e15dd05",
+  "strip_metadata_changed": true,
+  "temporary_transfer_removed_on_return": true
+}

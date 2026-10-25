@@ -1,0 +1,6 @@
+{
+    "entries_checked":  58,
+    "status":  "pass",
+    "msi_sha256":  "cb0845a208e0f6006aad72636b1789f7016257395eb79e19c1171e6b268fa523",
+    "scope":  "Native administrative extraction only; no installation, upgrade or rollback acceptance"
+}

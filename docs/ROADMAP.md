@@ -85,8 +85,16 @@ their named hashes. Test counts are scoped observations, not completion measures
   corrected handoff releases that handle after identity capture, before journal
   publication. **11 targeted native Windows cases now pass** with a distinct
   user/default-owner SID, including interrupted cleanup recovery and Undo parent
-  admission. The attempted ordinary-account scheduler fixture did not execute
-  native checks and is not accepted; that scope remains engineer-owned QA.
+  admission. The earlier ordinary-account scheduler fixture did not execute native checks
+  and remains unaccepted. A subsequent direct LogonUser/CreateProcessAsUser
+  fixture now passes the same **11 targeted cases** under a confirmed
+  non-administrator token whose default owner equals its user SID. This closes
+  targeted ordinary-token ownership admission, not ordinary desktop, whole-suite
+  or current-package GUI acceptance. No scheduled task, interactive logon or
+  profile load is used. The owned account/root are removed, no profile was
+  created, original profile/disk bindings are preserved, and the retained guest
+  is off with unchanged definition. Evidence:
+  `windows-ordinary-token-current/ACCEPTANCE.json`.
   Hosted run `40218714811` passes the real Linux systemd/Bubblewrap setup probe
   with namespace restriction **1**. It now fails two HTML image-rendering tests
   (199 preview unit tests pass). A local bounded reproduction proves that denying
@@ -104,7 +112,9 @@ their named hashes. Test counts are scoped observations, not completion measures
   failure, using the cache action's supported input. Windows verification first
   runs the three ownership/cleanup/Undo admission filters, then the full workspace
   suite. Both workflows and eight deliberate-omission contracts pass; actual
-  hosted cache reuse and MSVC preflight remain pending. The superseded `5be5524d`
+  hosted cache reuse remains pending; the corrected MSVC preflight has now passed
+  in run `40225986422`, whose full Windows workspace suite is still running.
+  The superseded `5be5524d`
   run was cancelled deliberately after scoped native diagnosis; its partial logs
   show continuing fault-prefix tests, not an inferred hang or a passing run.
   The `7fc8d768` run has now completed: **427 Windows platform tests passed,
@@ -114,10 +124,35 @@ their named hashes. Test counts are scoped observations, not completion measures
   credential/payload fixtures are removed, original bindings are preserved, and
   the retained guest is off with unchanged definition. Current source/native
   evidence is in `windows-owned-folder-current`.
+- **HTML isolation experiment:** isolated hosted run `40228171605` renders the
+  expected inert HTML pixels with Ubuntu namespace restriction **1** unchanged.
+  A root-owned fixed-purpose launcher enters its dedicated enforced profile;
+  all six observed renderer processes retain seccomp, zero effective capabilities
+  and NoNewPrivs. Restricting executable mappings to protected runtime/library
+  paths blocks a caller-supplied preload library while rendering still succeeds.
+  The runner's original Chrome is world-writable, so this experiment uses a
+  byte-identical protected copy; production must admit trusted runtime paths.
+  Every owned runner policy, runtime copy, fixture and transient unit is removed.
+  This is a prototype, **not a repaired production preview path**. Integrate its
+  fixed protocol, shared namespace plan, protected setup/package lifecycle and
+  clear capability state, then run real production HTML and hosted Office gates.
+  Independently, HTML render workspaces now start with mode 0700 and own teardown
+  before child preparation. Five focused checks, two actual local rendering
+  checks and strict preview lint pass. Those local browser checks run with host
+  restriction 0; they do not substitute for the restricted-host prototype.
+  Source privacy fix and launcher integration are not in delivered Linux builds.
+  Evidence: `html-profile-probe-current/ACCEPTANCE.json`.
 - **Font-notice delivery:** all four current Linux packages contain the exact
-  authoritative font notice. Windows producer/verifier support is prepared, but
-  the existing 57-file internal Windows candidate predates this change. A fresh
-  Windows ZIP/NSIS/MSI cohort and native MSI payload equality remain required.
+  authoritative font notice. The existing 57-file internal Windows candidate
+  predates this change. A fresh
+  clean `a230fa2c` ZIP/NSIS/MSI cohort now agrees on all **58 files**, including
+  the exact authoritative notice. Native MSI administrative extraction and
+  loader/CLI checks pass. This cohort remains in
+  `.hermes/packaging-tmp/.windows-ci-stage/` for actual current GUI and full
+  Windows CI acceptance; it has not replaced the accepted internal candidate.
+  Compiler, administrative-extraction and portable guest fixtures are removed;
+  the retained guest is off with its original definition unchanged. Current
+  scoped receipt: `windows-ci-package-current/ACCEPTANCE.json`.
 - **Receipt-script correction:** a local final assertion incorrectly expected
   two compact cleanup records; the implementation retains intent, completion and
   completed-Undo proof. Its shell continued to the internal swap after that
@@ -128,13 +163,15 @@ their named hashes. Test counts are scoped observations, not completion measures
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Verify the early MSVC ownership gate and full workspace suite for the new
-   native Windows handle handoff/CI/resource checkpoint. Native elevated
-   ownership checks pass; ordinary-account/candidate acceptance remains separate.
+1. The early MSVC ownership gate passes. Verify the full workspace suite for the new
+   native Windows handle handoff/CI/resource checkpoint. Both elevated and
+   ordinary-token targeted ownership checks pass; current-candidate and broader
+   ordinary desktop acceptance remain separate.
    Repair Ubuntu HTML sandbox composition while preserving real-browser fidelity
    and both isolation boundaries. Reach the mandatory hosted Office suite.
-2. Build and accept a fresh Windows ZIP/NSIS/MSI candidate with bundled-font
-   notices; retain public Copy gating and resolve failed-uninstall rollback.
+2. The fresh Windows ZIP/NSIS/MSI cohort and exact bundled-font payload
+   checks pass. Complete actual current GUI and full Windows CI acceptance;
+   retain public Copy gating and resolve failed-uninstall rollback.
    Commit and push verified checkpoints. Linux's new four-format cohort is
    delivered; hosted release/signing execution remains unaccepted.
 3. The single-item footer/terminal-refusal metadata fixes are delivered in Linux
@@ -225,7 +262,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four formats have a coherent current content receipt; AppImage Trash/Undo and component checks pass within the scopes above. Earlier workflows retain their own artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Resolve the nine hosted native ownership/admission failures, finish native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
+| Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Finish full corrected MSVC and current candidate GUI acceptance, then native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 

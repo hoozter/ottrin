@@ -1,0 +1,59 @@
+{
+  "status": "pass",
+  "uid": 1001,
+  "controller_userns": "user:[4026531837]",
+  "browser_metadata": "os.stat_result(st_mode=33279, st_ino=3670217, st_dev=2049, st_nlink=1, st_uid=0, st_gid=0, st_size=297798984, st_atime=1792746605, st_mtime=1791245218, st_ctime=1791841857)",
+  "restriction_before": "1",
+  "trusted_runtime_browser_sha256": "9bfb381296dffe75f3419d07b6cc64525105ed117d1453a4ef3b291cb97d2b58",
+  "exit": 0,
+  "renderer_witnesses": {
+    "4792": {
+      "userns": "user:[4026532333]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-profile-probe (enforce)"
+    },
+    "4803": {
+      "userns": "user:[4026532333]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-profile-probe (enforce)"
+    },
+    "4805": {
+      "userns": "user:[4026532333]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-profile-probe (enforce)"
+    },
+    "4811": {
+      "userns": "user:[4026532333]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-profile-probe (enforce)"
+    },
+    "4846": {
+      "userns": "user:[4026532333]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-profile-probe (enforce)"
+    },
+    "4848": {
+      "userns": "user:[4026532333]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-profile-probe (enforce)"
+    }
+  },
+  "caller_preload_denied": true,
+  "pixel_checks": "pass; inert static layout and blocked script",
+  "private_profile_removed": true,
+  "restriction_after": "1",
+  "owned_policy_binary_removed": true,
+  "host_restriction_unchanged": true
+}

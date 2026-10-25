@@ -1,0 +1,10 @@
+{
+  "pid": 2976,
+  "prior_pid": 6328,
+  "prior_failure": "PowerShell script policy refused controller before account creation; process-scoped test script policy only; machine/user policy unchanged",
+  "observe_same_pid": true,
+  "prior_description_validation_pid": 4776,
+  "description_correction": "Shortened owned marker to Windows local-user 48-character limit; validation refused before account creation",
+  "prior_acl_validation_pid": 1100,
+  "provision_correction": "Use literal filesystem path for ACL rather than DirectoryInfo provider conversion; resume only marker-checked owned account before actor dispatch"
+}

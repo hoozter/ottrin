@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "owned_branch": "branch/html-sandbox-profile-probe-20261025",
+  "expected_commit": "0ba8738eac92540f143a34965cedb0d79bfd6d9d",
+  "remote_deleted_with_exact_commit_lease": true,
+  "local_deleted_with_exact_old_value": true,
+  "main_not_changed": true,
+  "evidence": "Prototype C, profile, Python, workflow and all four run receipts retained as compact engineering evidence; no new production workflow installed"
+}

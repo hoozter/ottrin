@@ -1,0 +1,28 @@
+{
+    "checks":  [
+                   {
+                       "filter":  "windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent",
+                       "stdout":  "limited-direct-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stdout",
+                       "stderr":  "limited-direct-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stderr",
+                       "exit":  0
+                   },
+                   {
+                       "filter":  "windows_native_move_cleanup",
+                       "stdout":  "limited-direct-windows_native_move_cleanup.stdout",
+                       "stderr":  "limited-direct-windows_native_move_cleanup.stderr",
+                       "exit":  0
+                   },
+                   {
+                       "filter":  "windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names",
+                       "stdout":  "limited-direct-windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names.stdout",
+                       "stderr":  "limited-direct-windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names.stderr",
+                       "exit":  0
+                   }
+               ],
+    "phase":  "limited-direct",
+    "temp_entries":  0,
+    "owner":  "S-1-5-21-3183210791-1673105385-3262580894-1039",
+    "status":  "pass",
+    "administrator":  false,
+    "user":  "S-1-5-21-3183210791-1673105385-3262580894-1039"
+}

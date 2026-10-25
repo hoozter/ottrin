@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-ordinary-token-current/prepare.py", line 12, in <module>
+    exe=Path(t)/'platform.exe';subprocess.run(['x86_64-w64-mingw32-strip','--strip-debug','-o',str(exe),str(binary)],check=True);assert sections(exe)==sections(binary);digest=hashlib.file_digest(exe.open('rb'),'sha256').hexdigest();assert digest==prior['transferred_sha256']
+                                                                                                                                                                                                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

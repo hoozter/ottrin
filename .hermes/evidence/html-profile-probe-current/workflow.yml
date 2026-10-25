@@ -1,0 +1,28 @@
+name: HTML sandbox profile probe
+on:
+  push:
+    branches: ["BRANCH"]
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install declared prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap dbus-user-session apparmor-profiles gcc python3-pil
+      - name: Prepare real user isolation
+        run: ./scripts/ci/prepare-linux-isolation.sh
+      - name: Probe fixed trusted browser launcher and profile
+        run: /usr/bin/python3 scripts/ci/html-profile-probe.py
+      - name: Upload bounded probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-profile-probe
+          path: html-probe-evidence/
+          if-no-files-found: error
+          retention-days: 7

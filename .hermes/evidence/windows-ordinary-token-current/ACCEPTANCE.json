@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "source_revision": "a230fa2c7b8f8389bd9ddf3a33331388f4febdef",
+  "native_checks": 11,
+  "non_administrator": true,
+  "token_user_equals_default_owner": true,
+  "temp_entries_after_tests": 0,
+  "method": "Direct LogonUser/CreateProcessAsUser; private session-0 process; no scheduled task, interactive logon, profile load or user logon settings changes",
+  "binary": "BINARY.json; raw executable source and all retained PE sections bound; strip metadata differs from previous copy",
+  "scope": "Move native private-folder owner policy/replaced parent refusal; nine cleanup/freeze/interrupted recovery cases; replacement Undo parent admission",
+  "limits": "Not ordinary desktop, GUI, installer, whole workspace or public Windows acceptance",
+  "provisioning_corrections": "CONTROLLER_PID.json and DISPATCH_OBSERVATION.json record script-policy, local account description and ACL provider corrections; refused attempts did not execute native tests",
+  "cleanup": "TEARDOWN.json and TEARDOWN_GUEST.json: account/root removed; no profile was created; original profiles/disks/VM definition preserved; retained guest off"
+}

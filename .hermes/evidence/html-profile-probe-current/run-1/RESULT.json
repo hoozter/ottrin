@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "uid": 1001,
+  "restriction_before": "1",
+  "exit": 2,
+  "renderer_witnesses": {},
+  "error": "AssertionError('')",
+  "restriction_after": "1",
+  "owned_policy_binary_removed": true,
+  "host_restriction_unchanged": true
+}

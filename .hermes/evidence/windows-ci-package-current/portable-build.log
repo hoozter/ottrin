@@ -1,0 +1,23 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 5m 43s
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 1m 10s
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+/tmp/tmp.mDs3qQFCNV/pdfium.tgz: OK
+/tmp/tmp.eLzVKGzk5r/mesa.7z: OK
+/tmp/tmp.eLzVKGzk5r/mesa-source.tar.gz: OK
+/tmp/tmp.eLzVKGzk5r/pal1000-LICENSE.txt: OK
+/tmp/tmp.eLzVKGzk5r/dxc.zip: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/opengl32.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libEGL.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libGLESv2.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libgallium_wgl.dll: OK
+/tmp/tmp.eLzVKGzk5r/dxc/LICENSE-MS.txt: OK
+/tmp/tmp.eLzVKGzk5r/dxc/bin/x64/dxil.dll: OK
+/tmp/tmp.XR4LsgCY9r/archive: OK
+/tmp/tmp.XR4LsgCY9r/extract/ripgrep-15.2.0-x86_64-pc-windows-msvc/rg.exe: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage/Ottrin-0.1.0-windows-x64-portable.zip

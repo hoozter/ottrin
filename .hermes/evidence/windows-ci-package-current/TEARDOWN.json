@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "domain": "ottrin-copy-cleanup-qa",
+  "final_state": "shut off",
+  "definition_unchanged": true,
+  "guest_fixture_removed": true,
+  "no_new_disks_accounts_or_guests": true,
+  "stage_pending_consumer": "Retained host ZIP/NSIS/MSI/source stage for native GUI and full Windows CI acceptance; previous accepted candidate preserved"
+}

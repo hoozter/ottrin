@@ -1,0 +1,125 @@
+{
+  "status": "completed runtime logs archived byte-exact; original actor filenames refer to these gzip archives",
+  "entries": [
+    {
+      "archive": "elevated-windows_native_move_cleanup.stdout.gz",
+      "original_name": "elevated-windows_native_move_cleanup.stdout",
+      "original_bytes": 2787,
+      "original_sha256": "f64fe7b3f841f8c98049139df5e5411359fe2d72a0dddac863d52b9e09109557"
+    },
+    {
+      "archive": "CI_HANDLE_BEFORE_HANDOFF.log.gz",
+      "original_name": "CI_HANDLE_BEFORE_HANDOFF.log",
+      "original_bytes": 290360,
+      "original_sha256": "b282d28faa29ea958caa608ac621919f5b829884347cf71da4dfdfae62f3dda7"
+    },
+    {
+      "archive": "elevated-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stderr.gz",
+      "original_name": "elevated-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stderr",
+      "original_bytes": 0,
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "windows-final-clippy.log.gz",
+      "original_name": "windows-final-clippy.log",
+      "original_bytes": 162,
+      "original_sha256": "15f9e938723e5adefd12628e4e9daadf038aaace484d611c3a6cbc92e9905c3a"
+    },
+    {
+      "archive": "CI_LINUX_DIAGNOSTIC.log.gz",
+      "original_name": "CI_LINUX_DIAGNOSTIC.log",
+      "original_bytes": 297097,
+      "original_sha256": "f384a21cee40d30e8f16b42f7c27aef3753c3f6c2bedcafe0b23fcabd1cbaba8"
+    },
+    {
+      "archive": "elevated-fixed-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stderr.gz",
+      "original_name": "elevated-fixed-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stderr",
+      "original_bytes": 0,
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "build.log.gz",
+      "original_name": "build.log",
+      "original_bytes": 164,
+      "original_sha256": "c94af1f0cfa876ffd4adea5577cc85cf19c85d0a2ad09ac5b77e1f83c35bfc62"
+    },
+    {
+      "archive": "elevated-fixed-windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names.stderr.gz",
+      "original_name": "elevated-fixed-windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names.stderr",
+      "original_bytes": 0,
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "build-fixed.log.gz",
+      "original_name": "build-fixed.log",
+      "original_bytes": 164,
+      "original_sha256": "c19ce771bb512b42c45ad0b206c3ece3448f66b3b64cc3bd04b9259450a8adfc"
+    },
+    {
+      "archive": "build.jsonl.gz",
+      "original_name": "build.jsonl",
+      "original_bytes": 64733,
+      "original_sha256": "ee3439bde2ec7d819a3dd1ed799be7ccecf677ab389d5ab508a4f4aa09a498d5"
+    },
+    {
+      "archive": "build-fixed.jsonl.gz",
+      "original_name": "build-fixed.jsonl",
+      "original_bytes": 64733,
+      "original_sha256": "915ec4f6057c2b5427fb7450a54c3a829866f644825ac2a13ab8547fcfdc6e7f"
+    },
+    {
+      "archive": "linux-resource-boundary.log.gz",
+      "original_name": "linux-resource-boundary.log",
+      "original_bytes": 1869,
+      "original_sha256": "45fcf5c732f0e09adbc79b5df6765b8de6fd603b4f1f818d4c9b971d6aa9539f"
+    },
+    {
+      "archive": "elevated-fixed-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stdout.gz",
+      "original_name": "elevated-fixed-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stdout",
+      "original_bytes": 256,
+      "original_sha256": "69eaef16509f5203cb79ed1876c728529ed9b33d367a2448ecdb91b5c2dbbac5"
+    },
+    {
+      "archive": "elevated-fixed-windows_native_move_cleanup.stdout.gz",
+      "original_name": "elevated-fixed-windows_native_move_cleanup.stdout",
+      "original_bytes": 1616,
+      "original_sha256": "99ae3a176517ef7475f2e69c83257d62ee69d85ae70d53c970cb14abfc987165"
+    },
+    {
+      "archive": "elevated-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stdout.gz",
+      "original_name": "elevated-windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent.stdout",
+      "original_bytes": 256,
+      "original_sha256": "696a288277e32667b99a24edc147d93c6bc7baafe927b0c9c3c838f30a9ef334"
+    },
+    {
+      "archive": "linux-preview-final-clippy.log.gz",
+      "original_name": "linux-preview-final-clippy.log",
+      "original_bytes": 160,
+      "original_sha256": "a3277862ad039b26195ce511015ff1b7b5f4c7a26ff8ea42ccd561b54e3cdc8e"
+    },
+    {
+      "archive": "elevated-windows_native_move_cleanup.stderr.gz",
+      "original_name": "elevated-windows_native_move_cleanup.stderr",
+      "original_bytes": 4524,
+      "original_sha256": "f96c9c476bc90689ab5769b40ecf4953dcdca5cde74b90bdb5b6c8d50d333e8e"
+    },
+    {
+      "archive": "CI_PRE_REPAIR_CANCELLED.log.gz",
+      "original_name": "CI_PRE_REPAIR_CANCELLED.log",
+      "original_bytes": 190444,
+      "original_sha256": "1927f923738c92585fa5f6ac7dcf5ab0e65f21d955b213b329622c78a4d552cb"
+    },
+    {
+      "archive": "elevated-fixed-windows_native_move_cleanup.stderr.gz",
+      "original_name": "elevated-fixed-windows_native_move_cleanup.stderr",
+      "original_bytes": 0,
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "elevated-fixed-windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names.stdout.gz",
+      "original_name": "elevated-fixed-windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names.stdout",
+      "original_bytes": 254,
+      "original_sha256": "53c3185ad6f6254c54d4cb5921d521d1f80050298cccc03ed0c1cc5334750d7e"
+    }
+  ]
+}

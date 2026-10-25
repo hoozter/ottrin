@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "guest_off": true,
+  "definition_unchanged": true,
+  "guest_cleanup": "TEARDOWN_GUEST.json",
+  "owned_host_transfer_directories_removed": true,
+  "current_packages_and_source_caches_preserved": true
+}

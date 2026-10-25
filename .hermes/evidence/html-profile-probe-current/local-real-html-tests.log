@@ -1,0 +1,9 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.18s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_preview-95903c79075b572c)
+
+running 2 tests
+test tests::html_system_renderer_preserves_local_relative_stylesheets ... ok
+test tests::html_system_renderer_renders_inline_layout_without_executing_scripts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 200 filtered out; finished in 1.66s
+

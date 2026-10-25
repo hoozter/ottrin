@@ -1,0 +1,5 @@
+{
+    "actorExit":  0,
+    "method":  "LogonUser interactive token and CreateProcessAsUser CREATE_NO_WINDOW; session 0; no scheduled task or logon settings changed",
+    "profileLoadingRequested":  false
+}

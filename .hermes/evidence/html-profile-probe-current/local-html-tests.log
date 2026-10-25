@@ -1,0 +1,13 @@
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `test` profile [optimized + debuginfo] target(s) in 23.81s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_preview-95903c79075b572c)
+
+running 5 tests
+test html_visual::tests::data_images_are_limited_to_inert_raster_formats ... ok
+test html_visual::tests::offline_references_reject_encoded_and_backslash_traversal ... ok
+test html_visual::tests::sanitizer_removes_active_and_external_content ... ok
+test html_visual::tests::render_directories_are_private_and_clean_up_document_data ... ok
+test html_visual::tests::renderer_submits_only_sanitized_html_to_the_bounded_isolation_boundary ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.00s
+

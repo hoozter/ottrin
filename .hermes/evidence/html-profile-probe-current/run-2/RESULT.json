@@ -1,0 +1,13 @@
+{
+  "status": "fail",
+  "uid": 1001,
+  "controller_userns": "user:[4026531837]",
+  "browser_metadata": "os.stat_result(st_mode=33279, st_ino=3670217, st_dev=2049, st_nlink=1, st_uid=0, st_gid=0, st_size=297798984, st_atime=1792746605, st_mtime=1791245218, st_ctime=1791841857)",
+  "restriction_before": "1",
+  "exit": 2,
+  "renderer_witnesses": {},
+  "error": "AssertionError('untrusted browser uid=0 mode=100777\\n')",
+  "restriction_after": "1",
+  "owned_policy_binary_removed": true,
+  "host_restriction_unchanged": true
+}
