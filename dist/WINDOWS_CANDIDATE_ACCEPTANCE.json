@@ -1,24 +1,29 @@
 {
-  "status": "pass within package content, native loader/CLI, 18 native UI checks and scoped exact portable GUI footer/Move/Undo/cleanup checks",
-  "source_commit": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "status": "pass within exact payload, native loader/CLI and scoped ordinary portable GUI acceptance",
+  "source_commit": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "679e7e9a9ac8d0499568016548a630fe11e580f6ac6a86daad63064424dfc826",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "ecf8ec9bee6c594dba82595f52c5ab16699adde52612e43a862636a7a50d9f28",
-    "Ottrin-0.1.0-windows-x64.msi": "48504f2ce16c2d26cc3e0d68e4704a4eda6491f291d79550570f660c024259b7"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "aa13b402741daf02e922608d4dc8075ec972ee7eeba1c9e31e7e16615c501d09",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "b6731b008b304a0cf9c88c317fa288a500fd34f87713fae8704e90df11d17529",
+    "Ottrin-0.1.0-windows-x64.msi": "db228f9d4622974205a98d28d79ed2a314becf831946f263fa9fe6eb8a5ce4d2"
   },
-  "payload_files": 57,
-  "package_identity": "PACKAGE_IDENTITIES.json",
-  "native_deployment": "DEPLOYMENT.json",
-  "native_msi_administrative_extraction": "MSI_PAYLOAD.json",
+  "payload_files": 58,
+  "payload_identity": ".hermes/evidence/windows-ui-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-ui-package-current",
+  "native_msi_administrative_extraction": {
+    "entries_checked": 58,
+    "status": "pass",
+    "msi_sha256": "db228f9d4622974205a98d28d79ed2a314becf831946f263fa9fe6eb8a5ce4d2",
+    "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
+  },
   "native_loader_cli": {
     "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
     "status": "pass",
     "runs": [
       {
         "exit": 0,
-        "stdout_sha256": "daecf3c1dfcbfebc72eb2108cfb1b1cc0650f8427e18b1bd23560d600da9b972",
+        "stdout_sha256": "7b9185bef772d9d1468581812446aadcb5c10d621a430a9b18e07ed23f8a46ae",
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "executable": "ottrin.exe"
       },
@@ -37,39 +42,47 @@
     ],
     "identity": "NT AUTHORITY\\SYSTEM"
   },
-  "source_checks": {
-    "evidence": "../windows-footer-current/ACCEPTANCE.json",
-    "native_passed": 18,
-    "source_identity": "SOURCE_REVIEW.json"
-  },
   "portable_gui_acceptance": {
-    "evidence": "../windows-footer-gui-current/ACCEPTANCE.json",
-    "scope": {
-      "desktop": "ordinary temporary Windows account; default renderer; Dark/List100; actual1024x680 main window",
-      "workflow": "Native Cut/Paste Replace, displaced preservation, actual Activity Undo, cleanup with unknown private file retained, six file contents checked after normal app close",
-      "footer": "190-character selected basename stays in one truncated row; controls remain visible and wordmark does not overlap; actual hover shows complete filename in bounded tooltip",
-      "activity": "Completed Move Undo title;1 Move record count before/after cleanup; paired journals removed and three bound compact intent/completion records retained",
-      "warning": "Cleanup warning visible in Activity and adjacent command frame with input row; no clipping observed in this run. Native composed tests separately prove long transient footer feedback and full multiline tooltip."
-    }
+    "evidence": ".hermes/evidence/windows-ui-gui-current/GUI_SCOPES.json",
+    "scope": [
+      "Native clipboard Cut/Paste with explicit Replace, paired completion journals and displaced bytes",
+      "Both original parents externally renamed; old paths recreated with unrelated files",
+      "Actual Activity Undo refreshes the visible short-alias listing from two to three rows and selects restored note.txt",
+      "Both original versions and recreated foreign names preserved",
+      "Actual eligible-record cleanup completes; three compact anchors/completion records remain by design",
+      "Read-only VCF inspector closes with Space after its text body receives focus",
+      "Normal application close exits0; all six file contents remain exact; Dark/List preferences persist"
+    ],
+    "appearance": "Dark/List100/default renderer,1280x800 ordinary NTFS guest console"
   },
-  "payload_delta": "PAYLOAD_DELTA.json",
-  "office_sections": "OFFICE_SECTION_COMPARISON.json: both Office helpers have matching raw PE sections despite whole-file differences; no fresh Office GUI acceptance inferred",
-  "promotion": "PROMOTION.json",
-  "validation_correction": "FINAL_VALIDATION_CORRECTION.json",
+  "source_checks": {
+    "evidence": ".hermes/evidence/windows-ui-paths-current/ACCEPTANCE.json",
+    "native_ui": "369 passed/0 failed/4 ignored/2 public-Copy cases filtered; ordinary/elevated/repeated elevated GNU Windows",
+    "native_search": "222 passed/0 failed/6 ignored; same three token runs",
+    "strict_lint": "Windows GNU UI/platform/search all targets passed"
+  },
+  "hosted_source": {
+    "run": 40259280148,
+    "revision": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+    "linux": "success",
+    "benchmark": "success",
+    "windows": "failed only two positive public-Copy UI cases:369 UI passed/2 failed/4 ignored; all459 platform,222 search, preview/Office/native sandbox and both new preflights pass. No full Windows or MSVC lint/release pass inferred."
+  },
   "cleanup": {
-    "package_compiler": "TEARDOWN.json",
-    "native_ui": "../windows-footer-current/TEARDOWN.json",
-    "portable_gui": "../windows-footer-gui-current/TEARDOWN.json"
+    "native_package": "windows-ui-package-current/NATIVE_OWNER.json",
+    "portable_gui": "windows-ui-gui-current/SESSION.json",
+    "guest_off": true,
+    "original_guest_files_and_login_values_preserved": true,
+    "account_profile_credential_task_and_owned_extractions_removed": true
   },
-  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-footer-package-current",
   "public_windows_files_unchanged": true,
   "linux_packages_unchanged": true,
   "limits": [
-    "No native installer install/upgrade/repair/rollback/uninstall acceptance for these new hashes",
-    "Actual desktop scope Dark/List100/default renderer1024x680; additional scales/widths have native composed tests only",
-    "Earlier cross-volume GUI checks retain their earlier source/artifact scopes",
-    "Public Windows Copy remains disabled; native Copy and remaining transaction/resource/workflow gates unfinished",
-    "Hosted Ubuntu tests and Windows compiler failed; CI_FAILURES.json records independently fixable follow-up",
+    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes",
+    "Actual GUI scope ordinary Dark/List100/default renderer1024x680 on1280x800 NTFS VM; no physical/other-width/scale/graphics acceptance",
+    "Public Windows Copy remains gated; complete native/public workflow and package gates remain engineering work",
+    "Earlier footer/tooltip, cross-volume and Office GUI evidence retain their original source/artifact scopes",
     "No production release, Store submission or user daily-driver acceptance"
-  ]
+  ],
+  "promotion": ".hermes/evidence/windows-ui-package-current/PROMOTION.json"
 }

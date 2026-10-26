@@ -1,0 +1,10 @@
+{
+  "status": "failed",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "boot",
+  "nonce": "7fec1a7bcb93457aac605305f74b5cdb",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "error": "AssertionError({'exitcode': 1, 'err-data': 'IzwgQ0xJWE1MDQo8T2JqcyBWZXJzaW9uPSIxLjEuMC4xIiB4bWxucz0iaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS9wb3dlcnNoZWxsLzIwMDQvMDQiPjxTIFM9IkVycm9yIj5VbmV4cGVjdGVkIHRlc3QgY29uc29sZSB1c2VyX3gwMDBEX194MDAwQV88L1M+PFMgUz0iRXJyb3IiPkF0IGxpbmU6MiBjaGFyOjUyNV94MDAwRF9feDAwMEFfPC9TPjxTIFM9IkVycm9yIj4rIC4uLiBTS1RPUC04MUdIUDhVXGNhbXBiZWxsJyl7dGhyb3cgJ1VuZXhwZWN0ZWQgdGVzdCBjb25zb2xlIHVzZXInfTskbmV3PUAgLi4uX3gwMDBEX194MDAwQV88L1M+PFMgUz0iRXJyb3IiPisgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5feDAwMERfX3gwMDBBXzwvUz48UyBTPSJFcnJvciI+ICAgICsgQ2F0ZWdvcnlJbmZvICAgICAgICAgIDogT3BlcmF0aW9uU3RvcHBlZDogKFVuZXhwZWN0ZWQgdGVzdCBjb25zb2xlIHVzZXI6U3RyaW5nKSBbXSwgUnVudGltZUV4Y2VwdGlvbl94MDAwRF9feDAwMEFfPC9TPjxTIFM9IkVycm9yIj4gICAgKyBGdWxseVF1YWxpZmllZEVycm9ySWQgOiBVbmV4cGVjdGVkIHRlc3QgY29uc29sZSB1c2VyX3gwMDBEX194MDAwQV88L1M+PFMgUz0iRXJyb3IiPiBfeDAwMERfX3gwMDBBXzwvUz48L09ianM+', 'exited': True})",
+  "guest_off": true
+}

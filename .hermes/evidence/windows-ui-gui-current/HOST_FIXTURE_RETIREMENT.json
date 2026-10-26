@@ -1,0 +1,174 @@
+{
+  "scope": "Task-owned redundant onboarding/console screenshots; selected application evidence retained. All guest profiles, account, credential, task and extraction roots already removed.",
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/23-fixture-write.png",
+      "bytes": 895700
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/31-verify.png",
+      "bytes": 931037
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/08-dismiss-shell.png",
+      "bytes": 3134551
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/39-close.png",
+      "bytes": 3134901
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/32-focus.png",
+      "bytes": 931363
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/01-observe.png",
+      "bytes": 251961
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/40-verify.png",
+      "bytes": 3134563
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/21-fixture-rename.png",
+      "bytes": 895601
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/26-focus.png",
+      "bytes": 895894
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/28-focus.png",
+      "bytes": 903177
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/19-verify.png",
+      "bytes": 895601
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/04-onboard.png",
+      "bytes": 248874
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/desktop.png",
+      "bytes": 3134563
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/06-onboard.png",
+      "bytes": 253349
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/03-onboard.png",
+      "bytes": 250718
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/24-fixture-mkdir.png",
+      "bytes": 895700
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/09-prepare.png",
+      "bytes": 3134551
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/15-nav.png",
+      "bytes": 895776
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/14-key.png",
+      "bytes": 906180
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/07-onboard.png",
+      "bytes": 1771141
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/22-fixture-mkdir.png",
+      "bytes": 895700
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/02-onboard.png",
+      "bytes": 249993
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/13-click.png",
+      "bytes": 905561
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/11-focus.png",
+      "bytes": 905454
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/29-key.png",
+      "bytes": 919497
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/34-click.png",
+      "bytes": 942298
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/05-onboard.png",
+      "bytes": 254385
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/18-verify-retained.png",
+      "bytes": 895601
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/36-click.png",
+      "bytes": 926547
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/25-fixture-write.png",
+      "bytes": 895588
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/38-inspect-moves.png",
+      "bytes": 942133
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/20-fixture-rename.png",
+      "bytes": 895601
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/01-observe.png",
+      "bytes": 251818
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/08-prepare.png",
+      "bytes": 3134874
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/04-onboard.png",
+      "bytes": 248730
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/desktop.png",
+      "bytes": 905538
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/06-onboard.png",
+      "bytes": 253205
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/03-onboard.png",
+      "bytes": 250572
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/07-onboard.png",
+      "bytes": 3328362
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/09-launch.png",
+      "bytes": 905538
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/02-onboard.png",
+      "bytes": 249848
+    },
+    {
+      "path": ".hermes/evidence/windows-ui-gui-current/focus-control/05-onboard.png",
+      "bytes": 254243
+    }
+  ],
+  "bytes": 46906287
+}

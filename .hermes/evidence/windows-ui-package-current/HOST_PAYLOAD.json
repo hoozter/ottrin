@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "source_revision": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+  "files": 58,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "aa13b402741daf02e922608d4dc8075ec972ee7eeba1c9e31e7e16615c501d09",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "b6731b008b304a0cf9c88c317fa288a500fd34f87713fae8704e90df11d17529",
+    "Ottrin-0.1.0-windows-x64.msi": "db228f9d4622974205a98d28d79ed2a314becf831946f263fa9fe6eb8a5ce4d2"
+  },
+  "portable_nsis_msi_agree": true,
+  "font_notice_exact": true,
+  "gui_acceptance": "Passed scoped ordinary Dark/List100 default-renderer actions; windows-ui-gui-current/GUI_SCOPES.json",
+  "current_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate"
+}

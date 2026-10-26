@@ -1,0 +1,87 @@
+{
+  "status": "pass for scoped exact-package GUI actions and teardown",
+  "source": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+  "appearance": "Dark/List100/default renderer,1280x800 ordinary NTFS guest console",
+  "short_alias_navigation": {
+    "status": "pass",
+    "long_fixture_path": "C:\\OttrinWindowQA\\cases\\ordinary\\fixture\\renamed-source",
+    "native_path_entered": "C:\\OTTRIN~4\\cases\\ordinary\\fixture\\RENAME~1"
+  },
+  "accepted_actions": [
+    "Native clipboard Cut/Paste with explicit Replace, paired completion journals and displaced bytes",
+    "Both original parents externally renamed; old paths recreated with unrelated files",
+    "Actual Activity Undo refreshes the visible short-alias listing from two to three rows and selects restored note.txt",
+    "Both original versions and recreated foreign names preserved",
+    "Actual eligible-record cleanup completes; three compact anchors/completion records remain by design",
+    "Read-only VCF inspector closes with Space after its text body receives focus",
+    "Normal application close exits0; all six file contents remain exact; Dark/List preferences persist"
+  ],
+  "screenshots": [
+    "16-key.png",
+    "17-click.png",
+    "27-nav.png",
+    "30-click.png",
+    "33-click.png",
+    "35-key.png",
+    "37-key.png"
+  ],
+  "remaining_completed_metadata": [
+    [
+      "dc62f1b47f1df0ec924ed1a281ca8427.move-clean",
+      "1f866114a8c5d0cf43b2375e2d53ce150b239596b98fff1bca12781ee837e73f"
+    ],
+    [
+      "dc62f1b47f1df0ec924ed1a281ca8427.move-cleaning",
+      "fc5e72869989eafc1a03466f98e152b26508111d132c9ba062e3709f6b5ff57d"
+    ],
+    [
+      "dc62f1b47f1df0ec924ed1a281ca8427.move-done",
+      "844522c0ab9aba8eaa999eb56d29f785d76f7679ce2da962b5828e3d227526e4"
+    ]
+  ],
+  "files_after_close": {
+    "label": "Six files remain exact after Undo, cleanup, read-only VCF Space-close and normal application close",
+    "status": "pass",
+    "files": {
+      "renamed-source\\note.txt": "source original\n",
+      "renamed-destination\\note.txt": "destination original\n",
+      "source\\note.txt": "foreign source\n",
+      "destination\\note.txt": "foreign destination\n",
+      "renamed-source\\other.txt": "other original\n",
+      "renamed-source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+    },
+    "absent": []
+  },
+  "normal_close": {
+    "status": "pass",
+    "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+    "normal_app_close": [
+      {
+        "exit": 0,
+        "pid": 6188
+      }
+    ]
+  },
+  "excluded": [
+    "Public Windows Copy",
+    "MSI/NSIS installation/rollback",
+    "Additional storage/GPU/physical devices",
+    "Other appearance variants/scales",
+    "Human acceptance"
+  ],
+  "fixture_source_hashes": {
+    "scripts/windows-desktop-qa/actor.ps1": "4ddd452b060f8ee16a35a047f4815e4ee46579faf23abf9a7f57a34c02a81618",
+    ".hermes/evidence/windows-ui-gui-current/actor.ps1": "8741551b398ba182b7c17f854781a0fb448e18c223fe31dbe7184a895946fcd3",
+    ".hermes/evidence/windows-ui-gui-current/interop.ps1": "c0c1f21c5b02f5e3699c301bccb8033da2f62c97fe6afcaef35371cfaef35bb4"
+  },
+  "teardown": {
+    "actor_task_removed": true,
+    "original_files_preserved": true,
+    "profile_removed": true,
+    "temporary_password_removed": true,
+    "login_values_restored": true,
+    "status": "pass",
+    "ordinary_account_removed": true
+  },
+  "persistent_vm_definition_unchanged": true
+}

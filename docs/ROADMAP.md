@@ -27,7 +27,10 @@ their named hashes. Test counts are scoped observations, not completion measures
   fixtures now use private test endpoints instead of racing for the real per-user
   endpoint. The complete **222-test search suite** passes under the same three
   token runs with six existing ignores. Strict Windows all-target lint passes.
-  Full corrected hosted MSVC and application-package/GUI acceptance are pending.
+  Hosted MSVC `de11ac2c` now passes both preflights, all 459 platform tests,
+  all 222 search tests and the preview/Office/native sandbox gates. UI passes
+  369 and fails only the two positive public-Copy cases; four existing ignores
+  remain. Full Windows lint/release are not reached by that failed workspace job.
   Exact sources, binaries, controls and teardown:
   `windows-ui-paths-current/ACCEPTANCE.json`.
 - **Delivered Linux:** clean `0b011e01`, all four stable formats. AppImage
@@ -62,31 +65,36 @@ their named hashes. Test counts are scoped observations, not completion measures
   unit and wrapper hashes are unchanged; primary user files were not edited.
   Receipt: `personal-index-optimization-current/ACCEPTANCE.json`. Older startup
   and idle samples retain their separate scopes.
-- **Current internal Windows candidate:** clean `1777733f` at
-  `.hermes/packaging-tmp/windows-activity-candidate/`. Portable, NSIS and native
-  MSI extraction agree on all 57 payload files; native loader/CLI checks pass.
-  Exact portable Dark/List100/default-renderer checks pass Move/Replace, Undo,
-  unknown-data-preserving record cleanup, the completed-record count/title,
-  single-row long selection, and full native-hover tooltip. Six file contents
-  remain correct after normal close. Actual cleanup warning/command input and
-  footer controls render without clipping in this run. Broader widths/scales
-  have composed native UI tests, not new physical-desktop acceptance.
+- **Current internal Windows candidate:** clean **`de11ac2c`** at
+  `.hermes/packaging-tmp/windows-activity-candidate/`. Portable ZIP, NSIS and
+  native MSI extraction agree on all **58 application files**, including the
+  exact font notice. Native loader/CLI checks pass. Actual ordinary portable
+  Dark/List100/default-renderer checks pass native clipboard Replace, displaced
+  preservation, externally renamed parents with foreign old names recreated,
+  and Activity Undo through a short alias: the visible listing gains and selects
+  the restored file. Eligible-record cleanup completes; three compact bound
+  completion/cleanup records remain by design. A focused read-only VCF text body
+  closes with Space. Normal Close exits 0; all six file contents and saved
+  Dark/List preferences remain correct. The actual main window is 1024×680 on
+  a 1280×800 guest console. Original guest files/login values are preserved;
+  account/profile/credential/task, compiler and GUI extraction roots are removed,
+  and the retained guest is off. The superseded 57-file accepted candidate and
+  unpromoted `a230fa2c` cohort are retired. This does not carry older broad
+  footer/tooltip, Office, cross-volume or installer scopes onto these hashes.
   `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` records exact hashes and limitations.
 - **Completed older package workflows:** `48fb6c01` same/cross-volume parent-
   rename Undo and reopened recovery retain their exact earlier artifact scope in
   `.hermes/evidence/windows-move-activity-gui-current/ACCEPTANCE.json`. They are
   not automatically acceptance of the newer package. Earlier `68962f05` receipts
   are historical; its superseded generated internal candidate is removed.
-- **Cleanup:** all owned native-test, compiler and desktop fixtures, temporary
-  account/profile/credentials and secondary NTFS volume are removed. Checked
-  original files, login values, disks and VM definition are preserved. The
-  retained guest is off. Completed Linux stages/extractions are absent; only
-  `.hermes/packaging-tmp/.windows-ci-stage/` remains for current Windows GUI and
-  full-pipeline acceptance. Current compiler caches remain. Only the obsolete finalized Windows UI test session
-  from the rebuilt configuration was retired after lock/consumer checks. This
-  CI repair also retires the superseded Linux optimized/debug test executable,
-  fingerprint and incremental configuration after both lock/consumer checks;
-  the canonical unoptimized test replacements and useful caches remain.
+- **Cleanup:** all owned native-test, compiler and desktop fixtures,
+  temporary accounts/profiles/credentials and secondary NTFS volume are removed.
+  Original files, login values, disks and VM definition are preserved. The
+  retained guest is off. Completed stages/extractions are absent, including
+  `.hermes/packaging-tmp/.windows-ci-stage/`; the current accepted Windows
+  candidate occupies its one stable path above. Current compiler caches remain.
+  Superseded task test executables and older finalized incremental sessions were
+  retired only after replacement, hard-link, consumer and compiler-lock checks.
 - **CI repair source checkpoint:** the short-path, same-filesystem reproduction
   confirmed immediate device/inode reuse for files and symlinks. Linux pathname
   Undo now binds filesystem generation evidence; invalidated directory watches
@@ -189,17 +197,12 @@ their named hashes. Test counts are scoped observations, not completion measures
   The privacy fix is delivered in `7d5eee59`; launcher integration remains
   unfinished and is not claimed by those builds.
   Evidence: `html-profile-probe-current/ACCEPTANCE.json`.
-- **Font-notice delivery:** all four current Linux packages contain the exact
-  authoritative font notice. The existing 57-file internal Windows candidate
-  predates this change. A fresh
-  clean `a230fa2c` ZIP/NSIS/MSI cohort now agrees on all **58 files**, including
-  the exact authoritative notice. Native MSI administrative extraction and
-  loader/CLI checks pass. This cohort remains in
-  `.hermes/packaging-tmp/.windows-ci-stage/` for actual current GUI and full
-  Windows CI acceptance; it has not replaced the accepted internal candidate.
-  Compiler, administrative-extraction and portable guest fixtures are removed;
-  the retained guest is off with its original definition unchanged. Current
-  scoped receipt: `windows-ci-package-current/ACCEPTANCE.json`.
+- **Font-notice delivery:** all four current Linux packages and all three
+  current `de11ac2c` Windows formats contain the exact authoritative font notice.
+  Current Windows 58-file agreement, native MSI extraction, CLI and scoped GUI
+  acceptance are recorded in `windows-ui-package-current` and
+  `windows-ui-gui-current`. The earlier `a230fa2c` extraction/CLI receipt remains
+  historical; its superseded cohort is removed.
 - **Receipt-script correction:** a local final assertion incorrectly expected
   two compact cleanup records; the implementation retains intent, completion and
   completed-Undo proof. Its shell continued to the internal swap after that
@@ -212,15 +215,16 @@ Production Linux HTML repair is delivered and hosted source verification passes.
 The personal system helper remains optional setup in Settings → Services; it has
 not been installed on the personal machine during this QA.
 
-Latest completed hosted run `40251466108` on `db2c2d29` passes Linux and
-benchmark verification. Windows passes 459 platform tests, preview/Office
-contracts and all ten native sandbox cases, then search reports 221 passed,
-one failed and six ignored. The failure is a pipe test binding the singleton
-per-user endpoint while independent fixtures run concurrently. The test-only
-private endpoints above address this without changing production endpoint names
-or authentication. UI was not reached in that run. Earlier hosted `c44d943a`
-reached UI and exposed short-alias queue expectations plus the real Undo refresh
-failure now repaired; two public-Copy failures remain separate unfinished work.
+Latest completed hosted run **`40259280148` on `de11ac2c`** passes Linux and
+benchmark verification. Windows passes all 459 platform tests, preview/Office
+contracts, all ten native sandbox cases, all 222 search tests and both new
+Move/pipe preflights. UI reports **369 passed, two failed and four ignored**.
+The only failures are the two positive public-Copy workflows, whose implementation
+remains gated. The corrected Move alias/refresh and pipe tests now pass on hosted
+MSVC, as well as the local ordinary/elevated GNU runs. Full Windows workspace,
+MSVC lint and release remain unaccepted until public Copy is completed; do not
+exclude those positive cases to make CI green. The prior `db2c2d29` pipe failure
+and `c44d943a` Move failures retain their original negative scope.
 
 Both CI and release workflows now run Move UI recovery and pipe transport checks
 before the full workspace suite. All three packaging workflow/preflight contracts,
@@ -269,16 +273,17 @@ filename-FTS regeneration remains open work. Exact variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Verify the corrected Undo-alias and isolated-pipe source on hosted MSVC,
-   deliver and accept the current Windows application package, resolve public
-   Windows Copy workflow requirements, then reach full
-   workspace/search/UI/lint acceptance on hosted MSVC. Current-candidate GUI and
-   broader ordinary desktop acceptance remain separate. Linux `0b011e01` is
+1. Resolve the native/public Windows Copy workflow requirements and the two
+   remaining positive UI failures, then reach full workspace/UI/lint/release
+   acceptance on hosted MSVC. The corrected Move/pipe and scoped current-package
+   GUI gates above are complete; broader desktop/platform scopes remain separate.
+   Linux `0b011e01` is
    delivered; hosted release publication/signing remains unaccepted.
 2. Further reduce the personal index's startup revalidation CPU while
    preserving missed-offline-change detection and watcher coverage. Steady idle
-   passes separately. Complete current Windows candidate GUI, retain public Copy
-   gating and resolve failed-uninstall registration rollback.
+   passes separately. Continue broader Windows workflow/graphics acceptance,
+   retain public Copy gating until its implementation is accepted and resolve
+   failed-uninstall registration rollback.
 3. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below, then platform acceptance. Earlier `1b6e5138`/`fb6fbdf4`
    workflows retain their named scopes. Required outcome 4 (the themed picker and
@@ -378,7 +383,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four `0b011e01` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List/icon/read-only VCF, Light/Miller and normal close pass. The actual configured index is enabled/running at the bounded CPU/RSS scope above. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Finish full corrected MSVC and current candidate GUI acceptance, then native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
+| Windows | Internal `de11ac2c` portable/NSIS/MSI agree on58 files; native loader/CLI, actual renamed-parent short-alias Replace/Undo/list refresh, eligible cleanup, read-only VCF Space-close and normal exit0 pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. Hosted Move/pipe/platform/search gates pass; two public-Copy UI cases fail. | Finish public native Copy and full MSVC workspace/lint/release, remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier broader GUI scopes remain historical. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 

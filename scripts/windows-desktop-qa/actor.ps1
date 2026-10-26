@@ -120,7 +120,9 @@ if($c.op-eq'prepare'){
  if(-not$ready){throw 'Owned usable window not ready'}
  Start-Sleep -Milliseconds 500
 }elseif($c.op-eq'close'){
- foreach($owned in $processes){$p=Get-Process -Id $owned.ProcessId;if(-not$p.CloseMainWindow()){throw 'Main window refused close'};if(-not$p.WaitForExit(10000)){throw 'App remains live'}}
+ $closed=@()
+ foreach($owned in $processes){$p=Get-Process -Id $owned.ProcessId;$null=$p.Handle;try{if(-not$p.CloseMainWindow()){throw 'Main window refused close'};if(-not$p.WaitForExit(10000)){throw 'App remains live'};if($p.ExitCode-ne0){throw "App close exit $($p.ExitCode)"};$closed+=@{pid=$owned.ProcessId;exit=$p.ExitCode}}finally{$p.Dispose()}}
+ $verification=@{status='pass';normal_app_close=$closed;daemon_teardown='Owned disposable-profile daemon only; not a product auto-shutdown assertion'}
  foreach($daemon in @(Get-CimInstance Win32_Process|Where-Object{$_.ExecutablePath-eq"$root\payload\Ottrin-0.1.0-windows-x64\bin\ottrin-indexd.exe"})){
   $ownedDaemon=Get-Process -Id $daemon.ProcessId;$null=$ownedDaemon.Handle
   try{Stop-Process -InputObject $ownedDaemon -ErrorAction Stop;if(-not$ownedDaemon.WaitForExit(5000)){throw 'Owned daemon remains live'}}finally{$ownedDaemon.Dispose()}
@@ -186,11 +188,15 @@ if($c.op-eq'prepare'){
   [uint32]$pointPid=0;$null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::WindowFromPoint($point),[ref]$pointPid)
   if($pointPid-ne$p.Id){throw 'Visible input point is not owned'}
   $null=[CopyActivityDesktop]::SetForegroundWindow($window);Start-Sleep -Milliseconds 100
-  $null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($foregroundPid-ne$p.Id){throw 'Owned app did not receive pointer focus'}
+  $null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($c.op-ne'focus'-and$foregroundPid-ne$p.Id){throw 'Owned app did not receive pointer focus'}
   # Refresh native pointer position after focus changes, including an unchanged target point.
   $null=[CopyActivityDesktop]::SetCursorPos($point.X+1,$point.Y);Start-Sleep -Milliseconds 50
   $null=[CopyActivityDesktop]::SetCursorPos($point.X,$point.Y);Start-Sleep -Milliseconds 75
   if($c.op-eq'hover'){Start-Sleep -Milliseconds 1100}else{[CopyActivityDesktop]::mouse_event(2,0,0,0,[UIntPtr]::Zero);Start-Sleep -Milliseconds 75;[CopyActivityDesktop]::mouse_event(4,0,0,0,[UIntPtr]::Zero)}
+  # Windows may refuse background SetForegroundWindow. Explicit focus uses one
+  # real click at the already verified owned point, then checks activation. Other
+  # pointer actions still require focus before input; keyboard guards are unchanged.
+  if($c.op-eq'focus'){Start-Sleep -Milliseconds 100;$null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($foregroundPid-ne$p.Id){throw 'Owned click did not activate the app'}}
  }else{
   $null=[CopyActivityDesktop]::SetForegroundWindow($window);Start-Sleep -Milliseconds 100
   $null=[CopyActivityDesktop]::GetWindowThreadProcessId([CopyActivityDesktop]::GetForegroundWindow(),[ref]$foregroundPid);if($foregroundPid-ne$p.Id){throw 'Owned app did not receive focus'}

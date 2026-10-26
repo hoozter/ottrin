@@ -1,0 +1,12 @@
+{
+  "source_revision": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+  "tracked_tree": "clean",
+  "jobs": 1,
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage",
+  "target": "x86_64-pc-windows-gnu",
+  "pending_consumers": [],
+  "delivery": "Accepted internal candidate and public downloads preserved until replacement acceptance",
+  "memory": "Retained guest off during compiler work; shared target and existing release profile reused",
+  "final_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "cleanup_complete": true
+}

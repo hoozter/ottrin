@@ -1,0 +1,1330 @@
+{
+  "scope": "Scoped product actions; raw metadata bodies summarized to names and hashes. Native commands/result IDs retained. Onboarding observations excluded.",
+  "actions": [
+    {
+      "command": {
+        "op": "prepare",
+        "id": "c4461e7b8bbe4a4e91c788bbfb271b8d",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 1056,
+        "id": "c4461e7b8bbe4a4e91c788bbfb271b8d",
+        "case": "ordinary",
+        "foreground_pid": 6716,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [],
+        "ordinary_user": true,
+        "cursor_y": 668,
+        "op": "prepare"
+      }
+    },
+    {
+      "command": {
+        "op": "launch",
+        "id": "12143c6d0afb49ce8068604e3544817b",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 1056,
+        "id": "12143c6d0afb49ce8068604e3544817b",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 668,
+        "op": "launch"
+      }
+    },
+    {
+      "command": {
+        "op": "focus",
+        "x": 600,
+        "y": 350,
+        "id": "59f830fc7d38496983fe09e33d4c731f",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 600,
+        "id": "59f830fc7d38496983fe09e33d4c731f",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 350,
+        "op": "focus"
+      }
+    },
+    {
+      "command": {
+        "op": "nav",
+        "path": "source",
+        "short": true,
+        "id": "7d6d11150c574f6ba2e27d23fa4e70e3",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 600,
+        "id": "7d6d11150c574f6ba2e27d23fa4e70e3",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "long_fixture_path": "C:\\OttrinWindowQA\\cases\\ordinary\\fixture\\source",
+          "native_path_entered": "C:\\OTTRIN~4\\cases\\ordinary\\fixture\\source"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 350,
+        "op": "nav"
+      }
+    },
+    {
+      "command": {
+        "op": "click",
+        "x": 280,
+        "y": 182,
+        "id": "03520cf93e5645feb93f9fca599266f3",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 280,
+        "id": "03520cf93e5645feb93f9fca599266f3",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 182,
+        "op": "click"
+      }
+    },
+    {
+      "command": {
+        "op": "key",
+        "key": "^x",
+        "id": "4d46032ba7d7401d9a4d940a340237cb",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 280,
+        "id": "4d46032ba7d7401d9a4d940a340237cb",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 182,
+        "op": "key"
+      }
+    },
+    {
+      "command": {
+        "op": "nav",
+        "path": "destination",
+        "short": true,
+        "id": "570c1b16beec4dc882c8d70e96912e4d",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 280,
+        "id": "570c1b16beec4dc882c8d70e96912e4d",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "long_fixture_path": "C:\\OttrinWindowQA\\cases\\ordinary\\fixture\\destination",
+          "native_path_entered": "C:\\OTTRIN~4\\cases\\ordinary\\fixture\\DESTIN~1"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 182,
+        "op": "nav"
+      }
+    },
+    {
+      "command": {
+        "op": "key",
+        "key": "^v",
+        "id": "5410701f122e4a7ab493c6b6c9703eb4",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 280,
+        "id": "5410701f122e4a7ab493c6b6c9703eb4",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 182,
+        "op": "key"
+      }
+    },
+    {
+      "command": {
+        "op": "click",
+        "x": 603,
+        "y": 381,
+        "id": "80e5f88199bf42f4b3af35dfe933aa90",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "80e5f88199bf42f4b3af35dfe933aa90",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "click"
+      }
+    },
+    {
+      "command": {
+        "op": "verify-retained",
+        "id": "8ebbbb6985d045e0bc7f2f2f576943ad",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "8ebbbb6985d045e0bc7f2f2f576943ad",
+        "case": "ordinary",
+        "foreground_pid": 4304,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "label": "Replace preserves displaced bytes with paired completion journals",
+          "status": "pass",
+          "matches": [
+            {
+              "displaced_sha256": "B9F9ECCB9BBA3C5A67D19293F4C4E3E5E508A1B39AAE18DEAC635915FA920D47",
+              "central_sha256": "154C3B39486D4E8E19A6CF5DF246EDA089933CAC48D93059C1657FB9D8204D93",
+              "local_sha256": "154C3B39486D4E8E19A6CF5DF246EDA089933CAC48D93059C1657FB9D8204D93"
+            }
+          ]
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "verify-retained"
+      }
+    },
+    {
+      "command": {
+        "op": "verify",
+        "label": "Packaged Replace preserves both versions",
+        "files": {
+          "destination\\note.txt": "source original\n",
+          "source\\other.txt": "other original\n",
+          "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+        },
+        "absent": [
+          "source\\note.txt"
+        ],
+        "id": "f146fd54eaf44a78be07852c725ba327",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "f146fd54eaf44a78be07852c725ba327",
+        "case": "ordinary",
+        "foreground_pid": 1348,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "label": "Packaged Replace preserves both versions",
+          "status": "pass",
+          "files": {
+            "destination\\note.txt": "source original\n",
+            "source\\other.txt": "other original\n",
+            "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+          },
+          "absent": [
+            "source\\note.txt"
+          ]
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "verify"
+      }
+    },
+    {
+      "command": {
+        "op": "fixture-rename",
+        "source": "source",
+        "destination": "renamed-source",
+        "id": "4859513c612d4e3c81a2a7618c032dc2",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "4859513c612d4e3c81a2a7618c032dc2",
+        "case": "ordinary",
+        "foreground_pid": 5632,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "renamed_to": "renamed-source",
+          "renamed_from": "source"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "fixture-rename"
+      }
+    },
+    {
+      "command": {
+        "op": "fixture-rename",
+        "source": "destination",
+        "destination": "renamed-destination",
+        "id": "48bb3cff5f9446b48df8e1a699a8f574",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "48bb3cff5f9446b48df8e1a699a8f574",
+        "case": "ordinary",
+        "foreground_pid": 3656,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "renamed_to": "renamed-destination",
+          "renamed_from": "destination"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "fixture-rename"
+      }
+    },
+    {
+      "command": {
+        "op": "fixture-mkdir",
+        "path": "source",
+        "id": "00f6afce0f1a4c1099ef0fa12601cbc7",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "00f6afce0f1a4c1099ef0fa12601cbc7",
+        "case": "ordinary",
+        "foreground_pid": 4952,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "created_directory": "source"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "fixture-mkdir"
+      }
+    },
+    {
+      "command": {
+        "op": "fixture-write",
+        "path": "source\\note.txt",
+        "text": "foreign source\n",
+        "id": "733c8c6372134dad967bd8fd612ffa32",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "733c8c6372134dad967bd8fd612ffa32",
+        "case": "ordinary",
+        "foreground_pid": 1544,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "sha256": "d13bcdad2d8622af22b098b6888edbd4fbf522632ab7447d350b802f9cff04a4",
+          "created_file": "source\\note.txt"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "fixture-write"
+      }
+    },
+    {
+      "command": {
+        "op": "fixture-mkdir",
+        "path": "destination",
+        "id": "93c7779c1b1e47c7b27708d0693d562e",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "93c7779c1b1e47c7b27708d0693d562e",
+        "case": "ordinary",
+        "foreground_pid": 2392,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "created_directory": "destination"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "fixture-mkdir"
+      }
+    },
+    {
+      "command": {
+        "op": "fixture-write",
+        "path": "destination\\note.txt",
+        "text": "foreign destination\n",
+        "id": "0367b4f6ef4a4229876bfd715cac97ff",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 603,
+        "id": "0367b4f6ef4a4229876bfd715cac97ff",
+        "case": "ordinary",
+        "foreground_pid": 4108,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "sha256": "e867f6642f52be16d8531c17332acf80e44cc481c8a9be7040533a8234d5be6f",
+          "created_file": "destination\\note.txt"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 381,
+        "op": "fixture-write"
+      }
+    },
+    {
+      "command": {
+        "op": "focus",
+        "x": 500,
+        "y": 55,
+        "id": "941b88f39b2649ec84a8ae65e3b8a0c3",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 500,
+        "id": "941b88f39b2649ec84a8ae65e3b8a0c3",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 55,
+        "op": "focus"
+      }
+    },
+    {
+      "command": {
+        "op": "nav",
+        "path": "renamed-source",
+        "short": true,
+        "id": "c29f4ccebcd2455384da0e931aeaf6fa",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 500,
+        "id": "c29f4ccebcd2455384da0e931aeaf6fa",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "long_fixture_path": "C:\\OttrinWindowQA\\cases\\ordinary\\fixture\\renamed-source",
+          "native_path_entered": "C:\\OTTRIN~4\\cases\\ordinary\\fixture\\RENAME~1"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 55,
+        "op": "nav"
+      }
+    },
+    {
+      "command": {
+        "op": "focus",
+        "x": 500,
+        "y": 55,
+        "id": "9c58617552184adab7543df39faabb0c",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 500,
+        "id": "9c58617552184adab7543df39faabb0c",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 55,
+        "op": "focus"
+      }
+    },
+    {
+      "command": {
+        "op": "key",
+        "key": "^z",
+        "id": "ca1b0715f7b748b888b0a046bdcb5963",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 500,
+        "id": "ca1b0715f7b748b888b0a046bdcb5963",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 55,
+        "op": "key"
+      }
+    },
+    {
+      "command": {
+        "op": "click",
+        "x": 761,
+        "y": 265,
+        "id": "8e89eb3118b94c8683eec4b050cf9fdf",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 761,
+        "id": "8e89eb3118b94c8683eec4b050cf9fdf",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 265,
+        "op": "click"
+      }
+    },
+    {
+      "command": {
+        "op": "verify",
+        "label": "Renamed-parent short-alias Undo restores both originals and preserves recreated foreign names",
+        "files": {
+          "renamed-source\\note.txt": "source original\n",
+          "renamed-destination\\note.txt": "destination original\n",
+          "source\\note.txt": "foreign source\n",
+          "destination\\note.txt": "foreign destination\n",
+          "renamed-source\\other.txt": "other original\n",
+          "renamed-source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+        },
+        "absent": [],
+        "id": "8c8f02c05f254c9597940da32364ae87",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 761,
+        "id": "8c8f02c05f254c9597940da32364ae87",
+        "case": "ordinary",
+        "foreground_pid": 5224,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "label": "Renamed-parent short-alias Undo restores both originals and preserves recreated foreign names",
+          "status": "pass",
+          "files": {
+            "renamed-source\\note.txt": "source original\n",
+            "renamed-destination\\note.txt": "destination original\n",
+            "source\\note.txt": "foreign source\n",
+            "destination\\note.txt": "foreign destination\n",
+            "renamed-source\\other.txt": "other original\n",
+            "renamed-source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+          },
+          "absent": []
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 265,
+        "op": "verify"
+      }
+    },
+    {
+      "command": {
+        "op": "focus",
+        "x": 500,
+        "y": 55,
+        "id": "24a00c168f784c689658f9a9a648f7b8",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 500,
+        "id": "24a00c168f784c689658f9a9a648f7b8",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 55,
+        "op": "focus"
+      }
+    },
+    {
+      "command": {
+        "op": "click",
+        "x": 795,
+        "y": 263,
+        "id": "2a0446f3ea404853a3bbca98a45a5e5b",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 795,
+        "id": "2a0446f3ea404853a3bbca98a45a5e5b",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 263,
+        "op": "click"
+      }
+    },
+    {
+      "command": {
+        "op": "click",
+        "x": 282,
+        "y": 151,
+        "id": "93b5185b8f9b4760b182a5bbacf116df",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 282,
+        "id": "93b5185b8f9b4760b182a5bbacf116df",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 151,
+        "op": "click"
+      }
+    },
+    {
+      "command": {
+        "op": "key",
+        "key": " ",
+        "id": "262c598b7992485396a15d65abf50d21",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 282,
+        "id": "262c598b7992485396a15d65abf50d21",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 1901100,
+            "left": 130,
+            "bottom": 690,
+            "top": 130,
+            "right": 850,
+            "title": "Ottrin Quick Inspector \u2014 contact.vcf"
+          },
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 151,
+        "op": "key"
+      }
+    },
+    {
+      "command": {
+        "op": "click",
+        "x": 285,
+        "y": 294,
+        "id": "a31831a9f2514ede88a8751ceb969fad",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 285,
+        "id": "a31831a9f2514ede88a8751ceb969fad",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 1901100,
+            "left": 130,
+            "bottom": 690,
+            "top": 130,
+            "right": 850,
+            "title": "Ottrin Quick Inspector \u2014 contact.vcf"
+          },
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 294,
+        "op": "click"
+      }
+    },
+    {
+      "command": {
+        "op": "key",
+        "key": " ",
+        "id": "77c02a92b1bb48dd97b0d0d578b46a8d",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 285,
+        "id": "77c02a92b1bb48dd97b0d0d578b46a8d",
+        "case": "ordinary",
+        "foreground_pid": 6188,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": null,
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 294,
+        "op": "key"
+      }
+    },
+    {
+      "command": {
+        "op": "inspect-moves",
+        "id": "8b855e0e4a2f4d37af9976bc0e88591e",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 285,
+        "id": "8b855e0e4a2f4d37af9976bc0e88591e",
+        "case": "ordinary",
+        "foreground_pid": 5928,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "records": [
+            {
+              "name": "dc62f1b47f1df0ec924ed1a281ca8427.move-clean",
+              "sha256": "1f866114a8c5d0cf43b2375e2d53ce150b239596b98fff1bca12781ee837e73f"
+            },
+            {
+              "name": "dc62f1b47f1df0ec924ed1a281ca8427.move-cleaning",
+              "sha256": "fc5e72869989eafc1a03466f98e152b26508111d132c9ba062e3709f6b5ff57d"
+            },
+            {
+              "name": "dc62f1b47f1df0ec924ed1a281ca8427.move-done",
+              "sha256": "844522c0ab9aba8eaa999eb56d29f785d76f7679ce2da962b5828e3d227526e4"
+            }
+          ],
+          "status": "pass",
+          "metadata_root": "C:\\OttrinWindowQA\\cases\\ordinary\\profile\\Ottrin\\State\\moves"
+        },
+        "windows": [
+          {
+            "handle": 459190,
+            "left": 128,
+            "bottom": 716,
+            "top": 36,
+            "right": 1152,
+            "title": "Ottrin"
+          },
+          {
+            "handle": 459228,
+            "left": 0,
+            "bottom": 6,
+            "top": 0,
+            "right": 6,
+            "title": ""
+          }
+        ],
+        "ordinary_user": true,
+        "cursor_y": 294,
+        "op": "inspect-moves"
+      }
+    },
+    {
+      "command": {
+        "op": "close",
+        "id": "4ebcc7fac7314e9abb27d0a72a24f4cb",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 285,
+        "id": "4ebcc7fac7314e9abb27d0a72a24f4cb",
+        "case": "ordinary",
+        "foreground_pid": 1148,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "status": "pass",
+          "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+          "normal_app_close": [
+            {
+              "exit": 0,
+              "pid": 6188
+            }
+          ]
+        },
+        "windows": [],
+        "ordinary_user": true,
+        "cursor_y": 294,
+        "op": "close"
+      }
+    },
+    {
+      "command": {
+        "op": "verify",
+        "label": "Six files remain exact after Undo, cleanup, read-only VCF Space-close and normal application close",
+        "files": {
+          "renamed-source\\note.txt": "source original\n",
+          "renamed-destination\\note.txt": "destination original\n",
+          "source\\note.txt": "foreign source\n",
+          "destination\\note.txt": "foreign destination\n",
+          "renamed-source\\other.txt": "other original\n",
+          "renamed-source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+        },
+        "absent": [],
+        "id": "c5a51b756e894fb0b8e3e58bdb50429d",
+        "case": "ordinary"
+      },
+      "result": {
+        "cursor_x": 285,
+        "id": "c5a51b756e894fb0b8e3e58bdb50429d",
+        "case": "ordinary",
+        "foreground_pid": 1284,
+        "screen_width": 1280,
+        "screen_height": 800,
+        "verification": {
+          "label": "Six files remain exact after Undo, cleanup, read-only VCF Space-close and normal application close",
+          "status": "pass",
+          "files": {
+            "renamed-source\\note.txt": "source original\n",
+            "renamed-destination\\note.txt": "destination original\n",
+            "source\\note.txt": "foreign source\n",
+            "destination\\note.txt": "foreign destination\n",
+            "renamed-source\\other.txt": "other original\n",
+            "renamed-source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+          },
+          "absent": []
+        },
+        "windows": [],
+        "ordinary_user": true,
+        "cursor_y": 294,
+        "op": "verify"
+      }
+    }
+  ],
+  "raw_log_sha256": "30a9985a0529f8e99d08c6af7a83ebd867b7337a4879e0c6e213f9021cb21e84"
+}

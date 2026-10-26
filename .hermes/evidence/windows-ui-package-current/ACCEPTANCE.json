@@ -1,0 +1,75 @@
+{
+  "status": "pass for named source/package/GUI scopes; full Windows release gate remains failed on public Copy",
+  "source": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+  "current_receipt": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+  "payload": {
+    "status": "pass",
+    "source_revision": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+    "files": 58,
+    "artifacts": {
+      "Ottrin-0.1.0-windows-x64-portable.zip": "aa13b402741daf02e922608d4dc8075ec972ee7eeba1c9e31e7e16615c501d09",
+      "Ottrin-0.1.0-windows-x64-setup.exe": "b6731b008b304a0cf9c88c317fa288a500fd34f87713fae8704e90df11d17529",
+      "Ottrin-0.1.0-windows-x64.msi": "db228f9d4622974205a98d28d79ed2a314becf831946f263fa9fe6eb8a5ce4d2"
+    },
+    "portable_nsis_msi_agree": true,
+    "font_notice_exact": true,
+    "gui_acceptance": "Passed scoped ordinary Dark/List100 default-renderer actions; windows-ui-gui-current/GUI_SCOPES.json",
+    "current_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate"
+  },
+  "gui_evidence": "windows-ui-gui-current/GUI_SCOPES.json",
+  "promotion": {
+    "status": "pass",
+    "source": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+    "stable_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+    "previous_source": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+    "superseded_verified_tree_removed": true,
+    "superseded_bytes": 281557406,
+    "stage_removed": true,
+    "current_archives_reverified": true,
+    "no_active_package_consumers": true,
+    "receipt": "/home/campbell/Projects/Ottrin/dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+  },
+  "native_package_teardown": {
+    "status": "pass",
+    "domain": "ottrin-copy-cleanup-qa",
+    "guest_root": "C:\\OttrinCIPackageQA",
+    "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+    "phase": "administrative-extraction",
+    "root_removed": true,
+    "shutdown_transport_disconnected": true,
+    "guest_off": true
+  },
+  "gui_teardown": {
+    "status": "pass",
+    "guest_root": "C:\\OttrinWindowQA",
+    "domain": "ottrin-copy-cleanup-qa",
+    "phase": "teardown",
+    "nonce": "cb8971b5cd864c39bed4452150c0d9e4",
+    "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+    "reboot_transport_disconnected": true,
+    "next_sequence": 41,
+    "fixtures_removed": true,
+    "guest_off": true
+  },
+  "source_and_hosted_scopes": {
+    "run": 40259280148,
+    "revision": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+    "linux": "success",
+    "benchmark": "success",
+    "windows": "failed only two positive public-Copy UI cases:369 UI passed/2 failed/4 ignored; all459 platform,222 search, preview/Office/native sandbox and both new preflights pass. No full Windows or MSVC lint/release pass inferred."
+  },
+  "limits": [
+    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes",
+    "Actual GUI scope ordinary Dark/List100/default renderer1024x680 on1280x800 NTFS VM; no physical/other-width/scale/graphics acceptance",
+    "Public Windows Copy remains gated; complete native/public workflow and package gates remain engineering work",
+    "Earlier footer/tooltip, cross-volume and Office GUI evidence retain their original source/artifact scopes",
+    "No production release, Store submission or user daily-driver acceptance"
+  ],
+  "qa_producer_repairs": [
+    "Explicit desktop focus uses a real verified-owned click when Windows refuses SetForegroundWindow; non-focus pointer and keyboard ownership gates remain. Negative control retained.",
+    "Normal Close holds the process handle and requires actual exit0.",
+    "Initial controller refused before mutations until the original test console was ready and observed native Windows startup components were classified; those controls have no retained fixtures.",
+    "NSIS verifier compares58 application files plus its separately identified generated Uninstall.exe; first count-only control rejected before guest startup."
+  ],
+  "large_fixture_cleanup": "All guest/compiler/profile/extraction copies and superseded generated cohorts are removed; one stable accepted Windows candidate remains. Redundant host onboarding frames removed; selected product screenshots and compact receipts retained."
+}

@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "source": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+  "stable_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "previous_source": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+  "superseded_verified_tree_removed": true,
+  "superseded_bytes": 281557406,
+  "stage_removed": true,
+  "current_archives_reverified": true,
+  "no_active_package_consumers": true,
+  "receipt": "/home/campbell/Projects/Ottrin/dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+}
