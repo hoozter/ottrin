@@ -1,0 +1,15 @@
+{
+  "status": "failed",
+  "purpose": "Unrelated minimal per-user MSI engine controls; plain and ARP-icon variants; no Ottrin runtime/controller",
+  "volume_create": "Vol ottrin-msi-control-qa.qcow2 created",
+  "define": "Domain 'ottrin-msi-control-qa' defined from /home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-control-current/DOMAIN.xml",
+  "start": "Domain 'ottrin-msi-control-qa' started",
+  "error": "AssertionError({'exit': 230, 'out-data': \"5.0.2+aa65968c\\r\\nC:\\\\OttrinMsiControlQA\\\\plain.wxs(8) : error WIX0230: The Component/@Guid attribute's value '*' is not valid for this component because it does not meet the criteria for having an automatically generated guid. Components with registry keypaths and files cannot use an automatically generated guid. Create multiple components, each with one file and/or one registry value keypath, to use automatically generated guids.\\r\\n\", 'err-data': ''})",
+  "cleanup": {
+    "stop": "Domain 'ottrin-msi-control-qa' destroyed",
+    "undefine": "Domain 'ottrin-msi-control-qa' has been undefined",
+    "delete_volume": "Vol ottrin-msi-control-qa.qcow2 deleted",
+    "parent_xml_unchanged": true,
+    "retained_guests_off": true
+  }
+}

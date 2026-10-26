@@ -1,0 +1,116 @@
+{
+  "status": "Independent minimal controls reproduce failed-registration rollback; Ottrin installer not fixed/promoted",
+  "scope": "WiX5.0.2, ordinary interactive nonadministrator, Windows11 IoT Enterprise LTSC26100/msi5.0.26100.9168, onefile/HKCUcomponent, deferred cmd.exe exit1; plain and ARP-icon variants",
+  "observations": {
+    "msi_version": "5.0.26100.9168",
+    "os": {
+      "Caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+      "Version": "10.0.26100",
+      "BuildNumber": "26100"
+    },
+    "phase": "complete",
+    "identity": {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "administrator": false,
+      "owner": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "session": 1
+    },
+    "status": "observed",
+    "cases": [
+      {
+        "file_after_retry": true,
+        "positive_state_after": -1,
+        "positive_uninstall_exit": 0,
+        "status": "rollback-or-retry-failed",
+        "reinstall_exit": 0,
+        "file_preserved": true,
+        "failure_exit": 1603,
+        "rollback_errors": 79,
+        "case": "plain",
+        "invalid_owner_errors": 1,
+        "positive_install_exit": 0,
+        "registration_before": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\D5A634D14CF7F1A4A8709B330FC9E950",
+          "owner": "BUILTIN\\Administrators",
+          "sddl": "O:BAG:SYD:P(A;OICI;CCSWRPWPRC;;;WD)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)"
+        },
+        "product": "{1D436A5D-7FC4-4A1F-8A07-B933F09C9E05}",
+        "registration_after": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\D5A634D14CF7F1A4A8709B330FC9E950",
+          "owner": "DESKTOP-81GHP8U\\OttrinMsiControlQA",
+          "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+        },
+        "file_sha256": "8ad9144f6d5e574f5f99328a5bf7c6c7e6176be59c7c6bfb64c7f4d195b49a80",
+        "msi_sha256": "046f64313e9a4e046cc4fb57fdfba43a5993a1475e4fc78a503bfcddd6b96abf",
+        "deferred_failure_exercised": true,
+        "retry_exit": 0,
+        "state_after_failure": 1,
+        "state_after_retry": -1
+      },
+      {
+        "file_after_retry": true,
+        "positive_state_after": -1,
+        "positive_uninstall_exit": 0,
+        "status": "rollback-or-retry-failed",
+        "reinstall_exit": 0,
+        "file_preserved": true,
+        "failure_exit": 1603,
+        "rollback_errors": 80,
+        "case": "icon",
+        "invalid_owner_errors": 1,
+        "positive_install_exit": 0,
+        "registration_before": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\20030C1451860874F89D289A738A5ACD",
+          "owner": "BUILTIN\\Administrators",
+          "sddl": "O:BAG:SYD:P(A;OICI;CCSWRPWPRC;;;WD)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)"
+        },
+        "product": "{41C03002-6815-4780-8FD9-82A937A8A5DC}",
+        "registration_after": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\20030C1451860874F89D289A738A5ACD",
+          "owner": "DESKTOP-81GHP8U\\OttrinMsiControlQA",
+          "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+        },
+        "file_sha256": "8ad9144f6d5e574f5f99328a5bf7c6c7e6176be59c7c6bfb64c7f4d195b49a80",
+        "msi_sha256": "ea3c5fee67cd4f0136343cd21a6c8b6e84c387e76bfdd2bc1a93d37ae0d111e6",
+        "deferred_failure_exercised": true,
+        "retry_exit": 0,
+        "state_after_failure": 1,
+        "state_after_retry": -1
+      }
+    ]
+  },
+  "causal_limit": "Ottrin binaries and lifecycle controllers are absent. This rules them out as a necessary cause in this environment; clean-base/compiler/other-OS comparisons remain separate, so no universal Windows or safe product workaround claim.",
+  "cleanup": {
+    "stop": "Domain 'ottrin-msi-control-qa' destroyed",
+    "undefine": "Domain 'ottrin-msi-control-qa' has been undefined",
+    "delete_volume": "Vol ottrin-msi-control-qa.qcow2 deleted",
+    "parent_xml_unchanged": true,
+    "retained_guests_off": true
+  },
+  "source_sha256": {
+    "plain.wxs": "36820693ae0a85d644bfc23fa92c70d570c031d086f02be269fec6a0f4eb6db8",
+    "icon.wxs": "d5e81f391b78dbbb68efc6f13d836b3d293faf84e27334797b898a53fb07b16d",
+    "actor.ps1": "b20b4ad2144916b3bd18773c77341dad84b4b94bca13e22ce6451e9e188fb87e",
+    "run.py": "0d70446155f82c170efd83891d833c7b1f56a612867b353d0f80bfafb35320c8",
+    "control.txt": "8ad9144f6d5e574f5f99328a5bf7c6c7e6176be59c7c6bfb64c7f4d195b49a80"
+  },
+  "primary_references": [
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/msi/installation-context",
+      "use": "Per-user installation context is supported independently of per-machine elevation."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/msi/rollback-installation",
+      "use": "Default rollback is intended to restore the preceding system state."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1300-1699-",
+      "use": "System error1307 in registry failure1401 is ERROR_INVALID_OWNER, distinct from MSI message1307 (disk space)."
+    }
+  ],
+  "compressed_inputs": {
+    "PARENT.xml": "PARENT.xml.gz",
+    "control.txt": "control.txt.gz"
+  },
+  "reproduction_setup": "Restore the two compressed byte-exact inputs before running the archived controller; retire restored fixture inputs after the bounded reproduction. Source hashes refer to decompressed original bytes."
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Ottrin isolated MSI engine control icon" Manufacturer="Ottrin QA"
+      Version="0.1.0" UpgradeCode="31543417-637E-48A5-A600-64A36C5A5AF9" Scope="perUser">
+    <Icon Id="ControlIcon.ico" SourceFile="icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="ControlIcon.ico" />
+    <MediaTemplate EmbedCab="yes" />
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="INSTALLFOLDER" Name="OttrinMsiControlPayload-icon">
+        <Component Id="ControlPayload" Guid="B32F0F64-81F2-406C-8470-C93AC69284F4">
+          <File Id="ControlText" Source="control.txt" />
+          <RegistryValue Root="HKCU" Key="Software\OttrinMsiControlQA-icon" Name="Installed"
+              Type="integer" Value="1" KeyPath="yes" />
+          <RemoveFolder Id="RemoveControlFolder" On="uninstall" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+    <Feature Id="MainFeature"><ComponentRef Id="ControlPayload" /></Feature>
+    <CustomAction Id="FailRemoval" Directory="SystemFolder"
+        ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /c exit 1"
+        Execute="deferred" Impersonate="yes" Return="check" />
+    <InstallExecuteSequence>
+      <Custom Action="FailRemoval" Before="RemoveFiles"
+          Condition="REMOVE~=&quot;ALL&quot; AND FAILUNINSTALL=1" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>

@@ -1,0 +1,78 @@
+{
+  "msi_version": "5.0.26100.9168",
+  "os": {
+    "Caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+    "Version": "10.0.26100",
+    "BuildNumber": "26100"
+  },
+  "phase": "complete",
+  "identity": {
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "administrator": false,
+    "owner": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "session": 1
+  },
+  "status": "observed",
+  "cases": [
+    {
+      "file_after_retry": true,
+      "positive_state_after": -1,
+      "positive_uninstall_exit": 0,
+      "status": "rollback-or-retry-failed",
+      "reinstall_exit": 0,
+      "file_preserved": true,
+      "failure_exit": 1603,
+      "rollback_errors": 79,
+      "case": "plain",
+      "invalid_owner_errors": 1,
+      "positive_install_exit": 0,
+      "registration_before": {
+        "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\D5A634D14CF7F1A4A8709B330FC9E950",
+        "owner": "BUILTIN\\Administrators",
+        "sddl": "O:BAG:SYD:P(A;OICI;CCSWRPWPRC;;;WD)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)"
+      },
+      "product": "{1D436A5D-7FC4-4A1F-8A07-B933F09C9E05}",
+      "registration_after": {
+        "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\D5A634D14CF7F1A4A8709B330FC9E950",
+        "owner": "DESKTOP-81GHP8U\\OttrinMsiControlQA",
+        "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+      },
+      "file_sha256": "8ad9144f6d5e574f5f99328a5bf7c6c7e6176be59c7c6bfb64c7f4d195b49a80",
+      "msi_sha256": "046f64313e9a4e046cc4fb57fdfba43a5993a1475e4fc78a503bfcddd6b96abf",
+      "deferred_failure_exercised": true,
+      "retry_exit": 0,
+      "state_after_failure": 1,
+      "state_after_retry": -1
+    },
+    {
+      "file_after_retry": true,
+      "positive_state_after": -1,
+      "positive_uninstall_exit": 0,
+      "status": "rollback-or-retry-failed",
+      "reinstall_exit": 0,
+      "file_preserved": true,
+      "failure_exit": 1603,
+      "rollback_errors": 80,
+      "case": "icon",
+      "invalid_owner_errors": 1,
+      "positive_install_exit": 0,
+      "registration_before": {
+        "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\20030C1451860874F89D289A738A5ACD",
+        "owner": "BUILTIN\\Administrators",
+        "sddl": "O:BAG:SYD:P(A;OICI;CCSWRPWPRC;;;WD)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)"
+      },
+      "product": "{41C03002-6815-4780-8FD9-82A937A8A5DC}",
+      "registration_after": {
+        "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\20030C1451860874F89D289A738A5ACD",
+        "owner": "DESKTOP-81GHP8U\\OttrinMsiControlQA",
+        "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1031G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1031)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+      },
+      "file_sha256": "8ad9144f6d5e574f5f99328a5bf7c6c7e6176be59c7c6bfb64c7f4d195b49a80",
+      "msi_sha256": "ea3c5fee67cd4f0136343cd21a6c8b6e84c387e76bfdd2bc1a93d37ae0d111e6",
+      "deferred_failure_exercised": true,
+      "retry_exit": 0,
+      "state_after_failure": 1,
+      "state_after_retry": -1
+    }
+  ]
+}

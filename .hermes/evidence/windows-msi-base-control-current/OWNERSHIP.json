@@ -1,0 +1,10 @@
+{
+  "domain": "ottrin-msi-base-control-qa",
+  "volume": "ottrin-msi-base-control-qa.qcow2",
+  "backing_volume": "win11ltsc.qcow2",
+  "purpose": "Same minimal MSI controls against the retained Windows base as read-only backing; compare QA-image-specific behavior without Ottrin runtime/controller",
+  "pending_consumers": [],
+  "cleanup": "Retire only owned overlay/domain/NVRAM/TPM after verifying no dependent volume/snapshot/domain. All retained images and guest definitions remain unchanged.",
+  "parent_xml_sha256": "205ac6a20d999c4f7208d1c256eb15a7477b53e6e377998cc7d024f72030492e",
+  "cleanup_complete": true
+}

@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-msi-control-qa",
+  "volume": "ottrin-msi-control-qa.qcow2",
+  "backing_volume": "ottrin-qa-20261011.qcow2",
+  "purpose": "Minimal unrelated per-user MSI refusal/rollback control under a disposable ordinary interactive account; no Ottrin runtime/controller involved",
+  "pending_consumers": [],
+  "cleanup": "Stop owned guest, verify no child domain/volume/snapshot dependencies, undefine only this domain with its NVRAM/TPM, remove only this owned overlay. Preserve all retained guests and backing images.",
+  "parent_xml_sha256": "8dcdbc2cff6de7fe9f20eeff8724e178d2066f1ba7f1d5ce097f96af1401901d",
+  "cleanup_complete": true,
+  "previous_attempt": "Authoring-only WIX0230 rejection; all owned VM resources removed; no runtime result"
+}

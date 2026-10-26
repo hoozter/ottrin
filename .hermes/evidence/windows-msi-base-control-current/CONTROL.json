@@ -1,0 +1,93 @@
+{
+  "status": "observed",
+  "purpose": "Unrelated minimal per-user MSI engine controls; plain and ARP-icon variants; no Ottrin runtime/controller",
+  "volume_create": "Vol ottrin-msi-base-control-qa.qcow2 created",
+  "define": "Domain 'ottrin-msi-base-control-qa' defined from /home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-base-control-current/DOMAIN.xml",
+  "start": "Domain 'ottrin-msi-base-control-qa' started",
+  "compiler_output": "5.0.2+aa65968c\r\n",
+  "native": {
+    "msi_version": "5.0.26100.9168",
+    "os": {
+      "Caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+      "Version": "10.0.26100",
+      "BuildNumber": "26100"
+    },
+    "phase": "complete",
+    "identity": {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "administrator": false,
+      "owner": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "session": 1
+    },
+    "status": "observed",
+    "cases": [
+      {
+        "file_after_retry": true,
+        "positive_state_after": -1,
+        "positive_uninstall_exit": 0,
+        "status": "rollback-or-retry-failed",
+        "reinstall_exit": 0,
+        "file_preserved": true,
+        "failure_exit": 1603,
+        "rollback_errors": 79,
+        "case": "plain",
+        "invalid_owner_errors": 1,
+        "positive_install_exit": 0,
+        "registration_before": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\391C4869E158E6E4FA67410FD16265ED",
+          "owner": "BUILTIN\\Administrators",
+          "sddl": "O:BAG:SYD:P(A;OICI;CCSWRPWPRC;;;WD)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)"
+        },
+        "product": "{9684C193-851E-4E6E-AF76-14F01D2656DE}",
+        "registration_after": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\391C4869E158E6E4FA67410FD16265ED",
+          "owner": "DESKTOP-81GHP8U\\OttrinMsiControlQA",
+          "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1005G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+        },
+        "file_sha256": "8ad9144f6d5e574f5f99328a5bf7c6c7e6176be59c7c6bfb64c7f4d195b49a80",
+        "msi_sha256": "968e94adaafe5ca1940095ea250199838350719092e2949526a87e899c4d4894",
+        "deferred_failure_exercised": true,
+        "retry_exit": 0,
+        "state_after_failure": 1,
+        "state_after_retry": -1
+      },
+      {
+        "file_after_retry": true,
+        "positive_state_after": -1,
+        "positive_uninstall_exit": 0,
+        "status": "rollback-or-retry-failed",
+        "reinstall_exit": 0,
+        "file_preserved": true,
+        "failure_exit": 1603,
+        "rollback_errors": 80,
+        "case": "icon",
+        "invalid_owner_errors": 1,
+        "positive_install_exit": 0,
+        "registration_before": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\9BA26B6CD2CB92647A122929D452F83B",
+          "owner": "BUILTIN\\Administrators",
+          "sddl": "O:BAG:SYD:P(A;OICI;CCSWRPWPRC;;;WD)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)"
+        },
+        "product": "{C6B62AB9-BC2D-4629-A721-92924D258FB3}",
+        "registration_after": {
+          "path": "HKEY_CURRENT_USER\\Software\\Microsoft\\Installer\\Products\\9BA26B6CD2CB92647A122929D452F83B",
+          "owner": "DESKTOP-81GHP8U\\OttrinMsiControlQA",
+          "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1005G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+        },
+        "file_sha256": "8ad9144f6d5e574f5f99328a5bf7c6c7e6176be59c7c6bfb64c7f4d195b49a80",
+        "msi_sha256": "907fb255292f82b7b6f125f6dfa61df537ead7b778fd26b4c3f9379e0862ee60",
+        "deferred_failure_exercised": true,
+        "retry_exit": 0,
+        "state_after_failure": 1,
+        "state_after_retry": -1
+      }
+    ]
+  },
+  "cleanup": {
+    "stop": "Domain 'ottrin-msi-base-control-qa' destroyed",
+    "undefine": "Domain 'ottrin-msi-base-control-qa' has been undefined",
+    "delete_volume": "Vol ottrin-msi-base-control-qa.qcow2 deleted",
+    "parent_xml_unchanged": true,
+    "retained_guests_off": true
+  }
+}

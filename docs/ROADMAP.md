@@ -88,6 +88,19 @@ their named hashes. Test counts are scoped observations, not completion measures
   service's package mount is gone. Receipt:
   `personal-index-filename-current/ACCEPTANCE.json`. Earlier measurements retain
   their separate windows and hashes; this does not establish final owner acceptance.
+- **MSI rollback diagnostic boundary:** the existing file-only failure receipt
+  already establishes reproduction without Ottrin code. Fresh plain/icon
+  controls confirm it; the added read-only base-image comparison reproduces
+  the same advertised-product state, invalid-owner error and stranded payload.
+  Both environments use MSI 5.0.26100.9168, so this is no new OS-version matrix.
+  All owned overlays/domains/NVRAM/TPM are removed and retained guests are off
+  with unchanged definitions. Upstream issue 8574 remains open. A compiler,
+  runtime or authoring fix is not established; MSI remains unpromoted and its
+  rollback gate remains required. Do not repeat equivalent controls or turn a
+  failure before script execution into rollback acceptance. Continue the next
+  ready product work. Receipts: `windows-msi-control-current/ACCEPTANCE.json`,
+  `windows-msi-base-control-current/ACCEPTANCE.json`; earlier root findings:
+  `windows-msi-rollback-current/ACCEPTANCE.json`.
 - **Current internal Windows candidate:** clean **`bcd625ac`** at
   `.hermes/packaging-tmp/windows-activity-candidate/`. Portable ZIP, NSIS and
   native MSI extraction agree on all **58 application files**, including the
@@ -308,15 +321,18 @@ Historical variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Continue remaining Windows transaction/alias/ancestor/resource/workflow and
-   graphics acceptance, and resolve failed-uninstall registration rollback.
+1. Finish one-click Windows Copy Undo admission after containing-parent changes,
+   then remaining transaction/alias/ancestor/resource/workflow, graphics and
+   installer lifecycle acceptance. Keep failed-uninstall MSI rollback required;
+   investigate it further with a distinct proposed fix or justified comparison,
+   using the existing independent controls rather than repeating them.
    Current installer lifecycle and broader platform scopes remain separate from
    portable Copy acceptance. Linux `defc1ada` is delivered and its actual service
    is verified; release publication/signing remains unaccepted.
 2. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below, then platform acceptance. Earlier workflows retain their
    named scopes. Required outcome4 (the themed picker and supported folder
-   integration) stays deferred until preceding engineering is complete. Owner
+   integration) stays deferred until the preceding unblocked engineering is complete. Owner
    testing does not block independently executable work.
 
 CI push filters now omit commits that change only roadmap/status delivery
@@ -5118,7 +5134,7 @@ A real failed uninstall of that exact MSI reproduces broken registration. Lockin
 
 Two independently authored file-only per-user controls reproduce registration rollback failure after actual FileCopy/FileRemove operations. Each has one text file, an HKCU registry key path and a standard Type19 error action after InstallExecute; neither runs Ottrin or another custom executable. Failed installation leaves state5 with its file absent. Failed uninstallation restores its file but leaves state1. In the latter case forced repair and uninstall both return0 while the file remains; a fresh reinstall followed by uninstall removes it. This demonstrates why product state and exit0 alone do not prove removal. It does not establish the exact compiler/runtime/environment cause or a safe authoring repair.
 
-[WiX issue8574](https://github.com/wixtoolset/issues/issues/8574) describes related failures. Metadata-only inspection of its attachments shows the reported Advanced Installer comparison uses an immediate failure at6401 before InstallExecute6500, so that comparison does not prove equivalent rollback succeeds. No downloaded third-party MSI was executed. Local controls use pinned native WiX5.0.2 in Windows11 IoT Enterprise LTSC build26100, msi.dll5.0.26100.9168. Initial fixture compilation/export mistakes were corrected before their results were interpreted.
+[WiX issue 8574](https://github.com/wixtoolset/issues/issues/8574) describes related failures. Metadata-only inspection of its attachments shows the reported Advanced Installer comparison uses an immediate failure at6401 before InstallExecute6500, so that comparison does not prove equivalent rollback succeeds. No downloaded third-party MSI was executed. Local controls use pinned native WiX5.0.2 in Windows11 IoT Enterprise LTSC build26100, msi.dll5.0.26100.9168. Initial fixture compilation/export mistakes were corrected before their results were interpreted.
 
 MSI failed-transaction registration remains a rejected release gate. A production failure after index shutdown, full NSIS payload rollback, and the other native acceptance/signing gates retain their separate scopes; no partial release is inferred. README, guide, release notes and checklist now distinguish native construction/normal lifecycle evidence from this observed failure. Full receipts, controls and compact log extracts are under `.hermes/evidence/windows-msi-rollback-current/`; the staged acceptance records reference them. The fresh COW domain, disk, copied NVRAM and new TPM were discarded through libvirt. All backing VMs remain shut off and backing disk/NVRAM modification times are unchanged. Host settings and existing operator files are preserved.
 
