@@ -1,11 +1,11 @@
-//! Stop registration for the existing per-operation Windows Copy Undo workers.
+//! Stop registration shared by forward Copy and Copy Undo workers.
 use super::*;
 
 #[derive(Default)]
-pub(super) struct CopyUndoUi {
+pub(super) struct CopyWorkUi {
     cancellations: HashMap<u64, Arc<AtomicBool>>,
 }
-impl CopyUndoUi {
+impl CopyWorkUi {
     pub(super) fn start(&mut self, id: u64) -> Arc<AtomicBool> {
         let flag = Arc::new(AtomicBool::new(false));
         assert!(!self.cancellations.contains_key(&id));
@@ -29,7 +29,7 @@ impl CopyUndoUi {
         self.cancellations.remove(&id);
     }
 }
-impl Drop for CopyUndoUi {
+impl Drop for CopyWorkUi {
     fn drop(&mut self) {
         for flag in self.cancellations.values() {
             flag.store(true, Ordering::Release);
@@ -41,8 +41,8 @@ impl Drop for CopyUndoUi {
 mod tests {
     use super::*;
     #[test]
-    fn copy_undo_stop_is_per_operation_and_close_stops_remaining_workers() {
-        let mut ui = CopyUndoUi::default();
+    fn copy_work_stop_is_per_operation_and_close_stops_remaining_workers() {
+        let mut ui = CopyWorkUi::default();
         let first = ui.start(1);
         let second = ui.start(2);
         ui.stop(1);

@@ -1,16 +1,20 @@
-use super::{ConflictAction, PathMoveIdentity, PlatformError};
+use super::PlatformError;
+#[cfg(not(target_os = "windows"))]
+use super::{ConflictAction, PathMoveIdentity};
 #[cfg(target_os = "linux")]
 use super::{copy_entry, next_available_name, rename_identity};
 #[cfg(target_os = "linux")]
 use std::ffi::OsStr;
-#[cfg(any(target_os = "linux", test))]
+#[cfg(any(target_os = "linux", all(test, not(target_os = "windows"))))]
 use std::ffi::OsString;
+#[cfg(not(target_os = "windows"))]
 use std::path::{Path, PathBuf};
 
-// The native stream engine is being verified before publication/recovery is
-// enabled. The public Windows Copy gate below remains closed until that work lands.
+// Windows uses the native handle-bound stream, publication and recovery engine.
 #[cfg(target_os = "windows")]
 mod windows;
+#[cfg(target_os = "windows")]
+pub(super) use windows::{MAX_COPY_ENTRIES, copy_configured};
 #[cfg(target_os = "windows")]
 pub use windows::{
     RetainedCopyAbortPlan, RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan,
@@ -257,6 +261,7 @@ pub(super) fn withdraw_opened(
 #[cfg(target_os = "linux")]
 pub(super) const CANDIDATE: &str = "candidate";
 
+#[cfg(not(target_os = "windows"))]
 #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(super) enum CopyPublication {
@@ -287,7 +292,10 @@ pub(super) fn copy_entry_for_move_undo(
     linux::copy_for_move_undo(source, destination_dir, conflict)
 }
 
-#[cfg(any(not(target_os = "linux"), test))]
+#[cfg(any(
+    not(any(target_os = "linux", target_os = "windows")),
+    all(test, target_os = "linux")
+))]
 pub(super) fn copy_entry_transactional(
     source: &Path,
     destination_dir: &Path,
@@ -297,7 +305,7 @@ pub(super) fn copy_entry_transactional(
     {
         linux::copy(source, destination_dir, conflict, None)
     }
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     {
         portable::copy(source, destination_dir, conflict)
     }
@@ -357,11 +365,12 @@ pub(super) fn random_transaction_id() -> Result<String, PlatformError> {
     Ok(name)
 }
 
-#[cfg(any(target_os = "linux", test))]
+#[cfg(any(target_os = "linux", all(test, not(target_os = "windows"))))]
 fn random_transaction_name() -> Result<OsString, PlatformError> {
     random_transaction_id().map(|id| format!(".ottrin-txn-{id}").into())
 }
 
+#[cfg(not(target_os = "windows"))]
 fn reject_self_copy(source: &Path, target: &Path) -> Result<(), PlatformError> {
     let Ok(target_metadata) = std::fs::symlink_metadata(target) else {
         return Ok(());
@@ -375,15 +384,6 @@ fn reject_self_copy(source: &Path, target: &Path) -> Result<(), PlatformError> {
         if source_metadata.dev() == target_metadata.dev()
             && source_metadata.ino() == target_metadata.ino()
         {
-            return Err(PlatformError::InvalidDestination(
-                target.display().to_string(),
-            ));
-        }
-    }
-    #[cfg(windows)]
-    {
-        let _ = (source_metadata, target_metadata);
-        if same_file::is_same_file(source, target).unwrap_or(false) {
             return Err(PlatformError::InvalidDestination(
                 target.display().to_string(),
             ));
@@ -1097,7 +1097,7 @@ mod linux {
     }
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 mod portable {
     use super::*;
 

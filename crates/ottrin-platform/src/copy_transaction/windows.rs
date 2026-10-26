@@ -1,15 +1,16 @@
 //! Handle-bound Windows Copy staging, journaled no-replace publication and DACL application.
-//! Sources are never mutated; public Copy, Overwrite and cleanup remain gated.
+//! Sources are never mutated; Copy and recovery share one native transaction engine.
 //! Sealed creation recovery exposes only freshly admitted, identity-bound Undo plans.
 //!
 //! Backup streams preserve directory/file named data and extended attributes that ordinary
 //! ReadFile/WriteFile copying loses. Known link records are validated and installed
 //! through native handles; security and other unsupported
-//! backup records are refused rather than silently omitted. Final file metadata,
-//! guarded cleanup and public workflow integration remain required work.
-#![cfg_attr(not(test), allow(dead_code))]
+//! backup records are refused rather than silently omitted.
 
 mod dispatch;
+pub(crate) use dispatch::copy_configured;
+/// Bound pinned source descriptors before any destination mutation.
+pub(crate) const MAX_COPY_ENTRIES: usize = 100_000;
 mod journal;
 mod registry;
 pub use journal::{

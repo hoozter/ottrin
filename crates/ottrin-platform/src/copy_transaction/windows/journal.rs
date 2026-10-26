@@ -2587,6 +2587,7 @@ impl<'a> DurableStage<'a> {
         plan.validate().map_err(|e| stage_error(&self.stage, e))?;
         Ok(plan)
     }
+    #[cfg(test)]
     pub(super) fn inspect(&self, central: &File) -> Result<Inspection, PlatformError> {
         inspect(self.stage.parent(), central, &self.stage.name)
     }
@@ -3046,6 +3047,7 @@ impl PermissionStage {
         }
         Ok(())
     }
+    #[cfg(test)]
     pub(super) fn completed(&self) -> usize {
         self.journal.state.permissions.completed
     }
@@ -3062,19 +3064,32 @@ fn stage_error(stage: &namespace::PrivateStage<'_>, error: PlatformError) -> Pla
 
 #[derive(Debug)]
 pub(super) struct Inspection {
+    #[cfg(test)]
     pub(super) entries: usize,
+    #[cfg(test)]
     pub(super) created: usize,
+    #[cfg(test)]
     pub(super) staged: usize,
+    #[cfg(test)]
     pub(super) verified: bool,
+    #[cfg(test)]
     pub(super) security_planned: bool,
+    #[cfg(test)]
     pub(super) published: bool,
+    #[cfg(test)]
     pub(super) publication_pending: bool,
     pub(super) completion_verified: bool,
+    #[cfg(test)]
     pub(super) completion_entries: usize,
+    #[cfg(test)]
     pub(super) readonly_reopening: Option<usize>,
+    #[cfg(test)]
     pub(super) undo_pending: bool,
+    #[cfg(test)]
     pub(super) undone: bool,
+    #[cfg(test)]
     pub(super) permissions_completed: usize,
+    #[cfg(test)]
     pub(super) permission_pending: bool,
 }
 fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
@@ -3342,29 +3357,42 @@ pub(super) fn inspect(
 ) -> Result<Inspection, PlatformError> {
     let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Inspect)?;
     Ok(Inspection {
+        #[cfg(test)]
         entries: snapshot.state.nodes.len(),
+        #[cfg(test)]
         created: snapshot
             .state
             .nodes
             .iter()
             .filter(|n| n.created.is_some())
             .count(),
+        #[cfg(test)]
         staged: snapshot
             .state
             .nodes
             .iter()
             .filter(|n| n.staged.is_some())
             .count(),
+        #[cfg(test)]
         verified: snapshot.state.verified,
+        #[cfg(test)]
         security_planned: snapshot.state.planned.is_some(),
+        #[cfg(test)]
         published: snapshot.state.published,
+        #[cfg(test)]
         publication_pending: snapshot.state.publication_intent && !snapshot.state.published,
         completion_verified: snapshot.state.completion_verified,
+        #[cfg(test)]
         completion_entries: snapshot.state.final_versions.len(),
+        #[cfg(test)]
         readonly_reopening: snapshot.state.readonly_pending,
+        #[cfg(test)]
         undo_pending: snapshot.state.undo_intent && !snapshot.state.undo_complete(),
+        #[cfg(test)]
         undone: snapshot.state.undo_complete(),
+        #[cfg(test)]
         permissions_completed: snapshot.state.permissions.completed,
+        #[cfg(test)]
         permission_pending: snapshot.state.permissions.pending,
     })
 }
@@ -3513,6 +3541,7 @@ impl<'a> RetainedStage<'a> {
             })
             .map(|original| &original.evidence.entries[0].version)
     }
+    #[cfg(test)]
     pub(super) fn plan_destination_security(
         &self,
         mut progress: impl FnMut() -> Result<(), PlatformError>,
@@ -3531,6 +3560,7 @@ impl<'a> RetainedStage<'a> {
         self.tree
             .derive_destination_security(self.parent, &self.snapshot.state, progress)
     }
+    #[cfg(test)]
     pub(super) fn entry_count(&self) -> usize {
         self.tree.entries.len()
     }
@@ -3748,6 +3778,7 @@ impl HeldTree {
 /// Undo a completed creation by retaining its exact copied tree at the original
 /// candidate slot. Never delete data, overwrite a name, or read/mutate the source.
 /// A fresh call also resolves and finishes an interrupted inverse by identity.
+#[cfg(test)]
 pub(super) fn undo_completed_copy(
     parent: &File,
     central: &File,
@@ -3969,12 +4000,15 @@ impl<'a> CompletedCopy<'a> {
         }
         Ok(Self { retained })
     }
+    #[cfg(test)]
     pub(super) fn entry_count(&self) -> usize {
         self.retained.snapshot.state.final_versions.len()
     }
+    #[cfg(test)]
     pub(super) fn root_version(&self) -> &EntryVersion {
         &self.retained.snapshot.state.final_versions[0]
     }
+    #[cfg(test)]
     pub(super) fn revalidate(
         &self,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,

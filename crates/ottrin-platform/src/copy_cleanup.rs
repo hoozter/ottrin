@@ -1352,7 +1352,12 @@ mod tests {
         let destination = root.join("destination");
         std::fs::create_dir_all(&destination).unwrap();
         DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &destination, ConflictAction::Overwrite)
+            .execute_copy_with_undo_receipt(
+                &source,
+                &destination,
+                ConflictAction::Overwrite,
+                &mut |_| Ok(()),
+            )
             .unwrap()
             .unwrap()
     }
@@ -1423,6 +1428,7 @@ mod tests {
                 &source.join("item"),
                 &destination,
                 ConflictAction::Overwrite,
+                &mut |_| Ok(()),
             )
             .unwrap()
             .unwrap();
@@ -1575,6 +1581,7 @@ mod tests {
             &sources,
             &destination,
             ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_none());
         let captured = statuses(root.path());
@@ -1739,6 +1746,7 @@ mod tests {
             &sources,
             &root.path().join("destination"),
             ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_none());
         let batch_stages: Vec<_> = batch.undo_receipts.iter().map(stage).collect();
@@ -1868,6 +1876,7 @@ mod tests {
                     &source.join("item"),
                     &outer,
                     ConflictAction::Overwrite,
+                    &mut |_| Ok(()),
                 )
                 .unwrap()
                 .unwrap();
@@ -1882,6 +1891,7 @@ mod tests {
                     &replacement,
                     &destination,
                     ConflictAction::Overwrite,
+                    &mut |_| Ok(()),
                 )
                 .unwrap()
                 .unwrap();
@@ -1973,6 +1983,7 @@ mod tests {
                 &source.join("item"),
                 &destination,
                 ConflictAction::Overwrite,
+                &mut |_| Ok(()),
             )
             .unwrap()
             .unwrap();

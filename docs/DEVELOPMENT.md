@@ -917,8 +917,12 @@ Activity reports progress and retains the remaining action for retry.
 Safe expiry/reclamation of Copy transaction stages is still open. Receipt
 ownership and successful Undo do not establish that transaction storage has
 been reclaimed. Native Windows has journaled completion evidence and a private creation-Undo
-implementation. Public Copy receipts and UI integration remain gated;
-cross-compilation does not establish Windows Copy acceptance.
+implementation. Public Windows Copy now routes through that transaction engine,
+returns single/batch receipts and supports per-operation Stop with retained recovery.
+The ordinary/elevated native UI regression scopes and exact source hashes are in
+`windows-copy-public-workflow-current/ACCEPTANCE.json`. Complete hosted MSVC and
+rebuilt-package desktop acceptance remain required; cross-compilation alone does
+not establish Windows Copy acceptance.
 
 Native backend correctness tests use the workspace `target/` and the canonical
 per-package test profile in `Cargo.toml` (platform/UI optimization and debug data

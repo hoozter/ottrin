@@ -312,6 +312,7 @@ impl TreeSecurityPlan {
     pub(in super::super) fn into_root_policy(self) -> DestinationSecurity {
         self.entries.into_iter().next().unwrap().policy
     }
+    #[cfg(test)]
     pub(in super::super) fn entry_count(&self) -> usize {
         self.entries.len()
     }

@@ -3,9 +3,20 @@
 Status: file/directory streams, ordinary metadata, private namespace, recursive
 known-link staging, new-copy security inheritance components, paired staging
 journals, retained-candidate/private-DACL validation and durable whole-tree final
-permission planning have native component acceptance. Public Windows Copy remains disabled until the complete transaction
-and normal workflows are implemented and accepted. Current counts and scope are
-in the acceptance section below and the roadmap checkpoint.
+permission planning have native component acceptance. Public Copy/Paste now
+routes through this engine in source, with single/batch Undo receipts, actual
+completed-source accounting and a per-operation Stop control. Native ordinary and
+elevated UI suites each pass 375 tests (four existing integration ignores, no
+test-name filters), including both original positive clipboard cases. Explicit
+cases cover blocked-source Stop, partial-batch Undo, directory/named streams,
+and chunk cancellation with safely ending an unpublished attempt. Strict
+Linux/Windows-GNU lint and shared Linux regressions pass. Exact source/binary
+hashes and teardown are in
+`.hermes/evidence/windows-copy-public-workflow-current/ACCEPTANCE.json`.
+Complete hosted MSVC, exact new package desktop acceptance and the remaining
+resource/alias/transaction/platform gates are still required. Existing accepted
+packages retain their original source and disabled public-Copy behavior; older
+component checkpoint statements below retain their recorded scopes.
 
 ## Confirmed temporary-stream isolation gap
 

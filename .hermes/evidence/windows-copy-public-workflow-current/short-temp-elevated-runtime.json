@@ -1,0 +1,19 @@
+{
+  "exit": 0,
+  "remainingTempEntries": [
+    {
+      "Name": "o2ci5qiu",
+      "Attributes": 16,
+      "Length": null
+    }
+  ],
+  "uiRemainingEntries": [],
+  "tempEntries": 1,
+  "phase": "short-temp-elevated-runtime",
+  "actorTempEntries": [
+    "o2ci5qiu"
+  ],
+  "owner": "S-1-5-32-544",
+  "administrator": true,
+  "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+}

@@ -1,0 +1,272 @@
+{
+  "status": "pass for named native/source regressions; package and complete hosted Windows acceptance pending",
+  "source": {
+    "base_revision": "a5003d5f7cc238ad51daa1045702edec8d2f16af",
+    "working_tree": [
+      " M crates/ottrin-platform/src/copy_cleanup.rs",
+      " M crates/ottrin-platform/src/copy_finalization.rs",
+      " M crates/ottrin-platform/src/copy_recovery.rs",
+      " M crates/ottrin-platform/src/copy_transaction.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/security.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/tree.rs",
+      " M crates/ottrin-platform/src/lib.rs",
+      " M crates/ottrin-ui/src/copy_activity_cleanup.rs",
+      " D crates/ottrin-ui/src/copy_activity_undo.rs",
+      " M crates/ottrin-ui/src/lib.rs",
+      "?? AGENTS.md",
+      "?? crates/ottrin-ui/src/copy_activity_work.rs"
+    ],
+    "files": {
+      "crates/ottrin-platform/src/copy_cleanup.rs": "2052ab1d170e5462295b442e84c99b21e96c06e2c6845e442dde553db6d4e40b",
+      "crates/ottrin-platform/src/copy_finalization.rs": "45a7552860fe889e28d4036b66ebd8ab5730f687e5d8ce6677e512bff2a3d5cd",
+      "crates/ottrin-platform/src/copy_recovery.rs": "6ac34e74abddbf381d4824b44ea27a512e70aa21288f968b49e9e3509fef6544",
+      "crates/ottrin-platform/src/copy_transaction.rs": "f7771fb7d0fd57d751d2aa28cf97d050abc9a0b0e6a2196bbd7946db2a3fd12d",
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "d242101356a6c4c38600c8bdf37f70520529ae930df437a17b7fb78570ac8d19",
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "b117842062b10a79252e801360e6d56c236f83a277479f33eda97740f557db8a",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "5ba08cdf838e03c16b262d53871d09a953064d19e2ccb5bbad760395591c9a4e",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "55653f7eab97dd8ef0f93b118825d0dfb762d784409a8d6f06e1dc26721657c1",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "2f19fc3f8b5b75aa911100d36ed44d84a745ec7796d14f5149f0adc4746413e2",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "7cd3efc80c3cfc57074c5bbc452210fafe72476f327ec60ea433c311d2e9eec3",
+      "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "478462561db82bb451aa5c4beb642ef09f0235a0b6e8b1527d1d9999ddc46ddd",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "a28f33a84ac7592cd3ffcb560f64ed8a8cfafeba27cfc2608f63b6cb6eefce8a",
+      "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "8fff256d52c12f7ed48026eac10db8ce272576fe57abc574b6f958652443b713",
+      "crates/ottrin-platform/src/lib.rs": "c706f42f6192d7bdd680d9c7cacbdefe0e5692eda657233bae66d129d2dbd8c1",
+      "crates/ottrin-ui/src/copy_activity_cleanup.rs": "d754cf8971d6a060db63a5e901fa29d2f91575f9e2c0c3eff673f8be96e8a0db",
+      "crates/ottrin-ui/src/copy_activity_undo.rs": null,
+      "crates/ottrin-ui/src/copy_activity_work.rs": "fc331abc8238bce4636a614b4e6a12c635abf41b6d43ac71d24c0a038a4dd0d5",
+      "crates/ottrin-ui/src/lib.rs": "645ee394595a3aa25ef34bea1e94bfd8e4ddb4aa7513c2cf179c71651a261850"
+    }
+  },
+  "native_windows": {
+    "ordinary": {
+      "ui_summary": [
+        "test result: ok. 375 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 5.61s"
+      ],
+      "native_authority_summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 536 filtered out; finished in 0.06s"
+      ],
+      "actor": {
+        "exit": 0,
+        "remainingTempEntries": [],
+        "uiRemainingEntries": [],
+        "tempEntries": 0,
+        "phase": "short-temp-ordinary-runtime",
+        "actorTempEntries": [],
+        "owner": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+        "administrator": false,
+        "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+      },
+      "ignored": [
+        "test tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on an owned second volume",
+        "test tests::windows_copy_recovery_activity_integration ... ignored, requires the native platform fixture test executable in an owned guest",
+        "test tests::windows_cross_move_undo_admission_tracks_renamed_parent_paths ... ignored, requires an owned second native Windows volume",
+        "test tests::windows_move_cleanup_requires_captured_admission_and_uses_worker ... ignored, requires the owned secondary volume and isolated native actor profile"
+      ]
+    },
+    "elevated": {
+      "ui_summary": [
+        "test result: ok. 375 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 4.14s"
+      ],
+      "native_authority_summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 536 filtered out; finished in 0.04s"
+      ],
+      "actor": {
+        "exit": 0,
+        "remainingTempEntries": [
+          {
+            "Name": "o2ci5qiu",
+            "Attributes": 16,
+            "Length": null
+          }
+        ],
+        "uiRemainingEntries": [],
+        "tempEntries": 1,
+        "phase": "short-temp-elevated-runtime",
+        "actorTempEntries": [
+          "o2ci5qiu"
+        ],
+        "owner": "S-1-5-32-544",
+        "administrator": true,
+        "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+      },
+      "ignored": [
+        "test tests::file_operation_worker_cross_volume_move_undo_preserves_collision_and_allows_retry ... ignored, requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on an owned second volume",
+        "test tests::windows_copy_recovery_activity_integration ... ignored, requires the native platform fixture test executable in an owned guest",
+        "test tests::windows_cross_move_undo_admission_tracks_renamed_parent_paths ... ignored, requires an owned second native Windows volume",
+        "test tests::windows_move_cleanup_requires_captured_admission_and_uses_worker ... ignored, requires the owned secondary volume and isolated native actor profile"
+      ]
+    }
+  },
+  "explicit_public_workflow_checks": [
+    "clipboard_native_paste_event_starts_owned_file_operation",
+    "clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict",
+    "windows_public_copy_rendered_stop_interrupts_blocked_source_without_publishing",
+    "windows_public_copy_partial_batch_keeps_completed_receipt_and_undo",
+    "windows_public_copy_directory_preserves_streams_and_undo_keeps_source",
+    "windows_public_copy_chunk_stop_retains_an_endable_unpublished_attempt"
+  ],
+  "linux": [
+    "test result: ok. 419 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 1.54s",
+    "test result: ok. 239 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 61.28s",
+    "test result: ok. 402 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.71s"
+  ],
+  "strict_clippy": {
+    "windows_gnu_all_targets": "pass",
+    "linux_all_targets": "pass",
+    "packages": [
+      "ottrin-ui",
+      "ottrin-platform",
+      "ottrin-search"
+    ]
+  },
+  "binaries": {
+    "fixture-runtime.exe": {
+      "sha256": "7e5fb55aba4f4c68405ceb50486846a2fc165b4b0c411fe610d3c2e28e6de389",
+      "raw_sha256": "b28c0a112864406464c985e192a5043c8b50161ea38c8e29d6410bacbaae7fc8",
+      "source_date_epoch": 1792987941
+    },
+    "platform-runtime.exe": {
+      "sha256": "ec1532e32503bac7d18d78a1d8d1ae7913f81920e6e689a45288ea2529f3f931",
+      "raw_sha256": "509894e34d91b33e221e608d0587e8d359632f99f6c90df02c3bc011fa67a312",
+      "source_date_epoch": 1792986782
+    }
+  },
+  "teardown": {
+    "owner": {
+      "nonce": "5eb80545-bec1-42f7-81eb-78ece19aa97a",
+      "guest_root": "C:\\OttrinJobFixtureQA",
+      "domain": "ottrin-copy-cleanup-qa",
+      "status": "pass",
+      "phase": "cleanup",
+      "root_removed": true,
+      "shutdown_transport_disconnected": true,
+      "guest_off": true
+    },
+    "guest": {
+      "ownedProcesses": 0,
+      "ownedRootRemoved": true,
+      "noGlobalPoliciesOrLogonSettingsChanged": true,
+      "originalProfilesPreserved": true
+    }
+  },
+  "cleanup": {
+    "scope": "Same-configuration superseded finalized sessions only; no Cargo/rustc consumers, both compiler lock styles acquired; newest session and all other configurations retained",
+    "removed": [
+      {
+        "removed": "target/debug/incremental/ottrin_platform-3njrtbzoawl0q/s-hnfxnp8kij-09zad72-bd9dtxmcfeslea9m4hfs8b6ud",
+        "current_replacement": "target/debug/incremental/ottrin_platform-3njrtbzoawl0q/s-hnk7fei1tq-1kbupga-cee9r2aiebpkskqt5gvwcz54s",
+        "logical_bytes": 38269222
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnk0bnmrbv-0leuyc0-9a550k4t1vcc8vmw5xsf4eq8o",
+        "current_replacement": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnk7fbf9e3-042ni9b-8hjxamc7wlrenpa20q8xpxy83",
+        "logical_bytes": 39430861
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_ui-01qmn8oi03wig/s-hnk09aryax-1jwdam4-djyhn1rrkv4cz3huu1r3okic2",
+        "current_replacement": "target/debug/incremental/ottrin_ui-01qmn8oi03wig/s-hnk7d16imx-0klxg8w-9chfd7ht9l4b8p68mg4pvach3",
+        "logical_bytes": 139398158
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnk0blji4b-1jh6t9t-drs0utivlknc89y7dyz8l2ok1",
+        "current_replacement": "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnk7f5xdqy-1vpipcl-77fxnijnbnwib9jwfo2fjnneq",
+        "logical_bytes": 28131337
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_search-2tkac8xmsqbmj/s-hnjn1kgxyc-0ei6fl3-3ucceubfzg6ry9wltb0c312jd",
+        "current_replacement": "target/debug/incremental/ottrin_search-2tkac8xmsqbmj/s-hnk7cxpo85-0s2ssmp-8ywky0rhr23tt0mvbzegyivb3",
+        "logical_bytes": 100955976
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_search-3efjw05sxeo02/s-hnjn5n5oly-10ykybj-ecvct3csu3p8r9zbfkmjsiij7",
+        "current_replacement": "target/debug/incremental/ottrin_search-3efjw05sxeo02/s-hnk7fdka5z-0b6szu0-1xgek7rii3ug1658popp9br6b",
+        "logical_bytes": 19984150
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_platform-0bxnywkyrj34a/s-hnjnatffs5-1xiv68l-1lfxc3wvcn6abj7tml02vekd0",
+        "current_replacement": "target/debug/incremental/ottrin_platform-0bxnywkyrj34a/s-hnk7dnxu8o-1oe3184-atq6gz31ind1ywbhptzrni2h0",
+        "logical_bytes": 140884838
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_search-3v8jxw8tfpt6y/s-hnjn1kgws8-1qvty8r-2i9no041ub945xdiz6ox3u235",
+        "current_replacement": "target/debug/incremental/ottrin_search-3v8jxw8tfpt6y/s-hnk7d90gia-19k7shz-a767diij50lhsrljm3raxxnaz",
+        "logical_bytes": 165385530
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnk0bnmsxd-17j8lem-cghufg0fofoxc32t8iu7t8wqg",
+        "current_replacement": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnk7f7wesn-0ds0mti-3q1nhasyoxsg1hmfzlqiebgld",
+        "logical_bytes": 48167742
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_platform-3gakknta2rnwt/s-hnk08cbtpn-17ig49y-bboveq5r1rw8j6zs7mvbi36qb",
+        "current_replacement": "target/debug/incremental/ottrin_platform-3gakknta2rnwt/s-hnk7cznrm5-00f6gqy-500p0i8gwf7tokzheftjv7usz",
+        "logical_bytes": 72644778
+      },
+      {
+        "removed": "target/debug/incremental/ottrin_search-0wnw5by2u8bzg/s-hnjn5n5el5-16xbpd7-45obu96o79fqmupjx60orlyiy",
+        "current_replacement": "target/debug/incremental/ottrin_search-0wnw5by2u8bzg/s-hnk7f7d9hm-16vlgwa-7kuibycd1nvh2hq9xetnc1io2",
+        "logical_bytes": 13828401
+      },
+      {
+        "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-0y7pnjeqzwrit/s-hnk33vfdw3-0hnf2es-0yjipkacro1jv8wl2txdxmy0x",
+        "current_replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-0y7pnjeqzwrit/s-hnk6nmi2k1-1ntgim2-d1nuv65ic2ztqsb5atf9t7bm1",
+        "logical_bytes": 1330282854
+      },
+      {
+        "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3191j5ay2x91f/s-hnk781mm7i-0h7ox9q-eavyickb4az0atbsh8ryjhlb8",
+        "current_replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3191j5ay2x91f/s-hnk79n34f3-0127nd8-3gw8co4p3k5q3fbajzpxwceig",
+        "logical_bytes": 49650938
+      },
+      {
+        "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1wkro03yi2xal/s-hnk756je0j-0yrkgnp-64gqrtk4aaki0dpcanbwpprsp",
+        "current_replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-1wkro03yi2xal/s-hnk7a80b4a-1q6gmgu-2ve58zj7nxp19dzgjuoklzbbr",
+        "logical_bytes": 143261592
+      },
+      {
+        "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1d5tmpxunuyny/s-hnk463z4gg-0zewuqe-eqin7qek3ampipmn02xazd1t5",
+        "current_replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1d5tmpxunuyny/s-hnk6mz2zff-0oke3j5-13qkxu4pwcrinvbhlcw8qgfru",
+        "logical_bytes": 57908660
+      },
+      {
+        "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3ih2fj6pgwpjy/s-hnk784jdao-0lryjl0-8w14tsz8clf9aqjjcehlgz3j9",
+        "current_replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3ih2fj6pgwpjy/s-hnk79lvk28-1xndiug-ej2w2x1wukwh913idf968g3s4",
+        "logical_bytes": 41039096
+      },
+      {
+        "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-32sopd74kpo7b/s-hnk33cmffl-1r5s16d-9zb6b6po99amm0yx0e5k5shbw",
+        "current_replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-32sopd74kpo7b/s-hnk6n53zsr-1n4u1sr-elh2r3ra05m90ivvh54k5192k",
+        "logical_bytes": 103523242
+      },
+      {
+        "removed": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-04nh9tyacvkam/s-hnk6l7n0ct-1jtrw0r-cx6epdvo34bytcomwyuae2s98",
+        "current_replacement": "target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-04nh9tyacvkam/s-hnk6mr7c8w-1rnhk5h-8h79x6htvhxkp3v36q5adcbr1",
+        "logical_bytes": 43363854
+      }
+    ],
+    "logical_bytes": 2576111229
+  },
+  "negative_controls": {
+    "physical-count-control": "370 UI pass,1 fail,4 ignored; raw physical file count included the native claims anchor. Complete owned teardown.",
+    "transaction-directory-control": "372 UI pass,1 fail,4 ignored; exact directory assertion additionally needed the receipt-owned transaction directory. No arbitrary hidden entries excluded. Complete owned teardown.",
+    "provider-path-control": "No tests executed: runner used a retired staging provider path. Producer now requires the stable accepted candidate provider before starting the guest."
+  },
+  "delivery": {
+    "packages_changed": false,
+    "accepted_windows_candidate_source": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+    "linux_packages_source": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d"
+  },
+  "remaining": [
+    "Full hosted MSVC workspace, lint and release",
+    "Exact rebuilt package, actual public Copy/Undo desktop workflows and coherent archive payload checks",
+    "Broader alias, ancestor, resource, cross-volume, physical and remaining transaction acceptance retain their separate roadmap gates",
+    "MSI failed-uninstall registration rollback",
+    "Roadmap remains active; owner acceptance deferred"
+  ]
+}

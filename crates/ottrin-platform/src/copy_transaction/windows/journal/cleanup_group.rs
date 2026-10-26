@@ -830,6 +830,7 @@ impl Observation {
     /// its completion proof and advances peers only from that writer's exact
     /// control/registry acknowledgement. Shared aliases need a coordinated
     /// per-unlink protocol; this primitive cannot bypass their protection.
+    #[cfg(test)]
     pub(super) fn reclaim_payload(
         &mut self,
         index: usize,

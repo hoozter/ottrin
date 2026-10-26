@@ -119,8 +119,10 @@ fn cleanup_started(record: &OperationRecord) -> bool {
 pub(super) fn can_cleanup(record: &OperationRecord) -> bool {
     #[cfg(target_os = "windows")]
     let supported = record.retained_copy.as_ref().map_or(
-        record.status == OperationStatus::Completed
-            || matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)),
+        matches!(
+            record.status,
+            OperationStatus::Completed | OperationStatus::Stopped
+        ) || matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)),
         |owner| {
             matches!(
                 owner.cleanup_phase,
@@ -705,6 +707,7 @@ mod tests {
                 &source.join(name),
                 &destination,
                 ConflictAction::Overwrite,
+                &mut |_| Ok(()),
             )
             .unwrap()
             .unwrap()

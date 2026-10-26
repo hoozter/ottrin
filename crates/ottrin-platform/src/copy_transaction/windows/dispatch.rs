@@ -81,7 +81,7 @@ impl Source {
     }
 }
 
-pub(super) fn copy_configured(
+pub(crate) fn copy_configured(
     source: &Path,
     destination: &Path,
     conflict: ConflictAction,
@@ -133,8 +133,9 @@ fn entry(
     }
 }
 
-/// Execute against a caller-owned private registry. Public workflow routing stays
-/// gated until its complete capability and package acceptance requirements pass.
+/// Native component probes supply a private registry. Product operations use
+/// `copy_configured` and its independently admitted per-user root.
+#[cfg(test)]
 pub(super) fn copy_at(
     source: &Path,
     destination: &Path,

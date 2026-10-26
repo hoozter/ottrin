@@ -250,6 +250,7 @@ pub(super) struct DestinationSecurity {
     expected: Parts,
 }
 impl DestinationSecurity {
+    #[cfg(test)]
     pub(super) fn capture(parent: &File, directory: bool) -> Result<Self, PlatformError> {
         Self::capture_with_token(parent, directory, &windows_fs::current_token()?)
     }

@@ -1447,6 +1447,7 @@ mod tests {
             &sources,
             &destination,
             crate::ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_none(), "{:?}", batch.error);
         assert_eq!(batch.completed_sources, 3);
@@ -1478,6 +1479,7 @@ mod tests {
                     source,
                     &destination,
                     crate::ConflictAction::Overwrite,
+                    &mut |_| Ok(()),
                 )
                 .unwrap()
                 .unwrap();
@@ -1559,6 +1561,7 @@ mod tests {
                 &foreign,
                 &destination,
                 crate::ConflictAction::Overwrite,
+                &mut |_| Ok(()),
             )
             .unwrap()
             .unwrap();
@@ -1744,6 +1747,7 @@ mod tests {
                         &source,
                         &destination,
                         crate::ConflictAction::Overwrite,
+                        &mut |_| Ok(()),
                     )
                     .unwrap()
                     .unwrap();
@@ -1839,6 +1843,7 @@ mod tests {
                         &source,
                         &destination,
                         crate::ConflictAction::Overwrite,
+                        &mut |_| Ok(()),
                     )
                     .unwrap()
                     .unwrap();
@@ -1916,6 +1921,7 @@ mod tests {
                 &sources,
                 &destination,
                 super::super::ConflictAction::Skip,
+                &mut |_| Ok(()),
             );
             assert!(batch.error.is_none(), "{:?}", batch.error);
             assert_eq!(batch.completed_sources, 3);
@@ -1927,6 +1933,7 @@ mod tests {
                     &single,
                     &destination,
                     super::super::ConflictAction::Skip,
+                    &mut |_| Ok(()),
                 )
                 .unwrap()
                 .unwrap();
@@ -2016,6 +2023,7 @@ mod tests {
             &[first, second.clone()],
             &destination,
             super::super::ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_some());
         assert_eq!(batch.completed_sources, 1);
@@ -2197,6 +2205,7 @@ mod tests {
                 &source,
                 &destination,
                 super::super::ConflictAction::Overwrite,
+                &mut |_| Ok(()),
             )
             .unwrap()
             .unwrap()
@@ -2250,6 +2259,7 @@ mod tests {
                         &root.join("item"),
                         &destination,
                         super::super::ConflictAction::Overwrite,
+                        &mut |_| Ok(()),
                     )
                     .unwrap();
             } else {

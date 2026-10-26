@@ -82,7 +82,7 @@ mod copy_activity_cleanup;
 #[cfg(target_os = "windows")]
 mod copy_activity_recovery;
 #[cfg(target_os = "windows")]
-mod copy_activity_undo;
+mod copy_activity_work;
 mod file_details;
 mod icons;
 mod image_ops;
@@ -611,6 +611,7 @@ struct OpResult {
     delete_nav: Vec<DeletePostNav>,
     error: Option<String>,
     warning: Option<String>,
+    stopped: bool,
     retry: Option<PendingPrivilegedRetry>,
     clipboard_generation: Option<u64>,
     completed_sources: Option<usize>,
@@ -771,6 +772,7 @@ struct DeletePostNav {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum OperationStatus {
     Queued,
+    Stopped,
     Completed,
     Failed,
     NeedsReview,
@@ -1045,7 +1047,10 @@ fn path_move_undo_action_is_available(
     status: OperationStatus,
     state: Option<&PathMoveUndoState>,
 ) -> bool {
-    status == OperationStatus::Completed && matches!(state, Some(PathMoveUndoState::Available))
+    matches!(
+        status,
+        OperationStatus::Completed | OperationStatus::Stopped
+    ) && matches!(state, Some(PathMoveUndoState::Available))
 }
 
 fn rename_selection_for_tab(
@@ -3647,7 +3652,7 @@ pub struct OttrinApp {
     #[cfg(target_os = "windows")]
     copy_recovery: copy_activity_recovery::CopyRecoveryUi,
     #[cfg(target_os = "windows")]
-    copy_undo: copy_activity_undo::CopyUndoUi,
+    copy_work: copy_activity_work::CopyWorkUi,
     /// Last discovery snapshot. Roots are deliberately independent even when a
     /// backend reports the same identity at multiple mount points.
     known_storage_locations: Vec<StorageLocation>,
@@ -4599,7 +4604,7 @@ impl OttrinApp {
             #[cfg(target_os = "windows")]
             copy_recovery: Default::default(),
             #[cfg(target_os = "windows")]
-            copy_undo: Default::default(),
+            copy_work: Default::default(),
             known_storage_locations: Vec::new(),
             unavailable_locations: HashMap::new(),
             unavailable_root_tombstones: Vec::new(),
@@ -6935,6 +6940,8 @@ impl OttrinApp {
     fn poll_op_results(&mut self) {
         self.poll_transfer_probe_results();
         while let Ok(res) = self.op_rx.try_recv() {
+            #[cfg(target_os = "windows")]
+            self.copy_work.finish(res.op_id);
             let completed_cmd = res.cmd.clone();
             if matches!(&completed_cmd, FileCommand::Copy { .. })
                 && (res.error.is_some()
@@ -6997,7 +7004,11 @@ impl OttrinApp {
             }
             self.finish_operation_record(
                 res.op_id,
-                OperationStatus::Completed,
+                if res.stopped {
+                    OperationStatus::Stopped
+                } else {
+                    OperationStatus::Completed
+                },
                 res.warning.clone(),
             );
             if let (Some(kind), Some(receipt), Some(storage_bindings)) = (
@@ -7415,7 +7426,7 @@ impl OttrinApp {
             record.path_move_undo = Some(PathMoveUndoState::UndoQueued);
         }
         #[cfg(target_os = "windows")]
-        let cancellation = (kind == PathMoveUndoKind::Copy).then(|| self.copy_undo.start(op_id));
+        let cancellation = (kind == PathMoveUndoKind::Copy).then(|| self.copy_work.start(op_id));
         let platform = Arc::clone(&self.platform);
         let tx = self.path_move_undo_tx.clone();
         let result_repaint = self.result_repaint.clone();
@@ -7578,7 +7589,7 @@ impl OttrinApp {
             });
         if let Err(error) = spawn {
             #[cfg(target_os = "windows")]
-            self.copy_undo.finish(op_id);
+            self.copy_work.finish(op_id);
             self.finish_path_move_undo(op_id, Err(format!("Could not start Undo: {error}")), true);
         }
     }
@@ -7588,7 +7599,7 @@ impl OttrinApp {
         self.poll_native_move_undo_preparation();
         while let Ok(result) = self.path_move_undo_rx.try_recv() {
             #[cfg(target_os = "windows")]
-            self.copy_undo.finish(result.op_id);
+            self.copy_work.finish(result.op_id);
             let stopped_copy = result.copy_batch_progress.is_some() && result.result.is_err();
             let failure = result.result.as_ref().err().cloned();
             if let Some(progress) = result.copy_batch_progress
@@ -11062,6 +11073,9 @@ impl OttrinApp {
                 record.detail = "Remove owned journals and eligible empty recovery folders".into();
             }
         }
+        #[cfg(target_os = "windows")]
+        let copy_cancellation =
+            matches!(cmd, FileCommand::Copy { .. }).then(|| self.copy_work.start(op_id));
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
         let result_repaint = self.result_repaint.clone();
@@ -11071,232 +11085,308 @@ impl OttrinApp {
             // discovery API permits. The OS can still replace a pathname after
             // this check and before the platform syscall; Rust cannot make that
             // final cross-platform pathname operation identity-conditional.
+            #[cfg(target_os = "windows")]
+            let (copy_io_guard, copy_io_start_error) = match copy_cancellation
+                .as_ref()
+                .map(|flag| ottrin_platform::NativeIoCancellation::start(flag.clone()))
+                .transpose()
+            {
+                Ok(guard) => (guard, None),
+                Err(error) => (None, Some(error.to_string())),
+            };
+            #[cfg(target_os = "windows")]
+            let copy_monitor_started = copy_io_start_error.is_none();
+            #[cfg(target_os = "windows")]
+            let validation = if let Some(error) = copy_io_start_error {
+                Err(error)
+            } else if copy_cancellation
+                .as_ref()
+                .is_some_and(|flag| flag.load(Ordering::Acquire))
+            {
+                Err("Copy stopped before checking storage. No files were copied.".into())
+            } else {
+                validate_operation_storage_bindings(&bindings, &discover_storage_locations())
+            };
+            #[cfg(not(target_os = "windows"))]
+            let validation =
+                validate_operation_storage_bindings(&bindings, &discover_storage_locations());
             let mut move_dispositions = None;
-            let (outcome, completed_source_paths, path_move_receipt) =
-                match validate_operation_storage_bindings(&bindings, &discover_storage_locations())
-                {
-                    Ok(()) => match &cmd {
-                        FileCommand::CreateFile { parent, name } => {
-                            match platform.execute_create_file_with_undo_receipt(parent, name) {
-                                Ok(receipt) => (
-                                    FileOpOutcome::Completed,
-                                    Vec::new(),
-                                    receipt.map(OperationUndoReceipt::PathMove),
-                                ),
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
-                            }
+            let mut completed_copy_sources = None;
+            let (outcome, completed_source_paths, path_move_receipt) = match validation {
+                Ok(()) => match &cmd {
+                    FileCommand::CreateFile { parent, name } => {
+                        match platform.execute_create_file_with_undo_receipt(parent, name) {
+                            Ok(receipt) => (
+                                FileOpOutcome::Completed,
+                                Vec::new(),
+                                receipt.map(OperationUndoReceipt::PathMove),
+                            ),
+                            Err(error) => (classify_file_op_result(Err(error)), Vec::new(), None),
                         }
-                        FileCommand::CreateFolder { parent, name } => {
-                            match platform.execute_create_folder_with_undo_receipt(parent, name) {
-                                Ok(receipt) => (
-                                    FileOpOutcome::Completed,
-                                    Vec::new(),
-                                    receipt.map(OperationUndoReceipt::PathMove),
-                                ),
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
-                            }
+                    }
+                    FileCommand::CreateFolder { parent, name } => {
+                        match platform.execute_create_folder_with_undo_receipt(parent, name) {
+                            Ok(receipt) => (
+                                FileOpOutcome::Completed,
+                                Vec::new(),
+                                receipt.map(OperationUndoReceipt::PathMove),
+                            ),
+                            Err(error) => (classify_file_op_result(Err(error)), Vec::new(), None),
                         }
-                        FileCommand::Symlink { link_path, target } => {
-                            match platform.execute_symlink_with_undo_receipt(link_path, target) {
-                                Ok(receipt) => (
-                                    FileOpOutcome::Completed,
-                                    Vec::new(),
-                                    receipt.map(OperationUndoReceipt::PathMove),
-                                ),
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
-                            }
+                    }
+                    FileCommand::Symlink { link_path, target } => {
+                        match platform.execute_symlink_with_undo_receipt(link_path, target) {
+                            Ok(receipt) => (
+                                FileOpOutcome::Completed,
+                                Vec::new(),
+                                receipt.map(OperationUndoReceipt::PathMove),
+                            ),
+                            Err(error) => (classify_file_op_result(Err(error)), Vec::new(), None),
                         }
-                        FileCommand::Chmod { target, mode_str } => {
-                            match platform.execute_chmod_with_undo_receipt(target, mode_str) {
-                                Ok(receipt) => (
-                                    FileOpOutcome::Completed,
-                                    Vec::new(),
-                                    receipt.map(OperationUndoReceipt::Chmod),
-                                ),
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
-                            }
+                    }
+                    FileCommand::Chmod { target, mode_str } => {
+                        match platform.execute_chmod_with_undo_receipt(target, mode_str) {
+                            Ok(receipt) => (
+                                FileOpOutcome::Completed,
+                                Vec::new(),
+                                receipt.map(OperationUndoReceipt::Chmod),
+                            ),
+                            Err(error) => (classify_file_op_result(Err(error)), Vec::new(), None),
                         }
-                        FileCommand::Delete {
-                            targets,
-                            mode: DeleteMode::Trash,
-                        } if targets.len() == 1 => {
-                            match platform.execute_trash_with_undo_receipt(&targets[0]) {
-                                Ok(receipt) => (
-                                    FileOpOutcome::Completed,
-                                    vec![targets[0].clone()],
-                                    receipt.map(OperationUndoReceipt::Trash),
-                                ),
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
-                            }
+                    }
+                    FileCommand::Delete {
+                        targets,
+                        mode: DeleteMode::Trash,
+                    } if targets.len() == 1 => {
+                        match platform.execute_trash_with_undo_receipt(&targets[0]) {
+                            Ok(receipt) => (
+                                FileOpOutcome::Completed,
+                                vec![targets[0].clone()],
+                                receipt.map(OperationUndoReceipt::Trash),
+                            ),
+                            Err(error) => (classify_file_op_result(Err(error)), Vec::new(), None),
                         }
-                        FileCommand::Rename { source, new_name } => {
-                            match platform.execute_rename_with_undo_receipt(source, new_name) {
-                                Ok(receipt) => (
-                                    FileOpOutcome::Completed,
-                                    Vec::new(),
-                                    receipt.map(OperationUndoReceipt::PathMove),
-                                ),
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
-                            }
+                    }
+                    FileCommand::Rename { source, new_name } => {
+                        match platform.execute_rename_with_undo_receipt(source, new_name) {
+                            Ok(receipt) => (
+                                FileOpOutcome::Completed,
+                                Vec::new(),
+                                receipt.map(OperationUndoReceipt::PathMove),
+                            ),
+                            Err(error) => (classify_file_op_result(Err(error)), Vec::new(), None),
                         }
-                        FileCommand::Copy {
+                    }
+                    FileCommand::Copy {
+                        sources,
+                        destination,
+                        conflict,
+                    } => {
+                        let mut progress = |_| {
+                            #[cfg(target_os = "windows")]
+                            if copy_cancellation
+                                .as_ref()
+                                .is_some_and(|flag| flag.load(Ordering::Acquire))
+                            {
+                                return Err(PlatformError::Io(
+                                        "Copy stopped. Completed files and retained recovery data are preserved.".into(),
+                                    ));
+                            }
+                            Ok(())
+                        };
+                        let copied = platform.execute_copy_batch_with_undo_receipts(
                             sources,
                             destination,
-                            conflict,
-                        } => {
-                            let copied = platform.execute_copy_batch_with_undo_receipts(
-                                sources,
-                                destination,
-                                *conflict,
-                            );
-                            let outcome = classify_file_op_result(copied.error.map_or(Ok(()), Err));
-                            let receipt = if copied.undo_receipts.is_empty() {
-                                None
-                            } else if sources.len() == 1 {
-                                Some(OperationUndoReceipt::PathMove(
-                                    copied
-                                        .undo_receipts
-                                        .into_iter()
-                                        .next()
-                                        .expect("nonempty receipt"),
-                                ))
-                            } else {
-                                Some(OperationUndoReceipt::CopyBatch(
-                                    CopyBatchUndoReceipt::Session {
-                                        remaining: copied.undo_receipts.len(),
-                                        receipts: copied.undo_receipts,
-                                    },
-                                ))
-                            };
-                            (outcome, Vec::new(), receipt)
-                        }
-                        FileCommand::Move {
-                            sources,
+                            *conflict,
+                            &mut progress,
+                        );
+                        completed_copy_sources = Some(copied.completed_sources);
+                        let outcome = classify_file_op_result(copied.error.map_or(Ok(()), Err));
+                        let receipt = if copied.undo_receipts.is_empty() {
+                            None
+                        } else if sources.len() == 1 {
+                            Some(OperationUndoReceipt::PathMove(
+                                copied
+                                    .undo_receipts
+                                    .into_iter()
+                                    .next()
+                                    .expect("nonempty receipt"),
+                            ))
+                        } else {
+                            Some(OperationUndoReceipt::CopyBatch(
+                                CopyBatchUndoReceipt::Session {
+                                    remaining: copied.undo_receipts.len(),
+                                    receipts: copied.undo_receipts,
+                                },
+                            ))
+                        };
+                        (outcome, Vec::new(), receipt)
+                    }
+                    FileCommand::Move {
+                        sources,
+                        destination,
+                        conflict,
+                    } if sources.len() == 1 => {
+                        match platform.execute_move_with_undo_receipt(
+                            &sources[0],
                             destination,
-                            conflict,
-                        } if sources.len() == 1 => {
-                            match platform.execute_move_with_undo_receipt(
-                                &sources[0],
-                                destination,
-                                *conflict,
-                            ) {
-                                Ok((disposition, receipt)) => {
-                                    let completed_source_paths =
-                                        if disposition == MoveDisposition::Moved {
-                                            vec![sources[0].clone()]
-                                        } else {
-                                            Vec::new()
-                                        };
-                                    (
-                                        FileOpOutcome::Completed,
-                                        completed_source_paths,
-                                        receipt.map(OperationUndoReceipt::PathMove),
-                                    )
-                                }
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
+                            *conflict,
+                        ) {
+                            Ok((disposition, receipt)) => {
+                                let completed_source_paths =
+                                    if disposition == MoveDisposition::Moved {
+                                        vec![sources[0].clone()]
+                                    } else {
+                                        Vec::new()
+                                    };
+                                (
+                                    FileOpOutcome::Completed,
+                                    completed_source_paths,
+                                    receipt.map(OperationUndoReceipt::PathMove),
+                                )
                             }
+                            Err(error) => (classify_file_op_result(Err(error)), Vec::new(), None),
                         }
-                        FileCommand::Move { sources, .. } => {
-                            match platform.execute_command_with_move_dispositions(&cmd) {
-                                Ok((_, dispositions)) => {
-                                    let completed_source_paths = sources
+                    }
+                    FileCommand::Move { sources, .. } => {
+                        match platform.execute_command_with_move_dispositions(&cmd) {
+                            Ok((_, dispositions)) => {
+                                let completed_source_paths = sources
+                                    .iter()
+                                    .zip(&dispositions)
+                                    .filter_map(|(source, disposition)| {
+                                        (disposition == &MoveDisposition::Moved)
+                                            .then_some(source.clone())
+                                    })
+                                    .collect();
+                                move_dispositions = Some(dispositions);
+                                (FileOpOutcome::Completed, completed_source_paths, None)
+                            }
+                            Err(error) => {
+                                let completed_source_paths = match &error {
+                                    PlatformError::PartialBatch {
+                                        completed_dispositions,
+                                        ..
+                                    } => sources
                                         .iter()
-                                        .zip(&dispositions)
+                                        .zip(completed_dispositions)
                                         .filter_map(|(source, disposition)| {
                                             (disposition == &MoveDisposition::Moved)
                                                 .then_some(source.clone())
                                         })
-                                        .collect();
-                                    move_dispositions = Some(dispositions);
-                                    (FileOpOutcome::Completed, completed_source_paths, None)
-                                }
-                                Err(error) => {
-                                    let completed_source_paths = match &error {
-                                        PlatformError::PartialBatch {
-                                            completed_dispositions,
-                                            ..
-                                        } => sources
-                                            .iter()
-                                            .zip(completed_dispositions)
-                                            .filter_map(|(source, disposition)| {
-                                                (disposition == &MoveDisposition::Moved)
-                                                    .then_some(source.clone())
-                                            })
-                                            .collect(),
-                                        _ => Vec::new(),
-                                    };
-                                    (
-                                        classify_file_op_result(Err(error)),
-                                        completed_source_paths,
-                                        None,
-                                    )
-                                }
+                                        .collect(),
+                                    _ => Vec::new(),
+                                };
+                                (
+                                    classify_file_op_result(Err(error)),
+                                    completed_source_paths,
+                                    None,
+                                )
                             }
                         }
-                        #[cfg(target_os = "linux")]
-                        FileCommand::RecoverRetainedMove { .. } => (
-                            classify_file_op_result(
-                                recovery_plan
-                                    .as_ref()
-                                    .expect("admitted recovery plan")
-                                    .execute(),
-                            ),
-                            Vec::new(),
-                            None,
+                    }
+                    #[cfg(target_os = "linux")]
+                    FileCommand::RecoverRetainedMove { .. } => (
+                        classify_file_op_result(
+                            recovery_plan
+                                .as_ref()
+                                .expect("admitted recovery plan")
+                                .execute(),
                         ),
-                        #[cfg(target_os = "windows")]
-                        FileCommand::RecoverRetainedMove { .. } => {
-                            let plan = recovery_plan.as_ref().expect("admitted recovery plan");
-                            let outcome = if plan.cleanup_requested() {
-                                match plan.execute_cleanup() {
-                                    Ok(report) if report.directories_kept > 0 => {
-                                        FileOpOutcome::CompletedWithWarning {
-                                            message: format!(
-                                                "Recovery journals cleaned. Kept {} private folder(s); other files and streams were preserved.",
-                                                report.directories_kept
-                                            ),
-                                            completed_sources: 0,
-                                        }
-                                    }
-                                    Ok(_) => FileOpOutcome::Completed,
-                                    Err(error) => classify_file_op_result(Err(error)),
-                                }
-                            } else {
-                                classify_file_op_result(plan.execute())
-                            };
-                            (outcome, Vec::new(), None)
-                        }
-                        _ => (
-                            classify_file_op_result(platform.execute_command(&cmd).map(|_| ())),
-                            Vec::new(),
-                            None,
-                        ),
-                    },
-                    Err(message) => (
-                        FileOpOutcome::Failed {
-                            message,
-                            privilege_retry: false,
-                        },
                         Vec::new(),
                         None,
                     ),
+                    #[cfg(target_os = "windows")]
+                    FileCommand::RecoverRetainedMove { .. } => {
+                        let plan = recovery_plan.as_ref().expect("admitted recovery plan");
+                        let outcome = if plan.cleanup_requested() {
+                            match plan.execute_cleanup() {
+                                Ok(report) if report.directories_kept > 0 => {
+                                    FileOpOutcome::CompletedWithWarning {
+                                        message: format!(
+                                            "Recovery journals cleaned. Kept {} private folder(s); other files and streams were preserved.",
+                                            report.directories_kept
+                                        ),
+                                        completed_sources: 0,
+                                    }
+                                }
+                                Ok(_) => FileOpOutcome::Completed,
+                                Err(error) => classify_file_op_result(Err(error)),
+                            }
+                        } else {
+                            classify_file_op_result(plan.execute())
+                        };
+                        (outcome, Vec::new(), None)
+                    }
+                    _ => (
+                        classify_file_op_result(platform.execute_command(&cmd).map(|_| ())),
+                        Vec::new(),
+                        None,
+                    ),
+                },
+                Err(message) => (
+                    FileOpOutcome::Failed {
+                        message,
+                        privilege_retry: false,
+                    },
+                    Vec::new(),
+                    None,
+                ),
+            };
+            // The monitor owns only this dedicated operation worker. Join it
+            // before result preparation or any unrelated I/O on this thread.
+            #[cfg(target_os = "windows")]
+            let monitor_error = copy_io_guard.map(|guard| guard.finish()).transpose().err();
+            #[cfg(target_os = "windows")]
+            let stopped = copy_monitor_started
+                && monitor_error.is_none()
+                && !matches!(outcome, FileOpOutcome::Completed)
+                && copy_cancellation
+                    .as_ref()
+                    .is_some_and(|flag| flag.load(Ordering::Acquire));
+            #[cfg(not(target_os = "windows"))]
+            let stopped = false;
+            #[cfg(target_os = "windows")]
+            let outcome = if let Some(error) = monitor_error {
+                let cause = match &outcome {
+                    FileOpOutcome::Completed => String::new(),
+                    FileOpOutcome::CompletedWithWarning { message, .. }
+                    | FileOpOutcome::Failed { message, .. } => format!("{message}; "),
                 };
+                let message = format!("{cause}Copy I/O monitoring could not finish: {error}");
+                if completed_copy_sources.is_some_and(|count| count > 0) {
+                    FileOpOutcome::CompletedWithWarning {
+                        message,
+                        completed_sources: completed_copy_sources.unwrap(),
+                    }
+                } else {
+                    FileOpOutcome::Failed {
+                        message,
+                        privilege_retry: false,
+                    }
+                }
+            } else {
+                outcome
+            };
+            // A requested stop keeps the original error/recovery detail and any
+            // completed Undo receipts, without offering administrator retry.
+            let outcome = if stopped {
+                let message = match outcome {
+                    FileOpOutcome::Completed => unreachable!("successful copies stay completed"),
+                    FileOpOutcome::CompletedWithWarning { message, .. }
+                    | FileOpOutcome::Failed { message, .. } => message,
+                };
+                FileOpOutcome::CompletedWithWarning {
+                    message: format!("Copy stopped. {message}"),
+                    completed_sources: completed_copy_sources.unwrap_or(0),
+                }
+            } else {
+                outcome
+            };
             let completed_source_count = match outcome {
-                FileOpOutcome::Completed => Some(completed_source_paths.len()),
+                FileOpOutcome::Completed => {
+                    completed_copy_sources.or(Some(completed_source_paths.len()))
+                }
                 FileOpOutcome::CompletedWithWarning {
                     completed_sources, ..
                 } => Some(completed_sources),
@@ -11338,6 +11428,7 @@ impl OttrinApp {
                     delete_nav,
                     error,
                     warning,
+                    stopped,
                     retry,
                     clipboard_generation,
                     completed_sources,
@@ -15415,7 +15506,17 @@ impl OttrinApp {
                     #[cfg(not(target_os = "windows"))]
                     { false }
                 };
-                let (status_text, status_color, status_icon) = if self.copy_cleanup.owns(record) {
+                #[cfg(target_os = "windows")]
+                let forward_copy = record.status == OperationStatus::Queued && self.copy_work.running(record.id);
+                #[cfg(not(target_os = "windows"))]
+                let forward_copy = false;
+                let (status_text, status_color, status_icon) = if forward_copy {
+                    #[cfg(target_os = "windows")]
+                    let label = if self.copy_work.stopping(record.id) { "Stopping" } else { "Copying" };
+                    #[cfg(not(target_os = "windows"))]
+                    let label = "Copying";
+                    (label, c.accent_dim, MI_CONTENT_COPY)
+                } else if self.copy_cleanup.owns(record) {
                     ("Cleaning up", c.accent_dim, MI_HISTORY)
                 } else if copy_recovery_available {
                     if record.status == OperationStatus::Queued {
@@ -15430,6 +15531,7 @@ impl OttrinApp {
                 else { match record.status {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
                     OperationStatus::Completed => ("Done", c.accent, MI_CHECK),
+                    OperationStatus::Stopped => ("Stopped", c.accent_dim, MI_CLEAR),
                     OperationStatus::Failed => ("Failed", c.error, MI_CLEAR),
                     OperationStatus::NeedsReview => ("Needs review", c.error, MI_HISTORY),
                 }};
@@ -15603,7 +15705,7 @@ impl OttrinApp {
                                 }
                                 (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Copy) => {
                                     #[cfg(target_os = "windows")]
-                                    let label = if self.copy_undo.stopping(record.id) { "Stopping Copy Undo…" } else { "Undoing copy…" };
+                                    let label = if self.copy_work.stopping(record.id) { "Stopping Copy Undo…" } else { "Undoing copy…" };
                                     #[cfg(not(target_os = "windows"))]
                                     let label = "Undoing copy…";
                                     (label, c.accent_dim)
@@ -15664,11 +15766,17 @@ impl OttrinApp {
                         }
                         ui.add_space(4.0);
                         #[cfg(target_os = "windows")]
+                        if forward_copy
+                            && ui.add_enabled(!self.copy_work.stopping(record.id), egui::Button::new(
+                                if self.copy_work.stopping(record.id) { "Stopping…" } else { "Stop Copy" }
+                            ).themed(&c)).on_hover_text("Stop copying. Completed files and retained recovery data are preserved.").clicked()
+                        { self.copy_work.stop(record.id); }
+                        #[cfg(target_os = "windows")]
                         if matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
                             && record.undo_kind() == PathMoveUndoKind::Copy
-                            && self.copy_undo.running(record.id)
-                            && ui.add_enabled(!self.copy_undo.stopping(record.id), egui::Button::new(if self.copy_undo.stopping(record.id) { "Stopping…" } else { "Stop Undo" }).themed(&c)).clicked()
-                        { self.copy_undo.stop(record.id); }
+                            && self.copy_work.running(record.id)
+                            && ui.add_enabled(!self.copy_work.stopping(record.id), egui::Button::new(if self.copy_work.stopping(record.id) { "Stopping…" } else { "Stop Undo" }).themed(&c)).clicked()
+                        { self.copy_work.stop(record.id); }
                         if copy_activity_cleanup::can_cleanup(record)
                             && ui.add_enabled(!self.copy_cleanup.running(), egui::Button::new(
                                 self.copy_cleanup.action_label(record)
@@ -26834,6 +26942,7 @@ mod tests {
                 for (state, label) in [
                     (OperationStatus::Queued, "Queued"),
                     (OperationStatus::Completed, "Done"),
+                    (OperationStatus::Stopped, "Stopped"),
                     (OperationStatus::NeedsReview, "Needs review"),
                 ] {
                     let mut app = OttrinApp::default();
@@ -27180,11 +27289,11 @@ mod tests {
                     click_activity_action(&mut app, &ctx, "Stop Undo");
                 }
                 let deadline = Instant::now() + Duration::from_secs(3);
-                while app.copy_undo.running(id) && Instant::now() < deadline {
+                while app.copy_work.running(id) && Instant::now() < deadline {
                     app.poll_path_move_undo_results();
                     std::thread::sleep(Duration::from_millis(5));
                 }
-                let stopped = !app.copy_undo.running(id);
+                let stopped = !app.copy_work.running(id);
                 let close = lock.close();
                 wait(&mut app);
                 close.unwrap();
@@ -28800,6 +28909,9 @@ mod tests {
 
     #[test]
     fn clipboard_native_paste_event_starts_owned_file_operation() {
+        if private_activity_process("clipboard_native_paste_event_starts_owned_file_operation") {
+            return;
+        }
         let (root, mut app, source) = clipboard_keyboard_fixture();
         assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
         let destination = root.path().join("destination");
@@ -28818,10 +28930,24 @@ mod tests {
             "native Paste must queue the captured files"
         );
         let deadline = Instant::now() + Duration::from_secs(5);
-        while !destination.join("source.txt").exists() && Instant::now() < deadline {
+        while app.clipboard.as_ref().unwrap().in_flight && Instant::now() < deadline {
             std::thread::sleep(Duration::from_millis(10));
             app.poll_op_results();
         }
+        assert!(
+            !app.clipboard.as_ref().unwrap().in_flight,
+            "Copy worker did not finish"
+        );
+        assert_eq!(
+            app.operation_history.front().unwrap().status,
+            OperationStatus::Completed,
+            "{:?}",
+            app.operation_history
+        );
+        assert_eq!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Available)
+        );
         let copied = std::fs::read(destination.join("source.txt"));
         assert!(copied.is_ok(), "Copy failed: {:?}", app.operation_history);
         assert_eq!(copied.unwrap(), b"clipboard fixture");
@@ -28890,6 +29016,11 @@ mod tests {
 
     #[test]
     fn clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict() {
+        if private_activity_process(
+            "clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict",
+        ) {
+            return;
+        }
         let (root, mut app, source) = clipboard_keyboard_fixture();
         let destination = root.path().join("destination");
         std::fs::create_dir(&destination).unwrap();
@@ -28927,18 +29058,51 @@ mod tests {
             app.poll_op_results();
         }
         assert!(!app.clipboard.as_ref().unwrap().in_flight);
-        let paths: Vec<_> = std::fs::read_dir(&destination)
-            .unwrap()
-            .map(|entry| entry.unwrap())
-            .filter(|entry| entry.file_type().unwrap().is_file())
-            .map(|entry| entry.path())
-            .collect();
         assert_eq!(
-            paths.len(),
-            2,
-            "Copy/Rename conflict must create a second file: {:?}",
+            app.operation_history.front().unwrap().status,
+            OperationStatus::Completed,
+            "{:?}",
             app.operation_history
         );
+        assert_eq!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Available)
+        );
+        // Recovery and Undo own exactly this receipt's transaction directory
+        // plus the claims directory/anchor. Reject arbitrary additional entries.
+        #[cfg(target_os = "windows")]
+        {
+            let ids = copy_receipt_transaction_ids(app.operation_history.front().unwrap());
+            assert_eq!(ids.len(), 1);
+            let transaction = format!(".ottrin-copy-{}", ids[0]);
+            assert!(destination.join(&transaction).join("journal").is_file());
+            let mut expected = vec![
+                std::ffi::OsString::from(transaction),
+                ".ottrin-copy-target-claims".into(),
+                ".ottrin-copy-target-claims-root".into(),
+                "source (1).txt".into(),
+                "source.txt".into(),
+            ];
+            expected.sort();
+            let mut physical: Vec<_> = std::fs::read_dir(&destination)
+                .unwrap()
+                .map(|entry| entry.unwrap().file_name())
+                .collect();
+            physical.sort();
+            assert_eq!(physical, expected);
+            assert!(destination.join(".ottrin-copy-target-claims").is_dir());
+            assert!(
+                destination
+                    .join(".ottrin-copy-target-claims-root")
+                    .is_file()
+            );
+        }
+        let paths: Vec<_> = listing::list_directory(&destination, false)
+            .unwrap()
+            .into_iter()
+            .map(|entry| entry.path)
+            .collect();
+        assert_eq!(paths.len(), 2, "Copy/Rename must show two files: {paths:?}");
         assert_eq!(
             std::fs::read(destination.join("source.txt")).unwrap(),
             b"keep existing"
@@ -28953,6 +29117,303 @@ mod tests {
         assert!(
             app.pending_transfer_conflict.is_none(),
             "confirmed Copy must not reopen the conflict dialog"
+        );
+    }
+
+    #[cfg(target_os = "windows")]
+    fn wait_public_copy(app: &mut OttrinApp, id: u64) {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app.copy_work.running(id) && Instant::now() < deadline {
+            app.poll_op_results();
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        assert!(!app.copy_work.running(id), "Copy worker did not finish");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_public_copy_rendered_stop_interrupts_blocked_source_without_publishing() {
+        if private_activity_process(
+            "windows_public_copy_rendered_stop_interrupts_blocked_source_without_publishing",
+        ) {
+            return;
+        }
+        let (root, mut app, source) = clipboard_keyboard_fixture();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("unrelated.txt"), b"keep me").unwrap();
+        let mut lock = crate::test_oplock::Oplock::request(&source).unwrap();
+        assert!(app.run_file_op_bound(
+            FileCommand::Copy {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Overwrite,
+            },
+            None,
+            Vec::new(),
+            None,
+            None,
+            Some(ConflictAction::Overwrite)
+        ));
+        let id = app.operation_history.front().unwrap().id;
+        let broken = lock.wait_break();
+        let ctx = Context::default();
+        click_activity_action(&mut app, &ctx, "Stop Copy");
+        wait_public_copy(&mut app, id);
+        // Keep the lease held until after completion: Stop must interrupt real
+        // blocked native I/O, not merely wait for an external blocker to vanish.
+        let stopped = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == id)
+            .unwrap()
+            .status;
+        lock.close().unwrap();
+        assert_eq!(broken, windows_sys::Win32::Foundation::WAIT_OBJECT_0);
+        assert_eq!(stopped, OperationStatus::Stopped);
+        assert!(app.pending_privileged_retry.is_none());
+        assert!(
+            app.operation_history
+                .iter()
+                .find(|record| record.id == id)
+                .unwrap()
+                .message
+                .as_deref()
+                .is_some_and(|message| message.contains("stopped"))
+        );
+        assert!(!destination.join("source.txt").exists());
+        assert_eq!(std::fs::read(&source).unwrap(), b"clipboard fixture");
+        assert_eq!(
+            std::fs::read(destination.join("unrelated.txt")).unwrap(),
+            b"keep me"
+        );
+        assert!(!app.activity_operation_conflict(u64::MAX, &[OperationPath::write(source)]));
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_public_copy_partial_batch_keeps_completed_receipt_and_undo() {
+        if private_activity_process(
+            "windows_public_copy_partial_batch_keeps_completed_receipt_and_undo",
+        ) {
+            return;
+        }
+        let (root, mut app, source) = clipboard_keyboard_fixture();
+        let second = root.path().join("second/source.txt");
+        std::fs::create_dir(second.parent().unwrap()).unwrap();
+        std::fs::write(&second, b"second source").unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        assert!(app.run_file_op_bound(
+            FileCommand::Copy {
+                sources: vec![source.clone(), second.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Overwrite,
+            },
+            None,
+            Vec::new(),
+            None,
+            None,
+            Some(ConflictAction::Overwrite)
+        ));
+        let id = app.operation_history.front().unwrap().id;
+        wait_public_copy(&mut app, id);
+        let record = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == id)
+            .unwrap();
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(
+            record
+                .message
+                .as_deref()
+                .is_some_and(|message| message.contains("1 of 2")),
+            "Missing partial-batch detail: {:?}",
+            record.message
+        );
+        assert_eq!(record.path_move_undo, Some(PathMoveUndoState::Available));
+        assert_eq!(
+            std::fs::read(destination.join("source.txt")).unwrap(),
+            b"clipboard fixture"
+        );
+        assert_eq!(std::fs::read(&source).unwrap(), b"clipboard fixture");
+        assert_eq!(std::fs::read(&second).unwrap(), b"second source");
+        app.run_path_move_undo(id);
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app
+            .operation_history
+            .iter()
+            .find(|record| record.id == id)
+            .unwrap()
+            .path_move_undo
+            == Some(PathMoveUndoState::UndoQueued)
+            && Instant::now() < deadline
+        {
+            app.poll_path_move_undo_results();
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        assert_eq!(
+            app.operation_history
+                .iter()
+                .find(|record| record.id == id)
+                .unwrap()
+                .path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        );
+        assert!(!destination.join("source.txt").exists());
+        assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        assert_eq!(std::fs::read(second).unwrap(), b"second source");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_public_copy_directory_preserves_streams_and_undo_keeps_source() {
+        if private_activity_process(
+            "windows_public_copy_directory_preserves_streams_and_undo_keeps_source",
+        ) {
+            return;
+        }
+        let (root, mut app, _) = clipboard_keyboard_fixture();
+        let source = root.path().join("folder");
+        std::fs::create_dir_all(source.join("nested")).unwrap();
+        std::fs::create_dir(source.join("empty")).unwrap();
+        std::fs::write(source.join("nested/data.txt"), b"nested contents").unwrap();
+        std::fs::write(source.join("nested/data.txt:details"), b"named stream").unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        assert!(app.run_file_op_bound(
+            FileCommand::Copy {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Overwrite,
+            },
+            None,
+            Vec::new(),
+            None,
+            None,
+            Some(ConflictAction::Overwrite)
+        ));
+        let id = app.operation_history.front().unwrap().id;
+        wait_public_copy(&mut app, id);
+        let record = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == id)
+            .unwrap();
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(record.message.is_none(), "{:?}", record.message);
+        assert_eq!(record.path_move_undo, Some(PathMoveUndoState::Available));
+        assert_eq!(
+            std::fs::read(destination.join("folder/nested/data.txt")).unwrap(),
+            b"nested contents"
+        );
+        assert_eq!(
+            std::fs::read(destination.join("folder/nested/data.txt:details")).unwrap(),
+            b"named stream"
+        );
+        assert!(destination.join("folder/empty").is_dir());
+        app.run_path_move_undo(id);
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app
+            .operation_history
+            .iter()
+            .find(|record| record.id == id)
+            .unwrap()
+            .path_move_undo
+            == Some(PathMoveUndoState::UndoQueued)
+            && Instant::now() < deadline
+        {
+            app.poll_path_move_undo_results();
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        assert_eq!(
+            app.operation_history
+                .iter()
+                .find(|record| record.id == id)
+                .unwrap()
+                .path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        );
+        assert!(!destination.join("folder").exists());
+        assert_eq!(
+            std::fs::read(source.join("nested/data.txt")).unwrap(),
+            b"nested contents"
+        );
+        assert_eq!(
+            std::fs::read(source.join("nested/data.txt:details")).unwrap(),
+            b"named stream"
+        );
+        assert!(source.join("empty").is_dir());
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_public_copy_chunk_stop_retains_an_endable_unpublished_attempt() {
+        if private_activity_process(
+            "windows_public_copy_chunk_stop_retains_an_endable_unpublished_attempt",
+        ) {
+            return;
+        }
+        let (root, app, source) = clipboard_keyboard_fixture();
+        let data = vec![0x5a; 1024 * 1024];
+        std::fs::write(&source, &data).unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source.txt"), b"existing contents").unwrap();
+        let mut saw_chunk = false;
+        let result = app.platform.execute_copy_batch_with_undo_receipts(
+            std::slice::from_ref(&source),
+            &destination,
+            ConflictAction::Overwrite,
+            &mut |bytes| {
+                if bytes >= 64 * 1024 {
+                    saw_chunk = true;
+                    Err(PlatformError::Io("owned chunk stop".into()))
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(saw_chunk, "Stop must reach actual stream progress");
+        assert_eq!(result.completed_sources, 0);
+        assert!(result.undo_receipts.is_empty());
+        assert!(
+            result.error.is_some(),
+            "Stopped Copy must not report success"
+        );
+        assert_eq!(std::fs::read(&source).unwrap(), data);
+        assert_eq!(
+            std::fs::read(destination.join("source.txt")).unwrap(),
+            b"existing contents"
+        );
+        let retained = ottrin_platform::discover_retained_copy_transactions().unwrap();
+        assert_eq!(retained.len(), 1, "{retained:?}");
+        assert_eq!(
+            retained[0].evidence,
+            ottrin_platform::WindowsCopyRecoveryEvidence::UnverifiedStage
+        );
+        let id = retained[0].transaction_id.as_ref().unwrap();
+        let transaction = retained[0].transaction.as_ref().unwrap();
+        let journal = std::fs::read(transaction.join("journal")).unwrap();
+        let mut abort = ottrin_platform::restore_retained_copy_abort_plan(id).unwrap();
+        abort.end_attempt(|_| Ok(())).unwrap();
+        assert!(abort.complete());
+        let ended = ottrin_platform::discover_retained_copy_transactions().unwrap();
+        assert_eq!(ended.len(), 1);
+        assert_eq!(
+            ended[0].phase,
+            Some(ottrin_platform::WindowsCopyPhase::Aborted)
+        );
+        assert!(
+            std::fs::read(transaction.join("journal"))
+                .unwrap()
+                .starts_with(&journal)
+        );
+        assert_eq!(std::fs::read(source).unwrap(), data);
+        assert_eq!(
+            std::fs::read(destination.join("source.txt")).unwrap(),
+            b"existing contents"
         );
     }
 
@@ -30198,9 +30659,13 @@ mod tests {
     }
 
     #[test]
-    fn path_move_undo_action_requires_a_completed_available_rename() {
+    fn path_move_undo_action_requires_a_finished_available_receipt() {
         assert!(path_move_undo_action_is_available(
             OperationStatus::Completed,
+            Some(&PathMoveUndoState::Available),
+        ));
+        assert!(path_move_undo_action_is_available(
+            OperationStatus::Stopped,
             Some(&PathMoveUndoState::Available),
         ));
         assert!(!path_move_undo_action_is_available(
@@ -30314,6 +30779,7 @@ mod tests {
                         delete_nav: Vec::new(),
                         error: failed.then(|| "retained cleanup needs another attempt".into()),
                         warning: None,
+                        stopped: false,
                         retry: None,
                         clipboard_generation: None,
                         completed_sources: None,
@@ -30449,6 +30915,7 @@ mod tests {
                 delete_nav: Vec::new(),
                 error: None,
                 warning: None,
+                stopped: false,
                 retry: None,
                 clipboard_generation: None,
                 completed_sources: None,
@@ -30530,6 +30997,7 @@ mod tests {
                 delete_nav: Vec::new(),
                 error: None,
                 warning: None,
+                stopped: false,
                 retry: None,
                 clipboard_generation: None,
                 completed_sources: Some(1),
@@ -30636,6 +31104,7 @@ mod tests {
                 delete_nav: Vec::new(),
                 error: None,
                 warning: None,
+                stopped: false,
                 retry: None,
                 clipboard_generation: None,
                 completed_sources: Some(1),
@@ -31700,7 +32169,7 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_recovery_requires_captured_paths_and_real_drive_bindings() {
-        if private_move_activity_process(
+        if private_activity_process(
             "windows_move_recovery_requires_captured_paths_and_real_drive_bindings",
         ) {
             return;
@@ -32112,8 +32581,7 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_undo_admission_tracks_renamed_parent_paths() {
-        if private_move_activity_process("windows_move_undo_admission_tracks_renamed_parent_paths")
-        {
+        if private_activity_process("windows_move_undo_admission_tracks_renamed_parent_paths") {
             return;
         }
         assert_windows_move_undo_admission_tracks_renamed_parent_paths(false);
@@ -32129,7 +32597,7 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_history_reconciles_exact_inverse_without_overriding_its_worker() {
-        if private_move_activity_process(
+        if private_activity_process(
             "windows_move_history_reconciles_exact_inverse_without_overriding_its_worker",
         ) {
             return;
@@ -32595,6 +33063,7 @@ mod tests {
                 delete_nav: Vec::new(),
                 error: Some("permission denied".to_string()),
                 warning: None,
+                stopped: false,
                 retry: None,
                 clipboard_generation: None,
                 completed_sources: None,
@@ -32613,6 +33082,7 @@ mod tests {
                 delete_nav: Vec::new(),
                 error: None,
                 warning: Some("warning".to_string()),
+                stopped: false,
                 retry: None,
                 clipboard_generation: None,
                 completed_sources: None,
@@ -32661,6 +33131,7 @@ mod tests {
                 delete_nav: Vec::new(),
                 error: None,
                 warning: None,
+                stopped: false,
                 retry: None,
                 clipboard_generation: None,
                 completed_sources: None,
@@ -32728,6 +33199,7 @@ mod tests {
                     delete_nav: Vec::new(),
                     error: None,
                     warning: None,
+                    stopped: false,
                     retry: None,
                     clipboard_generation: None,
                     completed_sources: None,
@@ -34074,6 +34546,7 @@ mod tests {
             &sources,
             &destination,
             ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_none(), "{:?}", batch.error);
         let ids: Vec<_> = batch
@@ -34157,6 +34630,7 @@ mod tests {
             &sources,
             &destination,
             ConflictAction::Skip,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_none(), "{:?}", batch.error);
         let ids: Vec<_> = batch
@@ -34310,6 +34784,7 @@ mod tests {
             &sources,
             &destination,
             ConflictAction::Skip,
+            &mut |_| Ok(()),
         );
         assert!(later_copy.error.is_none());
         assert_eq!(later_copy.undo_receipts.len(), 2);
@@ -34372,7 +34847,12 @@ mod tests {
             let source = directory.join("item");
             std::fs::write(&source, format!("version-{version}")).unwrap();
             let receipt = DefaultPlatform
-                .execute_copy_with_undo_receipt(&source, &destination, ConflictAction::Overwrite)
+                .execute_copy_with_undo_receipt(
+                    &source,
+                    &destination,
+                    ConflictAction::Overwrite,
+                    &mut |_| Ok(()),
+                )
                 .unwrap()
                 .unwrap();
             ids.push(
@@ -34553,8 +35033,8 @@ mod tests {
 
     // These use the real profile-wide recovery registry. Parallel tests create
     // and retire journals, so each case needs its own process/state root.
-    fn private_move_activity_process(test: &str) -> bool {
-        const CHILD: &str = "OTTRIN_TEST_PRIVATE_MOVE_ACTIVITY";
+    fn private_activity_process(test: &str) -> bool {
+        const CHILD: &str = "OTTRIN_TEST_PRIVATE_ACTIVITY";
         if std::env::var(CHILD).as_deref() == Ok(test) {
             return false;
         }
@@ -34620,7 +35100,7 @@ mod tests {
 
     #[test]
     fn startup_loads_retained_move_activity_from_discovery() {
-        if private_move_activity_process("startup_loads_retained_move_activity_from_discovery") {
+        if private_activity_process("startup_loads_retained_move_activity_from_discovery") {
             return;
         }
         let mut app = OttrinApp::default();
@@ -34633,9 +35113,8 @@ mod tests {
 
     #[test]
     fn move_batch_warning_refreshes_retained_move_activity_snapshot() {
-        if private_move_activity_process(
-            "move_batch_warning_refreshes_retained_move_activity_snapshot",
-        ) {
+        if private_activity_process("move_batch_warning_refreshes_retained_move_activity_snapshot")
+        {
             return;
         }
         let mut app = OttrinApp::default();
@@ -34667,6 +35146,7 @@ mod tests {
                 "batch completed 1 of 2 items, then stopped at /tmp/source-two: disk full"
                     .to_string(),
             ),
+            stopped: false,
             retry: None,
             clipboard_generation: None,
             completed_sources: Some(1),
@@ -34686,9 +35166,8 @@ mod tests {
 
     #[test]
     fn failed_move_batch_reconciles_retained_move_activity_snapshot() {
-        if private_move_activity_process(
-            "failed_move_batch_reconciles_retained_move_activity_snapshot",
-        ) {
+        if private_activity_process("failed_move_batch_reconciles_retained_move_activity_snapshot")
+        {
             return;
         }
         let mut app = OttrinApp::default();
@@ -34720,6 +35199,7 @@ mod tests {
                     .to_string(),
             ),
             warning: None,
+            stopped: false,
             retry: None,
             clipboard_generation: None,
             completed_sources: None,

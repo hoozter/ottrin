@@ -81,6 +81,7 @@ impl StagedTree {
     /// Verify the complete staged tree again before publication. Stream rereads
     /// precede the last bottom-up timestamp writes. Root name bindings belong to
     /// the enclosing transaction, which must validate its pinned stage/parents.
+    #[cfg(test)]
     pub(super) fn verify_and_finalize(
         &self,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,

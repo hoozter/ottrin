@@ -194,7 +194,7 @@ mod copy_transaction;
 mod directory_watch;
 #[cfg(target_os = "linux")]
 use copy_transaction::CopyPublication;
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 use copy_transaction::copy_entry_transactional;
 pub mod move_recovery;
 mod move_transaction;
@@ -1152,12 +1152,15 @@ pub trait PlatformOps: Send + Sync {
             "session-only chmod undo is supported only on Linux",
         ))
     }
+    /// Check progress before copying; Windows also checks native stream chunks.
     fn execute_copy_with_undo_receipt(
         &self,
         source: &Path,
         destination: &Path,
         conflict: ConflictAction,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        progress(0)?;
         self.execute_command(&FileCommand::Copy {
             sources: vec![source.to_path_buf()],
             destination: destination.to_path_buf(),
@@ -1170,9 +1173,10 @@ pub trait PlatformOps: Send + Sync {
         sources: &[PathBuf],
         destination: &Path,
         conflict: ConflictAction,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
     ) -> CopyBatchResult {
         execute_copy_batch_with(sources, |source| {
-            self.execute_copy_with_undo_receipt(source, destination, conflict)
+            self.execute_copy_with_undo_receipt(source, destination, conflict, progress)
         })
     }
     /// Check cancellation before an inverse; Windows also checks stream chunks.
@@ -1350,8 +1354,12 @@ impl PlatformOps for DefaultPlatform {
                 destination,
                 conflict,
             } => {
-                let result =
-                    self.execute_copy_batch_with_undo_receipts(sources, destination, *conflict);
+                let result = self.execute_copy_batch_with_undo_receipts(
+                    sources,
+                    destination,
+                    *conflict,
+                    &mut |_| Ok(()),
+                );
                 if let Some(error) = result.error {
                     return Err(error);
                 }
@@ -1766,12 +1774,24 @@ impl PlatformOps for DefaultPlatform {
         source: &Path,
         destination: &Path,
         conflict: ConflictAction,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        progress(0)?;
         #[cfg(target_os = "linux")]
         {
             self.copy_with_operation(source, destination, conflict, None)
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            copy_transaction::copy_configured(
+                source,
+                destination,
+                conflict,
+                copy_transaction::MAX_COPY_ENTRIES,
+                progress,
+            )
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             ensure_existing_dir(destination)?;
             validate_copy_source(source)?;
@@ -1785,14 +1805,18 @@ impl PlatformOps for DefaultPlatform {
         sources: &[PathBuf],
         destination: &Path,
         conflict: ConflictAction,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
     ) -> CopyBatchResult {
-        let validation = ensure_existing_dir(destination).and_then(|()| {
-            for source in sources {
-                validate_copy_source(source)?;
-                reject_directory_copy_into_itself(source, destination)?;
-            }
-            Ok(())
-        });
+        let validation = progress(0)
+            .and_then(|()| ensure_existing_dir(destination))
+            .and_then(|()| {
+                for source in sources {
+                    progress(0)?;
+                    validate_copy_source(source)?;
+                    reject_directory_copy_into_itself(source, destination)?;
+                }
+                Ok(())
+            });
         if let Err(error) = validation {
             return CopyBatchResult {
                 completed_sources: 0,
@@ -1820,6 +1844,7 @@ impl PlatformOps for DefaultPlatform {
                 }
             };
             execute_copy_batch_with(sources, |source| {
+                progress(0)?;
                 let result =
                     self.copy_with_operation(source, destination, conflict, Some(&operation));
                 operation.item_index += 1;
@@ -1828,7 +1853,7 @@ impl PlatformOps for DefaultPlatform {
         }
         #[cfg(not(target_os = "linux"))]
         execute_copy_batch_with(sources, |source| {
-            self.execute_copy_with_undo_receipt(source, destination, conflict)
+            self.execute_copy_with_undo_receipt(source, destination, conflict, progress)
         })
     }
     /// Check cancellation before an inverse; Windows also checks stream chunks.
@@ -5208,7 +5233,12 @@ mod tests {
         std::fs::write(&source, "copied bytes").unwrap();
 
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .execute_copy_with_undo_receipt(
+                &source,
+                &destination_dir,
+                ConflictAction::Skip,
+                &mut |_| Ok(()),
+            )
             .unwrap()
             .expect("copy receipt");
         assert_eq!(
@@ -5263,6 +5293,7 @@ mod tests {
                         } else {
                             ConflictAction::Skip
                         },
+                        &mut |_| Ok(()),
                     )
                     .unwrap()
                     .unwrap();
@@ -5328,6 +5359,7 @@ mod tests {
                     &source,
                     &destination_dir,
                     ConflictAction::Overwrite,
+                    &mut |_| Ok(()),
                 )
                 .unwrap()
                 .unwrap();
@@ -5376,7 +5408,12 @@ mod tests {
         std::fs::write(&occupied, "existing bytes").unwrap();
 
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Rename)
+            .execute_copy_with_undo_receipt(
+                &source,
+                &destination_dir,
+                ConflictAction::Rename,
+                &mut |_| Ok(()),
+            )
             .unwrap()
             .expect("renamed copy receipt");
         assert_eq!(receipt.after_path(), renamed);
@@ -5409,7 +5446,12 @@ mod tests {
         let displaced_identity = rename_identity(&destination).unwrap();
 
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .execute_copy_with_undo_receipt(
+                &source,
+                &destination_dir,
+                ConflictAction::Overwrite,
+                &mut |_| Ok(()),
+            )
             .unwrap()
             .expect("overwrite copy receipt");
         assert_eq!(
@@ -5442,7 +5484,12 @@ mod tests {
         std::fs::write(&source, "copied bytes").unwrap();
         std::fs::write(&destination, "displaced bytes").unwrap();
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .execute_copy_with_undo_receipt(
+                &source,
+                &destination_dir,
+                ConflictAction::Overwrite,
+                &mut |_| Ok(()),
+            )
             .unwrap()
             .expect("overwrite copy receipt");
         std::fs::remove_file(receipt.before_path()).unwrap();
@@ -5690,7 +5737,12 @@ mod tests {
             std::fs::write(&source, "copied bytes").unwrap();
             std::fs::create_dir(&destination).unwrap();
             let receipt = DefaultPlatform
-                .execute_copy_with_undo_receipt(&source, &destination, ConflictAction::Skip)
+                .execute_copy_with_undo_receipt(
+                    &source,
+                    &destination,
+                    ConflictAction::Skip,
+                    &mut |_| Ok(()),
+                )
                 .unwrap()
                 .unwrap();
             let stage = receipt.before_path().parent().unwrap().to_path_buf();
@@ -5751,7 +5803,7 @@ mod tests {
         std::fs::write(&source, "copied bytes").unwrap();
         symlink(&actual, &alias).unwrap();
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip)
+            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip, &mut |_| Ok(()))
             .unwrap()
             .unwrap();
         std::fs::hard_link(actual.join("source"), other.join("source")).unwrap();
@@ -5796,7 +5848,7 @@ mod tests {
         std::fs::write(&source, "copied bytes").unwrap();
         symlink(other.path(), &alias).unwrap();
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip)
+            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip, &mut |_| Ok(()))
             .unwrap()
             .unwrap();
         DefaultPlatform
@@ -5824,7 +5876,7 @@ mod tests {
         std::fs::write(&source, "copied bytes").unwrap();
         symlink(&actual, &alias).unwrap();
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip)
+            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip, &mut |_| Ok(()))
             .unwrap()
             .unwrap();
         let directory = receipt.retained_copy_directory.as_ref().unwrap();
@@ -5905,7 +5957,9 @@ mod tests {
         let source = root.path().join("source");
         std::fs::write(&source, "original source").unwrap();
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &mount_path, ConflictAction::Skip)
+            .execute_copy_with_undo_receipt(&source, &mount_path, ConflictAction::Skip, &mut |_| {
+                Ok(())
+            })
             .unwrap()
             .unwrap();
         assert_eq!(
@@ -5952,7 +6006,9 @@ mod tests {
         };
         bind();
         let bind_receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &mount_path, ConflictAction::Skip)
+            .execute_copy_with_undo_receipt(&source, &mount_path, ConflictAction::Skip, &mut |_| {
+                Ok(())
+            })
             .unwrap()
             .unwrap();
         assert!(
@@ -6068,7 +6124,12 @@ mod tests {
         let destination = destination_dir.join("entry.txt");
         std::fs::write(&source, "copied bytes").unwrap();
         let receipt = DefaultPlatform
-            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .execute_copy_with_undo_receipt(
+                &source,
+                &destination_dir,
+                ConflictAction::Skip,
+                &mut |_| Ok(()),
+            )
             .unwrap()
             .expect("copy receipt");
         std::fs::remove_file(&destination).unwrap();

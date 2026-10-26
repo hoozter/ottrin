@@ -230,6 +230,7 @@ impl Admission {
 
     /// Persist cleanup intent without removing payload or metadata. The
     /// returned proof is captured from this writer, not readmitted by ID.
+    #[cfg(test)]
     pub(super) fn start(
         &self,
         parent: &File,
@@ -909,6 +910,7 @@ impl Admission {
         .map_err(|error| self.pending_error(error))
     }
 
+    #[cfg(test)]
     pub(super) fn reclaim(
         &self,
         parent: &File,
@@ -919,6 +921,7 @@ impl Admission {
             .map(|result| result.completion)
     }
 
+    #[cfg(test)]
     pub(super) fn reclaim_with_ack(
         &self,
         parent: &File,
@@ -975,6 +978,7 @@ impl Admission {
 
 /// Reclaim the recorded retained payload through the same observation used by
 /// longer-lived confirmation plans. Metadata finalization is a separate phase.
+#[cfg(test)]
 pub(super) fn reclaim_payload(
     parent: &File,
     central: &File,

@@ -973,6 +973,7 @@ mod tests {
             &paths,
             &destination,
             ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_none());
         assert_eq!(batch.undo_receipts.len(), 2);
@@ -1118,6 +1119,7 @@ mod tests {
             &sources,
             &destination,
             ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(batch.error.is_none(), "{:?}", batch.error);
         eprintln!(
@@ -1328,6 +1330,7 @@ mod tests {
             &[source.join("item")],
             &destination,
             ConflictAction::Overwrite,
+            &mut |_| Ok(()),
         );
         assert!(unrelated.error.is_none());
         let id = statuses(root.path())
@@ -1423,6 +1426,7 @@ mod tests {
                 &[source.join("item")],
                 &destination,
                 ConflictAction::Overwrite,
+                &mut |_| Ok(()),
             );
             assert!(batch.error.is_none());
         }

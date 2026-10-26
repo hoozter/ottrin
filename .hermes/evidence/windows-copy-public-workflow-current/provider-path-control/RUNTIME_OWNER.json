@@ -1,0 +1,40 @@
+{
+  "nonce": "5be47edb-b8bc-49a4-ac6d-87ac55244636",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "failed",
+  "source": {
+    "base_revision": "a5003d5f7cc238ad51daa1045702edec8d2f16af",
+    "working_tree": [
+      " M crates/ottrin-platform/src/copy_cleanup.rs",
+      " M crates/ottrin-platform/src/copy_finalization.rs",
+      " M crates/ottrin-platform/src/copy_recovery.rs",
+      " M crates/ottrin-platform/src/copy_transaction.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/security.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/tree.rs",
+      " M crates/ottrin-platform/src/lib.rs",
+      " M crates/ottrin-ui/src/copy_activity_cleanup.rs",
+      " D crates/ottrin-ui/src/copy_activity_undo.rs",
+      " M crates/ottrin-ui/src/lib.rs",
+      "?? AGENTS.md",
+      "?? crates/ottrin-ui/src/copy_activity_work.rs"
+    ],
+    "files": {
+      "crates/ottrin-ui/src/lib.rs": "de49463ca63690987e1ecc9a84ace9e6f596a5889843fbcc880f448e5c816eef",
+      "crates/ottrin-platform/src/move_transaction/windows_undo/plan.rs": "f02f4d1ea6d86560e9c89de086439663b074ddc26355024e8709cfd9021453c4",
+      "crates/ottrin-platform/src/move_transaction/windows_undo/plan/tests.rs": "644d1410256bf102099d9fc9f27f38a5dbf58d859268cdb9fb082051734036a7"
+    }
+  },
+  "error": "FileNotFoundError(2, 'No such file or directory')",
+  "phase": "cleanup",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

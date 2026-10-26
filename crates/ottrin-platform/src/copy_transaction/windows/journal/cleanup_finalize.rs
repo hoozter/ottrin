@@ -128,6 +128,7 @@ fn control_epoch(
     Ok(())
 }
 
+#[cfg(test)]
 pub(super) fn prepare(
     parent: &File,
     central: &File,
@@ -330,6 +331,7 @@ impl Completion {
         Ok((snapshot, dependencies, versions))
     }
 
+    #[cfg(test)]
     pub(super) fn begin(
         &self,
         parent: &File,
