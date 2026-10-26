@@ -1,0 +1,403 @@
+{
+  "scope": "Storage-phase replay of a private generated-cache copy; no filesystem freshness or complete daemon acceptance",
+  "binary_sha256": "121279aadd43aa8745aa8236a1c8c18352cd5f4f86465504b4749cbb937a82ed",
+  "personal_daemon_pid_before": "2260994",
+  "fixture": "/var/tmp/.ottrin-index-phase-vqpcsv4j",
+  "items": 121056,
+  "phases": [
+    {
+      "cpu_seconds": 0.0011099439999999999,
+      "phase": "open",
+      "wall_seconds": 0.003615823
+    },
+    {
+      "cpu_seconds": 0.49921393299999994,
+      "phase": "load_metadata_snapshot",
+      "wall_seconds": 0.499277942
+    },
+    {
+      "cpu_seconds": 0.06259914200000005,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.06513581
+    },
+    {
+      "cpu_seconds": 0.667337829,
+      "phase": "filename_fts",
+      "wall_seconds": 0.679004539
+    },
+    {
+      "cpu_seconds": 0.015098096999999866,
+      "phase": "content_state",
+      "wall_seconds": 0.01510036
+    },
+    {
+      "cpu_seconds": 0.041724056000000065,
+      "phase": "commit",
+      "wall_seconds": 0.059507967
+    },
+    {
+      "cpu_seconds": 2.095899999998707e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.2372e-05
+    },
+    {
+      "cpu_seconds": 0.060840237000000075,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.063418244
+    },
+    {
+      "cpu_seconds": 0.686409882,
+      "phase": "filename_fts",
+      "wall_seconds": 0.690202797
+    },
+    {
+      "cpu_seconds": 0.016632737999999758,
+      "phase": "content_state",
+      "wall_seconds": 0.016636344
+    },
+    {
+      "cpu_seconds": 0.049120536000000214,
+      "phase": "commit",
+      "wall_seconds": 0.057513128
+    },
+    {
+      "cpu_seconds": 2.03579999999981e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.1711e-05
+    },
+    {
+      "cpu_seconds": 0.059950078000000406,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.060964822
+    },
+    {
+      "cpu_seconds": 0.8458581770000002,
+      "phase": "filename_fts",
+      "wall_seconds": 0.859978705
+    },
+    {
+      "cpu_seconds": 0.025540286000000023,
+      "phase": "content_state",
+      "wall_seconds": 0.025542643
+    },
+    {
+      "cpu_seconds": 0.049390788999999824,
+      "phase": "commit",
+      "wall_seconds": 0.068184374
+    },
+    {
+      "cpu_seconds": 2.006799999998421e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.13e-05
+    },
+    {
+      "cpu_seconds": 0.056037173999999634,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.056619805
+    },
+    {
+      "cpu_seconds": 0.7041381209999997,
+      "phase": "filename_fts",
+      "wall_seconds": 0.705780296
+    },
+    {
+      "cpu_seconds": 0.016058670000000497,
+      "phase": "content_state",
+      "wall_seconds": 0.016060669
+    },
+    {
+      "cpu_seconds": 0.044152296000000035,
+      "phase": "commit",
+      "wall_seconds": 0.06153712
+    },
+    {
+      "cpu_seconds": 1.7903000000263347e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 1.9026e-05
+    },
+    {
+      "cpu_seconds": 0.05969406899999985,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.060232202
+    },
+    {
+      "cpu_seconds": 0.8994446519999997,
+      "phase": "filename_fts",
+      "wall_seconds": 0.922721959
+    },
+    {
+      "cpu_seconds": 0.026650078999999494,
+      "phase": "content_state",
+      "wall_seconds": 0.026664337
+    },
+    {
+      "cpu_seconds": 0.0454601220000006,
+      "phase": "commit",
+      "wall_seconds": 0.071452451
+    },
+    {
+      "cpu_seconds": 1.9927000000308226e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.132e-05
+    },
+    {
+      "cpu_seconds": 0.05599556699999919,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.056554583
+    },
+    {
+      "cpu_seconds": 0.7971232410000004,
+      "phase": "filename_fts",
+      "wall_seconds": 0.799023703
+    },
+    {
+      "cpu_seconds": 0.015845790000000193,
+      "phase": "content_state",
+      "wall_seconds": 0.015847628
+    },
+    {
+      "cpu_seconds": 0.04566653200000026,
+      "phase": "commit",
+      "wall_seconds": 0.068390462
+    },
+    {
+      "cpu_seconds": 1.8164000000098213e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 1.9387e-05
+    },
+    {
+      "cpu_seconds": 0.0567776939999991,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.057385208
+    },
+    {
+      "cpu_seconds": 0.9252267179999993,
+      "phase": "filename_fts",
+      "wall_seconds": 0.940416456
+    },
+    {
+      "cpu_seconds": 0.027773207000000077,
+      "phase": "content_state",
+      "wall_seconds": 0.02777552
+    },
+    {
+      "cpu_seconds": 0.04980061399999958,
+      "phase": "commit",
+      "wall_seconds": 0.066997618
+    },
+    {
+      "cpu_seconds": 1.854499999964787e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 1.9828e-05
+    },
+    {
+      "cpu_seconds": 0.0558316879999996,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.056433354
+    },
+    {
+      "cpu_seconds": 0.7882713259999994,
+      "phase": "filename_fts",
+      "wall_seconds": 0.789993338
+    },
+    {
+      "cpu_seconds": 0.016110176999999837,
+      "phase": "content_state",
+      "wall_seconds": 0.016112387
+    },
+    {
+      "cpu_seconds": 0.05606311300000044,
+      "phase": "commit",
+      "wall_seconds": 0.074098176
+    },
+    {
+      "cpu_seconds": 2.1639999999933934e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.2933e-05
+    },
+    {
+      "cpu_seconds": 0.05922229300000037,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.060120621
+    },
+    {
+      "cpu_seconds": 1.4822031879999997,
+      "phase": "filename_fts",
+      "wall_seconds": 1.537851522
+    },
+    {
+      "cpu_seconds": 0.01754793599999971,
+      "phase": "content_state",
+      "wall_seconds": 0.017550075
+    },
+    {
+      "cpu_seconds": 0.067999004999999,
+      "phase": "commit",
+      "wall_seconds": 0.088863224
+    },
+    {
+      "cpu_seconds": 1.871499999950288e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.0038e-05
+    },
+    {
+      "cpu_seconds": 0.05650140499999878,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.057028074
+    },
+    {
+      "cpu_seconds": 0.8052342039999996,
+      "phase": "filename_fts",
+      "wall_seconds": 0.80697875
+    },
+    {
+      "cpu_seconds": 0.02616814399999967,
+      "phase": "content_state",
+      "wall_seconds": 0.026175215
+    },
+    {
+      "cpu_seconds": 0.04660741800000068,
+      "phase": "commit",
+      "wall_seconds": 0.064130085
+    },
+    {
+      "cpu_seconds": 2.150100000086752e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.2792e-05
+    },
+    {
+      "cpu_seconds": 0.057295654999999,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.059354808
+    },
+    {
+      "cpu_seconds": 0.9077783959999994,
+      "phase": "filename_fts",
+      "wall_seconds": 0.921979008
+    },
+    {
+      "cpu_seconds": 0.01623752599999939,
+      "phase": "content_state",
+      "wall_seconds": 0.016239647
+    },
+    {
+      "cpu_seconds": 0.05237341800000017,
+      "phase": "commit",
+      "wall_seconds": 0.06971627
+    },
+    {
+      "cpu_seconds": 1.9887000000551325e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.117e-05
+    },
+    {
+      "cpu_seconds": 0.059070187999999746,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.059582698
+    },
+    {
+      "cpu_seconds": 0.755534892,
+      "phase": "filename_fts",
+      "wall_seconds": 0.757027469
+    },
+    {
+      "cpu_seconds": 0.016142348000000695,
+      "phase": "content_state",
+      "wall_seconds": 0.016144347
+    },
+    {
+      "cpu_seconds": 0.04839514200000039,
+      "phase": "commit",
+      "wall_seconds": 0.073128529
+    },
+    {
+      "cpu_seconds": 1.8804999999844085e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 1.9908e-05
+    },
+    {
+      "cpu_seconds": 0.0587556979999988,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.05927617
+    },
+    {
+      "cpu_seconds": 0.7644550799999994,
+      "phase": "filename_fts",
+      "wall_seconds": 0.786842843
+    },
+    {
+      "cpu_seconds": 0.029660939000001108,
+      "phase": "content_state",
+      "wall_seconds": 0.029663278
+    },
+    {
+      "cpu_seconds": 0.043298314999999477,
+      "phase": "commit",
+      "wall_seconds": 0.069637641
+    },
+    {
+      "cpu_seconds": 1.8634999999989077e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 1.9957e-05
+    },
+    {
+      "cpu_seconds": 0.05226126799999875,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.052875901
+    },
+    {
+      "cpu_seconds": 0.6001510069999991,
+      "phase": "filename_fts",
+      "wall_seconds": 0.612929759
+    },
+    {
+      "cpu_seconds": 0.023215481999999454,
+      "phase": "content_state",
+      "wall_seconds": 0.023217764
+    },
+    {
+      "cpu_seconds": 0.017384724999999435,
+      "phase": "commit",
+      "wall_seconds": 0.041844067
+    },
+    {
+      "cpu_seconds": 2.429599999942411e-05,
+      "phase": "checkpoint",
+      "wall_seconds": 2.5528e-05
+    },
+    {
+      "cpu_seconds": 0.040907768999998595,
+      "phase": "metadata_rows",
+      "wall_seconds": 0.042844803
+    },
+    {
+      "cpu_seconds": 0.5728349529999992,
+      "phase": "filename_fts",
+      "wall_seconds": 0.592833196
+    },
+    {
+      "cpu_seconds": 0.02218722300000131,
+      "phase": "content_state",
+      "wall_seconds": 0.022189547
+    },
+    {
+      "cpu_seconds": 0.013797832999999926,
+      "phase": "commit",
+      "wall_seconds": 0.029907859
+    },
+    {
+      "cpu_seconds": 0.005436762000000428,
+      "phase": "checkpoint",
+      "wall_seconds": 0.006048846
+    },
+    {
+      "cpu_seconds": 1.2042114229999985,
+      "phase": "validate_publish_retire",
+      "wall_seconds": 1.23049362
+    }
+  ],
+  "sqlite_version": "3.45.0",
+  "status": "pass for named phase replay",
+  "fixture_removed": true,
+  "personal_daemon_pid_after": "2260994"
+}

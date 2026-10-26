@@ -1097,19 +1097,32 @@ fn insert_generation_path_rows(
     generation: i64,
     items: &[OwnedItem],
 ) -> Result<(), SearchDbError> {
-    let mut path_insert = tx.prepare_cached(
-        "INSERT OR REPLACE INTO content_store.search_generation_paths (rowid, generation_id, path, path_text)
-         SELECT rowid, generation_id, path, ?3 FROM search_generation_items
+    // Avoid a source-reading INSERT ... SELECT for every FTS row. Resolve
+    // canonical row IDs and membership first, then insert directly. Bound the
+    // extra storage even when a whole-generation caller supplies a large slice.
+    let mut lookup = tx.prepare_cached(
+        "SELECT rowid FROM search_generation_items
          WHERE generation_id = ?1 AND path = ?2 AND metadata_indexed = 1",
     )?;
-    for owned in items {
-        let item = owned.item();
-        let encoded_path = encode_path(&item.path);
-        path_insert.execute(params![
-            generation,
-            encoded_path,
-            item.path.to_string_lossy()
-        ])?;
+    let mut path_insert = tx.prepare_cached(
+        "INSERT OR REPLACE INTO content_store.search_generation_paths (rowid, generation_id, path, path_text)
+         VALUES (?1, ?2, ?3, ?4)",
+    )?;
+    for batch in items.chunks(8192) {
+        let mut rows = Vec::with_capacity(batch.len());
+        for owned in batch {
+            let item = owned.item();
+            let path = encode_path(&item.path);
+            if let Some(rowid) = lookup
+                .query_row(params![generation, &path], |row| row.get::<_, i64>(0))
+                .optional()?
+            {
+                rows.push((rowid, path, item.path.to_string_lossy()));
+            }
+        }
+        for (rowid, path, text) in rows {
+            path_insert.execute(params![rowid, generation, path, text])?;
+        }
     }
     Ok(())
 }
@@ -4490,6 +4503,60 @@ mod generation_tests {
         );
         assert_eq!(store.load(&scan_plan).expect("load"), Some(committed));
         let _ = std::fs::remove_file(db_path);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn filename_index_preserves_non_utf8_canonical_paths_across_updates() {
+        use std::os::unix::ffi::OsStringExt;
+
+        let root = crate::test_temp_dir().join("filename-raw-path");
+        let raw_path = root.join(OsString::from_vec(b"needle-\xff.txt".to_vec()));
+        let mut item = owned(&root, "needle.txt", 1).item().clone();
+        item.path = raw_path.clone();
+        item.name = raw_path.file_name().unwrap().to_string_lossy().into_owned();
+        item.prepare();
+        let owned = OwnedItem::new(root.clone(), item);
+        let plan = plan(&root);
+        let path = temp_db_path("filename-raw-path");
+        let mut store = SearchStore::open(path.clone()).unwrap();
+        store
+            .commit(&plan, IndexMutation::ReplaceAll(vec![owned.clone()]))
+            .unwrap();
+        let query = || {
+            query_simple_term_page(
+                &path,
+                &plan,
+                SimpleTermPage {
+                    term: "needle",
+                    include_hidden: true,
+                    sort: SearchSort::Name,
+                    limit: 10,
+                    offset: 0,
+                },
+            )
+            .unwrap()
+        };
+        let fence = ActivationFence::new();
+        for _ in 0..2 {
+            let (hits, count) = query();
+            assert_eq!(count, 1);
+            assert_eq!(hits[0].path, raw_path);
+            store
+                .commit_delta_guarded_then(
+                    &plan,
+                    std::slice::from_ref(&owned),
+                    &[],
+                    &fence,
+                    fence.capture(),
+                    |_| {},
+                )
+                .unwrap();
+        }
+        store
+            .commit_delta_guarded_then(&plan, &[], &[raw_path], &fence, fence.capture(), |_| {})
+            .unwrap();
+        assert_eq!(query().1, 0);
     }
 
     #[cfg(unix)]

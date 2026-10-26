@@ -385,3 +385,35 @@ activity, not isolated idle. Content indexing is disabled in that personal
 profile, and its running binary differs from the current package; the observation
 does not accept the new package against the user's home. Configuration and the
 running service remain unchanged.
+
+## Filename-index construction on 2026-10-26
+
+A private copy of the existing 121,056-item metadata cache exposed excessive
+per-row filename-FTS construction cost. Canonical row-ID and metadata-membership
+lookups now finish in bounded batches before direct virtual-table inserts.
+The scan, index format, trigram tokenizer, publication fence, and watcher
+coverage are unchanged. Non-UTF-8 canonical paths remain byte-exact.
+
+| Same-machine private-cache observation | Prior daemon | Candidate daemon |
+|---|---:|---:|
+| Startup CPU, including watcher setup | 22.72 s | 15.12 s |
+| Startup observation through settled publication | 34.24 s | 27.19 s |
+| Explicit reconciliation CPU | 16.48 s | 9.39 s |
+| Explicit reconciliation elapsed | 17.27 s | 11.21 s |
+
+Both daemons served the saved index after roughly one second while startup
+validation proceeded. The candidate stopped during an active scan in 0.519 s,
+kept the previously active generation and removed the incomplete generation.
+This is one sequential comparison under live host filesystem activity, not a
+universal latency, idle CPU or memory claim. The separate Rust storage-phase
+replay reduced filename-FTS CPU from 12.20 s to 4.07 s; that replay excludes
+filesystem traversal and watcher setup.
+
+All 239 existing search tests pass, including offline freshness, cancelled
+publication and watcher recovery; the additional Unix raw-filename query,
+update and deletion test passes separately. Strict search all-target lint
+passes for Linux and Windows GNU. All private cache copies and test processes
+are removed; the personal daemon remains unchanged. This source checkpoint
+is not yet a packaged or installed-service result. Exact binary/source hashes,
+phase samples, daemon measurements and teardown are recorded in
+`.hermes/evidence/index-fts-build-probe-current/ACCEPTANCE.json`.

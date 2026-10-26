@@ -1,0 +1,273 @@
+{
+  "status": "Source and actual release-daemon checks pass within named scopes; packages and personal service unchanged",
+  "base_revision": "bab665940f4eaaf174bc6d26d49a55dd436da283",
+  "source_sha256": "44a6cee76ec7b7145b07a3409ecea9e0b7d9ee9ccfb02411a71ffb1693f0816c",
+  "production_change": "Bounded canonical row-ID/membership lookup batches followed by direct FTS VALUES inserts; unchanged schema, tokenization, filesystem scan, publication and cancellation protocol",
+  "baseline": {
+    "items": 121056,
+    "binary_sha256": "121279aadd43aa8745aa8236a1c8c18352cd5f4f86465504b4749cbb937a82ed",
+    "phases": {
+      "open": {
+        "cpu_seconds": 0.0011099439999999999,
+        "wall_seconds": 0.003615823
+      },
+      "load_metadata_snapshot": {
+        "cpu_seconds": 0.49921393299999994,
+        "wall_seconds": 0.499277942
+      },
+      "metadata_rows": {
+        "cpu_seconds": 0.851739924999992,
+        "wall_seconds": 0.8678271030000001
+      },
+      "filename_fts": {
+        "cpu_seconds": 12.202001665999994,
+        "wall_seconds": 12.403564340000003
+      },
+      "content_state": {
+        "cpu_seconds": 0.3108686420000011,
+        "wall_seconds": 0.31091976099999996
+      },
+      "commit": {
+        "cpu_seconds": 0.6712339140000001,
+        "wall_seconds": 0.964908971
+      },
+      "checkpoint": {
+        "cpu_seconds": 0.005716165000000828,
+        "wall_seconds": 0.006346116
+      },
+      "validate_publish_retire": {
+        "cpu_seconds": 1.2042114229999985,
+        "wall_seconds": 1.23049362
+      }
+    },
+    "fixture_removed": true,
+    "personal_daemon_pid_unchanged": true
+  },
+  "direct_insert": {
+    "items": 121056,
+    "binary_sha256": "c92466b27f5facc3c6f6f26c6a75d319c78ab943185f8f8a5c5ef6f4c9c0a1c1",
+    "phases": {
+      "open": {
+        "cpu_seconds": 0.0008796279999999999,
+        "wall_seconds": 0.002625126
+      },
+      "load_metadata_snapshot": {
+        "cpu_seconds": 0.476741756,
+        "wall_seconds": 0.476959242
+      },
+      "metadata_rows": {
+        "cpu_seconds": 0.8214958089999997,
+        "wall_seconds": 0.829716201
+      },
+      "filename_fts": {
+        "cpu_seconds": 4.071581814,
+        "wall_seconds": 4.224090848
+      },
+      "content_state": {
+        "cpu_seconds": 0.40369109600000097,
+        "wall_seconds": 0.43565882
+      },
+      "commit": {
+        "cpu_seconds": 0.5236158110000008,
+        "wall_seconds": 0.68406925
+      },
+      "checkpoint": {
+        "cpu_seconds": 0.005983232999999033,
+        "wall_seconds": 0.006681276
+      },
+      "validate_publish_retire": {
+        "cpu_seconds": 1.1966423160000002,
+        "wall_seconds": 1.219562876
+      }
+    },
+    "fixture_removed": true,
+    "personal_daemon_pid_unchanged": true
+  },
+  "source_tests": {
+    "full_existing_search_suite": {
+      "passed": 239,
+      "ignored": 2,
+      "filtered": 0
+    },
+    "added_non_utf8_filename_update_delete": {
+      "passed": 1,
+      "filtered": 241
+    },
+    "strict_search_all_target_clippy": "pass",
+    "strict_windows_gnu_search_all_target_clippy": "pass"
+  },
+  "limitations": [
+    "Rust phase replay excludes filesystem traversal and watcher setup",
+    "Temporary Linux-only phase test archived as evidence, removed from product test source",
+    "Python SQLite FTS microbenchmark is a separate component observation",
+    "Personal service and deliverable packages remain unchanged",
+    "One sequential real-size private-cache comparison; live filesystem activity and wall time are machine-specific",
+    "No new personal-service idle, memory or complete package acceptance claim"
+  ],
+  "release_binary_sha256": "d7a12a211ff123982e62aad83e200e36c06cdc278f60d061bfa41fea2d5850cb",
+  "daemon_comparison": {
+    "baseline-daemon": {
+      "status": "pass",
+      "traced": false,
+      "binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+      "personal_daemon_pid_before": "2260994",
+      "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+      "fixture": "/var/tmp/.ottrin-index-profile-0mh8bkdk",
+      "cache_copy_seconds": 2.6900279080145992,
+      "elapsed_seconds": 34.24042723502498,
+      "daemon_cpu_seconds": 22.72,
+      "peer_pid": 2388446,
+      "peak_sampled_rss_bytes": 51302400,
+      "first_query_ready_seconds": 1.022810536029283,
+      "first_scan_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 1,
+        "detail": "Indexing \u00b7 4527 files found",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995224,
+        "last_scan_completed_unix_secs": 1792995212,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 12.092452183016576,
+        "cpu_seconds": 6.1,
+        "rss_bytes": 44146688
+      },
+      "first_publication_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 2,
+        "detail": "Ready \u00b7 121056 indexed",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995224,
+        "last_scan_completed_unix_secs": 1792995242,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 30.197349006019067,
+        "cpu_seconds": 22.72,
+        "rss_bytes": 39796736
+      },
+      "reconcile_without_watch_setup": {
+        "elapsed_seconds": 17.26905998500297,
+        "cpu_seconds": 16.480000000000004,
+        "operation_ack": {
+          "type": "operation_complete",
+          "operation_id": 42
+        }
+      },
+      "fixture_removed": true,
+      "personal_daemon_pid_after": "2260994",
+      "sample_count": 34,
+      "raw_samples": "PROFILE-samples.json"
+    },
+    "candidate-daemon": {
+      "status": "pass",
+      "traced": false,
+      "binary_sha256": "d7a12a211ff123982e62aad83e200e36c06cdc278f60d061bfa41fea2d5850cb",
+      "personal_daemon_pid_before": "2260994",
+      "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+      "fixture": "/var/tmp/.ottrin-index-profile-4ezg3g24",
+      "cache_copy_seconds": 1.876452248019632,
+      "elapsed_seconds": 27.1873947189888,
+      "daemon_cpu_seconds": 15.12,
+      "peer_pid": 2388547,
+      "peak_sampled_rss_bytes": 54181888,
+      "first_query_ready_seconds": 1.006163601996377,
+      "first_scan_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 1,
+        "detail": "Indexing \u00b7 15721 files found",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995278,
+        "last_scan_completed_unix_secs": 1792995266,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 12.080457592033781,
+        "cpu_seconds": 6.02,
+        "rss_bytes": 51339264
+      },
+      "first_publication_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 2,
+        "detail": "Ready \u00b7 121056 indexed",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995278,
+        "last_scan_completed_unix_secs": 1792995288,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 23.144075575983152,
+        "cpu_seconds": 15.11,
+        "rss_bytes": 39329792
+      },
+      "reconcile_without_watch_setup": {
+        "elapsed_seconds": 11.210049239976797,
+        "cpu_seconds": 9.390000000000002,
+        "operation_ack": {
+          "type": "operation_complete",
+          "operation_id": 42
+        }
+      },
+      "fixture_removed": true,
+      "personal_daemon_pid_after": "2260994",
+      "sample_count": 27,
+      "raw_samples": "PROFILE-samples.json"
+    },
+    "candidate-cancel": {
+      "status": "pass",
+      "traced": false,
+      "binary_sha256": "d7a12a211ff123982e62aad83e200e36c06cdc278f60d061bfa41fea2d5850cb",
+      "personal_daemon_pid_before": "2260994",
+      "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+      "fixture": "/var/tmp/.ottrin-index-profile-kn3d6epz",
+      "cache_copy_seconds": 2.984230843023397,
+      "shutdown_during_scan_seconds": 0.5189187559881248,
+      "last_count_before_stop": 21567,
+      "cached_generation_preserved": true,
+      "elapsed_seconds": 12.598501296015456,
+      "daemon_cpu_seconds": 6.47,
+      "peer_pid": 2388638,
+      "peak_sampled_rss_bytes": 52895744,
+      "first_query_ready_seconds": 1.0061911650118418,
+      "first_scan_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 1,
+        "detail": "Indexing \u00b7 21567 files found",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995319,
+        "last_scan_completed_unix_secs": 1792995308,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 12.077238252968527,
+        "cpu_seconds": 6.47,
+        "rss_bytes": 52895744
+      },
+      "fixture_removed": true,
+      "personal_daemon_pid_after": "2260994",
+      "sample_count": 12,
+      "raw_samples": "PROFILE-samples.json"
+    }
+  },
+  "cleanup": {
+    "all_private_copies_removed": true,
+    "personal_daemon_pid_unchanged": true,
+    "temporary_profile_test_removed_from_product": true
+  }
+}

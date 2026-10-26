@@ -18,6 +18,17 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
+- **Linux filename-index CPU source checkpoint:** bounded canonical membership
+  lookups followed by direct FTS inserts reduce measured private-copy
+  reconciliation CPU from16.48 to9.39 seconds and startup CPU from22.72 to15.12
+  seconds for121,056 items. Saved results are available after roughly one
+  second; active-scan shutdown takes0.519 seconds, preserving the active cache
+  and removing incomplete staging. Existing239 search tests plus the new Unix
+  byte-exact filename query/update/delete case pass; strict Linux/Windows-GNU
+  search lint passes. This is one scoped comparison, with no new idle or memory
+  claim. Source format and full freshness checks are unchanged. Packages and
+  personal service retain their delivered hashes until replacement acceptance.
+  Receipt: `index-fts-build-probe-current/ACCEPTANCE.json`.
 - **Latest Windows source checkpoint:** public Copy/Paste now uses the existing
   native journaled transaction engine, retains single/batch Undo receipts and
   completed-item counts, and exposes Stop Copy with an explicit Stopped status.
