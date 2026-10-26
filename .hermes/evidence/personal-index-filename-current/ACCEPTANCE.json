@@ -1,0 +1,72 @@
+{
+  "status": "Exact current stable AppImage daemon, ready watching and scoped actual startup/settled samples verified",
+  "source_revision": "defc1adad368406d9a6276a469d8db274f3da3a2",
+  "artifact_sha256": "04be7d4149ab1bce651177de2bb299172e024061a91420faac7fe8926de5f3e2",
+  "pid": 2398670,
+  "process": "ottrin-indexd",
+  "indexd_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "startup_observation_cpu_percent_of_one_core": 23.210798045755187,
+  "steady_60_cpu_percent_of_one_core": 0.12384764167742235,
+  "steady_rss": "39368 kB",
+  "steady_cgroup_memory_bytes": 409825280,
+  "cgroup_memory_breakdown": {
+    "anon": 34160640,
+    "file": 333766656,
+    "kernel": 15732736
+  },
+  "memory_scope": "File cache is reclaimable and distinct from daemon RSS; no memory improvement claimed",
+  "index_status": {
+    "active_root": null,
+    "active_root_index": 0,
+    "configured_roots": 1,
+    "database_bytes": 875085824,
+    "detail": "Ready \u00b7 121056 indexed",
+    "error": null,
+    "estimated_total_items": null,
+    "freelist_bytes": 668762112,
+    "freelist_pages": 163272,
+    "indexed_items": 121056,
+    "last_completed_indexed_items": 121056,
+    "last_progress_unix_secs": 1792996352,
+    "last_scan_completed_unix_secs": 1792996352,
+    "last_scan_duration_ms": null,
+    "last_scan_started_unix_secs": 1792996324,
+    "snapshot_revision": 3,
+    "status": "ready",
+    "total_roots": 1,
+    "wal_bytes": 8272,
+    "watched_roots": 1,
+    "watcher_error": null,
+    "watcher_ready": true
+  },
+  "config_unit_wrapper_unchanged": {
+    "config": true,
+    "unit": true,
+    "wrapper": true
+  },
+  "service_left_enabled_and_running": true,
+  "scope": "One observed startup-minute and one separate settled60s window under normal host activity; no universal latency/CPU or final owner acceptance claim",
+  "personal_source_files_not_written_by_agent": true,
+  "private_package_qa_cleanup": {
+    "status": "pass",
+    "superseded_artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "c2ca3a3b0f6086f9564afd2ebbb0bae331bea6c5d0258a490d32f57213d22843",
+      "Ottrin-0.1.0-x86_64.AppImage": "dc5af154fb18fe73024c5958fbf01686a2c5af5a099089a827700b5ce83e836b",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "1916720bd79b17dbd3a903479e00e7bce0fbfdc221da4310cda5fbf581ddf118",
+      "ottrin_0.1.0_amd64.deb": "082fb70cd1be69806861422c5ca4dd093fac76e547e35b4689f738239729e768"
+    },
+    "stage_removed": true,
+    "extract_removed": true,
+    "profiles_removed": true,
+    "normal_app_exits": true,
+    "rpm_wrappers_removed": true,
+    "public_artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "b15a6fc71568d0bc7c2644ac36b1886c3eb3a02177a6f037abcd805b76c8e7a3",
+      "Ottrin-0.1.0-x86_64.AppImage": "04be7d4149ab1bce651177de2bb299172e024061a91420faac7fe8926de5f3e2",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "def2374979b53ecff7c6ed1f656d46ec8dd33f5f0ac00ab6ab931aa84d02501f",
+      "ottrin_0.1.0_amd64.deb": "0000a33dbedb2726ec1c799d3c93c0a3cdd3d8638e71a29d52d10b2810df5fa5"
+    },
+    "publisher_sha256": "485baa05d77e0c50a10820c2e3b60db4a607b5db36644a7fd544006edb306031"
+  },
+  "previous_package_mount_removed": true
+}

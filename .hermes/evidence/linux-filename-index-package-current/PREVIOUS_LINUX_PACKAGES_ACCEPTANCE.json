@@ -1,0 +1,142 @@
+{
+  "status": "pass within four-format contents, scoped native AppImage and exact index-daemon acceptance",
+  "source_revision": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "c2ca3a3b0f6086f9564afd2ebbb0bae331bea6c5d0258a490d32f57213d22843",
+    "Ottrin-0.1.0-x86_64.AppImage": "dc5af154fb18fe73024c5958fbf01686a2c5af5a099089a827700b5ce83e836b",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "1916720bd79b17dbd3a903479e00e7bce0fbfdc221da4310cda5fbf581ddf118",
+    "ottrin_0.1.0_amd64.deb": "082fb70cd1be69806861422c5ca4dd093fac76e547e35b4689f738239729e768"
+  },
+  "evidence": ".hermes/evidence/linux-index-package-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks",
+    "Actual AppImage Dark/List100 startup; all 256x256 native ARGB icon pixels match assets/icon.png",
+    "Read-only VCF Quick Inspector closes with Space and preserves its original bytes",
+    "Actual AppImage Light/Miller100 launch displays columns, not a List table",
+    "Both normal product closes exit zero and preserve their theme/view preferences",
+    "Exact packaged index ELF matches the measured 121056-item release candidate",
+    "Direct packaged HTML helper renders expected pixels and refuses document script on the unrestricted host",
+    "Hosted complete Linux workspace, strict lint, release and production HTML setup/confinement/teardown pass"
+  ],
+  "indexd_binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+  "indexd_resource_evidence": ".hermes/evidence/index-progress-rate-current/ACCEPTANCE.json",
+  "indexd_resource_scope": "Single private-copy comparison: reconciliation CPU 17.94 to 16.44 seconds, sampled RSS 46.8 to 51.8 MB; wall time did not improve. Active-scan shutdown 0.619s preserves the saved generation. Startup FTS regeneration remains open. No new personal-service idle claim.",
+  "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
+  "hosted_source_evidence": {
+    "source": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+    "run_id": 40248932019,
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40248932019",
+    "linux_job": 121336355944,
+    "linux_conclusion": "success",
+    "linux_steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Checkout",
+        "conclusion": "success"
+      },
+      {
+        "name": "Setup Rust",
+        "conclusion": "success"
+      },
+      {
+        "name": "Cache Rust build",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install Linux system dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare Linux process isolation",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install Windows test dependencies",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Cargo check",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare production Linux HTML sandbox",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify production HTML pixels and executable mapping policy",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check Windows Move ownership before workspace suite",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Check Windows Office contracts before workspace suite",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Check Windows native preview boundary before workspace suite",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Cargo test",
+        "conclusion": "success"
+      },
+      {
+        "name": "Cargo clippy",
+        "conclusion": "success"
+      },
+      {
+        "name": "Release build",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare release-build artifact",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload release-build artifact",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload Windows native boundary failure diagnostics",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Retire production Linux HTML integration",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload Linux HTML sandbox evidence",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Cache Rust build",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Checkout",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ],
+    "benchmark_conclusion": "success",
+    "windows_status": "in_progress",
+    "scope": "Complete Linux source checks only; Windows native job retains its separate status and package acceptance is independently recorded"
+  },
+  "html_os_policy_limit": "The hosted OS permits unconfined profile changes when its separate restriction is 0; no prevention of an OS-authorized transition or global sysctl change is claimed.",
+  "scope": "Exact package contents, software X11 Dark/List100 and Light/Miller100, unchanged read-only VCF and direct packaged HTML rendering. No new broad operation/appearance matrix, fresh distro lifecycle, Office/HTML main-GUI, physical desktop, Windows, signing or final owner acceptance. Earlier receipts retain their own hashes and scopes.",
+  "personal_setup": "Optional personal HTML helper installation remains owner setup; no administrator prompt or root installation was attempted.",
+  "cleanup": "Both private GUI profiles, app/daemon/display/bus/WM processes and completed staging/extraction are removed; prior root-owned cores remain on the explicit waiting list."
+}

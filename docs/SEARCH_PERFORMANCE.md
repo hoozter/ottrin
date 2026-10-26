@@ -413,7 +413,39 @@ All 239 existing search tests pass, including offline freshness, cancelled
 publication and watcher recovery; the additional Unix raw-filename query,
 update and deletion test passes separately. Strict search all-target lint
 passes for Linux and Windows GNU. All private cache copies and test processes
-are removed; the personal daemon remains unchanged. This source checkpoint
-is not yet a packaged or installed-service result. Exact binary/source hashes,
+were removed; the personal daemon stayed unchanged during those source-only
+runs. That initial checkpoint did not establish packaged or installed-service
+acceptance; the follow-up below records those separately. Exact binary/source hashes,
 phase samples, daemon measurements and teardown are recorded in
 `.hermes/evidence/index-fts-build-probe-current/ACCEPTANCE.json`.
+
+### Exact packaged and configured-service follow-up
+
+All four formats from clean `defc1ada` are delivered at their stable paths.
+AppImage SHA-256 is
+`04be7d4149ab1bce651177de2bb299172e024061a91420faac7fe8926de5f3e2`;
+its index ELF is
+`df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df`.
+An exact packaged private-cache run measured 15.03 startup CPU seconds and 9.50
+reconciliation CPU seconds (11.09 elapsed); saved results were available after
+roughly one second. Active-scan shutdown took 0.368 s and preserved the active
+cache. These are separate observations from the earlier source-binary replay.
+
+The enabled personal service now runs that exact daemon, with 121,056 entries,
+ready watching and no reported errors. Its observed startup minute used 23.2%
+of one core; a separate settled 60-second sample used 0.124% of one core. Settings,
+unit and launcher hashes are unchanged. Process RSS is about 40 MB; the service
+cgroup's roughly 410 MB includes reclaimable filesystem cache. No memory
+improvement is claimed. These are window-specific observations, not a universal
+CPU guarantee or final owner acceptance.
+
+The exact AppImage passes native icon validation, Dark/List100 and
+Light/Miller100 startup, read-only VCF Space-close/byte preservation, normal
+Close and saved preferences. All private profiles, displays, processes and
+package staging/extractions are removed. Full hosted Linux verification passes
+240 search, 419 platform, 205 preview and 402 UI tests, strict lint, release build
+and production HTML confinement/setup checks on `3ee5f7c9`; `defc1ada` changes
+only roadmap spacing and compressed logs. Latest Windows hosted verification
+remains in progress. Receipts:
+`.hermes/evidence/linux-filename-index-package-current/ACCEPTANCE.json` and
+`.hermes/evidence/personal-index-filename-current/ACCEPTANCE.json`.

@@ -1,0 +1,356 @@
+{
+  "status": "pass within four-format contents, scoped native AppImage and exact index-daemon acceptance",
+  "source_revision": "defc1adad368406d9a6276a469d8db274f3da3a2",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "b15a6fc71568d0bc7c2644ac36b1886c3eb3a02177a6f037abcd805b76c8e7a3",
+    "Ottrin-0.1.0-x86_64.AppImage": "04be7d4149ab1bce651177de2bb299172e024061a91420faac7fe8926de5f3e2",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "def2374979b53ecff7c6ed1f656d46ec8dd33f5f0ac00ab6ab931aa84d02501f",
+    "ottrin_0.1.0_amd64.deb": "0000a33dbedb2726ec1c799d3c93c0a3cdd3d8638e71a29d52d10b2810df5fa5"
+  },
+  "evidence": ".hermes/evidence/linux-filename-index-package-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks",
+    "Actual AppImage Dark/List100 startup; all 256x256 native ARGB icon pixels match assets/icon.png",
+    "Read-only VCF Quick Inspector closes with Space and preserves its original bytes",
+    "Actual AppImage Light/Miller100 launch displays columns, not a List table",
+    "Both normal product closes exit zero and preserve their theme/view preferences",
+    "Exact packaged index ELF passes the121056-item private-cache startup/reconciliation and active-scan cancellation checks",
+    "Direct packaged HTML helper renders expected pixels and refuses document script on the unrestricted host",
+    "Hosted complete Linux workspace, strict lint, release and production HTML setup/confinement/teardown pass"
+  ],
+  "indexd_binary_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "indexd_resource_evidence": ".hermes/evidence/linux-filename-index-package-current/packaged-daemon/PROFILE.json",
+  "indexd_resource_scope": "Exact packaged daemon in private121056-item cache copy: startup CPU15.03s, reconciliation CPU9.50s/elapsed11.09s, saved index ready in about1s. Prior exact daemon comparison CPU22.72s startup/16.48s reconcile. Active-scan shutdown0.368s preserves prior active generation and removes staging. Single comparison, no new personal-service idle or memory claim.",
+  "indexd_resource_details": {
+    "startup": {
+      "status": "pass",
+      "traced": false,
+      "binary_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+      "personal_daemon_pid_before": "2260994",
+      "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+      "fixture": "/var/tmp/.ottrin-index-profile-tquxs44m",
+      "cache_copy_seconds": 3.5165053009986877,
+      "elapsed_seconds": 26.176575532008428,
+      "daemon_cpu_seconds": 15.03,
+      "peer_pid": 2397334,
+      "peak_sampled_rss_bytes": 54894592,
+      "first_query_ready_seconds": 1.0060065889847465,
+      "first_scan_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 1,
+        "detail": "Indexing \u00b7 14041 files found",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995854,
+        "last_scan_completed_unix_secs": 1792995843,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 12.075216764002107,
+        "cpu_seconds": 6.26,
+        "rss_bytes": 53092352
+      },
+      "first_publication_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 2,
+        "detail": "Ready \u00b7 121056 indexed",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995854,
+        "last_scan_completed_unix_secs": 1792995864,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 22.13253339601215,
+        "cpu_seconds": 15.03,
+        "rss_bytes": 40665088
+      },
+      "reconcile_without_watch_setup": {
+        "elapsed_seconds": 11.086776545038447,
+        "cpu_seconds": 9.500000000000002,
+        "operation_ack": {
+          "type": "operation_complete",
+          "operation_id": 42
+        }
+      },
+      "fixture_removed": true,
+      "personal_daemon_pid_after": "2260994",
+      "sample_count": 26,
+      "raw_samples": "PROFILE-samples.json"
+    },
+    "active_scan_shutdown": {
+      "status": "pass",
+      "traced": false,
+      "binary_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+      "personal_daemon_pid_before": "2260994",
+      "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+      "fixture": "/var/tmp/.ottrin-index-profile-otwzuytl",
+      "cache_copy_seconds": 2.290146192011889,
+      "shutdown_during_scan_seconds": 0.3682869159965776,
+      "last_count_before_stop": 24576,
+      "cached_generation_preserved": true,
+      "elapsed_seconds": 8.415136899042409,
+      "daemon_cpu_seconds": 5.36,
+      "peer_pid": 2397427,
+      "peak_sampled_rss_bytes": 53092352,
+      "first_query_ready_seconds": 1.006245194002986,
+      "first_scan_sample": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "indexed_items": 121056,
+        "watcher_ready": true,
+        "snapshot_revision": 1,
+        "detail": "Indexing \u00b7 14228 files found",
+        "building_indexed_items": null,
+        "last_scan_started_unix_secs": 1792995889,
+        "last_scan_completed_unix_secs": 1792995883,
+        "last_scan_duration_ms": null,
+        "database_bytes": 872923136,
+        "wal_bytes": 4152,
+        "elapsed": 7.04037399002118,
+        "cpu_seconds": 4.61,
+        "rss_bytes": 51355648
+      },
+      "fixture_removed": true,
+      "personal_daemon_pid_after": "2260994",
+      "sample_count": 8,
+      "raw_samples": "PROFILE-samples.json"
+    }
+  },
+  "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
+  "hosted_source_evidence": {
+    "source_revision": "3ee5f7c9ab604482e0c78a0b132162c7a0941a14",
+    "run_id": 40278830449,
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40278830449",
+    "linux_job": 121427340999,
+    "linux_conclusion": "success",
+    "linux_steps": [
+      {
+        "completedAt": "2026-10-26T06:16:16Z",
+        "conclusion": "success",
+        "name": "Set up job",
+        "number": 1,
+        "startedAt": "2026-10-26T06:16:14Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:16:20Z",
+        "conclusion": "success",
+        "name": "Checkout",
+        "number": 2,
+        "startedAt": "2026-10-26T06:16:16Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:16:28Z",
+        "conclusion": "success",
+        "name": "Setup Rust",
+        "number": 3,
+        "startedAt": "2026-10-26T06:16:20Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:17:15Z",
+        "conclusion": "success",
+        "name": "Cache Rust build",
+        "number": 4,
+        "startedAt": "2026-10-26T06:16:28Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:19:19Z",
+        "conclusion": "success",
+        "name": "Install Linux system dependencies",
+        "number": 5,
+        "startedAt": "2026-10-26T06:17:15Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:19:19Z",
+        "conclusion": "success",
+        "name": "Prepare Linux process isolation",
+        "number": 6,
+        "startedAt": "2026-10-26T06:19:19Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:19:19Z",
+        "conclusion": "skipped",
+        "name": "Install Windows test dependencies",
+        "number": 7,
+        "startedAt": "2026-10-26T06:19:19Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:19:29Z",
+        "conclusion": "success",
+        "name": "Cargo check",
+        "number": 8,
+        "startedAt": "2026-10-26T06:19:19Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:20:22Z",
+        "conclusion": "success",
+        "name": "Prepare production Linux HTML sandbox",
+        "number": 9,
+        "startedAt": "2026-10-26T06:19:29Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:20:24Z",
+        "conclusion": "success",
+        "name": "Verify production HTML pixels and executable mapping policy",
+        "number": 10,
+        "startedAt": "2026-10-26T06:20:22Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:20:24Z",
+        "conclusion": "skipped",
+        "name": "Check Windows Move ownership before workspace suite",
+        "number": 11,
+        "startedAt": "2026-10-26T06:20:24Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:20:24Z",
+        "conclusion": "skipped",
+        "name": "Check Windows Office contracts before workspace suite",
+        "number": 12,
+        "startedAt": "2026-10-26T06:20:24Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:20:24Z",
+        "conclusion": "skipped",
+        "name": "Check Windows native preview boundary before workspace suite",
+        "number": 13,
+        "startedAt": "2026-10-26T06:20:24Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:20:24Z",
+        "conclusion": "skipped",
+        "name": "Check Windows Move UI recovery before workspace suite",
+        "number": 14,
+        "startedAt": "2026-10-26T06:20:24Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:20:24Z",
+        "conclusion": "skipped",
+        "name": "Check Windows index transport before workspace suite",
+        "number": 15,
+        "startedAt": "2026-10-26T06:20:24Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:23:49Z",
+        "conclusion": "success",
+        "name": "Cargo test",
+        "number": 16,
+        "startedAt": "2026-10-26T06:20:24Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:24:02Z",
+        "conclusion": "success",
+        "name": "Cargo clippy",
+        "number": 17,
+        "startedAt": "2026-10-26T06:23:49Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:03Z",
+        "conclusion": "success",
+        "name": "Release build",
+        "number": 18,
+        "startedAt": "2026-10-26T06:24:02Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:03Z",
+        "conclusion": "success",
+        "name": "Prepare release-build artifact",
+        "number": 19,
+        "startedAt": "2026-10-26T06:26:03Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:06Z",
+        "conclusion": "success",
+        "name": "Upload release-build artifact",
+        "number": 20,
+        "startedAt": "2026-10-26T06:26:03Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:06Z",
+        "conclusion": "skipped",
+        "name": "Upload Windows native boundary failure diagnostics",
+        "number": 21,
+        "startedAt": "2026-10-26T06:26:06Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:07Z",
+        "conclusion": "success",
+        "name": "Retire production Linux HTML integration",
+        "number": 22,
+        "startedAt": "2026-10-26T06:26:06Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:08Z",
+        "conclusion": "success",
+        "name": "Upload Linux HTML sandbox evidence",
+        "number": 23,
+        "startedAt": "2026-10-26T06:26:07Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:08Z",
+        "conclusion": "success",
+        "name": "Post Cache Rust build",
+        "number": 45,
+        "startedAt": "2026-10-26T06:26:08Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:09Z",
+        "conclusion": "success",
+        "name": "Post Checkout",
+        "number": 46,
+        "startedAt": "2026-10-26T06:26:08Z",
+        "status": "completed"
+      },
+      {
+        "completedAt": "2026-10-26T06:26:09Z",
+        "conclusion": "success",
+        "name": "Complete job",
+        "number": 47,
+        "startedAt": "2026-10-26T06:26:09Z",
+        "status": "completed"
+      }
+    ],
+    "windows_scope": "Native full job still running; no success inferred",
+    "package_source_revision": "defc1adad368406d9a6276a469d8db274f3da3a2",
+    "package_source_difference": "Roadmap spacing and lossless compression of verification logs only; production Rust unchanged",
+    "raw_log": "hosted-linux-3ee.log.gz"
+  },
+  "html_os_policy_limit": "The hosted OS permits unconfined profile changes when its separate restriction is 0; no prevention of an OS-authorized transition or global sysctl change is claimed.",
+  "scope": "Exact package contents, software X11 Dark/List100 and Light/Miller100, unchanged read-only VCF and direct packaged HTML rendering. No new broad operation/appearance matrix, fresh distro lifecycle, Office/HTML main-GUI, physical desktop, Windows, signing or final owner acceptance. Earlier receipts retain their own hashes and scopes.",
+  "personal_setup": "Optional personal HTML helper installation remains owner setup; no administrator prompt or root installation was attempted.",
+  "cleanup": "All owned private profiles, processes, staging and extraction removed. Enabled personal service runs the exact delivered daemon; prior root-owned diagnostic cores remain on the explicit waiting list.",
+  "personal_service_evidence": ".hermes/evidence/personal-index-filename-current/ACCEPTANCE.json"
+}

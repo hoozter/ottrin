@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "before": "Linux debug deps27G/incremental9.6G; Windows debug deps28G/incremental24G;75-76GB available",
+  "after": "27G\ttarget/debug/deps\n9.6G\ttarget/debug/incremental\n28G\ttarget/x86_64-pc-windows-gnu/debug/deps\n24G\ttarget/x86_64-pc-windows-gnu/debug/incremental\n480K\t/home/campbell/Projects/Ottrin/.hermes/evidence/linux-filename-index-package-current\n",
+  "cleanup": "Task generated-cache copies, desktop profiles/displays/processes, staging/extraction, redundant sample JSONL and Python bytecode removed. Superseded four-format deliverables atomically replaced; compact receipts/frames and useful shared compiler caches retained."
+}

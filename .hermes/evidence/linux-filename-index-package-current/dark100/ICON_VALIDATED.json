@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "width": 256,
+  "height": 256,
+  "elements": 65538,
+  "argb_property_sha256": "dccc197d0ed8b8f8767f7670f9584301070a8604dedce0cd031ae40f290dc5df",
+  "scope": "All native ARGB pixels match assets/icon.png; Ottrin WM_CLASS; no physical taskbar acceptance",
+  "validation_correction": "Use explicit xprop length above default 250000 bytes to avoid truncating a 256x256 icon; prior failed size assertion was a reader limit"
+}

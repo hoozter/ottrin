@@ -1,0 +1,9 @@
+{
+  "path": "/var/tmp/.ottrin-index-profile-otwzuytl",
+  "unit": "ottrin-index-profile-2397418",
+  "purpose": "Disposable consistent generated-index copy for startup phase/syscall profiling",
+  "pending_consumer": "this bounded profile; all copies removed in finally",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "fixture_removed": true
+}

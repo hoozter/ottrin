@@ -1,0 +1,2 @@
+WM_CLASS(STRING) = "", "org.ottrin.Ottrin"
+_NET_WM_PID(CARDINAL) = 2397780

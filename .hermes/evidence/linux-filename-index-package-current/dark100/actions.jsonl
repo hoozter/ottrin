@@ -1,0 +1,7 @@
+{"time": 1792996008.9687996, "key": "ctrl+l"}
+{"time": 1792996009.3512712, "key": "Return"}
+{"time": 1792996010.001655, "navigate": "/var/tmp/.opqa-kb0l46vu/fixture/contact"}
+{"time": 1792996010.1511877, "click": [150, 115]}
+{"time": 1792996010.6150653, "key": "space"}
+{"time": 1792996011.3635986, "capture": "after-readonly-preview"}
+{"time": 1792996011.413802, "product_close_requested": true}

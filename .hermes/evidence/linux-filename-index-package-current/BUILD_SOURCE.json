@@ -1,0 +1,11 @@
+{
+  "source_revision": "defc1adad368406d9a6276a469d8db274f3da3a2",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-filename-index-stage",
+  "jobs": 1,
+  "pending_consumers": [],
+  "changes": "Bounded direct filename-FTS inserts; Windows Copy implementation delivered in preceding source cohort",
+  "public_deliverables": "unchanged until replacement acceptance passes",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted and promoted; task staging and extraction removed"
+}

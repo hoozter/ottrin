@@ -1,0 +1,151 @@
+{
+  "source": "defc1adad368406d9a6276a469d8db274f3da3a2",
+  "artifact_sha256": "04be7d4149ab1bce651177de2bb299172e024061a91420faac7fe8926de5f3e2",
+  "theme": "Light",
+  "scale": "1",
+  "view_mode": "Miller",
+  "normal_app_exit": true,
+  "profile": "/var/tmp/.opqa-ltz7ekao",
+  "persisted_config": {
+    "theme": "Light",
+    "theme_preset": "Ottrin",
+    "custom_themes": [],
+    "active_custom_theme": null,
+    "default_view_mode": "Miller",
+    "colorize_file_types": true,
+    "colorize_folder_labels": false,
+    "list_columns": [
+      "Name",
+      "Kind",
+      "Size",
+      "Modified"
+    ],
+    "miller_view_scale": 1.0,
+    "list_view_scale": 1.0,
+    "grid_view_scale": 1.0,
+    "command_frame_always_visible": false,
+    "restore_session": false,
+    "show_hidden_files": false,
+    "list_show_thumbnails": false,
+    "grid_show_thumbnails": false,
+    "folder_list_thumbnails": {},
+    "folder_grid_thumbnails": {},
+    "target": {
+      "current": null,
+      "pinned": [],
+      "has_ever_set": false,
+      "recent": []
+    },
+    "last_session_dirs": [],
+    "bookmarks": [
+      [
+        "\ue88a",
+        "Home",
+        "/var/tmp/.opqa-ltz7ekao/home"
+      ],
+      [
+        "\ue1db",
+        "Root",
+        "/"
+      ]
+    ],
+    "search": {
+      "default_scope": "Global",
+      "include_hidden_system": false,
+      "include_roots": [
+        "/var/tmp/.opqa-ltz7ekao/fixture"
+      ],
+      "indexed_volumes": [],
+      "exclude_roots": [
+        "/proc",
+        "/sys",
+        "/dev",
+        "/run"
+      ],
+      "content_indexing_enabled": false,
+      "content_include_roots": [],
+      "content_exclude_roots": [],
+      "content_file_groups": [
+        "TextDocuments",
+        "SourceCode"
+      ],
+      "content_max_file_size_bytes": 524288,
+      "include_globs": [],
+      "exclude_globs": [
+        "*.swp",
+        "*.swo",
+        "*.tmp",
+        "*~",
+        ".git/**",
+        "**/.git/**",
+        ".svn/**",
+        "**/.svn/**",
+        ".hg/**",
+        "**/.hg/**",
+        "node_modules/**",
+        "**/node_modules/**",
+        "target/**",
+        "**/target/**",
+        "__pycache__/**",
+        "**/__pycache__/**",
+        "*.pyc",
+        "*.pyo",
+        ".Trash/**",
+        ".Trash-*/**"
+      ],
+      "default_sort": "Relevance",
+      "result_limit": 500,
+      "refresh_interval_hours": 0,
+      "use_system_locate": false,
+      "manage_locate_db": false,
+      "locate_update_hours": 6
+    },
+    "search_setup_completed": true,
+    "folder_column_widths": {},
+    "miller_column_width_mode": "Fixed",
+    "smart_panel_width": 420.0,
+    "window_size": [
+      1100.0,
+      800.0
+    ],
+    "thumbnail_cache_max_mb": 512,
+    "installed_office_previews_enabled": true,
+    "graphics_renderer": "Automatic",
+    "graphics_compatibility_notice_seen": true
+  },
+  "final_fixture_sha256": {
+    "source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb",
+    "long/zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename zz very long selected filename .txt": "714aba0c608d00df28f7133705a978892fb588fdb0536f41476e428a7b3aba9b",
+    "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92"
+  },
+  "status": "closed",
+  "daemon_cleanup": {
+    "pid": 2398149,
+    "peer_uid": 1000,
+    "pidfd_exit_observed": true
+  },
+  "owned_processes_reaped": [
+    {
+      "pid": 2398093,
+      "exit": 0
+    },
+    {
+      "pid": 2398096,
+      "exit": 0
+    },
+    {
+      "pid": 2398097,
+      "exit": 15
+    },
+    {
+      "pid": 2398145,
+      "exit": 0
+    }
+  ],
+  "additional_owned_children_stopped": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 5
+  },
+  "owned_portal_mounts_unmounted": [],
+  "profile_removed": true
+}

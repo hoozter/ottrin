@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "artifact_sha256": "04be7d4149ab1bce651177de2bb299172e024061a91420faac7fe8926de5f3e2",
+  "source_revision": "defc1adad368406d9a6276a469d8db274f3da3a2",
+  "observation": "Assistant inspected initial.png: actual Light theme, Miller columns and source file preview, scale1; normal Close exited0 and saved Light/Miller",
+  "frames": [
+    "initial.png",
+    "light-miller-before-close.png"
+  ],
+  "scope": "Owned software X11 display; no physical desktop or broad theme-editor acceptance"
+}

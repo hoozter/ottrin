@@ -1,0 +1,60 @@
+{
+  "status": "pass",
+  "traced": false,
+  "binary_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "personal_daemon_pid_before": "2260994",
+  "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+  "fixture": "/var/tmp/.ottrin-index-profile-tquxs44m",
+  "cache_copy_seconds": 3.5165053009986877,
+  "elapsed_seconds": 26.176575532008428,
+  "daemon_cpu_seconds": 15.03,
+  "peer_pid": 2397334,
+  "peak_sampled_rss_bytes": 54894592,
+  "first_query_ready_seconds": 1.0060065889847465,
+  "first_scan_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 1,
+    "detail": "Indexing \u00b7 14041 files found",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792995854,
+    "last_scan_completed_unix_secs": 1792995843,
+    "last_scan_duration_ms": null,
+    "database_bytes": 872923136,
+    "wal_bytes": 4152,
+    "elapsed": 12.075216764002107,
+    "cpu_seconds": 6.26,
+    "rss_bytes": 53092352
+  },
+  "first_publication_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 2,
+    "detail": "Ready \u00b7 121056 indexed",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792995854,
+    "last_scan_completed_unix_secs": 1792995864,
+    "last_scan_duration_ms": null,
+    "database_bytes": 872923136,
+    "wal_bytes": 4152,
+    "elapsed": 22.13253339601215,
+    "cpu_seconds": 15.03,
+    "rss_bytes": 40665088
+  },
+  "reconcile_without_watch_setup": {
+    "elapsed_seconds": 11.086776545038447,
+    "cpu_seconds": 9.500000000000002,
+    "operation_ack": {
+      "type": "operation_complete",
+      "operation_id": 42
+    }
+  },
+  "fixture_removed": true,
+  "personal_daemon_pid_after": "2260994",
+  "sample_count": 26,
+  "raw_samples": "PROFILE-samples.json"
+}
