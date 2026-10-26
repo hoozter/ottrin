@@ -1,0 +1,41 @@
+{
+  "scope": "Same-configuration superseded finalized sessions only; no Cargo/rustc consumers, both compiler lock styles acquired; newest session and all other configurations retained",
+  "removed": [
+    {
+      "removed": "target/debug/incremental/ottrin_preview-0x7djcdxgye5b/s-hnjqbwetbu-15y2y67-4ough66yl1wx8kp0ztpe9g3e6",
+      "current_replacement": "target/debug/incremental/ottrin_preview-0x7djcdxgye5b/s-hnk08gjkmg-1eyhpz5-7ivzr02pqg432bawrotrx85m0",
+      "logical_bytes": 202889867
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnjx1wpm4p-1edwc0o-9pupcdqkxszront6n9ii6ry0l",
+      "current_replacement": "target/debug/incremental/ottrin_ui-16oqn01qw0izd/s-hnk0bnmrbv-0leuyc0-9a550k4t1vcc8vmw5xsf4eq8o",
+      "logical_bytes": 39380492
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-01qmn8oi03wig/s-hnjqc59dop-0r4vq8y-80nnpfjwizti1bwgti6xte0c3",
+      "current_replacement": "target/debug/incremental/ottrin_ui-01qmn8oi03wig/s-hnk09aryax-1jwdam4-djyhn1rrkv4cz3huu1r3okic2",
+      "logical_bytes": 137776923
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnjx1vben4-0zelhq5-9ezw47ezxi21rtzz6b68bda73",
+      "current_replacement": "target/debug/incremental/ottrin_platform-3irto4pgedwys/s-hnk0blji4b-1jh6t9t-drs0utivlknc89y7dyz8l2ok1",
+      "logical_bytes": 28194695
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnjx1wpmr5-19zfcea-8mb8dtznq61qpj9ne5u3w8ave",
+      "current_replacement": "target/debug/incremental/ottrin_ui-1ge69zvmhylla/s-hnk0bnmsxd-17j8lem-cghufg0fofoxc32t8iu7t8wqg",
+      "logical_bytes": 48073564
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_preview-09bgazd8jbw2v/s-hnjx1qsap0-0ttdiaq-bwm58wodequz7mlnyc1jmm8dn",
+      "current_replacement": "target/debug/incremental/ottrin_preview-09bgazd8jbw2v/s-hnk0bfvao0-1hkkz09-7xy0c3ilaiegrc3iq6y962pwu",
+      "logical_bytes": 30813333
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_platform-3gakknta2rnwt/s-hnjqbvdui7-1kg52zf-31c4iwv8dk5ucca272vevid7m",
+      "current_replacement": "target/debug/incremental/ottrin_platform-3gakknta2rnwt/s-hnk08cbtpn-17ig49y-bboveq5r1rw8j6zs7mvbi36qb",
+      "logical_bytes": 72395158
+    }
+  ],
+  "logical_bytes": 559524032
+}

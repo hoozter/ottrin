@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "binary_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+  "personal_daemon_pid_before": "2225008",
+  "scope": "Copied generated cache; same configured metadata roots; no content indexing; strace overhead is separate from ordinary startup performance",
+  "fixture": "/var/tmp/.ottrin-index-profile-zyr4xogd",
+  "cache_copy_seconds": 3.3951544539886527,
+  "error": "SystemExit(130)",
+  "fixture_removed": true,
+  "personal_daemon_pid_after": "2225008"
+}

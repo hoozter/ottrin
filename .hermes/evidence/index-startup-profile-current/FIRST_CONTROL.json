@@ -1,0 +1,6 @@
+{
+  "status": "rejected; not a real-size startup profile",
+  "reason": "Minimal AppConfig omitted required fields and fell back to an empty default index; never accepted as performance evidence",
+  "controller_error": "Readiness budget exhausted, then ownership guard incorrectly searched ExecStart rather than the explicitly set environment",
+  "teardown": "Private fixture removed; bounded transient unit expired and is collected; original personal daemon remains active. Producer corrected before rerun."
+}

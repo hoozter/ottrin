@@ -1,5 +1,5 @@
 {
-  "status": "Both native guest token scopes pass; hosted Server/MSVC acceptance pending",
+  "status": "Guest ordinary and elevated native fixtures pass; hosted Server/MSVC native fixtures pass; full Windows job still fails later UI checks",
   "base_revision": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
   "source_identity": {
     "source": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
@@ -53,5 +53,21 @@
   },
   "guest_final_state": "shut off",
   "shutdown_observation": "QGA disconnected during powerdown; libvirt independently confirms off",
-  "scope": "Actual current GNU Windows fixture execution, not full MSVC/server, current Windows package or LibreOffice GUI acceptance"
+  "scope": "Actual current GNU Windows fixture execution, not full MSVC/server, current Windows package or LibreOffice GUI acceptance",
+  "hosted": {
+    "run_id": 40242148948,
+    "source": "22068232ed354f62cc89cff9829e03589cb5d63b",
+    "native_cases": 10,
+    "native_failures": 0,
+    "platform_passed": 459,
+    "overall_windows_job": "failure",
+    "later_ui": {
+      "passed": 366,
+      "failed": 5,
+      "ignored": 4
+    },
+    "linux_job": "success",
+    "benchmark_job": "success",
+    "scope": "Hosted native boundary and earlier workspace crates only; no full Windows lint or package promotion"
+  }
 }

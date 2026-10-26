@@ -1,0 +1,57 @@
+{
+  "status": "pass",
+  "traced": false,
+  "binary_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+  "personal_daemon_pid_before": "2225008",
+  "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+  "fixture": "/var/tmp/.ottrin-index-profile-fmdhol55",
+  "cache_copy_seconds": 4.658083204005379,
+  "elapsed_seconds": 34.220433612004854,
+  "daemon_cpu_seconds": 21.64,
+  "peer_pid": 2233858,
+  "first_query_ready_seconds": 1.0050033060251735,
+  "first_scan_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 1,
+    "detail": "Indexing \u00b7 4095 files found",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792970946,
+    "last_scan_completed_unix_secs": 1792970943,
+    "last_scan_duration_ms": null,
+    "database_bytes": 873177088,
+    "wal_bytes": 4152,
+    "elapsed": 3.0154352170065977,
+    "cpu_seconds": 3.3
+  },
+  "first_publication_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 3,
+    "detail": "Ready \u00b7 121056 indexed",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792970946,
+    "last_scan_completed_unix_secs": 1792970973,
+    "last_scan_duration_ms": null,
+    "database_bytes": 873172992,
+    "wal_bytes": 24752,
+    "elapsed": 30.18042280402733,
+    "cpu_seconds": 21.63
+  },
+  "reconcile_without_watch_setup": {
+    "elapsed_seconds": 25.78129973099567,
+    "cpu_seconds": 18.689999999999998,
+    "operation_ack": {
+      "type": "operation_complete",
+      "operation_id": 42
+    }
+  },
+  "fixture_removed": true,
+  "personal_daemon_pid_after": "2225008",
+  "sample_count": 34,
+  "raw_samples": "PROFILE-samples.json"
+}

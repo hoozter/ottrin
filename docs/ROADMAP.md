@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-25
+Last updated: 2026-10-26
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -10,7 +10,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current checkpoint and next work
 
-Audited: 2026-10-25
+Audited: 2026-10-26
 
 This section and the current delivery table below define the working state.
 Subsequent checkpoint narratives are historical evidence: their “next”, “pending”,
@@ -202,20 +202,44 @@ Production Linux HTML repair is delivered and hosted source verification passes.
 The personal system helper remains optional setup in Settings → Services; it has
 not been installed on the personal machine during this QA.
 
-The Windows hosted native boundary still fails four fixtures. Read-only
-`d54e1933` diagnostics establish two causes: NUL opens are denied inside the
-runner's AppContainer, and its permanent strict-handle policy raises on the
-invalid-handle probe. The retained Win11 GNU baseline passes all ten cases under
-ordinary and linked elevated interactive tokens; that does not accept the hosted
-server/MSVC lane. Fixtures are being corrected to inherit already-admitted I/O
-and inspect the valid handle table with a positive control, preserving all
-containment, process, memory and teardown assertions. No test exclusion or
-production-policy relaxation is introduced. `windows-job-fixtures-current/`
-records the baseline and hosted diagnostics; the corrected fixtures now pass all ten cases under both guest tokens with strict-handle policy0x3 unchanged. Owned root/processes are removed and the retained guest is off. See `windows-job-fixtures-fixed-current/ACCEPTANCE.json`. Hosted Server/MSVC acceptance remains required.
+Hosted run `40242148948` on `22068232` now passes every native Windows
+sandbox fixture, all 459 platform tests and the preview/Office contract gates.
+The same ten sandbox cases also pass under ordinary and linked elevated guest
+tokens. No production mitigation was relaxed. The full Windows job remains
+**failed**: UI reports 366 passed, five failed and four ignored. Two failures
+exercise public Copy, which is still deliberately unavailable; three Move
+recovery failures report unavailable recovery directories. The three recovery tests now use the existing private-process/profile harness;
+their real filesystem/Undo assertions and production implementation are unchanged.
+Both ordinary and linked elevated guest tokens pass **369 UI tests, zero
+failures, four existing ignores**, with those two public-Copy tests explicitly
+filtered from this diagnostic run. Strict Linux/Windows GNU UI lint and seven
+Linux recovery-profile tests pass. A missing `rg` in the first guest fixture was
+corrected with the existing exact packaged provider; that failed control remains
+recorded. Actor-owned teardown removes private journals without changing ACL or
+machine policy. All owned fixtures/processes are removed and the guest is off.
+Receipt: `windows-ui-recovery-current/ACCEPTANCE.json`. Corrected hosted UI,
+full Windows workspace/lint and current-package acceptance remain open. Linux workspace,
+strict lint, release build and actual production HTML confinement/setup/teardown
+pass in this same hosted run; benchmark CI passes separately.
+
+A private online copy of the generated 121,056-item personal index has now been
+profiled without changing its live service or configuration. Cached queries were
+ready in about one second. Untraced startup used 21.64 CPU seconds and settled in
+34.22 seconds; a subsequent explicit reconciliation, excluding watcher setup,
+used 18.69 CPU seconds over 25.78 seconds. A separate traced run identifies full
+filename-FTS generation rebuilding and database I/O as significant work; its
+tracing overhead is not an ordinary performance result. These are baseline
+measurements, **not an optimization**. Staged generation currently promotes
+Reconcile to Rebuild. Any reduction must preserve offline-change detection,
+atomic publication, cancellation, complete query bindings and explicit repair.
+All copied databases, private runtime/profile directories and transient units are
+removed; the personal daemon remains running. Evidence:
+`index-startup-profile-current/PROFILE.json` and `traced-PROFILE.json`.
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Verify the corrected Windows native sandbox fixtures, then reach full
+1. Verify the recovery-test isolation on hosted MSVC, resolve public Windows
+   Copy workflow requirements, then reach full
    workspace/search/UI/lint acceptance on hosted MSVC. Current-candidate GUI and
    broader ordinary desktop acceptance remain separate. Linux `d54e1933` is
    delivered; hosted release publication/signing remains unaccepted.
@@ -279,17 +303,17 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `7d5eee59`. Its production content
-checks and targeted Dark100/List/icon/read-only VCF/normal-close acceptance are
-summarized above and in
-`.hermes/evidence/linux-sandbox-package-current/ACCEPTANCE.json`. The earlier
-`1b6e5138` Undo refusal/metadata refresh checks retain their original hashes. Earlier
-`fb6fbdf4` Copy/Move/Undo, same-inode replacement refusal, Dark100/Light150,
-VCF/icon and populated-index observations retain their original package hashes;
-the new cohort does not silently inherit broader GUI acceptance. All owned new
-GUI/build/extraction fixtures are removed. Exact privileged diagnostic-core
-cleanup remains on the waiting list. This is targeted package acceptance,
-not completion of Linux, Office/picker or Windows outcomes.
+The current Linux cohort is built from clean `d54e1933`. Its production
+content/runtime/helper-policy/font/source checks and targeted Dark100/List/icon,
+read-only VCF, Settings/Services and normal-close acceptance are summarized above
+and in `.hermes/evidence/linux-html-package-current/ACCEPTANCE.json`. Its exact
+release HTML helper also passes direct rendering on the unrestricted host;
+restricted-host production setup/confinement is separately accepted in hosted CI.
+Earlier operation, broader theme/scale and populated-index receipts retain their
+original package hashes and scopes. All owned current GUI/build/extraction
+fixtures are removed. Exact privileged diagnostic-core cleanup remains on the
+waiting list. This is targeted package acceptance, not completion of Linux,
+Office/picker or Windows outcomes.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
@@ -312,7 +336,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | All four `7d5eee59` formats pass current content checks; actual AppImage Dark/List/icon/read-only VCF/normal close passes. The actual configured index is enabled/running at the bounded CPU/RSS scope above. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
+| Linux | All four `d54e1933` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List/icon/read-only VCF/Settings/Services/normal close passes. The actual configured index is enabled/running at the bounded CPU/RSS scope above. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
 | Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Finish full corrected MSVC and current candidate GUI acceptance, then native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |

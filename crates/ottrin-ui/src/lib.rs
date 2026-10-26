@@ -31679,6 +31679,11 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_recovery_requires_captured_paths_and_real_drive_bindings() {
+        if private_move_activity_process(
+            "windows_move_recovery_requires_captured_paths_and_real_drive_bindings",
+        ) {
+            return;
+        }
         let mut app = OttrinApp::default();
         let unknown = FileCommand::RecoverRetainedMove {
             transaction_id: [0x7c; 16],
@@ -32027,6 +32032,10 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_undo_admission_tracks_renamed_parent_paths() {
+        if private_move_activity_process("windows_move_undo_admission_tracks_renamed_parent_paths")
+        {
+            return;
+        }
         assert_windows_move_undo_admission_tracks_renamed_parent_paths(false);
     }
 
@@ -32040,6 +32049,11 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_history_reconciles_exact_inverse_without_overriding_its_worker() {
+        if private_move_activity_process(
+            "windows_move_history_reconciles_exact_inverse_without_overriding_its_worker",
+        ) {
+            return;
+        }
         fn move_once(app: &mut OttrinApp, source: &Path, destination: &Path) -> u64 {
             assert!(
                 app.run_file_op_bound(
@@ -34457,8 +34471,8 @@ mod tests {
         }
     }
 
-    // These compare two real discovery snapshots. Other parallel tests create
-    // and retire journals, so each comparison needs its own process/state root.
+    // These use the real profile-wide recovery registry. Parallel tests create
+    // and retire journals, so each case needs its own process/state root.
     fn private_move_activity_process(test: &str) -> bool {
         const CHILD: &str = "OTTRIN_TEST_PRIVATE_MOVE_ACTIVITY";
         if std::env::var(CHILD).as_deref() == Ok(test) {
@@ -34474,10 +34488,14 @@ mod tests {
             }
         }
         let root = tempfile::tempdir().expect("private Activity profile");
+        let stdout = root.path().join("activity.stdout");
+        let stderr = root.path().join("activity.stderr");
         let mut command = std::process::Command::new(std::env::current_exe().unwrap());
         command
             .args(["--exact", &format!("tests::{test}"), "--nocapture"])
-            .env(CHILD, test);
+            .env(CHILD, test)
+            .stdout(std::fs::File::create(&stdout).expect("Activity output"))
+            .stderr(std::fs::File::create(&stderr).expect("Activity diagnostics"));
         for (key, name) in [
             ("HOME", "home"),
             ("USERPROFILE", "home"),
@@ -34496,9 +34514,19 @@ mod tests {
         let deadline = Instant::now() + Duration::from_secs(20);
         loop {
             if let Some(status) = child.0.try_wait().expect("poll private Activity test") {
+                let read_output = |path: &Path| {
+                    assert!(std::fs::metadata(path).unwrap().len() <= 1024 * 1024);
+                    std::fs::read_to_string(path).unwrap()
+                };
+                let output = read_output(&stdout);
+                let diagnostic = read_output(&stderr);
                 assert!(
                     status.success(),
-                    "private Activity test failed: {test}: {status}"
+                    "private Activity test failed: {test}: {status}\n{output}\n{diagnostic}"
+                );
+                assert!(
+                    output.contains("test result: ok. 1 passed; 0 failed; 0 ignored;"),
+                    "private Activity case did not execute: {test}\n{output}\n{diagnostic}"
                 );
                 return true;
             }

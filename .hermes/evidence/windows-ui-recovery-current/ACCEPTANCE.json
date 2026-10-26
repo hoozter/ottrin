@@ -1,0 +1,60 @@
+{
+  "status": "pass for scoped native UI; public Copy and hosted acceptance remain open",
+  "base_revision": "22068232ed354f62cc89cff9829e03589cb5d63b",
+  "test_source_sha256": "e78d63504ed20ee129997491bc9652bbf5d266ca4f6b6bf90c2ec53fe333f040",
+  "binary": {
+    "source": "22068232ed354f62cc89cff9829e03589cb5d63b",
+    "binary_sha256": "259aa65d89fa89f46ed031a055fb3ec4c9829327e71f8ece8655a719ec4c7c0e",
+    "scope": "GNU Windows UI recovery profile isolation candidate"
+  },
+  "ordinary": {
+    "tempEntries": 0,
+    "administrator": false,
+    "owner": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+    "exit": 0,
+    "phase": "interactive",
+    "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+  },
+  "elevated": {
+    "tempEntries": 0,
+    "administrator": true,
+    "owner": "S-1-5-32-544",
+    "exit": 0,
+    "phase": "elevated-interactive",
+    "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+  },
+  "per_token": {
+    "passed": 369,
+    "failed": 0,
+    "ignored": 4,
+    "filtered": 2,
+    "test_threads": 4
+  },
+  "filtered_cases": [
+    "clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict",
+    "clipboard_native_paste_event_starts_owned_file_operation"
+  ],
+  "linux_recovery_focus": {
+    "passed": 7,
+    "failed": 0
+  },
+  "lint": "Strict all-target UI lint passes for Linux and Windows GNU; formatting passes",
+  "change": "Three Windows Move recovery tests use existing process/profile isolation; test bodies and production behavior unchanged; private child harness requires exactly one executed passing test",
+  "first_control": "368 passed; one failed due missing rg provider. All three recovery tests passed. Exact existing packaged rg staged before both accepted repetitions. Initial SYSTEM cleanup refused private owner-only journals; ordinary owner removed only the owned generated fixture. Actor now tears down its private profile on every exit.",
+  "teardown": {
+    "originalProfilesPreserved": true,
+    "ownedProcesses": 0,
+    "ownedRootRemoved": true,
+    "disposableAccountRemoved": true,
+    "noLogonSettingsOrMachinePolicyChanges": true,
+    "status": "pass"
+  },
+  "guest_final_state": "shut off",
+  "shutdown_observation": "QGA disconnected during powerdown; libvirt independently confirms off",
+  "not_accepted": [
+    "Full Windows workspace/MSVC CI",
+    "Public Windows Copy",
+    "Rendered desktop or refreshed package acceptance",
+    "Index startup optimization"
+  ]
+}
