@@ -30,6 +30,17 @@ their named hashes. Test counts are scoped observations, not completion measures
   This is a scoped comparison; personal service observations are separate below.
   Source evidence: `index-fts-build-probe-current/ACCEPTANCE.json`.
   Exact delivery: `linux-filename-index-package-current/ACCEPTANCE.json`.
+- **Windows Copy Undo ancestor admission — source candidate:** one click now
+  resolves the current native locations before execution while retaining the
+  original completion identity. Stale plans still refuse direct execution;
+  replacement occupants at old names are preserved. The same admission worker
+  honors Stop Undo, retains partial-batch progress and refreshes failed recovery
+  observations. Native ordinary/elevated runs each pass375 regular UI tests,
+  four Copy session controls, one Move authority control and the29-case Copy
+  Activity recovery matrix. Linux402 UI regressions and strict Linux/Windows-GNU
+  UI/platform lint pass. Exact source and native receipts:
+  `windows-copy-undo-admission-current/`. This source is not yet delivered in a
+  package; the stable Linux and Windows cohorts below remain authoritative.
 - **Latest Windows source checkpoint:** public Copy/Paste now uses the existing
   native journaled transaction engine, retains single/batch Undo receipts and
   completed-item counts, and exposes Stop Copy with an explicit Stopped status.
@@ -75,7 +86,14 @@ their named hashes. Test counts are scoped observations, not completion measures
   Ottrin does not change it. No fresh distro or personal helper installation
   is claimed by this source acceptance. Packaged `defc1ada` differs only in
   roadmap spacing and compressed verification logs; production code is identical.
-  Windows source verification for this latest run remains in progress.
+  The Windows job finished with 221 search passes and one failure in a
+  process-wide authentication handle-count assertion during parallel tests;
+  platform tests and the preceding focused native checks passed. Its subsequent
+  lint/release stages did not run. This is not an all-platform green run. The
+  isolated test repair passes an exact-count positive-control probe and all222
+  native search tests under both ordinary/elevated tokens, with six existing
+  ignores and zero filters in the full suites. Evidence:
+  `windows-copy-undo-admission-current/`; full hosted verification is pending.
 - **Actual personal index service:** restarted from the verified stable AppImage
   under the owner's existing authorization; remains enabled and running as
   **ottrin-indexd**, PID 2398670, with exact delivered daemon bytes. Its real
@@ -260,7 +278,7 @@ Production Linux HTML repair is delivered and hosted source verification passes.
 The personal system helper remains optional setup in Settings → Services; it has
 not been installed on the personal machine during this QA.
 
-Latest completed hosted run **`40268547285` on `bcd625ac`** passes all three
+Latest fully green hosted run **`40268547285` on `bcd625ac`** passes all three
 jobs: Linux, Windows and search performance. Both platform jobs pass complete
 workspace tests, strict all-target lint and release builds. Windows passes458
 platform,199 preview,16 Office-contract,10 native-sandbox,222 search and375 UI

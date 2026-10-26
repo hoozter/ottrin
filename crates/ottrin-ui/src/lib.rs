@@ -3587,9 +3587,9 @@ pub struct OttrinApp {
     path_move_undo_tx: Sender<PathMoveUndoResult>,
     path_move_undo_rx: Receiver<PathMoveUndoResult>,
     #[cfg(target_os = "windows")]
-    move_undo_preparation: Option<(
+    native_undo_preparation: Option<(
         u64,
-        RetainedActivityLoader<Result<ottrin_platform::WindowsMoveUndoPlan, String>>,
+        RetainedActivityLoader<Result<OperationUndoReceipt, String>>,
     )>,
     trash_tx: Sender<TrashLoadResponse>,
     trash_rx: Receiver<TrashLoadResponse>,
@@ -4543,7 +4543,7 @@ impl OttrinApp {
             path_move_undo_tx,
             path_move_undo_rx,
             #[cfg(target_os = "windows")]
-            move_undo_preparation: None,
+            native_undo_preparation: None,
             trash_tx,
             trash_rx,
             trash_empty_tx,
@@ -7249,39 +7249,37 @@ impl OttrinApp {
 
     fn run_path_move_undo(&mut self, op_id: u64) {
         #[cfg(target_os = "windows")]
-        if self
-            .operation_history
-            .iter()
-            .any(|row| row.id == op_id && row.undo_kind == Some(PathMoveUndoKind::Move))
-        {
-            self.prepare_native_move_undo(op_id);
+        if self.operation_history.iter().any(|row| {
+            row.id == op_id
+                && matches!(
+                    row.undo_kind,
+                    Some(PathMoveUndoKind::Move | PathMoveUndoKind::Copy)
+                )
+        }) {
+            self.prepare_native_undo(op_id);
             return;
         }
         self.start_path_move_undo(op_id);
     }
 
     #[cfg(target_os = "windows")]
-    fn prepare_native_move_undo(&mut self, op_id: u64) {
-        if self.copy_cleanup.running() || self.move_undo_preparation.is_some() {
+    fn prepare_native_undo(&mut self, op_id: u64) {
+        if self.copy_cleanup.running() || self.native_undo_preparation.is_some() {
             return;
         }
-        let Some(token) = self
+        let Some((token, kind)) = self
             .operation_history
             .iter()
             .find(|row| row.id == op_id)
             .filter(|row| {
                 path_move_undo_action_is_available(row.status, row.path_move_undo.as_ref())
             })
-            .and_then(|row| row.path_move_undo_token.clone())
+            .and_then(|row| Some((row.path_move_undo_token.clone()?, row.undo_kind())))
         else {
             return;
         };
         if self.path_move_undo_conflicts(op_id, &token.receipt) {
-            self.set_status_message(
-                path_move_undo_conflict_message(PathMoveUndoKind::Move),
-                false,
-                6,
-            );
+            self.set_status_message(path_move_undo_conflict_message(kind), false, 6);
             return;
         }
         self.reconcile_storage_location_availability(discover_storage_locations());
@@ -7292,10 +7290,6 @@ impl OttrinApp {
             self.finish_path_move_undo(op_id, Err(reason), false);
             return;
         }
-        let Some(receipt) = token.receipt.path_move_receipt().cloned() else {
-            self.finish_path_move_undo(op_id, Err("Move Undo has no native receipt".into()), true);
-            return;
-        };
         let tabs: Vec<_> = self
             .state
             .tabs
@@ -7303,7 +7297,7 @@ impl OttrinApp {
             .map(|tab| (tab.id, tab.current_dir.clone(), tab.view_mode))
             .collect();
         let mut presentation_directories = Vec::new();
-        for (id, directory, mode) in tabs {
+        for (id, directory, mode) in tabs.into_iter().filter(|_| kind == PathMoveUndoKind::Move) {
             presentation_directories.push(directory);
             if mode == ViewMode::Miller {
                 presentation_directories.extend(
@@ -7316,11 +7310,50 @@ impl OttrinApp {
         }
         presentation_directories.sort_unstable();
         presentation_directories.dedup();
+        let cancellation = (kind == PathMoveUndoKind::Copy).then(|| self.copy_work.start(op_id));
         let mut loader = RetainedActivityLoader::spawn_with(move || {
-            ottrin_platform::WindowsMoveUndoPlan::capture(&receipt, &presentation_directories)
-                .map_err(|e| e.to_string())
+            if kind == PathMoveUndoKind::Move {
+                let receipt = token
+                    .receipt
+                    .path_move_receipt()
+                    .ok_or_else(|| "Move Undo has no native receipt".to_owned())?;
+                return ottrin_platform::WindowsMoveUndoPlan::capture(
+                    receipt,
+                    &presentation_directories,
+                )
+                .map(OperationUndoReceipt::WindowsMove)
+                .map_err(|error| error.to_string());
+            }
+            let cancelled = cancellation
+                .as_ref()
+                .expect("Copy admission owns its Stop flag");
+            let guard = ottrin_platform::NativeIoCancellation::start(cancelled.clone())
+                .map_err(|error| error.to_string())?;
+            let mut progress = |_| {
+                if cancelled.load(Ordering::Acquire) {
+                    Err(PlatformError::Io(
+                        "Copy Undo stopped; retained data is preserved for retry.".into(),
+                    ))
+                } else {
+                    Ok(())
+                }
+            };
+            let result = copy_activity_work::refresh_undo_receipt(&token.receipt, &mut progress)
+                .and_then(|receipt| {
+                    progress(0)?;
+                    Ok(receipt)
+                })
+                .map_err(|error| error.to_string());
+            match guard.finish() {
+                Ok(()) => result,
+                Err(error) => Err(match result {
+                    Ok(_) => error.to_string(),
+                    Err(operation) => format!("{operation}; {error}"),
+                }),
+            }
         });
         if let Err(error) = loader.request() {
+            self.copy_work.finish(op_id);
             self.finish_path_move_undo(op_id, Err(error.into()), true);
             return;
         }
@@ -7329,19 +7362,29 @@ impl OttrinApp {
             .find(|row| row.id == op_id)
             .unwrap()
             .path_move_undo = Some(PathMoveUndoState::UndoQueued);
-        self.move_undo_preparation = Some((op_id, loader));
+        self.native_undo_preparation = Some((op_id, loader));
     }
 
     #[cfg(target_os = "windows")]
-    fn poll_native_move_undo_preparation(&mut self) {
+    fn poll_native_undo_preparation(&mut self) {
         let Some(result) = self
-            .move_undo_preparation
+            .native_undo_preparation
             .as_mut()
             .and_then(|(_, loader)| loader.poll())
         else {
             return;
         };
-        let (id, _) = self.move_undo_preparation.take().unwrap();
+        let (id, _) = self.native_undo_preparation.take().unwrap();
+        let stopped = self.copy_work.stopping(id);
+        self.copy_work.finish(id);
+        if stopped {
+            self.finish_path_move_undo(
+                id,
+                Err("Copy Undo stopped; retained data is preserved for retry.".into()),
+                true,
+            );
+            return;
+        }
         let plan = match result.map_err(str::to_owned).and_then(|r| r) {
             Ok(plan) => plan,
             Err(error) => {
@@ -7365,8 +7408,9 @@ impl OttrinApp {
             self.finish_path_move_undo(id, Err(error), false);
             return;
         }
+        let paths = plan.operation_paths();
         let bindings = match capture_required_storage_bindings(
-            plan.paths().iter().map(|path| (path.as_path(), true)),
+            paths.iter().map(|path| (path.path.as_path(), true)),
             &self.known_storage_locations,
         ) {
             Ok(bindings) => bindings,
@@ -7385,7 +7429,7 @@ impl OttrinApp {
         let Some(token) = row.path_move_undo_token.as_mut() else {
             return;
         };
-        token.receipt = OperationUndoReceipt::WindowsMove(plan);
+        token.receipt = plan;
         token.storage_bindings = bindings;
         row.path_move_undo = Some(PathMoveUndoState::Available);
         self.start_path_move_undo(id);
@@ -7596,7 +7640,7 @@ impl OttrinApp {
 
     fn poll_path_move_undo_results(&mut self) {
         #[cfg(target_os = "windows")]
-        self.poll_native_move_undo_preparation();
+        self.poll_native_undo_preparation();
         while let Ok(result) = self.path_move_undo_rx.try_recv() {
             #[cfg(target_os = "windows")]
             self.copy_work.finish(result.op_id);
@@ -7611,34 +7655,7 @@ impl OttrinApp {
             {
                 token.receipt = OperationUndoReceipt::CopyBatch(progress);
             }
-            let copy_undo = self
-                .operation_history
-                .iter()
-                .find(|record| record.id == result.op_id)
-                .is_some_and(|record| record.undo_kind == Some(PathMoveUndoKind::Copy));
-            let undo_failed = result.result.is_err();
-            let unblocks_copy = !undo_failed
-                && self
-                    .operation_history
-                    .iter()
-                    .find(|record| record.id == result.op_id)
-                    .map(copy_receipt_transaction_ids)
-                    .is_some_and(|completed| {
-                        self.operation_history.iter().any(|record| {
-                            record.retained_copy.as_ref().is_some_and(|owner| {
-                                owner.blocked_by.iter().any(|id| completed.contains(id))
-                            })
-                        })
-                    });
             self.finish_path_move_undo(result.op_id, result.result, result.retryable);
-            if copy_undo
-                && (undo_failed
-                    || unblocks_copy
-                    || self.retained_copy_activity_loader.pending
-                    || self.pending_retained_copy_activity.is_some())
-            {
-                self.refresh_retained_copy_activity();
-            }
             if stopped_copy
                 && let Some(record) = self
                     .operation_history
@@ -7653,6 +7670,33 @@ impl OttrinApp {
     }
 
     fn finish_path_move_undo(&mut self, op_id: u64, result: Result<(), String>, retryable: bool) {
+        let copy_undo = self
+            .operation_history
+            .iter()
+            .find(|record| record.id == op_id)
+            .is_some_and(|record| record.undo_kind == Some(PathMoveUndoKind::Copy));
+        let undo_failed = result.is_err();
+        let unblocks_copy = !undo_failed
+            && self
+                .operation_history
+                .iter()
+                .find(|record| record.id == op_id)
+                .map(copy_receipt_transaction_ids)
+                .is_some_and(|completed| {
+                    self.operation_history.iter().any(|record| {
+                        record.retained_copy.as_ref().is_some_and(|owner| {
+                            owner.blocked_by.iter().any(|id| completed.contains(id))
+                        })
+                    })
+                });
+        if copy_undo
+            && (undo_failed
+                || unblocks_copy
+                || self.retained_copy_activity_loader.pending
+                || self.pending_retained_copy_activity.is_some())
+        {
+            self.refresh_retained_copy_activity();
+        }
         #[cfg(target_os = "windows")]
         if self.operation_history.iter().any(|record| {
             record.id == op_id
@@ -15669,7 +15713,7 @@ impl OttrinApp {
                             let checking = self.copy_cleanup.running() || (record.retained_copy.as_ref().is_some_and(|owner| owner.restored)
                                 && self.retained_copy_activity_loader.pending);
                             #[cfg(target_os = "windows")]
-                            let checking = checking || (kind == PathMoveUndoKind::Move && self.move_undo_preparation.is_some());
+                            let checking = checking || self.native_undo_preparation.is_some();
                             if ui.add_enabled(!checking, egui::Button::new(button_label).themed(&c))
                                 .on_disabled_hover_text("Wait for the current check or recovery to finish.")
                                 .on_hover_text(hover_text)
@@ -15705,14 +15749,14 @@ impl OttrinApp {
                                 }
                                 (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Copy) => {
                                     #[cfg(target_os = "windows")]
-                                    let label = if self.copy_work.stopping(record.id) { "Stopping Copy Undo…" } else { "Undoing copy…" };
+                                    let label = if self.copy_work.stopping(record.id) { "Stopping Copy Undo…" } else if self.native_undo_preparation.as_ref().is_some_and(|(id, _)| *id == record.id) { "Checking files and drives…" } else { "Undoing copy…" };
                                     #[cfg(not(target_os = "windows"))]
                                     let label = "Undoing copy…";
                                     (label, c.accent_dim)
                                 }
                                 #[cfg(target_os = "windows")]
                                 (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Move)
-                                    if self.move_undo_preparation.as_ref().is_some_and(|(id, _)| *id == record.id) => {
+                                    if self.native_undo_preparation.as_ref().is_some_and(|(id, _)| *id == record.id) => {
                                     ("Checking files and drives…", c.accent_dim)
                                 }
                                 (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Move) => {
@@ -24176,7 +24220,7 @@ impl eframe::App for OttrinApp {
         }
 
         #[cfg(target_os = "windows")]
-        if self.move_undo_preparation.is_some() || self.move_cleanup_preparation.is_some() {
+        if self.native_undo_preparation.is_some() || self.move_cleanup_preparation.is_some() {
             // Requests can originate while drawing Activity above; keep idle
             // polling alive after that first request without a game-loop rate.
             ctx.request_repaint_after(Duration::from_millis(250));
@@ -26656,12 +26700,12 @@ fn format_search_duration(duration_ms: u64) -> String {
 
 #[cfg(test)]
 mod tests {
-    fn wait_for_move_undo_preparation(app: &mut OttrinApp) {
+    fn wait_for_native_undo_preparation(app: &mut OttrinApp) {
         #[cfg(target_os = "windows")]
         {
             let deadline = Instant::now() + Duration::from_secs(10);
-            while app.move_undo_preparation.is_some() {
-                app.poll_native_move_undo_preparation();
+            while app.native_undo_preparation.is_some() {
+                app.poll_native_undo_preparation();
                 assert!(Instant::now() < deadline, "Undo admission stayed pending");
                 std::thread::sleep(Duration::from_millis(1));
             }
@@ -27264,6 +27308,9 @@ mod tests {
             let central_before = std::fs::read(&central).unwrap();
             let data = actual.join("copy/nested/file");
             let mut blocked = case.strip_prefix("undo-blocked-").map(|target| {
+                // Native receipts claim canonical spellings. Resolve this before
+                // the oplock; alias equivalence is not lexical queue authority.
+                let claim = std::fs::canonicalize(&data).unwrap();
                 let payload_before = std::fs::read(&data).unwrap();
                 let lock = crate::test_oplock::Oplock::request(match target {
                     "central" => &central,
@@ -27272,10 +27319,10 @@ mod tests {
                     _ => panic!("Unknown owned oplock target"),
                 })
                 .unwrap();
-                (lock, payload_before)
+                (lock, payload_before, claim)
             });
             click_undo(&mut app, &ctx, case == "pending");
-            if let Some((lock, payload_before)) = &mut blocked {
+            if let Some((lock, payload_before, claim)) = &mut blocked {
                 let broken = lock.wait_break();
                 std::thread::sleep(Duration::from_millis(100));
                 app.poll_path_move_undo_results();
@@ -27284,7 +27331,7 @@ mod tests {
                     Some(PathMoveUndoState::UndoQueued)
                 );
                 let owns_paths = app
-                    .activity_operation_conflict(u64::MAX, &[OperationPath::write(data.clone())]);
+                    .activity_operation_conflict(u64::MAX, &[OperationPath::write(claim.clone())]);
                 if pending {
                     click_activity_action(&mut app, &ctx, "Stop Undo");
                 }
@@ -27327,30 +27374,8 @@ mod tests {
                 assert_eq!(std::fs::read(journal).unwrap(), before);
             } else {
                 if case == "moved" {
-                    assert!(matches!(
-                        app.operation_history[0].path_move_undo,
-                        Some(PathMoveUndoState::Available)
-                    ));
-                    assert!(
-                        app.operation_history[0]
-                            .path_move_undo_token
-                            .as_ref()
-                            .unwrap()
-                            .receipt
-                            .after_path()
-                            .ends_with(Path::new("moved/copy"))
-                    );
-                    assert_eq!(
-                        std::fs::read(
-                            actual
-                                .join(journal.parent().unwrap().file_name().unwrap())
-                                .join("journal")
-                        )
-                        .unwrap(),
-                        before
-                    );
-                    click_undo(&mut app, &ctx, false);
-                    wait(&mut app);
+                    // One admitted click must target the moved native parent,
+                    // preserving the unrelated occupant of its former pathname.
                     assert_eq!(
                         std::fs::read(destination.join("copy")).unwrap(),
                         b"unrelated new occupant"
@@ -29517,7 +29542,7 @@ mod tests {
                 assert_eq!(std::fs::read(&existing).unwrap(), b"clipboard fixture");
                 let id = app.operation_history.front().unwrap().id;
                 app.run_path_move_undo(id);
-                wait_for_move_undo_preparation(&mut app);
+                wait_for_native_undo_preparation(&mut app);
                 let result = app
                     .path_move_undo_rx
                     .recv_timeout(Duration::from_secs(5))
@@ -30935,9 +30960,9 @@ mod tests {
 
         app.run_path_move_undo(op_id);
 
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         assert!(matches!(
             app.operation_history
                 .front()
@@ -31018,7 +31043,7 @@ mod tests {
 
         app.run_path_move_undo(op_id);
 
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31126,7 +31151,7 @@ mod tests {
         use std::os::unix::fs::PermissionsExt;
         std::fs::set_permissions(&recovery_root, std::fs::Permissions::from_mode(0o500)).unwrap();
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31141,7 +31166,7 @@ mod tests {
 
         std::fs::set_permissions(&recovery_root, std::fs::Permissions::from_mode(0o700)).unwrap();
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31200,7 +31225,7 @@ mod tests {
         ));
         let op_id = record.id;
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31272,7 +31297,7 @@ mod tests {
         app.clear_finished_activity();
         assert_eq!(app.operation_history.len(), 2);
         app.run_path_move_undo(copy_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(3))
@@ -31391,7 +31416,7 @@ mod tests {
         std::fs::rename(destination.join("a"), &saved_a).unwrap();
         std::fs::write(destination.join("a"), "later replacement").unwrap();
         app.run_path_move_undo(id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(3))
@@ -31431,7 +31456,7 @@ mod tests {
         .unwrap();
         std::fs::rename(saved_a, destination.join("a")).unwrap();
         app.run_path_move_undo(id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(3))
@@ -31501,7 +31526,7 @@ mod tests {
         ));
         let op_id = record.id;
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31576,7 +31601,7 @@ mod tests {
         });
         app.result_repaint.bind(&undo_ctx);
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         assert_eq!(
             undo_wake_rx.recv_timeout(Duration::from_secs(2)).unwrap(),
             Duration::ZERO
@@ -31630,7 +31655,7 @@ mod tests {
         ));
         let op_id = record.id;
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31682,7 +31707,7 @@ mod tests {
         ));
         let op_id = record.id;
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31735,7 +31760,7 @@ mod tests {
             ));
             let op_id = record.id;
             app.run_path_move_undo(op_id);
-            wait_for_move_undo_preparation(&mut app);
+            wait_for_native_undo_preparation(&mut app);
             let result = app
                 .path_move_undo_rx
                 .recv_timeout(Duration::from_secs(2))
@@ -31818,7 +31843,7 @@ mod tests {
         ));
         let op_id = record.id;
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -31899,7 +31924,7 @@ mod tests {
         let op_id = record.id;
         std::fs::write(&source, "later occupant").unwrap();
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let refusal = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(5))
@@ -31931,7 +31956,7 @@ mod tests {
         let parked = source_dir.join("parked-occupant.txt");
         std::fs::rename(&source, &parked).unwrap();
         app.run_path_move_undo(op_id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let completion = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(5))
@@ -32466,14 +32491,14 @@ mod tests {
             let listing_before = app.tab_ui[&tab_id].main.request_id;
             app.run_path_move_undo(id);
             assert!(
-                app.move_undo_preparation.is_some(),
+                app.native_undo_preparation.is_some(),
                 "admission runs off the UI thread"
             );
             assert!(
                 app.path_move_undo_rx.try_recv().is_err(),
                 "no inverse before captured admission"
             );
-            wait_for_move_undo_preparation(&mut app);
+            wait_for_native_undo_preparation(&mut app);
             let record = app
                 .operation_history
                 .iter()
@@ -32661,7 +32686,7 @@ mod tests {
         };
         std::fs::write(&source, b"later occupant").unwrap();
         app.run_path_move_undo(first);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let refused = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(10))
@@ -32697,7 +32722,7 @@ mod tests {
             .expect("real discovered drive binding");
         binding.stable_identity = Some("different-volume-observation".into());
         app.run_path_move_undo(first);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         assert!(
             matches!(
                 app.operation_history
@@ -32766,7 +32791,7 @@ mod tests {
             "reused names do not adopt old completion"
         );
         app.run_path_move_undo(second);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let completed = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(10))
@@ -33146,7 +33171,7 @@ mod tests {
 
         app.run_path_move_undo(op_id);
 
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -34259,7 +34284,7 @@ mod tests {
 
         app.run_path_move_undo(op_id);
 
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         for _ in 0..100 {
             app.poll_path_move_undo_results();
             if app
@@ -34583,7 +34608,7 @@ mod tests {
         assert_eq!(app.operation_history.len(), 1);
         let id = app.operation_history[0].id;
         app.run_path_move_undo(id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let deadline = Instant::now() + Duration::from_secs(5);
         while matches!(
             app.operation_history[0].path_move_undo,
@@ -34749,7 +34774,7 @@ mod tests {
         let id = record.id;
         // Exercise the same asynchronous inverse path used by the Activity button.
         app.run_path_move_undo(id);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let deadline = Instant::now() + Duration::from_secs(5);
         while matches!(
             app.operation_history[0].path_move_undo,
@@ -34926,7 +34951,7 @@ mod tests {
             .unwrap()
             .id;
         app.run_path_move_undo(newest);
-        wait_for_move_undo_preparation(&mut app);
+        wait_for_native_undo_preparation(&mut app);
         let deadline = Instant::now() + Duration::from_secs(5);
         loop {
             app.poll_path_move_undo_results();

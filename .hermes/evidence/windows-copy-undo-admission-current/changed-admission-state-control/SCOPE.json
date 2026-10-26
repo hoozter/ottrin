@@ -1,0 +1,6 @@
+{
+  "status": "Rejected source candidate; changed-data Activity availability regression",
+  "observed": "Ordinary native375 UI,4 Copy receipt controls and1 Move authority test pass. The29-case recovery matrix stops on the changed-data state assertion before its subsequent byte/journal assertions, which remain unaccepted until rerun. All owned guest roots/processes removed, original profiles preserved and guest off.",
+  "fix_direction": "Schedule retained Copy re-observation in the authoritative Undo completion handler, covering admission failures as well as mutation-worker failures. Do not weaken the negative assertion.",
+  "source_patch_base": "c965b59705143585e03c44075a23f543dbe4f9ca"
+}

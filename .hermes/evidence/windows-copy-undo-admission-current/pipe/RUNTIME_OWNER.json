@@ -1,0 +1,33 @@
+{
+  "nonce": "23f59b8a-dfa5-4624-8be2-6e114af198ae",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "focused_identity_probe": false,
+  "source": {
+    "base_revision": "c965b59705143585e03c44075a23f543dbe4f9ca",
+    "working_tree": [
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal.rs",
+      " M crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs",
+      " M crates/ottrin-platform/src/lib.rs",
+      " M crates/ottrin-search/src/windows_identity.rs",
+      " M crates/ottrin-ui/src/copy_activity_work.rs",
+      " M crates/ottrin-ui/src/lib.rs",
+      "?? AGENTS.md"
+    ],
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "773f6ab0a0f42647136d9f1e65b245e65656fb798c697e17880b0f808782f109",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "799d91674dad785bf4b5f0a97bb65f6f6d621e229ce0ca944a08d68079975089",
+      "crates/ottrin-platform/src/lib.rs": "6591e862c3cf8eb9f4008bfb3b3be975aa73637037a2272a72a95c8aa2ca2cff",
+      "crates/ottrin-search/src/windows_identity.rs": "4d8f980e6ad34db419f558c3b087a703e08aad5b5ec7f21eb812957269b8a99a",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/lib.rs": "d4f06994a798baa20b547a6a618fc707a4a7d6318e89b385ee6c29a73024c5eb"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

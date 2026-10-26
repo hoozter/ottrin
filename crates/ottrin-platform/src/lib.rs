@@ -516,6 +516,16 @@ impl TrashUndoReceipt {
 
 impl PathMoveUndoReceipt {
     #[cfg(target_os = "windows")]
+    pub fn refresh_windows_copy_undo(
+        &self,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        self.windows_copy_plan()
+            .ok_or_else(|| PlatformError::Io("Copy Undo has no native receipt".into()))?
+            .refreshed_session_receipt(self, progress)
+    }
+
+    #[cfg(target_os = "windows")]
     fn windows_copy_plan(&self) -> Option<&RetainedCopyUndoPlan> {
         match self.windows_undo.as_ref()? {
             WindowsPathUndo::Copy(plan) => Some(plan),

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "obsolete_finalized_sessions_removed": 37,
+  "logical_bytes_removed": 3698714178,
+  "newest_finalized_per_crate_configuration_preserved": true,
+  "no_cargo_or_rustc_consumers": true,
+  "all_obsolete_locks_exclusively_held_before_removal": true,
+  "plan": "INCREMENTAL_CLEANUP_PLAN.json"
+}

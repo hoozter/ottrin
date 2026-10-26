@@ -4864,6 +4864,93 @@ mod tests {
         }
     }
     #[test]
+    fn windows_native_copy_session_refresh_resolves_moved_parent_without_adopting_old_path() {
+        use crate::PlatformOps;
+        for original in [None, Some(false), Some(true)] {
+            let root = tempfile::tempdir().unwrap();
+            fixture(root.path());
+            let old_parent = root.path().join("destination");
+            let moved = root.path().join("moved");
+            let target = old_parent.join("copy");
+            if let Some(directory) = original {
+                if directory {
+                    std::fs::create_dir(&target).unwrap();
+                    std::fs::write(target.join("old"), b"old data").unwrap();
+                } else {
+                    std::fs::write(&target, b"old data").unwrap();
+                }
+            }
+            let parent = owner(&old_parent);
+            let central = owner(&root.path().join("central"));
+            let admission = if original.is_some() {
+                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
+                    .unwrap()
+            } else {
+                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+            };
+            let receipt = DurableStage::execute_with_receipt(
+                &source(&root.path().join("source")),
+                &parent,
+                &central,
+                &admission,
+                OsStr::new("source"),
+                100,
+                |_| Ok(()),
+            )
+            .unwrap();
+            drop((parent, central, admission));
+            std::fs::rename(&old_parent, &moved).unwrap();
+            std::fs::create_dir(&old_parent).unwrap();
+            std::fs::write(old_parent.join("copy"), b"unrelated occupant").unwrap();
+            assert!(
+                crate::DefaultPlatform
+                    .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                    .is_err(),
+                "execution must not implicitly rebind an old admission"
+            );
+            assert!(
+                receipt
+                    .refresh_windows_copy_undo(|_| Err(io("owned cancellation")))
+                    .is_err()
+            );
+            assert_eq!(
+                std::fs::read(moved.join("copy/nested/file")).unwrap(),
+                b"original data"
+            );
+            let current = receipt.refresh_windows_copy_undo(|_| Ok(())).unwrap();
+            assert!(current.after_path().ends_with(Path::new("moved/copy")));
+            assert_eq!(current.copy_transaction_id(), receipt.copy_transaction_id());
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&current, &mut |_| Ok(()))
+                .unwrap();
+            assert_eq!(
+                std::fs::read(old_parent.join("copy")).unwrap(),
+                b"unrelated occupant"
+            );
+            assert_eq!(
+                std::fs::read(root.path().join("source/nested/file")).unwrap(),
+                b"original data"
+            );
+            assert_eq!(
+                std::fs::read(current.before_path().join("nested/file")).unwrap(),
+                b"original data"
+            );
+            match original {
+                None => assert!(!moved.join("copy").exists()),
+                Some(directory) => assert_eq!(
+                    std::fs::read(if directory {
+                        moved.join("copy/old")
+                    } else {
+                        moved.join("copy")
+                    })
+                    .unwrap(),
+                    b"old data"
+                ),
+            }
+        }
+    }
+
+    #[test]
     fn windows_native_copy_session_receipt_rejects_missing_authority_and_changed_publications() {
         use crate::PlatformOps;
         let root = tempfile::tempdir().unwrap();
@@ -4897,6 +4984,14 @@ mod tests {
             crate::DefaultPlatform
                 .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
                 .is_err()
+        );
+        assert!(
+            receipt
+                .refresh_windows_copy_undo(|_| Ok(()))
+                .and_then(|current| crate::DefaultPlatform
+                    .undo_copy_with_receipt(&current, &mut |_| Ok(())))
+                .is_err(),
+            "refresh cannot authorize externally changed copied data"
         );
         assert_eq!(std::fs::read(published).unwrap(), b"external data");
         assert!(!receipt.before_path().exists());

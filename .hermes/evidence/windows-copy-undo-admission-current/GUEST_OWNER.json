@@ -1,0 +1,6 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "original_state": "shut off",
+  "pending_consumer": "Native Copy Undo fresh-admission, first-click parent relocation, blocked-I/O Stop and full UI regression checks; preserve original profiles and return guest off"
+}

@@ -1,0 +1,6 @@
+{
+  "status": "Recovery matrix rejected at short-path scheduling assertion; no product acceptance inferred beyond passed cases",
+  "observed": "Ordinary375 UI,4 native Copy session controls and1 Move authority control pass. Matrix passes changed-data and first-click moved-parent cases, then fails undo-blocked-central on pending=true/conflict=false. Its later Stop/byte/journal assertions remain unaccepted. All owned roots/processes removed and guest off.",
+  "correction": "Precompute the canonical native claim before acquiring the oplock, following existing Move tests. Queue claims are lexical; arbitrary8.3-alias equivalence is not promised by this assertion. Retain real blocked-I/O Stop and exact journal/data assertions.",
+  "source_patch_base": "c965b59705143585e03c44075a23f543dbe4f9ca"
+}

@@ -1,0 +1,5 @@
+{
+  "status": "Isolated resource probe still fails before warm-up correction",
+  "observed": "Ordinary full search suite221 pass/1 fail,6 existing ignores. Isolated child ends73 handles versus72 before, while explicit held-handle +1/drop control passes. No full search acceptance inferred. Root/process/profile teardown succeeds; guest off.",
+  "next": "Warm the exact success/error/peer-handle sequence outside the repeated measurement, retain strict equality and the held-handle positive control; run focused probe before another full suite."
+}

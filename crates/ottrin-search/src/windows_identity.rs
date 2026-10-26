@@ -238,6 +238,40 @@ mod tests {
 
     #[test]
     fn windows_daemon_identity_releases_process_and_token_handles() {
+        const CHILD: &str = "OTTRIN_TEST_IDENTITY_HANDLE_CHILD";
+        const TEST: &str =
+            "windows_identity::tests::windows_daemon_identity_releases_process_and_token_handles";
+        const COMPLETED: i32 = 64;
+        if std::env::var(CHILD).as_deref() != Ok("1") {
+            // A process-wide count cannot be compared while the other tests
+            // independently open pipes, process handles and filesystem watches.
+            // Reuse the process owner's kill-and-reap guard on timeout/unwind.
+            let mut child = crate::ContentProviderChild(
+                std::process::Command::new(std::env::current_exe().unwrap())
+                    .args(["--exact", TEST, "--nocapture", "--test-threads=1"])
+                    .env(CHILD, "1")
+                    .stdout(std::process::Stdio::null())
+                    .spawn()
+                    .expect("isolated handle probe"),
+            );
+            let deadline = std::time::Instant::now() + Duration::from_secs(30);
+            let status = loop {
+                if let Some(status) = child.0.try_wait().unwrap() {
+                    break status;
+                }
+                assert!(
+                    std::time::Instant::now() < deadline,
+                    "handle probe timed out"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            };
+            // A misspelled filter running zero tests must not produce a pass.
+            assert_eq!(status.code(), Some(COMPLETED));
+            return;
+        }
+        let arguments: Vec<_> = std::env::args().collect();
+        assert!(arguments.windows(2).any(|pair| pair == ["--exact", TEST]));
+        assert!(arguments.iter().any(|arg| arg == "--test-threads=1"));
         fn handles() -> u32 {
             let mut count = 0;
             // SAFETY: valid process pseudo-handle and writable output counter.
@@ -248,11 +282,34 @@ mod tests {
             count
         }
         let identity = IndexDaemonIdentity::for_current_user().unwrap();
-        let before = handles();
-        for _ in 0..100 {
+        let foreign = IndexDaemonIdentity {
+            sid: "S-1-0-0".into(),
+            ..identity.clone()
+        };
+        let probe = || {
             identity.verify_process(std::process::id()).unwrap();
+            assert!(foreign.verify_process(std::process::id()).is_err());
+            assert!(identity.verify_process(0).is_err());
+            drop(identity.open_process(std::process::id()).unwrap());
+            assert!(foreign.open_process(std::process::id()).is_err());
+        };
+        // Initialize the same success and error paths before counting repeated
+        // use, including Windows' first system-error message formatting.
+        probe();
+        let before = handles();
+        let held = open_process(std::process::id(), PROCESS_QUERY_LIMITED_INFORMATION).unwrap();
+        assert_eq!(
+            handles(),
+            before + 1,
+            "counter must detect an owned live handle"
+        );
+        drop(held);
+        assert_eq!(handles(), before);
+        for _ in 0..100 {
+            probe();
         }
         assert_eq!(handles(), before);
+        std::process::exit(COMPLETED);
     }
 
     #[test]

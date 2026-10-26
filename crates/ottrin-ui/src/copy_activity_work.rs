@@ -37,6 +37,38 @@ impl Drop for CopyWorkUi {
     }
 }
 
+#[cfg(target_os = "windows")]
+pub(super) fn refresh_undo_receipt(
+    receipt: &OperationUndoReceipt,
+    progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<OperationUndoReceipt, PlatformError> {
+    progress(0)?;
+    Ok(match receipt {
+        OperationUndoReceipt::PathMove(receipt) => {
+            OperationUndoReceipt::PathMove(receipt.refresh_windows_copy_undo(progress)?)
+        }
+        OperationUndoReceipt::CopyBatch(batch) => OperationUndoReceipt::CopyBatch(match batch {
+            CopyBatchUndoReceipt::Retained(plan) => {
+                CopyBatchUndoReceipt::Retained(Box::new(plan.refreshed_with_progress(progress)?))
+            }
+            CopyBatchUndoReceipt::Session {
+                receipts,
+                remaining,
+            } => {
+                let mut receipts = receipts.clone();
+                for receipt in receipts.iter_mut().take(*remaining) {
+                    *receipt = receipt.refresh_windows_copy_undo(&mut *progress)?;
+                }
+                CopyBatchUndoReceipt::Session {
+                    receipts,
+                    remaining: *remaining,
+                }
+            }
+        }),
+        _ => return Err(PlatformError::Io("Copy Undo has no native receipt".into())),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

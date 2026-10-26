@@ -343,7 +343,7 @@
         "status": "completed"
       }
     ],
-    "windows_scope": "Native full job still running; no success inferred",
+    "windows_scope": "Final Windows job failed one process-global handle-count test (221 search passes,1 failure,6 existing ignores). Linux and benchmark passed. Later isolated repair remains separate; no Windows acceptance inferred.",
     "package_source_revision": "defc1adad368406d9a6276a469d8db274f3da3a2",
     "package_source_difference": "Roadmap spacing and lossless compression of verification logs only; production Rust unchanged",
     "raw_log": "hosted-linux-3ee.log.gz"

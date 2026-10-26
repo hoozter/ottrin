@@ -164,6 +164,35 @@ pub struct RetainedCopyUndoPlan {
     observed_location: PathBuf,
 }
 impl RetainedCopyUndoPlan {
+    /// Resolve current native locations without changing the completion this
+    /// receipt authorizes. Execution still reopens and verifies every object.
+    pub fn refreshed_with_progress(
+        &self,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        let current = Self::admit(&self.registry, &self.binding.header.transaction, progress)?;
+        if current.binding.header != self.binding.header
+            || current.binding.completion_digest != self.binding.completion_digest
+        {
+            return Err(io("Copy completion changed; Undo refresh refused"));
+        }
+        Ok(current)
+    }
+
+    pub(crate) fn refreshed_session_receipt(
+        &self,
+        receipt: &crate::PathMoveUndoReceipt,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<crate::PathMoveUndoReceipt, PlatformError> {
+        let plan = self.refreshed_with_progress(progress)?;
+        let mut receipt = receipt.clone();
+        receipt.before_path = plan.retention.clone();
+        receipt.after_path = plan.publication.clone();
+        receipt.retained_displaced_path = plan.original.clone();
+        receipt.windows_undo = Some(crate::WindowsPathUndo::Copy(plan));
+        Ok(receipt)
+    }
+
     pub(crate) fn admit(
         root: &Path,
         transaction_id: &str,
