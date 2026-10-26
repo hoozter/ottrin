@@ -16,6 +16,8 @@ for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
     'python3 scripts/ci/linux-html-sandbox.py cleanup' \
     'cargo test -p ottrin-preview --test office_provider_contract -- --nocapture' \
     'cargo test -p ottrin-preview --test windows_job_native -- --nocapture' \
+    'cargo test -p ottrin-ui --lib windows_move_ -- --nocapture' \
+    'cargo test -p ottrin-search --lib windows_pipe_ -- --nocapture' \
     'windows_native_move_private_directory_admits_its_owned_policy_and_refuses_replaced_parent' \
     'windows_native_move_cleanup' \
     'windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_names'; do
@@ -24,6 +26,15 @@ for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
       exit 1
     fi
   done
+  if ! awk '
+    /cargo test -p ottrin-ui --lib windows_move_/ { ui = NR }
+    /cargo test -p ottrin-search --lib windows_pipe_/ { pipe = NR }
+    /cargo test --workspace/ { suite = NR }
+    END { exit !(ui > 0 && pipe > 0 && suite > ui && suite > pipe) }
+  ' <<<"$verify_job"; then
+    printf 'Windows Move UI and index transport preflights must precede the full workspace suite: %s\n' "$verification" >&2
+    exit 1
+  fi
   for dependency in bubblewrap dbus-user-session apparmor-profiles; do
     if ! grep -Eq "(^|[[:space:]])$dependency($|[[:space:]])" <<<"$verify_job"; then
       printf 'Linux verification omits isolation dependency: %s (%s)\n' "$dependency" "$verification" >&2

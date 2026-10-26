@@ -1,0 +1,20 @@
+{
+  "scope": "Retired the task-owned superseded UI-only test executable and its dep-info/fingerprint after current combined UI/platform/search replacement; historical native receipts keep their hashes, with no pending executable consumer. Newest configuration caches and unrelated executables retained.",
+  "replacement": "target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-41ca65cbf8a227a3.exe",
+  "no_cargo_or_rustc_consumers": true,
+  "old_executable_hard_links": 1,
+  "fuser_consumers": 0,
+  "removed": [
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-ebf8e9137cceb236.exe",
+      "bytes": 733157102,
+      "sha256": "742cddf13d895f9ac022ea7af91e6d2c9a00b678d919cc040c96df02caa25e65"
+    },
+    {
+      "path": "target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-ebf8e9137cceb236.d",
+      "bytes": 4301,
+      "sha256": "1c5a501b47f49e4989aaf1fc77de10c0fc10b41774406afdeadde5c2be03d7be"
+    }
+  ],
+  "removed_fingerprint": "target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-ebf8e9137cceb236"
+}

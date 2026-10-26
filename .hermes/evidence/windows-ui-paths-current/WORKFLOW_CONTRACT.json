@@ -1,0 +1,62 @@
+{
+  "valid_workflows": "pass",
+  "negative_cases": [
+    {
+      "workflow": "ci.yml",
+      "preflight": "Windows Move UI recovery",
+      "mutation": "omit",
+      "exit": 1,
+      "diagnostic": "Verification omits dependency-cache or native Windows preflight: cargo test -p ottrin-ui --lib windows_move_ -- --nocapture (/home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "preflight": "Windows Move UI recovery",
+      "mutation": "after-suite",
+      "exit": 1,
+      "diagnostic": "Windows Move UI and index transport preflights must precede the full workspace suite: /home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/ci.yml"
+    },
+    {
+      "workflow": "ci.yml",
+      "preflight": "Windows index transport",
+      "mutation": "omit",
+      "exit": 1,
+      "diagnostic": "Verification omits dependency-cache or native Windows preflight: cargo test -p ottrin-search --lib windows_pipe_ -- --nocapture (/home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/ci.yml)"
+    },
+    {
+      "workflow": "ci.yml",
+      "preflight": "Windows index transport",
+      "mutation": "after-suite",
+      "exit": 1,
+      "diagnostic": "Windows Move UI and index transport preflights must precede the full workspace suite: /home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/ci.yml"
+    },
+    {
+      "workflow": "release.yml",
+      "preflight": "Windows Move UI recovery",
+      "mutation": "omit",
+      "exit": 1,
+      "diagnostic": "Verification omits dependency-cache or native Windows preflight: cargo test -p ottrin-ui --lib windows_move_ -- --nocapture (/home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "preflight": "Windows Move UI recovery",
+      "mutation": "after-suite",
+      "exit": 1,
+      "diagnostic": "Windows Move UI and index transport preflights must precede the full workspace suite: /home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/release.yml"
+    },
+    {
+      "workflow": "release.yml",
+      "preflight": "Windows index transport",
+      "mutation": "omit",
+      "exit": 1,
+      "diagnostic": "Verification omits dependency-cache or native Windows preflight: cargo test -p ottrin-search --lib windows_pipe_ -- --nocapture (/home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/release.yml)"
+    },
+    {
+      "workflow": "release.yml",
+      "preflight": "Windows index transport",
+      "mutation": "after-suite",
+      "exit": 1,
+      "diagnostic": "Windows Move UI and index transport preflights must precede the full workspace suite: /home/campbell/Projects/Ottrin/.hermes/qa/workflow-paths-mshjjk7u/release.yml"
+    }
+  ],
+  "temporary_fixtures_removed": true
+}

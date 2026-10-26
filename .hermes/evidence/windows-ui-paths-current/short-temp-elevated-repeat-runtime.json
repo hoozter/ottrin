@@ -1,0 +1,19 @@
+{
+  "exit": 0,
+  "remainingTempEntries": [
+    {
+      "Name": "mwbqvh3j",
+      "Attributes": 16,
+      "Length": null
+    }
+  ],
+  "uiRemainingEntries": [],
+  "tempEntries": 1,
+  "phase": "short-temp-elevated-repeat-runtime",
+  "actorTempEntries": [
+    "mwbqvh3j"
+  ],
+  "owner": "S-1-5-32-544",
+  "administrator": true,
+  "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+}

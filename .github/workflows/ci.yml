@@ -91,6 +91,18 @@ jobs:
           cargo test -p ottrin-preview --test windows_job_native -- --nocapture 2>&1 | Tee-Object -FilePath windows-job-fixtures.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Check Windows Move UI recovery before workspace suite
+        if: runner.os == 'Windows'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: cargo test -p ottrin-ui --lib windows_move_ -- --nocapture
+
+      - name: Check Windows index transport before workspace suite
+        if: runner.os == 'Windows'
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: cargo test -p ottrin-search --lib windows_pipe_ -- --nocapture
+
       - name: Cargo test
         env:
           CARGO_BUILD_JOBS: 2

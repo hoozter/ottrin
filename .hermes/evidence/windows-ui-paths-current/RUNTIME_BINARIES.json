@@ -1,0 +1,12 @@
+{
+  "fixture-runtime.exe": {
+    "sha256": "09740fa647d44234e8b4b0b1e22238dcf6b042045f86ebc9d4cf63a3dff89b7e",
+    "raw_sha256": "47a1829dc5be1a86abb8c084ec832ee952355b90be6b252b820bdf05b9a6516a",
+    "source_date_epoch": 1792980611
+  },
+  "platform-runtime.exe": {
+    "sha256": "e1605a4dbebc50ee8c61323139a732130a98b0b09fa32c639045151e37e5cd6e",
+    "raw_sha256": "8fc01d9e8e0785f35d222b6c06d94d985b8a0e6c4699a62f8d5e1c78ef9789b1",
+    "source_date_epoch": 1792979071
+  }
+}

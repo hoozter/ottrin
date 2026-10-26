@@ -460,12 +460,11 @@ mod query_lifetime_tests {
             #[cfg(unix)]
             let client = SearchDaemonClient::new(root.join(format!("{mode}.sock")));
             #[cfg(target_os = "windows")]
-            let mut listener = crate::WindowsIndexPipeListener::bind(
-                crate::IndexDaemonIdentity::for_current_user().unwrap(),
-            )
-            .unwrap();
+            let identity = crate::IndexDaemonIdentity::isolated_for_test();
             #[cfg(target_os = "windows")]
-            let client = SearchDaemonClient::connect_default().unwrap();
+            let mut listener = crate::WindowsIndexPipeListener::bind(identity.clone()).unwrap();
+            #[cfg(target_os = "windows")]
+            let client = SearchDaemonClient { identity };
             let cancelled = AtomicBool::new(false);
             let shutdown = AtomicBool::new(false);
             let query = SearchQuery {

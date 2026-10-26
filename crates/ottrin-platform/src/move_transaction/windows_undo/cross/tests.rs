@@ -552,7 +552,7 @@ fn windows_native_cross_undo_admits_renamed_parents_and_refuses_stale_queue_plan
         for keep_both in [false, true] {
             let fixture = Fixture::new();
             let receipt = fixture.moved(kind, keep_both);
-            let stale = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+            let stale = crate::WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
             let before_parent = receipt.before_path().parent().unwrap();
             let after_parent = receipt.after_path().parent().unwrap();
             let current_before = before_parent.with_extension("renamed");
@@ -565,7 +565,7 @@ fn windows_native_cross_undo_admits_renamed_parents_and_refuses_stale_queue_plan
             std::fs::write(receipt.after_path(), b"foreign publication").unwrap();
             assert!(stale.execute().is_err());
             assert!(guard(&receipt).inverse.get().is_none());
-            let plan = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+            let plan = crate::WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
             for parent in [&current_before, &current_after] {
                 assert!(
                     plan.paths()
@@ -601,7 +601,7 @@ fn windows_native_cross_undo_admits_renamed_parents_and_refuses_stale_queue_plan
             );
             terminal_record(&receipt);
             // Once completion is durable, repeat Undo does not touch either namespace.
-            crate::WindowsMoveUndoPlan::capture(&receipt)
+            crate::WindowsMoveUndoPlan::capture(&receipt, &[])
                 .unwrap()
                 .execute()
                 .unwrap();

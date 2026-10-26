@@ -7285,8 +7285,29 @@ impl OttrinApp {
             self.finish_path_move_undo(op_id, Err("Move Undo has no native receipt".into()), true);
             return;
         };
+        let tabs: Vec<_> = self
+            .state
+            .tabs
+            .iter()
+            .map(|tab| (tab.id, tab.current_dir.clone(), tab.view_mode))
+            .collect();
+        let mut presentation_directories = Vec::new();
+        for (id, directory, mode) in tabs {
+            presentation_directories.push(directory);
+            if mode == ViewMode::Miller {
+                presentation_directories.extend(
+                    self.build_miller_model(id)
+                        .0
+                        .into_iter()
+                        .map(|column| column.dir),
+                );
+            }
+        }
+        presentation_directories.sort_unstable();
+        presentation_directories.dedup();
         let mut loader = RetainedActivityLoader::spawn_with(move || {
-            ottrin_platform::WindowsMoveUndoPlan::capture(&receipt).map_err(|e| e.to_string())
+            ottrin_platform::WindowsMoveUndoPlan::capture(&receipt, &presentation_directories)
+                .map_err(|e| e.to_string())
         });
         if let Err(error) = loader.request() {
             self.finish_path_move_undo(op_id, Err(error.into()), true);
@@ -31737,9 +31758,25 @@ mod tests {
                 .map(OperationPath::write)
                 .collect::<Vec<_>>()
         );
-        assert!(app.activity_paths_conflict(u64::MAX, &[(source.as_path(), source.as_path())]));
+        // Native admissions return canonical paths; queue claims compare lexical
+        // spellings, not filesystem aliases such as the runner's short TEMP path.
+        let source_claim = std::fs::canonicalize(&source_parent)
+            .unwrap()
+            .join("entry.txt");
         let target = destination.join("entry.txt");
-        assert!(app.activity_paths_conflict(u64::MAX, &[(target.as_path(), target.as_path())]));
+        let target_claim = std::fs::canonicalize(&target).unwrap();
+        assert!(
+            app.activity_paths_conflict(
+                u64::MAX,
+                &[(source_claim.as_path(), source_claim.as_path())]
+            ),
+            "requested {source_claim:?}; admitted {:?}",
+            record.operation_paths
+        );
+        assert!(app.activity_paths_conflict(
+            u64::MAX,
+            &[(target_claim.as_path(), target_claim.as_path())]
+        ));
         let result = app.op_rx.recv_timeout(Duration::from_secs(10)).unwrap();
         assert!(result.error.is_none(), "{:?}", result.error);
         app.op_tx.send(result).unwrap();
@@ -31748,7 +31785,10 @@ mod tests {
             app.operation_history.front().unwrap().status,
             OperationStatus::Completed
         );
-        assert!(!app.activity_paths_conflict(u64::MAX, &[(source.as_path(), source.as_path())]));
+        assert!(!app.activity_paths_conflict(
+            u64::MAX,
+            &[(source_claim.as_path(), source_claim.as_path())]
+        ));
         assert!(!source.exists(), "forward recovery does not start Undo");
         assert_eq!(std::fs::read(target).unwrap(), b"selected source");
         DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
@@ -31757,6 +31797,7 @@ mod tests {
             std::fs::read(destination.join("entry.txt")).unwrap(),
             b"displaced destination"
         );
+        wait_for_retained_move_activity(&mut app);
     }
 
     #[cfg(target_os = "windows")]
@@ -31891,7 +31932,10 @@ mod tests {
     #[cfg(target_os = "windows")]
     fn assert_windows_move_undo_admission_tracks_renamed_parent_paths(cross_volume: bool) {
         for replace in [false, true] {
-            let fixture = tempfile::tempdir().unwrap();
+            let fixture = tempfile::Builder::new()
+                .prefix("ottrin-parent-undo-ui-")
+                .tempdir()
+                .unwrap();
             let secondary = cross_volume.then(|| {
                 tempfile::Builder::new()
                     .prefix("ottrin-parent-undo-ui-")
@@ -31979,19 +32023,52 @@ mod tests {
                 plan.paths()
                     .contains(&std::fs::canonicalize(&current_after).unwrap())
             );
-            assert!(app.activity_paths_conflict(
-                u64::MAX,
-                &[(current_before.as_path(), current_before.as_path())]
-            ));
+            // Keep the visible directory spelling for the selection assertion
+            // below, but compare the same canonical claims native admission uses.
+            let current_before_claim = std::fs::canonicalize(&current_before).unwrap();
+            let before_claim = std::fs::canonicalize(&before).unwrap();
             assert!(
-                !app.activity_paths_conflict(u64::MAX, &[(before.as_path(), before.as_path())])
+                app.activity_paths_conflict(
+                    u64::MAX,
+                    &[(
+                        current_before_claim.as_path(),
+                        current_before_claim.as_path()
+                    )]
+                ),
+                "requested {current_before_claim:?}; admitted {:?}",
+                plan.paths()
             );
+            assert!(!app.activity_paths_conflict(
+                u64::MAX,
+                &[(before_claim.as_path(), before_claim.as_path())]
+            ));
             let result = app
                 .path_move_undo_rx
                 .recv_timeout(Duration::from_secs(10))
                 .unwrap();
             assert!(result.result.is_ok(), "{:?}", result.result);
             app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+            // Verify the actual refreshed rows, and finish background consumers
+            // before releasing the fixture they read on Windows.
+            let deadline = Instant::now() + Duration::from_secs(10);
+            loop {
+                app.poll_listing_results();
+                app.poll_retained_move_activity();
+                if !app.tab_ui[&tab_id].main.loading && !app.retained_move_activity_loader.pending {
+                    break;
+                }
+                assert!(Instant::now() < deadline, "Undo refresh did not settle");
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            assert!(app.tab_ui[&tab_id].main.error.is_none());
+            assert!(
+                app.tab_ui[&tab_id]
+                    .main
+                    .entries
+                    .iter()
+                    .any(|entry| { entry.path == current_before.join("entry") }),
+                "the restored entry is present in the refreshed visible listing"
+            );
             assert!(
                 app.tab_ui[&tab_id].main.request_id > listing_before,
                 "the restored folder listing refreshes"
@@ -32004,7 +32081,10 @@ mod tests {
             );
             assert!(!app.activity_paths_conflict(
                 u64::MAX,
-                &[(current_before.as_path(), current_before.as_path())]
+                &[(
+                    current_before_claim.as_path(),
+                    current_before_claim.as_path()
+                )]
             ));
             assert_eq!(
                 std::fs::read(current_before.join("entry")).unwrap(),

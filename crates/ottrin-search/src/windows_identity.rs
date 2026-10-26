@@ -22,13 +22,29 @@ use windows_sys::Win32::System::Threading::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IndexDaemonIdentity {
     sid: String,
+    #[cfg(test)]
+    test_endpoint: Option<u64>,
 }
 
 impl IndexDaemonIdentity {
     pub fn for_current_user() -> Result<Self, String> {
         Ok(Self {
             sid: process_user_sid(std::process::id())?,
+            #[cfg(test)]
+            test_endpoint: None,
         })
+    }
+
+    // Independent fixtures must not compete for the real per-user endpoint or
+    // connect to each other. Peer authentication still uses the actual token SID.
+    #[cfg(test)]
+    pub(crate) fn isolated_for_test() -> Self {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static NEXT: AtomicU64 = AtomicU64::new(1);
+        Self {
+            test_endpoint: Some(NEXT.fetch_add(1, Ordering::Relaxed)),
+            ..Self::for_current_user().expect("current test process identity")
+        }
     }
 
     pub fn user_sid(&self) -> &str {
@@ -36,6 +52,14 @@ impl IndexDaemonIdentity {
     }
 
     pub fn pipe_name(&self) -> String {
+        #[cfg(test)]
+        if let Some(endpoint) = self.test_endpoint {
+            return format!(
+                r"\\.\pipe\Ottrin.Index.{}.test-{}-{endpoint}",
+                self.sid,
+                std::process::id()
+            );
+        }
         format!(r"\\.\pipe\Ottrin.Index.{}", self.sid)
     }
 
@@ -202,6 +226,7 @@ mod tests {
         assert!(identity.verify_process(0).is_err());
         let foreign = IndexDaemonIdentity {
             sid: "S-1-0-0".to_string(),
+            ..identity.clone()
         };
         assert!(
             foreign

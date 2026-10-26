@@ -14,7 +14,10 @@ pub struct WindowsMoveUndoPlan {
 }
 impl WindowsMoveUndoPlan {
     /// Read-only and potentially involves old volumes; run off the UI thread.
-    pub fn capture(receipt: &PathMoveUndoReceipt) -> Result<Self, PlatformError> {
+    pub fn capture(
+        receipt: &PathMoveUndoReceipt,
+        presentation_directories: &[PathBuf],
+    ) -> Result<Self, PlatformError> {
         let Some(WindowsPathUndo::Move(guard)) = &receipt.windows_undo else {
             return Err(PlatformError::InvalidPathMoveUndoReceipt(
                 "Move has no native Undo binding".into(),
@@ -114,6 +117,59 @@ impl WindowsMoveUndoPlan {
                 pairs[0].1.clone(),
             ));
         }
+        // Directory identities, not UI labels, decide which visible spellings
+        // refer to an admitted parent. Keep the canonical queue/lease paths
+        // unchanged; extra pairs are only for refreshing visible listings.
+        let admitted_pairs = pairs.clone();
+        for visible in presentation_directories
+            .iter()
+            .filter(|path| path.is_absolute())
+        {
+            let Ok(named) = windows_fs::open_directory(
+                visible,
+                FILE_READ_ATTRIBUTES
+                    | windows_sys::Win32::Storage::FileSystem::FILE_TRAVERSE
+                    | SYNCHRONIZE,
+            ) else {
+                continue;
+            };
+            // An unrelated or inaccessible presentation is not needed to admit
+            // the actual, independently verified mutation directories.
+            let Ok(identity) = move_recovery::stable_identity_from_handle(&named) else {
+                continue;
+            };
+            let matches_parent = |path: &Path| {
+                captured.iter().any(|binding| {
+                    binding.identity == identity
+                        && path
+                            .parent()
+                            .is_some_and(|parent| parent == binding.path || parent == binding.label)
+                })
+            };
+            for (before, after) in &admitted_pairs {
+                let before_matches = matches_parent(before);
+                let after_matches = matches_parent(after);
+                if !before_matches && !after_matches {
+                    continue;
+                }
+                let visible = std::path::absolute(visible).map_err(io)?;
+                let presented = (
+                    if before_matches {
+                        visible.join(before.file_name().ok_or_else(|| stale(before))?)
+                    } else {
+                        before.clone()
+                    },
+                    if after_matches {
+                        visible.join(after.file_name().ok_or_else(|| stale(after))?)
+                    } else {
+                        after.clone()
+                    },
+                );
+                if !pairs.contains(&presented) {
+                    pairs.push(presented);
+                }
+            }
+        }
         directories.append(&mut captured);
         directories.sort_by(|a, b| a.path.cmp(&b.path));
         if directories
@@ -143,6 +199,8 @@ impl WindowsMoveUndoPlan {
     pub fn after_path(&self) -> &Path {
         &self.pairs[0].1
     }
+    /// Presentation labels, including verified visible aliases. Queue and
+    /// mutation authority always comes from `paths()` and the pinned bindings.
     pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         self.pairs
             .iter()

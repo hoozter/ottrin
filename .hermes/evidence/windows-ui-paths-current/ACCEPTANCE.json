@@ -1,0 +1,170 @@
+{
+  "status": "pass for named source/native scopes",
+  "base_revision": "db2c2d29d513da58c931cfd2d5af2cfb921d46bb",
+  "source_files": {
+    ".github/workflows/ci.yml": "0f27ca9e4e20a51a1eb34e10022a3de71e7eb747ffaa479217e0b152fddbcc65",
+    ".github/workflows/release.yml": "59ea48555e5cb36c858672e07def294218456e6184aeaf76af22ef97e7af7a27",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/cross/offline_tests.rs": "29587e4609e06c1f77632d8c37863d2d2e893b5d3895d85b5f3b7228356c8117",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained/tests.rs": "a1638753f4a1ec84870fb8d27a1f7ff13946b807359cff27a19b1d2eb3b00312",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/cross/tests.rs": "643501a3877eaa0f6468ac4c71b331a9e1ad2c7be63b06cbaea7c2ffdf607da2",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/plan.rs": "f02f4d1ea6d86560e9c89de086439663b074ddc26355024e8709cfd9021453c4",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/plan/tests.rs": "644d1410256bf102099d9fc9f27f38a5dbf58d859268cdb9fb082051734036a7",
+    "crates/ottrin-search/src/daemon_client.rs": "db2838ad509911a6766247e1eef3696d62b6cc2801f391077929d7e70c1209bc",
+    "crates/ottrin-search/src/windows_identity.rs": "96477f7d5fb7fc854ee71554f53af28dd163fff992c45f407e365fafff0eed7e",
+    "crates/ottrin-search/src/windows_pipe.rs": "cd83e8d64fbeb471bd9d85b50ce8290bc541d2597cdf0a77f2bc544f7558f23b",
+    "crates/ottrin-ui/src/lib.rs": "4106310403f49e61f681344bac11976f0d4c2e1ac96b6877539edf237c69aba5",
+    "packaging/tests/verify-release-workflow-dependencies.sh": "886a95219ff6e6c4f34cb1ca0ee3069ee78c63f8f4cf2d98042e6e5b1d36a6da"
+  },
+  "fix": "Windows Undo refreshes identity-verified visible parent aliases without changing canonical queue or mutation authority. Independent pipe fixtures use unique test-only endpoint names with unchanged token authentication.",
+  "scopes": {
+    "ui": {
+      "source": {
+        "base_revision": "db2c2d29d513da58c931cfd2d5af2cfb921d46bb",
+        "files": {
+          "crates/ottrin-ui/src/lib.rs": "4106310403f49e61f681344bac11976f0d4c2e1ac96b6877539edf237c69aba5",
+          "crates/ottrin-platform/src/move_transaction/windows_undo/plan.rs": "f02f4d1ea6d86560e9c89de086439663b074ddc26355024e8709cfd9021453c4",
+          "crates/ottrin-platform/src/move_transaction/windows_undo/plan/tests.rs": "644d1410256bf102099d9fc9f27f38a5dbf58d859268cdb9fb082051734036a7"
+        }
+      },
+      "binaries": {
+        "fixture-runtime.exe": {
+          "sha256": "09740fa647d44234e8b4b0b1e22238dcf6b042045f86ebc9d4cf63a3dff89b7e",
+          "raw_sha256": "47a1829dc5be1a86abb8c084ec832ee952355b90be6b252b820bdf05b9a6516a",
+          "source_date_epoch": 1792980611
+        },
+        "platform-runtime.exe": {
+          "sha256": "e1605a4dbebc50ee8c61323139a732130a98b0b09fa32c639045151e37e5cd6e",
+          "raw_sha256": "8fc01d9e8e0785f35d222b6c06d94d985b8a0e6c4699a62f8d5e1c78ef9789b1",
+          "source_date_epoch": 1792979071
+        }
+      },
+      "runs": [
+        {
+          "role": "ordinary",
+          "passed": 369,
+          "failed": 0,
+          "ignored": 4,
+          "filtered": 2,
+          "actor_created_temp_entries_before_suite": [],
+          "suite_leftovers": [],
+          "token_owner": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+          "native_authority_checks": 1
+        },
+        {
+          "role": "elevated",
+          "passed": 369,
+          "failed": 0,
+          "ignored": 4,
+          "filtered": 2,
+          "actor_created_temp_entries_before_suite": [
+            "paxr2dve"
+          ],
+          "suite_leftovers": [],
+          "token_owner": "S-1-5-32-544",
+          "native_authority_checks": 1
+        },
+        {
+          "role": "elevated-repeat",
+          "passed": 369,
+          "failed": 0,
+          "ignored": 4,
+          "filtered": 2,
+          "actor_created_temp_entries_before_suite": [
+            "mwbqvh3j"
+          ],
+          "suite_leftovers": [],
+          "token_owner": "S-1-5-32-544",
+          "native_authority_checks": 1
+        }
+      ],
+      "teardown": {
+        "ownedProcesses": 0,
+        "ownedRootRemoved": true,
+        "noGlobalPoliciesOrLogonSettingsChanged": true,
+        "originalProfilesPreserved": true
+      },
+      "scope": "GNU native Windows tests; no new application-package or physical-desktop acceptance"
+    },
+    "search": {
+      "source": {
+        "base_revision": "db2c2d29d513da58c931cfd2d5af2cfb921d46bb",
+        "files": {
+          "crates/ottrin-search/src/windows_pipe.rs": "cd83e8d64fbeb471bd9d85b50ce8290bc541d2597cdf0a77f2bc544f7558f23b",
+          "crates/ottrin-search/src/windows_identity.rs": "96477f7d5fb7fc854ee71554f53af28dd163fff992c45f407e365fafff0eed7e",
+          "crates/ottrin-search/src/daemon_client.rs": "db2838ad509911a6766247e1eef3696d62b6cc2801f391077929d7e70c1209bc"
+        }
+      },
+      "binaries": {
+        "fixture-runtime.exe": {
+          "sha256": "bcaa803990eb69d5c899d55a25fda063cb0d2c18f625cd568632d208103fe51e",
+          "raw_sha256": "c76ab1bcf021853c7e9f6301e45a32d1ebe5aa986c09a567e109e593dc471f74",
+          "source_date_epoch": 1792981209
+        }
+      },
+      "runs": [
+        {
+          "role": "ordinary",
+          "passed": 222,
+          "failed": 0,
+          "ignored": 6,
+          "filtered": 0,
+          "actor_created_temp_entries_before_suite": [],
+          "suite_leftovers": [],
+          "token_owner": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+          "native_authority_checks": 0
+        },
+        {
+          "role": "elevated",
+          "passed": 222,
+          "failed": 0,
+          "ignored": 6,
+          "filtered": 0,
+          "actor_created_temp_entries_before_suite": [
+            "hryjfhje"
+          ],
+          "suite_leftovers": [],
+          "token_owner": "S-1-5-32-544",
+          "native_authority_checks": 0
+        },
+        {
+          "role": "elevated-repeat",
+          "passed": 222,
+          "failed": 0,
+          "ignored": 6,
+          "filtered": 0,
+          "actor_created_temp_entries_before_suite": [
+            "ty135thc"
+          ],
+          "suite_leftovers": [],
+          "token_owner": "S-1-5-32-544",
+          "native_authority_checks": 0
+        }
+      ],
+      "teardown": {
+        "ownedProcesses": 0,
+        "ownedRootRemoved": true,
+        "noGlobalPoliciesOrLogonSettingsChanged": true,
+        "originalProfilesPreserved": true
+      },
+      "scope": "GNU native Windows tests; no new application-package or physical-desktop acceptance"
+    }
+  },
+  "lint": "Strict Windows GNU Clippy on UI/platform/search all targets passed; formatting and all three packaging workflow/preflight contracts passed.",
+  "workflow_preflight": "Both CI and release run Move UI and pipe checks before the full workspace suite. YAML/order and eight omission/order-negative cases passed. Full workspace commands and public Copy gate unchanged.",
+  "controls": "Original c44 native short-alias failures and assertion-only real refresh failure retained. First/second runtime controls passed functional checks but incorrectly attributed a PowerShell-created temp directory to the UI; a before/after baseline proves it predates UI execution. Every failed control also removed its owned root/processes and shut the guest down.",
+  "hosted_latest": {
+    "run": 40251466108,
+    "source": "db2c2d29d513da58c931cfd2d5af2cfb921d46bb",
+    "linux": "success",
+    "benchmark": "success",
+    "windows": "failed: 459 platform passed; preview/Office/native sandbox passed; search221 passed/1 pipe endpoint conflict failed/6 ignored. UI not reached. Corrected hosted MSVC remains pending."
+  },
+  "packages": "Unchanged: Linux source0b011e01; accepted internal Windows1777733f and unpromoted a230fa2c cohort keep their own exact scopes. New Windows source is not yet delivered in an application package.",
+  "open": [
+    "Corrected hosted MSVC",
+    "Public Windows Copy and complete Windows pipeline",
+    "Current Windows application package and actual GUI acceptance",
+    "Remaining roadmap outcomes and owner acceptance"
+  ],
+  "evidence_encoding": "JSON is normalized to LF/indentation; nonempty raw native stdout/stderr is stored losslessly as gzip. No test output was rewritten."
+}

@@ -1,0 +1,8 @@
+{
+  "base_revision": "db2c2d29d513da58c931cfd2d5af2cfb921d46bb",
+  "source_sha256": "72c6e2ad9b6c7df905675fbc9c5a7a5e47c43672c8d3ed23622640c35e8d28dc",
+  "raw_binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-ebf8e9137cceb236.exe",
+  "raw_binary_sha256": "742cddf13d895f9ac022ea7af91e6d2c9a00b678d919cc040c96df02caa25e65",
+  "source_date_epoch": 1792977176,
+  "scope": "Canonical scheduling assertions; raw visible short paths remain in navigation and selection assertions. Production path authority and alias scheduling semantics unchanged."
+}

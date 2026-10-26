@@ -403,7 +403,7 @@ fn windows_native_move_completion_offline_verify() {
                 );
                 plan.execute().unwrap();
             }
-            let native_undo = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+            let native_undo = crate::WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
             assert_eq!(
                 native_undo.paths(),
                 &[std::fs::canonicalize(root.join("state")).unwrap()]

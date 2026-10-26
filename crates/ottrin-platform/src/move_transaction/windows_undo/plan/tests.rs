@@ -80,14 +80,46 @@ fn windows_native_atomic_undo_admits_renamed_parents_and_refuses_a_stale_plan() 
         .execute_move_with_undo_receipt(&before.join("entry"), &after, ConflictAction::Skip)
         .unwrap();
     let receipt = receipt.unwrap();
-    let stale = WindowsMoveUndoPlan::capture(&receipt).unwrap();
+    let stale = WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
     let (current_before, current_after) = f.renamed();
     assert!(stale.execute().is_err());
     assert_eq!(
         std::fs::read(current_after.join("entry")).unwrap(),
         b"selected"
     );
-    let plan = WindowsMoveUndoPlan::capture(&receipt).unwrap();
+    let canonical = WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
+    let plan = WindowsMoveUndoPlan::capture(
+        &receipt,
+        &[
+            current_before.clone(),
+            current_after.clone(),
+            before.clone(),
+            after.clone(),
+        ],
+    )
+    .unwrap();
+    assert_eq!(
+        plan.paths(),
+        canonical.paths(),
+        "presentation does not change queue authority"
+    );
+    assert!(
+        plan.path_pairs()
+            .iter()
+            .any(|(path, _)| *path == current_before.join("entry"))
+    );
+    assert!(
+        plan.path_pairs()
+            .iter()
+            .any(|(_, path)| *path == current_after.join("entry"))
+    );
+    assert!(
+        plan.path_pairs().iter().all(|(source, destination)| {
+            source.parent() != Some(before.as_path())
+                && destination.parent() != Some(after.as_path())
+        }),
+        "recreated foreign directories never become presentation aliases"
+    );
     assert!(
         plan.paths()
             .contains(&std::fs::canonicalize(&current_before).unwrap())
@@ -124,10 +156,10 @@ fn windows_native_replace_undo_admits_current_parents_without_rebinding_foreign_
             )
             .unwrap();
         let receipt = receipt.unwrap();
-        let stale = WindowsMoveUndoPlan::capture(&receipt).unwrap();
+        let stale = WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
         let (current_before, current_after) = f.renamed();
         assert!(stale.execute().is_err());
-        let plan = WindowsMoveUndoPlan::capture(&receipt).unwrap();
+        let plan = WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
         plan.execute().unwrap();
         assert_eq!(
             move_recovery::stable_identity_of_entry(&current_before.join("entry")).unwrap(),
@@ -245,7 +277,7 @@ fn windows_native_replace_recovery_follows_parent_ids_after_process_exit() {
             );
             let completed = moves::load_windows_overwrite_record(&central).unwrap();
             let receipt = overwrite::issue(&completed).unwrap();
-            WindowsMoveUndoPlan::capture(&receipt)
+            WindowsMoveUndoPlan::capture(&receipt, &[])
                 .unwrap()
                 .execute()
                 .unwrap();
@@ -296,7 +328,7 @@ fn windows_native_move_undo_keeps_ancestor_names_stable_and_releases_its_pins() 
     // Prove the ordinary owner can rename this ancestor without an active pin.
     std::fs::rename(&outer, &moved_outer).unwrap();
     std::fs::rename(&moved_outer, &outer).unwrap();
-    let plan = WindowsMoveUndoPlan::capture(&receipt).unwrap();
+    let plan = WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
     let called = Rc::new(Cell::new(false));
     let seen = called.clone();
     let original = outer.clone();

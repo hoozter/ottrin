@@ -18,10 +18,18 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
-- **Source and verification:** committed footer/Activity source `6dfd3b00` is
-  included in clean package source `1777733f`. All 18 selected native Windows UI
-  and Move-worker tests pass. Windows parent-recovery engine proof remains bound
-  to its original `48fb6c01` source and 163 native checks.
+- **Latest Windows source checkpoint:** Move Undo now refreshes UI-visible
+  short-path aliases admitted through the actual folder identities. Canonical
+  queue paths and pinned mutation authority remain unchanged. Native GNU Windows
+  ordinary, elevated and repeated elevated runs each pass **369 UI tests**, zero
+  failures, four existing ignores and two explicitly filtered public-Copy cases;
+  each also passes the native authority/foreign-parent control. Independent pipe
+  fixtures now use private test endpoints instead of racing for the real per-user
+  endpoint. The complete **222-test search suite** passes under the same three
+  token runs with six existing ignores. Strict Windows all-target lint passes.
+  Full corrected hosted MSVC and application-package/GUI acceptance are pending.
+  Exact sources, binaries, controls and teardown:
+  `windows-ui-paths-current/ACCEPTANCE.json`.
 - **Delivered Linux:** clean `0b011e01`, all four stable formats. AppImage
   SHA-256 starts `dc5af154fb18fe73`; the current receipt records all hashes.
   Production payload/runtime/helper-policy/font/source checks pass. Actual
@@ -204,25 +212,29 @@ Production Linux HTML repair is delivered and hosted source verification passes.
 The personal system helper remains optional setup in Settings → Services; it has
 not been installed on the personal machine during this QA.
 
-Hosted run `40242148948` on `22068232` now passes every native Windows
-sandbox fixture, all 459 platform tests and the preview/Office contract gates.
-The same ten sandbox cases also pass under ordinary and linked elevated guest
-tokens. No production mitigation was relaxed. The full Windows job remains
-**failed**: UI reports 366 passed, five failed and four ignored. Two failures
-exercise public Copy, which is still deliberately unavailable; three Move
-recovery failures report unavailable recovery directories. The three recovery tests now use the existing private-process/profile harness;
-their real filesystem/Undo assertions and production implementation are unchanged.
-Both ordinary and linked elevated guest tokens pass **369 UI tests, zero
-failures, four existing ignores**, with those two public-Copy tests explicitly
-filtered from this diagnostic run. Strict Linux/Windows GNU UI lint and seven
-Linux recovery-profile tests pass. A missing `rg` in the first guest fixture was
-corrected with the existing exact packaged provider; that failed control remains
-recorded. Actor-owned teardown removes private journals without changing ACL or
-machine policy. All owned fixtures/processes are removed and the guest is off.
-Receipt: `windows-ui-recovery-current/ACCEPTANCE.json`. Corrected hosted UI,
-full Windows workspace/lint and current-package acceptance remain open. Linux workspace,
-strict lint, release build and actual production HTML confinement/setup/teardown
-pass in this same hosted run; benchmark CI passes separately.
+Latest completed hosted run `40251466108` on `db2c2d29` passes Linux and
+benchmark verification. Windows passes 459 platform tests, preview/Office
+contracts and all ten native sandbox cases, then search reports 221 passed,
+one failed and six ignored. The failure is a pipe test binding the singleton
+per-user endpoint while independent fixtures run concurrently. The test-only
+private endpoints above address this without changing production endpoint names
+or authentication. UI was not reached in that run. Earlier hosted `c44d943a`
+reached UI and exposed short-alias queue expectations plus the real Undo refresh
+failure now repaired; two public-Copy failures remain separate unfinished work.
+
+Both CI and release workflows now run Move UI recovery and pipe transport checks
+before the full workspace suite. All three packaging workflow/preflight contracts,
+YAML/order checks and eight omission/order negative controls pass. The full
+workspace remains mandatory. The local native UI diagnostic explicitly filters
+the two still-gated Copy cases; it is not a green full Windows pipeline. Each
+owned native root/profile/process is removed, original guest profiles and XML are
+preserved, and the retained guest is off. Before/after TEMP inventories establish
+that PowerShell's elevated compilation directory predates UI execution; no UI or
+search fixture remains, and the actor's entire private profile is removed.
+Superseded standalone UI test output and seven older finalized incremental
+sessions are retired after replacement, hard-link and consumer/lock checks;
+current replacements and useful caches remain. Scope and cleanup receipts:
+`windows-ui-paths-current/ACCEPTANCE.json`.
 
 A private online copy of the generated 121,056-item personal index has now been
 profiled without changing its live service or configuration. Cached queries were
@@ -257,8 +269,9 @@ filename-FTS regeneration remains open work. Exact variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Verify the recovery-test isolation on hosted MSVC, resolve public Windows
-   Copy workflow requirements, then reach full
+1. Verify the corrected Undo-alias and isolated-pipe source on hosted MSVC,
+   deliver and accept the current Windows application package, resolve public
+   Windows Copy workflow requirements, then reach full
    workspace/search/UI/lint acceptance on hosted MSVC. Current-candidate GUI and
    broader ordinary desktop acceptance remain separate. Linux `0b011e01` is
    delivered; hosted release publication/signing remains unaccepted.

@@ -1,0 +1,7 @@
+{
+  "source": "Existing c44 UI fixture; exact dependency checkpoint retained in windows-ui-recovery-current/BINARY_BASELINE.json",
+  "binary_sha256": "259aa65d89fa89f46ed031a055fb3ec4c9829327e71f8ece8655a719ec4c7c0e",
+  "scope": "GNU Windows UI recovery profile isolation candidate",
+  "raw_input_sha256": "9520962b35d4afc7782a199e94de0a20167eb8e0026df1a7b5dcc7f17b78fd66",
+  "source_date_epoch": 1792972777
+}

@@ -394,7 +394,7 @@ mod tests {
     use super::*;
     #[test]
     fn windows_pipe_round_trip_authenticates_and_keeps_namespace_exclusive() {
-        let identity = IndexDaemonIdentity::for_current_user().unwrap();
+        let identity = IndexDaemonIdentity::isolated_for_test();
         let mut listener = WindowsIndexPipeListener::bind(identity.clone()).unwrap();
         assert!(WindowsIndexPipeListener::bind(identity.clone()).is_err());
         let client = std::thread::spawn(move || {
@@ -416,7 +416,7 @@ mod tests {
     }
     #[test]
     fn windows_pipe_accept_timeout_can_be_retried() {
-        let identity = IndexDaemonIdentity::for_current_user().unwrap();
+        let identity = IndexDaemonIdentity::isolated_for_test();
         let mut listener = WindowsIndexPipeListener::bind(identity.clone()).unwrap();
         assert!(
             listener
@@ -430,7 +430,7 @@ mod tests {
     }
     #[test]
     fn windows_pipe_read_timeout_drains_cancellation_and_recovers() {
-        let identity = IndexDaemonIdentity::for_current_user().unwrap();
+        let identity = IndexDaemonIdentity::isolated_for_test();
         let mut listener = WindowsIndexPipeListener::bind(identity.clone()).unwrap();
         let mut client =
             WindowsIndexPipeStream::connect(&identity, Duration::from_secs(1)).unwrap();
@@ -447,7 +447,7 @@ mod tests {
     }
     #[test]
     fn windows_pipe_buffered_response_survives_server_close() {
-        let identity = IndexDaemonIdentity::for_current_user().unwrap();
+        let identity = IndexDaemonIdentity::isolated_for_test();
         let mut listener = WindowsIndexPipeListener::bind(identity.clone()).unwrap();
         let mut client =
             WindowsIndexPipeStream::connect(&identity, Duration::from_secs(1)).unwrap();
@@ -494,7 +494,7 @@ mod tests {
     }
     #[test]
     fn windows_pipe_disconnected_client_does_not_poison_listener() {
-        let identity = IndexDaemonIdentity::for_current_user().unwrap();
+        let identity = IndexDaemonIdentity::isolated_for_test();
         let mut listener = WindowsIndexPipeListener::bind(identity.clone()).unwrap();
         let client = WindowsIndexPipeStream::connect(&identity, Duration::from_secs(1)).unwrap();
         drop(client);

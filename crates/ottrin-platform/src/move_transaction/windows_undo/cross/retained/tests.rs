@@ -966,7 +966,7 @@ fn windows_native_cross_replace_undo_follows_both_parent_ids_before_inverse_crea
         let fixture = Fixture::new();
         let receipt = fixture.moved(kind);
         let retained_identity = receipt.displaced_identity.as_ref().unwrap().windows;
-        let stale = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+        let stale = crate::WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
         let current_before = fixture.primary.path().join("renamed-source");
         let current_after = fixture.secondary.path().join("renamed-destination");
         std::fs::rename(receipt.before_path().parent().unwrap(), &current_before).unwrap();
@@ -977,7 +977,7 @@ fn windows_native_cross_replace_undo_follows_both_parent_ids_before_inverse_crea
         std::fs::write(receipt.after_path(), b"foreign destination").unwrap();
         assert!(stale.execute().is_err());
         assert!(guard(&receipt).inverse.get().is_none());
-        let plan = crate::WindowsMoveUndoPlan::capture(&receipt).unwrap();
+        let plan = crate::WindowsMoveUndoPlan::capture(&receipt, &[]).unwrap();
         plan.execute().unwrap();
         let restored = current_before.join("entry");
         let displaced = current_after.join("entry");
@@ -1011,7 +1011,7 @@ fn windows_native_cross_replace_undo_follows_both_parent_ids_before_inverse_crea
                 );
             }
         }
-        crate::WindowsMoveUndoPlan::capture(&receipt)
+        crate::WindowsMoveUndoPlan::capture(&receipt, &[])
             .unwrap()
             .execute()
             .unwrap();
