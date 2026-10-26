@@ -1,0 +1,60 @@
+{
+  "status": "pass",
+  "traced": false,
+  "binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+  "personal_daemon_pid_before": "2225008",
+  "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+  "fixture": "/var/tmp/.ottrin-index-profile-xustf4rj",
+  "cache_copy_seconds": 2.5688416679622605,
+  "elapsed_seconds": 28.1692378759617,
+  "daemon_cpu_seconds": 20.12,
+  "peer_pid": 2250191,
+  "peak_sampled_rss_bytes": 51785728,
+  "first_query_ready_seconds": 1.0065381579915993,
+  "first_scan_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 1,
+    "detail": "Indexing \u00b7 16062 files found",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792973696,
+    "last_scan_completed_unix_secs": 1792973690,
+    "last_scan_duration_ms": null,
+    "database_bytes": 873177088,
+    "wal_bytes": 4152,
+    "elapsed": 7.03865769400727,
+    "cpu_seconds": 4.61,
+    "rss_bytes": 49041408
+  },
+  "first_publication_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 2,
+    "detail": "Ready \u00b7 121056 indexed",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792973696,
+    "last_scan_completed_unix_secs": 1792973714,
+    "last_scan_duration_ms": null,
+    "database_bytes": 873177088,
+    "wal_bytes": 4152,
+    "elapsed": 24.132867764972616,
+    "cpu_seconds": 20.1,
+    "rss_bytes": 40226816
+  },
+  "reconcile_without_watch_setup": {
+    "elapsed_seconds": 18.386068727006204,
+    "cpu_seconds": 16.44,
+    "operation_ack": {
+      "type": "operation_complete",
+      "operation_id": 42
+    }
+  },
+  "fixture_removed": true,
+  "personal_daemon_pid_after": "2225008",
+  "sample_count": 28,
+  "raw_samples": "PROFILE-samples.json"
+}

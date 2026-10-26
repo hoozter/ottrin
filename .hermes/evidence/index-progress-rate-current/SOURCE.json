@@ -1,0 +1,9 @@
+{
+  "base_revision": "c44d943a8ab3c4c305f001c4dc63c4b8d9dd7ac0",
+  "files": {
+    "crates/ottrin-search/src/scanner.rs": "377b6cf9ee7294de97f18aed62c3c38725baffd927646fb5ae0ffc4ffad11a70",
+    "crates/ottrin-search/src/worker.rs": "6eee71f50ce70539b6acbfb809bc3d97b3256df7060cc969b0ab45617e287721"
+  },
+  "release_binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+  "production_change": "Progress updates at most every100ms plus first/final per-root observations; one acknowledged8192-item persistence batch in flight. Storage protocol, file walk, cancellation checks and activation guards unchanged."
+}

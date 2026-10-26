@@ -461,7 +461,7 @@ pub(crate) fn real_launcher() -> ScanLauncher {
             let result = scan_batched(
                 &plan,
                 &cancelled,
-                2_048,
+                8_192,
                 |items| send_scan_batch(&commands, revision, items, &cancelled),
                 move |progress| {
                     let _ = progress_commands.send(Command::ScanProgress { revision, progress });

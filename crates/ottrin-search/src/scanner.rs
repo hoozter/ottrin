@@ -3,7 +3,7 @@ use crate::plan::ScanPlan;
 use ottrin_core::{EntryKind, SearchResultItem};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::UNIX_EPOCH;
+use std::time::{Duration, Instant, UNIX_EPOCH};
 use walkdir::WalkDir;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -113,6 +113,10 @@ pub(crate) fn scan_batched(
             .same_file_system(plan.same_file_system())
             .into_iter()
             .filter_entry(|entry| plan.includes_path_for_root(entry.path(), root));
+        let root_start_count = indexed_items;
+        let mut reported_count = indexed_items;
+        let mut last_path = None;
+        let mut last_progress_at = Instant::now();
         for entry in walker {
             if cancelled.load(Ordering::Acquire) {
                 return Ok(BatchedScanOutcome::Cancelled);
@@ -139,7 +143,7 @@ pub(crate) fn scan_batched(
             let Some(item) = candidate_for_path(plan, entry.path())? else {
                 continue;
             };
-            let last_path = item.item().path.clone();
+            last_path = Some(item.item().path.clone());
             batch.push(item);
             indexed_items = indexed_items.saturating_add(1);
             if batch.len() == batch_size {
@@ -148,19 +152,30 @@ pub(crate) fn scan_batched(
                     Vec::with_capacity(batch_size.min(4096)),
                 ))?;
             }
-            on_progress(ScanProgress {
-                message: crate::format_progress(
-                    root_index + 1,
-                    total_roots.max(1),
+            // Progress is display state, not one worker command per file. Keep
+            // cancellation and durable batches independent of this UI cadence.
+            if indexed_items == root_start_count + 1
+                || last_progress_at.elapsed() >= Duration::from_millis(100)
+            {
+                on_progress(found_progress(
+                    root,
+                    root_index,
+                    total_roots,
                     indexed_items,
-                    indexed_items,
-                ),
-                active_root: root.clone(),
-                active_root_index: root_index + 1,
+                    last_path.clone(),
+                ));
+                reported_count = indexed_items;
+                last_progress_at = Instant::now();
+            }
+        }
+        if reported_count != indexed_items {
+            on_progress(found_progress(
+                root,
+                root_index,
                 total_roots,
                 indexed_items,
-                last_indexed_path: Some(last_path),
-            });
+                last_path,
+            ));
         }
     }
     if cancelled.load(Ordering::Acquire) {
@@ -170,6 +185,28 @@ pub(crate) fn scan_batched(
         on_batch(batch)?;
     }
     Ok(BatchedScanOutcome::Completed { indexed_items })
+}
+
+fn found_progress(
+    root: &Path,
+    root_index: usize,
+    total_roots: usize,
+    indexed_items: usize,
+    last_indexed_path: Option<PathBuf>,
+) -> ScanProgress {
+    ScanProgress {
+        message: crate::format_progress(
+            root_index + 1,
+            total_roots.max(1),
+            indexed_items,
+            indexed_items,
+        ),
+        active_root: root.to_path_buf(),
+        active_root_index: root_index + 1,
+        total_roots,
+        indexed_items,
+        last_indexed_path,
+    }
 }
 
 /// Build a private candidate for one exact configured root.
@@ -442,6 +479,8 @@ mod tests {
         let mut batch_sizes = Vec::new();
         let mut paths = Vec::new();
 
+        let mut progress = Vec::new();
+        let started = Instant::now();
         let outcome = scan_batched(
             &plan,
             &cancelled,
@@ -451,10 +490,24 @@ mod tests {
                 paths.extend(batch.into_iter().map(|owned| owned.item().path.clone()));
                 Ok(())
             },
-            |_| {},
+            |update| progress.push(update),
         )
         .expect("scan succeeds");
 
+        let final_progress = progress.last().expect("final progress");
+        assert_eq!(final_progress.indexed_items, paths.len());
+        assert_eq!(final_progress.last_indexed_path.as_ref(), paths.last());
+        assert_eq!(final_progress.active_root, root);
+        assert!(
+            progress
+                .windows(2)
+                .all(|pair| pair[0].indexed_items <= pair[1].indexed_items)
+        );
+        assert!(
+            progress.len() as u128 <= 3 + started.elapsed().as_millis() / 100,
+            "progress must be bounded by elapsed time, not file count: {} updates",
+            progress.len()
+        );
         assert_eq!(outcome, BatchedScanOutcome::Completed { indexed_items: 25 });
         assert_eq!(batch_sizes, vec![7, 7, 7, 4]);
         assert_eq!(paths.len(), 25);

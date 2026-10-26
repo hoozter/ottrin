@@ -1,0 +1,60 @@
+{
+  "status": "pass",
+  "traced": false,
+  "binary_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+  "personal_daemon_pid_before": "2225008",
+  "scope": "Consistent generated-cache copy, same configured metadata roots, no content indexing; repeated reconciliation excludes initial watcher setup. Trace overhead is recorded separately.",
+  "fixture": "/var/tmp/.ottrin-index-profile-2091vnzv",
+  "cache_copy_seconds": 1.8299046760075726,
+  "elapsed_seconds": 35.23212290002266,
+  "daemon_cpu_seconds": 24.39,
+  "peer_pid": 2248870,
+  "peak_sampled_rss_bytes": 46792704,
+  "first_query_ready_seconds": 1.0060199290164746,
+  "first_scan_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 1,
+    "detail": "Indexing \u00b7 4095 files found",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792973358,
+    "last_scan_completed_unix_secs": 1792973347,
+    "last_scan_duration_ms": null,
+    "database_bytes": 873177088,
+    "wal_bytes": 4152,
+    "elapsed": 12.076959138037637,
+    "cpu_seconds": 6.01,
+    "rss_bytes": 44548096
+  },
+  "first_publication_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "indexed_items": 121056,
+    "watcher_ready": true,
+    "snapshot_revision": 3,
+    "detail": "Ready \u00b7 121056 indexed",
+    "building_indexed_items": null,
+    "last_scan_started_unix_secs": 1792973358,
+    "last_scan_completed_unix_secs": 1792973377,
+    "last_scan_duration_ms": null,
+    "database_bytes": 873172992,
+    "wal_bytes": 28872,
+    "elapsed": 31.186480114993174,
+    "cpu_seconds": 24.38,
+    "rss_bytes": 40697856
+  },
+  "reconcile_without_watch_setup": {
+    "elapsed_seconds": 17.589277625025716,
+    "cpu_seconds": 17.939999999999998,
+    "operation_ack": {
+      "type": "operation_complete",
+      "operation_id": 42
+    }
+  },
+  "fixture_removed": true,
+  "personal_daemon_pid_after": "2225008",
+  "sample_count": 35,
+  "raw_samples": "PROFILE-samples.json"
+}

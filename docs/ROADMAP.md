@@ -236,6 +236,22 @@ All copied databases, private runtime/profile directories and transient units ar
 removed; the personal daemon remains running. Evidence:
 `index-startup-profile-current/PROFILE.json` and `traced-PROFILE.json`.
 
+The next source candidate limits per-file scan-progress wakeups to a 100ms
+cadence, preserving first/final observations for each root, and persists one
+acknowledged 8,192-item batch at a time. The complete search suite passes 239
+checks with two existing exclusions, and strict search lint passes. On private
+copies of the same real index, progress limiting alone reduced reconciliation
+CPU only about 3%; with the larger batch it used 16.44 CPU seconds versus 17.94
+baseline (about 8.4% lower). Sampled process RSS rose from 46.8 MB to 51.8 MB.
+Wall time did not improve in this single comparison; watcher timing also varied.
+Cached queries remained available at the first one-second observation. An actual
+shutdown after 23,702 scanned entries completed in 0.619 seconds, preserved the original
+cached generation and removed incomplete staging. Every private profile/unit
+is removed and the personal daemon PID is unchanged. This is a modest source
+improvement, **not a completed startup fix or new package delivery**. Full
+filename-FTS regeneration remains open work. Exact variants/scopes:
+`index-progress-rate-current/ACCEPTANCE.json`.
+
 Resume at the unfinished operation, not the start of an older checkpoint:
 
 1. Verify the recovery-test isolation on hosted MSVC, resolve public Windows

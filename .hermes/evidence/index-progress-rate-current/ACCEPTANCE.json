@@ -1,0 +1,96 @@
+{
+  "status": "Source and scoped actual release-daemon checks pass; packages and personal service unchanged",
+  "source": {
+    "base_revision": "c44d943a8ab3c4c305f001c4dc63c4b8d9dd7ac0",
+    "files": {
+      "crates/ottrin-search/src/scanner.rs": "377b6cf9ee7294de97f18aed62c3c38725baffd927646fb5ae0ffc4ffad11a70",
+      "crates/ottrin-search/src/worker.rs": "6eee71f50ce70539b6acbfb809bc3d97b3256df7060cc969b0ab45617e287721"
+    },
+    "release_binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+    "production_change": "Progress updates at most every100ms plus first/final per-root observations; one acknowledged8192-item persistence batch in flight. Storage protocol, file walk, cancellation checks and activation guards unchanged."
+  },
+  "variants": {
+    "baseline": {
+      "binary_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
+      "daemon_cpu_seconds": 24.39,
+      "elapsed_seconds": 35.23212290002266,
+      "first_query_ready_seconds": 1.0060199290164746,
+      "peak_sampled_rss_bytes": 46792704,
+      "fixture_removed": true,
+      "reconcile": {
+        "elapsed_seconds": 17.589277625025716,
+        "cpu_seconds": 17.939999999999998,
+        "operation_ack": {
+          "type": "operation_complete",
+          "operation_id": 42
+        }
+      }
+    },
+    "candidate": {
+      "binary_sha256": "b003bfd8d175604289f45dbbbeaea4fca0ff5095d368cfdd2927b7ab291e8a71",
+      "daemon_cpu_seconds": 20.98,
+      "elapsed_seconds": 30.180196321976837,
+      "first_query_ready_seconds": 1.007096407993231,
+      "peak_sampled_rss_bytes": 46940160,
+      "fixture_removed": true,
+      "reconcile": {
+        "elapsed_seconds": 21.202705519041047,
+        "cpu_seconds": 17.389999999999997,
+        "operation_ack": {
+          "type": "operation_complete",
+          "operation_id": 42
+        }
+      }
+    },
+    "batch8192": {
+      "binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+      "daemon_cpu_seconds": 20.12,
+      "elapsed_seconds": 28.1692378759617,
+      "first_query_ready_seconds": 1.0065381579915993,
+      "peak_sampled_rss_bytes": 51785728,
+      "fixture_removed": true,
+      "reconcile": {
+        "elapsed_seconds": 18.386068727006204,
+        "cpu_seconds": 16.44,
+        "operation_ack": {
+          "type": "operation_complete",
+          "operation_id": 42
+        }
+      }
+    },
+    "batch8192-stop": {
+      "binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+      "daemon_cpu_seconds": 5.73,
+      "elapsed_seconds": 8.667617906990927,
+      "first_query_ready_seconds": 1.0079424119903706,
+      "peak_sampled_rss_bytes": 49848320,
+      "fixture_removed": true,
+      "shutdown_during_scan_seconds": 0.6189153750310652,
+      "last_count_before_stop": 23702,
+      "cached_generation_preserved": true
+    }
+  },
+  "comparison": {
+    "reconcile_cpu_reduction_percent": 8.36120401337791,
+    "sampled_rss_increase_bytes": 4993024,
+    "scope": "One sequential untraced comparison on private online copies of the same121056-item real index. Startup watcher timings varied. Wall reconciliation was17.59s baseline versus18.39s final; no wall-time speedup or complete startup fix claimed."
+  },
+  "tests": {
+    "scanner": 8,
+    "search_passed": 239,
+    "search_failed": 0,
+    "search_ignored": 2,
+    "strict_search_lint": "pass"
+  },
+  "teardown": {
+    "all_copied_databases_and_profiles_removed": true,
+    "all_owned_transient_units_and_daemons_stopped": true,
+    "personal_service_pid_unchanged": "2225008"
+  },
+  "not_accepted": [
+    "New package delivery",
+    "New personal service idle observation",
+    "Eliminated full filename-FTS rebuild cost",
+    "Physical or Windows daemon resource acceptance"
+  ]
+}
