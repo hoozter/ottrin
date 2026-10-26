@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "stage_removed": true,
+  "extract_removed": true,
+  "profiles_removed": true,
+  "normal_app_exits": true,
+  "rpm_wrappers_removed": true,
+  "public_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "c2ca3a3b0f6086f9564afd2ebbb0bae331bea6c5d0258a490d32f57213d22843",
+    "Ottrin-0.1.0-x86_64.AppImage": "dc5af154fb18fe73024c5958fbf01686a2c5af5a099089a827700b5ce83e836b",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "1916720bd79b17dbd3a903479e00e7bce0fbfdc221da4310cda5fbf581ddf118",
+    "ottrin_0.1.0_amd64.deb": "082fb70cd1be69806861422c5ca4dd093fac76e547e35b4689f738239729e768"
+  },
+  "publisher_sha256": "485baa05d77e0c50a10820c2e3b60db4a607b5db36644a7fd544006edb306031"
+}

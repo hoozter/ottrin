@@ -1,0 +1,6 @@
+{
+  "source": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+  "artifact_sha256": "dc5af154fb18fe73024c5958fbf01686a2c5af5a099089a827700b5ce83e836b",
+  "observed": "Native Light theme with Miller columns, selected source/note.txt and preview column; no List header/table. Screenshot manually inspected.",
+  "scope": "Fresh launch of exact staged AppImage with a valid preexisting Light/Miller preference; persistence independently checked in teardown."
+}

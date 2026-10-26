@@ -1,0 +1,10 @@
+{
+  "scope": "Exact packaged release HTML helper, direct fixed protocol on the existing unrestricted-userns host; not protected installation or main app HTML GUI acceptance",
+  "binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
+  "restriction_before": "0",
+  "exit": 0,
+  "pixels_and_script_refusal": "pass",
+  "private_profile_removed": true,
+  "status": "pass",
+  "restriction_after": "0"
+}

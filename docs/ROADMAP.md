@@ -22,36 +22,38 @@ their named hashes. Test counts are scoped observations, not completion measures
   included in clean package source `1777733f`. All 18 selected native Windows UI
   and Move-worker tests pass. Windows parent-recovery engine proof remains bound
   to its original `48fb6c01` source and 163 native checks.
-- **Delivered Linux:** clean `d54e1933`, all four stable formats. AppImage
-  SHA-256 starts `35892243f2a0bd7a`; the current receipt records all hashes.
-  Production payload/runtime/helper-policy/font/source checks pass. The actual
-  AppImage passes Dark/List100 startup, exact native icon pixels, read-only VCF
-  Space-close/byte preservation, themed Settings/Services inspection, normal
-  product Close and persisted settings. Its exact release HTML helper renders
-  expected pixels with scripts blocked on the unrestricted host. All owned
-  GUI/profile/extraction/staging/wrapper fixtures are removed. Receipt:
-  `linux-html-package-current/ACCEPTANCE.json`.
+- **Delivered Linux:** clean `0b011e01`, all four stable formats. AppImage
+  SHA-256 starts `dc5af154fb18fe73`; the current receipt records all hashes.
+  Production payload/runtime/helper-policy/font/source checks pass. Actual
+  AppImage checks pass Dark/List100, exact native icon pixels, read-only VCF
+  Space-close/byte preservation, normal product Close and saved preferences.
+  A second actual launch displays **Light/Miller100 columns**, preserving that
+  preference after Close. The exact release HTML helper renders expected pixels
+  with scripts blocked on the unrestricted host. The packaged index ELF is the
+  exact measured candidate. All owned GUI/profile/extraction/staging fixtures
+  are removed. Receipt: `linux-index-package-current/ACCEPTANCE.json`.
+  Earlier Services visual and broader operation receipts retain their own hashes.
 - **Production Linux HTML and full source verification:** hosted run
-  `40239453234` accepts production helper installation, real browser pixels,
-  blocked private preload after a working control, six renderer confinement
-  observations, and complete integration teardown with namespace restriction1
-  unchanged. The full Linux workspace, strict lint and release build pass,
-  including 205 preview, 17 provider and 402 UI checks (one existing UI exclusion).
-  Global unconfined-profile-change policy remains an explicitly recorded OS
-  limitation; Ottrin does not change it. Earlier operation workflows retain
-  their original hashes/scopes. No fresh distro or personal helper installation
+  `40248932019` on `0b011e01` passes the complete Linux workspace, strict lint,
+  release build, production helper installation/rendering, protected-preload
+  refusal, confinement observations and full integration teardown. Benchmark CI
+  passes separately. Namespace restriction1 remains unchanged. The separate
+  global unconfined-profile-change policy remains a recorded OS limitation;
+  Ottrin does not change it. No fresh distro or personal helper installation
   is claimed by this source acceptance.
 - **Actual personal index service:** restarted from the new stable AppImage
   under the owner's existing authorization; remains enabled and running as
-  **ottrin-indexd**, with unchanged daemon bytes. Its real **121,056-item** index
-  reports ready and active watching. The first minute after restart used about
-  **25 CPU seconds** (41.3% of one core); the later 60-second steady observation
-  is **0.127% of one core**, with about **89 MB** charged to the service cgroup.
-  Startup revalidation cost is open engineering work, not an idle success or
-  owner dependency. Configuration, unit and wrapper hashes are unchanged;
-  primary user files were not edited. Receipt:
-  `personal-index-package-current/ACCEPTANCE.json`. Earlier 20/60-second samples
-  retain their scopes in `personal-index-runtime-current/`.
+  **ottrin-indexd**, now with the verified optimized daemon bytes. Its real
+  **121,056-item** index reports ready with active watching. The first observed
+  minute used **28.8% of one core**; the separate settled 60-second observation
+  is **0.129% of one core**. Current daemon RSS is about 44 MB, with about 390 MB
+  charged to the complete service cgroup, including about 335 MB of filesystem
+  cache in the recorded breakdown. No memory improvement is claimed. The
+  private-copy comparison reduced reconciliation CPU modestly, about 8.4%; full
+  startup filename-FTS regeneration remains open engineering work. Configuration,
+  unit and wrapper hashes are unchanged; primary user files were not edited.
+  Receipt: `personal-index-optimization-current/ACCEPTANCE.json`. Older startup
+  and idle samples retain their separate scopes.
 - **Current internal Windows candidate:** clean `1777733f` at
   `.hermes/packaging-tmp/windows-activity-candidate/`. Portable, NSIS and native
   MSI extraction agree on all 57 payload files; native loader/CLI checks pass.
@@ -236,7 +238,7 @@ All copied databases, private runtime/profile directories and transient units ar
 removed; the personal daemon remains running. Evidence:
 `index-startup-profile-current/PROFILE.json` and `traced-PROFILE.json`.
 
-The next source candidate limits per-file scan-progress wakeups to a 100ms
+The delivered source limits per-file scan-progress wakeups to a 100ms
 cadence, preserving first/final observations for each root, and persists one
 acknowledged 8,192-item batch at a time. The complete search suite passes 239
 checks with two existing exclusions, and strict search lint passes. On private
@@ -248,7 +250,8 @@ Cached queries remained available at the first one-second observation. An actual
 shutdown after 23,702 scanned entries completed in 0.619 seconds, preserved the original
 cached generation and removed incomplete staging. Every private profile/unit
 is removed and the personal daemon PID is unchanged. This is a modest source
-improvement, **not a completed startup fix or new package delivery**. Full
+improvement, **not a completed startup fix**. It is delivered in the current
+Linux cohort and running personal service. Full
 filename-FTS regeneration remains open work. Exact variants/scopes:
 `index-progress-rate-current/ACCEPTANCE.json`.
 
@@ -257,9 +260,9 @@ Resume at the unfinished operation, not the start of an older checkpoint:
 1. Verify the recovery-test isolation on hosted MSVC, resolve public Windows
    Copy workflow requirements, then reach full
    workspace/search/UI/lint acceptance on hosted MSVC. Current-candidate GUI and
-   broader ordinary desktop acceptance remain separate. Linux `d54e1933` is
+   broader ordinary desktop acceptance remain separate. Linux `0b011e01` is
    delivered; hosted release publication/signing remains unaccepted.
-2. Profile and reduce the personal index's startup revalidation CPU while
+2. Further reduce the personal index's startup revalidation CPU while
    preserving missed-offline-change detection and watcher coverage. Steady idle
    passes separately. Complete current Windows candidate GUI, retain public Copy
    gating and resolve failed-uninstall registration rollback.
@@ -268,6 +271,14 @@ Resume at the unfinished operation, not the start of an older checkpoint:
    workflows retain their named scopes. Required outcome 4 (the themed picker and
    supported folder integration) stays deferred until preceding work is complete.
    Owner testing does not block independently executable work.
+
+CI push filters now omit commits that change only roadmap/status delivery
+receipts (`docs/ROADMAP.md`, `.hermes/evidence/**`, `dist/**`). Source, workflow,
+packaging and other documentation changes still trigger the full workflow; pull
+requests retain unconditional verification. Runtime test commands, exclusions and
+release gates are unchanged. YAML/filter checks and all three release workflow/
+preflight coverage contracts pass. This avoids repeating unchanged native fault
+matrices for each progress receipt; it does not make the Windows Copy gate pass.
 
 The goal's recorded October 22 10:01 Stockholm stop reports
 `server_overloaded` (“Selected model is at capacity”). This is an execution failure,
@@ -319,10 +330,11 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `d54e1933`. Its production
-content/runtime/helper-policy/font/source checks and targeted Dark100/List/icon,
-read-only VCF, Settings/Services and normal-close acceptance are summarized above
-and in `.hermes/evidence/linux-html-package-current/ACCEPTANCE.json`. Its exact
+The current Linux cohort is built from clean `0b011e01`. Its production
+content/runtime/helper-policy/font/source checks, exact measured index daemon,
+Dark100/List/icon/read-only VCF, Light100/Miller and normal-close acceptance are
+summarized above and in
+`.hermes/evidence/linux-index-package-current/ACCEPTANCE.json`. Its exact
 release HTML helper also passes direct rendering on the unrestricted host;
 restricted-host production setup/confinement is separately accepted in hosted CI.
 Earlier operation, broader theme/scale and populated-index receipts retain their
@@ -352,7 +364,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | All four `d54e1933` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List/icon/read-only VCF/Settings/Services/normal close passes. The actual configured index is enabled/running at the bounded CPU/RSS scope above. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
+| Linux | All four `0b011e01` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List/icon/read-only VCF, Light/Miller and normal close pass. The actual configured index is enabled/running at the bounded CPU/RSS scope above. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
 | Windows | Internal `1777733f` portable/NSIS/MSI payloads match;18 native UI checks and scoped actual portable footer, Move/Undo/cleanup and native-hover checks pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. | Finish full corrected MSVC and current candidate GUI acceptance, then native Copy and remaining transaction/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier cross-volume GUI scopes remain historical; public Windows Copy stays gated. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |

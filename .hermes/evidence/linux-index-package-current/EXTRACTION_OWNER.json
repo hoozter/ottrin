@@ -1,0 +1,8 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-index-extract",
+  "source": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+  "pending_consumers": [],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted and promoted; task staging and extraction removed"
+}

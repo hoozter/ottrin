@@ -3,6 +3,12 @@ name: ci
 on:
   push:
     branches: ["**"]
+    # Status and delivery receipts do not change the verified runtime source.
+    # Pull requests retain full verification regardless of their changed paths.
+    paths-ignore:
+      - ".hermes/evidence/**"
+      - "dist/**"
+      - "docs/ROADMAP.md"
   pull_request:
 
 env:

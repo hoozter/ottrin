@@ -1,0 +1,11 @@
+{
+  "source_revision": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-index-stage",
+  "jobs": 1,
+  "pending_consumers": [],
+  "changes": "Bound scan progress traffic and acknowledged8192-item index persistence batches; Windows UI tests isolated in private profiles",
+  "public_deliverables": "unchanged until replacement acceptance passes",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted and promoted; task staging and extraction removed"
+}

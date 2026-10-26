@@ -1,13 +1,13 @@
 {
-  "status": "pass within exact four-format, scoped native GUI and production HTML acceptance",
-  "source_revision": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+  "status": "pass within four-format contents, scoped native AppImage and exact index-daemon acceptance",
+  "source_revision": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "c58f6635c77640ceca54f249fe330bf40fb9231b4eba147c5659d4acfee5f6f3",
-    "Ottrin-0.1.0-x86_64.AppImage": "35892243f2a0bd7a5bc391ecab9cca24a9f18c72a3bc5966665712d79748fcd5",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "9068be01be0130fd0477b0b1d4db6336fac0ddeb7bf1ee740ede1ef3d8271ed9",
-    "ottrin_0.1.0_amd64.deb": "d68fca0d77a0b255262746616ef8e1a06594dc1d6b33385301717dad12016a66"
+    "ottrin-0.1.0-1.x86_64.rpm": "c2ca3a3b0f6086f9564afd2ebbb0bae331bea6c5d0258a490d32f57213d22843",
+    "Ottrin-0.1.0-x86_64.AppImage": "dc5af154fb18fe73024c5958fbf01686a2c5af5a099089a827700b5ce83e836b",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "1916720bd79b17dbd3a903479e00e7bce0fbfdc221da4310cda5fbf581ddf118",
+    "ottrin_0.1.0_amd64.deb": "082fb70cd1be69806861422c5ca4dd093fac76e547e35b4689f738239729e768"
   },
-  "evidence": ".hermes/evidence/linux-html-package-current",
+  "evidence": ".hermes/evidence/linux-index-package-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -15,32 +15,25 @@
     "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks",
-    "Actual AppImage Dark/List100 startup and all 256x256 ARGB icon pixels match the source asset",
-    "Read-only VCF Quick Inspector closes with Space and preserves all VCF bytes",
-    "Actual product Close exits zero and persists Dark/List; owned app/daemon/display/bus/WM/profile teardown passes",
-    "Actual packaged release HTML helper renders expected pixels and refuses document script on the unrestricted host",
-    "Actual packaged Services layout/status inspected, including HTML setup and distinct index startup state",
-    "Hosted production installation, protected preload refusal, renderer seccomp/capability/profile checks and teardown on restricted Ubuntu"
+    "Actual AppImage Dark/List100 startup; all 256x256 native ARGB icon pixels match assets/icon.png",
+    "Read-only VCF Quick Inspector closes with Space and preserves its original bytes",
+    "Actual AppImage Light/Miller100 launch displays columns, not a List table",
+    "Both normal product closes exit zero and preserve their theme/view preferences",
+    "Exact packaged index ELF matches the measured 121056-item release candidate",
+    "Direct packaged HTML helper renders expected pixels and refuses document script on the unrestricted host",
+    "Hosted complete Linux workspace, strict lint, release and production HTML setup/confinement/teardown pass"
   ],
-  "scope": "Exact packages, software X11 Dark/List100, Services visual inspection, and direct packaged HTML helper on userns restriction0. Restricted-host installed production-helper source acceptance is separate. No fresh distro installation, personal helper setup, full Office/HTML GUI, physical desktop, Windows, signing or final owner acceptance. Earlier operation workflows retain their own artifact scopes.",
-  "included_source_fixes": [
-    "Fixed-protocol root-owned HTML sandbox and shared namespace builder",
-    "Complete system integration setup and Services status",
-    "8 MiB sanitized/expanded HTML limit",
-    "Controller-independent bounded renderer lifetime"
-  ],
-  "html_restricted_host_status": "Production helper installed/rendered/removed successfully on hosted Ubuntu with userns restriction1 unchanged; six observed renderers retained seccomp2, zero effective capabilities, NNP1 and the enforced profile. Caller private preload was blocked after a working positive control.",
-  "source_checks": "Hosted complete Linux workspace tests, strict lint and release build pass: includes 205 preview tests, 17 provider contracts and 402 UI tests with one existing UI exclusion. Native Windows hosted gate remains failed.",
-  "indexd_binary_sha256": "822e6786d583c4b70389ac773a7c117af36b211aa38f63a2a9f2aafb0f3f80d4",
-  "indexd_resource_evidence": "Byte-identical indexd to the prior cohort; existing personal-service measurement remains 0.138 percent of one core over60s. No new resource measurement claimed in package QA.",
-  "cleanup": "TEARDOWN and FINAL_TEARDOWN receipts; completed extraction/stage/wrappers removed; both previously recorded root-owned cores remain owner waiting.",
-  "html_os_policy_limit": "Hosted unconfined-profile-change restriction0 permits direct profile changes. No application-level prevention of that OS-authorized transition is claimed; global sysctls are unchanged.",
+  "indexd_binary_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee",
+  "indexd_resource_evidence": ".hermes/evidence/index-progress-rate-current/ACCEPTANCE.json",
+  "indexd_resource_scope": "Single private-copy comparison: reconciliation CPU 17.94 to 16.44 seconds, sampled RSS 46.8 to 51.8 MB; wall time did not improve. Active-scan shutdown 0.619s preserves the saved generation. Startup FTS regeneration remains open. No new personal-service idle claim.",
+  "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
   "hosted_source_evidence": {
-    "source": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
-    "run": 40239453234,
-    "linux_job": 121307916999,
+    "source": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+    "run_id": 40248932019,
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40248932019",
+    "linux_job": 121336355944,
     "linux_conclusion": "success",
-    "steps": [
+    "linux_steps": [
       {
         "name": "Set up job",
         "conclusion": "success"
@@ -138,8 +131,12 @@
         "conclusion": "success"
       }
     ],
-    "windows": "Native fixture diagnostic gate failed; full Windows suite not accepted"
+    "benchmark_conclusion": "success",
+    "windows_status": "in_progress",
+    "scope": "Complete Linux source checks only; Windows native job retains its separate status and package acceptance is independently recorded"
   },
-  "personal_setup": "Optional HTML system helper has not been installed on the personal machine; Services displays the actionable setup-needed state.",
-  "close_observation": "Final xdotool click returned nonzero while the product window was destroyed. Actual app exit0, settings persistence and complete owned teardown independently pass; original error retained."
+  "html_os_policy_limit": "The hosted OS permits unconfined profile changes when its separate restriction is 0; no prevention of an OS-authorized transition or global sysctl change is claimed.",
+  "scope": "Exact package contents, software X11 Dark/List100 and Light/Miller100, unchanged read-only VCF and direct packaged HTML rendering. No new broad operation/appearance matrix, fresh distro lifecycle, Office/HTML main-GUI, physical desktop, Windows, signing or final owner acceptance. Earlier receipts retain their own hashes and scopes.",
+  "personal_setup": "Optional personal HTML helper installation remains owner setup; no administrator prompt or root installation was attempted.",
+  "cleanup": "Both private GUI profiles, app/daemon/display/bus/WM processes and completed staging/extraction are removed; prior root-owned cores remain on the explicit waiting list."
 }

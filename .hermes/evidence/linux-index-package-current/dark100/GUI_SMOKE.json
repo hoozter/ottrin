@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "artifact_sha256": "dc5af154fb18fe73024c5958fbf01686a2c5af5a099089a827700b5ce83e836b",
+  "source_revision": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+  "scope": "Actual AppImage Dark/List100 on owned Xvfb/KWin display; native icon data, startup, read-only contact preview Space close and unchanged VCF bytes",
+  "contact_sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+  "interaction_correction": "Select the observed file row before Space; Home did not select it after address-bar navigation",
+  "broader_limits": "No actual HTML/Office provider GUI, fresh distro lifecycle, physical desktop or personal profile acceptance"
+}

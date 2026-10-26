@@ -1,0 +1,21 @@
+{
+  "scope": "Same-configuration superseded finalized sessions only; no Cargo/rustc consumers, both compiler lock styles acquired; newest session and all other configurations retained",
+  "removed": [
+    {
+      "removed": "target/debug/incremental/ottrin_search-0yy2h2gs9vmv2/s-hnk0kq9bss-139kj91-8ly2eagqzoqs7zche3x0lmacu",
+      "current_replacement": "target/debug/incremental/ottrin_search-0yy2h2gs9vmv2/s-hnk0uz0gll-0b2255x-1vd34n1wwjbr63nanip0i9epp",
+      "logical_bytes": 13735825
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_search-1hdscvz311jpk/s-hnjmzl6pkx-0fxzakt-5njqjn1djfgv37fj1b3xgntxn",
+      "current_replacement": "target/debug/incremental/ottrin_search-1hdscvz311jpk/s-hnk0il752c-1bjd9tv-aad2vyoaeaalw64mnxlnlvayt",
+      "logical_bytes": 164639945
+    },
+    {
+      "removed": "target/debug/incremental/ottrin_search-0mn4zqnd9nd2w/s-hnk0kq9c0q-1u7fadc-czgzrqrh1na70i06uqo12gd05",
+      "current_replacement": "target/debug/incremental/ottrin_search-0mn4zqnd9nd2w/s-hnk0uz0gqm-09lqxl9-czgzrqrh1na70i06uqo12gd05",
+      "logical_bytes": 19381560
+    }
+  ],
+  "logical_bytes": 197757330
+}

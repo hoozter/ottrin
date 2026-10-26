@@ -1,0 +1,108 @@
+{
+  "source": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+  "run_id": 40248932019,
+  "url": "https://github.com/hoozter/ottrin/actions/runs/40248932019",
+  "linux_job": 121336355944,
+  "linux_conclusion": "success",
+  "linux_steps": [
+    {
+      "name": "Set up job",
+      "conclusion": "success"
+    },
+    {
+      "name": "Checkout",
+      "conclusion": "success"
+    },
+    {
+      "name": "Setup Rust",
+      "conclusion": "success"
+    },
+    {
+      "name": "Cache Rust build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install Linux system dependencies",
+      "conclusion": "success"
+    },
+    {
+      "name": "Prepare Linux process isolation",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install Windows test dependencies",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Cargo check",
+      "conclusion": "success"
+    },
+    {
+      "name": "Prepare production Linux HTML sandbox",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify production HTML pixels and executable mapping policy",
+      "conclusion": "success"
+    },
+    {
+      "name": "Check Windows Move ownership before workspace suite",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Check Windows Office contracts before workspace suite",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Check Windows native preview boundary before workspace suite",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Cargo test",
+      "conclusion": "success"
+    },
+    {
+      "name": "Cargo clippy",
+      "conclusion": "success"
+    },
+    {
+      "name": "Release build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Prepare release-build artifact",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload release-build artifact",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload Windows native boundary failure diagnostics",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Retire production Linux HTML integration",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload Linux HTML sandbox evidence",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Cache Rust build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Checkout",
+      "conclusion": "success"
+    },
+    {
+      "name": "Complete job",
+      "conclusion": "success"
+    }
+  ],
+  "benchmark_conclusion": "success",
+  "windows_status": "in_progress",
+  "scope": "Complete Linux source checks only; Windows native job retains its separate status and package acceptance is independently recorded"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "expected daemon executed",
+  "old_pid": "2225008",
+  "new_pid": "2260994",
+  "elapsed_seconds_until_executable_verified": 0.22504181298427284,
+  "artifact_sha256": "dc5af154fb18fe73024c5958fbf01686a2c5af5a099089a827700b5ce83e836b",
+  "expected_indexd_sha256": "adbee54170542f050f7f5d690e587a46ed157689c8d4327a4ca1d10ea02dd4ee"
+}
