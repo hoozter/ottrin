@@ -1,0 +1,88 @@
+{
+  "status": "pass within exact payload, native loader/CLI and scoped ordinary portable GUI acceptance",
+  "source_commit": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "aa13b402741daf02e922608d4dc8075ec972ee7eeba1c9e31e7e16615c501d09",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "b6731b008b304a0cf9c88c317fa288a500fd34f87713fae8704e90df11d17529",
+    "Ottrin-0.1.0-windows-x64.msi": "db228f9d4622974205a98d28d79ed2a314becf831946f263fa9fe6eb8a5ce4d2"
+  },
+  "payload_files": 58,
+  "payload_identity": ".hermes/evidence/windows-ui-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-ui-package-current",
+  "native_msi_administrative_extraction": {
+    "entries_checked": 58,
+    "status": "pass",
+    "msi_sha256": "db228f9d4622974205a98d28d79ed2a314becf831946f263fa9fe6eb8a5ce4d2",
+    "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
+  },
+  "native_loader_cli": {
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status": "pass",
+    "runs": [
+      {
+        "exit": 0,
+        "stdout_sha256": "7b9185bef772d9d1468581812446aadcb5c10d621a430a9b18e07ed23f8a46ae",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "executable": "ottrin.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+        "executable": "ottrin-indexd.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+        "executable": "ottrin-priv-helper.exe"
+      }
+    ],
+    "identity": "NT AUTHORITY\\SYSTEM"
+  },
+  "portable_gui_acceptance": {
+    "evidence": ".hermes/evidence/windows-ui-gui-current/GUI_SCOPES.json",
+    "scope": [
+      "Native clipboard Cut/Paste with explicit Replace, paired completion journals and displaced bytes",
+      "Both original parents externally renamed; old paths recreated with unrelated files",
+      "Actual Activity Undo refreshes the visible short-alias listing from two to three rows and selects restored note.txt",
+      "Both original versions and recreated foreign names preserved",
+      "Actual eligible-record cleanup completes; three compact anchors/completion records remain by design",
+      "Read-only VCF inspector closes with Space after its text body receives focus",
+      "Normal application close exits0; all six file contents remain exact; Dark/List preferences persist"
+    ],
+    "appearance": "Dark/List100/default renderer,1280x800 ordinary NTFS guest console"
+  },
+  "source_checks": {
+    "evidence": ".hermes/evidence/windows-ui-paths-current/ACCEPTANCE.json",
+    "native_ui": "369 passed/0 failed/4 ignored/2 public-Copy cases filtered; ordinary/elevated/repeated elevated GNU Windows",
+    "native_search": "222 passed/0 failed/6 ignored; same three token runs",
+    "strict_lint": "Windows GNU UI/platform/search all targets passed"
+  },
+  "hosted_source": {
+    "run": 40259280148,
+    "revision": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+    "linux": "success",
+    "benchmark": "success",
+    "windows": "failed only two positive public-Copy UI cases:369 UI passed/2 failed/4 ignored; all459 platform,222 search, preview/Office/native sandbox and both new preflights pass. No full Windows or MSVC lint/release pass inferred."
+  },
+  "cleanup": {
+    "native_package": "windows-ui-package-current/NATIVE_OWNER.json",
+    "portable_gui": "windows-ui-gui-current/SESSION.json",
+    "guest_off": true,
+    "original_guest_files_and_login_values_preserved": true,
+    "account_profile_credential_task_and_owned_extractions_removed": true
+  },
+  "public_windows_files_unchanged": true,
+  "linux_packages_unchanged": true,
+  "limits": [
+    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes",
+    "Actual GUI scope ordinary Dark/List100/default renderer1024x680 on1280x800 NTFS VM; no physical/other-width/scale/graphics acceptance",
+    "Public Windows Copy remains gated; complete native/public workflow and package gates remain engineering work",
+    "Earlier footer/tooltip, cross-volume and Office GUI evidence retain their original source/artifact scopes",
+    "No production release, Store submission or user daily-driver acceptance"
+  ],
+  "promotion": ".hermes/evidence/windows-ui-package-current/PROMOTION.json"
+}

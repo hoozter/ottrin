@@ -1,0 +1,40 @@
+{
+  "cursor_x": 760,
+  "id": "0284037608ce475993f071bf6848c1d5",
+  "case": "ordinary",
+  "foreground_pid": 5952,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Keep Both Undo removes only the renamed copy",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n"
+    },
+    "absent": [
+      "destination\\note (1).txt"
+    ]
+  },
+  "windows": [
+    {
+      "handle": 262704,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 197172,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 266,
+  "op": "verify"
+}

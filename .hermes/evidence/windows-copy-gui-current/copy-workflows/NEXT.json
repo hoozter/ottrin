@@ -1,0 +1,9 @@
+{
+  "nonce": "8cb8eca249c34feca1fb9359ae1b5826",
+  "sequence": 54,
+  "op": "action",
+  "command": {
+    "op": "close",
+    "case": "ordinary"
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "interactive_processes": [
+    {
+      "Name": "csrss.exe",
+      "ExecutablePath": null,
+      "ProcessId": 732,
+      "ParentProcessId": 716,
+      "SessionId": 1
+    },
+    {
+      "Name": "winlogon.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\winlogon.exe",
+      "ProcessId": 796,
+      "ParentProcessId": 716,
+      "SessionId": 1
+    },
+    {
+      "Name": "fontdrvhost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\fontdrvhost.exe",
+      "ProcessId": 600,
+      "ParentProcessId": 796,
+      "SessionId": 1
+    },
+    {
+      "Name": "dwm.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\dwm.exe",
+      "ProcessId": 1128,
+      "ParentProcessId": 796,
+      "SessionId": 1
+    },
+    {
+      "Name": "sihost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\sihost.exe",
+      "ProcessId": 4804,
+      "ParentProcessId": 1248,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\svchost.exe",
+      "ProcessId": 4836,
+      "ParentProcessId": 868,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\svchost.exe",
+      "ProcessId": 4876,
+      "ParentProcessId": 868,
+      "SessionId": 1
+    },
+    {
+      "Name": "taskhostw.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\taskhostw.exe",
+      "ProcessId": 5004,
+      "ParentProcessId": 1248,
+      "SessionId": 1
+    },
+    {
+      "Name": "explorer.exe",
+      "ExecutablePath": "C:\\WINDOWS\\Explorer.EXE",
+      "ProcessId": 4232,
+      "ParentProcessId": 4124,
+      "SessionId": 1
+    },
+    {
+      "Name": "ShellHost.exe",
+      "ExecutablePath": "C:\\Windows\\System32\\ShellHost.exe",
+      "ProcessId": 4276,
+      "ParentProcessId": 4804,
+      "SessionId": 1
+    },
+    {
+      "Name": "CrossDeviceResume.exe",
+      "ExecutablePath": "C:\\WINDOWS\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+      "ProcessId": 4920,
+      "ParentProcessId": 4804,
+      "SessionId": 1
+    },
+    {
+      "Name": "StartMenuExperienceHost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+      "ProcessId": 3988,
+      "ParentProcessId": 428,
+      "SessionId": 1
+    },
+    {
+      "Name": "SearchHost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+      "ProcessId": 2692,
+      "ParentProcessId": 428,
+      "SessionId": 1
+    },
+    {
+      "Name": "RuntimeBroker.exe",
+      "ExecutablePath": "C:\\Windows\\System32\\RuntimeBroker.exe",
+      "ProcessId": 4400,
+      "ParentProcessId": 428,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\svchost.exe",
+      "ProcessId": 5128,
+      "ParentProcessId": 868,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ExecutablePath": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.101\\msedgewebview2.exe",
+      "ProcessId": 5716,
+      "ParentProcessId": 2692,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ExecutablePath": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.101\\msedgewebview2.exe",
+      "ProcessId": 5792,
+      "ParentProcessId": 5716,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ExecutablePath": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.101\\msedgewebview2.exe",
+      "ProcessId": 5520,
+      "ParentProcessId": 5716,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ExecutablePath": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.101\\msedgewebview2.exe",
+      "ProcessId": 5556,
+      "ParentProcessId": 5716,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ExecutablePath": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.101\\msedgewebview2.exe",
+      "ProcessId": 5116,
+      "ParentProcessId": 5716,
+      "SessionId": 1
+    },
+    {
+      "Name": "msedgewebview2.exe",
+      "ExecutablePath": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.101\\msedgewebview2.exe",
+      "ProcessId": 5896,
+      "ParentProcessId": 5716,
+      "SessionId": 1
+    },
+    {
+      "Name": "ctfmon.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\ctfmon.exe",
+      "ProcessId": 6552,
+      "ParentProcessId": 1240,
+      "SessionId": 1
+    },
+    {
+      "Name": "svchost.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\svchost.exe",
+      "ProcessId": 6736,
+      "ParentProcessId": 868,
+      "SessionId": 1
+    },
+    {
+      "Name": "SecurityHealthSystray.exe",
+      "ExecutablePath": "C:\\Windows\\System32\\SecurityHealthSystray.exe",
+      "ProcessId": 5000,
+      "ParentProcessId": 4232,
+      "SessionId": 1
+    },
+    {
+      "Name": "smartscreen.exe",
+      "ExecutablePath": "C:\\Windows\\System32\\smartscreen.exe",
+      "ProcessId": 5012,
+      "ParentProcessId": 428,
+      "SessionId": 1
+    },
+    {
+      "Name": "CMFNSS6.EXE",
+      "ExecutablePath": "C:\\Program Files\\Canon\\Canon MF Network Scanner Selector\\CMFNSS6.EXE",
+      "ProcessId": 4492,
+      "ParentProcessId": 4232,
+      "SessionId": 1
+    },
+    {
+      "Name": "pCloud.exe",
+      "ExecutablePath": "C:\\Program Files\\pCloud Drive\\pCloud.exe",
+      "ProcessId": 6860,
+      "ParentProcessId": 4232,
+      "SessionId": 1
+    },
+    {
+      "Name": "Everything.exe",
+      "ExecutablePath": "C:\\Program Files\\Everything\\Everything.exe",
+      "ProcessId": 6352,
+      "ParentProcessId": 4232,
+      "SessionId": 1
+    },
+    {
+      "Name": "CnTnrStsTask.exe",
+      "ExecutablePath": "C:\\Program Files (x86)\\Canon\\OIPTonerStatus\\CnTnrStsTask.exe",
+      "ProcessId": 6372,
+      "ParentProcessId": 6476,
+      "SessionId": 1
+    },
+    {
+      "Name": "taskhostw.exe",
+      "ExecutablePath": "C:\\WINDOWS\\system32\\taskhostw.exe",
+      "ProcessId": 7636,
+      "ParentProcessId": 1248,
+      "SessionId": 1
+    }
+  ],
+  "winlogon_password_present": false,
+  "console_user": "DESKTOP-81GHP8U\\campbell"
+}

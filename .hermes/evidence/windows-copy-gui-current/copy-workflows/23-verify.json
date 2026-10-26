@@ -1,0 +1,39 @@
+{
+  "cursor_x": 760,
+  "id": "612022f039734e638f96c763e09bbc37",
+  "case": "ordinary",
+  "foreground_pid": 3384,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Actual Copy Undo restores displaced bytes and preserves source",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n",
+      "source\\other.txt": "other original\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 262704,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 197172,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 266,
+  "op": "verify"
+}

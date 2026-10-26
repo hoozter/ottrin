@@ -1,0 +1,47 @@
+{
+  "cursor_x": 790,
+  "id": "9a2b27a9b44f497a84aed421ad3873bf",
+  "case": "ordinary",
+  "foreground_pid": 7444,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Actual batch Undo removes all four copied targets while preserving sources",
+    "status": "pass",
+    "files": {
+      "source\\bundle\\nested.txt": "nested directory bytes\n",
+      "source\\note.txt": "source original\n",
+      "source\\other.txt": "other original\n",
+      "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n",
+      "destination\\note.txt": "destination original\n"
+    },
+    "absent": [
+      "batch-destination\\bundle",
+      "batch-destination\\contact.vcf",
+      "batch-destination\\note.txt",
+      "batch-destination\\other.txt",
+      "destination\\note (1).txt"
+    ]
+  },
+  "windows": [
+    {
+      "handle": 262704,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 197172,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 266,
+  "op": "verify"
+}

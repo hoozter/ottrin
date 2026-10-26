@@ -1,0 +1,394 @@
+{
+  "scope": "Task-owned onboarding/redundant frames only; selected actual product/negative-control frames and all command receipts retained; unused private actor copies were never uploaded",
+  "removed": [
+    {
+      "path": "17-key.png",
+      "bytes": 833990,
+      "sha256": "3d7d6ad7bffbd4b89fadbfac3a8e87393e7de1b704b45958b8d2466d5e3d02ac"
+    },
+    {
+      "path": "14-click.png",
+      "bytes": 734128,
+      "sha256": "20c0d403c4bbe1133a6eb162ed141d6e23bfd6aed6afd80b22349c656aa3bdaf"
+    },
+    {
+      "path": "13-focus.png",
+      "bytes": 733275,
+      "sha256": "c56f8a43802ab702f6623b124f0624dce8c45950e19515a78b24326f26bbef6b"
+    },
+    {
+      "path": "01-observe.png",
+      "bytes": 219153,
+      "sha256": "a74f04c6e27ae8aa3d1e59d6b468e0945cb468701791acd38b8b892ae5f6d88f"
+    },
+    {
+      "path": "19-verify.png",
+      "bytes": 731350,
+      "sha256": "496cceb6feb2a30bfdde355ee5e215678a2e905e1cad52c6272a9549c15b2955"
+    },
+    {
+      "path": "11-launch.png",
+      "bytes": 738122,
+      "sha256": "1a678d39d9f020af4ae21fea85c5c5446daf9ea202afbc75be599a3925e8535c"
+    },
+    {
+      "path": "04-onboard.png",
+      "bytes": 214059,
+      "sha256": "c9ac4c6e0059ad62e579c349c0e4bb53153e68b84008e9b5d3fcd3127b427512"
+    },
+    {
+      "path": "desktop.png",
+      "bytes": 2585940,
+      "sha256": "c76e07e97fd64e929c410b3a9deb55fc4d0c93a3d626459ceed956b822c0f033"
+    },
+    {
+      "path": "09-dismiss-shell.png",
+      "bytes": 2585928,
+      "sha256": "f9c88791d199f7a090a80626d2f885680ab0b803bb2a55a91956a260e8a562e9"
+    },
+    {
+      "path": "24-verify.png",
+      "bytes": 2585940,
+      "sha256": "c76e07e97fd64e929c410b3a9deb55fc4d0c93a3d626459ceed956b822c0f033"
+    },
+    {
+      "path": "06-onboard.png",
+      "bytes": 218791,
+      "sha256": "0d7976a8ed4c5208df4a779c410b27da47744e08ee99b7d38f0746cd971648dc"
+    },
+    {
+      "path": "18-click.png",
+      "bytes": 724066,
+      "sha256": "74dbe74e8b24d8137cf5cdeb8becba72dd1805e6fec21e5497b2c0d7fae0fbbf"
+    },
+    {
+      "path": "23-close.png",
+      "bytes": 2586281,
+      "sha256": "fce2a3616a71bfd840096c29bc544ed9f78c893833e8e0876dea441e98188276"
+    },
+    {
+      "path": "03-onboard.png",
+      "bytes": 218041,
+      "sha256": "01b6f0623106541b086621726e5eb6add76059dcf6eb908e9232736621d43cb6"
+    },
+    {
+      "path": "10-prepare.png",
+      "bytes": 2585928,
+      "sha256": "f9c88791d199f7a090a80626d2f885680ab0b803bb2a55a91956a260e8a562e9"
+    },
+    {
+      "path": "16-nav.png",
+      "bytes": 724169,
+      "sha256": "f862ffdd8484420d0947eea801d2fbb4293f99532657e7fe26d443c6fb174012"
+    },
+    {
+      "path": "07-onboard.png",
+      "bytes": 1590771,
+      "sha256": "5395bc684a7553ccc6b0d929b392aa5020995d1bb4654645c33fd9d5f95176c5"
+    },
+    {
+      "path": "02-onboard.png",
+      "bytes": 215367,
+      "sha256": "3808f22670941f24333d3e386e0c12735d66b4a5cc68d164332c04a185a1ac86"
+    },
+    {
+      "path": "05-onboard.png",
+      "bytes": 221433,
+      "sha256": "139086174573a5fc5cf64ded6cc4f29db7bc4ecd6c0988d077e5da3978c39ce0"
+    },
+    {
+      "path": "22-verify.png",
+      "bytes": 742386,
+      "sha256": "a63050dbaca3893213dff8549c8e1e259ded25a04c6a2614128f5e10660e35ed"
+    },
+    {
+      "path": "08-observe.png",
+      "bytes": 1397614,
+      "sha256": "395e013d0a407de947cff93a6557ba25f529ab63a1db9ee1a56c9aab4bf62297"
+    },
+    {
+      "path": "15-key.png",
+      "bytes": 735143,
+      "sha256": "5d83c52ab31d9eeabeefdff873955c0416193a4a0b441589f843d89de3d1d9df"
+    },
+    {
+      "path": "focus-control/01-observe.png",
+      "bytes": 220658,
+      "sha256": "3b8e4cfc863f58e1b196414324c27f04903500680920d3f320df48833be70b72"
+    },
+    {
+      "path": "focus-control/08-prepare.png",
+      "bytes": 1541534,
+      "sha256": "473ebecfeedac6a702e47085f0c6c69ea4cb1d71065c8671d48cde03f6d2984a"
+    },
+    {
+      "path": "focus-control/04-onboard.png",
+      "bytes": 216851,
+      "sha256": "1f0bcd4aad7bdcdaccb8c1411fb8ac17dd704a080e31b7ad40ea17926c94b943"
+    },
+    {
+      "path": "focus-control/desktop.png",
+      "bytes": 443447,
+      "sha256": "5834574065a57cd3fba402220078b52a64283b1f0d5a2d0056efefdc36072e3d"
+    },
+    {
+      "path": "focus-control/06-onboard.png",
+      "bytes": 221480,
+      "sha256": "19413201cf9818315e95d092a09d1d0673e26955424a60fe7819994c4408f207"
+    },
+    {
+      "path": "focus-control/03-onboard.png",
+      "bytes": 219314,
+      "sha256": "4573af81215b7adcfa96824911b103da27bcf3f8148f8877a8bd92f0d87d70b2"
+    },
+    {
+      "path": "focus-control/07-onboard.png",
+      "bytes": 1623787,
+      "sha256": "06dce9a5072442aa480626c657c025c37c696d629c6cedcd01bd10f0eaa3c470"
+    },
+    {
+      "path": "focus-control/02-onboard.png",
+      "bytes": 218080,
+      "sha256": "27870d06e53f1746f7cb14fc5ed8904768643cb1f06e86cde0dc237e1d172ece"
+    },
+    {
+      "path": "focus-control/05-onboard.png",
+      "bytes": 223807,
+      "sha256": "ad65d8286dfe4e130bcbd1a292333cd3e936b24b5a32fadbf4e2239acb4a20de"
+    },
+    {
+      "path": "copy-workflows/17-nav.png",
+      "bytes": 820892,
+      "sha256": "d6cb83201fea2f1d6f348634662f7e452782ad7ae709abde128c0d271a452932"
+    },
+    {
+      "path": "copy-workflows/23-verify.png",
+      "bytes": 838481,
+      "sha256": "75a180ae6d589b08d5676fc09a545d97f705d3c332fb32c0b9e84067a590f59c"
+    },
+    {
+      "path": "copy-workflows/31-fixture-mkdir.png",
+      "bytes": 851217,
+      "sha256": "efb23994d18e7e8bbf9f07e9165ba9edfb734b8fb4ab3e444ea94097d52a447b"
+    },
+    {
+      "path": "copy-workflows/15-click.png",
+      "bytes": 829734,
+      "sha256": "dce93e441610ea71448024481d05c223590f1c085cbe8b23b228da9d12c93318"
+    },
+    {
+      "path": "copy-workflows/51-click.png",
+      "bytes": 713960,
+      "sha256": "d2ceb6e477b42601fbdc6fc96798372dcda4425a2c86eea5f653c2c5bd49717c"
+    },
+    {
+      "path": "copy-workflows/01-observe.png",
+      "bytes": 224989,
+      "sha256": "128b600a89a67e3197dc9419e9312631e79cf842c65725379cc6140ba1a56f08"
+    },
+    {
+      "path": "copy-workflows/27-click.png",
+      "bytes": 851463,
+      "sha256": "8c733f8be4195efdb1a9edcbc4124a06a39bb09219df8a9baa32ff50d589a997"
+    },
+    {
+      "path": "copy-workflows/53-verify.png",
+      "bytes": 842858,
+      "sha256": "09b28d0d6e1eecad5c722d7b84336f2a68875d2a21ed62cb5454996cf2535bcf"
+    },
+    {
+      "path": "copy-workflows/28-verify.png",
+      "bytes": 851217,
+      "sha256": "efb23994d18e7e8bbf9f07e9165ba9edfb734b8fb4ab3e444ea94097d52a447b"
+    },
+    {
+      "path": "copy-workflows/10-launch.png",
+      "bytes": 829184,
+      "sha256": "98ce34a0d42aac341ee9a50adfc2e23d11be6487e3d11eaffa82edf00826b725"
+    },
+    {
+      "path": "copy-workflows/11-probe.png",
+      "bytes": 829184,
+      "sha256": "98ce34a0d42aac341ee9a50adfc2e23d11be6487e3d11eaffa82edf00826b725"
+    },
+    {
+      "path": "copy-workflows/38-click.png",
+      "bytes": 864580,
+      "sha256": "9478c203f68f993b240f1a511042c98ac42186cc936297e9efdc1dd9362ccf13"
+    },
+    {
+      "path": "copy-workflows/04-onboard.png",
+      "bytes": 220771,
+      "sha256": "67c6888a7c75d458eb8e1ab8ef930068665ec831fcb1cfa989a4006b7ee1ae7a"
+    },
+    {
+      "path": "copy-workflows/desktop.png",
+      "bytes": 842858,
+      "sha256": "09b28d0d6e1eecad5c722d7b84336f2a68875d2a21ed62cb5454996cf2535bcf"
+    },
+    {
+      "path": "copy-workflows/06-onboard.png",
+      "bytes": 224848,
+      "sha256": "6c8f2c9544444494c64c9b6604f9a71990879643a662b5fe5f5c0ece375bc006"
+    },
+    {
+      "path": "copy-workflows/14-focus.png",
+      "bytes": 829088,
+      "sha256": "1912cb79975c2d9cfb6ef06adf2039442f27d5ca0a1956bbdfae2ab110da58a0"
+    },
+    {
+      "path": "copy-workflows/03-onboard.png",
+      "bytes": 223564,
+      "sha256": "d19509cc1d54d80d7f229bc07d6cfa472f6ee89e68f9011f2d9cf2f4732de961"
+    },
+    {
+      "path": "copy-workflows/32-nav.png",
+      "bytes": 862852,
+      "sha256": "8410bd2b06d7809b9004c2e86f1a199ee6c3855e0fe12b7177b1e1c065e589bb"
+    },
+    {
+      "path": "copy-workflows/24-key.png",
+      "bytes": 942055,
+      "sha256": "7475214c129ea37f43cb44c8dbe8c9e5760efb640471680d7ee166d4212d507b"
+    },
+    {
+      "path": "copy-workflows/45-click.png",
+      "bytes": 937379,
+      "sha256": "ed11321aee42ae995c54c5c807a55f2f9ef304c33ecbcb5dd19b6e1db39ac4f3"
+    },
+    {
+      "path": "copy-workflows/13-probe.png",
+      "bytes": 828845,
+      "sha256": "690a185038e82c21bd4d8637deaef0c62de2f77fae496eaff589b78835d3190a"
+    },
+    {
+      "path": "copy-workflows/48-nav.png",
+      "bytes": 842208,
+      "sha256": "f02b46ae605b07e1bab08fd07860ac0c4a78fd2df4bcb56802a598341f71c7f9"
+    },
+    {
+      "path": "copy-workflows/25-click.png",
+      "bytes": 857992,
+      "sha256": "553f824c92ef998f2aadf656fafae15d019bbe1d34952ac4252ca140d4cead37"
+    },
+    {
+      "path": "copy-workflows/09-prepare.png",
+      "bytes": 3015404,
+      "sha256": "807ebe52e818f316d29b39fdff342b39adb38535d005e1fa7af3cf8d4047a7c4"
+    },
+    {
+      "path": "copy-workflows/34-key.png",
+      "bytes": 869653,
+      "sha256": "fa679a2feb88e5ec5903f23f9147d76820fb6189d3384fdf9043854c41c23cb8"
+    },
+    {
+      "path": "copy-workflows/07-onboard.png",
+      "bytes": 3015430,
+      "sha256": "886bd38ec09714ec22d7e769e20a318ea1021b1c3d3f9ffbd5478997c1b61af8"
+    },
+    {
+      "path": "copy-workflows/35-nav.png",
+      "bytes": 851699,
+      "sha256": "4b7e0a74badc976e2647bfe5dfd5cab9147e1c5a92b27f28360624191e9a247b"
+    },
+    {
+      "path": "copy-workflows/29-fixture-mkdir.png",
+      "bytes": 851217,
+      "sha256": "efb23994d18e7e8bbf9f07e9165ba9edfb734b8fb4ab3e444ea94097d52a447b"
+    },
+    {
+      "path": "copy-workflows/36-key.png",
+      "bytes": 862314,
+      "sha256": "5dd291ce9a735e0782814d7954a0ebe23f4516b7f51e265542dbd60751dee783"
+    },
+    {
+      "path": "copy-workflows/46-click.png",
+      "bytes": 833702,
+      "sha256": "e102bba53e293913b95d2fe54bcc74774b930452f889b8d7445cd7bcdb519e0d"
+    },
+    {
+      "path": "copy-workflows/30-fixture-write.png",
+      "bytes": 851217,
+      "sha256": "efb23994d18e7e8bbf9f07e9165ba9edfb734b8fb4ab3e444ea94097d52a447b"
+    },
+    {
+      "path": "copy-workflows/02-onboard.png",
+      "bytes": 222109,
+      "sha256": "9274dcff7be8dab61f08ddedcc4ada784eb8a431540c65d1e9d7661e244d605d"
+    },
+    {
+      "path": "copy-workflows/33-key.png",
+      "bytes": 869823,
+      "sha256": "0c0e9c5be75da46e8e8b345e3b62ca39f1369f6f6626ecae34081f3e12362d97"
+    },
+    {
+      "path": "copy-workflows/43-click.png",
+      "bytes": 939440,
+      "sha256": "68a7c48d6f3be3052cefe525c95c601f2f808d3573a51f31f99b5ec0172c067c"
+    },
+    {
+      "path": "copy-workflows/41-click.png",
+      "bytes": 877460,
+      "sha256": "43d154875109440468346641907dae8c6be0e686aadb7b44b56c1913d9933c2c"
+    },
+    {
+      "path": "copy-workflows/20-verify.png",
+      "bytes": 820721,
+      "sha256": "3f5605296aabfeaf4d37d2d0dc5162d5821965ae36760766cc6279fa596f5ec4"
+    },
+    {
+      "path": "copy-workflows/05-onboard.png",
+      "bytes": 226927,
+      "sha256": "d383a98c80117be831cb73bf4b76a7a91039e8787391e5e3c4c6f78411935aa4"
+    },
+    {
+      "path": "copy-workflows/12-dismiss-shell.png",
+      "bytes": 828845,
+      "sha256": "690a185038e82c21bd4d8637deaef0c62de2f77fae496eaff589b78835d3190a"
+    },
+    {
+      "path": "copy-workflows/16-key.png",
+      "bytes": 830859,
+      "sha256": "7fca6383c83cfeb1225ffa371992e91091507a4ecc771dddd0b187e866c8fdfa"
+    },
+    {
+      "path": "copy-workflows/19-click.png",
+      "bytes": 820781,
+      "sha256": "db1d1b6652b3e9a9b1347bb96533e77ad50136e7af2124d8c791d5537d519aa6"
+    },
+    {
+      "path": "copy-workflows/49-click.png",
+      "bytes": 843177,
+      "sha256": "dd64032fa26b06a4b864776e4a0368be7467860ea5947162be239c2749dd35b3"
+    },
+    {
+      "path": "copy-workflows/08-observe.png",
+      "bytes": 3015420,
+      "sha256": "05232e52be78d91a37a8be41f73bf7a993c095e23d45350ee925454348a9cb51"
+    },
+    {
+      "path": "copy-workflows/44-click.png",
+      "bytes": 842434,
+      "sha256": "3cb0bd888c66de3d685002b9d9e3f3cc5f7bbae30d766c006dff4545789d5ca4"
+    }
+  ],
+  "bytes_removed": 68099684,
+  "retained": [
+    "12-probe.png",
+    "20-click.png",
+    "21-click.png",
+    "copy-workflows/18-key.png",
+    "copy-workflows/21-click.png",
+    "copy-workflows/22-click.png",
+    "copy-workflows/26-verify.png",
+    "copy-workflows/37-verify.png",
+    "copy-workflows/39-verify.png",
+    "copy-workflows/40-click.png",
+    "copy-workflows/42-verify.png",
+    "copy-workflows/47-verify.png",
+    "copy-workflows/50-key.png",
+    "copy-workflows/52-key.png",
+    "first-boot-timeout-control/boot-timeout.png",
+    "focus-control/09-launch.png"
+  ]
+}

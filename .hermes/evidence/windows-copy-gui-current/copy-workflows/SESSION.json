@@ -1,0 +1,13 @@
+{
+  "status": "failed",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "teardown",
+  "nonce": "8cb8eca249c34feca1fb9359ae1b5826",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 54,
+  "error": "JSONDecodeError('Expecting value: line 1 column 1 (char 0)')",
+  "fixtures_removed": true,
+  "guest_off": true
+}

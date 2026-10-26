@@ -1,0 +1,7 @@
+{
+  "default_view_mode": "List",
+  "status": "pass",
+  "scope": "Saved preferences after real app close; private daemon teardown separately labeled",
+  "owned_payload_processes": 0,
+  "theme": "Dark"
+}

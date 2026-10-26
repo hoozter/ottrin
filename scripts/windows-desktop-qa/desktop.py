@@ -36,8 +36,24 @@ if operation in ['cleanup', 'retire']:
     if operation == 'cleanup':
         wait(n.start((HERE / 'cleanup.ps1').read_text()))
         n.download('cleanup-result.json', E / 'TEARDOWN_GUEST.json')
-        for name in ['app.stderr', 'app.stdout']:
-            n.download('results\\' + name, E / name)
+    # Failed setup can restore the account before Ottrin ever launches. Observe
+    # the output files that actually exist; missing pre-launch logs must not
+    # prevent retiring an otherwise restored fixture. Real download errors stay
+    # fatal, and the manifest makes absence explicit in the evidence.
+    wait(n.start(r"""$root='C:\OttrinWindowQA'
+$receipt=Get-Content "$root\cleanup-result.json" -Raw|ConvertFrom-Json
+if($receipt.status-ne'pass'){throw 'Restoration has not completed'}
+$files=@(foreach($name in @('app.stderr','app.stdout')){
+ if(Test-Path -LiteralPath "$root\results\$name" -PathType Leaf){$name}
+})
+@{files=$files}|ConvertTo-Json|Set-Content "$root\results\app-outputs.json"
+"""))
+    n.download('results\\app-outputs.json', E / 'APP_OUTPUTS.json')
+    files = json.loads((E / 'APP_OUTPUTS.json').read_text(encoding='utf-8-sig'))['files']
+    assert isinstance(files, list) and len(files) == len(set(files))
+    assert set(files) <= {'app.stderr', 'app.stdout'}
+    for name in files:
+        n.download('results\\' + name, E / name)
     wait(n.start((HERE / 'retire-owned-root.ps1').read_text()))
     subprocess.run(['virsh', '-c', 'qemu:///system', 'shutdown', 'ottrin-copy-cleanup-qa', '--mode', 'agent'], check=True)
     print('Owned fixtures/account removed; guest shutdown requested. Verify domain off and unchanged XML.')

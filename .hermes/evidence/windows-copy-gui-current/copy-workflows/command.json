@@ -1,0 +1,20 @@
+{
+  "op": "verify",
+  "case": "ordinary",
+  "label": "Read-only VCF Space-close and all live contents remain exact after Copy Undo and cleanup",
+  "files": {
+    "source\\bundle\\nested.txt": "nested directory bytes\n",
+    "source\\note.txt": "source original\n",
+    "source\\other.txt": "other original\n",
+    "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n",
+    "destination\\note.txt": "destination original\n"
+  },
+  "absent": [
+    "batch-destination\\bundle",
+    "batch-destination\\contact.vcf",
+    "batch-destination\\note.txt",
+    "batch-destination\\other.txt",
+    "destination\\note (1).txt"
+  ],
+  "id": "67246c1122cc46aa817f777139af358b"
+}

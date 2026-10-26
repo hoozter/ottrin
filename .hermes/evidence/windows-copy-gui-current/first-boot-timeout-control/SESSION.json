@@ -1,0 +1,10 @@
+{
+  "status": "failed",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "teardown",
+  "nonce": "128f3c67ed69416c907758165dba8611",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "error": "TimeoutError('Guest agent unavailable')"
+}

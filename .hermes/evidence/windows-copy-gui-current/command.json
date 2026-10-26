@@ -1,0 +1,15 @@
+{
+  "op": "verify",
+  "case": "ordinary",
+  "label": "All four files remain exact after normal application Close",
+  "files": {
+    "source\\note.txt": "source original\n",
+    "destination\\note.txt": "destination original\n",
+    "source\\other.txt": "other original\n",
+    "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+  },
+  "absent": [
+    "destination\\note (1).txt"
+  ],
+  "id": "a17b125b334d46459bfd3629bed1f31b"
+}

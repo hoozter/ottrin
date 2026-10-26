@@ -1,0 +1,44 @@
+{
+  "cursor_x": 760,
+  "id": "8daf4917b0144b7f9c6a189e9e4cf713",
+  "case": "ordinary",
+  "foreground_pid": 5904,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Actual four-item Copy includes directory contents and preserves every source",
+    "status": "pass",
+    "files": {
+      "source\\bundle\\nested.txt": "nested directory bytes\n",
+      "batch-destination\\bundle\\nested.txt": "nested directory bytes\n",
+      "source\\note.txt": "source original\n",
+      "batch-destination\\note.txt": "source original\n",
+      "source\\other.txt": "other original\n",
+      "batch-destination\\other.txt": "other original\n",
+      "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n",
+      "batch-destination\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 262704,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 197172,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 266,
+  "op": "verify"
+}

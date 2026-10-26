@@ -1,0 +1,39 @@
+{
+  "cursor_x": 600,
+  "id": "91721e56f4264b06bc245211c385f668",
+  "case": "ordinary",
+  "foreground_pid": 7964,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Actual Keep Both publishes the renamed copy without replacing either original",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n",
+      "destination\\note (1).txt": "source original\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 262704,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 197172,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 352,
+  "op": "verify"
+}

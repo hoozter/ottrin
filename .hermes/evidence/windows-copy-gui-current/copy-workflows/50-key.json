@@ -1,0 +1,38 @@
+{
+  "cursor_x": 260,
+  "id": "7617255dbfb64a69b5cf7d087f4428cc",
+  "case": "ordinary",
+  "foreground_pid": 4968,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": null,
+  "windows": [
+    {
+      "handle": 655846,
+      "left": 52,
+      "bottom": 612,
+      "top": 52,
+      "right": 772,
+      "title": "Ottrin Quick Inspector \u2014 contact.vcf"
+    },
+    {
+      "handle": 262704,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 197172,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 181,
+  "op": "key"
+}

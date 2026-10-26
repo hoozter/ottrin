@@ -1,0 +1,91 @@
+{
+  "status": "pass for exact-package named GUI scopes and restored owned guest; no complete Windows release acceptance",
+  "source": "bcd625acf937703d217a83467c0485eae415b933",
+  "appearance": "Dark/List100/default renderer; actual1024x680 main window on1280x800 ordinary NTFS VM console",
+  "accepted_actions": [
+    "First real portable launch, native icon and intended appearance",
+    "Native clipboard Replace Copy with source preservation; actual Undo restores displaced destination bytes",
+    "Keep Both creates the expected renamed file; actual Undo removes only that copy",
+    "Four-item batch includes a directory and its nested file; exact bytes, available batch Undo, all sources preserved",
+    "Actual batch Undo removes all four targets and refreshes the visible listing to empty",
+    "All three explicit retained-data cleanup actions finish, clear Activity and preserve live originals; batch destination retains only shared claims controls",
+    "Focused read-only VCF inspector text closes with Space, with exact original bytes",
+    "Separate same-package ordinary session repeats real Keep Both Copy/Undo, then normal Close exits0; four files remain exact and saved Dark/List preferences persist"
+  ],
+  "workflows": {
+    "evidence": "copy-workflows",
+    "session_status": "Fixture-controller close-request JSON race after all product workflow checks; emergency teardown restored everything. No normal Close claimed for that session.",
+    "final_verified_contents": "copy-workflows/53-verify.json",
+    "batch_cleanup": "copy-workflows/BATCH_CLEANUP.json"
+  },
+  "normal_close": {
+    "evidence": "23-close.json",
+    "result": {
+      "status": "pass",
+      "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+      "normal_app_close": [
+        {
+          "exit": 0,
+          "pid": 4380
+        }
+      ]
+    },
+    "post_close_contents": "24-verify.json",
+    "saved_preferences": {
+      "default_view_mode": "List",
+      "status": "pass",
+      "scope": "Saved preferences after real app close; private daemon teardown separately labeled",
+      "owned_payload_processes": 0,
+      "theme": "Dark"
+    }
+  },
+  "teardown": {
+    "actor_task_removed": true,
+    "original_files_preserved": true,
+    "profile_removed": true,
+    "temporary_password_removed": true,
+    "login_values_restored": true,
+    "status": "pass",
+    "ordinary_account_removed": true
+  },
+  "all_sessions_guest_off_and_owned_fixtures_removed": true,
+  "persistent_definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "screenshots": [
+    "12-probe.png",
+    "20-click.png",
+    "21-click.png",
+    "copy-workflows/18-key.png",
+    "copy-workflows/21-click.png",
+    "copy-workflows/22-click.png",
+    "copy-workflows/26-verify.png",
+    "copy-workflows/37-verify.png",
+    "copy-workflows/39-verify.png",
+    "copy-workflows/40-click.png",
+    "copy-workflows/42-verify.png",
+    "copy-workflows/47-verify.png",
+    "copy-workflows/50-key.png",
+    "copy-workflows/52-key.png",
+    "first-boot-timeout-control/boot-timeout.png",
+    "focus-control/09-launch.png"
+  ],
+  "qa_controls_and_repairs": [
+    "First guest-agent50-second boot deadline was too short; recovered cleanup and bounded180-second readiness are recorded in first-boot-timeout-control",
+    "Cleanup now observes an explicit app-log manifest; no logs exist before launch, and real download errors remain fatal. Empty and both-log paths executed natively.",
+    "Native point probe confirmed invisible first-login Start/Search input ownership; actual owned shell Escape dismissal precedes app focus. Guard remained unchanged.",
+    "Close request raced its host JSON writer before dispatch; complete requests now publish atomically without replacing outstanding input, and a failed controller returns failure. Focused normal-close follow-up passed."
+  ],
+  "fixture_source_hashes": {
+    "scripts/windows-desktop-qa/desktop.py": "f23f3d25c172920ee923b002d2765a8ae2c6d2599f49252a928001dfc6621ac4",
+    "scripts/windows-desktop-qa/actor.ps1": "4ddd452b060f8ee16a35a047f4815e4ee46579faf23abf9a7f57a34c02a81618",
+    "scripts/windows-desktop-qa/interop.ps1": "358e7828e0b6c4855b005699eb4623b870b71e21c08dd75594de958d3f51df33",
+    ".hermes/evidence/windows-copy-package-current/gui-session.py": "5e78a17f9def793e7a049b205ba0c78a32c1b6369f7250223d9aea24f7f14a81",
+    ".hermes/evidence/windows-copy-package-current/gui-command.py": "252ca7291500ee1c3cc7951be828f61a97881714c59ffd7b396e154faed9a9a1"
+  },
+  "excluded": [
+    "Current MSI/NSIS install/upgrade/rollback/uninstall",
+    "Aliases, other storage, physical devices and additional graphics matrices",
+    "Additional appearance variants/scales and broad Office/footer/tooltip matrices",
+    "Complete hosted MSVC acceptance remains separately tracked",
+    "Production release, Store submission and human daily-driver acceptance"
+  ]
+}

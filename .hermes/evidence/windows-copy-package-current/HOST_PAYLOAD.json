@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "source_revision": "bcd625acf937703d217a83467c0485eae415b933",
+  "files": 58,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "946b962509c8db3f74947dadbdf9f31cae32dc56071e1a319c791099e9e01e66",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f6cc7a7f0aec4852d13b3ef259a6335472f62bf3529bcd894a4bf515fa30a8db",
+    "Ottrin-0.1.0-windows-x64.msi": "ffb3409e06cf4f2889a38c5580d1de9fde13c57c944f4cf64160d80dd9dadd71"
+  },
+  "portable_nsis_msi_agree": true,
+  "font_notice_exact": true,
+  "gui_acceptance": "pass for exact named ordinary portable Copy/Undo/cleanup and separate normal-close scopes; windows-copy-gui-current/GUI_SCOPES.json"
+}

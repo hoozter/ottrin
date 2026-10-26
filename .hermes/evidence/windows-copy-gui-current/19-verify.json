@@ -1,0 +1,39 @@
+{
+  "cursor_x": 600,
+  "id": "16b13c3936fc4fd088442c5fbd1a434c",
+  "case": "ordinary",
+  "foreground_pid": 4704,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Close follow-up same-package Copy preserves both originals",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n",
+      "destination\\note (1).txt": "source original\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 393846,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 655862,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 352,
+  "op": "verify"
+}

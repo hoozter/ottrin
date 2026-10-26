@@ -920,9 +920,11 @@ been reclaimed. Native Windows has journaled completion evidence and a private c
 implementation. Public Windows Copy now routes through that transaction engine,
 returns single/batch receipts and supports per-operation Stop with retained recovery.
 The ordinary/elevated native UI regression scopes and exact source hashes are in
-`windows-copy-public-workflow-current/ACCEPTANCE.json`. Complete hosted MSVC and
-rebuilt-package desktop acceptance remain required; cross-compilation alone does
-not establish Windows Copy acceptance.
+`windows-copy-public-workflow-current/ACCEPTANCE.json`. Full hosted Linux/Windows workspace, lint and release now pass on `bcd625ac`.
+Its coherent portable/NSIS/MSI candidate also passes actual ordinary portable
+Copy/Undo/cleanup and normal-close scopes in `windows-copy-package-current`.
+Broader transaction/resource/platform outcomes retain separate gates;
+cross-compilation alone does not establish Windows Copy acceptance.
 
 Native backend correctness tests use the workspace `target/` and the canonical
 per-package test profile in `Cargo.toml` (platform/UI optimization and debug data

@@ -1,0 +1,16 @@
+{
+  "scope": "After actual batch Cleanup action: only shared claims namespace controls remain; no batch publication or transaction directories",
+  "status": "pass",
+  "entries": [
+    {
+      "Name": ".ottrin-copy-target-claims",
+      "PSIsContainer": true,
+      "Length": null
+    },
+    {
+      "Name": ".ottrin-copy-target-claims-root",
+      "PSIsContainer": false,
+      "Length": 956
+    }
+  ]
+}

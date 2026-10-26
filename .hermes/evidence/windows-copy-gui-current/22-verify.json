@@ -1,0 +1,42 @@
+{
+  "cursor_x": 760,
+  "id": "7b54aa7bfbcb4f6e8c986a3980046ad3",
+  "case": "ordinary",
+  "foreground_pid": 2712,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Undo completes before normal close",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "destination original\n",
+      "source\\other.txt": "other original\n",
+      "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n"
+    },
+    "absent": [
+      "destination\\note (1).txt"
+    ]
+  },
+  "windows": [
+    {
+      "handle": 393846,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 655862,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 266,
+  "op": "verify"
+}

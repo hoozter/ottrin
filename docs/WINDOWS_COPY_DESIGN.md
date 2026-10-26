@@ -13,10 +13,14 @@ and chunk cancellation with safely ending an unpublished attempt. Strict
 Linux/Windows-GNU lint and shared Linux regressions pass. Exact source/binary
 hashes and teardown are in
 `.hermes/evidence/windows-copy-public-workflow-current/ACCEPTANCE.json`.
-Complete hosted MSVC, exact new package desktop acceptance and the remaining
-resource/alias/transaction/platform gates are still required. Existing accepted
-packages retain their original source and disabled public-Copy behavior; older
-component checkpoint statements below retain their recorded scopes.
+Full hosted Linux/Windows workspace, strict lint and release pass on `bcd625ac`.
+Its coherent58-file portable/NSIS/MSI candidate passes actual ordinary clipboard
+Replace/Keep Both, directory/file batch Copy, single/batch Undo, cleanup and
+normal-close scopes in `windows-copy-package-current/ACCEPTANCE.json`. The
+remaining resource/alias/transaction/platform and installer lifecycle gates stay
+required. Public downloads remain unchanged; the current internal candidate is
+identified by `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Older component checkpoint
+statements below retain their recorded scopes.
 
 ## Confirmed temporary-stream isolation gap
 

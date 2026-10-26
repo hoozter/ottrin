@@ -1,0 +1,13 @@
+{
+  "cursor_x": 1050,
+  "id": "d403ddadd65a47e4b652c37fe6e3738f",
+  "case": "ordinary",
+  "foreground_pid": 6172,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": null,
+  "windows": [],
+  "ordinary_user": true,
+  "cursor_y": 668,
+  "op": "prepare"
+}

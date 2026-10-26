@@ -1,11 +1,12 @@
 {
-  "status": "Native/source checkpoint verified; package and full hosted acceptance remain in progress",
-  "receipt": "ACCEPTANCE.json",
-  "next": [
-    "Full hosted MSVC workspace, lint and release",
-    "Exact rebuilt package, actual public Copy/Undo desktop workflows and coherent archive payload checks",
-    "Broader alias, ancestor, resource, cross-volume, physical and remaining transaction acceptance retain their separate roadmap gates",
+  "status": "Source checkpoint delivered in the current internal Windows candidate; full hosted Linux/Windows CI passed",
+  "package_source": "bcd625acf937703d217a83467c0485eae415b933",
+  "source_scope": "ACCEPTANCE.json",
+  "delivery_scope": ".hermes/evidence/windows-copy-package-current/ACCEPTANCE.json",
+  "remaining": [
+    "Broader transaction, alias, ancestor, resource and platform outcomes retain their own roadmap scopes",
     "MSI failed-uninstall registration rollback",
-    "Roadmap remains active; owner acceptance deferred"
+    "Index startup revalidation CPU",
+    "Other roadmap engineering, then owner acceptance"
   ]
 }

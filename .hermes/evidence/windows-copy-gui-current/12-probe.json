@@ -1,0 +1,40 @@
+{
+  "cursor_x": 1050,
+  "id": "875619ce43874be497682db918793408",
+  "case": "ordinary",
+  "foreground_pid": 864,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "hit_pid": 4380,
+    "label": "Native point ownership probe",
+    "hit_title": "Ottrin",
+    "y": 54,
+    "x": 400,
+    "hit_handle": 393846,
+    "app_pid": [
+      4380
+    ]
+  },
+  "windows": [
+    {
+      "handle": 393846,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 655862,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 668,
+  "op": "probe"
+}

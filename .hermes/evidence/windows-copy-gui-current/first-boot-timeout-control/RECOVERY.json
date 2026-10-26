@@ -1,0 +1,19 @@
+{
+  "status": "pass for recovery only; no application launched or GUI acceptance",
+  "failure": "First-login guest agent missed the50-second OS setup deadline; cleanup restored account/profile/login, then collector failed on absent pre-launch app logs",
+  "repair": "Explicit output presence manifest, with download errors fatal; shared cleanup/retire path now handles verified absence. Owned retirement executed successfully with files=[]",
+  "guest_off": true,
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "temporary_credential_account_profile_task_removed": {
+    "actor_task_removed": true,
+    "original_files_preserved": true,
+    "profile_removed": true,
+    "temporary_password_removed": true,
+    "login_values_restored": true,
+    "status": "pass",
+    "ordinary_account_removed": true
+  },
+  "root_retired": true,
+  "source_fixture_fix": "scripts/windows-desktop-qa/desktop.py",
+  "post_reboot_readiness_seconds": 180
+}
