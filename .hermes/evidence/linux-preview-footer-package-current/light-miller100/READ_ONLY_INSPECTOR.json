@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "opened_from": "Actual Expand preview button",
+  "inspector": "8388634",
+  "clicked_extracted_text_then_space_closed": true,
+  "main_window_remains": true,
+  "docx_sha256": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6",
+  "frame": "15-inspector-extracted.png",
+  "scope": "DOCX extracted text remains read-only; no native Office-provider, editing or broader keyboard acceptance"
+}

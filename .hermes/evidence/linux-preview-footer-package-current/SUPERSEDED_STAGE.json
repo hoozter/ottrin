@@ -1,0 +1,14 @@
+{
+  "source_revision": "802a2a4b7b44b8630c6136ffe4da1210a4a91965",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-preview-footer-stage",
+  "artifacts": {
+    "Ottrin-0.1.0-x86_64.AppImage.sha256": "d18b7112ade50e474e50b5369872303025640e83fae364f6e6335b73957b4f99",
+    "Ottrin-0.1.0-x86_64.AppImage": "db946b1cf176a52b379db02ea0a61e4a2c5f7c88b9c6959b8bc02a9e62f767be",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256": "6c0729828668024c0b2c20b3a686485e4b4bb2db1285803400b97eabad439403",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7128e3a77551cf2cdc7e1e544a958c2f08699b4d75714cc6400b881db27710ec",
+    "ottrin_0.1.0_amd64.deb.sha256": "f787d22239ac72e50fafdd88317581d3c548191dc244aa8e73ac0c7075481260",
+    "ottrin_0.1.0_amd64.deb": "af5b9acf6ce03fced0302cfba7846dd6c1b38fded60503cfc85807eb4bd70ec5",
+    "Ottrin-0.1.0-x86_64.AppImage.provenance.json": "219bb55294efb9487e50bfde5c5522db4901cc107826989bc1081d88b01aadbe"
+  },
+  "status": "Unpublished three-format802a2a4b stage;superseded to include corrected policy documentation. No GUI/extraction consumers;prior delivered cohort unchanged."
+}

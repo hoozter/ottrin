@@ -1,0 +1,60 @@
+{
+  "status": "pass within Linux source,four-format contents and scoped actual-AppImage preview acceptance",
+  "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "5115906af9e803a8a482a24d65cd125f21f9f50c76ffd81de4412bffda9cc1e9",
+    "Ottrin-0.1.0-x86_64.AppImage": "8b3b919ee427c62787297bcb170ada1cf2c8e51f90e8d7efdd547e1e656b7df3",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "16f4ca051f10e9a617a0ace45b222e92c544011bdf412b83f5a5d3d4fd4727fb",
+    "ottrin_0.1.0_amd64.deb": "da5cd5efae4e14ab940d634aebf11187e19dfe5e853d8c5f4633ecde97ea85ec"
+  },
+  "evidence": ".hermes/evidence/linux-preview-footer-package-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks",
+    "Actual AppImage Light/Miller100:wrapped text/DOCX metadata,native and extracted bodies,Inspector footer/read-only Space close with unchanged sources",
+    "Actual AppImage Dark/List150:short/long text Inspector metadata and read-only Space close with unchanged sources",
+    "Complete256x256 native window ARGB icon matches the asset",
+    "Both normal product closes exit0,persist theme/view and remove owned profiles,processes,displays,buses and mounts"
+  ],
+  "gui_acceptance": "GUI_ACCEPTANCE.json",
+  "indexd_binary_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
+  "indexd_resource_evidence": ".hermes/evidence/linux-filename-index-package-current/packaged-daemon/PROFILE.json",
+  "indexd_resource_scope": "Byte-identical daemon ELF;earlier CPU/startup/reconciliation observations retain original dates,fixtures and OS context. No new resource measurement claimed.",
+  "html_identity_scope": "Byte-identical release helper. Fresh complete hosted Linux3d469f31 setup/render/preload/namespace-capability/cleanup checks pass on Ubuntu26.04;no fresh personal privileged setup claimed.",
+  "hosted_source_evidence": {
+    "run": 41243997066,
+    "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+    "linux_job": "success",
+    "performance_job": "success",
+    "windows_job_at_linux_promotion": "in_progress",
+    "scope": "Full Linux workspace tests,strict lint,release and production HTML integration;Windows full CI remains separate. No complete all-platform green or release acceptance inferred."
+  },
+  "native_windows_source": "preview-footer-layout-current/ACCEPTANCE.json;380 regular tests each ordinary/elevated,one thread;Rust source unchanged from71f0cdb0",
+  "scope": "Local usable Linux cohort,not a production release. Targeted software-X11100/150% preview/normal-close/icon acceptance;broader workflows retain their earlier artifact hashes. No new fresh-distro,physical GPU/device,Office provider,editing,installer,signing or final owner acceptance.",
+  "personal_service": {
+    "pid": 2037864,
+    "enabled": true,
+    "active_current_runtime": true,
+    "same_daemon_elf": true,
+    "old_mount_removed": true,
+    "configuration_unit_wrapper_unchanged": true,
+    "evidence": "PERSONAL_SERVICE_DELIVERY.json"
+  },
+  "cleanup": "Owned GUI profiles/processes/displays/buses/mounts removed;staging/extraction retired after publication. Shared current compiler outputs and compact evidence retained.",
+  "personal_ready_interval": {
+    "seconds": 60.00418751499092,
+    "one_core_cpu_percent": 0.6999511490678395,
+    "rss_kib_range": [
+      44904,
+      44904
+    ],
+    "indexed_item_count_delta": 22,
+    "scope": "Both endpoints are watched Ready,but publication/completion timestamps and indexed-item count changed. This is a live-update interval,not quiet-idle acceptance.",
+    "evidence": "PERSONAL_READY_INTERVAL.json"
+  }
+}

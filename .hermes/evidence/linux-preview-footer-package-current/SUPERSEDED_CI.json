@@ -1,0 +1,8 @@
+{
+  "runs": [
+    41241958259,
+    41243399552
+  ],
+  "action": "Cancellation requested",
+  "reason": "Both earlier Linux jobs stop at superseded host-policy assertions;current3d469f31 full Linux/performance pass. Current41243997066 is the sole required Windows/full source verification. Earlier completed failure evidence is retained;no Windows success inferred for canceled runs."
+}

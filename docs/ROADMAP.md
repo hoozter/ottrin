@@ -18,34 +18,33 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
-- **Preview footer source correction (2026-10-31):** shared text, archive,
-  spreadsheet and document preview bodies reserve the actual wrapped metadata
-  height and frame margins. Short panels may shrink the body below egui's
-  former minimum. Spreadsheet omission notes reserve their rendered height.
-  DOCX headers and fallback controls wrap within the panel; selecting extracted
-  text uses one bounded presentation rather than appending a second document.
-  Six real rendered-geometry/click regression cases pass at narrow widths,
-  Light/Dark and text sizes up to200%. All407 regular Linux UI tests pass
-  (one existing ignore), and strict Linux/Windows-GNU UI lint passes. Native
-  Windows ordinary/elevated runs each pass380 regular UI tests serially, with
-  four existing ignores and no filters; all six new cases execute. The prior
-  four-thread ordinary run timed out in three existing Copy worker tests under
-  host memory pressure; it is retained as a failed control. Worker deadlines
-  and assertions are unchanged. Guest roots/profiles are removed and the guest
-  is off. Ten superseded incremental sessions were retired using guarded cleanup.
-  Hosted run41241958259 exposes an incorrect HTML host-policy assertion on
-  Ubuntu26.04: a successful profile-change syscall can retain restricted
-  `unconfined` as a stack. The revised check challenges namespace rights and
-  labels before/after the change. The first replacement probe in802a2a4b also
-  exposed namespace creation under a restrictive default profile; it is retained
-  as failed evidence, not accepted as a bypass or as passing CI. The next probe
-  requires either denied namespace creation or a retained enforcing guard and
-  denied privileged operation within it. Eight positive/negative admission
-  controls pass locally; a real permissive-host namespace challenge is rejected
-  by the gate. No global policy is changed. Fresh hosted verification and
-  replacement package acceptance remain required;
-  delivered cohorts below are unchanged. Evidence:
-  `preview-footer-layout-current/`.
+- **Preview footer delivered on Linux (2026-10-31):** clean `3d469f31` fixes
+  wrapped metadata/frame allocation, short body minima, sparse-sheet omission
+  notes and native/extracted DOCX presentation. All 407 regular Linux UI tests
+  pass (one existing ignore); strict Linux/Windows-GNU UI lint passes. Native
+  ordinary/elevated GNU Windows runs each pass 380 regular UI tests serially,
+  with four existing ignores and no filters. The failed four-thread pressure
+  control is retained. All six new layout/click cases execute. Ten obsolete
+  compiler sessions were retired with guarded cleanup. The corrected production
+  HTML host-policy challenge passes on Ubuntu26.04, including retained default
+  namespace confinement, pixels, preload denial and complete integration cleanup.
+  Full hosted Linux/performance pass in run **41243997066**; Windows release checking
+  is separate. Actual Linux package delivery and limits are recorded below.
+  Evidence: `preview-footer-layout-current/`, `html-host-policy-current/` and
+  `linux-preview-footer-package-current/`.
+- **Windows preview cohort not promoted:** all 58 files agree across portable,
+  NSIS and native MSI extraction; native loader/CLI checks pass for `3d469f31`.
+  Actual default-renderer Dark100 GUI frames show complete main/Inspector text
+  footers and read-only long-text/VCF Space close. The final caller incorrectly
+  supplied hashes to a verifier expecting literal text, so final byte/explicit
+  normal-Close acceptance did not execute. Cleanup removed the account/profile,
+  credential/task/root and returned the unchanged guest off. The unneeded staged
+  cohort was retired; published Windows `520d9c57` is preserved. No passing final
+  GUI acceptance is inferred. This run also exposes ready engineering: switching
+  List to Miller leaves the current directory/selection offscreen. Repair this
+  through the existing one-shot reveal path and verify bounded metadata values
+  before the next candidate. Evidence: `windows-preview-footer-package-current/`
+  and `windows-preview-footer-gui-current/`.
 - **Linux filename-index CPU delivered:** bounded canonical membership lookups
   followed by direct FTS inserts address the measured per-row construction
   hotspot. Exact packaged private-cache reconciliation uses 9.50 CPU seconds
@@ -99,22 +98,18 @@ their named hashes. Test counts are scoped observations, not completion measures
   Exact-package Copy/Undo/cleanup and normal-close acceptance is delivered below.
   Earlier Move/pipe acceptance retains its separate scope in
   `windows-ui-paths-current/ACCEPTANCE.json`.
-- **Delivered Linux:** clean **`41c35c2d`**, all four stable formats at
-  `dist/packages/`. AppImage SHA-256 starts `372c6c3fbdd424dc`; the current
-  receipt records all hashes. Production payload/runtime/helper-policy/font/
-  source checks pass. Actual AppImage runtime checks pass Dark/List100 normal
-  Copy Undo and changed-copy refusal, preserving the source and changed target.
-  Clicked read-only VCF text closes with Space without changing bytes; every
-  native ARGB icon pixel matches. Actual Light/Miller100 columns also pass Copy
-  Undo. Both normal closes exit0 and preserve their theme/view preferences.
-  Private profiles,displays,buses,daemons,mounts,extraction and staging are gone.
-  The index daemon and HTML helper are byte-identical to the earlier measured/
-  rendered cohort; those observations retain their dates and fixture scopes.
-  Production code is identical to fully green hosted520d9c57; the intervening
-  commit changes delivery receipts,roadmap and the native QA provider path only.
-  A clipped preview footer observed in Light/Miller remains ready engineering;
-  the view/theme check does not accept that footer or broader appearance.
-  Receipt: `linux-copy-undo-package-current/ACCEPTANCE.json`.
+- **Delivered Linux:** clean **3d469f31**, all four stable formats at
+  `dist/packages/`. AppImage SHA-256 starts **8b3b919ee427c627**; the current
+  receipt records all hashes. Production content/runtime/helper-policy/font/
+  source checks pass. Actual AppImage Light/Miller100 verifies wrapped text/DOCX
+  footers, native/extracted bodies and read-only Inspector close; Dark/List150
+  verifies short/long text Inspector footers/read-only close and every native
+  window ARGB icon pixel. Both product closes exit0, preserve theme/view and
+  remove private profiles,processes,displays,buses and mounts. Staging/extraction
+  is retired. The index daemon and HTML helper remain byte-identical; earlier
+  resource/workflow evidence retains its original dates and artifact scopes.
+  This is local preview delivery, not broader daily-driver or release acceptance.
+  Receipt: `linux-preview-footer-package-current/ACCEPTANCE.json`.
 - **Earlier production Linux HTML source verification:** hosted run
   `40278830449` on `3ee5f7c9` passes the complete Linux workspace, strict lint,
   release build, production helper installation/rendering, protected-preload
@@ -133,13 +128,17 @@ their named hashes. Test counts are scoped observations, not completion measures
   ignores and zero filters in the full suites. Evidence:
   `windows-copy-undo-admission-current/`. This earlier failure is superseded by
   complete hosted run40295923460 above.
-- **Personal service delivery (2026-10-31):** the configured unit is enabled
-  and running from the newly delivered AppImage, PID1789153, with exact daemon
-  ELF `df3f9618` unchanged. The observed cache contains122,877 items with watching
-  enabled; startup reconciliation was active in that snapshot, so no fresh idle
-  CPU result is claimed. Configuration,unit and launcher hashes are unchanged.
-  The old personal AppImage mount is gone. Receipt:
-  `linux-copy-undo-package-current/PERSONAL_SERVICE_DELIVERY.json`.
+- **Personal service delivery (2026-10-31):** enabled/running PID2037864
+  uses the current `3d469f31` AppImage runtime and unchanged daemon ELF `df3f9618`.
+  The previous runtime mount is gone; configuration,unit and wrapper hashes are
+  unchanged. A 60.004-second watched Ready interval uses 0.42 CPU seconds
+  (0.70% of one core), with stable 44,904 KiB process RSS while indexed-item count
+  rises 124,677→124,699 and publication timestamps change. This is a live-update
+  observation,not quiet-idle acceptance or an algorithm change. Earlier quiet
+  CPU evidence remains separately scoped. Evidence:
+  `linux-preview-footer-package-current/PERSONAL_SERVICE_DELIVERY.json` and
+  `PERSONAL_READY_INTERVAL.json`.
+
 - **Historical personal resource observation (2026-10-26):** at that observation,
   PID2398670 reported121,056 items,ready with active watching and no error.
   The first minute used23.2% of one core; the separate settled60-second window
@@ -374,17 +373,19 @@ Historical variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Finish fresh hosted verification of the corrected HTML profile-transition
-   challenge and exact-package acceptance/delivery of the preview footer repair.
-   The source and native layout checks above pass; current packages still retain
-   their original scope. Then continue remaining
-   Windows transaction/alias/ancestor/resource/workflow,graphics and
-   installer lifecycle acceptance. Keep failed-uninstall MSI rollback required;
-   investigate it further with a distinct proposed fix or justified comparison,
-   using the existing independent controls rather than repeating them.
-   Current installer lifecycle and broader platform scopes remain separate from
-   portable Copy acceptance. Linux `41c35c2d` is delivered and its actual service
-   is verified; release publication/signing remains unaccepted.
+1. Repair List-to-Miller view switching so the current directory/selection
+   and its preview are revealed once; keep deliberate later scrolling intact.
+   Inspect and bound the narrow Miller metadata values observed in the same run.
+   Reproduce failures before changing source,then run affected render/native and
+   exact-package checks. Correct the Windows GUI verifier caller to use literal
+   text plus independent raw-byte verification; the `3d469f31` staged cohort is
+   retired and its failed final control remains recorded. Linux `3d469f31` is
+   delivered and its actual enabled service is current. Continue remaining
+   Windows transaction/alias/ancestor/resource/workflow,graphics and installer
+   lifecycle acceptance. Keep failed-uninstall MSI rollback required and use a
+   distinct proposed fix or justified OS comparison rather than repeating its
+   existing independent controls. Release publication/signing remains unaccepted.
+
 2. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below, then platform acceptance. Earlier workflows retain their
    named scopes. Required outcome4 (the themed picker and supported folder
@@ -449,18 +450,15 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `41c35c2d`. Its production
-content/runtime/helper-policy/font/source checks, unchanged measured index ELF,
-actual Dark/List100 Copy Undo and changed-copy refusal,clicked read-only VCF,
-icon,Light/Miller100 Copy Undo and normal-close acceptance are summarized above
-and in `.hermes/evidence/linux-copy-undo-package-current/ACCEPTANCE.json`. Its exact
-release HTML helper also passes direct rendering on the unrestricted host;
-restricted-host production setup/confinement is separately accepted in hosted CI.
-Earlier operation, broader theme/scale and populated-index receipts retain their
-original package hashes and scopes. All owned current GUI/build/extraction
-fixtures are removed. Exact privileged diagnostic-core cleanup remains on the
-waiting list. This is targeted package acceptance, not completion of Linux,
-Office/picker or Windows outcomes.
+The current Linux cohort is built from clean `3d469f31`. Its full hosted Linux
+source checks, four-format contents and actual Light/Miller100 plus Dark/List150
+preview/read-only/normal-close/icon scopes are recorded above and in
+`.hermes/evidence/linux-preview-footer-package-current/ACCEPTANCE.json`.
+The configured service uses the current runtime with unchanged daemon bytes;
+previous resource/workflow receipts retain their dates and artifact hashes.
+All current private GUI/build/extraction fixtures are removed. Exact privileged
+cleanup of two earlier diagnostic cores remains on the waiting list. Broader
+platform,Office,picker,installer,signing and owner acceptance remain separate.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
@@ -483,7 +481,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | All four `41c35c2d` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List normal Undo/changed-copy refusal,clicked read-only VCF/icon,and Light/Miller Undo/normal close pass. The unchanged daemon ELF is enabled/running with122,877 cached items and watching;older CPU/RSS observations retain their dates. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
+| Linux | All four `3d469f31` formats pass current contents/source checks and scoped actual-AppImage Light/Miller100 and Dark/List150 preview/read-only/normal-close/icon acceptance. Full hosted Linux/performance pass;enabled service uses current runtime with unchanged daemon ELF and preserved configuration. Earlier workflows retain original hashes. | Complete ready Miller view/metadata corrections and remaining concentrated fresh-distro,device,media,elevation and final candidate acceptance. |
 | Windows | Internal `520d9c57` at `dist/windows-candidate/` agrees on58 files across portable/NSIS/MSI; native loader/CLI, single Replace and four-item batch Undo after destination-parent renames preserve old-path replacements; seven raw files and normal exit0 pass. Earlier cleanup/VCF scopes retain original hashes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. Full hosted `520d9c57` Linux/Windows workspace, lint and release pass;375 native UI cases pass per ordinary/elevated GNU token and on hosted MSVC. | Remaining transaction/alias/ancestor/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier broader GUI scopes retain their original hashes. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |

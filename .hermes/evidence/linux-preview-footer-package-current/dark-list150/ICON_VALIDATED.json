@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "width": 256,
+  "height": 256,
+  "all_argb_pixels_match": true,
+  "complete_cardinals": 65538,
+  "property_u32le_sha256": "6b6a2e09e109376b2e2c1432fa09b61bdbca6d10e3d0aa9ef9d53ab47aeab763",
+  "scope": "Actual packaged native window icon;no physical taskbar acceptance",
+  "xlib_storage_released": true
+}

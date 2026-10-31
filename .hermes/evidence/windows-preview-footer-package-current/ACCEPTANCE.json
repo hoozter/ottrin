@@ -1,0 +1,31 @@
+{
+  "status": "not accepted for final GUI delivery;unpromoted stage retired",
+  "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "d7218def46487dd7fe209eb744e5f4f6f774f2c8bd9fc52bf34cff3e85f28dd9",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "65997d01c28dace6d5020cc949a9d2bf28c0a3110251ecc1f21f4d7a97749804",
+    "Ottrin-0.1.0-windows-x64.msi": "8e31d9657806b6bf49ad3099e5df6d4aaecdeedc360b80c0c93032c94bd7906b"
+  },
+  "accepted_named_scopes": [
+    "All58 portable/NSIS/native-MSI administrative extraction payload bytes agree",
+    "Native loader/CLI argument checks",
+    "Source native380 regular UI checks per ordinary/elevated GNU token;Rust unchanged from71f0cdb0"
+  ],
+  "observed_only_gui": [
+    "Default-renderer ordinary Dark100 startup and actual View Mode menu",
+    "Long text main Miller/Inspector footers visibly complete",
+    "Clicked read-only long text and VCF followed by Space closes each Inspector"
+  ],
+  "failed_control": "The caller supplied SHA256 strings to actor verify.files,which expects literal UTF8 file contents. The helper correctly failed source/note.txt. This is a QA protocol error,not evidence of changed source bytes. Final raw-byte and explicit normal-Close checks did not execute and are not accepted.",
+  "ready_software_follow_up": "FOLLOW_UPS.json:List to Miller can leave current directory/selection offscreen;fix and reproduce before next candidate. Keep this defect out of owner waiting list.",
+  "cleanup": {
+    "account_profile_task_credential_root_removed": true,
+    "original_guest_files_preserved": true,
+    "guest_off": true,
+    "definition_unchanged": true,
+    "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage",
+    "retired_bytes": 285913851,
+    "reason": "No consumers remain. The following Miller correction will supersede this unpromoted cohort. Current published Windows520d9c57 is preserved."
+  },
+  "producer_cancellation_scope": "Signal/owned-controller guards and host producer process-group cleanup were added;successful native package teardown passes. Cancellation/failure-path acceptance is not claimed."
+}

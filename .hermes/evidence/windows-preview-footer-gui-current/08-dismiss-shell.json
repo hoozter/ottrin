@@ -1,0 +1,16 @@
+{
+  "cursor_x": 1050,
+  "id": "f902c38d91aa47efa5f083baca65fa5a",
+  "case": "ordinary",
+  "foreground_pid": 4156,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "status": "pass",
+    "dismissed_owned_shell": 3872
+  },
+  "windows": [],
+  "ordinary_user": true,
+  "cursor_y": 667,
+  "op": "dismiss-shell"
+}

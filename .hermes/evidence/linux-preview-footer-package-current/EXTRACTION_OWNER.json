@@ -1,0 +1,8 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-preview-footer-extract",
+  "source": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "pending_consumers": [],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks",
+  "cleanup_complete": true,
+  "path_removed": true
+}

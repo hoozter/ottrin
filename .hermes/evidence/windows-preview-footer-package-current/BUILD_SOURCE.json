@@ -1,0 +1,19 @@
+{
+  "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "tracked_tree": "clean",
+  "jobs": 1,
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage",
+  "target": "x86_64-pc-windows-gnu",
+  "recorded": "2026-10-31T21:33:59.352726+00:00",
+  "baseline_bytes": {
+    "target/debug/deps": 22735797135,
+    "target/debug/incremental": 8935075436,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394119902,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25033707461
+  },
+  "preserve": "Current Windows520d9c57 cohort atdist/windows-candidate and Linux41c35c2d until exact acceptance",
+  "pending_consumers": [],
+  "memory": "Guest off while using shared release target;no extra Cargo configuration",
+  "cleanup_complete": true,
+  "delivery_status": "Not promoted;unneeded stage retired;next Miller repair supersedes"
+}

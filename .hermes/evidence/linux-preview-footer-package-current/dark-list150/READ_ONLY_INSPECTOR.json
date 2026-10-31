@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "display_scale": 1.5,
+  "theme": "Dark",
+  "main_view": "List",
+  "short_and_long_text_source_bytes_unchanged": true,
+  "clicked_read_only_text_then_space_closed": true,
+  "long_text_sha256": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+  "footer_frames": [
+    "01-inspector-8388617.png",
+    "03-long-text-inspector.png",
+    "04-long-text-wheel-input.png"
+  ],
+  "scope": "Actual native Inspector text footer and source preservation at150% display DPI;no broader appearance,editing or physical-platform acceptance"
+}

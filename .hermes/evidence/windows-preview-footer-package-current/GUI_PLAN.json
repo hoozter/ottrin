@@ -1,0 +1,13 @@
+{
+  "status": "planned;no acceptance inferred",
+  "source": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "environment": "Owned ordinary Windows console,Dark/List100,default renderer;switch main file view to Miller through its actual menu",
+  "cases": [
+    "Launch exact checksum-identified portable and verify ordinary native window",
+    "Show long-name read-only text preview with a wrapped metadata footer in the main Miller pane",
+    "Open native Inspector,click read-only text and close with Space;source bytes unchanged",
+    "Normal product Close,private preferences retained,complete account/profile/credential/task/payload teardown"
+  ],
+  "limits": "No installer lifecycle,Office provider,physical GPU or final release acceptance",
+  "cleanup": "Existing guest state preserved;owned roots/account/profile/task/temporary login removed;guest off and XML unchanged"
+}

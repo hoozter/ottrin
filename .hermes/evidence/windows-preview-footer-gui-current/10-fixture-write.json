@@ -1,0 +1,17 @@
+{
+  "cursor_x": 1050,
+  "id": "e1cf398a0ec84dbd96cd85657317d639",
+  "case": "ordinary",
+  "foreground_pid": 7924,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "status": "pass",
+    "sha256": "570cd25608599bd91e3821033e751a3d1db0f0e41bc7001be89598f0ae4a32dc",
+    "created_file": "source\\a deliberately long preview filename for wrapped metadata.txt"
+  },
+  "windows": [],
+  "ordinary_user": true,
+  "cursor_y": 667,
+  "op": "fixture-write"
+}

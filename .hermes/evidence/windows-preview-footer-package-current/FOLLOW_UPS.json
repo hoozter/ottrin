@@ -1,0 +1,11 @@
+{
+  "ready_engineering": [
+    {
+      "issue": "Switching from List to Miller leaves the current directory and selected file offscreen;navigation is needed to reveal them",
+      "source": "3d469f31",
+      "observed_frame": "windows-preview-footer-gui-current/14-click.png",
+      "scope": "Actual default-renderer ordinary Windows GUI;not a footer acceptance pass or an owner wait",
+      "next": "Reproduce using the common view-mode setter and rendered Miller fixture,then repair through the existing one-shot reveal path. Complete current package verification/teardown first."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "status": "pass within exact actual-AppImage preview scope",
+  "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "artifact_sha256": "8b3b919ee427c62787297bcb170ada1cf2c8e51f90e8d7efdd547e1e656b7df3",
+  "light_miller100": {
+    "reviewed": [
+      "initial.png",
+      "03-long-text-scrolled.png",
+      "04-docx.png",
+      "11-docx-arrow-human-click.png",
+      "14-inspector-8388634.png",
+      "15-inspector-extracted.png"
+    ],
+    "observed": "Complete wrapped text/DOCX metadata in the narrow main pane;native and expanded extracted views share one bounded body;Inspector metadata remains visible and its read-only text closes with Space without changing DOCX bytes"
+  },
+  "dark_list150": {
+    "reviewed": [
+      "initial.png",
+      "01-inspector-8388617.png",
+      "03-long-text-inspector.png"
+    ],
+    "observed": "Actual1650x1200 List main window and1080x840 native Inspector at150% display DPI;short/long text metadata fully visible;read-only text then Space closes both Inspectors with source bytes preserved",
+    "icon": "Complete65538 native cardinals match every256x256 asset ARGB pixel"
+  },
+  "teardown": "Both normal product Close actions exit0,persist theme/view and remove owned profiles,processes,displays,buses and mounts",
+  "input_controls": "Rapid combined pointer move/short synthetic clicks shifted a Miller view and did not establish a fallback toggle. Producer now separates pointer motion and150ms press/release;observed arrow toggling and all accepted clicks use settled human-duration input. Xdotool move --sync with an unchanged pointer timed out and was removed;no source defect inferred from these input-driver controls. Main Space with an interactive header focused is not accepted as a generic main-window shortcut;Inspector close is tested separately.",
+  "limits": "No broader appearance audit,physical GPU,Office provider,editing,Copy workflow expansion,fresh distro lifecycle,signing or final owner acceptance"
+}

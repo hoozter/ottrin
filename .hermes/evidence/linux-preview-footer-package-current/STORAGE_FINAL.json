@@ -1,0 +1,13 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-preview-footer-package-current",
+  "purpose": "Compact receipts,scripts and selected actual-AppImage frames for delivered3d469f31",
+  "pending_consumers": [],
+  "owned_profiles_staging_extraction_removed": true,
+  "current_deliverables": "/home/campbell/Projects/Ottrin/dist/packages",
+  "shared_caches_preserved": [
+    "target",
+    "~/.cargo",
+    "~/.rustup"
+  ],
+  "intentional_running_consumer": "Configured personal index service PID2037864 uses current AppImage;it is user integration,not a disposable test"
+}

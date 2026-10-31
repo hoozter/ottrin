@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "compiler_reused": true,
+  "temporary_tool_wrapper_removed": true,
+  "scope": "Default host PATH has no rpmbuild;the three-format build-all result was completed with the retained private RPM runtime and the same release files. No repeated compiler or additional target configuration."
+}

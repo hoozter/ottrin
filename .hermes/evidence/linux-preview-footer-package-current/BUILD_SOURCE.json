@@ -1,0 +1,28 @@
+{
+  "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-preview-footer-stage",
+  "jobs": 1,
+  "recorded": "2026-10-31T21:07:38.995135+00:00",
+  "changes": "Shared preview footer,frame and extracted-text geometry;no index daemon or HTML helper source changes",
+  "baseline_bytes": {
+    "target/debug/deps": 22735797135,
+    "target/debug/incremental": 9138548844,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394119902,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25464159789
+  },
+  "pending_consumers": [],
+  "preserve": "Current Linux41c35c2d and Windows520d9c57 cohorts,personal service and all profiles until verified replacement",
+  "production_source": "Rust identical to native-verified71f0cdb0;later commits change only CI policy challenge,documentation and compact evidence",
+  "compiler_reuse": {
+    "ottrin-app": "df45e9f9f93ad74e25f8a10be59509417484ce575305cba940b4946a8bc4842a",
+    "ottrin-indexd": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+    "ottrin-priv-helper": "fcfa897101dd2fc5713a1cc32741ee8c498632ed028cbd23d8436545dea0258f",
+    "ottrin-legacy-doc-render": "0b493ca4d9586b2b4f6405b77ff734a0c000314e75a2a35d74a8b5eb73f318db",
+    "ottrin-html-render": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
+    "ottrin-media-playback": "9827ea355cda1dd922b6a35b1b495cd0ae4cbb30fb823e85dcc43676af8447dc"
+  },
+  "reuse_scope": "Completed same-profile release build from802a2a4b;no Rust source or Cargo changes. Reassemble all formats without repeating compilation,refreshing exact clean source notes and documentation.",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted local Linux cohort,published;staging/extraction removed"
+}

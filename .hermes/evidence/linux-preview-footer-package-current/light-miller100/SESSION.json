@@ -1,0 +1,21 @@
+{
+  "profile": "/var/tmp/.opqa-syjcad50",
+  "fixture": "/var/tmp/.opqa-syjcad50/fixture",
+  "app_pid": 1958164,
+  "app_start_time": "12871667",
+  "window": "8388611",
+  "source_revision": "3d469f313d812116cb3acf73821acf14f754f8ca",
+  "artifact_sha256": "8b3b919ee427c62787297bcb170ada1cf2c8e51f90e8d7efdd547e1e656b7df3",
+  "theme": "Light",
+  "scale": "1",
+  "environment": {
+    "DISPLAY": ":2",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-usZiIeSMbc,guid=f779e572c6aebf754108b8926ae65ed1",
+    "HOME": "/var/tmp/.opqa-syjcad50/home",
+    "XDG_CONFIG_HOME": "/var/tmp/.opqa-syjcad50/config",
+    "XDG_CACHE_HOME": "/var/tmp/.opqa-syjcad50/cache",
+    "XDG_DATA_HOME": "/var/tmp/.opqa-syjcad50/data",
+    "XDG_STATE_HOME": "/var/tmp/.opqa-syjcad50/state",
+    "XDG_RUNTIME_DIR": "/var/tmp/.opqa-syjcad50/runtime"
+  }
+}
