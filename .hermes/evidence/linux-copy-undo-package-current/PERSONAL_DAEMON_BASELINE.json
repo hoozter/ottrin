@@ -1,0 +1,8 @@
+{
+  "status": "observed before replacement",
+  "personal_pid": 1284,
+  "personal_exe": "/tmp/.mount_Ottrin6rAuT8/usr/bin/ottrin-indexd",
+  "personal_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "rebuilt_daemon_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "source_scope": "No index algorithm change since accepted defc1ada;new common Undo handler is UI-side. This is byte identity only,not a new resource measurement."
+}

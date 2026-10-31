@@ -1,0 +1,13 @@
+{"time": 1793476500.8708262, "key": "ctrl+c"}
+{"time": 1793476501.1984096, "key": "ctrl+l"}
+{"time": 1793476501.5605989, "key": "Return"}
+{"time": 1793476502.2109635, "navigate": "/var/tmp/.opqa-onq0roda/fixture/copy"}
+{"time": 1793476502.283388, "key": "ctrl+v"}
+{"time": 1793476502.5341527, "file_checkpoint": "01-light-copy", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "copy/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": []}
+{"time": 1793476502.6225693, "capture": "01-light-copy"}
+{"time": 1793476502.767527, "click": [1082, 680]}
+{"time": 1793476503.263784, "capture": "02-light-copy-activity"}
+{"time": 1793476539.1882272, "click": [705, 230]}
+{"time": 1793476539.5890307, "file_checkpoint": "03-light-copy-undone", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["copy/note.txt"]}
+{"time": 1793476539.667637, "capture": "03-light-copy-undone"}
+{"time": 1793476539.8099318, "product_close_requested": true}

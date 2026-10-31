@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "recorded": "2026-10-31T20:04:57.827755+00:00",
+  "allocated_bytes": {
+    "target/debug/deps": 22739722240,
+    "target/debug/incremental": 9055014912,
+    "target/x86_64-pc-windows-gnu/debug/deps": 25672278016,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25304018944,
+    ".hermes/evidence/linux-copy-undo-package-current": 868352
+  },
+  "profiles_displays_buses_daemons_and_mounts_removed": true,
+  "stage_removed": true,
+  "content_extraction_removed": true,
+  "old_personal_package_mount_removed": true,
+  "personal_service_preserved_active": true,
+  "remaining_task_storage": [
+    {
+      "path": "dist/packages",
+      "purpose": "Current four Linux deliverables and artifact-scoped receipts",
+      "pending_consumer": "Ongoing roadmap/final acceptance;current deliverables retained"
+    },
+    {
+      "path": ".hermes/evidence/linux-copy-undo-package-current",
+      "purpose": "Compact content,actual GUI,service and cleanup receipts with selected frames",
+      "pending_consumer": "Roadmap audit and next focused footer investigation"
+    }
+  ]
+}

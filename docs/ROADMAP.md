@@ -44,8 +44,8 @@ their named hashes. Test counts are scoped observations, not completion measures
   full workspace tests, strict lint and release builds. Windows reports459
   platform /222 search /375 UI passes, with existing ignores79/6/4 and no full-
   suite filters. Evidence: `windows-copy-undo-admission-current/` and
-  `windows-copy-undo-package-current/`. Linux packages remain `defc1ada`;
-  refresh the common completion-handler change in the next Linux cohort.
+  `windows-copy-undo-package-current/`. Linux packages now deliver the shared completion-handler change in the
+  `41c35c2d` cohort below.
 - **Windows Copy foundation and preceding acceptance:** public Copy/Paste now uses the existing
   native journaled transaction engine, retains single/batch Undo receipts and
   completed-item counts, and exposes Stop Copy with an explicit Stopped status.
@@ -71,18 +71,23 @@ their named hashes. Test counts are scoped observations, not completion measures
   Exact-package Copy/Undo/cleanup and normal-close acceptance is delivered below.
   Earlier Move/pipe acceptance retains its separate scope in
   `windows-ui-paths-current/ACCEPTANCE.json`.
-- **Delivered Linux:** clean `defc1ada`, all four stable formats. AppImage
-  SHA-256 starts `04be7d4149ab1bce`; the current receipt records all hashes.
-  Production payload/runtime/helper-policy/font/source checks pass. Actual
-  AppImage checks pass Dark/List100, exact native icon pixels, read-only VCF
-  Space-close/byte preservation, normal product Close and saved preferences.
-  A second actual launch displays **Light/Miller100 columns**, preserving that
-  preference after Close. The exact release HTML helper renders expected pixels
-  with scripts blocked on the unrestricted host. The packaged index ELF is the
-  exact measured candidate. All owned GUI/profile/extraction/staging fixtures
-  are removed. Receipt: `linux-filename-index-package-current/ACCEPTANCE.json`.
-  Earlier Services visual and broader operation receipts retain their own hashes.
-- **Production Linux HTML and full source verification:** hosted run
+- **Delivered Linux:** clean **`41c35c2d`**, all four stable formats at
+  `dist/packages/`. AppImage SHA-256 starts `372c6c3fbdd424dc`; the current
+  receipt records all hashes. Production payload/runtime/helper-policy/font/
+  source checks pass. Actual AppImage runtime checks pass Dark/List100 normal
+  Copy Undo and changed-copy refusal, preserving the source and changed target.
+  Clicked read-only VCF text closes with Space without changing bytes; every
+  native ARGB icon pixel matches. Actual Light/Miller100 columns also pass Copy
+  Undo. Both normal closes exit0 and preserve their theme/view preferences.
+  Private profiles,displays,buses,daemons,mounts,extraction and staging are gone.
+  The index daemon and HTML helper are byte-identical to the earlier measured/
+  rendered cohort; those observations retain their dates and fixture scopes.
+  Production code is identical to fully green hosted520d9c57; the intervening
+  commit changes delivery receipts,roadmap and the native QA provider path only.
+  A clipped preview footer observed in Light/Miller remains ready engineering;
+  the view/theme check does not accept that footer or broader appearance.
+  Receipt: `linux-copy-undo-package-current/ACCEPTANCE.json`.
+- **Earlier production Linux HTML source verification:** hosted run
   `40278830449` on `3ee5f7c9` passes the complete Linux workspace, strict lint,
   release build, production helper installation/rendering, protected-preload
   refusal, confinement observations and full integration teardown. Benchmark CI
@@ -99,18 +104,23 @@ their named hashes. Test counts are scoped observations, not completion measures
   native search tests under both ordinary/elevated tokens, with six existing
   ignores and zero filters in the full suites. Evidence:
   `windows-copy-undo-admission-current/`; full hosted verification is pending.
-- **Personal index service observation (2026-10-26):** restarted from the verified stable AppImage
-  under the owner's existing authorization; remains enabled and running as
-  **ottrin-indexd**, PID 2398670, with exact delivered daemon bytes. Its real
-  **121,056-item** index reports ready with active watching and no reported error.
-  The first observed minute used **23.2% of one core**; the separate settled
-  60-second observation used **0.124% of one core**. Daemon RSS is about 40 MB;
-  the complete cgroup is about 410 MB, mostly reclaimable file cache rather than
-  process RSS. No memory improvement is claimed. Configuration, unit and wrapper
-  hashes are unchanged; source files were not written by the agent. The earlier
-  service's package mount is gone. Receipt:
-  `personal-index-filename-current/ACCEPTANCE.json`. Earlier measurements retain
-  their separate windows and hashes; this does not establish final owner acceptance.
+- **Personal service delivery (2026-10-31):** the configured unit is enabled
+  and running from the newly delivered AppImage, PID1789153, with exact daemon
+  ELF `df3f9618` unchanged. The observed cache contains122,877 items with watching
+  enabled; startup reconciliation was active in that snapshot, so no fresh idle
+  CPU result is claimed. Configuration,unit and launcher hashes are unchanged.
+  The old personal AppImage mount is gone. Receipt:
+  `linux-copy-undo-package-current/PERSONAL_SERVICE_DELIVERY.json`.
+- **Historical personal resource observation (2026-10-26):** at that observation,
+  PID2398670 reported121,056 items,ready with active watching and no error.
+  The first minute used23.2% of one core; the separate settled60-second window
+  used0.124% of one core. RSS was about40MB and the cgroup about410MB,mostly
+  reclaimable file cache. No memory improvement was claimed. Configuration,unit
+  and wrapper hashes were unchanged; user files were not written by the agent.
+  Exact daemon bytes remain the same in the new cohort,while these measurements
+  retain their original workload,OS and time windows. Receipt:
+  `personal-index-filename-current/ACCEPTANCE.json`. Final owner acceptance
+  remains separate.
 - **MSI rollback diagnostic boundary:** the existing file-only failure receipt
   already establishes reproduction without Ottrin code. Fresh plain/icon
   controls confirm it; the added read-only base-image comparison reproduces
@@ -335,14 +345,15 @@ Historical variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Refresh the Linux cohort for the shared completion-handler change at
-   `520d9c57`, then continue remaining Windows transaction/alias/ancestor/
-   resource/workflow, graphics and
+1. Investigate and repair the clipped preview metadata footer observed in the
+   actual Light/Miller100 AppImage. Measure shared layout at narrow widths and
+   larger text;avoid another fixed-size allowance. Then continue remaining
+   Windows transaction/alias/ancestor/resource/workflow,graphics and
    installer lifecycle acceptance. Keep failed-uninstall MSI rollback required;
    investigate it further with a distinct proposed fix or justified comparison,
    using the existing independent controls rather than repeating them.
    Current installer lifecycle and broader platform scopes remain separate from
-   portable Copy acceptance. Linux `defc1ada` is delivered and its actual service
+   portable Copy acceptance. Linux `41c35c2d` is delivered and its actual service
    is verified; release publication/signing remains unaccepted.
 2. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below, then platform acceptance. Earlier workflows retain their
@@ -408,11 +419,11 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `defc1ada`. Its production
-content/runtime/helper-policy/font/source checks, exact measured index daemon,
-Dark100/List/icon/read-only VCF, Light100/Miller and normal-close acceptance are
-summarized above and in
-`.hermes/evidence/linux-filename-index-package-current/ACCEPTANCE.json`. Its exact
+The current Linux cohort is built from clean `41c35c2d`. Its production
+content/runtime/helper-policy/font/source checks, unchanged measured index ELF,
+actual Dark/List100 Copy Undo and changed-copy refusal,clicked read-only VCF,
+icon,Light/Miller100 Copy Undo and normal-close acceptance are summarized above
+and in `.hermes/evidence/linux-copy-undo-package-current/ACCEPTANCE.json`. Its exact
 release HTML helper also passes direct rendering on the unrestricted host;
 restricted-host production setup/confinement is separately accepted in hosted CI.
 Earlier operation, broader theme/scale and populated-index receipts retain their
@@ -442,7 +453,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | All four `defc1ada` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List/icon/read-only VCF, Light/Miller and normal close pass. The actual configured index is enabled/running at the bounded CPU/RSS scope above. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
+| Linux | All four `41c35c2d` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List normal Undo/changed-copy refusal,clicked read-only VCF/icon,and Light/Miller Undo/normal close pass. The unchanged daemon ELF is enabled/running with122,877 cached items and watching;older CPU/RSS observations retain their dates. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
 | Windows | Internal `520d9c57` at `dist/windows-candidate/` agrees on58 files across portable/NSIS/MSI; native loader/CLI, single Replace and four-item batch Undo after destination-parent renames preserve old-path replacements; seven raw files and normal exit0 pass. Earlier cleanup/VCF scopes retain original hashes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. Full hosted `520d9c57` Linux/Windows workspace, lint and release pass;375 native UI cases pass per ordinary/elevated GNU token and on hosted MSVC. | Remaining transaction/alias/ancestor/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier broader GUI scopes retain their original hashes. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |

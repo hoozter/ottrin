@@ -1,0 +1,8 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-copy-undo-extract",
+  "source": "41c35c2d0cab6ae316496cd859b8b6ca1a72c66c",
+  "pending_consumers": [],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks",
+  "extraction_removed": true,
+  "cleanup_complete": true
+}

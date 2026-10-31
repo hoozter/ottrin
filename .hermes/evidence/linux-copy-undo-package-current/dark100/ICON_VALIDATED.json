@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "width": 256,
+  "height": 256,
+  "all_argb_pixels_match": true,
+  "property_sha256": "dccc197d0ed8b8f8767f7670f9584301070a8604dedce0cd031ae40f290dc5df",
+  "scope": "Native window icon property;no physical taskbar acceptance"
+}

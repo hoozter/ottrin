@@ -1,0 +1,36 @@
+{"time": 1793476172.408999, "key": "ctrl+c"}
+{"time": 1793476172.7289252, "key": "ctrl+l"}
+{"time": 1793476173.1122148, "key": "Return"}
+{"time": 1793476173.7625692, "navigate": "/var/tmp/.opqa-11v2vcvw/fixture/copy"}
+{"time": 1793476173.8292274, "key": "ctrl+v"}
+{"time": 1793476174.079825, "file_checkpoint": "01-copy-published", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "copy/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": []}
+{"time": 1793476174.1557455, "capture": "01-copy-published"}
+{"time": 1793476174.299598, "click": [1082, 680]}
+{"time": 1793476174.7863421, "capture": "02-copy-activity"}
+{"time": 1793476214.4237425, "click": [705, 230]}
+{"time": 1793476214.8242896, "file_checkpoint": "03-copy-undone", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": ["copy/note.txt"]}
+{"time": 1793476214.9074945, "capture": "03-copy-undone"}
+{"time": 1793476214.9796004, "key": "ctrl+l"}
+{"time": 1793476215.3610213, "key": "Return"}
+{"time": 1793476216.011368, "navigate": "/var/tmp/.opqa-11v2vcvw/fixture/source"}
+{"time": 1793476216.1603718, "click": [130, 115]}
+{"time": 1793476216.6270003, "key": "ctrl+c"}
+{"time": 1793476216.9478393, "key": "ctrl+l"}
+{"time": 1793476217.3286257, "key": "Return"}
+{"time": 1793476217.9789634, "navigate": "/var/tmp/.opqa-11v2vcvw/fixture/stale"}
+{"time": 1793476218.048885, "key": "ctrl+v"}
+{"time": 1793476218.2997084, "file_checkpoint": "04-second-copy", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb"}, "absent": []}
+{"time": 1793476218.3843076, "capture": "04-second-copy"}
+{"time": 1793476218.3846843, "external_fixture_change": "stale/note.txt", "new_sha256": "6b401826be16241401a3c8fc46b393e657cc2d9de9745f80c8159d0ac27a33aa"}
+{"time": 1793476218.462638, "capture": "05-changed-copy-before-undo"}
+{"time": 1793476257.6116946, "click": [705, 230]}
+{"time": 1793476259.0124974, "file_checkpoint": "06-changed-copy-refused", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "6b401826be16241401a3c8fc46b393e657cc2d9de9745f80c8159d0ac27a33aa"}, "absent": ["copy/note.txt"]}
+{"time": 1793476259.1018586, "capture": "06-changed-copy-refused"}
+{"time": 1793476318.7223308, "key": "ctrl+l"}
+{"time": 1793476319.1014783, "key": "Return"}
+{"time": 1793476319.75185, "navigate": "/var/tmp/.opqa-11v2vcvw/fixture/contact"}
+{"time": 1793476319.8994215, "click": [150, 115]}
+{"time": 1793476320.3535182, "key": "space"}
+{"time": 1793476384.7998724, "file_checkpoint": "08-readonly-space-close", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "stale/note.txt": "6b401826be16241401a3c8fc46b393e657cc2d9de9745f80c8159d0ac27a33aa", "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92"}, "absent": ["copy/note.txt"]}
+{"time": 1793476384.8940647, "capture": "08-readonly-space-close"}
+{"time": 1793476385.0353866, "product_close_requested": true}

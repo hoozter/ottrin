@@ -1,0 +1,19 @@
+{
+  "source_revision": "41c35c2d0cab6ae316496cd859b8b6ca1a72c66c",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-copy-undo-stage",
+  "jobs": 1,
+  "recorded": "2026-10-31T19:39:27.780868+00:00",
+  "production_source": "Identical to fully verified520d9c57;41c35c2d changes delivery receipts,roadmap and native QA stable provider path only",
+  "changes": "Refresh common Undo completion/observation handler on Linux;Windows fresh admission is cfg-Windows",
+  "pending_consumers": [],
+  "baseline_bytes": {
+    "target/debug/deps": 22739722240,
+    "target/debug/incremental": 9055014912,
+    "target/x86_64-pc-windows-gnu/debug/deps": 25672278016,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25304018944
+  },
+  "preserve": "Current Linux defc1ada cohort and personal service until replacement acceptance;current Windows520d9c57 preserved",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted,published and staging/extraction removed"
+}

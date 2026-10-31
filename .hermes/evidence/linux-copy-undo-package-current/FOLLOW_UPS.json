@@ -1,0 +1,11 @@
+{
+  "status": "ready engineering;not owner-blocked",
+  "next": "Investigate and repair clipped preview metadata footer before broader appearance acceptance",
+  "observed_frame": "light-miller100/initial.png",
+  "observation": "At ordinary100% Light/Miller,selected plain-text preview wraps footer metadata and clips its lower line. Main view/theme and Copy Undo checks pass;this footer is not accepted.",
+  "source_pointers": [
+    "crates/ottrin-ui/src/preview_render.rs:503 render_preview_footer",
+    "crates/ottrin-ui/src/preview_render.rs:517 scrollable_preview_height reserves a fixed30 pixels"
+  ],
+  "verification_needed": "Measure actual footer geometry at narrow widths and larger text,fix shared layout at source,check representative renderers and actual packaged view on Linux/Windows;retain current usable cohort until replacement passes."
+}

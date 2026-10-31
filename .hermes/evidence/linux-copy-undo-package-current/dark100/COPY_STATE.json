@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "source": "41c35c2d0cab6ae316496cd859b8b6ca1a72c66c",
+  "artifact_sha256": "372c6c3fbdd424dc97ff931f2f89cfc140581840c8f6348b32eba963f1b43e92",
+  "normal_copy_undo": "03-copy-undone.png",
+  "changed_copy_refusal": "06-changed-copy-refused.png",
+  "source_and_changed_target_preserved": true,
+  "undo_clicks": 2,
+  "scope": "Actual AppImage normal Copy Undo plus one changed-file refusal; no other filesystem,platform or broad workflow acceptance",
+  "rendered_refusal": "Visually inspected06-changed-copy-refused.png: top Copy shows Undo unavailable and retains recovery data; prior Copy shows Copy undone"
+}

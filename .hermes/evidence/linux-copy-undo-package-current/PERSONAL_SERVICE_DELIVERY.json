@@ -1,0 +1,56 @@
+{
+  "status": "pass",
+  "before": {
+    "MainPID": "1284",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "old_exe": "/tmp/.mount_Ottrin6rAuT8/usr/bin/ottrin-indexd",
+  "old_mount": "/tmp/.mount_Ottrin6rAuT8",
+  "before_sha256": {
+    "config": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "unit": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+    "wrapper": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d"
+  },
+  "expected_daemon_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "reason": "Release retired AppImage runtime after cohort replacement;daemon ELF is byte-identical. No new CPU measurement or algorithm change.",
+  "after": {
+    "MainPID": "1789153",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "index_status": {
+    "active_root": "/home/campbell",
+    "active_root_index": 1,
+    "configured_roots": 1,
+    "database_bytes": 880046080,
+    "detail": "Indexing \u00b7 2082 files found",
+    "error": null,
+    "estimated_total_items": null,
+    "freelist_bytes": 667541504,
+    "freelist_pages": 162974,
+    "indexed_items": 122877,
+    "last_completed_indexed_items": 122877,
+    "last_progress_unix_secs": 1793476835,
+    "last_scan_completed_unix_secs": 1793476822,
+    "last_scan_duration_ms": null,
+    "last_scan_started_unix_secs": 1793476835,
+    "snapshot_revision": 1,
+    "status": "ready",
+    "total_roots": 1,
+    "wal_bytes": 4136512,
+    "watched_roots": 1,
+    "watcher_error": null,
+    "watcher_ready": true
+  },
+  "old_mount_removed": true,
+  "after_sha256": {
+    "config": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "unit": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+    "wrapper": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d"
+  },
+  "enabled": "enabled",
+  "daemon_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "configuration_unit_wrapper_unchanged": true,
+  "personal_user_files_not_modified_by_agent": true
+}
