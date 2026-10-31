@@ -36,8 +36,14 @@ their named hashes. Test counts are scoped observations, not completion measures
   Hosted run41241958259 exposes an incorrect HTML host-policy assertion on
   Ubuntu26.04: a successful profile-change syscall can retain restricted
   `unconfined` as a stack. The revised check challenges namespace rights and
-  labels before/after the change, with five positive/negative admission controls.
-  Fresh hosted verification and replacement package acceptance remain required;
+  labels before/after the change. The first replacement probe in802a2a4b also
+  exposed namespace creation under a restrictive default profile; it is retained
+  as failed evidence, not accepted as a bypass or as passing CI. The next probe
+  requires either denied namespace creation or a retained enforcing guard and
+  denied privileged operation within it. Eight positive/negative admission
+  controls pass locally; a real permissive-host namespace challenge is rejected
+  by the gate. No global policy is changed. Fresh hosted verification and
+  replacement package acceptance remain required;
   delivered cohorts below are unchanged. Evidence:
   `preview-footer-layout-current/`.
 - **Linux filename-index CPU delivered:** bounded canonical membership lookups

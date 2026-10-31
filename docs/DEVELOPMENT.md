@@ -1677,10 +1677,14 @@ host permits it. Hosted evidence records the setting and direct-transition
 result. With that setting enabled, the kernel may deny the profile change or
 allow it while stacking the target with `unconfined`, retaining system
 restrictions. The hosted probe requires an ordinary caller with no effective
-capabilities, checks the resulting label and challenges user namespace creation
-before and after the change. Both namespace attempts must be denied; a plain
-transition into the trusted profile or newly acquired namespace permission fails
-the check. This follows [AppArmor's documented stacking behavior](https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_unconfined_restriction.md).
+capabilities and checks the resulting labels and rights before/after the change.
+It requires either denied user namespace creation or an enforcing default guard
+that denies a privileged operation inside that namespace. In the latter mode,
+`unshare(CLONE_NEWNS)` challenges `CAP_SYS_ADMIN`; no mounts are performed and
+both child namespaces disappear at process exit. A plain trusted-profile
+transition, lost guard or newly acquired namespace privilege fails the check.
+This follows AppArmor's documented [profile stacking](https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_unconfined_restriction.md)
+and [two namespace restriction modes](https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_userns_restriction.md).
 The separate fixed-entry rendering, executable-mapping/preload, Chromium sandbox,
 script/network and arbitrary-command checks remain required. Ottrin never changes
 these global sysctls.

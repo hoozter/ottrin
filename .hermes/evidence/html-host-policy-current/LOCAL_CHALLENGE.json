@@ -1,0 +1,36 @@
+{
+  "probe": {
+    "baseline": {
+      "uid": 1000,
+      "euid": 1000,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "unconfined",
+      "change_rc": -2,
+      "change_errno": 0,
+      "userns_rc": 0,
+      "userns_errno": 0,
+      "label_after_userns": "unconfined",
+      "mountns_rc": 0,
+      "mountns_errno": 0
+    },
+    "transition": {
+      "uid": 1000,
+      "euid": 1000,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "unconfined",
+      "change_rc": -1,
+      "change_errno": 2,
+      "userns_rc": 0,
+      "userns_errno": 0,
+      "label_after_userns": "unconfined",
+      "mountns_rc": 0,
+      "mountns_errno": 0
+    }
+  },
+  "rejected_by_policy_gate": "unconfined",
+  "scope": "Actual child-only user/mount namespace challenge on this permissive host;not production HTML integration acceptance",
+  "parent_namespace_unchanged": true,
+  "owned_temp_directory_removed": true
+}

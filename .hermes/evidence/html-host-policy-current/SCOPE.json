@@ -1,0 +1,6 @@
+{
+  "scope": "Correct host-policy challenge on Ubuntu26.04;production Rust code and AppArmor rendering policy unchanged",
+  "negative_control": "802a2a4b-hosted-linux-html.zip:both baseline and post-profile-change unshare(USER) return0;post-change label retains unconfined. Old check aborts before pixels. Setup/profile removal is verified in the artifact.",
+  "local_control": "LOCAL_CHALLENGE.json:permissive-host child creates both user/mount namespaces;policy validator refuses it;parent namespace unchanged and owned source/binary directory removed",
+  "pending": "Actual hosted default-profile/CAP_SYS_ADMIN challenge,pixel/preload checks and full source CI. No replacement package promoted."
+}
