@@ -1674,6 +1674,13 @@ The separate OS policy `kernel.apparmor_restrict_unprivileged_unconfined`
 controls whether an already-unconfined process can change its own AppArmor
 profile. Ottrin cannot promise to prevent that system-wide operation when the
 host permits it. Hosted evidence records the setting and direct-transition
-result; on hosts where the setting is 1, the transition must be denied. This
-policy distinction does not disable Chromium's sandbox or allow original HTML
-scripts, network access or arbitrary helper commands.
+result. With that setting enabled, the kernel may deny the profile change or
+allow it while stacking the target with `unconfined`, retaining system
+restrictions. The hosted probe requires an ordinary caller with no effective
+capabilities, checks the resulting label and challenges user namespace creation
+before and after the change. Both namespace attempts must be denied; a plain
+transition into the trusted profile or newly acquired namespace permission fails
+the check. This follows [AppArmor's documented stacking behavior](https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_unconfined_restriction.md).
+The separate fixed-entry rendering, executable-mapping/preload, Chromium sandbox,
+script/network and arbitrary-command checks remain required. Ottrin never changes
+these global sysctls.

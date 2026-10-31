@@ -1,0 +1,13 @@
+{
+  "baseline": "Actual rendered footer at width250,height500,scale1 extends to512 below viewport492. Original test constructed horizontal bounds from text position rather than translated galley rect;vertical failure is still valid. Oracle now translates actual galley rectangle.",
+  "measured_footer_control": "Measured footer and frame reserve passes first case,but narrow180x300 at textscale2 still extends to308 below viewport292:egui default64px minimum scroll area exceeds the48px actually available. No tolerance added.",
+  "matrix_scope": "Wrapped metadata has enough total room at300/500px height;140px was removed before acceptance because the entire long caption itself cannot fit there at large text. Add a separate90px case with a short caption to verify body minimum removal.",
+  "narrow_header_control": "After the measured/footer/body fixes, the real DOCX header still expanded a180px viewport at textscale2: footer x186.7 exceeds viewport x172. A remaining-width wrapped title and separately allocated info button now pass the unchanged bounds oracle.",
+  "final_matrix": "Light/Dark actual painted text geometry and clip containment; text180/250/400px at100/150/200%, short90px viewport, archive/PDF fallback, sparse spreadsheet omission notes, real DOCX180/250px and a clicked extracted-text expansion through60 animation frames. Metadata fits without tolerance or a forced body minimum.",
+  "native_parallel_pressure_control": {
+    "ordinary_result": "377 passed,3 Copy asynchronous worker deadline failures,4 existing ignores;all6 footer cases passed",
+    "test_threads": 4,
+    "host_memory_pressure": "/proc/pressure/memory full avg10=35.27 observed during native run;other project processes preserved",
+    "next": "Full same-binary ordinary/elevated regular suite at1test thread;retain all assertions and5s worker deadlines. Do not call source fully native verified until it passes."
+  }
+}

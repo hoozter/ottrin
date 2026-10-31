@@ -1,0 +1,45 @@
+{
+  "status": "pass for scoped source/layout and native UI verification; replacement packages pending",
+  "source_commit": "71f0cdb0a887b501d23188bc770347b0caac0a19",
+  "source_files_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "c900b4c641bc4c8c0bac27eb1d0c138d9c4278c4ac58f8b21d5d4bf9d3c64d35",
+    "crates/ottrin-ui/src/preview_render.rs": "80d012344083b868bb508eb43ee776e534a915f5644ab78c014c1d9067491fa3"
+  },
+  "linux_ui": {
+    "passed": 407,
+    "failed": 0,
+    "existing_ignored": 1,
+    "filtered": 0
+  },
+  "strict_ui_clippy": [
+    "Linux all targets",
+    "Windows GNU all targets"
+  ],
+  "native_windows": {
+    "regular_passed_each": 380,
+    "failed": 0,
+    "existing_ignored_each": 4,
+    "full_suite_filtered": 0,
+    "test_threads": 1,
+    "roles": [
+      "ordinary",
+      "elevated"
+    ],
+    "binary_identity": "RUNTIME_BINARIES.json",
+    "all_six_footer_cases_executed": true,
+    "parallel_pressure_control": "CONTROLS.json",
+    "teardown": "RUNTIME_TEARDOWN.json",
+    "guest_off": true,
+    "original_profiles_preserved": true
+  },
+  "layout_scope": "Actual painted metadata bounds and clip containment,Light/Dark,180/250/400px,100/150/200% text;short90px panel;archive,PDF/extracted fallback,sparse worksheet omission notes,real DOCX and clicked fallback through60 animation frames",
+  "hosted_scope": "Run41241958259 Linux stopped at an incorrect profile-change syscall assertion on a new Ubuntu26.04 image;performance passes,Windows still running at checkpoint. New label/namespace-rights challenge and five admission controls must pass a fresh hosted run; no complete CI acceptance claimed.",
+  "package_delivery": "Linux41c35c2d and Windows520d9c57 remain current;these source checks do not accept replacement artifacts",
+  "cleanup": {
+    "owned_native_root_removed": true,
+    "guest_definition_unchanged": true,
+    "owned_local_test_profiles_removed": "scripts/test-workspace.py",
+    "incremental": "10 superseded sessions removed with exclusive locks and newest finalized sessions retained;exact protected desktop process inspection exceptions are recorded in PROCESS_REVIEWS.json",
+    "remaining_task_storage": "Compact receipts/scripts/logs in .hermes/evidence/preview-footer-layout-current; current compiler outputs/shared useful caches retained. Linux package scope prepared separately;no build staging allocated yet."
+  }
+}

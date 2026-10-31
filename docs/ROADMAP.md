@@ -27,8 +27,18 @@ their named hashes. Test counts are scoped observations, not completion measures
   Six real rendered-geometry/click regression cases pass at narrow widths,
   Light/Dark and text sizes up to200%. All407 regular Linux UI tests pass
   (one existing ignore), and strict Linux/Windows-GNU UI lint passes. Native
-  Windows verification and replacement package acceptance remain in progress;
-  the delivered cohorts below are unchanged. Evidence:
+  Windows ordinary/elevated runs each pass380 regular UI tests serially, with
+  four existing ignores and no filters; all six new cases execute. The prior
+  four-thread ordinary run timed out in three existing Copy worker tests under
+  host memory pressure; it is retained as a failed control. Worker deadlines
+  and assertions are unchanged. Guest roots/profiles are removed and the guest
+  is off. Ten superseded incremental sessions were retired using guarded cleanup.
+  Hosted run41241958259 exposes an incorrect HTML host-policy assertion on
+  Ubuntu26.04: a successful profile-change syscall can retain restricted
+  `unconfined` as a stack. The revised check challenges namespace rights and
+  labels before/after the change, with five positive/negative admission controls.
+  Fresh hosted verification and replacement package acceptance remain required;
+  delivered cohorts below are unchanged. Evidence:
   `preview-footer-layout-current/`.
 - **Linux filename-index CPU delivered:** bounded canonical membership lookups
   followed by direct FTS inserts address the measured per-row construction
@@ -358,9 +368,10 @@ Historical variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Investigate and repair the clipped preview metadata footer observed in the
-   actual Light/Miller100 AppImage. Measure shared layout at narrow widths and
-   larger text;avoid another fixed-size allowance. Then continue remaining
+1. Finish fresh hosted verification of the corrected HTML profile-transition
+   challenge and exact-package acceptance/delivery of the preview footer repair.
+   The source and native layout checks above pass; current packages still retain
+   their original scope. Then continue remaining
    Windows transaction/alias/ancestor/resource/workflow,graphics and
    installer lifecycle acceptance. Keep failed-uninstall MSI rollback required;
    investigate it further with a distinct proposed fix or justified comparison,

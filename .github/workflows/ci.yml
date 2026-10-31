@@ -64,7 +64,9 @@ jobs:
 
       - name: Verify production HTML pixels and executable mapping policy
         if: runner.os == 'Linux'
-        run: /usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py
+        run: |
+          /usr/bin/python3 scripts/ci/test_linux_html_transition.py
+          /usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py
 
       - name: Check Windows Move ownership before workspace suite
         if: runner.os == 'Windows'

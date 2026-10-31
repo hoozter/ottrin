@@ -1,6 +1,7 @@
 from pathlib import Path
 import os,json,subprocess,tempfile,time,signal
 from PIL import Image
+from linux_html_transition import probe_transition, verify_restricted_transition
 assert os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted'
 out=Path('html-sandbox-evidence');out.mkdir(exist_ok=True)
 owned=Path('/usr/libexec/ottrin/ottrin-html-render');unit='ottrin-render-html-check-'+str(os.getpid())
@@ -22,29 +23,13 @@ try:
   run(['/usr/bin/true'],env=control_env)
   assert (root/'control').read_text()=='injected','Preload control did not execute'
   report['preload_control_executed']=True
-  # Record the host's separate policy for unconfined profile changes. This
-  # setting is never changed by Ottrin or this check. On hardened hosts an
-  # already-running caller must not enter the rendering profile directly.
+  # This OS policy can deny change_profile or retain unconfined as a stack.
+  # Challenge the resulting rights as well as recording the effective label.
   transition_setting=Path('/proc/sys/kernel/apparmor_restrict_unprivileged_unconfined')
   report['unconfined_transition_restriction']=transition_setting.read_text().strip() if transition_setting.exists() else 'unavailable'
-  (root/'transition.c').write_text(r'''#include <dlfcn.h>
-#include <stdio.h>
-#include <errno.h>
-int main(void) {
- void *lib=dlopen("libapparmor.so.1",RTLD_NOW);
- if (!lib) return 2;
- int (*change)(const char*)=dlsym(lib,"aa_change_profile");
- if (!change) return 3;
- errno=0; int result=change("ottrin-html-render"); int error=errno;
- printf("%d %d\n",result,error); return 0;
-}
-''')
-  run(['cc',str(root/'transition.c'),'-ldl','-o',str(root/'transition')])
-  transition=run([str(root/'transition')],capture_output=True,text=True)
-  report['direct_profile_change_result']=transition.stdout.strip()
+  report['direct_profile_change_probe']=probe_transition(root)
   if report['unconfined_transition_restriction']=='1':
-   assert transition.stdout.startswith('-1 '),'Host policy permitted an unprivileged direct profile change'
-   report['direct_profile_change']='denied by host policy'
+   report['direct_profile_change']=verify_restricted_transition(report['direct_profile_change_probe'],os.getuid())
   else:
    report['direct_profile_change']='host policy dependent; no application-level prevention claimed'
   for bad in [[str(root),'--no-sandbox'],[str(root),'256','/usr/bin/true']]:

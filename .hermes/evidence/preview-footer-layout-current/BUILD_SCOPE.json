@@ -1,0 +1,12 @@
+{
+  "base_revision": "55b29274b0034f4ad0fc48cf59d4ffeaa776e90a",
+  "scope": "Shared preview footer clipping;preserve current delivered Linux41c35c2d and Windows520d9c57 cohorts,personal service and profiles",
+  "baseline_bytes": {
+    "target/debug/deps": 22739722240,
+    "target/debug/incremental": 9055014912,
+    "target/x86_64-pc-windows-gnu/debug/deps": 25672278016,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25304018944
+  },
+  "configuration": "Existing shared targets,default test profiles,one Cargo job,no RUSTFLAGS changes",
+  "teardown": "Use scripts/test-workspace.py for HOME/XDG state;native package QA must register private session teardown. Compact receipts only at completion."
+}

@@ -1,0 +1,28 @@
+{
+  "probe": {
+    "baseline": {
+      "uid": 1000,
+      "euid": 1000,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "unconfined",
+      "change_rc": -2,
+      "change_errno": 0,
+      "userns_rc": 0,
+      "userns_errno": 0
+    },
+    "transition": {
+      "uid": 1000,
+      "euid": 1000,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "unconfined",
+      "change_rc": -1,
+      "change_errno": 2,
+      "userns_rc": 0,
+      "userns_errno": 0
+    }
+  },
+  "scope": "Owned compiled challenge only; no system integration or global policy changes; no hosted policy acceptance claimed",
+  "owned_directory_removed": true
+}
