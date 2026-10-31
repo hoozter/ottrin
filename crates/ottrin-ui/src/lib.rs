@@ -17498,6 +17498,9 @@ impl OttrinApp {
                 self.sidebar = SidebarSection::None;
             }
         }
+        if !matches!(previous, ViewMode::Miller) && matches!(view_mode, ViewMode::Miller) {
+            self.request_miller_reveal(tab_id);
+        }
         self.state.config.default_view_mode = view_mode;
         self.persist_config();
     }
@@ -19048,7 +19051,13 @@ impl OttrinApp {
                                         ui.label(
                                             RichText::new(format!("{label}:")).color(lc).size(10.0 * c.font_scale),
                                         );
-                                        ui.label(RichText::new(value).color(vc).size(10.0 * c.font_scale));
+                                        ui.add(
+                                            egui::Label::new(
+                                                RichText::new(value).color(vc).size(10.0 * c.font_scale),
+                                            )
+                                            .truncate(),
+                                        )
+                                        .on_hover_text(value);
                                     });
                                 };
 
@@ -36321,6 +36330,162 @@ mod tests {
             app.tab_ui[&tab_id].miller_h_offset, manually_scrolled,
             "expanding the panel must preserve deliberate horizontal scrolling"
         );
+    }
+
+    #[test]
+    fn entering_miller_reveals_the_current_directory_and_selection_once() {
+        let root = tempfile::tempdir().expect("view switch fixture");
+        let directory = root.path().join("one/two/three/four/five");
+        std::fs::create_dir_all(&directory).unwrap();
+        let path = directory.join("selected.txt");
+        std::fs::write(&path, "selected preview").unwrap();
+        for previous in [ViewMode::List, ViewMode::Grid] {
+            for selected in [false, true] {
+                let mut app = OttrinApp::default();
+                let tab_id = app.state.active_tab().id;
+                app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
+                app.state.config.folder_column_widths.clear();
+                app.state.config.miller_view_scale = 1.0;
+                app.set_tab_view_mode(tab_id, previous);
+                if selected {
+                    app.select_file_at_startup(path.clone());
+                } else {
+                    app.navigate_tab_to(tab_id, directory.clone());
+                }
+                app.set_tab_view_mode(tab_id, ViewMode::Miller);
+                let ctx = Context::default();
+                for frame in 0..120 {
+                    app.poll_listing_results();
+                    let events = if frame == 60 {
+                        vec![
+                            egui::Event::PointerMoved(egui::pos2(50.0, 300.0)),
+                            egui::Event::MouseWheel {
+                                unit: egui::MouseWheelUnit::Point,
+                                delta: Vec2::new(300.0, 0.0),
+                                modifiers: egui::Modifiers::NONE,
+                            },
+                        ]
+                    } else {
+                        Vec::new()
+                    };
+                    let _ = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(800.0, 600.0),
+                            )),
+                            time: Some(frame as f64 / 60.0),
+                            events,
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default()
+                                .show(ctx, |ui| app.render_miller(ui, tab_id));
+                        },
+                    );
+                    if frame == 59 {
+                        assert!(
+                            app.tab_ui[&tab_id].miller_current_visible,
+                            "{previous:?} → Miller must reveal the current directory"
+                        );
+                        if selected {
+                            assert!(
+                                app.tab_ui[&tab_id].miller_preview_visible,
+                                "the selected file's complete preview must be visible"
+                            );
+                        }
+                        assert!(app.tab_ui[&tab_id].miller_reveal.is_none());
+                    }
+                }
+                assert!(
+                    !app.tab_ui[&tab_id].miller_current_visible,
+                    "the actual horizontal wheel input must move away from the revealed directory"
+                );
+                let manual_offset = app.tab_ui[&tab_id].miller_h_offset;
+                app.set_tab_view_mode(tab_id, ViewMode::Miller);
+                for frame in 120..150 {
+                    let _ = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(800.0, 600.0),
+                            )),
+                            time: Some(frame as f64 / 60.0),
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default()
+                                .show(ctx, |ui| app.render_miller(ui, tab_id));
+                        },
+                    );
+                }
+                assert_eq!(
+                    app.tab_ui[&tab_id].miller_h_offset, manual_offset,
+                    "an already selected mode must preserve deliberate scrolling"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn miller_metadata_values_fit_their_narrow_pane() {
+        let root = tempfile::tempdir().expect("metadata width fixture");
+        let directory = root
+            .path()
+            .join("a-long-parent-directory-name")
+            .join("another-long-parent-directory");
+        std::fs::create_dir_all(&directory).unwrap();
+        std::fs::write(directory.join("note.txt"), "metadata fixture").unwrap();
+        let entry = listing::list_directory(&directory, false)
+            .unwrap()
+            .remove(0);
+        let location = path_label(&directory);
+        for theme in [ottrin_core::ThemeMode::Light, ottrin_core::ThemeMode::Dark] {
+            for scale in [1.0, 1.35, 2.0] {
+                for width in [180.0, 250.0] {
+                    let mut app = OttrinApp::default();
+                    app.state.config.theme = theme;
+                    app.colors = Colors::for_config(&app.state.config, None);
+                    app.colors.font_scale = scale;
+                    let ctx = Context::default();
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(width + 16.0, 466.0),
+                            )),
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                app.render_miller_file_preview(ui, &entry, width, 450.0);
+                            });
+                        },
+                    );
+                    let values: Vec<_> = output
+                        .shapes
+                        .iter()
+                        .filter_map(|shape| match &shape.shape {
+                            egui::epaint::Shape::Text(text) if text.galley.job.text == location => {
+                                Some((text, shape.clip_rect))
+                            }
+                            _ => None,
+                        })
+                        .collect();
+                    assert_eq!(values.len(), 1, "the actual Location value must render");
+                    let (value, clip) = values[0];
+                    let bounds = value.galley.rect.translate(value.pos.to_vec2());
+                    assert!(
+                        clip.contains_rect(bounds),
+                        "metadata exceeds its pane: width={width},scale={scale},bounds={bounds:?},clip={clip:?}"
+                    );
+                    assert!(
+                        value.galley.elided,
+                        "show an explicit ellipsis for a long path"
+                    );
+                }
+            }
+        }
     }
 
     #[test]

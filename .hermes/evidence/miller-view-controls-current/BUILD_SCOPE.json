@@ -1,0 +1,14 @@
+{
+  "base_revision": "a5ecae3a50073bb14b9fb160cbe80e619d1711be",
+  "recorded": "2026-10-31T22:44:39.732745+00:00",
+  "baseline_bytes": {
+    "target/debug/deps": 22735797135,
+    "target/debug/incremental": 8935075436,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394119902,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25033707461
+  },
+  "scope": "List/Grid to Miller one-shot reveal and bounded Info metadata values observed in native3d469f31 GUI",
+  "configuration": "Existing shared native/Windows target trees,one Cargo job,same default profiles/features,no RUSTFLAGS changes",
+  "preserve": "Delivered Linux3d469f31 and Windows520d9c57,personal service/data,user AGENTS.md",
+  "cleanup": "Disposable test state through scripts/test-workspace.py;inspect/apply exact-root rust_incremental helper after consumers finish;no extra VM or desktop allocated"
+}

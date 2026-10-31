@@ -1,0 +1,19 @@
+
+running 14 tests
+test tests::right_clicking_miller_ancestor_selects_without_rebasing_the_current_folder ... ok
+test tests::clicking_a_miller_ancestor_row_cancels_unexecuted_command_input ... ok
+test tests::mouse_navigation_requests_miller_row_and_column_reveal ... ok
+test tests::failed_pointer_navigation_never_schedules_a_miller_reveal ... ok
+test tests::leaving_miller_or_closing_a_tab_discards_its_pointer_reveal_state ... ok
+test tests::failed_miller_history_navigation_does_not_report_a_move ... ok
+test tests::pointer_history_navigation_reveals_only_the_moved_miller_tandem_tab ... ok
+test tests::rename_refresh_reloads_a_parent_visible_in_a_miller_column_without_navigation ... ok
+test tests::pointer_folder_entry_updates_miller_path_and_reveals_an_empty_destination ... ok
+test tests::right_arrow_enters_the_selected_miller_folder_in_one_action ... ok
+test tests::miller_metadata_values_fit_their_narrow_pane ... ok
+test tests::pointer_up_navigation_reveals_miller_but_not_list_or_grid_tabs ... ok
+test tests::miller_empty_caption_stays_inside_the_file_viewport_beside_a_panel ... ok
+test tests::entering_miller_reveals_the_current_directory_and_selection_once ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 396 filtered out; finished in 2.07s
+

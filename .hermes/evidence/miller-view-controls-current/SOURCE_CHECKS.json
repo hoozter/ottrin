@@ -1,0 +1,31 @@
+{
+  "status": "source checks pass; fresh package delivery pending",
+  "base_revision": "a5ecae3a50073bb14b9fb160cbe80e619d1711be",
+  "source_sha256": "0f7ad8293832f9edfa1a9aa47e766291779d06f93bf01fd63bea3a129755573e",
+  "negative_controls": {
+    "miller_filtered_before": "12 passed; 2 reproduced failures",
+    "failures": [
+      "List to Miller leaves current folder offscreen",
+      "Location value exceeds narrow pane"
+    ]
+  },
+  "linux": {
+    "full_ui": "409 passed; one existing ignore; zero filters",
+    "focused_after": "14 passed",
+    "metadata_large_text": "Light/Dark,180/250px,100/135/200%; actual painted value fits clip and is elided",
+    "lint": "strict all-targets pass"
+  },
+  "windows": {
+    "cross_build": "GNU UI test executable built",
+    "lint": "strict GNU all-targets pass",
+    "ordinary_native": "382 passed; four existing ignores; zero filters",
+    "elevated_native": "382 passed; four existing ignores; zero filters"
+  },
+  "cleanup": {
+    "obsolete_incremental_sessions_removed": 6,
+    "reclaimed_gib": 0.25,
+    "private_tests": "scripts/test-workspace.py; no production profile writes",
+    "native_guest": "Owned root removed; zero owned processes; original profiles preserved; guest off; persistent XML unchanged"
+  },
+  "scope": "Shared one-shot reveal and metadata truncation only; current delivered artifacts preserved. No source claims for broader appearance,installer rollback or final acceptance."
+}

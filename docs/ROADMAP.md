@@ -18,6 +18,25 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
+- **Column-view transition and metadata repair in verification (2026-10-31):**
+  switching from List or Grid now requests the existing one-shot Miller reveal
+  for the current directory and selected-file preview. Selecting Column view
+  again preserves deliberate horizontal scrolling. Long Info metadata values
+  use an explicit ellipsis and expose the complete value on hover. Both rendered
+  regressions fail before the source correction and pass afterwards; all409
+  regular Linux UI tests pass, with one existing ignore. The narrow metadata
+  matrix also passes at200% text size. Strict native/Windows-GNU UI lint passes.
+  Native ordinary/elevated runs each pass382 regular tests, with four existing
+  ignores and no filters. Both include the new rendered regressions; owned roots
+  are removed, original profiles preserved and the guest is off. Six obsolete
+  compiler sessions were retired (0.25GiB). Fresh package delivery remains pending; current
+  published Linux3d469f31 and Windows520d9c57 are preserved. Evidence:
+  `miller-view-controls-current/`.
+- **Prior complete source CI:** run41243997066 on clean3d469f31 now finishes
+  successfully for Linux, Windows and search performance, including workspace
+  tests, strict lint and release builds. This accepts that source checkpoint;
+  it does not package the later column-view correction or resolve installer
+  rollback, hardware or owner acceptance.
 - **Preview footer delivered on Linux (2026-10-31):** clean `3d469f31` fixes
   wrapped metadata/frame allocation, short body minima, sparse-sheet omission
   notes and native/extracted DOCX presentation. All 407 regular Linux UI tests
@@ -2843,7 +2862,7 @@ The historical portable and MSI checkpoint was built from clean revision `fc3139
 
 ### 4. Required Ottrin picker and folder integration — deferred
 
-Approved on 2026-10-11 as a must-have, not optional research. Start only after the previously committed implementation, packaging and Linux/Windows platform-acceptance work is complete. Do not divert current repair work to this milestone or start it merely because another acceptance needs a device. After this milestone, run its focused platform acceptance and the final release-candidate gate against the resulting artifacts.
+Approved on 2026-10-11 as a must-have, not optional research. Start after the earlier independently executable implementation, packaging and Linux/Windows software acceptance work is complete. Finish current repairs first. Under the owner's independent-completion instruction, parked owner acceptance, unavailable physical devices and external release identities do not block this required milestone. After implementation, run its focused platform acceptance and the final release-candidate gate against the resulting artifacts.
 
 - Build a reusable Ottrin Open/Save/folder picker using the authoritative theme and shared UI components. Use familiar places/bookmarks, breadcrumbs/editable path, search, file views, optional preview and a clear filename/type/action footer. Support caller-specified locations, filters, multiple selection, cancellation, overwrite confirmation and parent-window behavior. Preserve useful picker preferences without overriding the caller's request. Verify theme changes on the actual picker, including fonts, colors, borders and corner geometry.
 - Use the picker within Ottrin on Linux and Windows. On Linux, provide a desktop-portal FileChooser backend for compatible applications, with an explicit enable/disable control that preserves other portal providers and restores the prior chooser selection. Windows external integration is limited to cooperating applications; do not claim or offer a universal replacement for other programs' native dialogs.
@@ -2865,7 +2884,7 @@ These outcomes remain available, but they start only when their trigger is met. 
 
 ## Final physical and platform QA
 
-Start this phase after outcomes 1–3 are complete, before starting deferred outcome 4. Keep it as one concentrated acceptance pass against exact candidate artifacts. Fix reproducible defects at their source, then rerun only the affected acceptance path. After outcome 4, accept its integration and recheck any affected existing workflows before the final gate.
+Start this phase after outcomes 1–3 are complete. Complete the independently available checks before deferred outcome4; record unavailable physical and owner checks on the waiting list so they do not block its implementation. Keep the available checks as one concentrated acceptance pass against exact candidate artifacts. Fix reproducible defects at their source, then rerun only the affected acceptance path. After outcome 4, accept its integration and recheck any affected existing workflows before the final gate.
 
 ### Linux
 

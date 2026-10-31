@@ -1,0 +1,11 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 17.02s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-9cf5f2c9763f2daf)
+
+thread 'tests::miller_metadata_values_fit_their_narrow_pane' (2120427) panicked at crates/ottrin-ui/src/lib.rs:36469:21:
+metadata exceeds its pane: width=180,scale=1,bounds=[[68.5 399.5] - [486.2 410.5]],clip=[[8.0 306.0] - [188.0 458.0]]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::entering_miller_reveals_the_current_directory_and_selection_once' (2120415) panicked at crates/ottrin-ui/src/lib.rs:36378:25:
+List → Miller must reveal the current directory
+error: test failed, to rerun pass `-p ottrin-ui --lib`
