@@ -1,0 +1,12 @@
+PDF preview render failed for /not-loaded-yet.pdf: PDFium runtime is unavailable; set OTTRIN_PDFIUM_DIR or package pdfium/lib beside Ottrin
+Affinity preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-affinity-7908-1793488211586413500.AfDeSiGn: Affinity input contains no qualifying complete embedded PNG
+SVG thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-blocked-svg-raster-cache-7908.svg: SVG contains blocked references (file/http/https image references are not permitted)
+PLY preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-ply-preview-7908.ply: PLY header is invalid or outside bounded preview limits: header line is unterminated or too long
+SQLite thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-7908-1793488212118080100.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-7908-1793488212118080100.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-7908-1793488212118080100.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-7908-1793488212118080100.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+STL thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-stl-preview-7908.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+STL preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-stl-preview-7908.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+SVG thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-blocked-svg-thumbnail-7908.svg: SVG contains blocked references (file/http/https image references are not permitted)
+SVG thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-oversized-svg-thumbnail-7908.svg: SVG could not be parsed for visual preview: SVG data parsing failed cause the document does not have a root node

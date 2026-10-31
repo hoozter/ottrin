@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-31
+Last updated: 2026-11-01
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -10,7 +10,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current checkpoint and next work
 
-Audited: 2026-10-31
+Audited: 2026-11-01
 
 This section and the current delivery table below define the working state.
 Subsequent checkpoint narratives are historical evidence: their “next”, “pending”,
@@ -18,6 +18,29 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
+- **Actual AppImage exposed toolbar defects (2026-11-01):** the clean489c72f4
+  build passes all four-format content checks. Its actual deep-path List-to-
+  Column menu action reveals the current directory and selected-file preview,
+  and narrow Location values elide. The same run reveals two defects: unbounded
+  breadcrumbs paint over view controls, and an explicit hover handler duplicates
+  the label's built-in complete-value tooltip. Neither Linux nor Windows489c72f4
+  is promoted. The Windows portable's58 files agree with its ZIP; native package/
+  GUI checking is intentionally deferred until shared-source repair. Normal Linux
+  Close exits0 and removes the private profile/processes/displays/buses/mounts.
+  Verified unused stages/extraction are retired (184,395,452 Linux bytes and
+  194,565,603 Windows bytes); current stable deliverables remain unchanged.
+  Source now bounds breadcrumbs in a horizontal scroll area, keeps the current
+  folder visible and uses the label's single built-in tooltip. Both regressions
+  reproduce before correction; all410 regular Linux UI tests pass with one
+  existing ignore, including actual toolbar clicks and hovered metadata.
+  Native ordinary/elevated Windows each pass383 regular tests, four existing
+  ignores and no filters; strict native/Windows-GNU lint passes. Both include the
+  new toolbar/hover checks,prior Miller reveal and six footer controls. Owned roots
+  are removed, original profiles preserved and the guest is off. Six further
+  obsolete compiler sessions are retired (0.40GiB). Fresh exact-package checks
+  remain pending. Evidence:
+  `navigation-toolbar-current/`, `linux-miller-view-package-current/` and
+  `windows-miller-view-package-current/PRE_REPAIR_PORTABLE_RETIRED.json`.
 - **Column-view transition and metadata repair in verification (2026-10-31):**
   switching from List or Grid now requests the existing one-shot Miller reveal
   for the current directory and selected-file preview. Selecting Column view
@@ -392,18 +415,16 @@ Historical variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Repair List-to-Miller view switching so the current directory/selection
-   and its preview are revealed once; keep deliberate later scrolling intact.
-   Inspect and bound the narrow Miller metadata values observed in the same run.
-   Reproduce failures before changing source,then run affected render/native and
-   exact-package checks. Correct the Windows GUI verifier caller to use literal
-   text plus independent raw-byte verification; the `3d469f31` staged cohort is
-   retired and its failed final control remains recorded. Linux `3d469f31` is
-   delivered and its actual enabled service is current. Continue remaining
-   Windows transaction/alias/ancestor/resource/workflow,graphics and installer
-   lifecycle acceptance. Keep failed-uninstall MSI rollback required and use a
-   distinct proposed fix or justified OS comparison rather than repeating its
-   existing independent controls. Release publication/signing remains unaccepted.
+1. Finish native verification and clean package delivery of the Column-entry,
+   bounded metadata, breadcrumb and single-tooltip corrections above. Use the
+   actual long-path interface, ordinary Windows default renderer, literal-text
+   UI verification and independent final raw-byte reads after normal Close.
+   Prior rejected stages are removed; source checks alone are not delivery.
+   Then continue Windows transaction/alias/ancestor/resource/workflow,graphics
+   and installer lifecycle acceptance. Keep failed-uninstall MSI rollback
+   required and use a distinct proposed fix or justified OS comparison rather
+   than repeating its existing independent controls. Release publication/signing
+   remains unaccepted.
 
 2. Continue dependency-ready preview/editing, file-operation and packaging
    outcomes below, then platform acceptance. Earlier workflows retain their

@@ -1,0 +1,10 @@
+{
+  "status": "unpromoted portable retired; no NSIS,MSI or native/GUI acceptance attempted",
+  "source": "489c72f4fefbba9cb1faa023652c8f1bffc4b639",
+  "portable_sha256": "ff1756c212bae610d1a9791475e79d8f99c01bc9a5ea3bc61c28db3b5e3c2ad8",
+  "payload_files": 58,
+  "payload_agrees_with_zip": true,
+  "reason": "Shared breadcrumb overflow and duplicate hover tooltip observed in Linux; fix before spending native acceptance on the same known UI defect",
+  "bytes_retired": 194565603,
+  "stable_windows520d9c57_preserved": true
+}

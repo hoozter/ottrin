@@ -13835,54 +13835,62 @@ impl OttrinApp {
             let mut crumb_right = None;
             let addr_resp = frame.show(ui, |ui| {
                 ui.set_width(ui.available_width());
-                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                    ui.set_height(18.0);
-                    let crumbs = path_crumbs(&path);
-                    for (i, crumb) in crumbs.iter().enumerate() {
-                        let display = &crumb.label;
-                        let dest = crumb.target.clone();
-                        let is_last = i == crumbs.len() - 1;
-                        let text_color = c.text_muted;
-                        let icon = if crumb.is_root {
-                            MI_STORAGE
-                        } else {
-                            let sem = semantic_for_path(&dest);
-                            let style = style_for_semantic(
-                                &sem,
-                                EntryVisualState::default(),
-                                &c,
-                                &palette,
-                                self.state.config.colorize_file_types,
-                                self.state.config.colorize_folder_labels,
-                            );
-                            material_icon(style.icon)
-                        };
-                        let resp = ui.add(
-                            egui::Button::new(
-                                RichText::new(format!("{} {}", icon, display))
-                                    .color(text_color)
-                                    .size(13.0 * c.font_scale),
-                            )
-                            .frame(false)
-                            .themed(&c),
-                        );
-                        crumb_right = Some(resp.rect.right());
-                        if resp.clicked() {
-                            self.focus_tab(tab_id);
-                            self.navigate_miller_pointer_folder(tab_id, dest);
-                        }
-                        if resp.hovered() {
-                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                        }
-                        if !is_last {
-                            ui.label(
-                                RichText::new("›")
-                                    .color(c.text_muted)
-                                    .size(12.0 * c.font_scale),
-                            );
-                        }
-                    }
-                });
+                ScrollArea::horizontal()
+                    .id_salt(("address_crumbs", tab_id, &path))
+                    .auto_shrink([false, true])
+                    .min_scrolled_width(0.0)
+                    .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
+                    .stick_to_right(true)
+                    .show(ui, |ui| {
+                        ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                            ui.set_height(18.0);
+                            let crumbs = path_crumbs(&path);
+                            for (i, crumb) in crumbs.iter().enumerate() {
+                                let display = &crumb.label;
+                                let dest = crumb.target.clone();
+                                let is_last = i == crumbs.len() - 1;
+                                let text_color = c.text_muted;
+                                let icon = if crumb.is_root {
+                                    MI_STORAGE
+                                } else {
+                                    let sem = semantic_for_path(&dest);
+                                    let style = style_for_semantic(
+                                        &sem,
+                                        EntryVisualState::default(),
+                                        &c,
+                                        &palette,
+                                        self.state.config.colorize_file_types,
+                                        self.state.config.colorize_folder_labels,
+                                    );
+                                    material_icon(style.icon)
+                                };
+                                let resp = ui.add(
+                                    egui::Button::new(
+                                        RichText::new(format!("{} {}", icon, display))
+                                            .color(text_color)
+                                            .size(13.0 * c.font_scale),
+                                    )
+                                    .frame(false)
+                                    .themed(&c),
+                                );
+                                crumb_right = Some(resp.rect.right());
+                                if resp.clicked() {
+                                    self.focus_tab(tab_id);
+                                    self.navigate_miller_pointer_folder(tab_id, dest);
+                                }
+                                if resp.hovered() {
+                                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                                }
+                                if !is_last {
+                                    ui.label(
+                                        RichText::new("›")
+                                            .color(c.text_muted)
+                                            .size(12.0 * c.font_scale),
+                                    );
+                                }
+                            }
+                        });
+                    });
             });
             // The edit target covers only unused space, never the breadcrumb buttons.
             let frame_rect = addr_resp.response.rect;
@@ -19056,8 +19064,7 @@ impl OttrinApp {
                                                 RichText::new(value).color(vc).size(10.0 * c.font_scale),
                                             )
                                             .truncate(),
-                                        )
-                                        .on_hover_text(value);
+                                        );
                                     });
                                 };
 
@@ -36333,6 +36340,112 @@ mod tests {
     }
 
     #[test]
+    fn long_breadcrumbs_preserve_toolbar_controls_and_current_folder_visibility() {
+        let directory = std::env::temp_dir()
+            .join("first-very-long-ancestor-name")
+            .join("second-very-long-ancestor-name")
+            .join("third-very-long-ancestor-name")
+            .join("fourth-very-long-ancestor-name")
+            .join("visible-current-folder");
+        for theme in [ottrin_core::ThemeMode::Light, ottrin_core::ThemeMode::Dark] {
+            for scale in [1.0, 2.0] {
+                for width in [800.0, 1100.0] {
+                    let mut app = OttrinApp::default();
+                    let tab_id = app.state.active_tab().id;
+                    app.state.active_tab_mut().current_dir = directory.clone();
+                    app.set_tab_view_mode(tab_id, ViewMode::List);
+                    app.state.config.theme = theme;
+                    app.colors = Colors::for_config(&app.state.config, None);
+                    app.colors.font_scale = scale;
+                    let ctx = Context::default();
+                    let mut output = None;
+                    for frame in 0..5 {
+                        output = Some(ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    Vec2::new(width, 600.0),
+                                )),
+                                time: Some(frame as f64 / 60.0),
+                                ..Default::default()
+                            },
+                            |ctx| app.render_nav_row(ctx),
+                        ));
+                    }
+                    let output = output.unwrap();
+                    let texts: Vec<_> = output
+                        .shapes
+                        .iter()
+                        .filter_map(|shape| match &shape.shape {
+                            egui::epaint::Shape::Text(text) => Some((text, shape.clip_rect)),
+                            _ => None,
+                        })
+                        .collect();
+                    let (options, _) = texts
+                        .iter()
+                        .find(|(text, _)| text.galley.job.text == MI_DASHBOARD_CUSTOMIZE)
+                        .unwrap();
+                    let options_bounds = options.galley.rect.translate(options.pos.to_vec2());
+                    let current = texts
+                        .iter()
+                        .find(|(text, _)| text.galley.job.text.contains("visible-current-folder"));
+                    assert!(
+                        current.is_some(),
+                        "long breadcrumbs must keep the current folder visible"
+                    );
+                    let (current, clip) = current.unwrap();
+                    assert!(
+                        clip.right() <= options_bounds.left(),
+                        "breadcrumbs must stay inside the address area: clip={clip:?},options={options_bounds:?}"
+                    );
+                    let current_bounds = current.galley.rect.translate(current.pos.to_vec2());
+                    assert!(
+                        clip.contains_rect(current_bounds),
+                        "the current folder must be visible: width={width},scale={scale},bounds={current_bounds:?},clip={clip:?}"
+                    );
+                    let (toggle, _) = texts
+                        .iter()
+                        .find(|(text, _)| text.galley.job.text == MI_VIEW_LIST)
+                        .unwrap();
+                    let position = toggle.galley.rect.translate(toggle.pos.to_vec2()).center();
+                    for (frame, pressed) in [(5, true), (6, false)] {
+                        let _ = ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    Vec2::new(width, 600.0),
+                                )),
+                                time: Some(frame as f64 / 60.0),
+                                events: vec![
+                                    egui::Event::PointerMoved(position),
+                                    egui::Event::PointerButton {
+                                        pos: position,
+                                        button: egui::PointerButton::Primary,
+                                        pressed,
+                                        modifiers: egui::Modifiers::NONE,
+                                    },
+                                ],
+                                ..Default::default()
+                            },
+                            |ctx| app.render_nav_row(ctx),
+                        );
+                    }
+                    assert_eq!(
+                        app.state.active_tab().view_mode,
+                        ViewMode::Grid,
+                        "the actual toolbar click must reach the view toggle"
+                    );
+                    assert_eq!(
+                        app.state.active_tab().current_dir,
+                        directory,
+                        "toolbar clicks must not navigate an overlapping breadcrumb"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
     fn entering_miller_reveals_the_current_directory_and_selection_once() {
         let root = tempfile::tempdir().expect("view switch fixture");
         let directory = root.path().join("one/two/three/four/five");
@@ -36483,6 +36596,40 @@ mod tests {
                         value.galley.elided,
                         "show an explicit ellipsis for a long path"
                     );
+                    let hover = bounds.intersect(clip).center();
+                    let mut hovered = None;
+                    for frame in 1..100 {
+                        hovered = Some(ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    Vec2::new(width + 16.0, 466.0),
+                                )),
+                                time: Some(frame as f64 / 60.0),
+                                events: if frame == 1 {
+                                    vec![egui::Event::PointerMoved(hover)]
+                                } else {
+                                    Vec::new()
+                                },
+                                ..Default::default()
+                            },
+                            |ctx| {
+                                egui::CentralPanel::default().show(ctx, |ui| {
+                                    app.render_miller_file_preview(ui, &entry, width, 450.0);
+                                });
+                            },
+                        ));
+                    }
+                    let full_tooltips = hovered
+                        .unwrap()
+                        .shapes
+                        .iter()
+                        .filter(|shape| {
+                            matches!(&shape.shape, egui::epaint::Shape::Text(text)
+                            if text.galley.job.text == location && !text.galley.elided)
+                        })
+                        .count();
+                    assert_eq!(full_tooltips, 1, "show the full path once on hover");
                 }
             }
         }

@@ -1,0 +1,8 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 6.93s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-9cf5f2c9763f2daf)
+
+thread 'tests::long_breadcrumbs_preserve_toolbar_controls_and_current_folder_visibility' (2163291) panicked at crates/ottrin-ui/src/lib.rs:36385:21:
+long breadcrumbs must keep the current folder visible
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p ottrin-ui --lib`

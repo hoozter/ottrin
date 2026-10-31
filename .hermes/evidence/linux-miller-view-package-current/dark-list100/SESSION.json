@@ -1,0 +1,21 @@
+{
+  "profile": "/var/tmp/.opqa-yn3om27r",
+  "fixture": "/var/tmp/.opqa-yn3om27r/fixture",
+  "app_pid": 2153781,
+  "app_start_time": "13379649",
+  "window": "8388611",
+  "source_revision": "489c72f4fefbba9cb1faa023652c8f1bffc4b639",
+  "artifact_sha256": "221f053e17f097018c8bc1bf1e9613d6ec8be5733876335f14a43dbe290cd2ab",
+  "theme": "Dark",
+  "scale": "1",
+  "environment": {
+    "DISPLAY": ":2",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-AL1kpVZ87e,guid=221fc991426f41099401092c6ae672a9",
+    "HOME": "/var/tmp/.opqa-yn3om27r/home",
+    "XDG_CONFIG_HOME": "/var/tmp/.opqa-yn3om27r/config",
+    "XDG_CACHE_HOME": "/var/tmp/.opqa-yn3om27r/cache",
+    "XDG_DATA_HOME": "/var/tmp/.opqa-yn3om27r/data",
+    "XDG_STATE_HOME": "/var/tmp/.opqa-yn3om27r/state",
+    "XDG_RUNTIME_DIR": "/var/tmp/.opqa-yn3om27r/runtime"
+  }
+}

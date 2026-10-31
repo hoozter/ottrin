@@ -7,7 +7,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 - Switching from List or Grid to Column view reveals the current folder and selected
   file preview. Choosing Column view again preserves manual horizontal scrolling.
   Long preview metadata values show an ellipsis when space is tight, with the full
-  value available on hover.
+  value available on hover. Long breadcrumb paths scroll within the address area,
+  keeping the current folder and view controls visible.
 
 - Copy and Move check destination names in the background, keeping the window responsive during large or slow checks. Cancel remains available while checking, and a cancelled result cannot start a later transfer.
 

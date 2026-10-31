@@ -1,0 +1,25 @@
+{
+  "nonce": "22a0e6d1-e93a-4e10-9328-c12a30499ab7",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "source": {
+    "base_revision": "489c72f4fefbba9cb1faa023652c8f1bffc4b639",
+    "working_tree": [
+      " M crates/ottrin-ui/src/lib.rs",
+      " M docs/RELEASE_NOTES.md",
+      " M docs/ROADMAP.md",
+      "?? AGENTS.md"
+    ],
+    "files": {
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/lib.rs": "9db8974bf4218a70f9146a64bac4d2cf49364d7bfac1078535ca69deef49e623"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

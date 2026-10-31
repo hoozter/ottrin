@@ -1,0 +1,17 @@
+{
+  "tracked_tree": "clean",
+  "jobs": 1,
+  "recorded": "2026-10-31T23:04:37.293638+00:00",
+  "changes": "One-shot current-directory/selection reveal on entering Column view and truncated metadata values with complete tooltips",
+  "baseline_bytes": {
+    "target/debug/deps": 22735830714,
+    "target/debug/incremental": 9024766372,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394150222,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25259364655
+  },
+  "preserve": "Current Linux3d469f31 and Windows520d9c57 until accepted replacements; personal service/configuration/data and user AGENTS.md",
+  "source_native_evidence": "miller-view-controls-current/SOURCE_CHECKS.json",
+  "base_revision": "489c72f4fefbba9cb1faa023652c8f1bffc4b639",
+  "scope": "Actual489c72f4 AppImage: long breadcrumbs paint over view controls; explicit metadata tooltip duplicates the built-in elision tooltip",
+  "cleanup": "Prior unpromoted Linux stage/extraction and Windows portable/payload retired after byte/consumer checks; current stable deliverables and personal service unchanged"
+}

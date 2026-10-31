@@ -1,0 +1,21 @@
+{
+  "source_revision": "489c72f4fefbba9cb1faa023652c8f1bffc4b639",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage",
+  "jobs": 1,
+  "recorded": "2026-10-31T22:54:51.120801+00:00",
+  "changes": "One-shot current-directory/selection reveal on entering Column view and truncated metadata values with complete tooltips",
+  "baseline_bytes": {
+    "target/debug/deps": 22735830714,
+    "target/debug/incremental": 9024766372,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394150222,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25259364655
+  },
+  "pending_consumers": [],
+  "preserve": "Current Linux3d469f31 and Windows520d9c57 until accepted replacements; personal service/configuration/data and user AGENTS.md",
+  "source_native_evidence": "miller-view-controls-current/SOURCE_CHECKS.json",
+  "target": "x86_64-pc-windows-gnu",
+  "memory": "Retained4GiB Windows guest stays off during compiler use; one shared-target compiler job",
+  "cleanup_complete": true,
+  "delivery_status": "Unpromoted489c72f4 portable retired; next repaired source replaces this planned cohort"
+}

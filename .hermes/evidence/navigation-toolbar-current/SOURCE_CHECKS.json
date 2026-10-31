@@ -1,0 +1,38 @@
+{
+  "status": "source verification pass; fresh package delivery pending",
+  "base_revision": "489c72f4fefbba9cb1faa023652c8f1bffc4b639",
+  "source_sha256": "9db8974bf4218a70f9146a64bac4d2cf49364d7bfac1078535ca69deef49e623",
+  "negative_controls": {
+    "breadcrumb": "Long breadcrumbs hide the current folder; actual489c72f4 AppImage also paints over view controls",
+    "metadata_hover": "Two full-value tooltips render before correction; exactly one required"
+  },
+  "changes": [
+    "Bound breadcrumbs in a horizontal scroll area; initially reveal the current folder while retaining direct toolbar access",
+    "Use the elided Label built-in full-value tooltip once; remove the duplicate handler"
+  ],
+  "linux": {
+    "regular_ui": 410,
+    "existing_ignores": 1,
+    "filters_in_full_suite": 0,
+    "strict_all_target_lint": "pass",
+    "rendered_matrix": "Light/Dark;800/1100px;100/200%: current folder and clipped breadcrumbs plus actual toolbar click",
+    "metadata_matrix": "Light/Dark;180/250px;100/135/200%: bounded value and exactly one full-path hover tooltip"
+  },
+  "windows": {
+    "ordinary_regular_ui": 383,
+    "elevated_regular_ui": 383,
+    "existing_ignores_each": 4,
+    "filters_in_full_suites": 0,
+    "strict_GNU_all_target_lint": "pass",
+    "required_controls": "New toolbar click and metadata hover,prior Miller reveal and six footer tests all execute"
+  },
+  "cleanup": {
+    "native_root_removed": true,
+    "owned_native_processes": 0,
+    "original_profiles_preserved": true,
+    "guest_off_and_definition_unchanged": true,
+    "obsolete_compiler_sessions_retired": 6,
+    "reclaimed_gib": 0.4
+  },
+  "limits": "Source/native tests do not accept a fresh package,MSI rollback,physical device/GPU or final release. Stable delivered Linux3d469f31 and Windows520d9c57 preserved."
+}

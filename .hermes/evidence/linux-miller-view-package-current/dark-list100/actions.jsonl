@@ -1,0 +1,8 @@
+{"time": 1793487585.6289878, "key": "ctrl+l"}
+{"time": 1793487585.9777071, "capture": "01-edit-path-controls"}
+{"time": 1793487596.964186, "click": [1009, 55], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793487597.4493847, "capture": "02-view-menu"}
+{"time": 1793487607.570612, "click": [872, 104], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793487609.116053, "capture": "03-column-current-preview"}
+{"time": 1793487634.86394, "capture": "04-full-location-tooltip"}
+{"time": 1793487635.2688417, "click": [1072, 18], "pointer_settled_before_press": true, "hold_seconds": 0.15}

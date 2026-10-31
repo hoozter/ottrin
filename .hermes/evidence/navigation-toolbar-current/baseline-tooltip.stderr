@@ -1,0 +1,9 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.45s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-9cf5f2c9763f2daf)
+
+thread 'tests::miller_metadata_values_fit_their_narrow_pane' (2163548) panicked at crates/ottrin-ui/src/lib.rs:36625:21:
+assertion `left == right` failed: show the full path once on hover
+  left: 2
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p ottrin-ui --lib`
