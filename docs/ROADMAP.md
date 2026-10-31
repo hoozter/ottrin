@@ -18,6 +18,18 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
+- **Preview footer source correction (2026-10-31):** shared text, archive,
+  spreadsheet and document preview bodies reserve the actual wrapped metadata
+  height and frame margins. Short panels may shrink the body below egui's
+  former minimum. Spreadsheet omission notes reserve their rendered height.
+  DOCX headers and fallback controls wrap within the panel; selecting extracted
+  text uses one bounded presentation rather than appending a second document.
+  Six real rendered-geometry/click regression cases pass at narrow widths,
+  Light/Dark and text sizes up to200%. All407 regular Linux UI tests pass
+  (one existing ignore), and strict Linux/Windows-GNU UI lint passes. Native
+  Windows verification and replacement package acceptance remain in progress;
+  the delivered cohorts below are unchanged. Evidence:
+  `preview-footer-layout-current/`.
 - **Linux filename-index CPU delivered:** bounded canonical membership lookups
   followed by direct FTS inserts address the measured per-row construction
   hotspot. Exact packaged private-cache reconciliation uses 9.50 CPU seconds
@@ -103,7 +115,8 @@ their named hashes. Test counts are scoped observations, not completion measures
   isolated test repair passes an exact-count positive-control probe and all222
   native search tests under both ordinary/elevated tokens, with six existing
   ignores and zero filters in the full suites. Evidence:
-  `windows-copy-undo-admission-current/`; full hosted verification is pending.
+  `windows-copy-undo-admission-current/`. This earlier failure is superseded by
+  complete hosted run40295923460 above.
 - **Personal service delivery (2026-10-31):** the configured unit is enabled
   and running from the newly delivered AppImage, PID1789153, with exact daemon
   ELF `df3f9618` unchanged. The observed cache contains122,877 items with watching

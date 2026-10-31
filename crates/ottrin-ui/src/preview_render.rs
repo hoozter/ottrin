@@ -14,7 +14,7 @@ use ottrin_preview::{
     PreviewData, PreviewKind, SpreadsheetOmission, SpreadsheetOmissionReason, SpreadsheetPreview,
 };
 use sha2::{Digest, Sha256};
-use std::path::Path;
+use std::{path::Path, sync::Arc};
 
 pub(crate) const PREVIEW_CONTENT_PADDING: f32 = 16.0;
 pub(crate) const FLOW_TEXT_SIZE: f32 = 16.0;
@@ -500,22 +500,60 @@ pub(crate) fn preview_payload_for_copy(
     }
 }
 
+fn preview_metadata_galley(
+    ui: &egui::Ui,
+    c: Colors,
+    text: &str,
+    align: Align,
+) -> Arc<egui::Galley> {
+    let text = egui::WidgetText::from(
+        RichText::new(text)
+            .color(c.text_dim)
+            .size(11.0 * c.font_scale),
+    );
+    let mut job = Arc::unwrap_or_clone(text.into_layout_job(
+        ui.style(),
+        egui::FontSelection::Style(egui::TextStyle::Body),
+        Align::Center,
+    ));
+    job.halign = align;
+    job.wrap.max_width = ui.available_width().max(1.0);
+    ui.fonts_mut(|fonts| fonts.layout_job(job))
+}
+
+fn preview_footer_galley(
+    ui: &egui::Ui,
+    c: Colors,
+    name: &str,
+    body: &str,
+) -> Option<Arc<egui::Galley>> {
+    (!body.trim().is_empty()).then(|| {
+        preview_metadata_galley(ui, c, &compact_preview_metadata(name, body), Align::Center)
+    })
+}
+
+fn preview_footer_height(ui: &egui::Ui, c: Colors, name: &str, body: &str) -> f32 {
+    preview_footer_galley(ui, c, name, body).map_or(0.0, |galley| {
+        ui.spacing().item_spacing.y + 6.0 + galley.size().y
+    })
+}
+
 pub(crate) fn render_preview_footer(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
-    if body.trim().is_empty() {
+    let Some(galley) = preview_footer_galley(ui, c, name, body) else {
         return;
-    }
+    };
     ui.add_space(6.0);
     ui.with_layout(Layout::top_down(Align::Center), |ui| {
-        ui.label(
-            RichText::new(compact_preview_metadata(name, body))
-                .color(c.text_dim)
-                .size(11.0 * c.font_scale),
-        );
+        ui.label(galley);
     });
 }
 
-pub(crate) fn scrollable_preview_height(available_height: f32, minimum_height: f32) -> f32 {
-    (available_height - 30.0).max(minimum_height)
+fn scrollable_preview_height(
+    available_height: f32,
+    footer_height: f32,
+    frame: &egui::Frame,
+) -> f32 {
+    (available_height - footer_height - frame.total_margin().sum().y).max(0.0)
 }
 
 pub(crate) fn docx_width_fit_scale(page_width: f32, available_width: f32) -> f32 {
@@ -530,41 +568,41 @@ fn render_scrollable_preview_text(
     text: &str,
     color: Color32,
     highlighted: Option<egui::text::LayoutJob>,
-    minimum_height: f32,
+    footer_height: f32,
     id: impl std::hash::Hash,
     scale: f32,
 ) {
-    let height = scrollable_preview_height(ui.available_height(), minimum_height);
-    egui::Frame::new()
-        .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
-        .show(ui, |ui| {
-            ScrollArea::vertical()
-                .id_salt(id)
-                .max_height(height)
-                .auto_shrink([false, false])
-                .show(ui, |ui| {
-                    ui.set_min_width(ui.available_width());
-                    let highlighted = highlighted.map(|mut job| {
-                        for section in &mut job.sections {
-                            section.format.font_id.size = FLOW_TEXT_SIZE * scale.clamp(0.7, 2.0);
-                        }
-                        job
-                    });
-                    let label = highlighted.map_or_else(
-                        || {
-                            egui::Label::new(
-                                RichText::new(text)
-                                    .font(FontId::monospace(
-                                        (FLOW_TEXT_SIZE * scale).clamp(10.0, 32.0),
-                                    ))
-                                    .color(color),
-                            )
-                        },
-                        egui::Label::new,
-                    );
-                    ui.add(label.wrap().selectable(true));
+    let frame = egui::Frame::new().stroke(Stroke::new(1.0, Color32::from_white_alpha(28)));
+    let height = scrollable_preview_height(ui.available_height(), footer_height, &frame);
+    frame.show(ui, |ui| {
+        ScrollArea::vertical()
+            .id_salt(id)
+            .max_height(height)
+            .min_scrolled_height(0.0)
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                ui.set_min_width(ui.available_width());
+                let highlighted = highlighted.map(|mut job| {
+                    for section in &mut job.sections {
+                        section.format.font_id.size = FLOW_TEXT_SIZE * scale.clamp(0.7, 2.0);
+                    }
+                    job
                 });
-        });
+                let label = highlighted.map_or_else(
+                    || {
+                        egui::Label::new(
+                            RichText::new(text)
+                                .font(FontId::monospace(
+                                    (FLOW_TEXT_SIZE * scale).clamp(10.0, 32.0),
+                                ))
+                                .color(color),
+                        )
+                    },
+                    egui::Label::new,
+                );
+                ui.add(label.wrap().selectable(true));
+            });
+    });
 }
 
 fn source_preview_layout_job(
@@ -597,7 +635,7 @@ pub(crate) fn render_text_body_preview_scaled(
         source,
         c.text,
         highlighted,
-        160.0,
+        preview_footer_height(ui, c, name, metadata),
         ("inspector_text", name),
         scale,
     );
@@ -613,66 +651,74 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
     }
 
     let tree = archive_tree_from_listing(listing);
-    let height = scrollable_preview_height(ui.available_height(), 180.0);
-    let width = ui.available_width();
-    egui::Frame::new()
-        .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
-        .show(ui, |ui| {
-            ui.set_width(width);
-            ScrollArea::vertical()
-                .id_salt(("inspector_archive_tree", name))
-                .max_height(height)
-                .auto_shrink([false, false])
+    let frame = egui::Frame::new().stroke(Stroke::new(1.0, Color32::from_white_alpha(28)));
+    let height = scrollable_preview_height(
+        ui.available_height(),
+        preview_footer_height(ui, c, name, metadata),
+        &frame,
+    );
+    frame.show(ui, |ui| {
+        let width = ui.available_width();
+        ScrollArea::both()
+            .id_salt(("inspector_archive_tree", name))
+            .max_height(height)
+            .min_scrolled_height(0.0)
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                ui.set_min_width(width);
+                egui::CollapsingHeader::new(
+                    RichText::new(format!("{MI_FOLDER_ZIP}  {}", archive_display_name(name)))
+                        .color(c.text)
+                        .size(12.5 * c.font_scale)
+                        .strong(),
+                )
+                .id_salt(("archive_root", name))
+                .default_open(true)
                 .show(ui, |ui| {
-                    ui.set_min_width(width);
-                    egui::CollapsingHeader::new(
-                        RichText::new(format!("{MI_FOLDER_ZIP}  {}", archive_display_name(name)))
-                            .color(c.text)
-                            .size(12.5 * c.font_scale)
-                            .strong(),
-                    )
-                    .id_salt(("archive_root", name))
-                    .default_open(true)
-                    .show(ui, |ui| {
-                        render_archive_tree_nodes(ui, &tree.roots, c, name, 0);
-                        if let Some(notice) = archive_partial_notice(metadata) {
-                            ui.label(
-                                RichText::new(notice)
-                                    .color(c.text_muted)
-                                    .italics()
-                                    .size(11.0 * c.font_scale),
-                            );
-                        }
-                        if tree.truncated {
-                            ui.label(
-                                RichText::new("Tree rendering truncated at the safe node limit.")
-                                    .color(c.text_muted)
-                                    .italics()
-                                    .size(11.0 * c.font_scale),
-                            );
-                        }
-                    });
+                    render_archive_tree_nodes(ui, &tree.roots, c, name, 0);
+                    if let Some(notice) = archive_partial_notice(metadata) {
+                        ui.label(
+                            RichText::new(notice)
+                                .color(c.text_muted)
+                                .italics()
+                                .size(11.0 * c.font_scale),
+                        );
+                    }
+                    if tree.truncated {
+                        ui.label(
+                            RichText::new("Tree rendering truncated at the safe node limit.")
+                                .color(c.text_muted)
+                                .italics()
+                                .size(11.0 * c.font_scale),
+                        );
+                    }
                 });
-        });
+            });
+    });
     render_preview_footer(ui, c, name, metadata);
 }
 
 const EXTRACTED_TEXT_FALLBACK_LABEL: &str = "Extracted text fallback";
 
-fn render_extracted_text_fallback_content(ui: &mut egui::Ui, c: Colors, text: &str) {
+fn render_extracted_text_fallback_content(
+    ui: &mut egui::Ui,
+    c: Colors,
+    text: &str,
+    show_heading: bool,
+) {
     ui.with_layout(Layout::top_down(Align::Min), |ui| {
+        if show_heading {
+            ui.label(
+                RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
+                    .color(c.text)
+                    .size(12.5 * c.font_scale)
+                    .strong(),
+            );
+        }
         ui.label(
-            RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
-                .color(c.text)
-                .size(12.5 * c.font_scale)
-                .strong(),
-        );
-        ui.label(
-            RichText::new(
-                "Source layout is unavailable. This fallback preserves extracted line breaks and whitespace only.",
-            )
-            .color(c.text_muted)
-            .size(10.5 * c.font_scale),
+            RichText::new("This text view preserves extracted line breaks and whitespace.")
+                .color(c.text_muted)
+                .size(10.5 * c.font_scale),
         );
         ui.add_space(6.0);
         ui.add(
@@ -684,6 +730,46 @@ fn render_extracted_text_fallback_content(ui: &mut egui::Ui, c: Colors, text: &s
             .selectable(true),
         );
     });
+}
+
+fn render_extracted_text_fallback_choice(
+    ui: &mut egui::Ui,
+    c: Colors,
+    name: &str,
+    metadata: &str,
+    text: &str,
+) -> bool {
+    let wrap_width =
+        (ui.available_width() - ui.spacing().indent - ui.spacing().button_padding.x).max(1.0);
+    let title = egui::WidgetText::from(
+        RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
+            .color(c.text_muted)
+            .size(11.0 * c.font_scale),
+    )
+    .into_galley(
+        ui,
+        Some(egui::TextWrapMode::Wrap),
+        wrap_width,
+        egui::TextStyle::Button,
+    );
+    let footer_height = preview_footer_height(ui, c, name, metadata);
+    egui::CollapsingHeader::new(title)
+        .id_salt(("document_extracted_fallback", name))
+        .default_open(false)
+        .show(ui, |ui| {
+            let height =
+                scrollable_preview_height(ui.available_height(), footer_height, &egui::Frame::NONE);
+            ScrollArea::both()
+                .id_salt(("document_extracted_text", name))
+                .max_height(height)
+                .min_scrolled_height(0.0)
+                .auto_shrink([false, false])
+                .show(ui, |ui| {
+                    render_extracted_text_fallback_content(ui, c, text, false)
+                });
+        })
+        .body_returned
+        .is_some()
 }
 
 fn docx_color(value: Option<&str>, fallback: Color32) -> Color32 {
@@ -830,14 +916,8 @@ pub(crate) fn render_docx_structured_body_preview(
         return false;
     };
 
-    ui.horizontal(|ui| {
+    ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
         ui.spacing_mut().item_spacing.x = 3.0;
-        ui.label(
-            RichText::new("Ottrin preview")
-                .color(c.text)
-                .size(12.5 * c.font_scale)
-                .strong(),
-        );
         let info = ui
             .add(
                 egui::Button::new(RichText::new(MI_INFO).color(c.text_muted).size(13.0 * c.font_scale))
@@ -852,79 +932,97 @@ pub(crate) fn render_docx_structured_body_preview(
                 );
             });
         }
+        ui.allocate_ui_with_layout(
+            Vec2::new(ui.available_width(), 0.0),
+            Layout::top_down(Align::Min),
+            |ui| {
+                ui.add(
+                    egui::Label::new(
+                        RichText::new("Ottrin preview")
+                            .color(c.text)
+                            .size(12.5 * c.font_scale)
+                            .strong(),
+                    )
+                    .wrap(),
+                );
+            },
+        );
     });
     ui.add_space(6.0);
 
-    let height = scrollable_preview_height(ui.available_height(), 180.0);
-    egui::Frame::new()
+    let (metadata, extracted) = split_preview_extracted_text(&preview.body);
+    if let Some(text) = extracted.filter(|text| !text.is_empty())
+        && render_extracted_text_fallback_choice(ui, c, name, metadata, text)
+    {
+        // The alternative shares the bounded preview body instead of appending
+        // a second full document below the primary view and clipping metadata.
+        render_preview_footer(ui, c, name, metadata);
+        return true;
+    }
+    let frame = egui::Frame::new()
         .fill(Color32::from_rgb(250, 250, 248))
         .stroke(Stroke::new(1.0, Color32::from_gray(190)))
-        .inner_margin(egui::Margin::same(18))
-        .show(ui, |ui| {
-            ScrollArea::vertical()
-                .id_salt(("inspector_docx_structure", name))
-                .max_height(height)
-                .auto_shrink([false, false])
-                .show(ui, |ui| {
-                    ui.set_min_width(ui.available_width());
-                    let document_colors = Colors {
-                        text: Color32::from_rgb(32, 34, 38),
-                        text_muted: Color32::from_rgb(92, 96, 104),
-                        text_dim: Color32::from_rgb(112, 116, 124),
-                        ..c
-                    };
-                    for (block_index, block) in document.blocks.iter().enumerate() {
-                        match block {
-                            DocxBlock::Paragraph(paragraph) => {
-                                render_docx_paragraph(ui, document_colors, paragraph, scale);
-                            }
-                            DocxBlock::Table(table) => {
-                                let stroke = if table.bordered {
-                                    Stroke::new(1.0, Color32::from_gray(120))
-                                } else {
-                                    Stroke::NONE
-                                };
-                                egui::Grid::new(("docx_table", name, block_index))
-                                    .spacing(Vec2::ZERO)
-                                    .show(ui, |ui| {
-                                        for row in &table.rows {
-                                            for cell in &row.cells {
-                                                egui::Frame::new()
-                                                    .stroke(stroke)
-                                                    .inner_margin(egui::Margin::same(7))
-                                                    .show(ui, |ui| {
-                                                        ui.set_min_width(150.0);
-                                                        for paragraph in &cell.paragraphs {
-                                                            render_docx_paragraph(
-                                                                ui,
-                                                                document_colors,
-                                                                paragraph,
-                                                                scale,
-                                                            );
-                                                        }
-                                                    });
-                                            }
-                                            ui.end_row();
+        .inner_margin(egui::Margin::same(18));
+    let height = scrollable_preview_height(
+        ui.available_height(),
+        preview_footer_height(ui, c, name, metadata),
+        &frame,
+    );
+    frame.show(ui, |ui| {
+        ScrollArea::both()
+            .id_salt(("inspector_docx_structure", name))
+            .max_height(height)
+            .min_scrolled_height(0.0)
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                ui.set_min_width(ui.available_width());
+                let document_colors = Colors {
+                    text: Color32::from_rgb(32, 34, 38),
+                    text_muted: Color32::from_rgb(92, 96, 104),
+                    text_dim: Color32::from_rgb(112, 116, 124),
+                    ..c
+                };
+                for (block_index, block) in document.blocks.iter().enumerate() {
+                    match block {
+                        DocxBlock::Paragraph(paragraph) => {
+                            render_docx_paragraph(ui, document_colors, paragraph, scale);
+                        }
+                        DocxBlock::Table(table) => {
+                            let stroke = if table.bordered {
+                                Stroke::new(1.0, Color32::from_gray(120))
+                            } else {
+                                Stroke::NONE
+                            };
+                            egui::Grid::new(("docx_table", name, block_index))
+                                .spacing(Vec2::ZERO)
+                                .show(ui, |ui| {
+                                    for row in &table.rows {
+                                        for cell in &row.cells {
+                                            egui::Frame::new()
+                                                .stroke(stroke)
+                                                .inner_margin(egui::Margin::same(7))
+                                                .show(ui, |ui| {
+                                                    ui.set_min_width(150.0);
+                                                    for paragraph in &cell.paragraphs {
+                                                        render_docx_paragraph(
+                                                            ui,
+                                                            document_colors,
+                                                            paragraph,
+                                                            scale,
+                                                        );
+                                                    }
+                                                });
                                         }
-                                    });
-                                ui.add_space(8.0);
-                            }
+                                        ui.end_row();
+                                    }
+                                });
+                            ui.add_space(8.0);
                         }
                     }
-                });
-        });
+                }
+            });
+    });
 
-    let (metadata, extracted) = split_preview_extracted_text(&preview.body);
-    if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        egui::CollapsingHeader::new(
-            RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
-                .color(c.text_muted)
-                .size(11.0 * c.font_scale),
-        )
-        .id_salt(("document_extracted_fallback", name))
-        .default_open(false)
-        .show(ui, |ui| render_extracted_text_fallback_content(ui, c, text));
-    }
     render_preview_footer(ui, c, name, metadata);
     true
 }
@@ -938,21 +1036,24 @@ pub(crate) fn render_document_body_preview(
 ) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        let height = scrollable_preview_height(ui.available_height(), 180.0);
-        let width = ui.available_width();
-        egui::Frame::new()
-            .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
-            .show(ui, |ui| {
-                ui.set_width(width);
-                ScrollArea::both()
-                    .id_salt(("inspector_document_fallback", name))
-                    .max_height(height)
-                    .auto_shrink([false, false])
-                    .show(ui, |ui| {
-                        ui.set_min_width(width);
-                        render_extracted_text_fallback_content(ui, c, text);
-                    });
-            });
+        let frame = egui::Frame::new().stroke(Stroke::new(1.0, Color32::from_white_alpha(28)));
+        let height = scrollable_preview_height(
+            ui.available_height(),
+            preview_footer_height(ui, c, name, metadata),
+            &frame,
+        );
+        frame.show(ui, |ui| {
+            let width = ui.available_width();
+            ScrollArea::both()
+                .id_salt(("inspector_document_fallback", name))
+                .max_height(height)
+                .min_scrolled_height(0.0)
+                .auto_shrink([false, false])
+                .show(ui, |ui| {
+                    ui.set_min_width(width);
+                    render_extracted_text_fallback_content(ui, c, text, true);
+                });
+        });
         render_preview_footer(ui, c, name, metadata);
     } else {
         render_metadata_card_preview(ui, c, icon, name, metadata);
@@ -1314,67 +1415,75 @@ pub(crate) fn render_spreadsheet_body_preview(
     });
     ui.add_space(6.0);
     let sheet = &grid.sheets[selected_index];
-    let height = scrollable_preview_height(ui.available_height(), 180.0);
-    egui::Frame::new()
+    let frame = egui::Frame::new()
         .fill(Color32::WHITE)
-        .stroke(Stroke::new(1.0, Color32::from_rgb(205, 210, 218)))
-        .show(ui, |ui| {
-            // egui normally expands scroll clips to accommodate widget shadows.
-            // Cell backgrounds must stop inside this frame, including at the
-            // trailing edge while a solid scrollbar reserves its own space.
-            ui.set_clip_rect(ui.clip_rect().intersect(ui.max_rect()));
-            ui.visuals_mut().clip_rect_margin = 0.0;
-            ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
-            ScrollArea::both()
-                .id_salt(("inspector_spreadsheet", name, &sheet.id))
-                .max_height(height)
-                .auto_shrink([false, false])
-                .show(ui, |ui| {
-                    let count = sheet.columns.len();
-                    let available = (ui.available_width() - 2.0).max(1.0);
-                    let column = spreadsheet_content_width(available, count, false);
-                    let natural = SPREADSHEET_ROW_HEADER_WIDTH
-                        + SPREADSHEET_CELL_HORIZONTAL_PADDING
-                        + count as f32 * (column + SPREADSHEET_CELL_HORIZONTAL_PADDING);
-                    let scale = if sizing.spreadsheet_overview {
-                        (available / natural).min(1.0)
-                    } else {
-                        sizing.flow_text_scale.clamp(0.7, 2.0)
-                    };
-                    let mut widths = vec![
-                        (SPREADSHEET_ROW_HEADER_WIDTH + SPREADSHEET_CELL_HORIZONTAL_PADDING)
-                            * scale,
-                    ];
-                    widths.extend(std::iter::repeat_n(
-                        (column + SPREADSHEET_CELL_HORIZONTAL_PADDING) * scale,
-                        count,
-                    ));
-                    ui.spacing_mut().item_spacing.y = 0.0;
-                    let mut header = vec![("#", SpreadsheetCellKind::Header)];
-                    header.extend(
-                        sheet
-                            .columns
+        .stroke(Stroke::new(1.0, Color32::from_rgb(205, 210, 218)));
+    let omission_height: f32 = sheet
+        .omissions
+        .iter()
+        .chain(grid.omissions.iter())
+        .map(|note| {
+            preview_metadata_galley(ui, c, note, Align::Min).size().y + ui.spacing().item_spacing.y
+        })
+        .sum();
+    let height = scrollable_preview_height(
+        ui.available_height(),
+        preview_footer_height(ui, c, name, &preview.body) + omission_height,
+        &frame,
+    );
+    frame.show(ui, |ui| {
+        // egui normally expands scroll clips to accommodate widget shadows.
+        // Cell backgrounds must stop inside this frame, including at the
+        // trailing edge while a solid scrollbar reserves its own space.
+        ui.set_clip_rect(ui.clip_rect().intersect(ui.max_rect()));
+        ui.visuals_mut().clip_rect_margin = 0.0;
+        ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
+        ScrollArea::both()
+            .id_salt(("inspector_spreadsheet", name, &sheet.id))
+            .max_height(height)
+            .min_scrolled_height(0.0)
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                let count = sheet.columns.len();
+                let available = (ui.available_width() - 2.0).max(1.0);
+                let column = spreadsheet_content_width(available, count, false);
+                let natural = SPREADSHEET_ROW_HEADER_WIDTH
+                    + SPREADSHEET_CELL_HORIZONTAL_PADDING
+                    + count as f32 * (column + SPREADSHEET_CELL_HORIZONTAL_PADDING);
+                let scale = if sizing.spreadsheet_overview {
+                    (available / natural).min(1.0)
+                } else {
+                    sizing.flow_text_scale.clamp(0.7, 2.0)
+                };
+                let mut widths = vec![
+                    (SPREADSHEET_ROW_HEADER_WIDTH + SPREADSHEET_CELL_HORIZONTAL_PADDING) * scale,
+                ];
+                widths.extend(std::iter::repeat_n(
+                    (column + SPREADSHEET_CELL_HORIZONTAL_PADDING) * scale,
+                    count,
+                ));
+                ui.spacing_mut().item_spacing.y = 0.0;
+                let mut header = vec![("#", SpreadsheetCellKind::Header)];
+                header.extend(
+                    sheet
+                        .columns
+                        .iter()
+                        .map(|column| (column.label.as_str(), SpreadsheetCellKind::Header)),
+                );
+                render_spreadsheet_row(ui, &header, &widths, false, scale);
+                for (index, row) in sheet.rows.iter().enumerate() {
+                    let mut cells = vec![(row.label.as_str(), SpreadsheetCellKind::Header)];
+                    cells.extend(
+                        row.cells
                             .iter()
-                            .map(|column| (column.label.as_str(), SpreadsheetCellKind::Header)),
+                            .map(|value| (value.as_str(), SpreadsheetCellKind::Body)),
                     );
-                    render_spreadsheet_row(ui, &header, &widths, false, scale);
-                    for (index, row) in sheet.rows.iter().enumerate() {
-                        let mut cells = vec![(row.label.as_str(), SpreadsheetCellKind::Header)];
-                        cells.extend(
-                            row.cells
-                                .iter()
-                                .map(|value| (value.as_str(), SpreadsheetCellKind::Body)),
-                        );
-                        render_spreadsheet_row(ui, &cells, &widths, index % 2 == 1, scale);
-                    }
-                });
-        });
+                    render_spreadsheet_row(ui, &cells, &widths, index % 2 == 1, scale);
+                }
+            });
+    });
     for omission in sheet.omissions.iter().chain(grid.omissions.iter()) {
-        ui.label(
-            RichText::new(omission)
-                .color(c.text_dim)
-                .size(11.0 * c.font_scale),
-        );
+        ui.label(preview_metadata_galley(ui, c, omission, Align::Min));
     }
     render_preview_footer(ui, c, name, &preview.body);
     true
@@ -1413,14 +1522,7 @@ pub(crate) fn render_document_body_preview_in_scroll_content(
 ) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        egui::CollapsingHeader::new(
-            RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
-                .color(c.text_muted)
-                .size(11.0 * c.font_scale),
-        )
-        .id_salt(("document_extracted_fallback", name))
-        .default_open(false)
-        .show(ui, |ui| render_extracted_text_fallback_content(ui, c, text));
+        render_extracted_text_fallback_choice(ui, c, name, metadata, text);
         render_preview_footer(ui, c, name, metadata);
     } else {
         render_metadata_card_preview(ui, c, icon, name, metadata);
@@ -2231,6 +2333,311 @@ mod tests {
             docx_list_layout(paragraph.list.as_ref().expect("list")),
             ("◦", 18.0)
         );
+    }
+
+    fn assert_rendered_footer_fits(
+        name: &str,
+        size: Vec2,
+        scale: f32,
+        wrapped: bool,
+        mut render: impl FnMut(&mut egui::Ui, Colors),
+    ) {
+        for theme in [ottrin_core::ThemeMode::Light, ottrin_core::ThemeMode::Dark] {
+            let context = egui::Context::default();
+            context.set_visuals(if theme == ottrin_core::ThemeMode::Light {
+                egui::Visuals::light()
+            } else {
+                egui::Visuals::dark()
+            });
+            let config = ottrin_core::AppConfig {
+                theme,
+                ..Default::default()
+            };
+            let mut colors = Colors::for_config(&config, None);
+            colors.font_scale = scale;
+            for _ in 0..2 {
+                let mut viewport = Rect::NOTHING;
+                let output = context.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, size)),
+                        ..Default::default()
+                    },
+                    |context| {
+                        egui::CentralPanel::default().show(context, |ui| {
+                            viewport = ui.max_rect();
+                            render(ui, colors);
+                        });
+                    },
+                );
+                let footers: Vec<_> = output
+                    .shapes
+                    .iter()
+                    .filter_map(|shape| match &shape.shape {
+                        egui::epaint::Shape::Text(text)
+                            if text.galley.job.text.starts_with(name) =>
+                        {
+                            Some((text, shape.clip_rect))
+                        }
+                        _ => None,
+                    })
+                    .collect();
+                assert_eq!(footers.len(), 1, "actual metadata footer must render");
+                let (footer, clip) = footers[0];
+                assert!(footer.galley.job.text.contains("Filetype:"));
+                if wrapped {
+                    assert!(footer.galley.rows.len() > 1, "exercise wrapped metadata");
+                }
+                let bounds = footer.galley.rect.translate(footer.pos.to_vec2());
+                assert!(
+                    viewport.contains_rect(bounds) && clip.contains_rect(bounds),
+                    "footer must be wholly visible: name={name}, size={size:?}, scale={scale}, footer={bounds:?}, viewport={viewport:?}, clip={clip:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn wrapped_preview_footer_stays_inside_its_viewport() {
+        let name = "footer geometry fixture with a deliberately long name.txt";
+        let body = "Filetype: Plain text file\nEncoding: UTF-8\nLines: 1\n\nExtracted text:\nDocument content";
+        for width in [250.0, 180.0, 400.0] {
+            for height in [500.0, 300.0] {
+                for scale in [1.0, 1.5, 2.0] {
+                    assert_rendered_footer_fits(
+                        name,
+                        Vec2::new(width, height),
+                        scale,
+                        true,
+                        |ui, colors| render_text_body_preview_scaled(ui, colors, name, body, 1.0),
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn short_preview_preserves_its_footer_without_forcing_body_height() {
+        let name = "short.txt";
+        let body = "Filetype: Text\n\nExtracted text:\nDocument content\n".repeat(20);
+        assert_rendered_footer_fits(name, Vec2::new(250.0, 90.0), 1.0, false, |ui, colors| {
+            render_text_body_preview_scaled(ui, colors, name, &body, 1.0)
+        });
+    }
+
+    #[test]
+    fn archive_and_document_fallback_footers_fit_narrow_viewports() {
+        for scale in [1.0, 1.5, 2.0] {
+            let name = "footer geometry fixture with a deliberately long name.zip";
+            let body = "Filetype: ZIP archive\nEntries: 1\nContents:\nfolder/note.txt";
+            assert_rendered_footer_fits(
+                name,
+                Vec2::new(250.0, 400.0),
+                scale,
+                true,
+                |ui, colors| render_archive_body_preview(ui, colors, name, body),
+            );
+            let name = "footer geometry fixture with a deliberately long name.pdf";
+            let body = "Filetype: PDF document\nPages: 1\n\nExtracted text:\nDocument content";
+            assert_rendered_footer_fits(
+                name,
+                Vec2::new(250.0, 400.0),
+                scale,
+                true,
+                |ui, colors| render_document_body_preview(ui, colors, MI_DESCRIPTION, name, body),
+            );
+        }
+    }
+
+    #[test]
+    fn spreadsheet_footer_and_omission_notes_fit_narrow_viewports() {
+        let name = "footer geometry fixture with a deliberately long name.xlsx";
+        let preview = PreviewData {
+            title: name.into(),
+            kind: PreviewKind::OfficeMetadata,
+            body: "Filetype: XLSX document\nFormat: XLSX\nSheets: 1".into(),
+            document: None,
+            open_external: false,
+            spreadsheet: Some(SpreadsheetPreview {
+                sheets: vec![ottrin_preview::SpreadsheetSheet {
+                    id: "sheet".into(),
+                    name: "Sheet".into(),
+                    cells: [(0, 0, "first"), (99_999, 99_999, "last")]
+                        .into_iter()
+                        .map(|(row, column, text)| ottrin_preview::SpreadsheetCell {
+                            row,
+                            column,
+                            text: text.into(),
+                        })
+                        .collect(),
+                    omissions: vec![SpreadsheetOmission {
+                        reason: SpreadsheetOmissionReason::SparseColumnGap {
+                            from: 1,
+                            to: 99_998,
+                        },
+                    }],
+                }],
+                omissions: vec![],
+            }),
+        };
+        let grid = spreadsheet_grid_from_payload(preview.spreadsheet.as_ref().unwrap());
+        assert!(!grid.sheets[0].omissions.is_empty() || !grid.omissions.is_empty());
+        for scale in [1.0, 1.5] {
+            assert_rendered_footer_fits(
+                name,
+                Vec2::new(250.0, 500.0),
+                scale,
+                true,
+                |ui, colors| {
+                    assert!(render_spreadsheet_body_preview(
+                        ui,
+                        colors,
+                        name,
+                        &preview,
+                        &mut None,
+                        PreviewBodySizing::default()
+                    ));
+                },
+            );
+        }
+    }
+
+    #[test]
+    fn structured_document_footer_fits_below_its_fallback_control() {
+        let fixture = tempfile::tempdir().expect("owned DOCX geometry fixture");
+        let path = fixture.path().join("footer-geometry.docx");
+        std::fs::write(
+            &path,
+            include_bytes!("../../ottrin-preview/tests/fixtures/docx-baseline.docx"),
+        )
+        .unwrap();
+        let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
+            path,
+            kind_hint: ottrin_core::EntryKind::File,
+        });
+        let name = "footer geometry fixture with a deliberately long name.docx";
+        for scale in [1.0, 1.5, 2.0] {
+            for width in [180.0, 250.0] {
+                assert_rendered_footer_fits(
+                    name,
+                    Vec2::new(width, 500.0),
+                    scale,
+                    true,
+                    |ui, colors| {
+                        assert!(render_docx_structured_body_preview(
+                            ui, colors, name, &preview, 1.0
+                        ));
+                    },
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn expanded_extracted_text_keeps_its_footer_visible() {
+        let fixture = tempfile::tempdir().expect("owned DOCX fallback fixture");
+        let path = fixture.path().join("footer-fallback.docx");
+        std::fs::write(
+            &path,
+            include_bytes!("../../ottrin-preview/tests/fixtures/docx-baseline.docx"),
+        )
+        .unwrap();
+        let mut preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
+            path,
+            kind_hint: ottrin_core::EntryKind::File,
+        });
+        preview.body = format!(
+            "Filetype: DOCX document\nFormat: DOCX\n\nExtracted text:\n{}",
+            "ONLY_EXTRACTED_MODE content remains scrollable\n".repeat(100)
+        );
+        let name = "footer geometry fixture with a deliberately long name.docx";
+        let context = egui::Context::default();
+        let mut click = None;
+        let mut expanded = false;
+        for frame in 0..60 {
+            let events = match (frame, click) {
+                (1, Some(pos)) => vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+                (2, Some(pos)) => vec![egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers: egui::Modifiers::NONE,
+                }],
+                _ => vec![],
+            };
+            let mut viewport = Rect::NOTHING;
+            let output = context.run(
+                egui::RawInput {
+                    time: Some(frame as f64 / 60.0),
+                    events,
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(180.0, 500.0),
+                    )),
+                    ..Default::default()
+                },
+                |context| {
+                    egui::CentralPanel::default().show(context, |ui| {
+                        viewport = ui.max_rect();
+                        let mut colors = Colors::for_config(&Default::default(), None);
+                        colors.font_scale = 1.5;
+                        assert!(render_docx_structured_body_preview(
+                            ui, colors, name, &preview, 1.0
+                        ));
+                    });
+                },
+            );
+            let mut footer_count = 0;
+            let mut fallback = false;
+            let mut paper = false;
+            for shape in &output.shapes {
+                match &shape.shape {
+                    egui::epaint::Shape::Text(text) => {
+                        let bounds = text.galley.rect.translate(text.pos.to_vec2());
+                        if text.galley.job.text == EXTRACTED_TEXT_FALLBACK_LABEL && frame == 0 {
+                            assert!(
+                                viewport.contains_rect(bounds),
+                                "wrapped fallback control must fit"
+                            );
+                            click = Some(bounds.center());
+                        }
+                        if text.galley.job.text.starts_with(name) {
+                            footer_count += 1;
+                            assert!(
+                                viewport.contains_rect(bounds)
+                                    && shape.clip_rect.contains_rect(bounds),
+                                "footer clipped during fallback transition at frame{frame}: {bounds:?}"
+                            );
+                        }
+                        fallback |= text.galley.job.text.contains("ONLY_EXTRACTED_MODE");
+                    }
+                    egui::epaint::Shape::Rect(rect)
+                        if rect.fill == Color32::from_rgb(250, 250, 248) =>
+                    {
+                        paper = true
+                    }
+                    _ => {}
+                }
+            }
+            assert_eq!(footer_count, 1);
+            if frame == 0 {
+                assert!(click.is_some());
+                assert!(paper);
+            }
+            if frame >= 30 {
+                assert!(fallback, "click must open the actual fallback control");
+                assert!(!paper, "show one bounded document presentation");
+                expanded = true;
+            }
+        }
+        assert!(expanded);
     }
 
     #[test]
