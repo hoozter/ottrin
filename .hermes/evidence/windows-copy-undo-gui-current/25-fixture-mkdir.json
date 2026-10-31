@@ -1,0 +1,33 @@
+{
+  "cursor_x": 1134,
+  "id": "d10adb1e33b443b182711e728e458f63",
+  "case": "ordinary",
+  "foreground_pid": 4580,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "status": "pass",
+    "created_directory": "source\\bundle"
+  },
+  "windows": [
+    {
+      "handle": 131464,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 131790,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 596,
+  "op": "fixture-mkdir"
+}

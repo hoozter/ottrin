@@ -1,0 +1,12 @@
+{
+  "source_revision": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+  "tracked_tree": "clean",
+  "jobs": 1,
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage",
+  "target": "x86_64-pc-windows-gnu",
+  "pending_consumers": [],
+  "delivery": "Prior accepted Windows bcd625ac and Linux defc1ada cohorts preserved until replacement acceptance; public Windows files unchanged",
+  "memory": "VM off while reusing shared release Cargo target",
+  "final_candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "cleanup_complete": true
+}

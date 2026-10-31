@@ -1,0 +1,38 @@
+{
+  "cursor_x": 600,
+  "id": "1c7a6af8b93541d6b49206038cbb13f9",
+  "case": "ordinary",
+  "foreground_pid": 5020,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Replace Copy publishes source content while preserving source",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "destination\\note.txt": "source original\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 131464,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 131790,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 386,
+  "op": "verify"
+}

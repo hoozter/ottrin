@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "guest_root": "C:\\OttrinWindowQA",
+  "account": "OttrinWindowQA",
+  "package_source": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-ci-stage/Ottrin-0.1.0-windows-x64-portable.zip",
+  "archive_sha256": "b973224e1da039689d240e7154fb4de4c86c24d18f6f10fc474ad967c75e2bd8",
+  "payload_manifest": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-undo-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "scope": "Actual ordinary-account packaged public Copy/Undo workflows and visible listing; original guest files/login values preserved; no physical or full release acceptance"
+}

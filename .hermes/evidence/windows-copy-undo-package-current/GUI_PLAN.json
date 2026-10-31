@@ -1,0 +1,13 @@
+{
+  "status": "planned; no execution or acceptance inferred",
+  "source": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+  "environment": "owned ordinary Windows console,Dark/List100,default renderer,stable retained QA guest",
+  "cases": [
+    "Actual clipboard Replace Copy into existing destination; rename destination parent; populate original path with unrelated bytes; one real Activity Undo restores displaced bytes only at resolved current location",
+    "Actual four-item file/directory batch Copy; rename containing destination; create old-path occupants; one real Activity Undo removes copied entries only at resolved current location",
+    "Source and all old-path occupants remain byte-exact after each operation",
+    "Normal product Close exits0 and saved appearance preferences persist"
+  ],
+  "controls": "Inspect actual captured UI before input; bounded fixture mutations only model external parent/name changes. Source fixtures already cover cancellation/oplocks and changed-authority refusals; no additional package scopes inferred.",
+  "cleanup": "Owned account/profile/credential/task/uploads/processes removed,original guest state preserved,guest off,XML unchanged; prior delivered package preserved until all new checks pass"
+}

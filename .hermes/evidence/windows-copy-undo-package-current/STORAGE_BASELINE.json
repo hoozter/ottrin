@@ -1,0 +1,12 @@
+{
+  "recorded": "2026-10-31T19:20:53.685421+00:00",
+  "scope": "Refreshed before native package and desktop QA; compiler build reused prior shared release target. Source-phase cleanup receipt records earlier task baseline and retirement.",
+  "allocated_bytes": {
+    "target/debug/deps": 22739722240,
+    "target/debug/incremental": 9055014912,
+    "target/x86_64-pc-windows-gnu/debug/deps": 25672278016,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25304018944,
+    ".hermes/packaging-tmp/.windows-ci-stage": 234041344,
+    ".hermes/evidence/windows-copy-undo-package-current": 380928
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "status": "pass",
+  "recorded": "2026-10-31T19:37:03.457267+00:00",
+  "allocated_bytes": {
+    "target/debug/deps": 22739722240,
+    "target/debug/incremental": 9055014912,
+    "target/x86_64-pc-windows-gnu/debug/deps": 25672278016,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25304018944,
+    ".hermes/evidence/windows-copy-undo-package-current": 425984,
+    ".hermes/evidence/windows-copy-undo-gui-current": 4894720,
+    "dist/windows-candidate": 286146560
+  },
+  "staging_removed": true,
+  "superseded_package_removed": true,
+  "guest_off": true,
+  "incremental_tool": "Prescribed rust_incremental.py inspected exact native/Windows roots,then --apply after compiler consumers ended;zero obsolete sessions",
+  "task_created_storage_remaining": [
+    {
+      "path": "dist/windows-candidate",
+      "purpose": "Current accepted internal Windows ZIP/NSIS/MSI and authoritative58-file payload;retained current deliverable",
+      "pending_consumer": "Ongoing Windows roadmap/native/installer acceptance;not disposable QA extraction"
+    },
+    {
+      "path": ".hermes/evidence/windows-copy-undo-package-current",
+      "purpose": "Compact package/provenance/hosted/native receipts and reproduction scripts",
+      "pending_consumer": "Roadmap audit"
+    },
+    {
+      "path": ".hermes/evidence/windows-copy-undo-gui-current",
+      "purpose": "Exact packaged GUI receipts,six selected product frames and raw-file hashes",
+      "pending_consumer": "Roadmap audit"
+    }
+  ],
+  "original_guest_state": "Temporary account/profile/credential/task and native compiler/GUI roots removed;original files/login values and XML preserved",
+  "unrelated_builds": "Promotion guard checks Ottrin consumers and all candidate-file handles;unrelated Minus-browser build preserved"
+}

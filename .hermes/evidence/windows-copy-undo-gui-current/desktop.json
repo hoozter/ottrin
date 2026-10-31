@@ -1,0 +1,31 @@
+{
+  "cursor_x": 775,
+  "id": "0d142612d11b4c4f82475d3be7c6e86f",
+  "case": "ordinary",
+  "foreground_pid": 5436,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "Post-close sources,restored original and replacement occupants remain exact; copied batch entries absent",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "source\\other.txt": "other original\n",
+      "source\\bundle\\nested.txt": "nested directory bytes\n",
+      "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n",
+      "renamed-destination\\note.txt": "destination original\n",
+      "destination\\note.txt": "unrelated old-path occupant\n",
+      "batch-destination\\note.txt": "unrelated batch old-path occupant\n"
+    },
+    "absent": [
+      "renamed-batch\\bundle",
+      "renamed-batch\\contact.vcf",
+      "renamed-batch\\note.txt",
+      "renamed-batch\\other.txt"
+    ]
+  },
+  "windows": [],
+  "ordinary_user": true,
+  "cursor_y": 266,
+  "op": "verify"
+}

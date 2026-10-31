@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-26
+Last updated: 2026-10-31
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -10,7 +10,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current checkpoint and next work
 
-Audited: 2026-10-26
+Audited: 2026-10-31
 
 This section and the current delivery table below define the working state.
 Subsequent checkpoint narratives are historical evidence: their “next”, “pending”,
@@ -30,18 +30,23 @@ their named hashes. Test counts are scoped observations, not completion measures
   This is a scoped comparison; personal service observations are separate below.
   Source evidence: `index-fts-build-probe-current/ACCEPTANCE.json`.
   Exact delivery: `linux-filename-index-package-current/ACCEPTANCE.json`.
-- **Windows Copy Undo ancestor admission — source candidate:** one click now
-  resolves the current native locations before execution while retaining the
-  original completion identity. Stale plans still refuse direct execution;
-  replacement occupants at old names are preserved. The same admission worker
-  honors Stop Undo, retains partial-batch progress and refreshes failed recovery
-  observations. Native ordinary/elevated runs each pass375 regular UI tests,
-  four Copy session controls, one Move authority control and the29-case Copy
-  Activity recovery matrix. Linux402 UI regressions and strict Linux/Windows-GNU
-  UI/platform lint pass. Exact source and native receipts:
-  `windows-copy-undo-admission-current/`. This source is not yet delivered in a
-  package; the stable Linux and Windows cohorts below remain authoritative.
-- **Latest Windows source checkpoint:** public Copy/Paste now uses the existing
+- **Windows Copy Undo delivered:** clean `520d9c57` resolves current native
+  locations before execution while retaining original completion authority.
+  Exact packaged ordinary Windows checks pass one-click single Replace Undo
+  and four-item file/directory batch Undo after destination-parent renames.
+  Unrelated replacements at both old paths are preserved. The batch listing
+  becomes empty; seven final files match independently declared raw bytes.
+  Normal Close exits0 and Dark/List preferences persist. Native source checks
+  pass375 regular UI tests, four Copy controls, one Move authority control and
+  the29-case Activity matrix under each ordinary/elevated token. All222 search
+  tests pass per token after isolating the exact-count handle test. Complete
+  hosted run **40295923460** passes Linux, Windows and performance, including
+  full workspace tests, strict lint and release builds. Windows reports459
+  platform /222 search /375 UI passes, with existing ignores79/6/4 and no full-
+  suite filters. Evidence: `windows-copy-undo-admission-current/` and
+  `windows-copy-undo-package-current/`. Linux packages remain `defc1ada`;
+  refresh the common completion-handler change in the next Linux cohort.
+- **Windows Copy foundation and preceding acceptance:** public Copy/Paste now uses the existing
   native journaled transaction engine, retains single/batch Undo receipts and
   completed-item counts, and exposes Stop Copy with an explicit Stopped status.
   A per-worker native cancellation guard covers storage preflight and Copy I/O;
@@ -94,7 +99,7 @@ their named hashes. Test counts are scoped observations, not completion measures
   native search tests under both ordinary/elevated tokens, with six existing
   ignores and zero filters in the full suites. Evidence:
   `windows-copy-undo-admission-current/`; full hosted verification is pending.
-- **Actual personal index service:** restarted from the verified stable AppImage
+- **Personal index service observation (2026-10-26):** restarted from the verified stable AppImage
   under the owner's existing authorization; remains enabled and running as
   **ottrin-indexd**, PID 2398670, with exact delivered daemon bytes. Its real
   **121,056-item** index reports ready with active watching and no reported error.
@@ -119,32 +124,23 @@ their named hashes. Test counts are scoped observations, not completion measures
   ready product work. Receipts: `windows-msi-control-current/ACCEPTANCE.json`,
   `windows-msi-base-control-current/ACCEPTANCE.json`; earlier root findings:
   `windows-msi-rollback-current/ACCEPTANCE.json`.
-- **Current internal Windows candidate:** clean **`bcd625ac`** at
-  `.hermes/packaging-tmp/windows-activity-candidate/`. Portable ZIP, NSIS and
-  native MSI extraction agree on all **58 application files**, including the
-  exact font notice. Native loader/CLI checks pass. Actual ordinary portable
-  Dark/List100/default-renderer checks pass clipboard Replace and Keep Both,
-  single Undo with displaced-byte restoration, four-item directory/file batch
-  Copy, batch Undo, visible listing refresh and explicit retained-data cleanup.
-  All live originals remain exact. The batch cleanup leaves only its shared
-  claims controls; transaction directories are gone. A focused read-only VCF
-  closes with Space. A separate same-package session repeats Copy/Undo, then
-  **normal Close exits0**, four files remain exact afterward, and Dark/List
-  preferences persist. The main window is1024×680 on a1280×800 NTFS guest.
-  A QA request-file race occurred before the earlier session's final Close;
-  that session establishes the completed workflows, not normal shutdown. The
-  repaired atomic request handoff and focused follow-up establish normal close.
-  Pre-launch log absence no longer prevents restored fixture retirement.
-  All owned account/profile/credential/task, compiler and extraction roots are
-  removed, original guest files/login values are preserved, and the guest is off
-  with unchanged definition. The superseded `de11ac2c` cohort is retired after
-  complete manifest/hash/consumer checks. Redundant screenshots are retired;
-  selected product frames and compact negative controls remain. Current receipt:
-  `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`; complete scopes and controls:
-  `windows-copy-package-current/ACCEPTANCE.json` and
-  `windows-copy-gui-current/GUI_SCOPES.json`. Current installer lifecycle,
-  aliases/other storage, additional appearance/graphics and broader Office scopes
-  remain separate gates. Public Windows downloads and Linux packages are unchanged.
+- **Current internal Windows candidate:** clean **`520d9c57`**, one stable
+  path **`dist/windows-candidate/`**. ZIP, NSIS and native MSI extraction agree
+  on58 application files; loader/CLI and the actual ordinary packaged workflows
+  above pass. Full source CI is green. Source and package scopes remain separate.
+  All owned account/profile/credential/task, compiler/runtime extractions and
+  GUI roots are removed; the retained guest is off with unchanged XML and
+  original files/login values preserved. The prior `bcd625ac` cohort was fully
+  verified without consumers, then retired (285,845,463 bytes). Both superseded
+  `.hermes/packaging-tmp/windows-activity-candidate/` and task staging are gone.
+  The prescribed incremental tool inspected both exact shared roots and applied
+  cleanup after compiler consumers ended: zero obsolete sessions remained.
+  Six selected product frames and compact receipts remain. Authority:
+  `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`; details:
+  `windows-copy-undo-package-current/ACCEPTANCE.json` and
+  `windows-copy-undo-gui-current/GUI_SCOPES.json`. Current installer lifecycle,
+  MSI rollback, broader storage/graphics/appearance/Office and final owner
+  acceptance remain separate gates. Public release files are unchanged.
 - **Completed older package workflows:** `48fb6c01` same/cross-volume parent-
   rename Undo and reopened recovery retain their exact earlier artifact scope in
   `.hermes/evidence/windows-move-activity-gui-current/ACCEPTANCE.json`. They are
@@ -278,7 +274,7 @@ Production Linux HTML repair is delivered and hosted source verification passes.
 The personal system helper remains optional setup in Settings → Services; it has
 not been installed on the personal machine during this QA.
 
-Latest fully green hosted run **`40268547285` on `bcd625ac`** passes all three
+The preceding fully green hosted run **`40268547285` on `bcd625ac`** passes all three
 jobs: Linux, Windows and search performance. Both platform jobs pass complete
 workspace tests, strict all-target lint and release builds. Windows passes458
 platform,199 preview,16 Office-contract,10 native-sandbox,222 search and375 UI
@@ -339,8 +335,9 @@ Historical variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Finish one-click Windows Copy Undo admission after containing-parent changes,
-   then remaining transaction/alias/ancestor/resource/workflow, graphics and
+1. Refresh the Linux cohort for the shared completion-handler change at
+   `520d9c57`, then continue remaining Windows transaction/alias/ancestor/
+   resource/workflow, graphics and
    installer lifecycle acceptance. Keep failed-uninstall MSI rollback required;
    investigate it further with a distinct proposed fix or justified comparison,
    using the existing independent controls rather than repeating them.
@@ -446,7 +443,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | All four `defc1ada` formats pass current content/runtime/helper-policy/font/source checks; actual AppImage Dark/List/icon/read-only VCF, Light/Miller and normal close pass. The actual configured index is enabled/running at the bounded CPU/RSS scope above. Earlier operation workflows retain their original artifact scopes. | Complete remaining software and concentrated clean-desktop, fresh-distro lifecycle, real-device, media, elevation and final candidate acceptance. |
-| Windows | Internal `bcd625ac` portable/NSIS/MSI agree on58 files; native loader/CLI and actual Replace/Keep Both, single/batch directory Copy/Undo/cleanup, read-only VCF and normal exit0 pass. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. Full hosted Linux/Windows workspace, lint and release pass;375 native UI cases pass per ordinary/elevated GNU token and on hosted MSVC. | Remaining transaction/alias/ancestor/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier broader GUI scopes retain their original hashes. |
+| Windows | Internal `520d9c57` at `dist/windows-candidate/` agrees on58 files across portable/NSIS/MSI; native loader/CLI, single Replace and four-item batch Undo after destination-parent renames preserve old-path replacements; seven raw files and normal exit0 pass. Earlier cleanup/VCF scopes retain original hashes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. Full hosted `520d9c57` Linux/Windows workspace, lint and release pass;375 native UI cases pass per ordinary/elevated GNU token and on hosted MSVC. | Remaining transaction/alias/ancestor/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier broader GUI scopes retain their original hashes. |
 | Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
 | Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
 

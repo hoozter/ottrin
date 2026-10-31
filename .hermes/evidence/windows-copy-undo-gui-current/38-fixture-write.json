@@ -1,0 +1,34 @@
+{
+  "cursor_x": 1134,
+  "id": "62f75ba7fa7048ab83e3f52a0c6d3072",
+  "case": "ordinary",
+  "foreground_pid": 6832,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "status": "pass",
+    "sha256": "3be089f4818fc3937869d92b97c2b6d161aa0a7a4fc360f0d045f8cd898b9db1",
+    "created_file": "batch-destination\\note.txt"
+  },
+  "windows": [
+    {
+      "handle": 131464,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 131790,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 596,
+  "op": "fixture-write"
+}

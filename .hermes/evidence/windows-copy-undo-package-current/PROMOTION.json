@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "stable_candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "previous_stable_candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "source": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+  "superseded_bytes_removed": 285845463,
+  "old_directory_removed": true,
+  "stage_removed": true,
+  "reason_for_stable_path": "Updated project instruction requires current deliverables under dist; this is the single internal Windows cohort,not a public release"
+}

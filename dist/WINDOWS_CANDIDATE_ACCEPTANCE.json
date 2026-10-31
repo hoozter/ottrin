@@ -1,20 +1,20 @@
 {
-  "status": "pass within exact payload, native loader/CLI and scoped ordinary portable GUI acceptance",
-  "source_commit": "bcd625acf937703d217a83467c0485eae415b933",
+  "status": "pass within exact payload,native loader/CLI,scoped ordinary portable GUI and complete hosted source verification",
+  "source_commit": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
   "working_tree_at_build": "clean",
-  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "946b962509c8db3f74947dadbdf9f31cae32dc56071e1a319c791099e9e01e66",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "f6cc7a7f0aec4852d13b3ef259a6335472f62bf3529bcd894a4bf515fa30a8db",
-    "Ottrin-0.1.0-windows-x64.msi": "ffb3409e06cf4f2889a38c5580d1de9fde13c57c944f4cf64160d80dd9dadd71"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "b973224e1da039689d240e7154fb4de4c86c24d18f6f10fc474ad967c75e2bd8",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "96e3f7e02958d67e6fc6125e2ff4275d35a72f484c64779a31403b59d85d86bc",
+    "Ottrin-0.1.0-windows-x64.msi": "a244a06552f19bb0452ab6a2b2df769ac25e8016f908009f8bb7c0cf1079221f"
   },
   "payload_files": 58,
-  "payload_identity": ".hermes/evidence/windows-copy-package-current/PAYLOAD_GUI_MANIFEST.json",
-  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-package-current",
+  "payload_identity": ".hermes/evidence/windows-copy-undo-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-undo-package-current",
   "native_msi_administrative_extraction": {
     "entries_checked": 58,
     "status": "pass",
-    "msi_sha256": "ffb3409e06cf4f2889a38c5580d1de9fde13c57c944f4cf64160d80dd9dadd71",
+    "msi_sha256": "a244a06552f19bb0452ab6a2b2df769ac25e8016f908009f8bb7c0cf1079221f",
     "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
   },
   "native_loader_cli": {
@@ -43,55 +43,85 @@
     "identity": "NT AUTHORITY\\SYSTEM"
   },
   "portable_gui_acceptance": {
-    "evidence": ".hermes/evidence/windows-copy-gui-current/GUI_SCOPES.json",
-    "scope": [
-      "First real portable launch, native icon and intended appearance",
-      "Native clipboard Replace Copy with source preservation; actual Undo restores displaced destination bytes",
-      "Keep Both creates the expected renamed file; actual Undo removes only that copy",
-      "Four-item batch includes a directory and its nested file; exact bytes, available batch Undo, all sources preserved",
-      "Actual batch Undo removes all four targets and refreshes the visible listing to empty",
-      "All three explicit retained-data cleanup actions finish, clear Activity and preserve live originals; batch destination retains only shared claims controls",
-      "Focused read-only VCF inspector text closes with Space, with exact original bytes",
-      "Separate same-package ordinary session repeats real Keep Both Copy/Undo, then normal Close exits0; four files remain exact and saved Dark/List preferences persist"
+    "status": "pass",
+    "source": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+    "appearance": "Ordinary Windows NTFS VM,Dark/List100,default renderer; actual1024x680 window on1280x800 console",
+    "single_click_undo_verified": true,
+    "batch_click_undo_verified": true,
+    "old_path_occupants_preserved": true,
+    "accepted_actions": [
+      "Native clipboard Replace Copy,source preserved",
+      "External destination-parent rename plus unrelated replacement at original pathname",
+      "One real Undo click restores displaced original at current native location and preserves old-path replacement",
+      "Four-item batch Copy includes directory and nested file with every source preserved",
+      "External batch destination-parent rename plus old-path replacement",
+      "One real batch Undo click removes all copied entries at resolved destination; listing visibly empty; all originals and replacements preserved",
+      "Normal product Close exits0; final seven raw files exactly equal independent expected bytes; Dark/List saved preferences persist"
     ],
-    "appearance": "Dark/List100/default renderer; actual1024x680 main window on1280x800 ordinary NTFS VM console"
-  },
-  "source_checks": {
-    "evidence": ".hermes/evidence/windows-copy-public-workflow-current/ACCEPTANCE.json",
-    "native_ui": "375 passed/0 failed/4 existing ignores/0 filtered under each ordinary and elevated GNU Windows token; targeted native Undo authority control also passes in each role",
-    "linux_regressions": "419 platform,239 search,402 UI pass; existing ignores4/2/1",
-    "strict_lint": "Linux and Windows GNU UI/platform/search all targets passed"
-  },
-  "hosted_source": {
-    "run": 40268547285,
-    "revision": "bcd625acf937703d217a83467c0485eae415b933",
-    "snapshot": {
-      "status": "completed",
-      "conclusion": "success",
-      "headSha": "bcd625acf937703d217a83467c0485eae415b933",
-      "url": "https://github.com/hoozter/ottrin/actions/runs/40268547285",
-      "jobs": {
-        "search-performance": "success",
-        "verify (ubuntu-latest)": "success",
-        "verify (windows-latest)": "success"
-      }
+    "normal_close": {
+      "exit": 0,
+      "pid": 1888
     },
-    "scope": "Complete hosted Linux/Windows workspace, strict lint and release passed; benchmark passed. Explicit ignored fixture scopes remain separate."
+    "raw_bytes": "FINAL_BYTES.json",
+    "saved_preferences": {
+      "theme": "Dark",
+      "default_view_mode": "List"
+    },
+    "single_undo": {
+      "click": "22-click.json",
+      "result": "23-verify.json"
+    },
+    "batch_copy": "34-verify.json",
+    "batch_undo": {
+      "click": "39-click.json",
+      "result": "40-verify.json",
+      "visible_empty_listing": "41-nav.png"
+    },
+    "post_close": "43-verify.json",
+    "screenshots": [
+      "10-launch.png",
+      "14-key.png",
+      "23-verify.png",
+      "33-click.png",
+      "40-verify.png",
+      "41-nav.png"
+    ],
+    "teardown": {
+      "actor_task_removed": true,
+      "original_files_preserved": true,
+      "profile_removed": true,
+      "temporary_password_removed": true,
+      "login_values_restored": true,
+      "status": "pass",
+      "ordinary_account_removed": true
+    },
+    "persistent_definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+    "limits": [
+      "Portable GUI only; native installer extraction/CLI accepted separately",
+      "No installer lifecycle,rollback,physical GPU,DPI,Office or cross-volume expansion of scope",
+      "Earlier broader checks retain original artifact hashes; no release or final owner acceptance"
+    ]
+  },
+  "source_checks": ".hermes/evidence/windows-copy-undo-admission-current/ACCEPTANCE.json",
+  "hosted_source": {
+    "run": 40295923460,
+    "revision": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+    "conclusion": "success",
+    "evidence": ".hermes/evidence/windows-copy-undo-package-current/HOSTED_CURRENT.json"
   },
   "cleanup": {
-    "native_package": "windows-copy-package-current/NATIVE_OWNER.json",
-    "portable_gui": "windows-copy-gui-current/SESSION.json",
+    "native_package": "windows-copy-undo-package-current/NATIVE_OWNER.json",
+    "portable_gui": "windows-copy-undo-gui-current/SESSION.json",
     "guest_off": true,
-    "original_guest_files_and_login_values_preserved": true,
-    "account_profile_credential_task_and_owned_extractions_removed": true
+    "original_guest_files_and_profiles_preserved": true,
+    "account_profile_credential_task_and_extractions_removed": true
   },
   "public_windows_files_unchanged": true,
   "linux_packages_unchanged": true,
   "limits": [
-    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes",
-    "Actual GUI scope ordinary Dark/List100/default renderer1024x680 on1280x800 NTFS VM; no physical/other-width/scale/graphics acceptance",
-    "Public Copy works in this internal candidate within the named GUI scopes; broader alias/resource/transaction/platform and installer lifecycle gates remain engineering work; full hosted source CI passed",
-    "Earlier footer/tooltip, cross-volume and Office GUI evidence retain their original source/artifact scopes",
-    "No production release, Store submission or user daily-driver acceptance"
+    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes; MSI rollback remains required and unresolved",
+    "GUI scope ordinary Dark/List100/default renderer1024x680 on1280x800 NTFS VM",
+    "Earlier cross-volume,Office,appearance and physical evidence retain original hashes",
+    "No production release,Store submission or final owner acceptance"
   ]
 }

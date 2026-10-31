@@ -1,0 +1,97 @@
+{
+  "status": "pass within exact payload, native loader/CLI and scoped ordinary portable GUI acceptance",
+  "source_commit": "bcd625acf937703d217a83467c0485eae415b933",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/windows-activity-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "946b962509c8db3f74947dadbdf9f31cae32dc56071e1a319c791099e9e01e66",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f6cc7a7f0aec4852d13b3ef259a6335472f62bf3529bcd894a4bf515fa30a8db",
+    "Ottrin-0.1.0-windows-x64.msi": "ffb3409e06cf4f2889a38c5580d1de9fde13c57c944f4cf64160d80dd9dadd71"
+  },
+  "payload_files": 58,
+  "payload_identity": ".hermes/evidence/windows-copy-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-package-current",
+  "native_msi_administrative_extraction": {
+    "entries_checked": 58,
+    "status": "pass",
+    "msi_sha256": "ffb3409e06cf4f2889a38c5580d1de9fde13c57c944f4cf64160d80dd9dadd71",
+    "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
+  },
+  "native_loader_cli": {
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status": "pass",
+    "runs": [
+      {
+        "exit": 0,
+        "stdout_sha256": "7b9185bef772d9d1468581812446aadcb5c10d621a430a9b18e07ed23f8a46ae",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "executable": "ottrin.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+        "executable": "ottrin-indexd.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+        "executable": "ottrin-priv-helper.exe"
+      }
+    ],
+    "identity": "NT AUTHORITY\\SYSTEM"
+  },
+  "portable_gui_acceptance": {
+    "evidence": ".hermes/evidence/windows-copy-gui-current/GUI_SCOPES.json",
+    "scope": [
+      "First real portable launch, native icon and intended appearance",
+      "Native clipboard Replace Copy with source preservation; actual Undo restores displaced destination bytes",
+      "Keep Both creates the expected renamed file; actual Undo removes only that copy",
+      "Four-item batch includes a directory and its nested file; exact bytes, available batch Undo, all sources preserved",
+      "Actual batch Undo removes all four targets and refreshes the visible listing to empty",
+      "All three explicit retained-data cleanup actions finish, clear Activity and preserve live originals; batch destination retains only shared claims controls",
+      "Focused read-only VCF inspector text closes with Space, with exact original bytes",
+      "Separate same-package ordinary session repeats real Keep Both Copy/Undo, then normal Close exits0; four files remain exact and saved Dark/List preferences persist"
+    ],
+    "appearance": "Dark/List100/default renderer; actual1024x680 main window on1280x800 ordinary NTFS VM console"
+  },
+  "source_checks": {
+    "evidence": ".hermes/evidence/windows-copy-public-workflow-current/ACCEPTANCE.json",
+    "native_ui": "375 passed/0 failed/4 existing ignores/0 filtered under each ordinary and elevated GNU Windows token; targeted native Undo authority control also passes in each role",
+    "linux_regressions": "419 platform,239 search,402 UI pass; existing ignores4/2/1",
+    "strict_lint": "Linux and Windows GNU UI/platform/search all targets passed"
+  },
+  "hosted_source": {
+    "run": 40268547285,
+    "revision": "bcd625acf937703d217a83467c0485eae415b933",
+    "snapshot": {
+      "status": "completed",
+      "conclusion": "success",
+      "headSha": "bcd625acf937703d217a83467c0485eae415b933",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/40268547285",
+      "jobs": {
+        "search-performance": "success",
+        "verify (ubuntu-latest)": "success",
+        "verify (windows-latest)": "success"
+      }
+    },
+    "scope": "Complete hosted Linux/Windows workspace, strict lint and release passed; benchmark passed. Explicit ignored fixture scopes remain separate."
+  },
+  "cleanup": {
+    "native_package": "windows-copy-package-current/NATIVE_OWNER.json",
+    "portable_gui": "windows-copy-gui-current/SESSION.json",
+    "guest_off": true,
+    "original_guest_files_and_login_values_preserved": true,
+    "account_profile_credential_task_and_owned_extractions_removed": true
+  },
+  "public_windows_files_unchanged": true,
+  "linux_packages_unchanged": true,
+  "limits": [
+    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes",
+    "Actual GUI scope ordinary Dark/List100/default renderer1024x680 on1280x800 NTFS VM; no physical/other-width/scale/graphics acceptance",
+    "Public Copy works in this internal candidate within the named GUI scopes; broader alias/resource/transaction/platform and installer lifecycle gates remain engineering work; full hosted source CI passed",
+    "Earlier footer/tooltip, cross-volume and Office GUI evidence retain their original source/artifact scopes",
+    "No production release, Store submission or user daily-driver acceptance"
+  ]
+}

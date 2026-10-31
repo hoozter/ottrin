@@ -1,0 +1,203 @@
+{
+  "status": "pass",
+  "retained": [
+    "10-launch.png",
+    "14-key.png",
+    "23-verify.png",
+    "33-click.png",
+    "40-verify.png",
+    "41-nav.png"
+  ],
+  "discarded_redundant_frames": [
+    {
+      "name": "37-fixture-mkdir.png",
+      "sha256": "61e34a15feb750be23430763ba38626460544b9d12510d3dec76a0589b037c8a",
+      "bytes": 769149
+    },
+    {
+      "name": "27-fixture-mkdir.png",
+      "sha256": "db8470dd4988601c934b530aab5dc639a9b080d386226a919445f51a71da20cd",
+      "bytes": 735337
+    },
+    {
+      "name": "34-verify.png",
+      "sha256": "397503669a351130d330841feac68cca1e640eed2786233a8f881cb7a7666612",
+      "bytes": 770533
+    },
+    {
+      "name": "21-click.png",
+      "sha256": "535ddae7a5ddbd7fb831a06c59e7455d96ff4f7aaf695f3f73ea48f8b8cdeb23",
+      "bytes": 750573
+    },
+    {
+      "name": "17-nav.png",
+      "sha256": "9678396a4491391db91f12c781277dd6913143d4dd3e58db24e7fc6edafcb023",
+      "bytes": 733292
+    },
+    {
+      "name": "32-key.png",
+      "sha256": "93ef855f88e4bb8c5110ae5deccf369a1a3fd941e902aba0d5b81eaef56f3128",
+      "bytes": 726232
+    },
+    {
+      "name": "08-dismiss-shell.png",
+      "sha256": "c8c0f6116272bef2f7adafa1888e1d509b188c3adc21b64d00c98a370302e537",
+      "bytes": 2585966
+    },
+    {
+      "name": "15-click.png",
+      "sha256": "507d7d1a8c9cbfd7b48f18251f6ec109c2b6a066dc50633cfd0a9bf5aa261a40",
+      "bytes": 724096
+    },
+    {
+      "name": "22-click.png",
+      "sha256": "dad285ca5362c92333a9041d71375920952c248bc36628855ed199642075e435",
+      "bytes": 749379
+    },
+    {
+      "name": "01-observe.png",
+      "sha256": "7be1f2806cf739cd05a5fd073aa898a8d0ac88b0f8d7ac9ece365ffeedc44e3f",
+      "bytes": 219106
+    },
+    {
+      "name": "19-fixture-mkdir.png",
+      "sha256": "65d80099022c4f5ff2922154b1e832e2e0f69350aeac6cf1044dfa7cdadf16bc",
+      "bytes": 732994
+    },
+    {
+      "name": "31-nav.png",
+      "sha256": "830a1bcd1972824b09938ab1143bed7433943eb73ba6a53acc6981f1880fe670",
+      "bytes": 726709
+    },
+    {
+      "name": "04-onboard.png",
+      "sha256": "e00170eb7bb26990607c65105f33526fd83803c61d75f72bd6896d7616abf095",
+      "bytes": 214013
+    },
+    {
+      "name": "39-click.png",
+      "sha256": "acba83f86153888e6f673506f230aefc29270b7ca6fe14f6bd514ee113ff5e1d",
+      "bytes": 767602
+    },
+    {
+      "name": "desktop.png",
+      "sha256": "52a5baab5366839bc411f389f9aace20678c302441d5961a1cdf0021af2e5823",
+      "bytes": 2587707
+    },
+    {
+      "name": "20-fixture-write.png",
+      "sha256": "e55004cb519f6e0beee47be5a184f80f3e39b80c62c50dd3d5638e39dbb07788",
+      "bytes": 733165
+    },
+    {
+      "name": "06-onboard.png",
+      "sha256": "2dc226e33e8bfdef240e62e013c3c9209ffd17f3ab230d660fabb9a96f5d38f0",
+      "bytes": 218742
+    },
+    {
+      "name": "03-onboard.png",
+      "sha256": "efb2f466614c54181f03d7f010ab474506f5d99c419b979486a36d3716b06fc2",
+      "bytes": 217994
+    },
+    {
+      "name": "26-fixture-write.png",
+      "sha256": "db8470dd4988601c934b530aab5dc639a9b080d386226a919445f51a71da20cd",
+      "bytes": 735337
+    },
+    {
+      "name": "09-prepare.png",
+      "sha256": "0897f0e01216f760e43a4545367ad5fc752ad9713707b398e039d94f65dfbc2b",
+      "bytes": 2585973
+    },
+    {
+      "name": "07-onboard.png",
+      "sha256": "b9d04233581b113b0c9981332299667334b89f2aaac4753127a85f41dcb25631",
+      "bytes": 1397609
+    },
+    {
+      "name": "35-nav.png",
+      "sha256": "1e1a8701600f97854abbf304a866cb3a36476a5f117494ae23106cd108fb7471",
+      "bytes": 768913
+    },
+    {
+      "name": "43-verify.png",
+      "sha256": "52a5baab5366839bc411f389f9aace20678c302441d5961a1cdf0021af2e5823",
+      "bytes": 2587707
+    },
+    {
+      "name": "24-click.png",
+      "sha256": "fb079a10fece966dc471363072752678498100593cade9183ee87a3307af44ed",
+      "bytes": 735403
+    },
+    {
+      "name": "42-close.png",
+      "sha256": "b4b78caaafba08e3290303877d1d1df1749b173b8f2b60d55146aa4df63bfb8b",
+      "bytes": 2588690
+    },
+    {
+      "name": "02-onboard.png",
+      "sha256": "6499c8a269332fcb0ff65030838c27236f78b90c761c4e3f1069459d6244caaf",
+      "bytes": 215316
+    },
+    {
+      "name": "11-click.png",
+      "sha256": "77fe8801794dc58e889914ea9efa542be90f840eb974e72b31686dc527548c2b",
+      "bytes": 734214
+    },
+    {
+      "name": "29-key.png",
+      "sha256": "6f0d16b73533a7d39390c7fbde06faff7d059e72f5fa384bf8ae1c1c695fe247",
+      "bytes": 751608
+    },
+    {
+      "name": "13-nav.png",
+      "sha256": "6f083fc2a962c2251b5774fda3cb640f8d529d3d2ce5f2b67fb8f4bd81f64fe2",
+      "bytes": 724239
+    },
+    {
+      "name": "18-fixture-rename.png",
+      "sha256": "07f9dfe9f702618d3dd2cb7c0498386b37d0d2e7ade69ccaf83fdc9ce5293b12",
+      "bytes": 732983
+    },
+    {
+      "name": "05-onboard.png",
+      "sha256": "d373b250e3e385389c9dc64f83faea7664d3d2905f2dad418985962af353d12e",
+      "bytes": 221386
+    },
+    {
+      "name": "30-key.png",
+      "sha256": "c776e185b0c0af7bdad5e6d70e2d3aaaa37ec2aa30c89b24377f345f087f8d36",
+      "bytes": 751408
+    },
+    {
+      "name": "38-fixture-write.png",
+      "sha256": "d8c71b388c4bf872e96ad4a5c9cff72975c0e37c46b4c7814f1966baf11f8b2a",
+      "bytes": 769161
+    },
+    {
+      "name": "16-verify.png",
+      "sha256": "b43a049ff9e248c89d45c53e753a91dbe8c617914dc7f03d29c46cea9315977d",
+      "bytes": 723941
+    },
+    {
+      "name": "28-nav.png",
+      "sha256": "24b0e71b738bc5404a6e66fbb88b4272e6165e222965f583d9c1849663cf1468",
+      "bytes": 741883
+    },
+    {
+      "name": "25-fixture-mkdir.png",
+      "sha256": "c97bc16edede8bffa724bc354423858246d10b47ebbb84dd50f00655c02b883f",
+      "bytes": 735350
+    },
+    {
+      "name": "36-fixture-rename.png",
+      "sha256": "3ecad122c46ca02438fa2fe7d23485cde6c4b8b681b87ea8c023603f28a38be8",
+      "bytes": 769087
+    },
+    {
+      "name": "12-key.png",
+      "sha256": "7305897a750fb33de937d94acdf56a73781bb033c41624f068cf81a05634e15a",
+      "bytes": 735220
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "cursor_x": 1134,
+  "id": "318ca799143046e19b74652b6f737aa2",
+  "case": "ordinary",
+  "foreground_pid": 7272,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "status": "pass",
+    "renamed_to": "renamed-batch",
+    "renamed_from": "batch-destination"
+  },
+  "windows": [
+    {
+      "handle": 131464,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 131790,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 596,
+  "op": "fixture-rename"
+}

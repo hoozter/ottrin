@@ -1,0 +1,41 @@
+{
+  "status": "pass for exact current internal Windows cohort and named native GUI scopes; overall roadmap remains unfinished",
+  "source_commit": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+  "current_receipt": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+  "candidate": "dist/windows-candidate",
+  "payload_files": 58,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "b973224e1da039689d240e7154fb4de4c86c24d18f6f10fc474ad967c75e2bd8",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "96e3f7e02958d67e6fc6125e2ff4275d35a72f484c64779a31403b59d85d86bc",
+    "Ottrin-0.1.0-windows-x64.msi": "a244a06552f19bb0452ab6a2b2df769ac25e8016f908009f8bb7c0cf1079221f"
+  },
+  "hosted_source": {
+    "run": 40295923460,
+    "all_jobs": "success",
+    "windows_full_platform_search_ui_passes": [
+      459,
+      222,
+      375
+    ],
+    "windows_existing_ignores": [
+      79,
+      6,
+      4
+    ],
+    "full_suites_filtered": 0,
+    "log": "hosted-520.log.gz"
+  },
+  "native_package": {
+    "portable_nsis_msi_agree": true,
+    "native_msi_extraction": "MSI_PAYLOAD.json",
+    "loader_cli": "CLI_SMOKE.json"
+  },
+  "packaged_gui": "../windows-copy-undo-gui-current/GUI_SCOPES.json",
+  "cleanup": "FINAL_TEARDOWN.json",
+  "source_native_checks": "../windows-copy-undo-admission-current/ACCEPTANCE.json",
+  "limits": [
+    "No current-hash installer lifecycle or MSI rollback acceptance",
+    "No expansion to physical devices,other filesystems/volumes,Office,themed picker,signing,Store or final owner acceptance",
+    "Linux current packages retain defc1ada;shared completion-handler change awaits the next cohort"
+  ]
+}

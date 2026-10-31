@@ -59,7 +59,7 @@ try:
     assert records[-1] == {'reason': 'build-finished', 'success': True}
     inputs = {r['target']['name']: Path(r['executable']) for r in records if r.get('reason') == 'compiler-artifact' and r.get('executable')}
     assert ({'ottrin_search'} if search_suite else {'ottrin_ui', 'ottrin_platform'}) <= inputs.keys()
-    assert (root / '.hermes/packaging-tmp/windows-activity-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/rg.exe').is_file()
+    assert (root / 'dist/windows-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/rg.exe').is_file()
     state['source'] = {'base_revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
         'working_tree': subprocess.check_output(['git','status','--short'],text=True).splitlines(),
         'files': {name: hashlib.sha256((root / name).read_bytes()).hexdigest() if (root / name).is_file() else None
@@ -106,7 +106,7 @@ try:
             n.upload(archive, 'runtime.gz')
             n.execute(r'''$ErrorActionPreference='Stop';$r='C:\OttrinJobFixtureQA';$s=[IO.File]::OpenRead("$r\runtime.gz");$z=[IO.Compression.GZipStream]::new($s,[IO.Compression.CompressionMode]::Decompress);$d=[IO.File]::Create("$r\NAME");try{$z.CopyTo($d)}finally{$d.Dispose();$z.Dispose();$s.Dispose()};if((Get-FileHash "$r\NAME").Hash.ToLowerInvariant()-ne'HASH'){throw 'Transfer changed'};Remove-Item "$r\runtime.gz"'''.replace('NAME', name).replace('HASH', digest))
     (p / 'RUNTIME_BINARIES.json').write_text(json.dumps(binaries, indent=2) + '\n')
-    provider = root / '.hermes/packaging-tmp/windows-activity-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/rg.exe'
+    provider = root / 'dist/windows-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/rg.exe'
     n.upload(provider, 'rg.exe')
     with provider.open('rb') as stream:
         provider_sha = hashlib.file_digest(stream, 'sha256').hexdigest()

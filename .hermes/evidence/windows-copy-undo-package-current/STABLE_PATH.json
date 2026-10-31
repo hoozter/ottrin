@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "current": "dist/windows-candidate",
+  "previous": ".hermes/packaging-tmp/windows-activity-candidate",
+  "native_source_harness_updated": true,
+  "provider_sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680",
+  "purpose": "One stable current Windows cohort under dist,with manifest used by upcoming native and installer QA; public release remains withheld"
+}

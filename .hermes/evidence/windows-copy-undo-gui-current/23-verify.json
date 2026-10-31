@@ -1,0 +1,39 @@
+{
+  "cursor_x": 755,
+  "id": "243082e8d97941e3a4e73bdcd947effa",
+  "case": "ordinary",
+  "foreground_pid": 4460,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "One single Undo click resolves renamed parent, restores displaced original and preserves old-path replacement",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "renamed-destination\\note.txt": "destination original\n",
+      "destination\\note.txt": "unrelated old-path occupant\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 131464,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 131790,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 266,
+  "op": "verify"
+}

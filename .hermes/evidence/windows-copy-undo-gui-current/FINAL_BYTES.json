@@ -1,0 +1,49 @@
+{
+  "status": "pass",
+  "method": "QGA read-only download and exact raw byte equality against independently declared UTF-8/CRLF fixtures; temporary host downloads removed",
+  "files": {
+    "source\\note.txt": {
+      "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
+      "bytes": 16
+    },
+    "source\\other.txt": {
+      "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
+      "bytes": 15
+    },
+    "source\\bundle\\nested.txt": {
+      "sha256": "4fd54943dedf9ab13a509adbfa0281678f1d73efc7612c95511a3fe80d836982",
+      "bytes": 23
+    },
+    "source\\contact.vcf": {
+      "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+      "bytes": 51
+    },
+    "renamed-destination\\note.txt": {
+      "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
+      "bytes": 21
+    },
+    "destination\\note.txt": {
+      "sha256": "ccce101e62a08a831c99943a045e238f70c8b14582b0cd8d92a55a39e61ed932",
+      "bytes": 28
+    },
+    "batch-destination\\note.txt": {
+      "sha256": "3be089f4818fc3937869d92b97c2b6d161aa0a7a4fc360f0d045f8cd898b9db1",
+      "bytes": 34
+    }
+  },
+  "saved_preferences": {
+    "theme": "Dark",
+    "default_view_mode": "List"
+  },
+  "normal_close": {
+    "status": "pass",
+    "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+    "normal_app_close": [
+      {
+        "exit": 0,
+        "pid": 1888
+      }
+    ]
+  },
+  "scope": "After single and batch Undo following parent renames,old-path replacements preserved; native hash evidence does not broaden UI or installer scope"
+}
