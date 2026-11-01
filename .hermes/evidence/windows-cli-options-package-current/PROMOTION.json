@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "stable_candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "previous_stable_candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "source": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "superseded_bytes_removed": 285939035,
+  "superseded_directory_removed": true,
+  "stage_removed": true,
+  "reason_for_stable_path": "Replace the one internal Windows cohort under dist;preserve public release files and existing user data"
+}

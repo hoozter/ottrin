@@ -1,0 +1,90 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 13
+}
+{
+    "cursor_x":  1125,
+    "id":  "037139a5dcec4ae2b626470792b1c25f",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  90,
+    "op":  "click"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 14
+}
+{
+    "cursor_x":  1000,
+    "id":  "6692a565c406419fa38b73b71dbae42b",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  393914,
+                        "left":  26,
+                        "bottom":  666,
+                        "top":  26,
+                        "right":  946,
+                        "title":  "Ottrin Settings"
+                    },
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  358,
+    "op":  "click"
+}
+

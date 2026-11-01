@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "scope": "Actual ordinary-user folder-plus-renderer launch,explicit renderer priority,preserved preferences and read-only Inspector; no blanket UI acceptance",
+  "source": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "launch_option_routing": true,
+  "renderer_preference_round_trip": true,
+  "readonly_inspector": true,
+  "preferences_preserved": true,
+  "normal_close": {
+    "exit": 0,
+    "pid": 5072
+  },
+  "final_raw_files": 5,
+  "seeded_profile": "SEEDED_PREFERENCES.json initializes Native/Miller before launch. Earlier actual click/save and no-override Native restart are scoped in rejected-key-control/CONTROL_SCOPE.json; that whole run is failed, not full acceptance.",
+  "remaining_defects": [
+    "Selecting a file in Miller can leave preview mostly offscreen; source repair next",
+    "First-use compatibility notice incorrectly attributes explicit CLI override to detected graphics"
+  ],
+  "limits": [
+    "Dark100 ordinary Windows VM only; no physical GPU acceptance",
+    "No new full Office,appearance,installer lifecycle or final daily-driver acceptance"
+  ]
+}

@@ -1,0 +1,19 @@
+﻿{
+    "cursor_x":  1050,
+    "id":  "fec938b7e0054b6ab5e79286b828ff0d",
+    "case":  "ordinary",
+    "foreground_pid":  1036,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "status":  "pass",
+                         "sha256":  "ca071ffb6ebf378eae79caf2c0feffabb401ad94d3fc52656eee2f21a96bb0bf",
+                         "created_file":  "source/long preview.txt"
+                     },
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "fixture-write"
+}

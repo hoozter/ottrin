@@ -1,0 +1,5 @@
+{
+  "status": "Initial seed refused before mutation; canonical ownership path corrected",
+  "cause": "Helper attempted nonexistent OWNER.json rather than actor-config.json",
+  "resolution": "Use canonical actor ownership record and verify account SID and fixture description. Existing controller remains active; no cleanup or process bypass."
+}

@@ -1,0 +1,14 @@
+{
+  "source_revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-cli-options-stage",
+  "status": "four-format build pass; staged for content and GUI acceptance",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d395189c470f95ad313f9af3a74a01dd0df759470159451138cbf8f519bfb62f",
+    "Ottrin-0.1.0-x86_64.AppImage": "c0248e0bb08b239cba55646ce34c1cc77b46c0875cad507bfdaeca6e3ab38d41",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7b7255b1da0d2340576e5e2b3a7cb3e0bf1a10f5d25aa896b26092f137753820",
+    "ottrin_0.1.0_amd64.deb": "3bb0e97868ad25ab84f20b8edb66f67ecaa10df5b3c81c2bd75654367ca2e734"
+  },
+  "child_exit": 0,
+  "temporary_tool_wrappers_removed": true,
+  "staging_retained_for_pending_acceptance": true
+}

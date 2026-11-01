@@ -1,0 +1,211 @@
+{
+  "scope": "Exact owned window crops only; content and colors unchanged; redundant desktop/onboarding frames retired",
+  "regions": [
+    {
+      "original": "11-launch.png",
+      "original_sha256": "d76bf463e114f520ef647cdd89afe682607909a0ef5b68a8455a1c1fe297b6c9",
+      "window": {
+        "handle": 786990,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "retained": "11-launch-window.png",
+      "rgb_sha256": "7587492eff09e5bbbb9b08a8c16b36cb284ad7ddc8ded34782c470615b0f6521"
+    },
+    {
+      "original": "13-click.png",
+      "original_sha256": "890f2366c171fba2069a7233b36433e8cfa35c5bccc52756ff2a8468899e961f",
+      "window": {
+        "handle": 393914,
+        "left": 26,
+        "bottom": 666,
+        "top": 26,
+        "right": 946,
+        "title": "Ottrin Settings"
+      },
+      "retained": "13-click-window.png",
+      "rgb_sha256": "56ab1752a26dca02459c29d048035738606c2f61bb22d41878c157e5575d90be"
+    },
+    {
+      "original": "16-key.png",
+      "original_sha256": "9c768ab2be5084396d6513a55965a24ed6cce4b82e2caba2e624b4366be638f1",
+      "window": {
+        "handle": 590522,
+        "left": 130,
+        "bottom": 690,
+        "top": 130,
+        "right": 850,
+        "title": "Ottrin Quick Inspector \u2014 long preview.txt"
+      },
+      "retained": "16-key-window.png",
+      "rgb_sha256": "8acbcdcb56195641a7605fb63cd9dfbff526de1b53577c55c81e5ba77431a385"
+    },
+    {
+      "original": "18-key.png",
+      "original_sha256": "b40fb9b0e6320db6db9bd55e8a3aed2de7a3b2b9442534454d95249b80bb469e",
+      "window": {
+        "handle": 590522,
+        "left": 130,
+        "bottom": 690,
+        "top": 130,
+        "right": 850,
+        "title": "Ottrin Quick Inspector \u2014 contact.vcf"
+      },
+      "retained": "18-key-window.png",
+      "rgb_sha256": "168747a2e7799b76c3044ddaf45facb42686ac3b10af278f6e07ed827e936ba0"
+    },
+    {
+      "original": "20-key.png",
+      "original_sha256": "597da29ab5e2e4886e7391c75d3998f6eca6df9f59d4bd3fbb7d81706f245a60",
+      "window": {
+        "handle": 590522,
+        "left": 130,
+        "bottom": 690,
+        "top": 130,
+        "right": 850,
+        "title": "Ottrin Quick Inspector \u2014 long preview.txt"
+      },
+      "retained": "20-key-window.png",
+      "rgb_sha256": "8acbcdcb56195641a7605fb63cd9dfbff526de1b53577c55c81e5ba77431a385"
+    },
+    {
+      "original": "22-key.png",
+      "original_sha256": "be85c35a7e593ec0958653f4e2cc1e4cc031123eec7282617db02b581a4e7717",
+      "window": {
+        "handle": 786990,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "retained": "22-key-window.png",
+      "rgb_sha256": "689ae4aee417e11f218e356960bac59c56a674111c1e46dde1ed2a4465ecfa0e"
+    }
+  ],
+  "removed": [
+    {
+      "name": "21-click.png",
+      "bytes": 521637,
+      "sha256": "597da29ab5e2e4886e7391c75d3998f6eca6df9f59d4bd3fbb7d81706f245a60"
+    },
+    {
+      "name": "10-fixture-write.png",
+      "bytes": 1541245,
+      "sha256": "cd61399ce7d39d6d538a05e1aee8b03bb91695b5ce66f9079752069947d02a7f"
+    },
+    {
+      "name": "08-dismiss-shell.png",
+      "bytes": 1541245,
+      "sha256": "cd61399ce7d39d6d538a05e1aee8b03bb91695b5ce66f9079752069947d02a7f"
+    },
+    {
+      "name": "14-click.png",
+      "bytes": 464147,
+      "sha256": "03c5397b2525c814a13d8b610ab90904962a3f6555b309cbb14ecd32b4d2a9ee"
+    },
+    {
+      "name": "15-click.png",
+      "bytes": 467574,
+      "sha256": "dfd8fcf91fd46510efc5c33ddab84957f3f672d4b4835a65d03380bb396be74f"
+    },
+    {
+      "name": "01-observe.png",
+      "bytes": 220782,
+      "sha256": "a5bfde05ca0ada0d244932275733aa41052d8940be768ed02c7f283695025d85"
+    },
+    {
+      "name": "18-key.png",
+      "bytes": 466925,
+      "sha256": "b40fb9b0e6320db6db9bd55e8a3aed2de7a3b2b9442534454d95249b80bb469e"
+    },
+    {
+      "name": "12-click.png",
+      "bytes": 476877,
+      "sha256": "17b54607cde04379b81d45f7f69f8bf741186c0a739c144cbbf9219b49a8d6cb"
+    },
+    {
+      "name": "22-key.png",
+      "bytes": 467575,
+      "sha256": "be85c35a7e593ec0958653f4e2cc1e4cc031123eec7282617db02b581a4e7717"
+    },
+    {
+      "name": "11-launch.png",
+      "bytes": 464174,
+      "sha256": "d76bf463e114f520ef647cdd89afe682607909a0ef5b68a8455a1c1fe297b6c9"
+    },
+    {
+      "name": "04-onboard.png",
+      "bytes": 216975,
+      "sha256": "6c400beb39d3eb33a37071abb1aaa990c3118823213828cebb80071f8ca30447"
+    },
+    {
+      "name": "desktop.png",
+      "bytes": 1541790,
+      "sha256": "40db4d7d97186d58504ba5b48cbb65cddde018ff9555a33ab747112a64dbf6b3"
+    },
+    {
+      "name": "06-onboard.png",
+      "bytes": 221605,
+      "sha256": "cd30fc5db8db1c969c573f5c178f3cb915e062a19e84d2d69c3fdb32eab8e547"
+    },
+    {
+      "name": "23-close.png",
+      "bytes": 1541790,
+      "sha256": "40db4d7d97186d58504ba5b48cbb65cddde018ff9555a33ab747112a64dbf6b3"
+    },
+    {
+      "name": "03-onboard.png",
+      "bytes": 219434,
+      "sha256": "8af9b599ba41adabf807634fd3f570ff29e458d5231ed7b8e6b9ef4af44f8f34"
+    },
+    {
+      "name": "17-click.png",
+      "bytes": 521637,
+      "sha256": "597da29ab5e2e4886e7391c75d3998f6eca6df9f59d4bd3fbb7d81706f245a60"
+    },
+    {
+      "name": "09-prepare.png",
+      "bytes": 1541245,
+      "sha256": "cd61399ce7d39d6d538a05e1aee8b03bb91695b5ce66f9079752069947d02a7f"
+    },
+    {
+      "name": "07-onboard.png",
+      "bytes": 841069,
+      "sha256": "961eed86f47b51330b0cf83c1d664a00829c78bac795d212c406f444e4587117"
+    },
+    {
+      "name": "20-key.png",
+      "bytes": 521637,
+      "sha256": "597da29ab5e2e4886e7391c75d3998f6eca6df9f59d4bd3fbb7d81706f245a60"
+    },
+    {
+      "name": "02-onboard.png",
+      "bytes": 218208,
+      "sha256": "1e2f52ce08a1167f0a6742f4a85bc81b40862c122cd94a22211b3351255e4b24"
+    },
+    {
+      "name": "13-click.png",
+      "bytes": 360845,
+      "sha256": "890f2366c171fba2069a7233b36433e8cfa35c5bccc52756ff2a8468899e961f"
+    },
+    {
+      "name": "05-onboard.png",
+      "bytes": 223951,
+      "sha256": "a6f34b800665b1a00eb8e5f9f67948869d9d6943dc695e27ebea0e5436f866c5"
+    },
+    {
+      "name": "16-key.png",
+      "bytes": 521633,
+      "sha256": "9c768ab2be5084396d6513a55965a24ed6cce4b82e2caba2e624b4366be638f1"
+    },
+    {
+      "name": "19-click.png",
+      "bytes": 466925,
+      "sha256": "b40fb9b0e6320db6db9bd55e8a3aed2de7a3b2b9442534454d95249b80bb469e"
+    }
+  ]
+}

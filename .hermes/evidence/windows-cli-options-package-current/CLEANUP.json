@@ -1,0 +1,13 @@
+{
+  "status": "complete",
+  "stage_removed": true,
+  "superseded_candidate_bytes_removed": 285939035,
+  "GUI_root_account_profile_tasks_credentials": "removed in both failed-control and passed-retry fixtures; original user files/profiles preserved",
+  "guest_off": true,
+  "unused_copied_GUI_helpers_removed": [
+    "gui-session.py",
+    "gui-command.py",
+    "collect-preferences.py"
+  ],
+  "retained": "One current dist/windows-candidate cohort,compact receipts/window crops and reusable QA producer scripts. Newer picker/Miller source work and compiler caches are separate active consumers."
+}

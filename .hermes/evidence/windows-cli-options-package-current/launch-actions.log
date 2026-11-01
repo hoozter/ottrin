@@ -1,0 +1,126 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 9
+}
+{
+    "cursor_x":  1050,
+    "id":  "28d61dcf902f472f8420b25abf9a66db",
+    "case":  "ordinary",
+    "foreground_pid":  5024,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "status":  "pass",
+                         "dismissed_owned_shell":  6096
+                     },
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "dismiss-shell"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 10
+}
+{
+    "cursor_x":  1050,
+    "id":  "af7721b860214e209869e6268a8269cc",
+    "case":  "ordinary",
+    "foreground_pid":  204,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "prepare"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 11
+}
+{
+    "cursor_x":  1050,
+    "id":  "fec938b7e0054b6ab5e79286b828ff0d",
+    "case":  "ordinary",
+    "foreground_pid":  1036,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "status":  "pass",
+                         "sha256":  "ca071ffb6ebf378eae79caf2c0feffabb401ad94d3fc52656eee2f21a96bb0bf",
+                         "created_file":  "source/long preview.txt"
+                     },
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "fixture-write"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 12
+}
+{
+    "cursor_x":  1050,
+    "id":  "f3853995fc3a4d8d9d560e3333499f32",
+    "case":  "ordinary",
+    "foreground_pid":  7452,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  328236,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  852360,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "launch"
+}
+

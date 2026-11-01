@@ -1,0 +1,9 @@
+native PID 6280
+{
+    "graphics_renderer":  "Native",
+    "status":  "pass",
+    "default_view_mode":  "Miller",
+    "config_sha256":  "ab919e389c63935d41a863f294a396950be2788cfff61efc9b934fdd8cdae01a",
+    "scope":  "Explicit initial private fixture preferences, not user-click acceptance"
+}
+

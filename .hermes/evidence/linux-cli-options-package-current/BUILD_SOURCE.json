@@ -1,0 +1,20 @@
+{
+  "source_revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-cli-options-stage",
+  "recorded": "2026-11-01T02:21:13.570294+00:00",
+  "jobs": 1,
+  "changes": "Normalize global GUI options before target dispatch; retain verified preview fixes",
+  "baseline_bytes": {
+    "target/debug/deps": 22736624999,
+    "target/debug/incremental": 9075395610,
+    "target/x86_64-pc-windows-gnu/debug/deps": 27405321763,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25956476452
+  },
+  "pending_consumers": [],
+  "preserve": "Current Linux83ae and Windows e79 usable deliverables; personal settings/index; owner AGENTS.md",
+  "native_source_evidence": "cli-global-options-current/SOURCE_CHECKS.json",
+  "build_result": "All four formats built and content-verified; both scoped actual AppImage sessions closed and cleaned",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted scoped Linux CLI repair,published;staging/extraction retired"
+}

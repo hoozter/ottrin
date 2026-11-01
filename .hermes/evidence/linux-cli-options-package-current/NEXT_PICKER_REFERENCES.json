@@ -1,0 +1,11 @@
+{
+  "independent_picker_reference_review": {
+    "backend": "https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.impl.portal.FileChooser.html",
+    "configuration": "https://flatpak.github.io/xdg-desktop-portal/docs/portals.conf.html"
+  },
+  "constraints": [
+    "Backend uses OpenFile/SaveFile request handles and returns file:// URIs; Request.Close cancellation must terminate only the owned picker",
+    "Use the effective desktop-specific portal configuration, preserve unrelated interfaces and restore prior chooser choice; do not replace whole provider configuration",
+    "Directory browsing must not require index readiness; keep full GUI on demand, not in background"
+  ]
+}

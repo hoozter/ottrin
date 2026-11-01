@@ -1,0 +1,42 @@
+{
+  "status": "pass within Linux source,four-format contents and scoped actual-AppImage acceptance",
+  "source_revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d395189c470f95ad313f9af3a74a01dd0df759470159451138cbf8f519bfb62f",
+    "Ottrin-0.1.0-x86_64.AppImage": "c0248e0bb08b239cba55646ce34c1cc77b46c0875cad507bfdaeca6e3ab38d41",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7b7255b1da0d2340576e5e2b3a7cb3e0bf1a10f5d25aa896b26092f137753820",
+    "ottrin_0.1.0_amd64.deb": "3bb0e97868ad25ab84f20b8edb66f67ecaa10df5b3c81c2bd75654367ca2e734"
+  },
+  "evidence": ".hermes/evidence/linux-cli-options-package-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks",
+    "Actual checksum-verified AppImage launches selected deep file with --renderer opengl before and after target",
+    "Dark100 and Light150 show requested directory,file selection,Column view and actual read-only preview",
+    "Both close normally with all nine declared fixture files unchanged and saved Native renderer,Miller and intended theme preserved",
+    "Light150 clicked read-only Inspector closes on Space with no visible Inspector remaining",
+    "Owned private profiles,processes,indexers,displays,buses and mounts removed"
+  ],
+  "prior_preview_acceptance": ".hermes/evidence/linux-preview-scroll-package-current/ACCEPTANCE.json",
+  "gui_acceptance": "GUI_ACCEPTANCE.json",
+  "indexd_binary_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
+  "indexd_resource_evidence": ".hermes/evidence/linux-filename-index-package-current/packaged-daemon/PROFILE.json",
+  "indexd_resource_scope": "Byte-identical daemon; earlier resource observations retain their original dates,workloads and artifact scopes. No new CPU or memory acceptance claimed.",
+  "native_source_evidence": "cli-global-options-current/SOURCE_CHECKS.json",
+  "hosted_source_evidence": {
+    "run": 41264828707,
+    "source_revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+    "linux_job": "success",
+    "performance_job": "success",
+    "windows_job_at_linux_promotion": "in_progress",
+    "complete_run_conclusion": "success",
+    "complete_evidence": "linux-cli-options-package-current/HOSTED_COMPLETE.json"
+  },
+  "scope": "Usable local Linux build,not a public release or final daily-driver acceptance. Windows,installer rollback,Office providers,physical devices/GPU,signing and owner acceptance remain separate.",
+  "cleanup": "Both private GUI sessions closed normally and removed owned profiles,processes,displays,buses and mounts. Completed staging/extraction retired after publication. Current shared compiler outputs and compact evidence retained."
+}

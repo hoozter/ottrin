@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "checks": [
+    "Clicked long text then Left navigates to VCF",
+    "Clicked VCF then Right navigates to long text",
+    "Clicked long text then Space closes Inspector, no Inspector window remains"
+  ],
+  "mode": "No edit mode requested; canonical actor input"
+}

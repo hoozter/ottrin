@@ -1,0 +1,104 @@
+native PID 6508
+Owned ordinary account ready; protected restoration data saved.
+
+uploaded interop.ps1
+uploaded actor.ps1
+uploaded cleanup.ps1
+uploaded config-template.json
+uploaded payload-manifest.json
+uploaded payload.zip
+native PID 3420
+Scripts parsed; exact candidate extracted.
+
+Prepared. Reboot once to enter the owned console.
+uploaded command.json
+native PID 6240
+{"cursor_x": 640, "id": "e1b9c2cffee148c4b2ea1d54a54a0426", "case": "ordinary", "foreground_pid": 5540, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 400, "op": "observe"}
+uploaded command.json
+native PID 532
+{"cursor_x": 850, "id": "d75d10c6cba849f78d906034d6f0fb6b", "case": "ordinary", "foreground_pid": 5540, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 465, "op": "onboard"}
+uploaded command.json
+native PID 8132
+{"cursor_x": 1050, "id": "5f0188c1b5af49b9b696b9c778ca4379", "case": "ordinary", "foreground_pid": 5540, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "onboard"}
+uploaded command.json
+native PID 4028
+{"cursor_x": 850, "id": "59733db80ded4048af83a91ac1ad558c", "case": "ordinary", "foreground_pid": 5540, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 465, "op": "onboard"}
+uploaded command.json
+native PID 4024
+{"cursor_x": 1050, "id": "e06d3b2da6a34837864dd63409589d7b", "case": "ordinary", "foreground_pid": 5540, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "onboard"}
+uploaded command.json
+native PID 2540
+{"cursor_x": 850, "id": "094e958aba1e4a9aa3436ee441776bc6", "case": "ordinary", "foreground_pid": 5540, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 535, "op": "onboard"}
+uploaded command.json
+native PID 7732
+{"cursor_x": 1050, "id": "4033982e534146afa854ed4e45cf03c9", "case": "ordinary", "foreground_pid": 6096, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "onboard"}
+uploaded command.json
+native PID 1196
+{"cursor_x": 1050, "id": "28d61dcf902f472f8420b25abf9a66db", "case": "ordinary", "foreground_pid": 5024, "screen_width": 1280, "screen_height": 800, "verification": {"status": "pass", "dismissed_owned_shell": 6096}, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "dismiss-shell"}
+uploaded command.json
+native PID 876
+{"cursor_x": 1050, "id": "af7721b860214e209869e6268a8269cc", "case": "ordinary", "foreground_pid": 204, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "prepare"}
+uploaded command.json
+native PID 5240
+{"cursor_x": 1050, "id": "fec938b7e0054b6ab5e79286b828ff0d", "case": "ordinary", "foreground_pid": 1036, "screen_width": 1280, "screen_height": 800, "verification": {"status": "pass", "sha256": "ca071ffb6ebf378eae79caf2c0feffabb401ad94d3fc52656eee2f21a96bb0bf", "created_file": "source/long preview.txt"}, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "fixture-write"}
+uploaded command.json
+native PID 3128
+{"cursor_x": 1050, "id": "f3853995fc3a4d8d9d560e3333499f32", "case": "ordinary", "foreground_pid": 7452, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 328236, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 852360, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 667, "op": "launch"}
+uploaded command.json
+native PID 4188
+{"cursor_x": 530, "id": "b0906fb2813d4168b90033cba11ee170", "case": "ordinary", "foreground_pid": 7452, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 590530, "left": 26, "bottom": 666, "top": 26, "right": 946, "title": "Ottrin Settings"}, {"handle": 328236, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 852360, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 443, "op": "click"}
+uploaded command.json
+native PID 1888
+{"cursor_x": 400, "id": "04ff1aca1740486caae9ef73390860af", "case": "ordinary", "foreground_pid": 7452, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 590530, "left": 26, "bottom": 666, "top": 26, "right": 946, "title": "Ottrin Settings"}, {"handle": 328236, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 852360, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 172, "op": "click"}
+uploaded command.json
+native PID 7612
+{"cursor_x": 400, "id": "5d10b368eef54a05999529edf2786b38", "case": "ordinary", "foreground_pid": 7452, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 590530, "left": 26, "bottom": 666, "top": 26, "right": 946, "title": "Ottrin Settings"}, {"handle": 328236, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 852360, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 519, "op": "click"}
+uploaded command.json
+native PID 7708
+{"cursor_x": 924, "id": "475ed3ad1d104586adfab80e76698ed5", "case": "ordinary", "foreground_pid": 7452, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 328236, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 852360, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 42, "op": "click"}
+uploaded command.json
+native PID 4500
+{"cursor_x": 924, "id": "53c26cd7810d40af8ee9a11179286758", "case": "ordinary", "foreground_pid": 4788, "screen_width": 1280, "screen_height": 800, "verification": {"status": "pass", "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion", "normal_app_close": [{"exit": 0, "pid": 7452}]}, "windows": [], "ordinary_user": true, "cursor_y": 42, "op": "close"}
+uploaded command.json
+native PID 2260
+{"cursor_x": 924, "id": "2198c41f5b854759bea60d382cc24500", "case": "ordinary", "foreground_pid": 5904, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 721328, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 983432, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 42, "op": "launch"}
+uploaded command.json
+native PID 7352
+{"cursor_x": 1125, "id": "271b7c8f6f5c4a158ac0c8a4687c7a9e", "case": "ordinary", "foreground_pid": 5904, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 721328, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 983432, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 90, "op": "click"}
+uploaded command.json
+native PID 7956
+{"cursor_x": 1000, "id": "e3f732b41abf4b2bbd7fda54d5a22072", "case": "ordinary", "foreground_pid": 5904, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 655584, "left": 104, "bottom": 744, "top": 104, "right": 1024, "title": "Ottrin Settings"}, {"handle": 721328, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 983432, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 358, "op": "click"}
+uploaded command.json
+native PID 2368
+{"cursor_x": 1001, "id": "0682cafd781543ef8c3776d8b7b0973d", "case": "ordinary", "foreground_pid": 5904, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 655584, "left": 104, "bottom": 744, "top": 104, "right": 1024, "title": ""}, {"handle": 721328, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 983432, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 120, "op": "click"}
+uploaded command.json
+native PID 4516
+{"cursor_x": 950, "id": "c1571ae187f147e9b7e723e6c2d92bff", "case": "ordinary", "foreground_pid": 5904, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 721328, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 983432, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 148, "op": "click"}
+uploaded command.json
+native PID 7356
+{"cursor_x": 950, "id": "063fd71c34ab4574a4e4e6d3794925f1", "case": "ordinary", "foreground_pid": 1532, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 721328, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 983432, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 148, "op": "observe"}
+uploaded command.json
+native PID 1300
+#< CLIXML
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04"><S S="Error">Owned actor failed_x000D__x000A_</S><S S="Error">At line:14 char:110_x000D__x000A_</S><S S="Error">+ ... \OttrinWindowQA\results\actor-error.txt)){throw 'Owned actor failed'}_x000D__x000A_</S><S S="Error">+                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~_x000D__x000A_</S><S S="Error">    + CategoryInfo          : OperationStopped: (Owned actor failed:String) [], RuntimeException_x000D__x000A_</S><S S="Error">    + FullyQualifiedErrorId : Owned actor failed_x000D__x000A_</S><S S="Error"> _x000D__x000A_</S></Objs>
+Key outside QA input set
+
+RuntimeError app.stderr
+RuntimeError app.stdout
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/scripts/windows-desktop-qa/desktop.py", line 121, in <module>
+    wait(n.start(script))
+  File "/home/campbell/Projects/Ottrin/scripts/windows-desktop-qa/desktop.py", line 28, in wait
+    n.wait(pid, 45)
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-cleanup-current/transport.py", line 18, in wait
+    assert result.get('exitcode')==0,result
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'exitcode': 1, 'err-data': 'IzwgQ0xJWE1MDQo8T2JqcyBWZXJzaW9uPSIxLjEuMC4xIiB4bWxucz0iaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS9wb3dlcnNoZWxsLzIwMDQvMDQiPjxTIFM9IkVycm9yIj5Pd25lZCBhY3RvciBmYWlsZWRfeDAwMERfX3gwMDBBXzwvUz48UyBTPSJFcnJvciI+QXQgbGluZToxNCBjaGFyOjExMF94MDAwRF9feDAwMEFfPC9TPjxTIFM9IkVycm9yIj4rIC4uLiBcT3R0cmluV2luZG93UUFccmVzdWx0c1xhY3Rvci1lcnJvci50eHQpKXt0aHJvdyAnT3duZWQgYWN0b3IgZmFpbGVkJ31feDAwMERfX3gwMDBBXzwvUz48UyBTPSJFcnJvciI+KyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5feDAwMERfX3gwMDBBXzwvUz48UyBTPSJFcnJvciI+ICAgICsgQ2F0ZWdvcnlJbmZvICAgICAgICAgIDogT3BlcmF0aW9uU3RvcHBlZDogKE93bmVkIGFjdG9yIGZhaWxlZDpTdHJpbmcpIFtdLCBSdW50aW1lRXhjZXB0aW9uX3gwMDBEX194MDAwQV88L1M+PFMgUz0iRXJyb3IiPiAgICArIEZ1bGx5UXVhbGlmaWVkRXJyb3JJZCA6IE93bmVkIGFjdG9yIGZhaWxlZF94MDAwRF9feDAwMEFfPC9TPjxTIFM9IkVycm9yIj4gX3gwMDBEX194MDAwQV88L1M+PC9PYmpzPg==', 'exited': True}
+native PID 7500
+native PID 2752
+native PID 1952
+Owned fixtures removed, including protected transaction data.
+
+Domain 'ottrin-copy-cleanup-qa' is being shutdown
+
+Owned fixtures/account removed; guest shutdown requested. Verify domain off and unchanged XML.

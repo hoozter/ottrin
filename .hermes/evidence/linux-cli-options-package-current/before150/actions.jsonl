@@ -1,0 +1,3 @@
+{"time": 1793500032.0402265, "key": "space"}
+{"time": 1793500033.586426, "check": "Before-target renderer dispatch selects requested file; clicked read-only Inspector closes on Space; no visible Inspector remains"}
+{"time": 1793500034.0116546, "click": [1608, 27], "pointer_settled_before_press": true, "hold_seconds": 0.15}

@@ -1,20 +1,20 @@
 {
   "status": "pass within exact payload,native loader/CLI,scoped ordinary portable GUI and complete hosted source verification",
-  "source_commit": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "source_commit": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "6fcabb80a05d0ebe89ad85a02f30530f4905d4b8e823d9eb6aae5aa03675efb3",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "d07dfe51f4742343f809af426f53bed7448fa3359e91b47a0d8e7e8a1c9dded4",
-    "Ottrin-0.1.0-windows-x64.msi": "cfbcf1bc3e3d621e2984eb944f74d8b37d54ac6a24d21cf069dd0c9918581fde"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "c84097f4c3e9c2020cdbd3beed248bc7a7d70e5a6770ddaa198a0ec1cbaceab2",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "8566824c36e588cc8f1e4381d395b9663be093af40fd5c3f765169967e3cc71c",
+    "Ottrin-0.1.0-windows-x64.msi": "fb80b6a09c5f2b59ab6133e704d435934636d57148abaad7c05acd1f8bb09ad2"
   },
   "payload_files": 58,
-  "payload_identity": ".hermes/evidence/windows-navigation-package-current/PAYLOAD_GUI_MANIFEST.json",
-  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-navigation-package-current",
+  "payload_identity": ".hermes/evidence/windows-cli-options-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cli-options-package-current",
   "native_msi_administrative_extraction": {
     "entries_checked": 58,
     "status": "pass",
-    "msi_sha256": "cfbcf1bc3e3d621e2984eb944f74d8b37d54ac6a24d21cf069dd0c9918581fde",
+    "msi_sha256": "fb80b6a09c5f2b59ab6133e704d435934636d57148abaad7c05acd1f8bb09ad2",
     "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
   },
   "native_loader_cli": {
@@ -23,7 +23,7 @@
     "runs": [
       {
         "exit": 0,
-        "stdout_sha256": "7b9185bef772d9d1468581812446aadcb5c10d621a430a9b18e07ed23f8a46ae",
+        "stdout_sha256": "0169d9b845cd5c674d295363928ad357657b8aaef20c40760590f87c35688e80",
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "executable": "ottrin.exe"
       },
@@ -44,101 +44,48 @@
   },
   "portable_gui_acceptance": {
     "status": "pass",
-    "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
-    "archive_sha256": "6fcabb80a05d0ebe89ad85a02f30530f4905d4b8e823d9eb6aae5aa03675efb3",
-    "environment": "Ordinary Windows11 IoT LTSC26100 virtual desktop,Dark100,default Automatic launch,1024x680 window on1280x800",
-    "view_switch_reveal_verified": true,
-    "metadata_hover_verified": true,
-    "readonly_navigation_verified": true,
+    "scope": "Actual ordinary-user folder-plus-renderer launch,explicit renderer priority,preserved preferences and read-only Inspector; no blanket UI acceptance",
+    "source": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+    "launch_option_routing": true,
+    "renderer_preference_round_trip": true,
+    "readonly_inspector": true,
+    "preferences_preserved": true,
     "normal_close": {
       "exit": 0,
-      "pid": 6856
+      "pid": 5072
     },
-    "preferences_preserved": true,
-    "preferences": {
-      "status": "pass",
-      "default_view_mode": "Miller",
-      "config_sha256": "299b44d13f0deb97fd4d1c3802ffe550b1b039c31ee9921526ceae77421c8282",
-      "theme": "Dark",
-      "graphics_renderer": "Automatic",
-      "owned_payload_processes": 0
-    },
-    "final_raw_bytes": {
-      "source\\note.txt": {
-        "bytes": 16,
-        "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
-        "matches_independently_declared_utf8_bytes": true
-      },
-      "source\\other.txt": {
-        "bytes": 15,
-        "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
-        "matches_independently_declared_utf8_bytes": true
-      },
-      "source\\contact.vcf": {
-        "bytes": 51,
-        "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
-        "matches_independently_declared_utf8_bytes": true
-      },
-      "destination\\note.txt": {
-        "bytes": 21,
-        "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
-        "matches_independently_declared_utf8_bytes": true
-      },
-      "source\\a deliberately long preview filename for wrapped metadata.txt": {
-        "bytes": 3300,
-        "sha256": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
-        "matches_independently_declared_utf8_bytes": true
-      }
-    },
-    "cases": [
-      "Direct List/menu and Grid/toggle to Column show the selected source file and adjacent preview after layout settles",
-      "Narrow Location uses ellipsis with one full-path hover tooltip",
-      "Long text content click then Right navigates to VCF;VCF content click then Right navigates to note.txt;Left returns to VCF",
-      "VCF and long-text read-only content clicks followed by Space close each Inspector without entering Edit text",
-      "Literal contents of all five files verified;normal product Close exits0;independent raw QGA reads after close match every declared UTF8 byte",
-      "Dark/Miller and Automatic preferences persist;zero owned payload processes;complete owned account/profile/task/credential/root cleanup and guest off with unchanged XML"
+    "final_raw_files": 5,
+    "seeded_profile": "SEEDED_PREFERENCES.json initializes Native/Miller before launch. Earlier actual click/save and no-override Native restart are scoped in rejected-key-control/CONTROL_SCOPE.json; that whole run is failed, not full acceptance.",
+    "remaining_defects": [
+      "Selecting a file in Miller can leave preview mostly offscreen; source repair next",
+      "First-use compatibility notice incorrectly attributes explicit CLI override to detected graphics"
     ],
-    "reviewed_screens": [
-      "11-launch-window.png",
-      "15-hover-window.png",
-      "17-click-window.png",
-      "18-click-window.png",
-      "19-click-window.png",
-      "21-key-window.png",
-      "23-key-window.png"
-    ],
-    "cleanup": {
-      "fixtures_removed": true,
-      "guest_off": true,
-      "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626"
-    },
-    "prior_failed_attempt": "../windows-navigation-gui-lease-control/ACCEPTANCE.json;expired25-minute scope did not execute final close/raw-byte verification;not accepted",
     "limits": [
-      "No new Copy/Move/Undo,Office-provider,installed lifecycle,MSI rollback,physical GPU/device or final release/owner acceptance",
-      "Default Automatic launch observed;native WGPU or override graphics coverage is not inferred merely from loaded DLLs",
-      "Fresh45-minute session completed only the core;prior extra Copy/Rename/Undo chain was not completed"
+      "Dark100 ordinary Windows VM only; no physical GPU acceptance",
+      "No new full Office,appearance,installer lifecycle or final daily-driver acceptance"
     ]
   },
-  "source_checks": ".hermes/evidence/navigation-toolbar-current/SOURCE_CHECKS.json",
+  "source_checks": ".hermes/evidence/cli-global-options-current/SOURCE_CHECKS.json",
   "hosted_source": {
-    "run": 41251463739,
-    "revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+    "run": 41264828707,
+    "revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
     "conclusion": "success",
-    "evidence": ".hermes/evidence/windows-navigation-package-current/HOSTED_SOURCE.json"
+    "evidence": ".hermes/evidence/windows-cli-options-package-current/HOSTED_SOURCE.json"
   },
   "cleanup": {
-    "native_package": "windows-navigation-package-current/NATIVE_OWNER.json",
-    "portable_gui": "windows-navigation-gui-current/SESSION.json",
+    "native_package": "windows-cli-options-package-current/NATIVE_OWNER.json",
+    "portable_gui": "windows-cli-renderer-gui-current/SESSION.json",
     "guest_off": true,
     "original_guest_files_and_profiles_preserved": true,
     "account_profile_credential_task_and_extractions_removed": true
   },
   "public_windows_files_unchanged": true,
-  "linux_source_cohort": "e79b915e;accepted separately at dist/packages",
+  "linux_source_cohort": "cf6e465a;accepted separately at dist/packages",
   "limits": [
     "No install/upgrade/repair/rollback/uninstall acceptance for these hashes; MSI rollback remains required and unresolved",
-    "GUI scope ordinary Dark100/default launch1024x680 on1280x800 NTFS VM;List/Grid to Column,metadata,read-only navigation/Space,normal Close and five final raw files",
+    "GUI scope ordinary Dark100 on1280x800 NTFS VM;actual folder/CLI renderer routing,Native/Miller preference preservation,read-only navigation/Space,normal Close and five final raw files",
     "Earlier cross-volume,Office,appearance and physical evidence retain original hashes",
+    "Open UI defects: pointer file selection can leave Miller preview offscreen; first-use graphics notice can misattribute a CLI override. Required source repairs remain open",
     "No production release,Store submission or final owner acceptance"
   ]
 }

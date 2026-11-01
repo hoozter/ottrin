@@ -1,0 +1,286 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 18
+}
+{
+    "cursor_x":  400,
+    "id":  "f19756c97d394e5a8ed40a7327458d9c",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  590522,
+                        "left":  130,
+                        "bottom":  690,
+                        "top":  130,
+                        "right":  850,
+                        "title":  "Ottrin Quick Inspector — long preview.txt"
+                    },
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  300,
+    "op":  "click"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 19
+}
+{
+    "cursor_x":  400,
+    "id":  "45989597e0be47bc9271bef19720d031",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  590522,
+                        "left":  130,
+                        "bottom":  690,
+                        "top":  130,
+                        "right":  850,
+                        "title":  "Ottrin Quick Inspector — contact.vcf"
+                    },
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  300,
+    "op":  "key"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 20
+}
+{
+    "cursor_x":  400,
+    "id":  "6e6471b5045345e19610ffef29a2eefe",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  590522,
+                        "left":  130,
+                        "bottom":  690,
+                        "top":  130,
+                        "right":  850,
+                        "title":  "Ottrin Quick Inspector — contact.vcf"
+                    },
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  300,
+    "op":  "click"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 21
+}
+{
+    "cursor_x":  400,
+    "id":  "95edde2f59ed498489e1593a3f89b879",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  590522,
+                        "left":  130,
+                        "bottom":  690,
+                        "top":  130,
+                        "right":  850,
+                        "title":  "Ottrin Quick Inspector — long preview.txt"
+                    },
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  300,
+    "op":  "key"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 22
+}
+{
+    "cursor_x":  400,
+    "id":  "0862768fbc1d44769b506b87bb2eae28",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  590522,
+                        "left":  130,
+                        "bottom":  690,
+                        "top":  130,
+                        "right":  850,
+                        "title":  "Ottrin Quick Inspector — long preview.txt"
+                    },
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  300,
+    "op":  "click"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 23
+}
+{
+    "cursor_x":  400,
+    "id":  "6b68f7e2b53e4cf0bfa57783f2c7b70a",
+    "case":  "ordinary",
+    "foreground_pid":  5072,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  786990,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  459220,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  300,
+    "op":  "key"
+}
+

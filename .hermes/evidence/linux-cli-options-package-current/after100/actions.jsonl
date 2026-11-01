@@ -1,0 +1,6 @@
+{"time": 1793499982.0955684, "click": [1074, 54], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793499982.6167204, "capture": "menu"}
+{"time": 1793499989.726299, "click": [956, 321], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793500002.5357563, "key": "space"}
+{"time": 1793500003.8403385, "check": "After-target renderer dispatch selects requested file; clicked read-only Inspector closes on Space"}
+{"time": 1793500004.2414787, "click": [1072, 18], "pointer_settled_before_press": true, "hold_seconds": 0.15}

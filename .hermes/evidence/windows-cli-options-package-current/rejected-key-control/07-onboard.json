@@ -1,0 +1,15 @@
+﻿{
+    "cursor_x":  1050,
+    "id":  "4033982e534146afa854ed4e45cf03c9",
+    "case":  "ordinary",
+    "foreground_pid":  6096,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "onboard"
+}

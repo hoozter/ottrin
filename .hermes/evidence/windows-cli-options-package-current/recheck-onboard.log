@@ -1,0 +1,156 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 3
+}
+{
+    "cursor_x":  850,
+    "id":  "c62cff1010fa4ddda3e1fa78a369bc39",
+    "case":  "ordinary",
+    "foreground_pid":  6180,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  465,
+    "op":  "onboard"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 4
+}
+{
+    "cursor_x":  1050,
+    "id":  "81335c822160499ca0a42f4c23d92e60",
+    "case":  "ordinary",
+    "foreground_pid":  6180,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "onboard"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 5
+}
+{
+    "cursor_x":  850,
+    "id":  "eab04ed84ed044eda0fc4aa7d43dfdf4",
+    "case":  "ordinary",
+    "foreground_pid":  6180,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  465,
+    "op":  "onboard"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 6
+}
+{
+    "cursor_x":  1050,
+    "id":  "225403a5a01542798e13d7eecb81d354",
+    "case":  "ordinary",
+    "foreground_pid":  6180,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "onboard"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 7
+}
+{
+    "cursor_x":  850,
+    "id":  "f4a55cdcaa7c4dc99514543f2b78cc4e",
+    "case":  "ordinary",
+    "foreground_pid":  6180,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  535,
+    "op":  "onboard"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 8
+}
+{
+    "cursor_x":  1050,
+    "id":  "ae74e7660dd74c91b9246610cc9c32f3",
+    "case":  "ordinary",
+    "foreground_pid":  4508,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  667,
+    "op":  "onboard"
+}
+

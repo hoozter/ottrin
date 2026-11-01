@@ -1,0 +1,26 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 2
+}
+{
+    "cursor_x":  640,
+    "id":  "df4f053c4bb246b7a2e94176811df828",
+    "case":  "ordinary",
+    "foreground_pid":  6180,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  400,
+    "op":  "observe"
+}
+

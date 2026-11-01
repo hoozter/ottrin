@@ -1,0 +1,90 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 24
+}
+{
+    "cursor_x":  400,
+    "id":  "97c579a640e84bf086267fb63effb194",
+    "case":  "ordinary",
+    "foreground_pid":  7612,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "status":  "pass",
+                         "daemon_teardown":  "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+                         "normal_app_close":  [
+                                                  {
+                                                      "exit":  0,
+                                                      "pid":  5072
+                                                  }
+                                              ]
+                     },
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  300,
+    "op":  "close"
+}
+
+native PID 1432
+{
+    "config_sha256":  "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+    "default_view_mode":  "Miller",
+    "graphics_renderer":  "Native",
+    "owned_payload_processes":  0,
+    "status":  "pass",
+    "theme":  "Dark"
+}
+
+Saved Dark/Column/Native preferences verified after normal Close; no owned payload processes.
+{
+  "status": "pass",
+  "source": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "expected_manifest_sha256": "47f2682e4d77434690d54f883e33d08665cf52cf8d647c208b5403506f72dd4a",
+  "files": {
+    "source/note.txt": {
+      "bytes": 16,
+      "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source/other.txt": {
+      "bytes": 15,
+      "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source/contact.vcf": {
+      "bytes": 51,
+      "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "destination/note.txt": {
+      "bytes": 21,
+      "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source/long preview.txt": {
+      "bytes": 3410,
+      "sha256": "ca071ffb6ebf378eae79caf2c0feffabb401ad94d3fc52656eee2f21a96bb0bf",
+      "matches_independently_declared_utf8_bytes": true
+    }
+  },
+  "scope": "Independent raw guest-file reads,not text decoding or hash strings supplied to the UI verifier. Run after explicit normal product Close and before owned teardown."
+}
+{
+  "status": "requested completion; teardown pending",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "teardown",
+  "nonce": "9746db5a27e2430d9cd09c83dc86691a",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 24
+}

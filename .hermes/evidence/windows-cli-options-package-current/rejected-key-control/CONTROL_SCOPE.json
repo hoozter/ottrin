@@ -1,0 +1,20 @@
+{
+  "status": "failed QA input; not full acceptance",
+  "cause": "Sender submitted Space; canonical actor requires literal space. Actor rejected before SendKeys; owned cleanup completed.",
+  "positive_scope": [
+    "First actual folder-plus-renderer launch succeeds, Settings shows explicit OpenGL override",
+    "Exact bundled OpenGL module bytes match payload",
+    "Normal first Close exit0 saves Dark/Miller/Native with no owned payload processes",
+    "Second no-override launch retains Miller and actual Native preference reason"
+  ],
+  "missing_scope": [
+    "final normal Close/raw bytes on second launch",
+    "OpenGL override over preexisting Native preference",
+    "read-only Inspector keyboard check"
+  ],
+  "product_followups": [
+    "First-use compatibility notice incorrectly attributes explicit CLI choice to detection",
+    "Selecting a file in Miller can leave preview as a narrow offscreen sliver; observed after settle"
+  ],
+  "resolution": "Fresh minimal retry; preserve this failed scope, do not count it as full acceptance."
+}

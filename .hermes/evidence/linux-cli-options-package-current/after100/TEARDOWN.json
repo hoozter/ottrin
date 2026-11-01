@@ -1,0 +1,178 @@
+{
+  "source": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "artifact_sha256": "c0248e0bb08b239cba55646ce34c1cc77b46c0875cad507bfdaeca6e3ab38d41",
+  "theme": "Dark",
+  "scale": "1",
+  "view_mode": "Miller",
+  "normal_app_exit": true,
+  "profile": "/var/tmp/.opqa-4j7ocglh",
+  "initial_fixture_sha256": {
+    "source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb",
+    "preview/archive preview.zip": "f44648410b3f74b15cd667ea240257e803ad86f1f00b1acb00bde94e836d6e7a",
+    "preview/page preview.pdf": "6d8441667a569577c70109a87ccf860d008bef8f1c0c861b3ad0e985d5f9ebe2",
+    "preview/sheet preview.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+    "preview/document preview with wrapped metadata.docx": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6",
+    "preview/code preview.rs": "c1449297fe4f460ed3ee8248a9183bc400f733afac5f29194da8048dd130015f",
+    "preview/a deliberately long preview filename for wrapped metadata.txt": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+    "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+    "one/two/three/four/five/a-long-parent-directory-name/another-long-parent-directory/selected preview with a long filename.txt": "f8382b99e231e20e834a20830693448a2b935b1fd4297c56a2e826841c6ab56f"
+  },
+  "launch": "Actual checksum-verified AppImage runtime,not direct AppRun",
+  "launch_arguments": [
+    "--select",
+    "/var/tmp/.opqa-4j7ocglh/fixture/one/two/three/four/five/a-long-parent-directory-name/another-long-parent-directory/selected preview with a long filename.txt",
+    "--renderer",
+    "opengl"
+  ],
+  "saved_renderer_before": "Native",
+  "persisted_config": {
+    "theme": "Dark",
+    "theme_preset": "Ottrin",
+    "custom_themes": [],
+    "active_custom_theme": null,
+    "default_view_mode": "Miller",
+    "colorize_file_types": true,
+    "colorize_folder_labels": false,
+    "list_columns": [
+      "Name",
+      "Kind",
+      "Size",
+      "Modified"
+    ],
+    "miller_view_scale": 1.0,
+    "list_view_scale": 1.0,
+    "grid_view_scale": 1.0,
+    "command_frame_always_visible": false,
+    "restore_session": false,
+    "show_hidden_files": false,
+    "list_show_thumbnails": false,
+    "grid_show_thumbnails": false,
+    "folder_list_thumbnails": {},
+    "folder_grid_thumbnails": {},
+    "target": {
+      "current": null,
+      "pinned": [],
+      "has_ever_set": false,
+      "recent": []
+    },
+    "last_session_dirs": [],
+    "bookmarks": [
+      [
+        "\ue88a",
+        "Home",
+        "/var/tmp/.opqa-4j7ocglh/home"
+      ],
+      [
+        "\ue1db",
+        "Root",
+        "/"
+      ]
+    ],
+    "search": {
+      "default_scope": "Global",
+      "include_hidden_system": false,
+      "include_roots": [
+        "/var/tmp/.opqa-4j7ocglh/fixture"
+      ],
+      "indexed_volumes": [],
+      "exclude_roots": [
+        "/proc",
+        "/sys",
+        "/dev",
+        "/run"
+      ],
+      "content_indexing_enabled": false,
+      "content_include_roots": [],
+      "content_exclude_roots": [],
+      "content_file_groups": [
+        "TextDocuments",
+        "SourceCode"
+      ],
+      "content_max_file_size_bytes": 524288,
+      "include_globs": [],
+      "exclude_globs": [
+        "*.swp",
+        "*.swo",
+        "*.tmp",
+        "*~",
+        ".git/**",
+        "**/.git/**",
+        ".svn/**",
+        "**/.svn/**",
+        ".hg/**",
+        "**/.hg/**",
+        "node_modules/**",
+        "**/node_modules/**",
+        "target/**",
+        "**/target/**",
+        "__pycache__/**",
+        "**/__pycache__/**",
+        "*.pyc",
+        "*.pyo",
+        ".Trash/**",
+        ".Trash-*/**"
+      ],
+      "default_sort": "Relevance",
+      "result_limit": 500,
+      "refresh_interval_hours": 0,
+      "use_system_locate": false,
+      "manage_locate_db": false,
+      "locate_update_hours": 6
+    },
+    "search_setup_completed": true,
+    "folder_column_widths": {},
+    "miller_column_width_mode": "Fixed",
+    "smart_panel_width": 420.0,
+    "window_size": [
+      1100.0,
+      800.0
+    ],
+    "thumbnail_cache_max_mb": 512,
+    "installed_office_previews_enabled": true,
+    "graphics_renderer": "Native",
+    "graphics_compatibility_notice_seen": true
+  },
+  "final_fixture_sha256": {
+    "source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb",
+    "preview/archive preview.zip": "f44648410b3f74b15cd667ea240257e803ad86f1f00b1acb00bde94e836d6e7a",
+    "preview/page preview.pdf": "6d8441667a569577c70109a87ccf860d008bef8f1c0c861b3ad0e985d5f9ebe2",
+    "preview/sheet preview.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+    "preview/document preview with wrapped metadata.docx": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6",
+    "preview/code preview.rs": "c1449297fe4f460ed3ee8248a9183bc400f733afac5f29194da8048dd130015f",
+    "preview/a deliberately long preview filename for wrapped metadata.txt": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+    "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+    "one/two/three/four/five/a-long-parent-directory-name/another-long-parent-directory/selected preview with a long filename.txt": "f8382b99e231e20e834a20830693448a2b935b1fd4297c56a2e826841c6ab56f"
+  },
+  "status": "closed",
+  "daemon_cleanup": {
+    "pid": 2658082,
+    "peer_uid": 1000,
+    "pidfd_exit_observed": true
+  },
+  "owned_processes_reaped": [
+    {
+      "pid": 2658017,
+      "exit": 0
+    },
+    {
+      "pid": 2658020,
+      "exit": 0
+    },
+    {
+      "pid": 2658022,
+      "exit": 15
+    },
+    {
+      "pid": 2658074,
+      "exit": 0
+    }
+  ],
+  "additional_owned_children_stopped": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [
+    "98 34 0:64 / /var/tmp/.opqa-4j7ocglh/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

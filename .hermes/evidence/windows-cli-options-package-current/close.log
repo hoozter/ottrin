@@ -1,0 +1,35 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 17
+}
+{
+    "cursor_x":  924,
+    "id":  "53c26cd7810d40af8ee9a11179286758",
+    "case":  "ordinary",
+    "foreground_pid":  4788,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "status":  "pass",
+                         "daemon_teardown":  "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+                         "normal_app_close":  [
+                                                  {
+                                                      "exit":  0,
+                                                      "pid":  7452
+                                                  }
+                                              ]
+                     },
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  42,
+    "op":  "close"
+}
+

@@ -1,0 +1,139 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 14
+}
+{
+    "cursor_x":  400,
+    "id":  "04ff1aca1740486caae9ef73390860af",
+    "case":  "ordinary",
+    "foreground_pid":  7452,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  590530,
+                        "left":  26,
+                        "bottom":  666,
+                        "top":  26,
+                        "right":  946,
+                        "title":  "Ottrin Settings"
+                    },
+                    {
+                        "handle":  328236,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  852360,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  172,
+    "op":  "click"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 15
+}
+{
+    "cursor_x":  400,
+    "id":  "5d10b368eef54a05999529edf2786b38",
+    "case":  "ordinary",
+    "foreground_pid":  7452,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  590530,
+                        "left":  26,
+                        "bottom":  666,
+                        "top":  26,
+                        "right":  946,
+                        "title":  "Ottrin Settings"
+                    },
+                    {
+                        "handle":  328236,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  852360,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  519,
+    "op":  "click"
+}
+
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "76ab4ddc7eb8482480a49a61b0f15b0f",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 16
+}
+{
+    "cursor_x":  924,
+    "id":  "475ed3ad1d104586adfab80e76698ed5",
+    "case":  "ordinary",
+    "foreground_pid":  7452,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  328236,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  852360,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  42,
+    "op":  "click"
+}
+

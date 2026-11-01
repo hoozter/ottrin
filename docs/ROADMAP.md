@@ -18,58 +18,50 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
-- **Combined GUI-option/target repair in verification (2026-11-01).** Actual
-  Windows83ae renderer QA rejects a folder followed by `--renderer opengl`
-  before graphics initialization. A leading renderer option also prevents the
-  old dispatcher from resolving the requested target. One parser now separates
-  renderer/helper/help options from command arguments before dispatch, preserving
-  option-like literals after `--`. The three separate argument scans are removed;
-  explicit helper overrides also take priority over development autobuilding.
-  All26 Linux application tests pass,including both option positions,inline and
-  separate forms,preview/select routing,missing/duplicate values and literal
-  help queries. Both ordinary and elevated Windows accounts pass all23
-  application tests; Linux and GNU Windows strict all-target lint pass. Fresh
-  exact-package verification remains pending. Evidence: `cli-global-options-current/`.
-- **Current Linux delivery: 83ae6b97 (2026-11-01).** All four stable formats at
-  `dist/packages/` contain the single preview scroll owner and accessible bounded
-  Info metadata. Full hosted Linux/Windows/performance run41258195349 passes,
-  including platform workspace tests,strict lint and release builds. Native UI
-  source checks pass412 regular Linux cases and385 Windows cases under each
-  ordinary/elevated token,with existing ignores and zero filters. Actual Dark100
-  and Light150 AppImage sessions verify body wheel input with pixel-identical
-  complete footers,Details/final-field access,clicked text/VCF Space close,nine
-  unchanged fixture files,normal exit0 and saved theme/Miller preferences. Dark
-  checks also cover code/archive scrolling,DOCX/extracted/sheet presentation and
-  stable cached code-to-PDF transitions at two window heights. Private processes,
-  profiles,displays,buses and mounts are removed;staging/extraction is retired.
-  Evidence: `preview-scroll-current/`, `linux-preview-scroll-package-current/`.
-- **Current Windows candidate remains e79b915e.** The unpromoted83ae ZIP/NSIS/MSI
-  cohort has58 matching files,native loader/CLI/administrative extraction and
-  scoped ordinary GUI positives:single-scrollbar preview,complete footer,
-  Details/last available field,List/Grid-to-Column,read-only text/VCF navigation,
-  normal exit0 and five independently verified raw files after Close. A collector
-  syntax error left first-session preference collection unaccepted;the separate
-  renderer fixture verifies saved Dark/Miller/Automatic and Native preferences
-  and a live Native restart. Its attempted OpenGL launch exposes the CLI dispatch
-  failure above,so OpenGL acceptance is not claimed. Both fixtures remove their
-  accounts/profiles/tasks/credentials/root and return the unchanged guest off.
-  The unused83ae stage is retired after hash/consumer checks (285,938,418 bytes).
-  Preserve the usable e79 candidate while repairing and verifying the next cohort.
-  Evidence: `windows-preview-scroll-package-current/`,
-  `windows-preview-scroll-gui-current/`, `windows-preview-renderer-gui-current/`.
-- **Personal Linux service at current delivery:** enabled/watched Ready
-  PID2493327 uses the83ae runtime and byte-identical daemon `df3f9618`. Config,
-  unit and wrapper hashes are unchanged,and the previous mount is gone. This is
-  runtime delivery,not new CPU/memory acceptance or an indexing algorithm change.
-- **Independent MSI evidence reviewed:** upstream issue8574 remains open. Two
-  digest-verified published Server/MSI-version artifacts show actual FileRemove,
-  deliberate failure,rollback FileCopy,invalid-owner registration errors and a
-  later successful uninstall that strands the file. This corroborates the local
-  failure family;it is not a new Ottrin OS test,a causal conclusion or a fix.
-  Only compressed text diagnostics are retained;third-party MSI binaries were
-  not executed and downloaded archives are removed. Keep the rollback gate
-  required;further investigation needs a discriminating hypothesis or candidate
-  fix,while other ready work continues. Evidence: `msi-upstream-review-current/`.
+- **Current Linux and Windows startup delivery: cf6e465a (2026-11-01).**
+  Global GUI options are parsed before target dispatch. Actual launches accept
+  `--renderer opengl` after a folder/file target; Linux also verifies the leading
+  form. Literal option-like names after `--` remain intact. Linux application
+  tests pass26 cases and native ordinary/elevated Windows application tests pass23
+  each,with no ignores or filters. Complete hosted run41264828707 passes Linux,
+  Windows and performance,including workspace tests,strict lint and release builds.
+- **Linux delivery:** all four stable `dist/packages/` formats pass package-content,
+  runtime/helper/font/source checks. Actual Dark100 and Light150 AppImage sessions
+  open the requested selected deep file in Miller mode,close normally,preserve all
+  nine declared files and save the intended theme/Miller/Native preferences.
+  Light150 also verifies clicked read-only Inspector text closes on Space.
+  The enabled personal index uses the updated runtime with unchanged daemon bytes;
+  configuration and data remain intact. This adds no new index resource claim.
+  Evidence: `cli-global-options-current/`, `linux-cli-options-package-current/`.
+- **Windows delivery:** the single `dist/windows-candidate/` ZIP/NSIS/MSI cohort
+  has58 matching application files and passes native loader/CLI/administrative MSI
+  extraction. Ordinary Dark100 GUI confirms folder-plus-OpenGL routing,the actual
+  explicit-override reason over saved Native settings,read-only text/VCF navigation,
+  Space close,normal exit0,preserved Native/Miller preferences and five unchanged
+  independently read files. One earlier fixture was ended by a rejected test key;
+  its scoped positives are retained separately,not counted as a complete pass.
+  All private accounts/profiles/tasks/credentials/roots are removed and the guest
+  is off. The superseded candidate is retired (285,939,035 bytes). Public release
+  files,installer rollback and final daily-driver acceptance remain separate.
+  Evidence: `windows-cli-options-package-current/`, `windows-cli-renderer-gui-current/`.
+- **Newer source repair,not yet packaged:** actual Windows QA found a primary file
+  click could leave the Miller preview mostly offscreen. A rendered pointer test
+  fails on the preceding behavior and passes after requesting explicit reveal for
+  primary file clicks. All413 regular Linux UI tests and386 ordinary/elevated
+  Windows UI tests pass,with existing ignores and zero filters;strict native and
+  GNU Windows lint passes. The compatibility notice now uses the real renderer
+  reason instead of attributing a CLI override to detected hardware. These source
+  repairs still require fresh package/UI acceptance. Evidence: `picker-foundation-current/`.
+- **Required picker/folder integration is active work.** The public caller contract
+  for Open/Save/folder requests,filters,choices,cancellation and response validation
+  is implemented in the working tree; all34 Linux core tests pass. The actual
+  shared UI,internal adoption,portal/cooperating-app integration,reversible folder
+  controls and resource/startup acceptance remain required. Park owner,physical
+  and release-identity waits while completing this milestone.
+- **MSI rollback remains a required failed gate.** Reviewed upstream evidence
+  corroborates the failure family but establishes no safe authoring correction.
+  Keep its exact receipts and external investigation boundary; do not repeat the
+  same controls without a discriminating hypothesis. Evidence: `msi-upstream-review-current/`.
 
 Earlier checkpoints below retain their recorded source/artifact scopes:
 
@@ -608,8 +600,8 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four83ae6b97 formats;full hosted source checks;actual Dark100/Light150 single scroll owner,metadata,read-only close,nine-file preservation;enabled service on current runtime. | Deliver the global CLI-option repair,remaining concentrated software/platform acceptance,and later owner/device acceptance. |
-| Windows | e79b915e internal candidate remains usable. Unpromoted83ae core/persistence/Native positives and the pre-OpenGL CLI dispatch failure retain separate scopes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) defines delivered hashes. | Repair/verify combined global options and target,then deliver the fresh cohort;continue Office/workflow and installed lifecycle. MSI rollback remains failed,not waived. |
+| Linux | Four cf6e465a formats; complete hosted checks; actual before/after target options,Dark100/Light150 startup,read-only close,nine-file preservation and saved preferences. Enabled personal service uses current runtime. | Deliver the newer pointer-preview/notice source repair and required picker/integration; finish available software acceptance before parked owner/device checks. |
+| Windows | cf6e465a ZIP/NSIS/MSI candidate;58 matching files,complete hosted source checks and scoped native CLI/renderer/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) defines hashes and limits. | Deliver newer pointer-preview/notice repair and required picker/integration; continue remaining workflow/installed acceptance. MSI rollback remains required and failed. |
 | Ottrin picker and folder integration | Required outcome4 is approved and defined below. | Implement after earlier unblocked engineering/software acceptance;park owner/physical/external waits so they do not block this required milestone. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 

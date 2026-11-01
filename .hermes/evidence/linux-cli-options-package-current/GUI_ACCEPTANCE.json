@@ -1,0 +1,35 @@
+{
+  "status": "pass within actual-AppImage global-option and target dispatch acceptance",
+  "source_revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "appimage_sha256": "c0248e0bb08b239cba55646ce34c1cc77b46c0875cad507bfdaeca6e3ab38d41",
+  "sessions": {
+    "after100": {
+      "renderer_option_position": "after",
+      "theme": "Dark",
+      "saved_renderer": "Native",
+      "saved_view": "Miller",
+      "normal_exit": 0,
+      "source_bytes_match": true,
+      "fixture_files": 9,
+      "profile_removed": true
+    },
+    "before150": {
+      "renderer_option_position": "before",
+      "theme": "Light",
+      "saved_renderer": "Native",
+      "saved_view": "Miller",
+      "normal_exit": 0,
+      "source_bytes_match": true,
+      "fixture_files": 9,
+      "profile_removed": true
+    }
+  },
+  "checks": [
+    "Actual checksum-verified AppImage launches selected deep file with --renderer opengl before and after target",
+    "Dark100 and Light150 show requested directory,file selection,Column view and actual read-only preview",
+    "Both close normally with all nine declared fixture files unchanged and saved Native renderer,Miller and intended theme preserved",
+    "Light150 clicked read-only Inspector closes on Space with no visible Inspector remaining",
+    "Owned private profiles,processes,indexers,displays,buses and mounts removed"
+  ],
+  "limits": "No new renderer adapter,preview matrix,Office provider,physical GPU,index resource or release acceptance; earlier preview scopes retain original artifact identities."
+}
