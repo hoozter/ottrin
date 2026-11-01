@@ -1,0 +1,18 @@
+{
+  "source": "31e77bdfd427c6a866995d539e22c264c0b12c67",
+  "reason": "Selecting a native filename then toggling hidden files returns a lossy different Save pathname. Original fixture is unchanged; cohort is rejected and not promoted.",
+  "retired_roots": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-extract"
+  ],
+  "logical_bytes": 184319092,
+  "stable_deliverables_preserved": true,
+  "windows_canceled_stage": {
+    "source_revision": "31e77bdfd427c6a866995d539e22c264c0b12c67",
+    "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "status": "failed; owned staging retired",
+    "error": "SystemExit(130)",
+    "child_exit": -15,
+    "staging_retained_for_pending_acceptance": false
+  }
+}

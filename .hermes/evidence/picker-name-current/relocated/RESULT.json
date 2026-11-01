@@ -1,0 +1,55 @@
+{
+  "case": "relocated",
+  "binary_sha256": "3b01c0b03b0de66bdf8e02340052ca442122b57f25019f94b223171d5ef1bbc8",
+  "scope": "Actual debug-source picker GUI; not package or final resource acceptance",
+  "initial_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "cold_process_window_ready_ms": 400.42,
+  "normal_exit": 0,
+  "response": {
+    "accepted": true,
+    "paths": [
+      {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d72753673346865362f666978747572652f6f726967696e616c2d802e747874"
+      }
+    ],
+    "current_filter": null,
+    "choices": {}
+  },
+  "exact_native_path_bytes_verified": true,
+  "final_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "index_socket_created": false,
+  "status": "normal close; fixture files unchanged",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ru6s4he6",
+    "owned_processes_reaped": [
+      {
+        "pid": 3259890,
+        "exit": 0
+      },
+      {
+        "pid": 3259894,
+        "exit": 0
+      },
+      {
+        "pid": 3259895,
+        "exit": 15
+      },
+      {
+        "pid": 3259942,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

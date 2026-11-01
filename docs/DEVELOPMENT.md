@@ -1729,6 +1729,12 @@ filesystem recovery records; existing persisted recovery representations remain
 unchanged. Rust callers keep `PathBuf` in memory and use the request/response
 Serde implementations for the wire representation.
 
+The chooser's filename and editable Location draft also retain native OS units.
+Their temporary Unicode edit buffers replace those values only when the user
+actually changes the text. Refreshing, changing visibility or confirming an
+unedited Location must never construct a path from replacement glyphs. Selection
+is independent of the Save basename, which survives refresh and folder navigation.
+
 ### Request and response
 
 A minimal Linux request selecting text documents from `/tmp`:

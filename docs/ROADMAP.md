@@ -142,6 +142,22 @@ their named hashes. Test counts are scoped observations, not completion measures
   only the missing application scope was rerun. The rejected Linux cohort and
   canceled Windows staging are removed; stable cf6e465a packages are untouched.
   Fresh package delivery remains next. Evidence: `picker-layout-current/`.
+- **Native chooser drafts now survive non-editing controls in source.**
+  Actual31e77bdf AppImage QA reproduced a wrong Save path after toggling hidden
+  files: a cleared selection left only a lossy filename string. Source GUI also
+  reproduced unchanged Location confirmation navigating to a lossy nonexistent
+  path. Filename and Location now retain OS-native values; temporary Unicode edit
+  buffers replace them only after a real text change. The selected-path workaround
+  is removed. Failing-before regressions cover refresh,navigation and unedited
+  Location on Linux bytes and Windows unmatched UTF-16. All447 regular Linux UI
+  tests and419 native ordinary/elevated Windows UI tests pass,with existing ignores
+  and zero filters;strict Linux/GNU Windows lint passes. Final source GUI verifies
+  combined view/visibility/Location controls,exact native overwrite selection and
+  explicit filename/location edits,with unchanged originals and clean teardown.
+  Earlier filename-only GUI/binaries and the canceled Location control retain their
+  own scopes. Both rejected package cohorts and canceled Windows stages are removed;
+  current stable packages remain cf6e465a. Refresh exact packages next.
+  Evidence: `picker-name-current/SOURCE_ACCEPTANCE.json`.
 - **MSI rollback remains a required failed gate.** Reviewed upstream evidence
   corroborates the failure family but establishes no safe authoring correction.
   Keep its exact receipts and external investigation boundary; do not repeat the
@@ -658,7 +674,10 @@ are source-verified. A staged `7a9a5319` Linux cohort passed package contents,
 native-path Save and bounded chooser/index resource checks,but actual Grid with
 Preview exposed a layout defect. That cohort is rejected and retired;the interrupted
 Windows stage is also removed. Both stable deliverables remain intact while the
-layout repair and fresh coherent delivery continue. Earlier resource/workflow
+layout repair and fresh coherent delivery continue. The subsequent staged31e77bdf
+cohort exposed a native-name loss after toggling hidden files;it and its canceled
+Windows stage are also retired. Native filename and Location draft repairs are now source-verified;fresh exact
+package delivery remains next. Earlier resource/workflow
 observations retain their original dates and hashes. Physical,owner and release
 identity gates remain on the waiting list.
 

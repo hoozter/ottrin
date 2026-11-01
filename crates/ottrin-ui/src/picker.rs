@@ -13,6 +13,7 @@ use ottrin_core::{
     SortConfig, default_home_dir,
 };
 use std::collections::BTreeMap;
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::{
     Arc,
@@ -290,7 +291,7 @@ pub(crate) struct PickerDialog {
     request: PickerRequest,
     filters: Vec<Filter>,
     directory: PathBuf,
-    location: String,
+    location: OsString,
     editing_location: bool,
     focus_location: bool,
     entries: Arc<Vec<FileEntry>>,
@@ -301,7 +302,7 @@ pub(crate) struct PickerDialog {
     focus: Option<PathBuf>,
     preview: Option<crate::picker_preview::PickerPreview>,
     preview_enabled: bool,
-    filename: String,
+    filename: OsString,
     query: String,
     indexed: bool,
     search_cancelled: Option<Arc<AtomicBool>>,
@@ -336,7 +337,7 @@ impl PickerDialog {
             Some(directory) => directory,
             None => preferences.directory()?.unwrap_or_else(default_home_dir),
         };
-        let filename = request.filename.clone();
+        let filename = OsString::from(&request.filename);
         let choices = request
             .choices
             .iter()
@@ -345,7 +346,7 @@ impl PickerDialog {
         let mut dialog = Self {
             request,
             filters,
-            location: path_label(&directory),
+            location: directory.as_os_str().to_os_string(),
             directory,
             editing_location: false,
             focus_location: false,
@@ -485,7 +486,7 @@ impl PickerDialog {
         } else {
             self.directory.join(directory)
         };
-        self.location = path_label(&self.directory);
+        self.location = self.directory.as_os_str().to_os_string();
         self.editing_location = false;
         if self.request.mode != PickerMode::Save {
             self.filename.clear();
@@ -683,16 +684,16 @@ impl PickerDialog {
                 .focus
                 .as_ref()
                 .and_then(|path| path.file_name())
-                .map(|name| name.to_string_lossy().into_owned())
+                .map(|name| name.to_os_string())
                 .unwrap_or_default();
         } else if !is_directory(entry) {
-            self.filename.clone_from(&entry.name);
+            self.filename = entry.path.file_name().unwrap_or_default().to_os_string();
         }
         if self.indexed
             && let Some(parent) = self.focus.as_ref().and_then(|path| path.parent())
         {
             self.directory = parent.to_path_buf();
-            self.location = path_label(&self.directory);
+            self.location = self.directory.as_os_str().to_os_string();
         }
         self.error = None;
     }
@@ -701,27 +702,30 @@ impl PickerDialog {
             return;
         }
         let paths = if self.request.mode == PickerMode::Save {
-            // A displayed filename may contain replacement glyphs. Keep the selected
-            // native path authoritative until editing clears selection.
-            let path = if let Some(path) = self.selected.first().filter(|path| {
-                path.parent() == Some(self.directory.as_path())
-                    && path
-                        .file_name()
-                        .is_some_and(|name| name.to_string_lossy() == self.filename)
-            }) {
-                path.clone()
-            } else {
-                if !is_picker_filename(&self.filename) {
+            // The native basename survives selection resets and folder changes.
+            // Its lossy presentation is never used to construct a filesystem path.
+            let mut components = Path::new(&self.filename).components();
+            if !matches!(components.next(), Some(std::path::Component::Normal(name)) if name == self.filename.as_os_str())
+                || components.next().is_some()
+                || self.filename.as_encoded_bytes().contains(&0)
+            {
+                self.error =
+                    Some("Enter one filename. Use Location to choose another folder.".into());
+                return;
+            }
+            let path = self.directory.join(&self.filename);
+            if !self.entries.iter().any(|entry| entry.path == path) {
+                let displayed = self.filename.to_string_lossy();
+                if !is_picker_filename(&displayed) {
                     self.error =
                         Some("Enter one filename. Use Location to choose another folder.".into());
                     return;
                 }
-                if let Err(error) = ottrin_platform::validate_creation_name(&self.filename) {
+                if let Err(error) = ottrin_platform::validate_creation_name(&displayed) {
                     self.error = Some(error.to_string());
                     return;
                 }
-                self.directory.join(&self.filename)
-            };
+            }
             if self
                 .request
                 .current_filter
@@ -735,7 +739,7 @@ impl PickerDialog {
             vec![self.directory.clone()]
         } else if !self.selected.is_empty() {
             self.selected.clone()
-        } else if is_picker_filename(&self.filename) {
+        } else if is_picker_filename(&self.filename.to_string_lossy()) {
             vec![self.directory.join(&self.filename)]
         } else {
             self.error = Some("Choose a file first.".into());
@@ -830,7 +834,7 @@ impl PickerDialog {
         {
             if self.editing_location {
                 self.editing_location = false;
-                self.location = path_label(&self.directory);
+                self.location = self.directory.as_os_str().to_os_string();
             } else {
                 self.cancel();
             }
@@ -862,6 +866,7 @@ impl PickerDialog {
                             self.navigate(parent.to_path_buf());
                         }
                         if self.editing_location {
+                            let mut location = self.location.to_string_lossy().into_owned();
                             let editor_id = ui.make_persistent_id("picker-location");
                             if std::mem::take(&mut self.focus_location) {
                                 ui.memory_mut(|memory| memory.request_focus(editor_id));
@@ -872,17 +877,20 @@ impl PickerDialog {
                                     .cursor
                                     .set_char_range(Some(egui::text::CCursorRange::two(
                                         egui::text::CCursor::new(0),
-                                        egui::text::CCursor::new(self.location.chars().count()),
+                                        egui::text::CCursor::new(location.chars().count()),
                                     )));
                                 state.store(&ctx, editor_id);
                             }
                             let response = ui.add(
-                                egui::TextEdit::singleline(&mut self.location)
+                                egui::TextEdit::singleline(&mut location)
                                     .id(editor_id)
                                     .char_limit(32768)
                                     .desired_width(ui.available_width() * 0.62)
                                     .themed(&colors),
                             );
+                            if response.changed() {
+                                self.location = location.into();
+                            }
                             if response.lost_focus()
                                 && ui.input(|input| input.key_pressed(egui::Key::Enter))
                             {
@@ -1276,13 +1284,15 @@ impl PickerDialog {
                 } else if self.selected.len() > 1 {
                     ui.label(format!("{} files selected", self.selected.len()));
                 } else {
+                    let mut filename = self.filename.to_string_lossy().into_owned();
                     let response = ui.add(
-                        egui::TextEdit::singleline(&mut self.filename)
+                        egui::TextEdit::singleline(&mut filename)
                             .char_limit(4096)
                             .desired_width(ui.available_width())
                             .themed(&colors),
                     );
                     if response.changed() {
+                        self.filename = filename.into();
                         self.selected.clear();
                         self.cancel_validation();
                     }
@@ -2064,7 +2074,7 @@ mod tests {
                 time,
                 vec![egui::Event::Text(target.to_string_lossy().into_owned())],
             );
-            assert_eq!(app.dialog.location, target.to_string_lossy());
+            assert_eq!(app.dialog.location, target.as_os_str());
             time += 0.1;
             frame(
                 &mut app,
@@ -2410,6 +2420,139 @@ mod tests {
         drop(app);
         assert!(cancelled.load(Ordering::Acquire));
     }
+    #[cfg(any(unix, windows))]
+    #[test]
+    fn confirming_an_unedited_location_preserves_native_directory_units() {
+        let root = tempfile::tempdir().unwrap();
+        #[cfg(unix)]
+        let name = {
+            use std::os::unix::ffi::OsStringExt;
+            OsString::from_vec(b"folder\x81".to_vec())
+        };
+        #[cfg(windows)]
+        let name = {
+            use std::os::windows::ffi::OsStringExt;
+            OsString::from_wide(&[102, 0xd800])
+        };
+        let directory = root.path().join(name);
+        std::fs::create_dir(&directory).unwrap();
+        std::fs::write(directory.join("keep.txt"), b"preserve original").unwrap();
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(directory.clone()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        let size = Vec2::new(940.0, 640.0);
+        frame(&mut app, &ctx, size, 0.0, vec![]);
+        frame(
+            &mut app,
+            &ctx,
+            size,
+            0.1,
+            vec![egui::Event::Key {
+                key: egui::Key::L,
+                physical_key: Some(egui::Key::L),
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::CTRL,
+            }],
+        );
+        assert!(app.dialog.editing_location);
+        frame(
+            &mut app,
+            &ctx,
+            size,
+            0.2,
+            vec![egui::Event::Key {
+                key: egui::Key::Enter,
+                physical_key: Some(egui::Key::Enter),
+                pressed: true,
+                repeat: false,
+                modifiers: Default::default(),
+            }],
+        );
+        wait_listing(&mut app.dialog);
+        assert_eq!(app.dialog.directory, directory);
+        assert_eq!(app.dialog.visible_entries().len(), 1);
+        assert_eq!(
+            std::fs::read(directory.join("keep.txt")).unwrap(),
+            b"preserve original"
+        );
+    }
+
+    #[cfg(any(unix, windows))]
+    #[test]
+    fn native_save_name_survives_refresh_and_navigation_without_a_selection() {
+        let root = tempfile::tempdir().unwrap();
+        #[cfg(unix)]
+        let filename = {
+            use std::os::unix::ffi::OsStringExt;
+            std::ffi::OsString::from_vec(b"original\x80.txt".to_vec())
+        };
+        #[cfg(windows)]
+        let filename = {
+            use std::os::windows::ffi::OsStringExt;
+            std::ffi::OsString::from_wide(&[111, 0xd800, 46, 116, 120, 116])
+        };
+        let original = root.path().join(&filename);
+        std::fs::write(&original, b"preserve original").unwrap();
+        let other = root.path().join("other");
+        std::fs::create_dir(&other).unwrap();
+        let ctx = Context::default();
+        let mut dialog = PickerDialog::new(
+            PickerRequest {
+                mode: PickerMode::Save,
+                initial_directory: Some(root.path().into()),
+                ..Default::default()
+            },
+            &ctx,
+            Default::default(),
+        )
+        .unwrap();
+        wait_listing(&mut dialog);
+        let visible = dialog.visible_entries();
+        let index = visible
+            .iter()
+            .position(|entry| entry.path == original)
+            .unwrap();
+        dialog.select(visible.get(index), index, &visible, Default::default());
+        dialog.hidden = true;
+        dialog.scan();
+        wait_listing(&mut dialog);
+        assert!(dialog.selected.is_empty());
+        dialog.accept(false);
+        let until = Instant::now() + Duration::from_secs(3);
+        while dialog.validating {
+            dialog.poll();
+            assert!(Instant::now() < until);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(
+            dialog.overwrite,
+            Some(original.clone()),
+            "Refreshing must not replace native filename units with display glyphs"
+        );
+        dialog.navigate(other.clone());
+        wait_listing(&mut dialog);
+        dialog.accept(false);
+        while dialog.validating {
+            dialog.poll();
+            assert!(Instant::now() < until);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(
+            dialog.take_result().unwrap().paths,
+            vec![other.join(filename)]
+        );
+        assert_eq!(std::fs::read(&original).unwrap(), b"preserve original");
+        assert_eq!(std::fs::read_dir(other).unwrap().count(), 0);
+    }
+
     #[cfg(any(unix, windows))]
     #[test]
     fn save_selection_and_response_preserve_native_filename_without_mutating_the_file() {

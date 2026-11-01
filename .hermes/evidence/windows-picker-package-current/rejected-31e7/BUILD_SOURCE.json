@@ -1,0 +1,10 @@
+{
+  "source_revision": "31e77bdfd427c6a866995d539e22c264c0b12c67",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "pending_consumers": [
+    "coherent package build",
+    "exact package verification and GUI/resource checks",
+    "stable-path promotion and owned teardown"
+  ],
+  "cleanup_owner": "windows-picker-package-current"
+}

@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "source_revision": "31e77bdfd427c6a866995d539e22c264c0b12c67",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "e49e9bc6b73a691d033df0e63c16afc3457eac2bbb728bf931166bb8d5851ad8",
+    "Ottrin-0.1.0-x86_64.AppImage": "7deb47f5e957bd656347988a9481351ec321587fa83bc33217f4a92ec50adbd6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "49ccab7656a314c45e6c5c6e7e7609c656156691af9d50d815e35081b604383d",
+    "ottrin_0.1.0_amd64.deb": "efc4deeb181ab9a86e7aa3147263e6c7540c99ddf6f2db327306163ea170bb9b"
+  },
+  "verifier_sha256": "33b60ba8802056bee6c466454e1e69fc53bab4d69472dc4413e72990b5b731cc",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "scope": "package contents and scoped native namespace checks; GUI, resource and actual distribution installation remain separate",
+  "extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-extract",
+  "pending_consumer": "native GUI; remove remaining extraction afterwards"
+}

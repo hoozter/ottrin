@@ -1,0 +1,9 @@
+{
+  "bytes": {
+    "target/debug/deps": 32390223542,
+    "target/debug/incremental": 12211415502,
+    "target/x86_64-pc-windows-gnu/debug/deps": 31245085275,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 29396767906
+  },
+  "scope": "Current shared binaries,dependencies and newest caches retained; rejected staging retired."
+}

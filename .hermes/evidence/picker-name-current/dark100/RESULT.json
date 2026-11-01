@@ -1,0 +1,57 @@
+{
+  "case": "dark100",
+  "binary_sha256": "fb5b3ba6a0d5eb26e185e4a2603f3f9805eed08bcb4326e0eb0cc19d3c9ce3f2",
+  "scope": "Actual debug-source picker GUI; not package or final resource acceptance",
+  "initial_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "cold_process_window_ready_ms": 349.27,
+  "normal_exit": 0,
+  "response": {
+    "accepted": true,
+    "paths": [
+      {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d79775f6d657336792f666978747572652f6e61746976652d812f6f726967696e616c2d802e747874"
+      }
+    ],
+    "current_filter": null,
+    "choices": {}
+  },
+  "exact_native_path_bytes_verified": true,
+  "final_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "index_socket_created": false,
+  "status": "normal close; fixture files unchanged",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-yw_mes6y",
+    "owned_processes_reaped": [
+      {
+        "pid": 3239626,
+        "exit": 0
+      },
+      {
+        "pid": 3239629,
+        "exit": 0
+      },
+      {
+        "pid": 3239630,
+        "exit": 15
+      },
+      {
+        "pid": 3239683,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 5
+    },
+    "owned_mounts_unmounted": [
+      "494 34 0:70 / /var/tmp/.ottrin-picker-qa-yw_mes6y/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

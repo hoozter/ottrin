@@ -1,0 +1,48 @@
+{
+  "status": "pass within final source and actual Linux GUI scopes; not package delivery",
+  "source_sha256": {
+    "crates/ottrin-ui/src/picker.rs": "2c174226ef06680937cbfb25437e871506284528422caf8771fdd8c83c1204ba",
+    "crates/ottrin-ui/src/lib.rs": "a2a612a026b7854fcf29bfe5b1fe4cd50d7f55a5cdcbcbb398e3eda9a86b8168",
+    "crates/ottrin-ui/src/remote_index.rs": "67f2c19dda5ab6044f945f011cd579702736764bfaa6b27546c620ad9b0ea3d8",
+    "crates/ottrin-app/src/main.rs": "48fa971ef3dab4682a30c0d52e8299d2daa66b6742ed9634f63592c10e14edcc"
+  },
+  "Linux": {
+    "ui_regular": 447,
+    "existing_ignored": 1,
+    "filters": 0,
+    "strict_lint": true
+  },
+  "Windows": {
+    "ui_per_ordinary_elevated": 419,
+    "existing_ignored": 4,
+    "filters": 0,
+    "strict_cross_lint": true,
+    "final_evidence": "final/RUNTIME_OWNER.json"
+  },
+  "native_application_scope": "27 ordinary/elevated tests in picker-layout-current; application source unchanged. No extra application rerun for private chooser state changes.",
+  "controls": {
+    "refresh_before": "BEFORE.log.gz",
+    "location_before": "LOCATION_BEFORE.log.gz",
+    "actual_bad_save": ".hermes/evidence/linux-picker-package-current/rejected-31e7/dark100/response.json",
+    "location_GUI_before": "location-control/after-unedited-location.png",
+    "type_migration_compile_control": "TYPE_MIGRATION_CONTROL.log.gz"
+  },
+  "final_GUI": {
+    "nonediting_controls": "location-fixed/RESULT.json",
+    "explicit_location_edit": "relocated/RESULT.json",
+    "explicit_name_edit": "edited-final/RESULT.json"
+  },
+  "earlier_GUI_scopes": "dark100/edited precede only the Location repair; final cases above use the final binary. location-control reproduces invalid unchanged Location and is canceled,not acceptance.",
+  "remaining": [
+    "Fresh coherent Linux/Windows packages and exact GUI/resource acceptance",
+    "External ownership,portal/cooperating-app and folder integration",
+    "Parked owner/external acceptance remains separate"
+  ],
+  "cleanup": {
+    "guarded_obsolete_incremental_sessions": 25,
+    "measured_gib": 1.01,
+    "private_profiles_removed": true,
+    "native_roots_removed_and_guest_off": true,
+    "rejected_staging_removed": true
+  }
+}

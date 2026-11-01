@@ -1,0 +1,45 @@
+{
+  "case": "location-control",
+  "binary_sha256": "fb5b3ba6a0d5eb26e185e4a2603f3f9805eed08bcb4326e0eb0cc19d3c9ce3f2",
+  "scope": "Actual debug-source picker GUI; not package or final resource acceptance",
+  "initial_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "cold_process_window_ready_ms": 279.12,
+  "normal_exit": 0,
+  "response": {
+    "accepted": false,
+    "paths": [],
+    "current_filter": null,
+    "choices": {}
+  },
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-0xgqz45q",
+    "owned_processes_reaped": [
+      {
+        "pid": 3245126,
+        "exit": 0
+      },
+      {
+        "pid": 3245133,
+        "exit": 0
+      },
+      {
+        "pid": 3245134,
+        "exit": 15
+      },
+      {
+        "pid": 3245186,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "error": "",
+    "profile_removed": true
+  }
+}
