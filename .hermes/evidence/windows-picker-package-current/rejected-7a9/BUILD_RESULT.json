@@ -1,0 +1,8 @@
+{
+  "source_revision": "7a9a5319f9ea1858075a462207872753891a56f1",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "status": "failed; owned staging retired",
+  "error": "SystemExit(130)",
+  "child_exit": -15,
+  "staging_retained_for_pending_acceptance": false
+}

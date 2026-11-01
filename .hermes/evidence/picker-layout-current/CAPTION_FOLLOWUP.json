@@ -1,0 +1,4 @@
+{
+  "change": "One item now reads 1 item rather than 1 items.",
+  "scope": "Caption-only follow-up after native logic suites and source GUI; final package GUI will verify its visible result. No additional standalone or broad native test run for this text-only change."
+}

@@ -1,0 +1,9 @@
+{
+  "scope": "Layout repair before full/native verification; first focused rendered control already started",
+  "bytes": {
+    "target/debug/deps": 32389928566,
+    "target/debug/incremental": 12338926633,
+    "target/x86_64-pc-windows-gnu/debug/deps": 31244775698,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 29394920873
+  }
+}

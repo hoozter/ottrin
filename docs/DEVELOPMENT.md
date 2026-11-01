@@ -1767,7 +1767,7 @@ The normal user window observes a separate `ottrin index ensure` process, which
 uses the existing package/service upgrade path and can complete if the window
 closes. This command is headless, rejects extra arguments and `--json`, and
 refuses automatic root-user startup on Unix. Standalone Inspector and picker
-launches do not request daemon startup.
+launches do not request daemon startup. Index lifecycle actions wait behind pending startup on their worker so Stop cannot run before that startup finishes. A startup failure still permits the requested Stop or retry; helper setup does not use this index ordering.
 
 `remote_index` owns the UI connection, ordered configuration and cached
 diagnostics. Only its workers perform normal index RPCs. Queries are cancellable;

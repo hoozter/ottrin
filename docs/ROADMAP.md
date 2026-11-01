@@ -126,6 +126,22 @@ their named hashes. Test counts are scoped observations, not completion measures
   the guest is off. Guarded cleanup retired34 obsolete incremental sessions (1.18GiB).
   Refresh the usable Linux/Windows package cohort next,before external integration.
   Evidence: `index-startup-availability-current/SOURCE_ACCEPTANCE.json`.
+- **Chooser Grid/Preview and startup service ordering repairs are source-verified.**
+  Actual7a9a5319 AppImage QA found that a sparse grid shrank its file column and
+  displaced Preview. The file pane now retains its allocated width; a rendered
+  failing-before regression covers sparse/empty Grid,List,Dark/Light and100/150 text
+  scales. Actual corrected Linux source GUI preserves the preview column and returns
+  the exact native-byte Save selection without changing the file. Index service
+  actions also wait behind pending initial startup on their worker,including failed
+  startup,so Stop cannot finish before that startup step. Linux passes445 regular UI
+  tests; native ordinary/elevated Windows passes417 UI and27 application tests per
+  token,with existing ignores and zero filters. Final strict Linux/GNU Windows lint
+  includes a later caption-only correction from “1 items” to “1 item”; native logic
+  and source GUI predate only that caption. A Cargo manifest selection failure was
+  fixed by requiring test-profile artifacts; successful UI results are retained and
+  only the missing application scope was rerun. The rejected Linux cohort and
+  canceled Windows staging are removed; stable cf6e465a packages are untouched.
+  Fresh package delivery remains next. Evidence: `picker-layout-current/`.
 - **MSI rollback remains a required failed gate.** Reviewed upstream evidence
   corroborates the failure family but establishes no safe authoring correction.
   Keep its exact receipts and external investigation boundary; do not repeat the
@@ -635,17 +651,16 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `83ae6b97`,with all four formats,
-full hosted source verification and scoped Dark100/Light150 scrolling,metadata,
-read-only close,nine-file preservation and normal exit acceptance. The configured
-personal index service uses the current runtime and unchanged daemon bytes.
-Receipt: `.hermes/evidence/linux-preview-scroll-package-current/ACCEPTANCE.json`.
-The stable Windows internal candidate remains `e79b915e`. Its unpromoted83ae
-replacement exposed combined renderer-option/target dispatch failure before
-OpenGL initialization;the unused stage is removed. The parser repair is in source
-verification and needs fresh packages. Earlier workflow/resource observations
-retain their original dates/hashes. Two older privileged core removals and final
-physical/owner/signing gates remain separate waits.
+The stable Linux and Windows candidate cohorts currently use clean `cf6e465a`.
+Their receipts and the current checkpoint above define the exact hashes and tested
+scopes. The newer shared picker,native-path and asynchronous index-startup changes
+are source-verified. A staged `7a9a5319` Linux cohort passed package contents,
+native-path Save and bounded chooser/index resource checks,but actual Grid with
+Preview exposed a layout defect. That cohort is rejected and retired;the interrupted
+Windows stage is also removed. Both stable deliverables remain intact while the
+layout repair and fresh coherent delivery continue. Earlier resource/workflow
+observations retain their original dates and hashes. Physical,owner and release
+identity gates remain on the waiting list.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes

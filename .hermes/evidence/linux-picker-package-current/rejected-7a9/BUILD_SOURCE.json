@@ -1,0 +1,10 @@
+{
+  "source_revision": "7a9a5319f9ea1858075a462207872753891a56f1",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-stage",
+  "pending_consumers": [
+    "coherent package build",
+    "exact package verification and GUI/resource checks",
+    "stable-path promotion and owned teardown"
+  ],
+  "cleanup_owner": "linux-picker-package-current"
+}

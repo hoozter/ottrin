@@ -20868,6 +20868,26 @@ impl OttrinApp {
         });
     }
 
+    fn begin_index_service_action(
+        &mut self,
+        ctx: &Context,
+        action: impl FnOnce() -> Result<String, String> + Send + 'static,
+    ) {
+        if self.service_action_rx.is_some() {
+            return;
+        }
+        let startup = self.index_startup_rx.take();
+        self.begin_service_action(ctx, move || {
+            if let Some(startup) = startup {
+                // Ordering only: Stop/retry must also run after a failed startup.
+                // The startup worker already reports its error. Never wait on
+                // the UI thread or interrupt a partially completed upgrade.
+                let _ = startup.recv();
+            }
+            action()
+        });
+    }
+
     fn poll_service_action(&mut self) {
         let result = self
             .service_action_rx
@@ -20918,7 +20938,7 @@ impl OttrinApp {
         if busy {
             ui.horizontal(|ui| {
                 ui.spinner();
-                ui.label("Working… Complete any administrator authentication prompt.");
+                ui.label("Working…");
             });
         }
         ui.add_enabled_ui(!busy, |ui| {
@@ -20999,17 +21019,17 @@ impl OttrinApp {
             ui.horizontal_wrapped(|ui| {
                 if ui.add(egui::Button::new(if installed { "Update / reinstall service" } else { "Enable automatic startup" }).themed(&c)).clicked() {
                     let config = self.state.config.search.clone();
-                    self.begin_service_action(ui.ctx(), move || SearchService::install_sqlite_schedule(&config));
+                    self.begin_index_service_action(ui.ctx(), move || SearchService::install_sqlite_schedule(&config));
                 }
                 if ui.add(egui::Button::new("Start / restart").themed(&c)).clicked() {
-                    self.begin_service_action(ui.ctx(), SearchService::start_sqlite_schedule);
+                    self.begin_index_service_action(ui.ctx(), SearchService::start_sqlite_schedule);
                 }
                 #[cfg(any(target_os = "linux", target_os = "windows"))]
                 if ui.add(egui::Button::new("Stop indexing").themed(&c)).clicked() {
-                    self.begin_service_action(ui.ctx(), SearchService::stop_sqlite_schedule);
+                    self.begin_index_service_action(ui.ctx(), SearchService::stop_sqlite_schedule);
                 }
                 if installed && ui.add(egui::Button::new("Uninstall service").themed(&c)).clicked() {
-                    self.begin_service_action(ui.ctx(), SearchService::uninstall_sqlite_schedule);
+                    self.begin_index_service_action(ui.ctx(), SearchService::uninstall_sqlite_schedule);
                 }
                 if ui.add(egui::Button::new("Refresh status").themed(&c)).clicked() {
                     self.search_ui.sqlite_schedule_status = None;
@@ -26934,6 +26954,38 @@ mod tests {
         assert_eq!(app.settings_tab, SettingsTab::Services);
         assert!(app.search_ui.sqlite_schedule_status.is_none());
         assert!(app.service_action_rx.is_none());
+    }
+
+    #[test]
+    fn index_service_changes_wait_for_startup_before_stopping_or_replacing_it() {
+        for startup_result in [Ok(()), Err("Startup failed".to_owned())] {
+            let mut app = OttrinApp::default();
+            let ctx = Context::default();
+            let (startup, pending) = mpsc::channel();
+            app.observe_index_startup(pending);
+            let (action, reached) = mpsc::channel();
+            app.begin_index_service_action(&ctx, move || {
+                action.send(()).unwrap();
+                Ok("Stopped".to_owned())
+            });
+            assert!(
+                matches!(
+                    reached.recv_timeout(Duration::from_millis(30)),
+                    Err(mpsc::RecvTimeoutError::Timeout)
+                ),
+                "A pending startup could restart the index after Stop returned"
+            );
+            startup.send(startup_result).unwrap();
+            reached.recv_timeout(Duration::from_secs(2)).unwrap();
+            assert_eq!(
+                app.service_action_rx
+                    .as_ref()
+                    .unwrap()
+                    .recv_timeout(Duration::from_secs(2))
+                    .unwrap(),
+                Ok("Stopped".to_owned())
+            );
+        }
     }
 
     #[test]

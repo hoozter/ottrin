@@ -1,0 +1,22 @@
+{
+  "failure": "Manifest dictionary let the later normal application overwrite the test executable. --list then ran the application CLI instead of the test harness.",
+  "manifest_records": [
+    {
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-31b7edd54000d76e.exe",
+      "is_test": true
+    },
+    {
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-app.exe",
+      "is_test": false
+    }
+  ],
+  "wrong_transferred_raw_sha256": "8dd6479691adbddd00c6a0177d1b845e67b22ae1f88676a910ba44119f059e76",
+  "wrong_bytes_match_manifest_normal_binary": true,
+  "correction": "Require profile.test=true before choosing any test executable. Preserve successful ordinary/elevated UI scopes; rerun only application tests.",
+  "teardown": {
+    "ownedProcesses": 0,
+    "ownedRootRemoved": true,
+    "noGlobalPoliciesOrLogonSettingsChanged": true,
+    "originalProfilesPreserved": true
+  }
+}

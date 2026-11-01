@@ -1,0 +1,55 @@
+{
+  "case": "dark100",
+  "binary_sha256": "747c8da5813bf38d8bb3717ee24d9e8d7561c8ad49b8fad5fdff14c7faab2306",
+  "scope": "Actual debug-source picker GUI; not package or final resource acceptance",
+  "initial_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "cold_process_window_ready_ms": 281.16,
+  "normal_exit": 0,
+  "response": {
+    "accepted": true,
+    "paths": [
+      {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75647465777278372f666978747572652f6e61746976652d812f6f726967696e616c2d802e747874"
+      }
+    ],
+    "current_filter": null,
+    "choices": {}
+  },
+  "exact_native_path_bytes_verified": true,
+  "final_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "index_socket_created": false,
+  "status": "normal close; fixture files unchanged",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-udtewrx7",
+    "owned_processes_reaped": [
+      {
+        "pid": 3197882,
+        "exit": 0
+      },
+      {
+        "pid": 3197885,
+        "exit": 0
+      },
+      {
+        "pid": 3197886,
+        "exit": 15
+      },
+      {
+        "pid": 3197934,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

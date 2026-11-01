@@ -1,0 +1,14 @@
+{
+  "source_revision": "7a9a5319f9ea1858075a462207872753891a56f1",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-stage",
+  "status": "four-format build pass; staged for content and GUI acceptance",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "9d9d581eb17603ccf9a03576bb464bebbd011623ea5144371335fdfc07aa0d3b",
+    "Ottrin-0.1.0-x86_64.AppImage": "4a7500159d5d3db46ee5259b51c15fdbb402d1950c46abed326cc8e8ed528d0e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "cb91392ae777f3fd4e70a8708d196ca127c28778124201d3b54d975431c109a9",
+    "ottrin_0.1.0_amd64.deb": "2c744b7e50be504051eafa59eb9790196a5b06b08212ab2c5f0e091747f333d8"
+  },
+  "child_exit": 0,
+  "temporary_tool_wrappers_removed": true,
+  "staging_retained_for_pending_acceptance": true
+}

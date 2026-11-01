@@ -1,0 +1,12 @@
+{
+  "fixture-ui.exe": {
+    "sha256": "3685edd3b28277af970eeb9de4f5b55dd3ddf4190a1198e79ff3f60a2c00f525",
+    "raw_sha256": "05cf4c59c2ef5760c75b4c3311355320ff9a6d6b5d6c0fc9e32b7823ef51c351",
+    "source_date_epoch": 1793523199
+  },
+  "fixture-app.exe": {
+    "sha256": "5c6e46e60916525824c730cc3d1d6b275ae69e185006062258a76e98c40286d0",
+    "raw_sha256": "8dd6479691adbddd00c6a0177d1b845e67b22ae1f88676a910ba44119f059e76",
+    "source_date_epoch": 1793523195
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "source": "7a9a5319f9ea1858075a462207872753891a56f1",
+  "reason": "Actual grid-plus-preview layout rejected; no promotion. Scoped chooser/native path/resource/index positives retained, not complete GUI acceptance.",
+  "retired_roots": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-extract"
+  ],
+  "logical_bytes": 184309032,
+  "stable_deliverables_preserved": true,
+  "windows_canceled_stage": {
+    "source_revision": "7a9a5319f9ea1858075a462207872753891a56f1",
+    "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "status": "failed; owned staging retired",
+    "error": "SystemExit(130)",
+    "child_exit": -15,
+    "staging_retained_for_pending_acceptance": false
+  }
+}

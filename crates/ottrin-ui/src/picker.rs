@@ -964,7 +964,8 @@ impl PickerDialog {
                             } else if self.loading {
                                 "Reading folder…".into()
                             } else {
-                                format!("{} items", self.visible_entries().len())
+                                let count = self.visible_entries().len();
+                                format!("{count} {}", if count == 1 { "item" } else { "items" })
                             })
                             .color(colors.text_muted)
                             .small(),
@@ -1089,6 +1090,9 @@ impl PickerDialog {
                     Vec2::new(width, height),
                     Layout::top_down(Align::Min),
                     |ui| {
+                        // A sparse grid must still own its whole file column;
+                        // otherwise horizontal layout gives that space to Preview.
+                        ui.set_min_width(width);
                         ui.painter().rect_filled(
                             egui::Rect::from_min_size(ui.cursor().min, Vec2::new(width, height)),
                             0.0,
@@ -1816,6 +1820,44 @@ mod tests {
         assert!(dialog.selected.is_empty());
         assert!(dialog.focus.is_none());
         assert!(dialog.filename.is_empty());
+    }
+
+    #[test]
+    fn preview_keeps_its_column_when_grid_contents_are_sparse_or_empty() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("one.txt"), "preview content").unwrap();
+        for dark in [true, false] {
+            for scale in [1.0, 1.5] {
+                let ctx = Context::default();
+                let mut app = host(
+                    &ctx,
+                    PickerRequest {
+                        initial_directory: Some(root.path().to_path_buf()),
+                        ..Default::default()
+                    },
+                    dark,
+                    scale,
+                );
+                app.dialog.set_preview_enabled(true, &ctx);
+                let size = Vec2::new(940.0, 640.0);
+                frame(&mut app, &ctx, size, 0.0, vec![]);
+                let list = frame(&mut app, &ctx, size, 0.1, vec![]);
+                let column = text_center(&list, "Preview").unwrap().x;
+                app.dialog.grid = true;
+                let grid = frame(&mut app, &ctx, size, 0.2, vec![]);
+                let sparse_column = text_center(&grid, "Preview").unwrap().x;
+                assert!(
+                    (column - sparse_column).abs() < 1.0,
+                    "Preview moved from {column} to {sparse_column} for one grid item"
+                );
+                app.dialog.query = "no matching file".into();
+                let empty = frame(&mut app, &ctx, size, 0.3, vec![]);
+                let empty_column = text_center(&empty, "Preview").unwrap().x;
+                assert!((column - empty_column).abs() < 1.0);
+                assert!(text_center(&empty, "Open").is_some());
+                assert!(text_center(&empty, "Cancel").is_some());
+            }
+        }
     }
 
     #[test]

@@ -1,0 +1,9 @@
+{
+  "bytes": {
+    "target/debug/deps": 32390130208,
+    "target/debug/incremental": 12211194180,
+    "target/x86_64-pc-windows-gnu/debug/deps": 31245041311,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 29395862567
+  },
+  "scope": "Current shared binaries,dependencies and newest compiler sessions retained. Rejected staged packages removed; stable deliverables preserved."
+}
