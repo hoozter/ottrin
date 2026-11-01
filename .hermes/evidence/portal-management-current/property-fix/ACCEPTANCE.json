@@ -1,0 +1,37 @@
+{
+  "status": "pass local contract and real private-bus probes; hosted lifecycle rerun pending",
+  "base_revision": "d7981da577c857359b5d65682a15aa4e3795819c",
+  "defect": "Implicit zbus property naming exposed Version instead of standard lowercase version",
+  "checks": {
+    "app_tests": 45,
+    "daemon_tests": 2,
+    "cli_tests": 3,
+    "linux_strict_lint": true,
+    "native_before_uppercase_only": true,
+    "native_after_lowercase_only": true,
+    "no_index_started": true,
+    "probe_profiles_removed": true,
+    "failed_hosted_gate_teardown": {
+      "owned_files_removed": true,
+      "original_unit_active_states_restored": true,
+      "manager_desktop_restored": true
+    }
+  },
+  "source_files": {
+    "crates/ottrin-app/src/portal.rs": "bb1b6807e7535c581e0dc815a487ccb2423d16d13f91717ba3b57cde67077b4e",
+    "docs/ROADMAP.md": "986e46465d165a4dd8278162ffb2931863605f9371979bae1ea847c09022e4ee",
+    "scripts/ci/linux-portal.py": "ff73ff4ab8c0f6dc39d9b90e2b86c8c224936a619ef052897166594a0878d91a"
+  },
+  "cleanup": {
+    "obsolete_incremental_sessions": 4,
+    "space_recovered_report": "0.33 GiB",
+    "remaining_task_storage": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/portal-management-current/property-fix",
+      "purpose": "Compact contract/probe/hosted failure receipts and producer logs; no runtime,GUI,index or test process remains."
+    }
+  },
+  "scope_limits": [
+    "No new package acceptance; stable cohort remains25b38c8f.",
+    "Real production readiness/update/disable gate must run again after this fix."
+  ]
+}

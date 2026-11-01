@@ -1,0 +1,19 @@
+{
+  "binary_sha256": "3863bf8c6d0560df6b2bc3ef232032ac30dda27fcfc6a0c364dda7ec28cba451",
+  "phase": "before",
+  "properties": {
+    "version": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: GDBus.Error:org.freedesktop.DBus.Error.UnknownProperty: Unknown property 'version'\n"
+    },
+    "Version": {
+      "exit": 0,
+      "stdout": "(<uint32 4>,)\n",
+      "stderr": ""
+    }
+  },
+  "no_index_started": true,
+  "status": "pass: control reproduces wrong property",
+  "profile_removed": true
+}

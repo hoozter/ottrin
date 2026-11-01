@@ -1,0 +1,15 @@
+{
+  "binary_sha256": "6f0269530802058ec8ec257d9440e07e6b0b25ced1455195ea09e34d7273fff2",
+  "config": "/home/runner/.config/xdg-desktop-portal/ottrinci-portals.conf",
+  "managed_paths": [
+    "/home/runner/.local/state/ottrin/portal-registration.json",
+    "/home/runner/.local/share/dbus-1/services/org.freedesktop.impl.portal.desktop.ottrin.service",
+    "/home/runner/.config/systemd/user/ottrin-portal.service"
+  ],
+  "units_before": {
+    "xdg-desktop-portal.service": false,
+    "xdg-document-portal.service": false,
+    "xdg-permission-store.service": false
+  },
+  "manager_desktop_before": null
+}

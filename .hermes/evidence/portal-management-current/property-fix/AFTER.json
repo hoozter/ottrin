@@ -1,0 +1,19 @@
+{
+  "binary_sha256": "84496b430e882c8fed5a7f5fc0459aea33aa535dcd5262773c87b247130ffb49",
+  "phase": "after",
+  "properties": {
+    "version": {
+      "exit": 0,
+      "stdout": "(<uint32 4>,)\n",
+      "stderr": ""
+    },
+    "Version": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: GDBus.Error:org.freedesktop.DBus.Error.UnknownProperty: Unknown property 'Version'\n"
+    }
+  },
+  "no_index_started": true,
+  "status": "pass: standard lowercase property is reachable",
+  "profile_removed": true
+}

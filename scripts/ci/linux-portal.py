@@ -54,6 +54,8 @@ try:
  cli('apply');off=json.loads(cli('status','--json'));assert not off['enabled'] and not off['ready'] and not off['pending'],off
  assert not receipt.exists();assert control('is-active','ottrin-portal.service',check=False).returncode!=0
  report.update(status='pass',ready=ready,off=off,broker_pid=pid,prior_chooser_restored=True,unrelated_edit_preserved=True,managed_activation_removed=True)
+except BaseException as error:
+ report.update(status='failed',error=repr(error));raise
 finally:
  try:
   if allocated:

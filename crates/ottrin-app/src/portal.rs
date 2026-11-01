@@ -371,7 +371,7 @@ impl Portal {
 }
 #[zbus::interface(name = "org.freedesktop.impl.portal.FileChooser")]
 impl Portal {
-    #[zbus(property)]
+    #[zbus(property, name = "version")]
     fn version(&self) -> u32 {
         4
     }
@@ -559,6 +559,25 @@ pub(super) fn run() -> Result<(), String> {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn file_chooser_version_property_matches_the_desktop_portal_contract() {
+        let (completed, _) = async_channel::unbounded();
+        let portal = Portal {
+            shared: Arc::new(Shared {
+                executable: PathBuf::from("/unused"),
+                active: Mutex::new(HashMap::new()),
+                completed,
+            }),
+        };
+        let mut xml = String::new();
+        zbus::object_server::Interface::introspect_to_writer(&portal, &mut xml, 0);
+        assert!(
+            xml.contains("<property name=\"version\" type=\"u\" access=\"read\""),
+            "{xml}"
+        );
+        assert!(!xml.contains("name=\"Version\""));
+    }
     struct OwnedTest {
         state: Arc<RequestState>,
         worker:

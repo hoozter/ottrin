@@ -1,5 +1,28 @@
 # Ottrin roadmap
 
+## Portal version metadata correction — source, 2026-11-01
+
+The first production lifecycle gate reached real activation but correctly refused
+Ready: the backend exposed `Version`, while the portal contract requires
+lowercase `version`. Chooser methods had worked in earlier private tests, so
+method success did not establish complete interface metadata. The zbus property
+now names the standard field explicitly. A new introspection contract test and
+actual private-bus before/after probes verify lowercase version 4 and rejection of
+the obsolete capitalized property. No compatibility alias was added.
+
+All 45 Linux app, two daemon and three CLI tests and strict Linux lint pass. The
+failed hosted lifecycle test restored its prior configuration, removed activation
+files and restored service/environment states. A new hosted lifecycle run is
+required; the corrected interface is not yet packaged. Earlier 78af6a2a Windows
+and search jobs passed; its Ubuntu failure was the renderer-name collision already
+corrected in 5dfe01ca, whose Ubuntu/search jobs are green.
+
+Evidence: `.hermes/evidence/portal-management-current/property-fix/`. Four obsolete
+incremental sessions were removed (0.33 GiB reported); private probe profiles and
+processes are gone. Continue the production lifecycle rerun and the independently
+available folder/cooperating-app work. Stable packages remain `25b38c8f`.
+
+
 ## Production portal lifecycle gate — source, 2026-11-01
 
 Portal management now has headless enable/disable/apply/status commands using the
