@@ -1,0 +1,44 @@
+{
+  "status": "source checks pass; exact-package rebuild pending",
+  "scope": "Shared title chrome Close reservation/truncation, full Properties geometry, source Dark100/Light150 long-name window and normal pointer Close",
+  "before": "Actual e171 package had title/control/content overflow; regression fails old source with1114.8-point chrome in320-point viewport",
+  "source_checks": {
+    "ui_tests_passed": 453,
+    "ignored_existing_namespace_fixture": 1,
+    "focused": 5,
+    "strict_linux_windows_gnu": true
+  },
+  "gui": {
+    "properties-light150": {
+      "source_binary_sha256": "8bcded7f810849a6d9597cfe6c6c20bbde6757d34062bd27dd6b60d077574749",
+      "normal_exit": 0,
+      "native_close_button_clicked": true,
+      "source_and_config_preserved": true,
+      "private_profile_removed": true
+    },
+    "properties-dark100": {
+      "source_binary_sha256": "8bcded7f810849a6d9597cfe6c6c20bbde6757d34062bd27dd6b60d077574749",
+      "normal_exit": 0,
+      "native_close_button_clicked": true,
+      "source_and_config_preserved": true,
+      "private_profile_removed": true
+    }
+  },
+  "visual_review": "Both source bottom.png images reviewed: Close visible, full name/path wrap inside cards, both groups within viewport. Physical-seat and Windows native/exact-package checks remain separate.",
+  "rejected_package_cleanup": "REJECTED_PACKAGES_REMOVED.json",
+  "cleanup": "All owned GUI profiles/processes/displays/buses removed; unused proposal patch and owned bytecode removed. Two transient PID refusals inspected absent; unchanged guard retry2 removes17 remaining sessions,0.71GiB reported; partial progress not assigned an invented total. Current source app and useful compiler caches retained. Stable deliverables unchanged.",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/properties-long-title-current",
+      "purpose": "Compact controls/source receipts/reproducers/screenshots"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-package-current/rejected-e171",
+      "purpose": "Compact rejected-cohort controls; no runtime/staging retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+      "purpose": "Current verified source app and useful shared build output"
+    }
+  ]
+}

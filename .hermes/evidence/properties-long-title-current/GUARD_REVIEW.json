@@ -1,0 +1,5 @@
+{
+  "pid": 4111009,
+  "exists": false,
+  "decision": "Retry unchanged guard only if transient PID has exited; no new exception"
+}

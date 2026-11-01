@@ -28,6 +28,8 @@ Keep earlier receipts under their original artifact identities.
 
 Every UI change must preserve shared theme roles and consistent text/icon alignment across the main window, Settings, theme editor, Inspector, menus, and dialogs. Reuse the authoritative themed widgets; previews must use production controls where they represent those controls.
 
+Window titles must never widen their viewport or push window controls off-screen. The shared title bar reserves Close first, truncates long titles and exposes the full title on hover. Verify long filenames with real pointer closure as well as layout geometry; content cards must stay inside the window at enlarged text and desktop scaling.
+
 Quick Inspector opens every file read-only. Only an explicit **Edit text** action
 may create an editor; asynchronous loading, reload of a preview, and selection
 navigation must never enable editing. Read-only previews leave arrow navigation

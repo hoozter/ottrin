@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-stage",
+      "logical_bytes": 112631169,
+      "reason": "Exact packaged long-title defect; all pending runtime/assembly consumers canceled, useful compiler cache retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+      "logical_bytes": 75095707,
+      "reason": "Exact packaged long-title defect; all pending runtime/assembly consumers canceled, useful compiler cache retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "logical_bytes": 235903189,
+      "reason": "Exact packaged long-title defect; all pending runtime/assembly consumers canceled, useful compiler cache retained"
+    }
+  ],
+  "all_qa_profiles_closed": true,
+  "no_windows_guest_started_for_this_cohort": true,
+  "stable_deliverables_preserved": true
+}

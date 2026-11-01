@@ -247,7 +247,7 @@ impl OttrinApp {
             ThemeEditorSource::Imported => format!("Import {}", self.theme_editor.initial_name),
         };
         egui::CentralPanel::default().frame(Frame::new().fill(c.panel).inner_margin(egui::Margin::same(c.window_border_width.ceil() as i8))).show(ctx, |ui| {
-            render_custom_titlebar(ui, ctx, c, c.titlebar_bg, &title, true, &mut close_requested, |_| {});
+            render_custom_titlebar(ui, ctx, c, c.titlebar_bg, &title, true, &mut close_requested);
             Frame::new().inner_margin(16).show(ui, |ui| {
             ui.add_space(10.0);
             ui.horizontal(|ui| {

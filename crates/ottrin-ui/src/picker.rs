@@ -1515,7 +1515,6 @@ impl PickerApp {
                     self.dialog.request().window_title(),
                     true,
                     &mut close,
-                    |_| {},
                 );
                 if close {
                     self.dialog.cancel();

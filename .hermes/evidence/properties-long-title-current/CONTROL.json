@@ -1,0 +1,7 @@
+{
+  "artifact": "../desktop-package-current/linux/PACKAGE_CONTENT_ACCEPTANCE.json",
+  "image": "../desktop-package-current/linux/properties-light150/bottom.png",
+  "status": "real exact-package layout defect; do not promote",
+  "source": "e171dcef",
+  "next": "Reserve close-button width before truncating title in shared window chrome; test complete Properties layout with long names; rerun exact package before delivery. Wait for active compiler before input edits."
+}

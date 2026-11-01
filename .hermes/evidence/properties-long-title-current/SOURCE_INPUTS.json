@@ -1,0 +1,10 @@
+{
+  "crates/ottrin-ui/src/window_chrome.rs": "ef3c7d1846d1092f60689f0cea73db14df9c2b27a693511ccaf905a783826527",
+  "crates/ottrin-ui/src/properties.rs": "871c3aabe36ac8a90e88bd5f1158cf3dfd61cbd7ed71451a200856d5348f8b18",
+  "crates/ottrin-ui/src/appearance_editor.rs": "d169ecf6d0bc1e38c9c7fd492bb5da05954eed10dfa78f147c5fbd094c9dc3b4",
+  "crates/ottrin-ui/src/internal_picker.rs": "f376b436977692d6befe374102ba1d9262d6aa2915cb58114f9d740048a9453c",
+  "crates/ottrin-ui/src/picker.rs": "eb3a7bcb197d84b599f474042f9d1b7fec12c4c64954f36ec23dfc8c2ce6fe76",
+  "crates/ottrin-ui/src/lib.rs": "b46c633a14f96f0d70014b85bf16c70d99fea4efc5081f245c7e94258e04c683",
+  "docs/DEVELOPMENT.md": "a13825a77eed64f4c19338bbb094455a7eda82293f4ea746aab2d6ed0223bd65",
+  "docs/ROADMAP.md": "492b91dde978f7824355dae2c8669d3b72ed45a622b4c79687e1625184deac6a"
+}

@@ -1,0 +1,5 @@
+{
+  "pid": 4111228,
+  "exists": false,
+  "decision": "Unchanged guard retry only after observed transient process exit"
+}

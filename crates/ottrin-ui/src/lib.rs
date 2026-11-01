@@ -19307,7 +19307,7 @@ impl OttrinApp {
             )
             .show(inspector_ctx, |ui| {
                 render_custom_titlebar(ui, inspector_ctx, c, c.titlebar_bg,
-                    &format!("Quick Inspector — {name}"), true, &mut close_requested, |_| {});
+                    &format!("Quick Inspector — {name}"), true, &mut close_requested);
 
                 Frame::new().inner_margin(12).show(ui, |ui| {
                 ui.with_layout(Layout::top_down(Align::Min), |ui| {
@@ -21276,9 +21276,7 @@ impl OttrinApp {
                     c.titlebar_bg,
                     &format!("{} Settings", MI_SETTINGS),
                     true,
-                    &mut close_requested,
-                    |_ui| {},
-                );
+                    &mut close_requested);
 
                 // ── Index summary strip removed (kept only on Search page) ───
                 let full_rect = ui.available_rect_before_wrap();

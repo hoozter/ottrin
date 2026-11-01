@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-dtyvnm1_",
+  "owned_processes_reaped": [
+    {
+      "pid": 4110263,
+      "exit": 0
+    },
+    {
+      "pid": 4110266,
+      "exit": 0
+    },
+    {
+      "pid": 4110267,
+      "exit": 15
+    },
+    {
+      "pid": 4110319,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

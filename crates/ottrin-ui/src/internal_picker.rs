@@ -116,7 +116,6 @@ impl OttrinApp {
                     pending.dialog.request().window_title(),
                     false,
                     &mut close,
-                    |_| {},
                 );
                 if close {
                     pending.dialog.cancel();

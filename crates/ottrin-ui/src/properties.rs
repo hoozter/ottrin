@@ -174,7 +174,6 @@ impl eframe::App for PropertiesApp {
                     &title,
                     true,
                     &mut close,
-                    |_| {},
                 );
                 egui::TopBottomPanel::bottom("properties-actions")
                     .frame(egui::Frame::new().fill(colors.panel).inner_margin(12))
@@ -329,7 +328,7 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         let path = root
             .path()
-            .join(format!("{}report.txt", "long name ".repeat(12)));
+            .join(format!("{}report.txt", "long metadata name ".repeat(8)));
         std::fs::write(&path, b"metadata must not change this file").unwrap();
         let properties = ottrin_platform::read_file_properties(&path).unwrap();
         for theme in [ottrin_core::ThemeMode::Dark, ottrin_core::ThemeMode::Light] {
@@ -359,19 +358,49 @@ mod tests {
                                 ..Default::default()
                             },
                             |ctx| {
-                                egui::CentralPanel::default().show(ctx, |ui| {
-                                    let scroll = egui::ScrollArea::vertical()
-                                        .vertical_scroll_offset(if at_bottom {
-                                            bottom
-                                        } else {
-                                            0.0
-                                        })
-                                        .show(ui, |ui| {
-                                            render_properties(ui, colors, &config, &properties)
-                                        });
-                                    bottom = (scroll.content_size.y - scroll.inner_rect.height())
+                                egui::CentralPanel::default().frame(egui::Frame::NONE).show(
+                                    ctx,
+                                    |ui| {
+                                        let mut close = false;
+                                        window_chrome::render_custom_titlebar(
+                                            ui,
+                                            ctx,
+                                            colors,
+                                            colors.titlebar_bg,
+                                            &format!("Properties — {}", path_label(&path)),
+                                            false,
+                                            &mut close,
+                                        );
+                                        let scroll = egui::ScrollArea::vertical()
+                                            .auto_shrink([false, false])
+                                            .vertical_scroll_offset(if at_bottom {
+                                                bottom
+                                            } else {
+                                                0.0
+                                            })
+                                            .show(ui, |ui| {
+                                                egui::Frame::new().inner_margin(16).show(
+                                                    ui,
+                                                    |ui| {
+                                                        render_properties(
+                                                            ui,
+                                                            colors,
+                                                            &config,
+                                                            &properties,
+                                                        )
+                                                    },
+                                                );
+                                            });
+                                        assert!(
+                                            ui.min_rect().right() <= 720.5,
+                                            "Properties expanded beyond viewport: {:?}",
+                                            ui.min_rect()
+                                        );
+                                        bottom = (scroll.content_size.y
+                                            - scroll.inner_rect.height())
                                         .max(0.0);
-                                });
+                                    },
+                                );
                             },
                         );
                         texts.extend(output.shapes.into_iter().filter_map(

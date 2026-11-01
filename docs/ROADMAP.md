@@ -1,5 +1,31 @@
 # Ottrin roadmap
 
+## Long-title overflow — source correction, 2026-11-01
+
+Exact e171dcef AppImage visual QA found a real long-filename Properties overflow:
+the shared title bar expanded the layout and pushed Close/content off-screen.
+Earlier mechanical checks passed but did not establish visual acceptance. The
+regression reproduces a1114-point bar in a320-point window before the fix. Shared
+chrome now reserves Close first, truncates the title with a full-text tooltip and
+removes an unused empty-body extension from all callers. Properties tests render
+the complete title/content layout and both scroll positions. The full Linux UI
+suite passes453 tests (one existing mount-namespace fixture ignored), and strict
+Linux/Windows checks pass. Actual Light150 source Properties wraps the long name
+and path inside the window and closes normally through its visible Close button,
+with source/config unchanged and no index. Final source/package checks continue.
+
+The e171dcef cohort passes four-format Linux content/ownership checks, actual
+file-manager activation/reveal/Properties, native-path picker/caller-loss, cleanup
+refusals/restoration, Dark100/Light150 read-only Inspector navigation and normal
+close/index continuity. Its10000-file content index passes live/offline changes
+and restart; three30-second quiet samples measure0.067–0.100percent of one core.
+Hosted Linux verification, production active/pending portal cleanup and teardown,
+and search performance pass. These retain their exact scope. The long-title case
+is rejected: all staged Linux/Windows packages/extractions are removed; stable
+25b38c8f deliverables remain unchanged. Rebuild one clean-source cohort after the
+correction. Evidence: `.hermes/evidence/properties-long-title-current/` and compact
+controls under `.hermes/evidence/desktop-package-current/rejected-e171/`.
+
 ## Hosted portal lifecycle timing — 2026-11-01
 
 The active portal/folder `--uninstall` case passes on the production user manager.
