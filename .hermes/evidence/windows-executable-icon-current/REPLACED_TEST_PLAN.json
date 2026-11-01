@@ -1,0 +1,66 @@
+[
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-cde13dff8326dae7",
+    "new": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-46397fa932c1de1b",
+    "scope": "Complete Linux app/daemon/CLI suite",
+    "old_sha256": "862a2303f80b6d3130183aa6a7c4cb226be4fd846079e80ae71e4a2785d1ab3c",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 17573561801879140266,
+      "profile": 1169666772337208464,
+      "rustflags": [],
+      "compile_kind": 0
+    },
+    "intentional_input_change": "New build script embeds the canonical Windows icon; original locked versions preserved",
+    "logical_bytes": 726964048
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-b22e6d0e2cdb398f",
+    "new": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-e69afa1ebd5c040d",
+    "scope": "Complete Linux app/daemon/CLI suite",
+    "old_sha256": "da74ee40a32e6597d1126e677ee9d9530f850a6518539da068fd4b8066678000",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 18214513505635217009,
+      "profile": 1169666772337208464,
+      "rustflags": [],
+      "compile_kind": 0
+    },
+    "intentional_input_change": "New build script embeds the canonical Windows icon; original locked versions preserved",
+    "logical_bytes": 719012509
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-65f91d4e5ef91ab9",
+    "new": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-17302bda94deaca4",
+    "scope": "Complete Linux app/daemon/CLI suite",
+    "old_sha256": "7b96fab2b57cf15bdb447e53657f4ba8e7bffc93217e829dfd495f8b46b8f68b",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 8907537459418581772,
+      "profile": 1169666772337208464,
+      "rustflags": [],
+      "compile_kind": 0
+    },
+    "intentional_input_change": "New build script embeds the canonical Windows icon; original locked versions preserved",
+    "logical_bytes": 60151622
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-f497de91ce66c05d.exe",
+    "new": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b6fa9c58132d4b0b.exe",
+    "scope": "Complete 32 native Windows app tests under both token types",
+    "old_sha256": "2638b3ee0a9c5f365bb5c1a18f9ac2b2f332452058ff3a72ce0c5aba56e83d9e",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 17573561801879140266,
+      "profile": 1169666772337208464,
+      "rustflags": [],
+      "compile_kind": 8200324069407742093
+    },
+    "intentional_input_change": "New build script embeds the canonical Windows icon; original locked versions preserved",
+    "logical_bytes": 751251941
+  }
+]

@@ -1963,3 +1963,18 @@ only Refresh is disabled until the result arrives. Initial setup checks still
 show loading until a first result is available. Portal and folder cards share
 this request mechanism. Rendered UI regressions verify stable action positions
 through an in-flight refresh and display of the returned status.
+
+
+## Windows executable branding
+
+The application build script embeds `assets/icon.ico` in both `ottrin-app` and
+`ottrin-indexd` through one resource file. Windows SDK resource tools or the GNU
+cross resource compiler are required; a missing/failed compiler fails the build.
+The build dependency adds no resident runtime component.
+
+On Windows, `scripts/ci/verify-windows-executable-icons.ps1` verifies the release
+executables by default. It extracts their actual Shell small/large icons and
+compares dimensions and ARGB pixels with the canonical ICO asset. CI runs this
+same checker with Windows PowerShell after the release build and retains its
+JSON receipt. Source GNU debug products also pass native checks at16/32 pixels;
+that does not establish acceptance of a future packaged or MSVC release image.

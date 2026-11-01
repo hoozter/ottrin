@@ -129,12 +129,18 @@ jobs:
       - name: Release build
         run: cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
 
+      - name: Verify Windows executable icons
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: ./scripts/ci/verify-windows-executable-icons.ps1 -Output windows-executable-icons.json
+
       - name: Prepare release-build artifact
         shell: bash
         run: |
           mkdir -p ci-artifacts
           if [ "${{ runner.os }}" = "Windows" ]; then
             cp target/release/ottrin-app.exe ci-artifacts/ottrin-app.exe
+            cp windows-executable-icons.json ci-artifacts/windows-executable-icons.json
             cp target/release/ottrin-priv-helper.exe ci-artifacts/ottrin-priv-helper.exe
           else
             cp target/release/ottrin-app ci-artifacts/ottrin-app

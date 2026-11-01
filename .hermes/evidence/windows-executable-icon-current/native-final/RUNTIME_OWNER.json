@@ -1,0 +1,35 @@
+{
+  "nonce": "32de2c56-da0d-4e91-9da1-ebe2da0eb768",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "source": {
+    "base_revision": "41d26cd5a5d83ace03cd187c6cee4cebfb3cadb8",
+    "working_tree": [
+      " M .github/workflows/ci.yml",
+      " M Cargo.lock",
+      " M crates/ottrin-app/Cargo.toml",
+      "?? AGENTS.md",
+      "?? crates/ottrin-app/build.rs",
+      "?? crates/ottrin-app/windows.rc",
+      "?? scripts/ci/verify-windows-executable-icons.ps1"
+    ],
+    "files": {
+      ".github/workflows/ci.yml": "5831644f171728e16cd0620a4889fbbb3dc8fe28bc4778c906e587d3a4d2599a",
+      "Cargo.lock": "d2ac1a03c08717e1c0081f6fa2ef7ba4678e7752df822cd42f828d6af5a303f7",
+      "assets/icon.ico": "3db24c16886d05b2ac588e8c0639ddfa440f7778083544c16806a4c088a9dd42",
+      "crates/ottrin-app/Cargo.toml": "14c15337ea03d3d113e05712b47bf2da9ecce38dd8512e44877692dd658d4757",
+      "crates/ottrin-app/build.rs": "a7dba2a0499aed2952afdfcf2452563bf4c0f655d0e71b6ab139a199b19b883a",
+      "crates/ottrin-app/windows.rc": "dc45545ba85e931bc9ce003fbae6648f4219aa4d190d0c9c36de1bf920836ec4",
+      "crates/ottrin-core/src/picker.rs": "a9ed2461bce1ad3e68834c9e4e513c5c5c287f1c88b6c492240e260f2d4b0f69",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "scripts/ci/verify-windows-executable-icons.ps1": "0f627b7765e63195491c22a276f6b57c005bf3e6fa259aac52c9cfcd7ae0ee9c"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

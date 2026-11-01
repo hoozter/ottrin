@@ -1,5 +1,27 @@
 # Ottrin roadmap
 
+## Windows executable icons — source, 2026-11-01
+
+Both app and index-daemon Windows images now embed the existing canonical ICO
+through a shared resource build step. Existing dependency versions/selections
+are preserved; only four resource-build packages are added. Linux skips resource
+compilation. Missing resource tools fail a Windows build.
+
+Native Windows Shell extraction matches canonical16/32-pixel ARGB data in both
+images under ordinary and administrator tokens. The accepted older candidate
+has zero icon groups. The first checker incorrectly required one extracted
+image; Windows returns two for an executable's large/small pair and one for the
+ICO. The corrected check requires success, both handles and matching pixels.
+Every control removed its guest root and stopped the retained VM.
+
+Strict Linux/GNU checks pass, plus46 Linux app/two daemon/three CLI tests and
+all32 Windows app tests per token. The Windows GUI subsystem remains intact in
+both products. The maintained native checker is now a Windows release CI gate,
+pinned to the tested Windows PowerShell engine; hosted MSVC execution is pending.
+Evidence: `.hermes/evidence/windows-executable-icon-current/`. Stable packages
+remain25b38c8f. Continue default-folder preference, FileManager1, software gates
+and one coherent package cohort; signing/Store/final owner waits remain separate.
+
 ## Stable desktop-integration refresh — source, 2026-11-01
 
 Portal and folder cards now keep their last status and action layout during a
@@ -489,8 +511,8 @@ roadmap completion. A source pass does not establish package or owner acceptance
    Preserve the explicit native-platform and physical-device scope boundaries.
    Remove the unused AppConfig restore_session/last_session_dirs fields after
    checking all producers; they currently provide no session-restoration behavior.
-   Verify/embed the canonical Windows executable icon: current source and accepted
-   candidate PE files lack a resource section despite shell/NSIS icon-index0 references.
+   Windows executable icon resources pass native source checks; collect the new
+   hosted MSVC release gate and include them in exact-package acceptance.
 5. **Finish release preparation.** Implement and verify remaining MSIX/release
    tooling independently. Linux signing identity, Store identity/submission,
    unavailable physical hardware and final owner acceptance stay on the waiting

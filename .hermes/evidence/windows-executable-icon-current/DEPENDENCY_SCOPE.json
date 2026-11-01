@@ -1,0 +1,22 @@
+{
+  "new_build_packages": [
+    [
+      "embed-resource",
+      "3.0.12"
+    ],
+    [
+      "vswhom",
+      "0.1.0"
+    ],
+    [
+      "vswhom-sys",
+      "0.1.3"
+    ],
+    [
+      "winreg",
+      "0.56.0"
+    ]
+  ],
+  "existing_versions_preserved": true,
+  "reason": "Cargo add also deduplicated unrelated Windows bindings; restore existing resolutions and add only the resource compiler dependency graph"
+}

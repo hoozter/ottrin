@@ -1,0 +1,14 @@
+{
+  "base_revision": "41d26cd5a5d83ace03cd187c6cee4cebfb3cadb8",
+  "files": {
+    "Cargo.lock": "d2ac1a03c08717e1c0081f6fa2ef7ba4678e7752df822cd42f828d6af5a303f7",
+    "Cargo.toml": "717b3b45e9ce47a815ad34b7fff18a3cdfa51af21f5a4233812cf035cc8f170b",
+    "crates/ottrin-app/Cargo.toml": "14c15337ea03d3d113e05712b47bf2da9ecce38dd8512e44877692dd658d4757",
+    "crates/ottrin-app/build.rs": "a7dba2a0499aed2952afdfcf2452563bf4c0f655d0e71b6ab139a199b19b883a",
+    "crates/ottrin-app/windows.rc": "dc45545ba85e931bc9ce003fbae6648f4219aa4d190d0c9c36de1bf920836ec4",
+    "assets/icon.ico": "3db24c16886d05b2ac588e8c0639ddfa440f7778083544c16806a4c088a9dd42",
+    "scripts/ci/verify-windows-executable-icons.ps1": "0f627b7765e63195491c22a276f6b57c005bf3e6fa259aac52c9cfcd7ae0ee9c",
+    ".github/workflows/ci.yml": "5831644f171728e16cd0620a4889fbbb3dc8fe28bc4778c906e587d3a4d2599a"
+  },
+  "purpose": "One existing debug target/configuration; canonical icon resources in both Windows app and index daemon; shared Cargo caches"
+}

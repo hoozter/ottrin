@@ -1,0 +1,22 @@
+{
+  "fixture-app.exe": {
+    "sha256": "5cd2edf2189903e58187833d1c2ce90fbb2e9239298c2e9237d7b2e595fbc70a",
+    "raw_sha256": "dbb98f7aa4104e198d8e1ec7f3cecac747dc7edfb18924b7c5d761671ffa8289",
+    "source_date_epoch": 1793558844
+  },
+  "fixture-launch.exe": {
+    "sha256": "d291c3e661458a3dd1a2b1590aa641ae18af8b3516196953ff7785067655ad1d",
+    "raw_sha256": "62d41c2c3805982c8c2e4fa33a0792f55ba308f76684647849fce1f26d40f611",
+    "source_date_epoch": 1793558853
+  },
+  "ottrin-indexd.exe": {
+    "sha256": "3190d56a2a46def2e0d042d668da242aa53451bc89ddd8b32a0bac59558331e3",
+    "raw_sha256": "88336f6647165c9256bec14223324a431e12d01d77cf5849d4e3b11b57276d35",
+    "source_date_epoch": 1793558870
+  },
+  "previous-app.exe": {
+    "sha256": "a0363ebb928195b0a19ec6c9b4c0f347e346164f25c74475996fdb5fe97bf519",
+    "raw_sha256": "aacea488ed30851f2c4d1af5020d28fa134643dbdaee7da8f1c8d7941003e05c",
+    "source_date_epoch": 1793526982
+  }
+}

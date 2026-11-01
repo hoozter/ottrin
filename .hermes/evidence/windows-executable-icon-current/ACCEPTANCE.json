@@ -1,0 +1,75 @@
+{
+  "status": "pass scoped source checkpoint",
+  "source_base": "41d26cd5a5d83ace03cd187c6cee4cebfb3cadb8",
+  "build_inputs": "BUILD_SOURCE.json; native-time snapshot BUILD_SOURCE_NATIVE.json",
+  "native": "Native Windows Shell extraction in ordinary and administrator contexts; exact16/32-pixel ARGB hashes match canonical ICO in app and index daemon; former accepted candidate has zero icon groups",
+  "app_tests": {
+    "linux_app": 46,
+    "linux_daemon": 2,
+    "linux_cli": 3,
+    "windows_app_per_token": 32
+  },
+  "strict_lint": [
+    "Linux all-target platform/app/UI",
+    "Windows GNU all-target platform/app/UI"
+  ],
+  "windows_gui_subsystem_preserved": [
+    "app",
+    "indexd"
+  ],
+  "dependencies": {
+    "new_build_packages": [
+      [
+        "embed-resource",
+        "3.0.12"
+      ],
+      [
+        "vswhom",
+        "0.1.0"
+      ],
+      [
+        "vswhom-sys",
+        "0.1.3"
+      ],
+      [
+        "winreg",
+        "0.56.0"
+      ]
+    ],
+    "every_existing_version_and_selection_preserved": true,
+    "runtime_component_added": false
+  },
+  "ci": "Release icon checker added after Windows release build and pinned to the tested Windows PowerShell engine; no hosted MSVC run claimed yet",
+  "cleanup": {
+    "vm_off": true,
+    "owned_root_removed": true,
+    "original_profiles_and_definition_preserved": true,
+    "test_executable_retirement": "REPLACED_TEST_CLEANUP.json",
+    "incremental": "Guard inspected/applied: zero obsolete sessions; newest current configuration states retained",
+    "remaining_task_storage": "Compact evidence/source producers in this directory; current binaries and useful native/Windows debug compiler caches in target; no owned profile/process/extraction/mount/VM staging remains"
+  },
+  "controls": [
+    "First checker incorrectly required one extracted icon; EXE returns two for requested large/small pair, ICO one. Corrected check validates success, both handles and exact pixels.",
+    "Initial Clippy generic-array borrow corrected without lint exceptions.",
+    "Cargo add attempted unrelated binding deduplication; restored original selections and validated both locked builds."
+  ],
+  "windows_json_originals": [
+    "native/RUNTIME_TEARDOWN.json",
+    "native-final/short-temp-ordinary-app-runtime-icon-control.json",
+    "native-final/short-temp-ordinary-app-runtime-launch.json",
+    "native-final/short-temp-ordinary-app-runtime-alias.json",
+    "native-final/RUNTIME_TEARDOWN.json",
+    "native-final/short-temp-elevated-app-runtime-launch.json",
+    "native-final/short-temp-elevated-app-runtime.json",
+    "native-final/short-temp-elevated-app-runtime-alias.json",
+    "native-final/short-temp-elevated-app-runtime-icons.json",
+    "native-final/short-temp-elevated-app-runtime-icon-control.json",
+    "native-final/short-temp-ordinary-app-runtime.json",
+    "native-final/short-temp-ordinary-app-runtime-icons.json"
+  ],
+  "limits": [
+    "Source GNU debug artifacts, not an updated release package",
+    "Native pixel check covers Shell small/large sizes at16/32; no broad DPI or final owner acceptance claim",
+    "Stable Linux/Windows packages remain25b38c8f; hosted MSVC release gate and coherent package acceptance remain independent work"
+  ]
+}

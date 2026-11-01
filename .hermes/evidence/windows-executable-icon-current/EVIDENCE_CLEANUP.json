@@ -1,0 +1,90 @@
+{
+  "bytecode_removed": [
+    "native/__pycache__/run-native.cpython-312.pyc"
+  ],
+  "unused_template_removed": true,
+  "lossless_compressed_files": [
+    "DEPENDENCY.log",
+    "SUBSYSTEM_INDEX.log",
+    "SUBSYSTEM_APP.log",
+    "LINUX_LINT.log",
+    "WINDOWS_LINT_FINAL.log",
+    "WINDOWS_BUILD.log",
+    "INCREMENTAL_APPLY.log",
+    "INCREMENTAL_INSPECT.log",
+    "CLEANUP.log",
+    "NATIVE_FINAL.log",
+    "LINUX_APP_TESTS.log",
+    "NATIVE.log",
+    "WINDOWS_LINT.log",
+    "windows-build.jsonl",
+    "native/short-temp-ordinary-app-runtime.transcript",
+    "native-final/short-temp-elevated-app-runtime-launch.stderr",
+    "native-final/short-temp-ordinary-app-runtime.stdout",
+    "native-final/short-temp-elevated-app-runtime.stdout",
+    "native-final/short-temp-elevated-app-runtime.stderr",
+    "native-final/short-temp-ordinary-app-runtime-launch.stdout",
+    "native-final/short-temp-elevated-app-runtime.list",
+    "native-final/short-temp-elevated-app-runtime-launch.stdout",
+    "native-final/short-temp-ordinary-app-runtime.list",
+    "native-final/short-temp-elevated-app-runtime.transcript",
+    "native-final/short-temp-ordinary-app-runtime.stderr",
+    "native-final/short-temp-ordinary-app-runtime.transcript",
+    "native-final/short-temp-ordinary-app-runtime-launch.stderr"
+  ],
+  "control_archive": "NATIVE_CONTROL.tar.gz",
+  "archived_files": [
+    {
+      "path": "native/short-temp-ordinary-app-runtime.transcript.gz",
+      "sha256": "9dc435fa5fbec24ed50904a40ae0833427ee3dbd433a86c253574d10d453e423"
+    },
+    {
+      "path": "native/ordinary-app-runtime-pid.json",
+      "sha256": "fe8f3c061d5f11afc7653f15f2f2b913fa21ae928648e4dd3120e00ce6026525"
+    },
+    {
+      "path": "native/cleanup-runtime.ps1",
+      "sha256": "1cbac8cf56300a7d09a8dbdc4b92036feb41da8f5f5b73705029366485dc2fef"
+    },
+    {
+      "path": "native/RUNTIME_BINARIES.json",
+      "sha256": "0d37f37c36c3659101d726e7be7d202c9823b89fa78c17189c0b658af025ec29"
+    },
+    {
+      "path": "native/ordinary-app-runtime.ps1",
+      "sha256": "dd34a8156da0cd6334c94515a2ab8b270c485ff0553dc9db2e9409617dd0d9b0"
+    },
+    {
+      "path": "native/RUNTIME_OWNER.json",
+      "sha256": "a3d29c0438e82865dda0200028811f4457550645928535d5c61d504fc761786f"
+    },
+    {
+      "path": "native/RUNTIME_TEARDOWN.json.raw.gz",
+      "sha256": "01a780e9f8705f45ea2be1ca87857f4276909220f01ce4b7b646d711dee615cd"
+    },
+    {
+      "path": "native/RUNTIME_TEARDOWN.json",
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "native/cleanup-runtime-controller.json",
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "native/ordinary-app-runtime-controller.json",
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "native/cleanup-runtime-pid.json",
+      "sha256": "b9dba1f5d497395f4ea3096e5fb7dcf9d52a029eff2a971f64fafc4090832aa1"
+    },
+    {
+      "path": "native/run-native.py",
+      "sha256": "a1ac69df07bbc0056b90facbfacd16b81f14c2d4662f2cdde393d294d34037e7"
+    },
+    {
+      "path": "native/verify-icons-input.ps1",
+      "sha256": "d644ccee301e5cbd14235b74dabb73514c05bcd121078fd04f05bd65c7959565"
+    }
+  ]
+}
