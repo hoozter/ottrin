@@ -1,0 +1,4 @@
+{
+  "status": "failed actual address replacement; successful cancellation/preservation/teardown only",
+  "defect": "Ctrl+L focuses without selecting previous path, so a typed absolute path appends. Do not claim folder/grid/preview acceptance from this run."
+}

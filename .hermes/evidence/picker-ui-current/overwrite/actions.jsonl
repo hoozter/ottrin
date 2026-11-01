@@ -1,0 +1,14 @@
+{"time": 1793507771.9513958, "click": [232, 238], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507772.7591276, "click": [907, 110], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507773.2483873, "capture": "readable-text-preview"}
+{"time": 1793507784.3233123, "click": [756, 219], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507784.778281, "key": "space"}
+{"time": 1793507785.0286534, "file_checkpoint": "preview-input-readonly", "files": {"existing.txt": "e34e980cfde1ef8b0db238fb1d41d08dc4490fe388311f6df9d024b980e63827"}, "absent": []}
+{"time": 1793507785.1017256, "capture": "preview-input-readonly"}
+{"time": 1793507785.5026777, "click": [902, 606], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507785.980529, "capture": "overwrite-confirmation"}
+{"time": 1793507795.9700158, "click": [250, 354], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507796.3706708, "file_checkpoint": "cancel-overwrite", "files": {"existing.txt": "e34e980cfde1ef8b0db238fb1d41d08dc4490fe388311f6df9d024b980e63827"}, "absent": []}
+{"time": 1793507796.471488, "capture": "cancel-overwrite"}
+{"time": 1793507796.8824012, "click": [902, 606], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507797.6924536, "click": [323, 354], "pointer_settled_before_press": true, "hold_seconds": 0.15}

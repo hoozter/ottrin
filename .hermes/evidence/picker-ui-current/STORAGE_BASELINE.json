@@ -1,0 +1,13 @@
+{
+  "recorded": "2026-11-01T04:30:26.561469+00:00",
+  "purpose": "Shared chooser UI, lazy read-only preview, shared production renderer and window chrome verification",
+  "sizes": {
+    "target/debug/deps": 26055749661,
+    "target/debug/incremental": 10714252112,
+    "target/x86_64-pc-windows-gnu/debug/deps": 27407821415,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25977679306,
+    ".hermes/evidence/picker-ui-current": 164612,
+    ".hermes/evidence/picker-foundation-current": 100959
+  },
+  "cleanup_owner": "Current goal; guard exact incremental roots, retire superseded test outputs only after replacement checks; retain stable cf6 deliverables"
+}

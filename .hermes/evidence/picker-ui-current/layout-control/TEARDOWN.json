@@ -1,0 +1,23 @@
+{
+  "status": "active",
+  "profile": "/var/tmp/.ottrin-picker-qa-wwlc2onm",
+  "owned_processes_reaped": [
+    {
+      "pid": 2760663,
+      "exit": 0
+    },
+    {
+      "pid": 2760666,
+      "exit": 0
+    },
+    {
+      "pid": 2760668,
+      "exit": 15
+    },
+    {
+      "pid": 2760729,
+      "exit": 0
+    }
+  ],
+  "profile_removed": true
+}

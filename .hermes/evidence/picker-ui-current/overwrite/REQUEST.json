@@ -1,0 +1,7 @@
+{
+  "mode": "save",
+  "title": "Save a document",
+  "initial_directory": "/var/tmp/.ottrin-picker-qa-kprh7q3t/fixture",
+  "multiple": false,
+  "filename": "existing.txt"
+}

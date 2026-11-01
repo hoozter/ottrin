@@ -1,0 +1,9 @@
+{
+  "accepted": true,
+  "paths": [
+    "/var/tmp/.ottrin-picker-qa-yw4f35ep/fixture/alpha.txt",
+    "/var/tmp/.ottrin-picker-qa-yw4f35ep/fixture/beta.txt"
+  ],
+  "current_filter": null,
+  "choices": {}
+}

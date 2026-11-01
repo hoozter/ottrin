@@ -54,10 +54,24 @@ their named hashes. Test counts are scoped observations, not completion measures
   repairs still require fresh package/UI acceptance. Evidence: `picker-foundation-current/`.
 - **Required picker/folder integration is active work.** The public caller contract
   for Open/Save/folder requests,filters,choices,cancellation and response validation
-  is implemented in source; all34 Linux core tests pass. The actual
-  shared UI,internal adoption,portal/cooperating-app integration,reversible folder
-  controls and resource/startup acceptance remain required. Park owner,physical
-  and release-identity waits while completing this milestone.
+  is implemented in source; all34 Linux core tests pass. The shared on-demand
+  Open/Save/folder UI is now in development,using the actual theme,window frame,
+  file rows,bookmarks and production preview engine. Nine focused tests cover
+  clipped-visible actions at small sizes/large text,filters,overwrite confirmation,
+  multi-selection and read-only image previews; the complete Linux UI suite passes
+  422 cases with one existing ignore and no filters,and application tests pass27.
+  Native ordinary/elevated Windows suites pass395 regular UI cases each,four
+  existing ignores and no filters; strict Linux/GNU Windows all-target lint passes.
+  Actual private Linux windows verify multi-select,read-only text/Space input,
+  overwrite cancel/confirm,Light150 location replacement,view switching and selection,
+  with unchanged fixture bytes and no index socket. Initial layout/address controls
+  remain separate failed scopes. The daemon CLI fixtures now run sequentially to
+  prevent concurrent fork inheritance of a writable fixture executable (ETXTBSY).
+  This is source work,not a new packaged picker acceptance. Internal adoption,
+  preferences,index search,parent-window ownership,portal/cooperating-app integration,reversible folder
+  controls and platform resource/startup acceptance remain required. Park owner,
+  physical and release-identity waits while completing this milestone.
+  Current evidence: `picker-ui-current/`.
 - **MSI rollback remains a required failed gate.** Reviewed upstream evidence
   corroborates the failure family but establishes no safe authoring correction.
   Keep its exact receipts and external investigation boundary; do not repeat the
@@ -2960,7 +2974,7 @@ The historical portable and MSI checkpoint was built from clean revision `fc3139
 
 
 
-### 4. Required Ottrin picker and folder integration — deferred
+### 4. Required Ottrin picker and folder integration — active
 
 Approved on 2026-10-11 as a must-have, not optional research. Start after the earlier independently executable implementation, packaging and Linux/Windows software acceptance work is complete. Finish current repairs first. Under the owner's independent-completion instruction, parked owner acceptance, unavailable physical devices and external release identities do not block this required milestone. After implementation, run its focused platform acceptance and the final release-candidate gate against the resulting artifacts.
 

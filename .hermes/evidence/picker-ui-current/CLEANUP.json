@@ -1,0 +1,131 @@
+{
+  "status": "Owned cleanup complete",
+  "incremental_sessions_retired": 53,
+  "incremental_tool_reported_recovered_GiB": 1.84,
+  "incremental_inspection": "First relative-root apply refused before mutation; exact absolute-root guarded run passed after existing desktop process review revalidation",
+  "replaced_test_artifacts": {
+    "retired_artifacts": 2,
+    "logical_bytes": 1519432672,
+    "filesystem_free_delta": 1519292416,
+    "current_tests_and_shared_dependencies_retained": true
+  },
+  "superseded_disposable_output_removed": [
+    {
+      "path": ".hermes/evidence/picker-ui-current/APP_TESTS.log",
+      "bytes": 2614
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/BUILD.log",
+      "bytes": 233
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/CLIPPY.log",
+      "bytes": 2784
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/CLIPPY_FINAL.log",
+      "bytes": 232
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/CLIPPY_FIXED.log",
+      "bytes": 232
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/COMPLETE_NATIVE_TESTS.log",
+      "bytes": 41173
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/COMPLETE_NATIVE_TESTS_FINAL.log",
+      "bytes": 41355
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/KEYBOARD_POINTER.log",
+      "bytes": 435
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/PREVIEW_BUILD.log",
+      "bytes": 325
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/PREVIEW_BUILD_FINAL.log",
+      "bytes": 233
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/PREVIEW_RENDERED_TESTS.log",
+      "bytes": 1499
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/PREVIEW_RENDERED_TESTS_CURRENT.log",
+      "bytes": 938
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/RENDERED_TESTS.log",
+      "bytes": 747
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/layout-control.log",
+      "bytes": 519
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/open.log",
+      "bytes": 0
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/pre-location-windows",
+      "bytes": 463488
+    },
+    {
+      "path": ".hermes/evidence/picker-foundation-current/PICKER_APP_CHECK.log",
+      "bytes": 232
+    },
+    {
+      "path": ".hermes/evidence/picker-foundation-current/PICKER_BUILD.log",
+      "bytes": 233
+    },
+    {
+      "path": ".hermes/evidence/picker-foundation-current/PICKER_CHECK.log",
+      "bytes": 703
+    },
+    {
+      "path": ".hermes/evidence/picker-foundation-current/PICKER_PREVIEW_CHECK.log",
+      "bytes": 2526
+    },
+    {
+      "path": ".hermes/evidence/picker-foundation-current/PREVIEW_SERVICE_CHECK.log",
+      "bytes": 232
+    },
+    {
+      "path": ".hermes/evidence/picker-ui-current/__pycache__",
+      "bytes": 37920
+    },
+    {
+      "path": "scripts/linux-desktop-qa/__pycache__",
+      "bytes": 13540
+    }
+  ],
+  "known_private_profiles_absent": [
+    "/var/tmp/.ottrin-picker-qa-0hzjaxzt",
+    "/var/tmp/.ottrin-picker-qa-999o77t2",
+    "/var/tmp/.ottrin-picker-qa-_gcp272i",
+    "/var/tmp/.ottrin-picker-qa-kprh7q3t",
+    "/var/tmp/.ottrin-picker-qa-uiyniz3_",
+    "/var/tmp/.ottrin-picker-qa-wwlc2onm",
+    "/var/tmp/.ottrin-picker-qa-yw4f35ep"
+  ],
+  "private_FUSE_mounts": "released before profile removal; see per-run teardown",
+  "native_guest_off": true,
+  "native_root_removed": true,
+  "staging_roots_remaining": [],
+  "current_sizes": {
+    "target/debug/deps": 27591537100,
+    "target/debug/incremental": 10050259245,
+    "target/x86_64-pc-windows-gnu/debug/deps": 27445907210,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 26389130842
+  },
+  "remaining_task_created_storage": {
+    "target/debug/ottrin-app": "Current source debug application for ongoing picker QA; not a packaged delivery",
+    "target/debug and target/x86_64-pc-windows-gnu/debug": "Current compiler artifacts/dependencies and newest finalized cache state for continued roadmap work",
+    ".hermes/evidence/picker-ui-current": "Compact source/native/GUI acceptance and bounded control receipts; ongoing roadmap checkpoint"
+  },
+  "preserved": "Stable cf6 Linux packages/Windows candidate,personal service/data,owner AGENTS.md,existing shared Cargo/Rustup caches,retained VMs"
+}

@@ -1,0 +1,57 @@
+{
+  "case": "cancel",
+  "binary_sha256": "01c3972f6d378d391a8558471bcbb711c54d0bf2df8431ba4c0ceae0934d358d",
+  "scope": "Actual debug-source picker GUI; not package or final resource acceptance",
+  "initial_files": {
+    "beta.txt": "6e2674aa1b707d0e9338ba184dccd37079efcd0d5420f493a58213c9835ce935",
+    "alpha.txt": "cce4c580c21ca6ebdeaca08dc4688d8a3eb2fd032ab90ea413cdfdff5b739aca",
+    "image.png": "39bcab92c726b379f160790cc05fea75a75e9f701bc24486943f3b3287b0f5c7",
+    "existing.txt": "e34e980cfde1ef8b0db238fb1d41d08dc4490fe388311f6df9d024b980e63827",
+    "subfolder/inside.txt": "c03b7d3692d523e10fd652cee6d381eff16f77abffe055fc80872ac9e3807f7a"
+  },
+  "cold_process_window_ready_ms": 344.77,
+  "normal_exit": 0,
+  "response": {
+    "accepted": false,
+    "paths": [],
+    "current_filter": null,
+    "choices": {}
+  },
+  "final_files": {
+    "beta.txt": "6e2674aa1b707d0e9338ba184dccd37079efcd0d5420f493a58213c9835ce935",
+    "alpha.txt": "cce4c580c21ca6ebdeaca08dc4688d8a3eb2fd032ab90ea413cdfdff5b739aca",
+    "image.png": "39bcab92c726b379f160790cc05fea75a75e9f701bc24486943f3b3287b0f5c7",
+    "existing.txt": "e34e980cfde1ef8b0db238fb1d41d08dc4490fe388311f6df9d024b980e63827",
+    "subfolder/inside.txt": "c03b7d3692d523e10fd652cee6d381eff16f77abffe055fc80872ac9e3807f7a"
+  },
+  "index_socket_created": false,
+  "status": "normal close; fixture files unchanged",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-uiyniz3_",
+    "owned_processes_reaped": [
+      {
+        "pid": 2852331,
+        "exit": 0
+      },
+      {
+        "pid": 2852334,
+        "exit": 0
+      },
+      {
+        "pid": 2852335,
+        "exit": 15
+      },
+      {
+        "pid": 2852384,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

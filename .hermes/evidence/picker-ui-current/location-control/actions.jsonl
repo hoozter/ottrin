@@ -1,0 +1,14 @@
+{"time": 1793507839.4778583, "key": "ctrl+l"}
+{"time": 1793507839.9225073, "key": "Return"}
+{"time": 1793507840.572903, "navigate": "/var/tmp/.ottrin-picker-qa-_gcp272i/fixture/subfolder"}
+{"time": 1793507840.8107998, "capture": "nested-folder"}
+{"time": 1793507840.8907716, "key": "ctrl+l"}
+{"time": 1793507841.3145998, "key": "Return"}
+{"time": 1793507841.9649942, "navigate": "/var/tmp/.ottrin-picker-qa-_gcp272i/fixture"}
+{"time": 1793507842.3786573, "click": [1233, 165], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507842.9776866, "capture": "grid"}
+{"time": 1793507843.389496, "click": [1168, 165], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507844.1972198, "click": [343, 274], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507845.0093398, "click": [1358, 165], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507845.6064343, "capture": "light-readonly-preview"}
+{"time": 1793507867.0021849, "key": "Escape"}

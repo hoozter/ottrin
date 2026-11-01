@@ -1,0 +1,9 @@
+{"time": 1793507619.8342094, "click": [231, 181], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507620.3062923, "key": "ctrl+Down"}
+{"time": 1793507620.6280897, "capture": "keyboard-multi"}
+{"time": 1793507621.029904, "click": [906, 110], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507621.487646, "capture": "read-only-preview"}
+{"time": 1793507656.4459922, "click": [759, 321], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793507656.900581, "key": "space"}
+{"time": 1793507657.2162542, "capture": "readonly-space"}
+{"time": 1793507657.6187792, "click": [902, 606], "pointer_settled_before_press": true, "hold_seconds": 0.15}

@@ -1,0 +1,19 @@
+{"time": 1793508137.5791855, "key": "ctrl+l"}
+{"time": 1793508137.9892247, "key": "Return"}
+{"time": 1793508138.6395898, "navigate": "/var/tmp/.ottrin-picker-qa-999o77t2/fixture/subfolder"}
+{"time": 1793508138.9823365, "capture": "nested-folder-fixed"}
+{"time": 1793508139.1016026, "key": "ctrl+l"}
+{"time": 1793508139.5090876, "key": "Return"}
+{"time": 1793508140.1594393, "navigate": "/var/tmp/.ottrin-picker-qa-999o77t2/fixture"}
+{"time": 1793508140.346515, "capture": "back-to-fixture-fixed"}
+{"time": 1793508153.7218034, "click": [1233, 165], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793508154.2602518, "capture": "grid-fixed"}
+{"time": 1793508154.6661973, "click": [1168, 165], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793508155.472284, "click": [343, 274], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793508156.2748272, "click": [1358, 165], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793508156.7918298, "capture": "light-readonly-preview-fixed"}
+{"time": 1793508171.8294654, "click": [1121, 325], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793508172.286207, "key": "space"}
+{"time": 1793508172.5366023, "file_checkpoint": "light-readonly-input", "files": {"alpha.txt": "cce4c580c21ca6ebdeaca08dc4688d8a3eb2fd032ab90ea413cdfdff5b739aca"}, "absent": []}
+{"time": 1793508172.6558774, "capture": "light-readonly-input"}
+{"time": 1793508173.0573108, "click": [1352, 909], "pointer_settled_before_press": true, "hold_seconds": 0.15}

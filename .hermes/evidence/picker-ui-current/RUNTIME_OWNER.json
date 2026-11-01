@@ -1,0 +1,47 @@
+{
+  "nonce": "aba4d581-d003-4af4-82be-95bc99ccac69",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "source": {
+    "base_revision": "348ba6f8add5745fb396224ec12915d89136ab12",
+    "working_tree": [
+      " M Cargo.lock",
+      " M crates/ottrin-app/src/main.rs",
+      " M crates/ottrin-app/tests/persisted_search_cli.rs",
+      " M crates/ottrin-ui/Cargo.toml",
+      " M crates/ottrin-ui/src/lib.rs",
+      " M crates/ottrin-ui/src/theme_colors.rs",
+      " M crates/ottrin-ui/src/widget_style.rs",
+      " M crates/ottrin-ui/src/window_chrome.rs",
+      " M docs/ROADMAP.md",
+      "?? AGENTS.md",
+      "?? crates/ottrin-ui/src/file_row.rs",
+      "?? crates/ottrin-ui/src/picker.rs",
+      "?? crates/ottrin-ui/src/picker_preview.rs",
+      "?? crates/ottrin-ui/src/preview_jobs.rs",
+      "?? scripts/linux-desktop-qa/"
+    ],
+    "files": {
+      "crates/ottrin-app/src/main.rs": "490d0f20fc7c62ed1682e73ecaec3ad1fab47b0f7d205aea693bea0606066900",
+      "crates/ottrin-app/tests/persisted_search_cli.rs": "c10f9c7775c4474f10d73d370f220ad7d52b8eb0d2d3e7f3b03a548e495f3114",
+      "crates/ottrin-core/src/picker.rs": "57bbdf0a99ec053968864f8314d09eefeafaee587bb940379c3e9599bb02ea36",
+      "crates/ottrin-ui/Cargo.toml": "982294ba08893423eea3c7fc3b6d4feb412fe86b48ab0de078d168fdbeb0dc69",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/file_row.rs": "2597cc17c8997c538eaf71390aa6628b1fc4203b93414b2f824264e9a347469d",
+      "crates/ottrin-ui/src/lib.rs": "e7b0eecb3087ea6306c0b4b6e985ff128e6e762879a9b78247585b90fd3181c0",
+      "crates/ottrin-ui/src/picker.rs": "7c508f5278f43352ce6088560893c333aab9b9cfc6407838d0f82ead0e641f6e",
+      "crates/ottrin-ui/src/picker_preview.rs": "4c86d33c4c93cf23fcf524f77a4e533d4cc5bef1fb3556211f7d128ca122d34f",
+      "crates/ottrin-ui/src/preview_jobs.rs": "5ac89ebb7132fa51fec13b06d2c3694a50bee53f36656e37d64f860d7ad8614c",
+      "crates/ottrin-ui/src/theme_colors.rs": "c76a81e3d75f1549cd82df6eec6a7e3c68662e1ebdf08aa821561bc077353ac1",
+      "crates/ottrin-ui/src/widget_style.rs": "ae4ee4afe1dd71d411afa4bb7bc216bdd98edca44d8b9182733286dce9aa54d3",
+      "crates/ottrin-ui/src/window_chrome.rs": "64453cf95dd6322acb41f157ec0579471a98385b6c6c6df5d60a0558bb384566"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

@@ -5,6 +5,7 @@ import os
 from contextlib import contextmanager
 from pathlib import Path
 import signal
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -57,14 +58,14 @@ def stop_render_jobs(profile):
 
 
 @contextmanager
-def isolated_environment(*, directory=None, prefix="ot-"):
+def isolated_environment(*, directory=None, prefix="ot-", before_remove=None):
     """Share disposable app state and existing compiler caches with GUI QA too."""
     operator_home = Path.home()
     env = os.environ.copy()
     env.setdefault("CARGO_HOME", str(operator_home / ".cargo"))
     env.setdefault("RUSTUP_HOME", str(operator_home / ".rustup"))
-    with tempfile.TemporaryDirectory(prefix=prefix, dir=directory) as temporary:
-        profile = Path(temporary)
+    profile = Path(tempfile.mkdtemp(prefix=prefix, dir=directory))
+    try:
         for variable, subdirectory in (
             ("HOME", "home"),
             ("USERPROFILE", "home"),
@@ -83,10 +84,17 @@ def isolated_environment(*, directory=None, prefix="ot-"):
             env[variable] = str(path)
         for variable in ("DISPLAY", "WAYLAND_DISPLAY"):
             env.pop(variable, None)
+        yield profile, env
+    finally:
         try:
-            yield profile, env
-        finally:
             stop_render_jobs(profile)
+            if before_remove is not None:
+                before_remove(profile)
+        except BaseException:
+            print(f"Owned test profile retained after teardown failure: {profile}", file=sys.stderr)
+            raise
+        else:
+            shutil.rmtree(profile)
 
 
 def main():

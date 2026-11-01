@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-_gcp272i",
+  "owned_processes_reaped": [
+    {
+      "pid": 2832765,
+      "exit": 0
+    },
+    {
+      "pid": 2832768,
+      "exit": 0
+    },
+    {
+      "pid": 2832769,
+      "exit": 15
+    },
+    {
+      "pid": 2832817,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

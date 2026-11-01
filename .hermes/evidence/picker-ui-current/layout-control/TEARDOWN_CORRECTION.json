@@ -1,0 +1,12 @@
+{
+  "status": "cleanup completed after producer naming defect",
+  "initial_error": "Producer called nonexistent cleanup_owned_children; canonical function is cleanup_profile_children",
+  "owned_process_groups_already_reaped": true,
+  "remaining_private_namespace_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "remaining_mounts": [],
+  "profile_removed": true,
+  "initial_run_acceptance": "UI layout control only; no successful Open acceptance"
+}

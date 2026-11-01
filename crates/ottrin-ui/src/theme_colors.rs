@@ -692,6 +692,113 @@ pub(crate) fn parse_hex_rgb(input: &str) -> Option<[u8; 3]> {
     }
 }
 
+/// Apply the authoritative Ottrin palette and typography to any application surface.
+pub(crate) fn apply_to_context(ctx: &egui::Context, c: &Colors) {
+    use egui::{FontId, Shadow, Stroke, Vec2};
+
+    let mut visuals = if c.bg.intensity() < 0.5 {
+        egui::Visuals::dark()
+    } else {
+        egui::Visuals::light()
+    };
+    let widget_radius = c.border_radius;
+    let (control_bg, control_text) = (c.panel_raised, c.text);
+    // Force all major visual slots so no inherited hue survives from
+    // egui defaults (which can make dark themes feel warm/purple).
+    visuals.override_text_color = None;
+    visuals.weak_text_color = Some(c.text_muted);
+    visuals.hyperlink_color = c.accent;
+    visuals.panel_fill = c.panel;
+    visuals.window_fill = c.panel; // modals/settings use panel color, not bg
+    visuals.window_stroke = Stroke::new(c.window_border_width, c.window_border);
+    visuals.window_corner_radius = egui::CornerRadius::same(c.app_radius);
+    visuals.menu_corner_radius = egui::CornerRadius::same(c.border_radius);
+    visuals.window_shadow = Shadow::NONE;
+    visuals.popup_shadow = Shadow::NONE;
+    visuals.extreme_bg_color = c.panel_raised;
+    visuals.faint_bg_color = c.row_alt;
+    visuals.text_edit_bg_color = Some(c.panel_raised);
+    visuals.code_bg_color = c.panel_raised;
+    visuals.warn_fg_color = c.text_muted;
+    visuals.error_fg_color = c.error;
+    visuals.widgets.noninteractive.bg_fill = c.panel;
+    visuals.widgets.noninteractive.weak_bg_fill = c.panel;
+    visuals.widgets.noninteractive.bg_stroke = Stroke::NONE;
+    visuals.widgets.noninteractive.corner_radius = egui::CornerRadius::same(widget_radius);
+    visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, c.text);
+    visuals.widgets.inactive.bg_fill = control_bg;
+    visuals.widgets.inactive.weak_bg_fill = control_bg;
+    visuals.widgets.inactive.bg_stroke = Stroke::NONE;
+    visuals.widgets.inactive.corner_radius = egui::CornerRadius::same(widget_radius);
+    visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, control_text);
+    visuals.widgets.hovered.bg_fill = c.hover;
+    visuals.widgets.hovered.weak_bg_fill = c.hover;
+    visuals.widgets.hovered.bg_stroke = Stroke::NONE;
+    visuals.widgets.hovered.corner_radius = egui::CornerRadius::same(widget_radius);
+    visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, control_text);
+    visuals.widgets.active.bg_fill = c.accent_dim;
+    visuals.widgets.active.weak_bg_fill = c.accent_dim;
+    visuals.widgets.active.bg_stroke = Stroke::NONE;
+    visuals.widgets.active.corner_radius = egui::CornerRadius::same(widget_radius);
+    visuals.widgets.active.fg_stroke = Stroke::new(1.0, c.accent);
+    visuals.widgets.open.bg_fill = control_bg;
+    visuals.widgets.open.weak_bg_fill = control_bg;
+    visuals.widgets.open.bg_stroke = Stroke::NONE;
+    visuals.widgets.open.corner_radius = egui::CornerRadius::same(widget_radius);
+    visuals.widgets.open.fg_stroke = Stroke::new(1.0, control_text);
+    visuals.selection.bg_fill = c.selected_bg;
+    visuals.selection.stroke = Stroke::new(1.0, c.text);
+    // Ottrin resolves System mode and editor previews into this palette.
+    // Keep egui on its matching style when a later OS appearance event arrives.
+    // Raw system_theme remains available to our own mode resolution.
+    ctx.set_theme(if visuals.dark_mode {
+        egui::Theme::Dark
+    } else {
+        egui::Theme::Light
+    });
+    ctx.set_visuals(visuals);
+    ctx.style_mut(|style| {
+        let mut scroll = egui::style::ScrollStyle::solid();
+        // Keep a thin visible handle, but hide the track/background.
+        // Use floating bars so they don't consume layout width and cause
+        // columns to "bounce" when a bar appears/disappears.
+        scroll.floating = true;
+        scroll.floating_allocated_width = 0.0;
+        scroll.bar_width = 8.0;
+        scroll.handle_min_length = 34.0;
+        scroll.bar_outer_margin = 0.0;
+        scroll.bar_inner_margin = 0.0;
+        scroll.dormant_background_opacity = 0.0;
+        scroll.active_background_opacity = 0.0;
+        scroll.interact_background_opacity = 0.0;
+        scroll.dormant_handle_opacity = 1.0;
+        scroll.active_handle_opacity = 1.0;
+        scroll.interact_handle_opacity = 1.0;
+        style.spacing.scroll = scroll;
+        style.text_styles.insert(
+            egui::TextStyle::Heading,
+            FontId::proportional(21.0 * c.font_scale),
+        );
+        style.text_styles.insert(
+            egui::TextStyle::Body,
+            FontId::proportional(15.0 * c.font_scale),
+        );
+        style.text_styles.insert(
+            egui::TextStyle::Button,
+            FontId::proportional(14.0 * c.font_scale),
+        );
+        style.text_styles.insert(
+            egui::TextStyle::Monospace,
+            FontId::monospace(13.0 * c.font_scale),
+        );
+        style.text_styles.insert(
+            egui::TextStyle::Small,
+            FontId::proportional(11.0 * c.font_scale),
+        );
+        style.spacing.button_padding = Vec2::new(10.0, 6.0);
+    });
+}
+
 #[cfg(test)]
 mod theme_resolution_tests {
     use super::*;

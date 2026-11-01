@@ -1,0 +1,8 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 9.46s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-21cb108f787ec80e)
+
+running 1 test
+test picker::tests::location_shortcut_replaces_the_path_on_repeated_navigation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 422 filtered out; finished in 0.01s

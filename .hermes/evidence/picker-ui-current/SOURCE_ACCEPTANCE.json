@@ -1,0 +1,105 @@
+{
+  "status": "Source foundation verified; complete picker/integration and packages still required",
+  "base_revision": "348ba6f8add5745fb396224ec12915d89136ab12",
+  "source_sha256": {
+    "crates/ottrin-app/src/main.rs": "490d0f20fc7c62ed1682e73ecaec3ad1fab47b0f7d205aea693bea0606066900",
+    "crates/ottrin-app/tests/persisted_search_cli.rs": "c10f9c7775c4474f10d73d370f220ad7d52b8eb0d2d3e7f3b03a548e495f3114",
+    "crates/ottrin-ui/Cargo.toml": "982294ba08893423eea3c7fc3b6d4feb412fe86b48ab0de078d168fdbeb0dc69",
+    "crates/ottrin-ui/src/file_row.rs": "2597cc17c8997c538eaf71390aa6628b1fc4203b93414b2f824264e9a347469d",
+    "crates/ottrin-ui/src/lib.rs": "e7b0eecb3087ea6306c0b4b6e985ff128e6e762879a9b78247585b90fd3181c0",
+    "crates/ottrin-ui/src/picker.rs": "7c508f5278f43352ce6088560893c333aab9b9cfc6407838d0f82ead0e641f6e",
+    "crates/ottrin-ui/src/picker_preview.rs": "4c86d33c4c93cf23fcf524f77a4e533d4cc5bef1fb3556211f7d128ca122d34f",
+    "crates/ottrin-ui/src/preview_jobs.rs": "5ac89ebb7132fa51fec13b06d2c3694a50bee53f36656e37d64f860d7ad8614c",
+    "crates/ottrin-ui/src/theme_colors.rs": "c76a81e3d75f1549cd82df6eec6a7e3c68662e1ebdf08aa821561bc077353ac1",
+    "crates/ottrin-ui/src/widget_style.rs": "ae4ee4afe1dd71d411afa4bb7bc216bdd98edca44d8b9182733286dce9aa54d3",
+    "crates/ottrin-ui/src/window_chrome.rs": "64453cf95dd6322acb41f157ec0579471a98385b6c6c6df5d60a0558bb384566",
+    "scripts/linux-desktop-qa/README.md": "8077da8b59d55b0216b1df1ce2ec82074aef829ec797e1438f27e4ec9ae05ae2",
+    "scripts/linux-desktop-qa/session.py": "2cc1351c58d8272c826dbda6d6eac9e52c54398ea3c6fb8157a5b1edccee70de",
+    "scripts/test-workspace.py": "7e083e13efc16f89f86e4f10a3a494474de42c431543b9c1a4aa1e35a89dc661"
+  },
+  "Linux": {
+    "regular_ui": 422,
+    "existing_ignored_ui": 1,
+    "filtered_ui": 0,
+    "app_unit_tests": 27,
+    "indexd_unit_tests": 2,
+    "daemon_cli_fixtures": 3,
+    "strict_all_target_lint": "pass"
+  },
+  "Windows": {
+    "ordinary_regular_ui": 395,
+    "elevated_regular_ui": 395,
+    "existing_ignored_ui": 4,
+    "filtered_ui": 0,
+    "strict_GNU_all_target_lint": "pass",
+    "guest_off": true,
+    "owned_root_removed": true
+  },
+  "picker_cases": 9,
+  "actual_GUI": {
+    "open": {
+      "binary_sha256": "a5497f985d02cb0184a8344403f229fa12fbafcf756874cb35fa8a79625b9fbb",
+      "accepted": true,
+      "selected_names": [
+        "alpha.txt"
+      ],
+      "unchanged_files": 5,
+      "profile_removed": true,
+      "no_index_socket": true
+    },
+    "multi": {
+      "binary_sha256": "3d116e1d49d414aadcc51ab8c3adb22e49018d676344a2f59a2f0520509bc062",
+      "accepted": true,
+      "selected_names": [
+        "alpha.txt",
+        "beta.txt"
+      ],
+      "unchanged_files": 5,
+      "profile_removed": true,
+      "no_index_socket": true
+    },
+    "overwrite": {
+      "binary_sha256": "847084770ef5424076f636ff52b993680a68ecf993c7a16efeec81b2521a8fd6",
+      "accepted": true,
+      "selected_names": [
+        "existing.txt"
+      ],
+      "unchanged_files": 5,
+      "profile_removed": true,
+      "no_index_socket": true
+    },
+    "light150": {
+      "binary_sha256": "01c3972f6d378d391a8558471bcbb711c54d0bf2df8431ba4c0ceae0934d358d",
+      "accepted": true,
+      "selected_names": [
+        "alpha.txt"
+      ],
+      "unchanged_files": 5,
+      "profile_removed": true,
+      "no_index_socket": true
+    },
+    "cancel": {
+      "binary_sha256": "01c3972f6d378d391a8558471bcbb711c54d0bf2df8431ba4c0ceae0934d358d",
+      "accepted": false,
+      "selected_names": [],
+      "unchanged_files": 5,
+      "profile_removed": true,
+      "no_index_socket": true
+    }
+  },
+  "limits": [
+    "Source debug GUI only; not package or physical desktop acceptance",
+    "No new measured idle/resource/first-paint claim",
+    "Preferences,existing-index search,internal adoption,portal/cooperating-app and reversible folder integration still required",
+    "No main configuration writes from picker",
+    "Current cf6 Linux packages and Windows candidate remain unchanged",
+    "External parent-window ownership is not yet implemented; standalone requests currently create an independent window. Internal deferred-viewport and portal parent semantics remain required."
+  ],
+  "controls": {
+    "location-control": "Failed typed path replacement on preceding binary; preserved files and successful cancellation/teardown only",
+    "layout-control": "Initial wrong child layout and teardown naming failure; corrected, exact cleanup sweep retained",
+    "COMPLETE_NATIVE_LOCATION.log": "ETXTBSY during concurrent executable fixture setup; not a successful complete run",
+    "LOCATION_REGRESSION.log": "Test construction omitted RawInput modifier state; corrected fixture subsequently passed",
+    "TEARDOWN_FAILURE_CONTROL.log": "Injected cleanup refusal retains exact profile; control then explicitly removed; normal removal verified"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "mode": "open",
+  "title": "Open a document",
+  "initial_directory": "/var/tmp/.ottrin-picker-qa-yw4f35ep/fixture",
+  "multiple": true
+}

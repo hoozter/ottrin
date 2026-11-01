@@ -1,0 +1,21 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 19.47s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-21cb108f787ec80e)
+
+running 1 test
+
+thread 'picker::tests::location_shortcut_replaces_the_path_on_repeated_navigation' (2837056) panicked at crates/ottrin-ui/src/picker.rs:1784:13:
+assertion `left == right` failed
+  left: "/tmp/ot-u3vd7nab/t/.tmpfAUIBo"
+ right: "/tmp/ot-u3vd7nab/t/.tmpfAUIBo/child"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test picker::tests::location_shortcut_replaces_the_path_on_repeated_navigation ... FAILED
+
+failures:
+
+failures:
+    picker::tests::location_shortcut_replaces_the_path_on_repeated_navigation
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 422 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

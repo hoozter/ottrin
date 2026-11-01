@@ -84,11 +84,16 @@ mod copy_activity_recovery;
 #[cfg(target_os = "windows")]
 mod copy_activity_work;
 mod file_details;
+mod file_row;
+mod picker;
+pub use picker::PickerApp;
 mod icons;
 mod image_ops;
 mod launcher;
 mod listing;
 mod path_display;
+mod picker_preview;
+mod preview_jobs;
 mod preview_render;
 mod semantic_style;
 mod system_appearance;
@@ -139,10 +144,7 @@ use thumbnail_cache::{
     preview_cache_key_for_page_with_sqlite_generation, preview_cache_stats,
     prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
 };
-use window_chrome::{
-    WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
-    wm_btn,
-};
+use window_chrome::{WmBtn, render_custom_titlebar, wm_btn};
 
 const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 const CREATION_MODAL_INPUT_HEIGHT: f32 = 38.0;
@@ -2536,12 +2538,16 @@ fn preview_image_with_fit_bounds(
     bounds: Vec2,
     corner_radius: u8,
 ) -> egui::Image<'static> {
-    let size = image::load_from_memory(&bytes).ok().map(|decoded| {
-        let source = Vec2::new(decoded.width() as f32, decoded.height() as f32);
-        width_fit_size(source, bounds).unwrap_or_else(|| {
-            preview_render::fit_size(source, bounds, preview_render::PreviewSizingMode::FitPage)
-        })
-    });
+    let size = image::ImageReader::new(std::io::Cursor::new(&bytes))
+        .with_guessed_format()
+        .ok()
+        .and_then(|reader| reader.into_dimensions().ok())
+        .map(|(width, height)| {
+            let source = Vec2::new(width as f32, height as f32);
+            width_fit_size(source, bounds).unwrap_or_else(|| {
+                preview_render::fit_size(source, bounds, preview_render::PreviewSizingMode::FitPage)
+            })
+        });
     let image = egui::Image::from_bytes(uri, bytes).corner_radius(corner_radius);
     if let Some(size) = size {
         image.fit_to_exact_size(size)
@@ -2662,6 +2668,7 @@ struct PreviewLoadResponse {
 
 fn spawn_preview_loader_with<F>(
     loader: F,
+    repaint: ResultRepaint,
 ) -> (
     mpsc::SyncSender<PreviewLoadRequest>,
     Receiver<PreviewLoadResponse>,
@@ -2675,12 +2682,15 @@ where
         while let Ok(job) = request_rx.recv() {
             let path = job.request.path.clone();
             let data = loader(&job.request, &job.cancellation);
-            let _ = response_tx.send(PreviewLoadResponse {
-                target: job.target,
-                generation: job.generation,
-                path,
-                data,
-            });
+            repaint.send(
+                &response_tx,
+                PreviewLoadResponse {
+                    target: job.target,
+                    generation: job.generation,
+                    path,
+                    data,
+                },
+            );
         }
     });
     (request_tx, response_rx)
@@ -3826,9 +3836,8 @@ impl OttrinApp {
         let (trash_empty_tx, trash_empty_rx) = mpsc::channel::<TrashEmptyResponse>();
 
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
-        let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
-        let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
         let result_repaint = ResultRepaint::default();
+        let (preview_req_tx, preview_res_rx) = preview_jobs::spawn(result_repaint.clone());
         let transfer_probe = transfer_probe::Worker::spawn(result_repaint.clone());
         let office_provider = Arc::new(Mutex::new(None));
         #[cfg(all(any(target_os = "linux", target_os = "windows"), not(test)))]
@@ -3846,7 +3855,7 @@ impl OttrinApp {
             });
         }
         let (preview_load_tx, preview_load_rx) =
-            spawn_preview_loader_with(load_preview_cancellable);
+            spawn_preview_loader_with(load_preview_cancellable, result_repaint.clone());
         let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
 
         let listing_repaint = result_repaint.clone();
@@ -3863,631 +3872,6 @@ impl OttrinApp {
                         result,
                     },
                 );
-            }
-        });
-
-        std::thread::spawn(move || {
-            while let Ok(mut req) = preview_req_rx.recv() {
-                let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
-                let obj_candidate = ottrin_preview::is_obj_path(&req.path);
-                let ply_candidate = ottrin_preview::is_ply_path(&req.path);
-                let office_candidate = ottrin_preview::is_office_visual_path(&req.path);
-                let native_legacy_doc_candidate =
-                    ottrin_preview::is_native_legacy_doc_visual_path(&req.path);
-                let office_provider_candidate =
-                    req.office_provider.as_ref().is_some_and(|detected| {
-                        ottrin_preview::office_format_for_path(&req.path)
-                            .is_some_and(|format| detected.capability.formats.contains(&format))
-                    });
-                let video_candidate = ottrin_preview::preview_profile(&req.path).visual_renderer()
-                    == ottrin_preview::PreviewVisualRenderer::Video;
-                let html_candidate = ottrin_preview::preview_profile(&req.path).visual_renderer()
-                    == ottrin_preview::PreviewVisualRenderer::Html;
-                let eps_candidate = ottrin_preview::preview_profile(&req.path).visual_renderer()
-                    == ottrin_preview::PreviewVisualRenderer::Eps;
-                let mut video_source_generation = req
-                    .video_source
-                    .as_ref()
-                    .map(|source| source.generation().clone());
-                let generation_is_current = if office_provider_candidate {
-                    let detected = req.office_provider.as_ref().expect("checked above");
-                    let identity = ottrin_preview::OfficeRenderCacheIdentity {
-                        provider: detected.capability.id,
-                        provider_version: detected.capability.version.clone(),
-                        policy_version: 1,
-                    };
-                    req.cache_key
-                        == office_provider_preview_cache_key(
-                            req.target_dim,
-                            req.page_index,
-                            req.office_source_generation.as_ref(),
-                            &identity,
-                        )
-                } else if video_candidate {
-                    req.video_source.as_ref().is_none_or(|source| {
-                        req.cache_key
-                            == ottrin_preview::video_thumbnail_cache_key(
-                                source.generation(),
-                                req.target_dim,
-                            )
-                    })
-                } else {
-                    req.cache_key
-                        == preview_cache_key_for_page_with_generations(
-                            &req.path,
-                            req.target_dim,
-                            req.page_index,
-                            req.sqlite_source_generation.as_ref(),
-                            req.obj_source_generation.as_ref(),
-                            req.ply_source_generation.as_ref(),
-                            req.office_source_generation.as_ref(),
-                        )
-                };
-                let selected_pdf_page = req.page_index > 0
-                    && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
-                let mut video_error = None;
-                #[cfg(target_os = "linux")]
-                let mut html_error = None::<String>;
-                #[cfg(not(target_os = "linux"))]
-                let html_error = None::<String>;
-                #[cfg(any(target_os = "linux", target_os = "windows"))]
-                let mut eps_error = None::<String>;
-                #[cfg(not(any(target_os = "linux", target_os = "windows")))]
-                let eps_error = None::<String>;
-                let mut office_error = None;
-                let mut office_render = None;
-                let bytes = if !generation_is_current
-                    || (sqlite_candidate
-                        && (req.sqlite_source_generation.is_none()
-                            || req.sqlite_source_generation
-                                != ottrin_preview::sqlite_preview_source_generation(&req.path)))
-                    || (obj_candidate
-                        && (req.obj_source_generation.is_none()
-                            || req.obj_source_generation
-                                != ottrin_preview::obj_preview_source_generation(&req.path)))
-                    || (ply_candidate
-                        && (req.ply_source_generation.is_none()
-                            || req.ply_source_generation
-                                != ottrin_preview::ply_preview_source_generation(&req.path)))
-                    || (office_candidate
-                        && (req.office_source_generation.is_none()
-                            || req.office_source_generation
-                                != ottrin_preview::office_preview_source_generation(&req.path)))
-                {
-                    None
-                } else if office_provider_candidate {
-                    #[cfg(any(target_os = "linux", target_os = "windows"))]
-                    {
-                        let detected = req.office_provider.as_ref().expect("checked above");
-                        let format = ottrin_preview::office_format_for_path(&req.path)
-                            .expect("checked above");
-                        let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                            PREVIEW_CACHE_BUCKET_XL
-                        } else {
-                            req.target_dim
-                        };
-                        let unique = std::time::SystemTime::now()
-                            .duration_since(std::time::UNIX_EPOCH)
-                            .unwrap_or_default()
-                            .as_nanos();
-                        let output_dir = std::env::temp_dir().join(format!(
-                            "ottrin-office-preview-{}-{unique}",
-                            std::process::id()
-                        ));
-                        let rendered = std::fs::create_dir(&output_dir)
-                            .map_err(|error| error.to_string())
-                            .and_then(|()| {
-                                let isolation = NativeOfficeIsolation;
-                                let converter = ottrin_preview::InstalledLibreOfficeConverter::new(
-                                    detected.executable.clone(),
-                                    &isolation,
-                                );
-                                let request = ottrin_preview::OfficeRenderRequest {
-                                    source_path: req.path.clone(),
-                                    format,
-                                    private_output_dir: output_dir.clone(),
-                                    policy: ottrin_preview::OfficeRenderPolicy {
-                                        version: 1,
-                                        max_input_bytes: 256 * 1024 * 1024,
-                                        max_output_bytes: 512 * 1024 * 1024,
-                                        max_pages: 1000,
-                                        timeout: Duration::from_secs(60),
-                                    },
-                                };
-                                ottrin_preview::render_office_preview_page(
-                                    std::slice::from_ref(&detected.capability),
-                                    &request,
-                                    &converter,
-                                    req.page_index,
-                                    render_dimension,
-                                    req.cancellation.as_ref(),
-                                    |pdf, page, dimension| {
-                                        ottrin_preview::render_pdf_page_png(pdf, page, dimension)
-                                            .map_err(|error| error.to_string())
-                                    },
-                                )
-                                .map_err(|error| error.to_string())
-                            });
-                        let _ = std::fs::remove_dir_all(&output_dir);
-                        match rendered {
-                            Ok(rendered) => {
-                                office_render = Some(OfficeRenderedPage {
-                                    source_path: req.path.clone(),
-                                    source_generation: req
-                                        .office_source_generation
-                                        .clone()
-                                        .expect("provider requests require a source generation"),
-                                    label: rendered.provider_label,
-                                    page_count: rendered.page_count,
-                                    cache_identity: Some(rendered.cache_identity),
-                                });
-                                Some(rendered.png)
-                            }
-                            Err(error) => {
-                                office_error = Some(error);
-                                None
-                            }
-                        }
-                    }
-                    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
-                    {
-                        None
-                    }
-                } else if video_candidate {
-                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
-                        && let Some(cached) = load_cached_video_thumbnail(&req.cache_key)
-                    {
-                        Some(cached)
-                    } else if let Some(source) = req.video_source.take() {
-                        let decode_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                            PREVIEW_CACHE_BUCKET_XL
-                        } else {
-                            req.target_dim
-                        };
-                        match ottrin_preview::render_video_thumbnail_png(
-                            source,
-                            decode_dimension,
-                            Arc::clone(&req.cancellation),
-                        ) {
-                            Ok(rendered) => {
-                                video_source_generation = Some(rendered.source_generation);
-                                if req.target_dim != PREVIEW_CACHE_ORIGINAL {
-                                    persist_cached_video_thumbnail(
-                                        &req.cache_key,
-                                        &rendered.png,
-                                        req.cache_max_bytes,
-                                    );
-                                }
-                                Some(rendered.png)
-                            }
-                            Err(error) => {
-                                video_error = Some(error.fallback_message().to_string());
-                                None
-                            }
-                        }
-                    } else {
-                        video_error = Some(
-                            ottrin_preview::VideoThumbnailError::AdmissionFailed
-                                .fallback_message()
-                                .to_string(),
-                        );
-                        None
-                    }
-                } else if sqlite_candidate {
-                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
-                        && let Some(cached) = load_cached_thumbnail(
-                            &req.path,
-                            req.target_dim,
-                            req.page_index,
-                            &req.cache_key,
-                        )
-                    {
-                        let _ = preview_res_tx.send(PreviewJobResponse {
-                            slot: req.slot,
-                            path: req.path,
-                            target_dim: req.target_dim,
-                            page_index: req.page_index,
-                            cache_key: req.cache_key,
-                            sqlite_source_generation: req.sqlite_source_generation,
-                            obj_source_generation: req.obj_source_generation,
-                            ply_source_generation: req.ply_source_generation,
-                            office_source_generation: req.office_source_generation,
-                            video_source_generation: None,
-                            office_render: None,
-                            request_id: req.request_id,
-                            bytes: Some(cached),
-                            error: None,
-                        });
-                        continue;
-                    }
-                    let rendered =
-                        ottrin_preview::render_sqlite_metadata_preview_png_with_generation(
-                            &req.path,
-                            if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                                PREVIEW_CACHE_BUCKET_XL
-                            } else {
-                                req.target_dim
-                            },
-                        );
-                    match rendered {
-                        Ok(rendered)
-                            if Some(&rendered.source_generation)
-                                == req.sqlite_source_generation.as_ref() =>
-                        {
-                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
-                                persist_cached_thumbnail(
-                                    &req.path,
-                                    req.target_dim,
-                                    req.page_index,
-                                    &req.cache_key,
-                                    &rendered.png,
-                                    req.cache_max_bytes,
-                                );
-                            }
-                            Some(rendered.png)
-                        }
-                        _ => None,
-                    }
-                } else if obj_candidate {
-                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
-                        && let Some(cached) = load_cached_thumbnail(
-                            &req.path,
-                            req.target_dim,
-                            req.page_index,
-                            &req.cache_key,
-                        )
-                    {
-                        let _ = preview_res_tx.send(PreviewJobResponse {
-                            slot: req.slot,
-                            path: req.path,
-                            target_dim: req.target_dim,
-                            page_index: req.page_index,
-                            cache_key: req.cache_key,
-                            sqlite_source_generation: req.sqlite_source_generation,
-                            obj_source_generation: req.obj_source_generation,
-                            ply_source_generation: req.ply_source_generation,
-                            office_source_generation: req.office_source_generation,
-                            video_source_generation: None,
-                            office_render: None,
-                            request_id: req.request_id,
-                            bytes: Some(cached),
-                            error: None,
-                        });
-                        continue;
-                    }
-                    match ottrin_preview::render_obj_preview_png_with_generation(
-                        &req.path,
-                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                            PREVIEW_CACHE_BUCKET_XL
-                        } else {
-                            req.target_dim
-                        },
-                    ) {
-                        Ok(rendered)
-                            if Some(&rendered.source_generation)
-                                == req.obj_source_generation.as_ref() =>
-                        {
-                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
-                                persist_cached_thumbnail(
-                                    &req.path,
-                                    req.target_dim,
-                                    req.page_index,
-                                    &req.cache_key,
-                                    &rendered.png,
-                                    req.cache_max_bytes,
-                                );
-                            }
-                            Some(rendered.png)
-                        }
-                        _ => None,
-                    }
-                } else if ply_candidate {
-                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
-                        && let Some(cached) = load_cached_thumbnail(
-                            &req.path,
-                            req.target_dim,
-                            req.page_index,
-                            &req.cache_key,
-                        )
-                    {
-                        let _ = preview_res_tx.send(PreviewJobResponse {
-                            slot: req.slot,
-                            path: req.path,
-                            target_dim: req.target_dim,
-                            page_index: req.page_index,
-                            cache_key: req.cache_key,
-                            sqlite_source_generation: req.sqlite_source_generation,
-                            obj_source_generation: req.obj_source_generation,
-                            ply_source_generation: req.ply_source_generation,
-                            office_source_generation: req.office_source_generation,
-                            video_source_generation: None,
-                            office_render: None,
-                            request_id: req.request_id,
-                            bytes: Some(cached),
-                            error: None,
-                        });
-                        continue;
-                    }
-                    match ottrin_preview::render_ply_preview_png_with_generation(
-                        &req.path,
-                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                            PREVIEW_CACHE_BUCKET_XL
-                        } else {
-                            req.target_dim
-                        },
-                    ) {
-                        Ok(rendered)
-                            if Some(&rendered.source_generation)
-                                == req.ply_source_generation.as_ref() =>
-                        {
-                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
-                                persist_cached_thumbnail(
-                                    &req.path,
-                                    req.target_dim,
-                                    req.page_index,
-                                    &req.cache_key,
-                                    &rendered.png,
-                                    req.cache_max_bytes,
-                                );
-                            }
-                            Some(rendered.png)
-                        }
-                        _ => None,
-                    }
-                } else if office_candidate {
-                    if !native_legacy_doc_candidate
-                        && req.target_dim != PREVIEW_CACHE_ORIGINAL
-                        && let Some(cached) = load_cached_thumbnail(
-                            &req.path,
-                            req.target_dim,
-                            req.page_index,
-                            &req.cache_key,
-                        )
-                    {
-                        let _ = preview_res_tx.send(PreviewJobResponse {
-                            slot: req.slot,
-                            path: req.path,
-                            target_dim: req.target_dim,
-                            page_index: req.page_index,
-                            cache_key: req.cache_key,
-                            sqlite_source_generation: req.sqlite_source_generation,
-                            obj_source_generation: req.obj_source_generation,
-                            ply_source_generation: req.ply_source_generation,
-                            office_source_generation: req.office_source_generation,
-                            video_source_generation: None,
-                            office_render: None,
-                            request_id: req.request_id,
-                            bytes: Some(cached),
-                            error: None,
-                        });
-                        continue;
-                    }
-                    let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                        PREVIEW_CACHE_BUCKET_XL
-                    } else {
-                        req.target_dim
-                    };
-                    if native_legacy_doc_candidate {
-                        match ottrin_preview::render_legacy_doc_pdf_with_generation(&req.path) {
-                            Ok(rendered)
-                                if Some(&rendered.source_generation)
-                                    == req.office_source_generation.as_ref() =>
-                            {
-                                match ottrin_preview::render_pdf_bytes_page_png(
-                                    &rendered.pdf,
-                                    req.page_index,
-                                    render_dimension,
-                                ) {
-                                    Ok(png) => {
-                                        office_render = Some(OfficeRenderedPage {
-                                            source_path: req.path.clone(),
-                                            source_generation: rendered.source_generation,
-                                            label:
-                                                "Rendered by Ottrin — native legacy Word preview"
-                                                    .to_string(),
-                                            page_count: rendered.page_count,
-                                            cache_identity: None,
-                                        });
-                                        Some(png)
-                                    }
-                                    Err(error) => {
-                                        office_error = Some(error.to_string());
-                                        None
-                                    }
-                                }
-                            }
-                            Ok(_) => None,
-                            Err(error) => {
-                                office_error = Some(error.to_string());
-                                None
-                            }
-                        }
-                    } else {
-                        match ottrin_preview::render_office_content_preview_png_with_generation(
-                            &req.path,
-                            render_dimension,
-                        ) {
-                            Ok(rendered)
-                                if Some(&rendered.source_generation)
-                                    == req.office_source_generation.as_ref() =>
-                            {
-                                if req.target_dim != PREVIEW_CACHE_ORIGINAL {
-                                    persist_cached_thumbnail(
-                                        &req.path,
-                                        req.target_dim,
-                                        req.page_index,
-                                        &req.cache_key,
-                                        &rendered.png,
-                                        req.cache_max_bytes,
-                                    );
-                                }
-                                Some(rendered.png)
-                            }
-                            _ => None,
-                        }
-                    }
-                } else if html_candidate {
-                    #[cfg(target_os = "linux")]
-                    {
-                        let persistent_cache_allowed =
-                            visual_renderer_uses_persistent_thumbnail_cache(
-                                ottrin_preview::PreviewVisualRenderer::Html,
-                            );
-                        if persistent_cache_allowed
-                            && req.target_dim != PREVIEW_CACHE_ORIGINAL
-                            && let Some(cached) = load_cached_thumbnail(
-                                &req.path,
-                                req.target_dim,
-                                req.page_index,
-                                &req.cache_key,
-                            )
-                        {
-                            Some(cached)
-                        } else {
-                            let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                                PREVIEW_CACHE_BUCKET_XL
-                            } else {
-                                req.target_dim
-                            };
-                            match ottrin_preview::render_html_content_preview_png(
-                                &req.path,
-                                render_dimension,
-                            ) {
-                                Ok(bytes) => {
-                                    if persistent_cache_allowed
-                                        && req.target_dim != PREVIEW_CACHE_ORIGINAL
-                                    {
-                                        persist_cached_thumbnail(
-                                            &req.path,
-                                            req.target_dim,
-                                            req.page_index,
-                                            &req.cache_key,
-                                            &bytes,
-                                            req.cache_max_bytes,
-                                        );
-                                    }
-                                    Some(bytes)
-                                }
-                                Err(error) => {
-                                    html_error = Some(error.to_string());
-                                    None
-                                }
-                            }
-                        }
-                    }
-                    #[cfg(not(target_os = "linux"))]
-                    {
-                        None
-                    }
-                } else if eps_candidate {
-                    #[cfg(any(target_os = "linux", target_os = "windows"))]
-                    {
-                        if req.target_dim != PREVIEW_CACHE_ORIGINAL
-                            && let Some(cached) = load_cached_thumbnail(
-                                &req.path,
-                                req.target_dim,
-                                req.page_index,
-                                &req.cache_key,
-                            )
-                        {
-                            Some(cached)
-                        } else {
-                            let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                                PREVIEW_CACHE_BUCKET_XL
-                            } else {
-                                req.target_dim
-                            };
-                            match ottrin_preview::render_eps_content_preview_png(
-                                &req.path,
-                                render_dimension,
-                            ) {
-                                Ok(bytes) => {
-                                    if req.target_dim != PREVIEW_CACHE_ORIGINAL {
-                                        persist_cached_thumbnail(
-                                            &req.path,
-                                            req.target_dim,
-                                            req.page_index,
-                                            &req.cache_key,
-                                            &bytes,
-                                            req.cache_max_bytes,
-                                        );
-                                    }
-                                    Some(bytes)
-                                }
-                                Err(error) => {
-                                    eps_error = Some(format!(
-                                        "EPS preview unavailable ({error:?}). Open externally to view this file."
-                                    ));
-                                    None
-                                }
-                            }
-                        }
-                    }
-                    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
-                    {
-                        None
-                    }
-                } else if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
-                    full_preview_bytes_at_page(&req.path, PREVIEW_CACHE_BUCKET_XL, req.page_index)
-                } else {
-                    let cached = load_cached_thumbnail(
-                        &req.path,
-                        req.target_dim,
-                        req.page_index,
-                        &req.cache_key,
-                    );
-                    thumbnail_bytes_from_cache_or_build(&req.path, req.target_dim, cached).map(
-                        |(bytes, should_persist)| {
-                            if should_persist {
-                                persist_cached_thumbnail(
-                                    &req.path,
-                                    req.target_dim,
-                                    req.page_index,
-                                    &req.cache_key,
-                                    &bytes,
-                                    req.cache_max_bytes,
-                                );
-                            }
-                            bytes
-                        },
-                    )
-                };
-                let error = if office_error.is_some() {
-                    office_error
-                } else if video_error.is_some() {
-                    video_error
-                } else if html_error.is_some() {
-                    html_error
-                } else if eps_error.is_some() {
-                    eps_error
-                } else if bytes.is_none() && ottrin_preview::is_svg_path(&req.path) {
-                    let target_dim = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                        PREVIEW_CACHE_BUCKET_XL
-                    } else {
-                        req.target_dim
-                    };
-                    ottrin_preview::render_svg_content_preview_png(&req.path, target_dim)
-                        .err()
-                        .map(|error| error.to_string())
-                } else {
-                    None
-                };
-                let _ = preview_res_tx.send(PreviewJobResponse {
-                    slot: req.slot,
-                    path: req.path,
-                    target_dim: req.target_dim,
-                    page_index: req.page_index,
-                    cache_key: req.cache_key,
-                    sqlite_source_generation: req.sqlite_source_generation,
-                    obj_source_generation: req.obj_source_generation,
-                    ply_source_generation: req.ply_source_generation,
-                    office_source_generation: req.office_source_generation,
-                    video_source_generation,
-                    office_render,
-                    request_id: req.request_id,
-                    bytes,
-                    error,
-                });
             }
         });
 
@@ -4645,234 +4029,11 @@ impl OttrinApp {
     }
 
     fn apply_theme_to_ctx(&self, ctx: &Context) {
-        let mut visuals = if self.colors.bg.intensity() < 0.5 {
-            egui::Visuals::dark()
-        } else {
-            egui::Visuals::light()
-        };
-        let c = &self.colors;
-        let widget_radius = c.border_radius;
-        let (control_bg, control_text) = (c.panel_raised, c.text);
-        // Force all major visual slots so no inherited hue survives from
-        // egui defaults (which can make dark themes feel warm/purple).
-        visuals.override_text_color = None;
-        visuals.weak_text_color = Some(c.text_muted);
-        visuals.hyperlink_color = c.accent;
-        visuals.panel_fill = c.panel;
-        visuals.window_fill = c.panel; // modals/settings use panel color, not bg
-        visuals.window_stroke = Stroke::new(c.window_border_width, c.window_border);
-        visuals.window_corner_radius = egui::CornerRadius::same(c.app_radius);
-        visuals.menu_corner_radius = egui::CornerRadius::same(c.border_radius);
-        visuals.window_shadow = Shadow::NONE;
-        visuals.popup_shadow = Shadow::NONE;
-        visuals.extreme_bg_color = c.panel_raised;
-        visuals.faint_bg_color = c.row_alt;
-        visuals.text_edit_bg_color = Some(c.panel_raised);
-        visuals.code_bg_color = c.panel_raised;
-        visuals.warn_fg_color = c.text_muted;
-        visuals.error_fg_color = c.error;
-        visuals.widgets.noninteractive.bg_fill = c.panel;
-        visuals.widgets.noninteractive.weak_bg_fill = c.panel;
-        visuals.widgets.noninteractive.bg_stroke = Stroke::NONE;
-        visuals.widgets.noninteractive.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, c.text);
-        visuals.widgets.inactive.bg_fill = control_bg;
-        visuals.widgets.inactive.weak_bg_fill = control_bg;
-        visuals.widgets.inactive.bg_stroke = Stroke::NONE;
-        visuals.widgets.inactive.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, control_text);
-        visuals.widgets.hovered.bg_fill = c.hover;
-        visuals.widgets.hovered.weak_bg_fill = c.hover;
-        visuals.widgets.hovered.bg_stroke = Stroke::NONE;
-        visuals.widgets.hovered.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, control_text);
-        visuals.widgets.active.bg_fill = c.accent_dim;
-        visuals.widgets.active.weak_bg_fill = c.accent_dim;
-        visuals.widgets.active.bg_stroke = Stroke::NONE;
-        visuals.widgets.active.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.active.fg_stroke = Stroke::new(1.0, c.accent);
-        visuals.widgets.open.bg_fill = control_bg;
-        visuals.widgets.open.weak_bg_fill = control_bg;
-        visuals.widgets.open.bg_stroke = Stroke::NONE;
-        visuals.widgets.open.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.open.fg_stroke = Stroke::new(1.0, control_text);
-        visuals.selection.bg_fill = c.selected_bg;
-        visuals.selection.stroke = Stroke::new(1.0, c.text);
-        // Ottrin resolves System mode and editor previews into this palette.
-        // Keep egui on its matching style when a later OS appearance event arrives.
-        // Raw system_theme remains available to our own mode resolution.
-        ctx.set_theme(if visuals.dark_mode {
-            egui::Theme::Dark
-        } else {
-            egui::Theme::Light
-        });
-        ctx.set_visuals(visuals);
-        ctx.style_mut(|style| {
-            let mut scroll = egui::style::ScrollStyle::solid();
-            // Keep a thin visible handle, but hide the track/background.
-            // Use floating bars so they don't consume layout width and cause
-            // columns to "bounce" when a bar appears/disappears.
-            scroll.floating = true;
-            scroll.floating_allocated_width = 0.0;
-            scroll.bar_width = 8.0;
-            scroll.handle_min_length = 34.0;
-            scroll.bar_outer_margin = 0.0;
-            scroll.bar_inner_margin = 0.0;
-            scroll.dormant_background_opacity = 0.0;
-            scroll.active_background_opacity = 0.0;
-            scroll.interact_background_opacity = 0.0;
-            scroll.dormant_handle_opacity = 1.0;
-            scroll.active_handle_opacity = 1.0;
-            scroll.interact_handle_opacity = 1.0;
-            style.spacing.scroll = scroll;
-            style.text_styles.insert(
-                egui::TextStyle::Heading,
-                FontId::proportional(21.0 * c.font_scale),
-            );
-            style.text_styles.insert(
-                egui::TextStyle::Body,
-                FontId::proportional(15.0 * c.font_scale),
-            );
-            style.text_styles.insert(
-                egui::TextStyle::Button,
-                FontId::proportional(14.0 * c.font_scale),
-            );
-            style.text_styles.insert(
-                egui::TextStyle::Monospace,
-                FontId::monospace(13.0 * c.font_scale),
-            );
-            style.text_styles.insert(
-                egui::TextStyle::Small,
-                FontId::proportional(11.0 * c.font_scale),
-            );
-            style.spacing.button_padding = Vec2::new(10.0, 6.0);
-        });
+        theme_colors::apply_to_context(ctx, &self.colors);
     }
 
     fn paint_viewport_frame(&self, ctx: &Context) {
-        // Paint the same rounded border and alpha mask for every Ottrin viewport.
-        // The GL callback runs first to fix the alpha channel, then the
-        // border stroke paints on top so it is never occluded.
-        let vp_rect = ctx.viewport_rect();
-        let border_painter = ctx.layer_painter(egui::LayerId::new(
-            egui::Order::Foreground,
-            egui::Id::new("viewport_border"),
-        ));
-
-        let radius = self.colors.app_radius as f32;
-        if rounded_alpha_callback_enabled(self.graphics_runtime.is_windows) {
-            border_painter.add(egui::Shape::Callback(egui::PaintCallback {
-                rect: vp_rect,
-                callback: std::sync::Arc::new(eframe::egui_glow::CallbackFn::new(
-                    move |info, painter| {
-                        use eframe::glow::HasContext as _;
-                        let gl = painter.gl();
-                        let [scr_w, scr_h] = info.screen_size_px;
-                        let scr_w = scr_w as i32;
-                        let scr_h = scr_h as i32;
-                        let ppp = info.pixels_per_point;
-
-                        unsafe {
-                            let r_f = radius * ppp;
-                            let r_px = r_f.ceil() as i32;
-
-                            // --- alpha pass: only write the A channel --------
-                            gl.color_mask(false, false, false, true);
-
-                            // 1. Clear alpha to 0 everywhere (fully transparent).
-                            gl.clear_color(0.0, 0.0, 0.0, 0.0);
-                            gl.disable(eframe::glow::SCISSOR_TEST);
-                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-
-                            // 2. Fill alpha=1.0 only inside the rounded rect.
-                            gl.clear_color(0.0, 0.0, 0.0, 1.0);
-                            gl.enable(eframe::glow::SCISSOR_TEST);
-
-                            if r_px > 0 && scr_h > 2 * r_px {
-                                // Middle band: full width, fully opaque.
-                                gl.scissor(0, r_px, scr_w, scr_h - 2 * r_px);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-
-                                // Corner scanlines: arc-shaped inset.
-                                for row in 0..r_px {
-                                    let dy = r_f - row as f32 - 0.5;
-                                    let inset = if dy <= 0.0 {
-                                        0
-                                    } else if dy >= r_f {
-                                        scr_w // fully outside
-                                    } else {
-                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
-                                        let edge = r_f - x_inside;
-                                        (edge.ceil() as i32).clamp(0, r_px)
-                                    };
-                                    let strip_w = scr_w - 2 * inset;
-                                    if strip_w <= 0 {
-                                        continue;
-                                    }
-                                    // Top row (GL origin is bottom-left).
-                                    gl.scissor(inset, scr_h - 1 - row, strip_w, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    // Bottom row.
-                                    gl.scissor(inset, row, strip_w, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                }
-                            } else {
-                                // No rounding or window too small — full opaque.
-                                gl.scissor(0, 0, scr_w, scr_h);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                            }
-
-                            // --- RGB pass: zero out RGB in corner boxes so
-                            //     stale content colour doesn't bleed through
-                            //     the border's anti-aliased fringe. ----------
-                            if r_px > 0 {
-                                gl.color_mask(true, true, true, false);
-                                gl.clear_color(0.0, 0.0, 0.0, 0.0);
-                                // Only clear the thin L-shaped strips outside
-                                // the arc, not the whole corner box (to avoid
-                                // destroying content pixels inside the arc).
-                                for row in 0..r_px {
-                                    let dy = r_f - row as f32 - 0.5;
-                                    let inset = if dy <= 0.0 {
-                                        0
-                                    } else if dy >= r_f {
-                                        r_px
-                                    } else {
-                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
-                                        let edge = r_f - x_inside;
-                                        (edge.ceil() as i32).clamp(0, r_px)
-                                    };
-                                    if inset <= 0 {
-                                        continue;
-                                    }
-                                    // Top-left / top-right
-                                    gl.scissor(0, scr_h - 1 - row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    gl.scissor(scr_w - inset, scr_h - 1 - row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    // Bottom-left / bottom-right
-                                    gl.scissor(0, row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    gl.scissor(scr_w - inset, row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                }
-                            }
-
-                            gl.color_mask(true, true, true, true);
-                            gl.disable(eframe::glow::SCISSOR_TEST);
-                        }
-                    },
-                )),
-            }));
-        }
-
-        // Border stroke renders AFTER the callback so it sits on top.
-        border_painter.rect_stroke(
-            vp_rect,
-            self.colors.app_radius,
-            Stroke::new(self.colors.window_border_width, self.colors.window_border),
-            egui::StrokeKind::Inside,
-        );
+        window_chrome::paint_viewport_frame(ctx, self.colors, self.graphics_runtime.is_windows);
     }
 
     fn set_status_message(&mut self, text: impl Into<String>, ok: bool, ttl_secs: u64) {
@@ -23772,104 +22933,23 @@ impl OttrinApp {
         row_width: f32,
         c: &Colors,
     ) -> egui::Response {
-        let scale = self.view_scale_for(ViewMode::Grid);
-        let row_h = (25.0 * scale.clamp(0.9, 1.35) * c.font_scale).round();
-        let icon_size = (16.0 * scale.sqrt()).max(14.0);
-        let text_size = (13.0 * scale.sqrt()).max(11.0) * c.font_scale;
-        let row_rect = Rect::from_min_size(ui.cursor().min, Vec2::new(row_width.max(1.0), row_h));
-
-        // Alternating stripe (painted first, underneath everything else)
-        if row_index % 2 == 1 && !selected {
-            ui.painter().rect_filled(row_rect, 0.0, c.row_alt);
-        }
-
-        let fill = if selected && is_active_col {
-            c.selected_bg
-        } else if selected {
-            c.selected_bg.gamma_multiply(0.72)
-        } else {
-            Color32::TRANSPARENT
-        };
-
-        if fill != Color32::TRANSPARENT {
-            ui.painter().rect_filled(row_rect, 0.0, fill);
-            // Keep selected row visually distinct from path marker rows.
-            let stroke_col = if is_active_col {
-                c.accent
-            } else {
-                c.accent_dim
-            };
-            ui.painter().rect_stroke(
-                row_rect.shrink(1.0),
-                3.0,
-                Stroke::new(1.0, stroke_col),
-                egui::StrokeKind::Inside,
-            );
-        }
-
-        let response = ui.allocate_rect(row_rect, Sense::click());
-        response.widget_info(|| {
-            WidgetInfo::selected(WidgetType::Button, true, selected, entry.name.as_str())
-        });
-
-        if response.hovered() && !selected {
-            ui.painter().rect_filled(row_rect, 0.0, c.hover);
-        }
-
-        let is_dir = matches!(entry.kind, EntryKind::Directory | EntryKind::Symlink);
-        let style = style_for_entry(
+        file_row::render_file_row(
+            ui,
             entry,
             EntryVisualState {
                 selected,
                 focused: is_active_col,
-                hovered: response.hovered(),
                 opened,
-                symlink_dir: matches!(entry.kind, EntryKind::Symlink)
-                    && entry.symlink_target_is_dir == Some(true),
+                ..Default::default()
+            },
+            file_row::FileRowLayout {
+                index: row_index,
+                width: row_width,
+                scale: self.view_scale_for(ViewMode::Grid),
             },
             c,
             &self.state.config,
-        );
-        let mut label = entry.name.clone();
-        if self.state.config.miller_column_width_mode == MillerColumnWidthMode::Fixed {
-            let usable = (row_width - 64.0).max(64.0);
-            let max_chars = (usable / (text_size * 0.6)).floor() as usize;
-            label = truncate_middle(&label, max_chars.max(8));
-        }
-        let icon_str = material_icon(style.icon);
-        ui.painter().text(
-            egui::Pos2::new(row_rect.min.x + 10.0, row_rect.center().y),
-            Align2::LEFT_CENTER,
-            icon_str,
-            FontId::proportional(icon_size),
-            style.icon_color,
-        );
-
-        ui.painter().text(
-            egui::Pos2::new(row_rect.min.x + 30.0, row_rect.center().y),
-            Align2::LEFT_CENTER,
-            &label,
-            FontId::proportional(text_size),
-            style.text_color,
-        );
-        // Arrow for directories — shows there are children
-        if is_dir {
-            ui.painter().text(
-                egui::Pos2::new(row_rect.max.x - 10.0, row_rect.center().y),
-                Align2::RIGHT_CENTER,
-                "\u{203A}", // › single right angle quotation mark — in NotoSans
-                FontId::proportional(text_size),
-                c.text_muted,
-            );
-        }
-
-        // NOTE: do NOT add_space here — allocate_rect already advanced the cursor.
-        // Adding space here was the cause of double-row-height spacing.
-        if label != entry.name {
-            response.on_hover_text(entry.name.clone())
-        } else {
-            response
-        }
+        )
     }
 
     fn handle_viewport_resize(&self, ctx: &Context) {
@@ -23880,29 +22960,7 @@ impl OttrinApp {
         {
             return;
         }
-        let (maximized, fullscreen) = ctx.input(|i| {
-            let viewport = i.viewport();
-            (
-                viewport.maximized.unwrap_or(false),
-                viewport.fullscreen.unwrap_or(false),
-            )
-        });
-        if maximized || fullscreen {
-            return;
-        }
-
-        let rect = ctx.viewport_rect();
-        let Some(pos) = ctx.pointer_hover_pos() else {
-            return;
-        };
-
-        if let Some(direction) = resize_direction_for_pos(rect, pos, 6.0) {
-            ctx.set_cursor_icon(cursor_icon_for_resize_direction(direction));
-            let primary_pressed = ctx.input(|i| i.pointer.primary_pressed());
-            if primary_pressed {
-                ctx.send_viewport_cmd(egui::ViewportCommand::BeginResize(direction));
-            }
-        }
+        window_chrome::handle_viewport_resize(ctx);
     }
 }
 
@@ -38211,11 +37269,14 @@ mod tests {
     fn preview_loader_bounds_pending_work_to_one_request() {
         let (started_tx, started_rx) = mpsc::channel();
         let (release_tx, release_rx) = mpsc::channel();
-        let (tx, rx) = spawn_preview_loader_with(move |request, _cancelled| {
-            started_tx.send(()).expect("announce started load");
-            release_rx.recv().expect("release blocked load");
-            load_preview(request)
-        });
+        let (tx, rx) = spawn_preview_loader_with(
+            move |request, _cancelled| {
+                started_tx.send(()).expect("announce started load");
+                release_rx.recv().expect("release blocked load");
+                load_preview(request)
+            },
+            ResultRepaint::default(),
+        );
         let request = |generation, name: &str| PreviewLoadRequest {
             target: PreviewTarget::Overlay,
             generation,

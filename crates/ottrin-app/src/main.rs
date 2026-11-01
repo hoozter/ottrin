@@ -123,6 +123,7 @@ enum HeadlessAction {
         offset: usize,
     },
     Preview(PathBuf),
+    Picker,
     OpenPath(PathBuf),
     SelectPath(PathBuf),
     DropStatus,
@@ -348,7 +349,23 @@ fn main() {
         print_cli_help();
         return;
     }
-    let gui_target = match cli_headless_action(&cli.command) {
+    let action = cli_headless_action(&cli.command);
+    if matches!(&action, Some(HeadlessAction::Picker)) {
+        let request = match read_picker_request(std::io::stdin().lock()) {
+            Ok(request) => request,
+            Err(error) => {
+                eprintln!("ottrin picker: {error}");
+                std::process::exit(2);
+            }
+        };
+        install_windows_startup_panic_hook();
+        if let Err(error) = run_picker_gui(request, cli) {
+            eprintln!("ottrin picker: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    let gui_target = match action {
         Some(HeadlessAction::Preview(path)) => match resolve_preview_path(&path) {
             Ok(path) => Some(GuiLaunchTarget::QuickInspector(path)),
             Err(error) => {
@@ -456,6 +473,79 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
             Ok(Box::new(app))
         }),
     )
+}
+
+const MAX_PICKER_REQUEST_BYTES: usize = 128 * 1024;
+
+fn read_picker_request(
+    reader: impl std::io::Read,
+) -> Result<ottrin_core::picker::PickerRequest, String> {
+    use std::io::Read as _;
+    let mut bytes = Vec::new();
+    reader
+        .take(MAX_PICKER_REQUEST_BYTES as u64 + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|error| error.to_string())?;
+    if bytes.len() > MAX_PICKER_REQUEST_BYTES {
+        return Err("Picker request exceeds 128 KiB".into());
+    }
+    let request = serde_json::from_slice(&bytes)
+        .map_err(|error| format!("Invalid picker request: {error}"))?;
+    ottrin_ui::PickerApp::validate_request(&request)?;
+    Ok(request)
+}
+
+fn run_picker_gui(
+    request: ottrin_core::picker::PickerRequest,
+    cli: CliArguments,
+) -> Result<(), String> {
+    let renderer_override = graphics_renderer_override(cli.renderer_override.as_deref())?;
+    let config = load_config();
+    let runtime = graphics_runtime_status(renderer_override.is_some(), &config);
+    let title = format!(
+        "{} — {}",
+        application_window_title(),
+        request.window_title()
+    );
+    let options = NativeOptions {
+        renderer: renderer_for_selection(runtime.is_windows, runtime.selection.choice),
+        viewport: egui::ViewportBuilder::default()
+            .with_app_id(ottrin_ui::DESKTOP_APPLICATION_ID)
+            .with_title(&title)
+            .with_decorations(false)
+            .with_transparent(main_viewport_transparent(runtime.is_windows))
+            .with_inner_size([940.0, 640.0])
+            .with_min_inner_size([680.0, 480.0])
+            .with_icon(load_window_icon()),
+        ..Default::default()
+    };
+    #[cfg(target_os = "windows")]
+    let options = windows_initial_window_options(options, false);
+    let outcome = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let result = outcome.clone();
+    let cancelled = request.cancelled_response();
+    let validate = request.clone();
+    eframe::run_native(
+        &title,
+        options,
+        Box::new(move |cc| {
+            Ok(Box::new(ottrin_ui::PickerApp::new(
+                cc, request, runtime, outcome,
+            )?))
+        }),
+    )
+    .map_err(|error| error.to_string())?;
+    let response = result
+        .lock()
+        .map_err(|_| "Picker result lock was poisoned")?
+        .take()
+        .unwrap_or(cancelled);
+    response.validate_for(&validate)?;
+    println!(
+        "{}",
+        serde_json::to_string(&response).map_err(|error| error.to_string())?
+    );
+    Ok(())
 }
 
 #[cfg(target_os = "windows")]
@@ -604,6 +694,7 @@ fn print_cli_help() {
     println!("Ottrin — find, inspect, and manage files");
     println!();
     println!("Usage:");
+    println!("  ottrin picker                   Open an Ottrin chooser using a JSON stdin request");
     println!("  ottrin                         Open the file manager");
     println!("  ottrin <FILE>                  Open the file directly in Quick Inspector");
     println!("  ottrin <DIRECTORY>             Open the file manager in that directory");
@@ -700,6 +791,11 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
     match command {
         "search" | "-s" => Some(parse_search_action(&args[1..])),
         "index" => Some(parse_index_action(&args[1..])),
+        "picker" => Some(if args.len() == 1 {
+            HeadlessAction::Picker
+        } else {
+            HeadlessAction::Invalid("picker reads one JSON request from standard input".into())
+        }),
         "preview" | "-p" => Some(match &args[1..] {
             [path] if !path.is_empty() => HeadlessAction::Preview(PathBuf::from(path)),
             [separator, path] if separator == "--" && !path.is_empty() => {
@@ -1069,6 +1165,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             Ok(())
         }
         HeadlessAction::Preview(_)
+        | HeadlessAction::Picker
         | HeadlessAction::OpenPath(_)
         | HeadlessAction::SelectPath(_) => {
             unreachable!("GUI paths start before headless routing")
@@ -1391,6 +1488,39 @@ mod tests {
     use super::*;
 
     #[cfg(unix)]
+    #[test]
+    fn picker_requests_are_bounded_and_validated_before_graphics_startup() {
+        let request =
+            read_picker_request(br#"{"mode":"open","title":"Choose a document"}"#.as_slice())
+                .unwrap();
+        assert_eq!(request.title, "Choose a document");
+        assert!(
+            read_picker_request(vec![b' '; MAX_PICKER_REQUEST_BYTES + 1].as_slice())
+                .unwrap_err()
+                .contains("128 KiB")
+        );
+        for invalid in [
+            r#"{"mode":"save","multiple":true}"#,
+            r#"{"unknown":true}"#,
+            r#"{"filters":[{"name":"Invalid glob","patterns":[{"kind":"glob","value":"["}]}]}"#,
+        ] {
+            assert!(
+                read_picker_request(invalid.as_bytes()).is_err(),
+                "{invalid}"
+            );
+        }
+        let cli =
+            parse_cli_arguments(&["picker".into(), "--renderer".into(), "opengl".into()]).unwrap();
+        assert!(matches!(
+            cli_headless_action(&cli.command),
+            Some(HeadlessAction::Picker)
+        ));
+        assert!(matches!(
+            cli_headless_action(&["picker".into(), "extra".into()]),
+            Some(HeadlessAction::Invalid(_))
+        ));
+    }
+
     #[test]
     fn initial_viewport_fits_taskbar_work_area_at_normal_and_scaled_dpi() {
         for scale in [1.0, 1.5, 2.0] {

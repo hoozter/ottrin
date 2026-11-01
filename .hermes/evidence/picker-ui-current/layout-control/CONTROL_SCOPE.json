@@ -1,0 +1,7 @@
+{
+  "status": "First rendered layout rejected; no successful Open acceptance",
+  "cause": "Inherited horizontal child layout expanded Places over file pane and pushed actions outside viewport",
+  "observed": "Actual source picker starts without index; Cancel returns accepted=false and leaves all five files unchanged",
+  "cleanup": "TEARDOWN_CORRECTION.json verifies no remaining owned namespace children or mounts after correcting the cleanup helper name",
+  "fix": "Explicit vertical layouts and bounded Places width; scope the location focus request and clear stale filtered/typed selections"
+}

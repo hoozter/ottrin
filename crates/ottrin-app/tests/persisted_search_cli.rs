@@ -10,7 +10,14 @@ use std::os::unix::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::process::{Child, Command, Output, Stdio};
+use std::sync::Mutex;
 use std::thread;
+
+// A concurrent fork can briefly inherit another fixture's writable executable
+// descriptor before exec closes it, making Linux reject that fixture with
+// ETXTBSY. Keep executable creation and child lifetimes in this test process
+// sequential; separate profiles still verify the real daemon lifecycle.
+static DAEMON_FIXTURE: Mutex<()> = Mutex::new(());
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 struct FixtureDaemon(Child);
@@ -52,6 +59,7 @@ fn run_app(config_home: &Path, cache_home: &Path, runtime_dir: &Path, args: &[&s
 
 #[test]
 fn persisted_no_match_cli_query_does_not_scan_fuzzy_candidates() {
+    let _fixture_lock = DAEMON_FIXTURE.lock().expect("daemon fixture lock");
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("clock")
@@ -155,12 +163,14 @@ fn persisted_no_match_cli_query_does_not_scan_fuzzy_candidates() {
 #[cfg(target_os = "linux")]
 #[test]
 fn stale_on_demand_daemon_is_replaced_before_a_rebuild() {
+    let _fixture_lock = DAEMON_FIXTURE.lock().expect("daemon fixture lock");
     check_daemon_reuse(true);
 }
 
 #[cfg(target_os = "linux")]
 #[test]
 fn identical_daemon_on_another_mount_is_reused_across_launches() {
+    let _fixture_lock = DAEMON_FIXTURE.lock().expect("daemon fixture lock");
     check_daemon_reuse(false);
 }
 

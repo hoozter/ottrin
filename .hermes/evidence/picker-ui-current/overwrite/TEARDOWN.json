@@ -1,0 +1,30 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-kprh7q3t",
+  "owned_processes_reaped": [
+    {
+      "pid": 2830276,
+      "exit": 0
+    },
+    {
+      "pid": 2830293,
+      "exit": 0
+    },
+    {
+      "pid": 2830294,
+      "exit": 15
+    },
+    {
+      "pid": 2830353,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [
+    "98 34 0:64 / /var/tmp/.ottrin-picker-qa-kprh7q3t/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

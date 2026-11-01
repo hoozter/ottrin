@@ -1,0 +1,2 @@
+Owned test profile retained after teardown failure: /tmp/ottrin-teardown-control-lwhjnqn1/ot-p6oxki3t
+Failed teardown retains exact profile; successful teardown removes it; control fixture removed.

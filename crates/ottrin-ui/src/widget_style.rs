@@ -180,6 +180,7 @@ pub(crate) struct AlignedMenuButton {
     label: String,
     colors: Colors,
     framed: bool,
+    selected: bool,
     min_size: egui::Vec2,
     submenu: bool,
     width: Option<f32>,
@@ -198,6 +199,7 @@ pub(crate) fn aligned_menu_button(
         label: label.to_owned(),
         colors: *colors,
         framed: false,
+        selected: false,
         min_size: egui::Vec2::new(188.0 * colors.font_scale, 28.0 * colors.font_scale),
         submenu: false,
         width: None,
@@ -205,6 +207,10 @@ pub(crate) fn aligned_menu_button(
 }
 
 impl AlignedMenuButton {
+    pub(crate) fn selected(mut self, selected: bool) -> Self {
+        self.selected = selected;
+        self
+    }
     /// Choice groups reserve this column on every row; action-only menus omit it.
     pub(crate) fn indicator_column(mut self) -> Self {
         self.indicator_column = true;
@@ -257,6 +263,7 @@ impl Widget for AlignedMenuButton {
             );
             atoms.push(Atom::grow());
             let mut button = Button::new(egui::Atoms::from(atoms))
+                .selected(self.selected)
                 .frame(true)
                 .frame_when_inactive(self.framed)
                 .min_size(self.min_size);

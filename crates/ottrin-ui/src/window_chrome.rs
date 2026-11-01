@@ -167,6 +167,162 @@ pub(crate) enum WmBtn {
     Minimize,
 }
 
+/// Use identical native corner masking and borders for file-manager and picker windows.
+pub(crate) fn paint_viewport_frame(ctx: &Context, colors: Colors, is_windows: bool) {
+    use crate::rounded_alpha_callback_enabled;
+
+    // Paint the same rounded border and alpha mask for every Ottrin viewport.
+    // The GL callback runs first to fix the alpha channel, then the
+    // border stroke paints on top so it is never occluded.
+    let vp_rect = ctx.viewport_rect();
+    let border_painter = ctx.layer_painter(egui::LayerId::new(
+        egui::Order::Foreground,
+        egui::Id::new("viewport_border"),
+    ));
+
+    let radius = colors.app_radius as f32;
+    if rounded_alpha_callback_enabled(is_windows) {
+        border_painter.add(egui::Shape::Callback(egui::PaintCallback {
+            rect: vp_rect,
+            callback: std::sync::Arc::new(eframe::egui_glow::CallbackFn::new(
+                move |info, painter| {
+                    use eframe::glow::HasContext as _;
+                    let gl = painter.gl();
+                    let [scr_w, scr_h] = info.screen_size_px;
+                    let scr_w = scr_w as i32;
+                    let scr_h = scr_h as i32;
+                    let ppp = info.pixels_per_point;
+
+                    unsafe {
+                        let r_f = radius * ppp;
+                        let r_px = r_f.ceil() as i32;
+
+                        // --- alpha pass: only write the A channel --------
+                        gl.color_mask(false, false, false, true);
+
+                        // 1. Clear alpha to 0 everywhere (fully transparent).
+                        gl.clear_color(0.0, 0.0, 0.0, 0.0);
+                        gl.disable(eframe::glow::SCISSOR_TEST);
+                        gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+
+                        // 2. Fill alpha=1.0 only inside the rounded rect.
+                        gl.clear_color(0.0, 0.0, 0.0, 1.0);
+                        gl.enable(eframe::glow::SCISSOR_TEST);
+
+                        if r_px > 0 && scr_h > 2 * r_px {
+                            // Middle band: full width, fully opaque.
+                            gl.scissor(0, r_px, scr_w, scr_h - 2 * r_px);
+                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+
+                            // Corner scanlines: arc-shaped inset.
+                            for row in 0..r_px {
+                                let dy = r_f - row as f32 - 0.5;
+                                let inset = if dy <= 0.0 {
+                                    0
+                                } else if dy >= r_f {
+                                    scr_w // fully outside
+                                } else {
+                                    let x_inside = (r_f * r_f - dy * dy).sqrt();
+                                    let edge = r_f - x_inside;
+                                    (edge.ceil() as i32).clamp(0, r_px)
+                                };
+                                let strip_w = scr_w - 2 * inset;
+                                if strip_w <= 0 {
+                                    continue;
+                                }
+                                // Top row (GL origin is bottom-left).
+                                gl.scissor(inset, scr_h - 1 - row, strip_w, 1);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                // Bottom row.
+                                gl.scissor(inset, row, strip_w, 1);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                            }
+                        } else {
+                            // No rounding or window too small — full opaque.
+                            gl.scissor(0, 0, scr_w, scr_h);
+                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                        }
+
+                        // --- RGB pass: zero out RGB in corner boxes so
+                        //     stale content colour doesn't bleed through
+                        //     the border's anti-aliased fringe. ----------
+                        if r_px > 0 {
+                            gl.color_mask(true, true, true, false);
+                            gl.clear_color(0.0, 0.0, 0.0, 0.0);
+                            // Only clear the thin L-shaped strips outside
+                            // the arc, not the whole corner box (to avoid
+                            // destroying content pixels inside the arc).
+                            for row in 0..r_px {
+                                let dy = r_f - row as f32 - 0.5;
+                                let inset = if dy <= 0.0 {
+                                    0
+                                } else if dy >= r_f {
+                                    r_px
+                                } else {
+                                    let x_inside = (r_f * r_f - dy * dy).sqrt();
+                                    let edge = r_f - x_inside;
+                                    (edge.ceil() as i32).clamp(0, r_px)
+                                };
+                                if inset <= 0 {
+                                    continue;
+                                }
+                                // Top-left / top-right
+                                gl.scissor(0, scr_h - 1 - row, inset, 1);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                gl.scissor(scr_w - inset, scr_h - 1 - row, inset, 1);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                // Bottom-left / bottom-right
+                                gl.scissor(0, row, inset, 1);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                gl.scissor(scr_w - inset, row, inset, 1);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                            }
+                        }
+
+                        gl.color_mask(true, true, true, true);
+                        gl.disable(eframe::glow::SCISSOR_TEST);
+                    }
+                },
+            )),
+        }));
+    }
+
+    // Border stroke renders AFTER the callback so it sits on top.
+    border_painter.rect_stroke(
+        vp_rect,
+        colors.app_radius,
+        Stroke::new(colors.window_border_width, colors.window_border),
+        egui::StrokeKind::Inside,
+    );
+}
+
+/// Shared edge resize behavior for undecorated application windows.
+pub(crate) fn handle_viewport_resize(ctx: &Context) {
+    let (maximized, fullscreen) = ctx.input(|i| {
+        let viewport = i.viewport();
+        (
+            viewport.maximized.unwrap_or(false),
+            viewport.fullscreen.unwrap_or(false),
+        )
+    });
+    if maximized || fullscreen {
+        return;
+    }
+
+    let rect = ctx.viewport_rect();
+    let Some(pos) = ctx.pointer_hover_pos() else {
+        return;
+    };
+
+    if let Some(direction) = resize_direction_for_pos(rect, pos, 6.0) {
+        ctx.set_cursor_icon(cursor_icon_for_resize_direction(direction));
+        let primary_pressed = ctx.input(|i| i.pointer.primary_pressed());
+        if primary_pressed {
+            ctx.send_viewport_cmd(egui::ViewportCommand::BeginResize(direction));
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
