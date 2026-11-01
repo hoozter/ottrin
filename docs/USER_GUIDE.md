@@ -66,6 +66,25 @@ and signing still require macOS release-candidate evidence.
 | F2 | Rename |
 | F5 | Refresh current folder |
 
+## Ottrin chooser — source preview
+
+The current source uses Ottrin's themed chooser for theme import/export, manual
+application selection and search-folder settings. These changes are awaiting fresh
+packaged delivery; the roadmap identifies the accepted package revision.
+
+Use **This folder** to filter names in the folder you are browsing, or select
+**Indexed folders** to search configured indexed locations with the same query
+syntax as the main Search panel. Indexed results show their parent folders.
+Search uses an already-running index and never starts one. If it is unavailable,
+select **This folder** to continue browsing directly. Returning to that scope
+clears the indexed query because folder filtering uses literal text.
+
+Save checks the selected location and asks before returning an existing file.
+The chooser returns the path; the calling application performs the save. A
+selection from indexed results uses that result's parent folder. View, hidden-file,
+preview and last-folder preferences are remembered separately from main-window
+settings; an application's requested starting folder takes precedence.
+
 ## Appearance and themes
 
 Open **Settings → Appearance** to choose a built-in theme or one of **Your themes**.

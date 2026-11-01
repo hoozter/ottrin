@@ -73,10 +73,26 @@ their named hashes. Test counts are scoped observations, not completion measures
   scopes; both defects have failing-before/passing-after regression tests. The
   Dark binary predates the final grid/panel-color extraction; receipts retain
   exact binary scopes. These changes still need final package acceptance and
-  actual Windows picker-window/resource checks. Existing-index search,external
-  parent-window ownership,portal/cooperating-app integration and reversible folder
-  associations remain required. Keep owner/physical/release-identity waits parked.
+  actual Windows picker-window/resource checks. External parent-window ownership,
+  portal/cooperating-app integration and reversible folder associations remain required. Keep owner/physical/release-identity waits parked.
   Evidence: `picker-integration-current/`; preceding foundation: `picker-ui-current/`.
+- **Existing-index picker search is implemented in source,not yet packaged.**
+  The chooser distinguishes literal **This folder** filtering from **Indexed folders**
+  using the main Search query syntax. Debounced background queries cancel abandoned
+  connections and discard stale generations; empty searches make no connection.
+  Search never starts the index. Stopped/unavailable indexes show a direct-browsing
+  recovery instruction. Indexed list results show aligned,clickable parent paths;
+  choosing a result updates the save location before fresh filesystem validation
+  and explicit overwrite confirmation. Results are bounded to200 with a refine-query
+  notice when truncated; caller file-type filters apply to that bounded result set.
+  All436 regular Linux UI tests and408 native ordinary/elevated Windows UI tests
+  pass,with one/four existing ignores respectively and zero filters. Strict Linux
+  and GNU Windows lint passes. Final actual Linux GUI verifies advanced indexed
+  queries,cross-folder Save/exact response,unchanged original bytes,index survival
+  after picker close,unavailable-index recovery and no automatic index startup.
+  Private desktop profiles and the native QA root are removed; guest is off.
+  These are source checks,not final package,Windows picker-window or resource
+  acceptance. Evidence: `picker-index-current/`.
 - **MSI rollback remains a required failed gate.** Reviewed upstream evidence
   corroborates the failure family but establishes no safe authoring correction.
   Keep its exact receipts and external investigation boundary; do not repeat the
@@ -621,7 +637,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | --- | --- | --- |
 | Linux | Four cf6e465a formats; complete hosted checks; actual before/after target options,Dark100/Light150 startup,read-only close,nine-file preservation and saved preferences. Enabled personal service uses current runtime. | Deliver the newer pointer-preview/notice source repair and required picker/integration; finish available software acceptance before parked owner/device checks. |
 | Windows | cf6e465a ZIP/NSIS/MSI candidate;58 matching files,complete hosted source checks and scoped native CLI/renderer/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) defines hashes and limits. | Deliver newer pointer-preview/notice repair and required picker/integration; continue remaining workflow/installed acceptance. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Shared chooser,picker-only preferences and seven internal callers verified in source; native/Linux GUI scopes above. | Finish existing-index search,external ownership,portal/cooperating-app and reversible folder integration,then exact-package/resource acceptance. Park owner/physical/external waits. |
+| Ottrin picker and folder integration | Shared chooser,picker-only preferences and seven internal callers verified in source; native/Linux GUI scopes above. | Finish external ownership,portal/cooperating-app and reversible folder integration,then exact-package/resource acceptance. Existing-index search is source-verified. Park owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

@@ -1,0 +1,87 @@
+{
+  "status": "owned cleanup complete",
+  "incremental_sessions_retired": 19,
+  "tool_reported_recovered_GiB": 0.74,
+  "retired_routine_outputs": [
+    {
+      "path": "scripts/__pycache__",
+      "bytes": 182577
+    },
+    {
+      "path": "scripts/linux-desktop-qa/__pycache__",
+      "bytes": 13571
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/__pycache__",
+      "bytes": 13286
+    },
+    {
+      "path": ".hermes/evidence/windows-office-contract-current/__pycache__",
+      "bytes": 4949
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/FOCUSED.log",
+      "bytes": 2568
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-ready/overwrite-confirmation.png",
+      "bytes": 59578
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-ready/selected-remote.png",
+      "bytes": 43144
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-ready/indexed-results.png",
+      "bytes": 41698
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-ready/scope-menu.png",
+      "bytes": 33751
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-ready/initial.png",
+      "bytes": 31748
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-unavailable/index-unavailable.png",
+      "bytes": 49058
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-unavailable/direct-recovered.png",
+      "bytes": 31979
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-unavailable/scope-recovery.png",
+      "bytes": 50645
+    },
+    {
+      "path": ".hermes/evidence/picker-index-current/first-unavailable/initial.png",
+      "bytes": 31600
+    }
+  ],
+  "test_output_paths": {
+    "previous": [
+      "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-1c2af95a0e3b7fca.exe"
+    ],
+    "current": [
+      "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-1c2af95a0e3b7fca.exe"
+    ]
+  },
+  "superseded_test_binaries": "Current compiler settings retain the same test executable paths; no extra old test executable cohort created.",
+  "private_GUI_profiles_removed": true,
+  "native_guest_root_removed": true,
+  "native_guest_off": true,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-index-current",
+      "purpose": "Compact source, native test and actual GUI acceptance receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current binaries/test replacements and useful shared compiler state; no extra target tree"
+    }
+  ],
+  "after_sizes": "32217679866\ttarget/debug/deps\n11698743093\ttarget/debug/incremental\n27470213684\ttarget/x86_64-pc-windows-gnu/debug/deps\n26559650966\ttarget/x86_64-pc-windows-gnu/debug/incremental\n527248\t.hermes/evidence/picker-index-current\n",
+  "preserved": "Stable dist packages, personal service/data, unrelated owner AGENTS.md and useful shared caches"
+}

@@ -1,0 +1,59 @@
+{
+  "case": "ready",
+  "binary_sha256": "72ca768753121befe9793f4e188833dcd3a6777f11d858ac03cc6bd2c6d259c7",
+  "index_binary_sha256": "45f8fa3282a11cf53203dc0d984fab591edac1b496398f3114b7f0bfcdbc5303",
+  "scope": "Actual source-debug chooser; not final package/resource acceptance",
+  "initial_files": {
+    "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+    "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+  },
+  "normal_exit": 0,
+  "response": {
+    "accepted": true,
+    "paths": [
+      "/var/tmp/.ottrin-picker-qa-7bv625pc/fixture/remote/report.txt"
+    ],
+    "current_filter": null,
+    "choices": {}
+  },
+  "existing_index_survived_picker_close": true,
+  "final_files": {
+    "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+    "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+  },
+  "status": "passed: normal close and original bytes unchanged",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-7bv625pc",
+    "owned_processes_reaped": [
+      {
+        "pid": 2975771,
+        "exit": 0
+      },
+      {
+        "pid": 2975774,
+        "exit": 0
+      },
+      {
+        "pid": 2975775,
+        "exit": 15
+      },
+      {
+        "pid": 2975827,
+        "exit": -15
+      },
+      {
+        "pid": 2975961,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:64 / /var/tmp/.ottrin-picker-qa-7bv625pc/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

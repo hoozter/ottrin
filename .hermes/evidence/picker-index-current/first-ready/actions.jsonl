@@ -1,0 +1,10 @@
+{"time": 1793514068.5911732, "click": [80, 110], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514069.059969, "capture": "scope-menu"}
+{"time": 1793514077.7624996, "click": [80, 176], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514078.5672224, "click": [652, 72], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514080.1445572, "capture": "indexed-results"}
+{"time": 1793514092.7193348, "click": [240, 199], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514093.1794796, "capture": "selected-remote"}
+{"time": 1793514093.5862799, "click": [903, 606], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514094.0580676, "capture": "overwrite-confirmation"}
+{"time": 1793514102.858525, "click": [322, 355], "pointer_settled_before_press": true, "hold_seconds": 0.15}

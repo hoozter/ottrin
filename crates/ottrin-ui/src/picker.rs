@@ -8,7 +8,10 @@ use egui::{Align, Context, Layout, RichText, ScrollArea, Vec2};
 use ottrin_core::picker::{
     PickerMode, PickerPattern, PickerRequest, PickerResponse, is_picker_filename,
 };
-use ottrin_core::{AppConfig, EntryKind, FileEntry, SortConfig, default_home_dir};
+use ottrin_core::{
+    AppConfig, EntryKind, FileEntry, SearchIndexStatus, SearchQuery, SearchScope, SearchSort,
+    SortConfig, default_home_dir,
+};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::sync::{
@@ -16,6 +19,7 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     mpsc,
 };
+use std::time::{Duration, Instant};
 
 struct VisibleEntries {
     entries: Arc<Vec<FileEntry>>,
@@ -92,6 +96,11 @@ impl Filter {
 }
 
 enum Work {
+    Search {
+        generation: u64,
+        query: SearchQuery,
+        cancelled: Arc<AtomicBool>,
+    },
     Scan {
         generation: u64,
         directory: PathBuf,
@@ -106,6 +115,10 @@ enum Work {
     },
 }
 enum ResultMessage {
+    Search {
+        generation: u64,
+        result: Result<ottrin_search::SearchQueryResult, String>,
+    },
     Listing {
         generation: u64,
         entries: Result<Vec<FileEntry>, String>,
@@ -141,6 +154,20 @@ impl Worker {
                     break;
                 }
                 let result = match request {
+                    Work::Search {
+                        generation,
+                        query,
+                        cancelled,
+                    } => {
+                        if cancelled.load(Ordering::Acquire) {
+                            continue;
+                        }
+                        ResultMessage::Search {
+                            generation,
+                            result: ottrin_search::SearchDaemonClient::connect_default()
+                                .and_then(|client| client.query_cancellable(query, &cancelled)),
+                        }
+                    }
                     Work::Scan {
                         generation,
                         directory,
@@ -276,6 +303,10 @@ pub(crate) struct PickerDialog {
     preview_enabled: bool,
     filename: String,
     query: String,
+    indexed: bool,
+    search_cancelled: Option<Arc<AtomicBool>>,
+    search_due: Option<Instant>,
+    search_note: Option<String>,
     hidden: bool,
     grid: bool,
     options_expanded: bool,
@@ -328,6 +359,10 @@ impl PickerDialog {
             preview_enabled: false,
             filename,
             query: String::new(),
+            indexed: false,
+            search_cancelled: None,
+            search_due: None,
+            search_note: None,
             hidden: preferences.hidden,
             grid: preferences.grid,
             options_expanded: false,
@@ -374,7 +409,57 @@ impl PickerDialog {
         response.choices.clone_from(&self.choices);
         self.result = Some(response);
     }
+    fn cancel_search(&mut self) {
+        if let Some(cancelled) = self.search_cancelled.take() {
+            cancelled.store(true, Ordering::Release);
+        }
+        self.search_due = None;
+    }
+    fn schedule_search(&mut self, ctx: &Context) {
+        self.cancel_search();
+        self.generation += 1;
+        self.clear_selection();
+        self.entries = Arc::new(Vec::new());
+        self.visible_key = None;
+        self.error = None;
+        self.overwrite = None;
+        self.search_note = None;
+        self.listing_valid = false;
+        self.loading = !self.query.trim().is_empty();
+        if self.loading {
+            self.search_due = Some(Instant::now() + Duration::from_millis(150));
+            ctx.request_repaint_after(Duration::from_millis(150));
+        }
+    }
+    fn dispatch_search(&mut self) {
+        let cancelled = Arc::new(AtomicBool::new(false));
+        self.search_cancelled = Some(cancelled.clone());
+        let text = if self.request.mode == PickerMode::Folder {
+            format!("({}) (type:folder | type:link)", self.query)
+        } else {
+            self.query.clone()
+        };
+        if let Err(error) = self.worker.send(Work::Search {
+            generation: self.generation,
+            query: SearchQuery {
+                text,
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: self.hidden,
+                sort: SearchSort::Relevance,
+                limit: 200,
+                offset: 0,
+                content_search: false,
+            },
+            cancelled,
+        }) {
+            self.loading = false;
+            self.error = Some(error);
+        }
+    }
     fn scan(&mut self) {
+        self.cancel_search();
+        self.search_note = None;
         self.generation += 1;
         self.loading = true;
         self.validating = false;
@@ -394,6 +479,7 @@ impl PickerDialog {
         }
     }
     fn navigate(&mut self, directory: PathBuf) {
+        self.indexed = false;
         self.directory = if directory.is_absolute() {
             directory
         } else {
@@ -408,8 +494,64 @@ impl PickerDialog {
         self.scan();
     }
     fn poll(&mut self) {
+        if self.search_due.is_some_and(|due| Instant::now() >= due) {
+            self.search_due = None;
+            self.dispatch_search();
+        }
         while let Ok(message) = self.worker.results.try_recv() {
             match message {
+                ResultMessage::Search { generation, result } if generation == self.generation => {
+                    self.loading = false;
+                    self.search_cancelled = None;
+                    match result {
+                        Ok(result) => {
+                            let response = result.response;
+                            if let Some(error) = response.error {
+                                self.error = Some(error);
+                            } else if response.status == SearchIndexStatus::Unavailable {
+                                self.error = Some(
+                                    "Index unavailable. Choose This folder to browse directly."
+                                        .into(),
+                                );
+                            } else {
+                                let count = response.items.len();
+                                let mut notes = Vec::new();
+                                if response.total > count {
+                                    notes.push(format!("First {count} of {} index matches; refine your query. File type filters apply to these results.", response.total));
+                                }
+                                if response.status != SearchIndexStatus::Ready {
+                                    notes.push("The index is still loading or updating; results may be incomplete.".into());
+                                }
+                                if let Some(warning) = result.warning {
+                                    notes.push(warning);
+                                }
+                                self.search_note = (!notes.is_empty()).then(|| notes.join(" "));
+                                self.entries = Arc::new(
+                                    response
+                                        .items
+                                        .into_iter()
+                                        .map(|item| FileEntry {
+                                            name: item.name,
+                                            path: item.path,
+                                            kind: item.kind,
+                                            is_executable: item.is_executable,
+                                            symlink_target_is_dir: item.symlink_target_is_dir,
+                                            size_bytes: item.size_bytes,
+                                            modified_unix_secs: item.modified_unix_secs,
+                                        })
+                                        .collect(),
+                                );
+                                self.visible_key = None;
+                                self.listing_valid = true;
+                            }
+                        }
+                        Err(error) => {
+                            self.error = Some(format!(
+                                "Index unavailable. Choose This folder to browse directly. Details: {error}"
+                            ))
+                        }
+                    }
+                }
                 ResultMessage::Listing {
                     generation,
                     entries,
@@ -465,7 +607,9 @@ impl PickerDialog {
                     .filter_map(|(index, entry)| {
                         let directory = is_directory(entry);
                         ((self.request.mode != PickerMode::Folder || directory)
-                            && (query.is_empty() || entry.name.to_lowercase().contains(&query))
+                            && (self.indexed
+                                || query.is_empty()
+                                || entry.name.to_lowercase().contains(&query))
                             && (directory
                                 || self
                                     .request
@@ -543,6 +687,12 @@ impl PickerDialog {
                 .unwrap_or_default();
         } else if !is_directory(entry) {
             self.filename.clone_from(&entry.name);
+        }
+        if self.indexed
+            && let Some(parent) = self.focus.as_ref().and_then(|path| path.parent())
+        {
+            self.directory = parent.to_path_buf();
+            self.location = path_label(&self.directory);
         }
         self.error = None;
     }
@@ -661,6 +811,9 @@ impl PickerDialog {
     pub(crate) fn show(&mut self, ui: &mut egui::Ui, colors: Colors, config: &AppConfig) {
         self.poll();
         let ctx = ui.ctx().clone();
+        if let Some(due) = self.search_due {
+            ctx.request_repaint_after(due.saturating_duration_since(Instant::now()));
+        }
         if ctx.input(|input| input.key_pressed(egui::Key::Escape))
             && self.overwrite.take().is_none()
         {
@@ -770,19 +923,34 @@ impl PickerDialog {
                         }
                         let search = ui.add(
                             egui::TextEdit::singleline(&mut self.query)
-                                .hint_text("Search this folder")
+                                .hint_text(if self.indexed { "Search indexed folders" } else { "Filter this folder" })
                                 .char_limit(1024)
                                 .desired_width(ui.available_width().max(80.0))
                                 .themed(&colors),
                         );
+                        search.clone().on_hover_text(if self.indexed {
+                            "Uses Ottrin search syntax, like the main Search panel. Searches configured indexed folders without starting the index service."
+                        } else { "Filter filenames in this folder." });
                         if search.changed() {
-                            self.clear_selection();
+                            if self.indexed { self.schedule_search(&ctx); } else { self.clear_selection(); }
                         }
                     });
                     ui.add_space(6.0);
                     ui.horizontal(|ui| {
+                        let previous = self.indexed;
+                        egui::ComboBox::from_id_salt("picker-search-scope")
+                            .selected_text(if self.indexed { "Indexed folders" } else { "This folder" })
+                            .show_ui(ui, |ui| {
+                                ui.selectable_value(&mut self.indexed, false, "This folder");
+                                ui.selectable_value(&mut self.indexed, true, "Indexed folders");
+                            });
+                        if previous != self.indexed {
+                            if self.indexed { self.schedule_search(&ctx); } else { self.query.clear(); self.scan(); }
+                        }
                         ui.label(
-                            RichText::new(if self.loading {
+                            RichText::new(if self.loading && self.indexed {
+                                "Searching…".into()
+                            } else if self.loading {
                                 "Reading folder…".into()
                             } else {
                                 format!("{} items", self.visible_entries().len())
@@ -816,7 +984,7 @@ impl PickerDialog {
                                 .clicked()
                             {
                                 self.hidden = !self.hidden;
-                                self.scan();
+                                if self.indexed { self.schedule_search(&ctx); } else { self.scan(); }
                             }
                             if ui
                                 .add(egui::Button::new(MI_APPS).themed(&colors))
@@ -835,6 +1003,9 @@ impl PickerDialog {
                         });
                     });
                 });
+            if let Some(note) = &self.search_note {
+                ui.add(egui::Label::new(RichText::new(note).small().color(colors.text_muted)).truncate()).on_hover_text(note);
+            }
             ui.separator();
             let options_open = self.options_expanded;
             let footer_height = (80.0
@@ -914,7 +1085,7 @@ impl PickerDialog {
                         );
                         if self.loading {
                             ui.spinner();
-                            ui.label("Reading folder…");
+                            ui.label(if self.indexed { "Searching indexed folders…" } else { "Reading folder…" });
                         }
                         let visible = self.visible_entries();
                         let grid_metrics =
@@ -931,7 +1102,7 @@ impl PickerDialog {
                         let row_height = if self.grid {
                             grid_metrics.size.y
                         } else {
-                            (25.0 * colors.font_scale).round()
+                            (25.0 * colors.font_scale).round() + if self.indexed { ui.text_style_height(&egui::TextStyle::Small) + ui.spacing().item_spacing.y } else { 0.0 }
                         };
                         ScrollArea::vertical()
                             .id_salt("picker-files")
@@ -961,6 +1132,7 @@ impl PickerDialog {
                                                         config,
                                                         crate::file_grid::GridThumbnail::Icon,
                                                     );
+                                                let response = response.on_hover_text(path_label(&entry.path));
                                                 if response.clicked() {
                                                     self.select(
                                                         entry,
@@ -1002,6 +1174,14 @@ impl PickerDialog {
                                             &colors,
                                             config,
                                         );
+                                        let response = if self.indexed {
+                                            let location = ui.horizontal(|ui| {
+                                                ui.add_space(30.0);
+                                                ui.add(egui::Label::new(RichText::new(entry.path.parent().map(path_label).unwrap_or_default()).small().color(colors.text_muted)).truncate().sense(egui::Sense::click()))
+                                                    .on_hover_text(path_label(&entry.path))
+                                            }).inner;
+                                            response.union(location)
+                                        } else { response };
                                         if self.focus.as_ref() == Some(&entry.path)
                                             && ui.input(|input| {
                                                 input.key_pressed(egui::Key::ArrowDown)
@@ -1028,7 +1208,13 @@ impl PickerDialog {
                                     }
                                 }
                                 if visible.is_empty() && !self.loading {
-                                    ui.label(if self.query.is_empty() {
+                                    ui.label(if self.indexed && self.query.trim().is_empty() {
+                                        "Enter a query to search indexed folders"
+                                    } else if self.indexed && self.error.is_some() {
+                                        "Choose This folder to continue browsing without the index."
+                                    } else if self.indexed {
+                                        "No matching indexed files or folders"
+                                    } else if self.query.is_empty() {
                                         "No matching files or folders"
                                     } else {
                                         "No matches in this folder"
@@ -1215,8 +1401,14 @@ impl PickerDialog {
     }
 }
 
+impl Drop for PickerDialog {
+    fn drop(&mut self) {
+        self.cancel_search();
+    }
+}
+
 /// Standalone host for portal and cooperating-application requests. It loads no
-/// file-manager operation workers and never connects to or starts the index.
+/// file-manager operation workers. Only explicit indexed search connects to an existing index.
 pub struct PickerApp {
     dialog: PickerDialog,
     config: AppConfig,
@@ -1945,5 +2137,224 @@ mod tests {
         .unwrap();
         assert!(dialog.preview.is_none());
         assert!(dialog.preferences().preview);
+    }
+    fn capture_work(
+        dialog: &mut PickerDialog,
+    ) -> (mpsc::Receiver<Work>, mpsc::Sender<ResultMessage>) {
+        let (sender, requests) = mpsc::channel();
+        let (completed, results) = mpsc::channel();
+        dialog.worker = Worker {
+            sender: Some(sender),
+            results,
+            stopped: Arc::new(AtomicBool::new(false)),
+        };
+        (requests, completed)
+    }
+    fn search_result(path: &Path) -> ottrin_search::SearchQueryResult {
+        ottrin_search::SearchQueryResult {
+            response: ottrin_core::SearchResponse {
+                items: vec![ottrin_core::SearchResultItem {
+                    path: path.to_path_buf(),
+                    parent_path: path.parent().unwrap().to_path_buf(),
+                    name: path.file_name().unwrap().to_string_lossy().into_owned(),
+                    kind: EntryKind::File,
+                    is_executable: false,
+                    symlink_target_is_dir: None,
+                    size_bytes: Some(8),
+                    modified_unix_secs: None,
+                    content_snippet: None,
+                    name_lower: String::new(),
+                    path_str: String::new(),
+                    path_lower: String::new(),
+                }],
+                total: 1,
+                status: SearchIndexStatus::Ready,
+                error: None,
+            },
+            warning: None,
+        }
+    }
+    #[test]
+    fn indexed_search_cancels_abandoned_queries_and_discards_their_results() {
+        let root = tempfile::tempdir().unwrap();
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(root.path().into()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        wait_listing(&mut app.dialog);
+        let (requests, completed) = capture_work(&mut app.dialog);
+        app.dialog.indexed = true;
+        app.dialog.query = "ext:txt".into();
+        app.dialog.schedule_search(&ctx);
+        assert!(
+            requests.try_recv().is_err(),
+            "typing must debounce, not dispatch immediately"
+        );
+        app.dialog.search_due = Some(Instant::now());
+        app.dialog.poll();
+        let Work::Search {
+            generation,
+            query,
+            cancelled,
+        } = requests.recv().unwrap()
+        else {
+            panic!()
+        };
+        assert_eq!(query.text, "ext:txt");
+        assert!(!query.content_search);
+        app.dialog.query = "ext:pdf".into();
+        app.dialog.schedule_search(&ctx);
+        assert!(cancelled.load(Ordering::Acquire));
+        completed
+            .send(ResultMessage::Search {
+                generation,
+                result: Ok(search_result(&root.path().join("stale.txt"))),
+            })
+            .unwrap();
+        app.dialog.poll();
+        assert!(app.dialog.entries.is_empty());
+        assert!(app.dialog.loading);
+        app.dialog.navigate(root.path().into());
+        assert!(!app.dialog.indexed);
+        assert!(app.dialog.search_due.is_none());
+        assert!(matches!(requests.recv().unwrap(), Work::Scan { .. }));
+    }
+    #[test]
+    fn indexed_save_uses_the_selected_results_parent_and_rechecks_overwrite() {
+        let browsing = tempfile::tempdir().unwrap();
+        let results = tempfile::tempdir().unwrap();
+        let path = results.path().join("report.txt");
+        std::fs::write(&path, "original").unwrap();
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                mode: PickerMode::Save,
+                initial_directory: Some(browsing.path().into()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        wait_listing(&mut app.dialog);
+        let (requests, completed) = capture_work(&mut app.dialog);
+        app.dialog.indexed = true;
+        app.dialog.query = "ext:txt".into();
+        app.dialog.schedule_search(&ctx);
+        app.dialog.search_due = None;
+        completed
+            .send(ResultMessage::Search {
+                generation: app.dialog.generation,
+                result: Ok(search_result(&path)),
+            })
+            .unwrap();
+        app.dialog.poll();
+        let visible = app.dialog.visible_entries();
+        assert_eq!(
+            visible.len(),
+            1,
+            "advanced queries must not be filtered as literal filenames"
+        );
+        app.dialog
+            .select(visible.get(0), 0, &visible, Default::default());
+        assert_eq!(app.dialog.directory, results.path());
+        app.dialog.accept(false);
+        let Work::Validate {
+            paths,
+            mode,
+            overwrite_confirmed,
+            ..
+        } = requests.recv().unwrap()
+        else {
+            panic!()
+        };
+        assert_eq!(paths, vec![path.clone()]);
+        assert!(
+            matches!(validate_selection(paths, mode, overwrite_confirmed, None), Ok(Selection::Overwrite(p)) if p == path)
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), b"original");
+        assert!(!browsing.path().join("report.txt").exists());
+    }
+    #[test]
+    fn indexed_unavailability_keeps_actions_visible_and_direct_browsing_recovers() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("local.txt"), "original").unwrap();
+        for dark in [false, true] {
+            let ctx = Context::default();
+            let mut app = host(
+                &ctx,
+                PickerRequest {
+                    initial_directory: Some(root.path().into()),
+                    ..Default::default()
+                },
+                dark,
+                1.35,
+            );
+            wait_listing(&mut app.dialog);
+            let (_requests, completed) = capture_work(&mut app.dialog);
+            app.dialog.indexed = true;
+            app.dialog.query = "query".into();
+            app.dialog.schedule_search(&ctx);
+            app.dialog.search_due = None;
+            completed
+                .send(ResultMessage::Search {
+                    generation: app.dialog.generation,
+                    result: Err("connection refused".repeat(20)),
+                })
+                .unwrap();
+            let size = Vec2::new(680.0, 480.0);
+            frame(&mut app, &ctx, size, 0.0, vec![]);
+            let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+            assert!(text_center(&output, "Open").is_some());
+            assert!(text_center(&output, "Cancel").is_some());
+            assert!(!app.dialog.listing_valid);
+            assert!(app.dialog.error.as_ref().unwrap().contains("This folder"));
+            app.dialog.worker = Worker::start(ctx.clone());
+            app.dialog.navigate(root.path().into());
+            wait_listing(&mut app.dialog);
+            assert_eq!(app.dialog.visible_entries().len(), 1);
+        }
+    }
+    #[test]
+    fn empty_indexed_search_does_not_connect_and_closing_cancels_inflight_work() {
+        let root = tempfile::tempdir().unwrap();
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                mode: PickerMode::Folder,
+                initial_directory: Some(root.path().into()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        wait_listing(&mut app.dialog);
+        let (requests, _completed) = capture_work(&mut app.dialog);
+        app.dialog.indexed = true;
+        app.dialog.query = "  ".into();
+        app.dialog.schedule_search(&ctx);
+        app.dialog.poll();
+        assert!(requests.try_recv().is_err());
+        assert!(!app.dialog.loading);
+        app.dialog.query = "photos".into();
+        app.dialog.schedule_search(&ctx);
+        app.dialog.search_due = Some(Instant::now());
+        app.dialog.poll();
+        let Work::Search {
+            query, cancelled, ..
+        } = requests.recv().unwrap()
+        else {
+            panic!()
+        };
+        assert_eq!(query.text, "(photos) (type:folder | type:link)");
+        drop(app);
+        assert!(cancelled.load(Ordering::Acquire));
     }
 }

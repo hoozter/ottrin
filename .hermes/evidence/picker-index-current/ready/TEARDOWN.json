@@ -1,0 +1,34 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-7bv625pc",
+  "owned_processes_reaped": [
+    {
+      "pid": 2975771,
+      "exit": 0
+    },
+    {
+      "pid": 2975774,
+      "exit": 0
+    },
+    {
+      "pid": 2975775,
+      "exit": 15
+    },
+    {
+      "pid": 2975827,
+      "exit": -15
+    },
+    {
+      "pid": 2975961,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [
+    "65 34 0:64 / /var/tmp/.ottrin-picker-qa-7bv625pc/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

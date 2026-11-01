@@ -1,0 +1,142 @@
+{
+  "status": "Existing-index picker search verified in source; packages/external integration remain open",
+  "base_revision": "5d4f25f482be008eb06173459054316fbd525f78",
+  "source_sha256": {
+    "crates/ottrin-ui/src/picker.rs": "cea0cdc1d52e9ac5d64433c3a353e646187fe8af0b97906721b34361571b32b1"
+  },
+  "Linux": {
+    "regular_UI": 436,
+    "ignored": 1,
+    "filtered": 0,
+    "strict_all_target_lint": "pass"
+  },
+  "Windows": {
+    "ordinary_regular_UI": 408,
+    "elevated_regular_UI": 408,
+    "ignored_per_scope": 4,
+    "filtered": 0,
+    "strict_GNU_all_target_lint": "pass"
+  },
+  "actual_GUI": {
+    "ready": {
+      "case": "ready",
+      "binary_sha256": "72ca768753121befe9793f4e188833dcd3a6777f11d858ac03cc6bd2c6d259c7",
+      "index_binary_sha256": "45f8fa3282a11cf53203dc0d984fab591edac1b496398f3114b7f0bfcdbc5303",
+      "scope": "Actual source-debug chooser; not final package/resource acceptance",
+      "initial_files": {
+        "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+        "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+      },
+      "normal_exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          "/var/tmp/.ottrin-picker-qa-7bv625pc/fixture/remote/report.txt"
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "existing_index_survived_picker_close": true,
+      "final_files": {
+        "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+        "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+      },
+      "status": "passed: normal close and original bytes unchanged",
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-7bv625pc",
+        "owned_processes_reaped": [
+          {
+            "pid": 2975771,
+            "exit": 0
+          },
+          {
+            "pid": 2975774,
+            "exit": 0
+          },
+          {
+            "pid": 2975775,
+            "exit": 15
+          },
+          {
+            "pid": 2975827,
+            "exit": -15
+          },
+          {
+            "pid": 2975961,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [
+          "65 34 0:64 / /var/tmp/.ottrin-picker-qa-7bv625pc/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+        ],
+        "profile_removed": true
+      }
+    },
+    "unavailable": {
+      "case": "unavailable",
+      "binary_sha256": "72ca768753121befe9793f4e188833dcd3a6777f11d858ac03cc6bd2c6d259c7",
+      "index_binary_sha256": "45f8fa3282a11cf53203dc0d984fab591edac1b496398f3114b7f0bfcdbc5303",
+      "scope": "Actual source-debug chooser; not final package/resource acceptance",
+      "initial_files": {
+        "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+        "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+      },
+      "normal_exit": 0,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "index_not_started": true,
+      "final_files": {
+        "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+        "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+      },
+      "status": "passed: normal close and original bytes unchanged",
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-no52mz60",
+        "owned_processes_reaped": [
+          {
+            "pid": 2978660,
+            "exit": 0
+          },
+          {
+            "pid": 2978685,
+            "exit": 0
+          },
+          {
+            "pid": 2978688,
+            "exit": 15
+          },
+          {
+            "pid": 2978805,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    }
+  },
+  "first_pass": {
+    "ready": "Cross-folder query/save and unchanged bytes passed before final caption/error refinements.",
+    "unavailable": "No automatic index startup and direct recovery passed; technical error initially obscured recovery guidance. Final GUI verifies improvement."
+  },
+  "limits": [
+    "Stable cf6 Linux packages and Windows candidate unchanged",
+    "Actual native Windows picker-window/resource and exact-package acceptance still required",
+    "No new personal index CPU or physical/daily-driver acceptance claim",
+    "External ownership, portal/cooperating-app, reversible associations and native-path wire transport remain required"
+  ]
+}

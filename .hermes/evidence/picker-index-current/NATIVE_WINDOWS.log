@@ -1,0 +1,4 @@
+Domain 'ottrin-copy-cleanup-qa' started
+
+ordinary: complete408 UI checks pass,including single scrollbar/body wheel/stationary footer,accessible metadata,toolbar and existing footer controls
+elevated: complete408 UI checks pass,including single scrollbar/body wheel/stationary footer,accessible metadata,toolbar and existing footer controls

@@ -1,0 +1,12 @@
+{"time": 1793514130.3645754, "click": [80, 110], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514131.165803, "click": [80, 176], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514131.9698462, "click": [652, 72], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514133.5555692, "capture": "index-unavailable"}
+{"time": 1793514147.30499, "click": [80, 110], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514147.764731, "capture": "scope-recovery"}
+{"time": 1793514171.2926435, "click": [80, 145], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514172.0986736, "click": [650, 72], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793514172.5719156, "key": "ctrl+a"}
+{"time": 1793514172.877492, "key": "BackSpace"}
+{"time": 1793514173.2095697, "capture": "direct-recovered"}
+{"time": 1793514173.6144836, "click": [834, 606], "pointer_settled_before_press": true, "hold_seconds": 0.15}

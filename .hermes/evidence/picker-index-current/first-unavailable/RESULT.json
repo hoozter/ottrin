@@ -1,0 +1,51 @@
+{
+  "case": "unavailable",
+  "binary_sha256": "45379a0afdc8601e05e113ec1bce8d4b71225ad03806cab2803c376494290312",
+  "index_binary_sha256": "133d9127e16f428c6436cf9fb3d8ab816cb7450305bea5cd3f6367a654342a5b",
+  "scope": "Actual source-debug chooser; not final package/resource acceptance",
+  "initial_files": {
+    "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+    "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+  },
+  "normal_exit": 0,
+  "response": {
+    "accepted": false,
+    "paths": [],
+    "current_filter": null,
+    "choices": {}
+  },
+  "index_not_started": true,
+  "final_files": {
+    "remote/report.txt": "ea0505dfcb92056e4a5226ca88ad5b9a83d26b2f239c04dcde49e04d2e42926d",
+    "local/local.txt": "37949954457066d384576dc0f4a78795dc569be3048bf6c29861cf1dd4505b71"
+  },
+  "status": "passed: normal close and original bytes unchanged",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-h_y79o3i",
+    "owned_processes_reaped": [
+      {
+        "pid": 2969414,
+        "exit": 0
+      },
+      {
+        "pid": 2969417,
+        "exit": 0
+      },
+      {
+        "pid": 2969418,
+        "exit": 15
+      },
+      {
+        "pid": 2969470,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
