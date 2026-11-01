@@ -1,5 +1,31 @@
 # Ottrin roadmap
 
+## Windows folder menu actions — source, 2026-11-01
+
+Optional per-user **Open in Ottrin** actions now share one backend between
+Services and headless folder commands. They cover folders, folder backgrounds
+and drives, preserve existing folder defaults, and use a native transaction for
+all commands and the ownership receipt. Repair restores missing owned entries;
+changed or unknown data refuses replacement/removal. Uninstall preserves other
+handlers, including parents with many unrelated entries. Windows helper status
+now explains the bundled helper and native administrator prompt.
+
+Strict Linux/GNU checks pass. Nine native parser/registry tests pass under both
+ordinary and administrator tokens, with every volatile fixture removed. Actual
+merged shell actions open folders, folder backgrounds and drive roots; reviewed
+address bars show the requested native locations. Services Repair, normal close,
+headless removal, original defaults and source preservation pass. The first
+actual drive launch exposed the closing-quote/trailing-backslash error; directory
+commands now end in a dot component and pass both native parsing and GUI checks.
+Failed QA controls remain recorded, including incorrect session-field assertions,
+coordinate/input assumptions and cancellation. Every completed control removed
+its root/processes and stopped the retained VM. Manual Refresh currently removes
+the action row while its status query runs; keep controls stable in the next UI
+checkpoint. These source checks do not establish final-package acceptance.
+Evidence: `.hermes/evidence/windows-folder-integration-current/` and the bounded
+native command-quoting probe under `windows-folder-command-probe-current`.
+Packages remain25b38c8f. Default-folder preference and FileManager1 remain work.
+
 ## Cooperating caller follow-up — source, 2026-11-01
 
 A minimal Rust example uses the shared picker/native-path contract and retains
@@ -21,10 +47,10 @@ preferences and index process state are unchanged. Loaded app-local Mesa module
 paths/hashes are verified. Final QA root removal and VM shutdown pass. Every completed attempt removed its root/processes and shut off
 the retained VM. Source fixes are not inferred from failed QA setup.
 
-Hosted983f8e29 Linux/search jobs pass. Its HTML process histories show seccomp2
-in every sample, with unchanged security assertions. This successful run does
-not establish the cause of0e85f745's earlier mode0 observation; keep that control
-and the diagnostic histories for further investigation. Windows CI is pending.
+Hosted8e57b0f5 run41325738936 passes all Linux, Windows and search jobs.
+The retained983f8e29 HTML process histories show seccomp2 in every sample, with
+unchanged security assertions. These successful runs do not establish the cause
+of0e85f745's earlier mode0 observation; keep that control and diagnostic histories.
 Stable packages remain25b38c8f; continue remaining independent roadmap work.
 
 
@@ -415,19 +441,21 @@ Audited: 2026-11-01. This section and the delivery table are the active queue;
 checkpoint narratives retain historical evidence only. Test totals do not measure
 roadmap completion. A source pass does not establish package or owner acceptance.
 
-1. **Resolve latest hosted HTML witness failure.** Protocol2 source and native
-   Linux/Windows upgrade checks are committed/pushed at0e85f745 with completed
-   teardown and cleanup. Its hosted Linux run41322511138 failed the renderer
-   seccomp witness gate. Added process histories retain the full assertion;
-   collect the next hosted evidence and fix the underlying cause. Other ready
-   integration work continues while CI runs. Windows full CI is pending.
+1. **Retain the HTML security regression gate.** Latest pushed8e57b0f5 hosted
+   run41325738936 passes Linux, Windows and search jobs;983f8e29 also passes.
+   The earlier0e85f745 seccomp0 observation remains an unexplained failed control.
+   Per-process histories preserve every sample and the full assertion. Investigate
+   a recurrence using those histories; do not waive the gate or describe the
+   current pipeline as blocked while its complete checks pass.
 2. **Finish desktop/cooperating-app integration.** Portal source/lifecycle passes
    at 87999cf8. Reversible Linux default-directory dispatch passes actual GIO/GUI
    at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
    pushed and its Linux production lifecycle now passes. Actual sandboxed
    development-caller Open/Save and document export also pass. Still required:
    standard FileManager1 reveal, supported Windows
-   folder actions and cooperating-app native picker acceptance.
+   folder actions/default preference and final packaged cooperating-app acceptance.
+   Direct Windows owner/Open/Save/lease checks and a constrained Flatpak caller
+   pass in source; they do not establish final browser/package acceptance.
 3. **Deliver one coherent package cohort.** Stable Linux formats and Windows
    candidates remain25b38c8f. Rebuild from a clean verified checkpoint, verify
    exact packaged chooser/integration/upgrade/native paths and bounded resource
@@ -439,6 +467,11 @@ roadmap completion. A source pass does not establish package or owner acceptance
    a required failed gate, not waived or assigned to the owner; investigate a
    materially different corrective path instead of repeating equivalent controls.
    Preserve the explicit native-platform and physical-device scope boundaries.
+   Remove the unused AppConfig restore_session/last_session_dirs fields after
+   checking all producers; they currently provide no session-restoration behavior.
+   Keep desktop integration controls stable during manual status refresh.
+   Verify/embed the canonical Windows executable icon: current source and accepted
+   candidate PE files lack a resource section despite shell/NSIS icon-index0 references.
 5. **Finish release preparation.** Implement and verify remaining MSIX/release
    tooling independently. Linux signing identity, Store identity/submission,
    unavailable physical hardware and final owner acceptance stay on the waiting

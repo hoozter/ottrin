@@ -1,0 +1,6 @@
+40G	target/debug/deps
+13G	target/debug/incremental
+36G	target/x86_64-pc-windows-gnu/debug/deps
+31G	target/x86_64-pc-windows-gnu/debug/incremental
+3.2M	.hermes/evidence/windows-folder-integration-current
+192K	.hermes/evidence/windows-folder-command-probe-current

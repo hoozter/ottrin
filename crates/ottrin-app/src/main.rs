@@ -131,7 +131,7 @@ fn parse_cli_arguments(args: &[OsString]) -> Result<CliArguments, String> {
 enum HeadlessAction {
     #[cfg(target_os = "linux")]
     Portal,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     IntegrationManagement {
         integration: DesktopIntegration,
         action: IntegrationAction,
@@ -169,18 +169,20 @@ enum HeadlessAction {
     Invalid(String),
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum IntegrationAction {
     Status,
     Enable,
     Disable,
+    #[cfg(target_os = "linux")]
     Apply,
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DesktopIntegration {
+    #[cfg(target_os = "linux")]
     Portal,
     Folders,
 }
@@ -906,8 +908,11 @@ fn print_cli_help() {
         println!("  ottrin portal                   Run the desktop file-dialog backend");
         println!("  ottrin portal enable|disable|apply|status [--json]");
         println!("                                 Manage optional desktop file dialogs");
+    }
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    {
         println!("  ottrin folders enable|disable|status [--json]");
-        println!("                                 Manage optional directory-link handling");
+        println!("                                 Manage optional folder integration");
     }
     println!("  ottrin picker                   Open an Ottrin chooser using a JSON stdin request");
     println!(
@@ -1018,7 +1023,7 @@ fn text_command_arguments(args: &[OsString]) -> Result<Vec<String>, String> {
         .collect()
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 fn parse_integration_management(
     args: &[OsString],
     integration: DesktopIntegration,
@@ -1027,6 +1032,7 @@ fn parse_integration_management(
         match args {
             [action] if action == "enable" => (IntegrationAction::Enable, false),
             [action] if action == "disable" => (IntegrationAction::Disable, false),
+            #[cfg(target_os = "linux")]
             [action] if action == "apply" && integration == DesktopIntegration::Portal => {
                 (IntegrationAction::Apply, false)
             }
@@ -1067,7 +1073,7 @@ fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
             &args[1..],
             DesktopIntegration::Portal,
         )),
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         "folders" => Some(parse_integration_management(
             &args[1..],
             DesktopIntegration::Folders,
@@ -1380,22 +1386,26 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     match action {
         #[cfg(target_os = "linux")]
         HeadlessAction::Portal => return portal::run(),
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         HeadlessAction::IntegrationManagement {
             integration,
             action,
             json,
         } => {
             let message = match (integration, action) {
+                #[cfg(target_os = "linux")]
                 (DesktopIntegration::Portal, IntegrationAction::Enable) => {
                     ottrin_platform::portal_integration::enable()?
                 }
+                #[cfg(target_os = "linux")]
                 (DesktopIntegration::Portal, IntegrationAction::Disable) => {
                     ottrin_platform::portal_integration::disable()?
                 }
+                #[cfg(target_os = "linux")]
                 (DesktopIntegration::Portal, IntegrationAction::Apply) => {
                     ottrin_platform::portal_integration::apply()?
                 }
+                #[cfg(target_os = "linux")]
                 (DesktopIntegration::Portal, IntegrationAction::Status) => {
                     let status = ottrin_platform::portal_integration::status();
                     if json {
@@ -1418,6 +1428,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                         status.detail
                     }
                 }
+                #[cfg(target_os = "linux")]
                 (DesktopIntegration::Folders, IntegrationAction::Apply) => {
                     return Err("Folder changes apply immediately".into());
                 }
@@ -1435,8 +1446,10 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 
     match action {
         #[cfg(target_os = "linux")]
-        HeadlessAction::Portal | HeadlessAction::IntegrationManagement { .. } => {
-            unreachable!("portal starts before index routing")
+        HeadlessAction::Portal => unreachable!("portal starts before index routing"),
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
+        HeadlessAction::IntegrationManagement { .. } => {
+            unreachable!("integration starts before index routing")
         }
         HeadlessAction::IndexEnsure => {
             #[cfg(unix)]
@@ -2003,6 +2016,40 @@ mod tests {
             cli_headless_action(&["portal".into(), "extra".into()]),
             Some(HeadlessAction::Invalid(_))
         ));
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[test]
+    fn folder_commands_are_headless_and_reject_unowned_modifiers() {
+        for (name, action) in [
+            ("enable", IntegrationAction::Enable),
+            ("disable", IntegrationAction::Disable),
+            ("status", IntegrationAction::Status),
+        ] {
+            assert_eq!(
+                cli_headless_action(&["folders".into(), name.into()]),
+                Some(HeadlessAction::IntegrationManagement {
+                    integration: DesktopIntegration::Folders,
+                    action,
+                    json: false
+                })
+            );
+        }
+        for arguments in [
+            vec!["folders", "apply"],
+            vec!["folders", "enable", "--json"],
+            vec!["folders", "disable", "extra"],
+        ] {
+            assert!(matches!(
+                cli_headless_action(
+                    &arguments
+                        .into_iter()
+                        .map(OsString::from)
+                        .collect::<Vec<_>>()
+                ),
+                Some(HeadlessAction::Invalid(_))
+            ));
+        }
     }
 
     #[test]

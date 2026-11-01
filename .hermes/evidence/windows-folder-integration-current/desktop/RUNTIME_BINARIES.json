@@ -1,0 +1,12 @@
+{
+  "fixture-launch.exe": {
+    "sha256": "b342f2d80499d45d6d90a2d05994cb1bcfc8aa6d6ed6f07e0c2d4b687d8306d5",
+    "raw_sha256": "fa262f901479dbde7087bf592a4d91501b242e48273d25ab450919888751c61e",
+    "source_date_epoch": 1793553709
+  },
+  "ottrin-indexd.exe": {
+    "sha256": "f7e3f8b8266a50134d2acc51d16ac6f92a8dba5b1015b9d67d1faa4e0194435b",
+    "raw_sha256": "83f80234f3ddc17af4bba347dccd617788b25cc1f65d061722b853689ea93128",
+    "source_date_epoch": 1793553688
+  }
+}

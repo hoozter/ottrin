@@ -1,0 +1,9 @@
+{
+  "removed": [
+    "windows-complete/__pycache__/run-native.cpython-312.pyc",
+    "desktop-final/__pycache__/run-native.cpython-312.pyc",
+    "desktop/__pycache__/run-native.cpython-312.pyc",
+    "native-final/__pycache__/run-native.cpython-312.pyc"
+  ],
+  "purpose": "Disposable bytecode from this checkpoint only; shared caches preserved"
+}

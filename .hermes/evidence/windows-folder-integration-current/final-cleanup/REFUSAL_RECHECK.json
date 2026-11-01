@@ -1,0 +1,5 @@
+{
+  "refused_pid": 3907154,
+  "process_now_absent": true,
+  "action": "Retry unchanged guard after verified transient process exit; no new exception"
+}

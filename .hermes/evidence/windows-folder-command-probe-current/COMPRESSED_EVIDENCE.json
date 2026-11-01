@@ -1,0 +1,10 @@
+{
+  "lossless_compressed_files": [
+    "PRIVATE_CLASS.log",
+    "RUN.log",
+    "short-temp-ordinary-folder-probe-error.txt",
+    "short-temp-ordinary-folder-probe.transcript",
+    "private-class/short-temp-ordinary-folder-probe.transcript"
+  ],
+  "current_producers_screenshots_and_receipts_retained": true
+}

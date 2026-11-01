@@ -1,0 +1,1581 @@
+{
+  "archive": "HISTORICAL_CONTROLS.tar.gz",
+  "purpose": "Lossless executed QA controls and superseded launchers; current full producer is native-final/run-native.py with desktop inputs. Accepted GUI receipts remain native-stable-card.",
+  "files": [
+    {
+      "path": "windows-native/RUNTIME_BINARIES.json",
+      "bytes": 707,
+      "sha256": "c2d7028c2c9ccde0aaec9f924083dc306690d9a1dc2df52afebd285f7d1e499b"
+    },
+    {
+      "path": "windows-native/RUNTIME_OWNER.json",
+      "bytes": 2374,
+      "sha256": "4f615a8a95d6d4b93efbce0ee4942b6a16aca750056cd728496703ff9b22cec8"
+    },
+    {
+      "path": "windows-native/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "windows-native/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "windows-native/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-native/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "383318cb8dfcf49c4bb12a3be12ca5dda1754b0a912557a77559c32922dcf9af"
+    },
+    {
+      "path": "windows-native/cleanup-runtime.ps1",
+      "bytes": 546,
+      "sha256": "b88cf2f63be4ee16f6eb4c8f427926930105bb16498e75f6fd815de999b93dfd"
+    },
+    {
+      "path": "windows-native/elevated-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-native/elevated-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "e96a9e6c6b34f9f83d0035983b43b58ecf7f8a090a89589aa25483c9e8162549"
+    },
+    {
+      "path": "windows-native/elevated-platform-runtime.ps1",
+      "bytes": 4753,
+      "sha256": "6496764394ce24156aa455a80cf7cb9459f425e320459003fa099fcc93bc91e6"
+    },
+    {
+      "path": "windows-native/ordinary-app-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "windows-native/ordinary-app-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "3551d73e5ee0f56f3d2c75674a7418e545322cb88fe85bc9159af1551f1dca47"
+    },
+    {
+      "path": "windows-native/ordinary-app-runtime.ps1",
+      "bytes": 4665,
+      "sha256": "30be4f9e939a06c48d2fd0d2243114aec95f98d97f3f0d23d3a3cdadacb1c487"
+    },
+    {
+      "path": "windows-native/ordinary-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-native/ordinary-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "ddc6ff1e777bb19190794e70747d76c4102d6d3c129d0ac89e2fc058f6078c59"
+    },
+    {
+      "path": "windows-native/ordinary-platform-runtime.ps1",
+      "bytes": 4711,
+      "sha256": "c523579d12a4bfeabc46998410f436062c38ac380314aa5338939036e9e0bb5a"
+    },
+    {
+      "path": "windows-native/run-native.py",
+      "bytes": 17927,
+      "sha256": "aa4433946db07cdfa5f358ae13338f46165e2bd6b8e44e4d710d3e321a712f3e"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-alias.json",
+      "bytes": 267,
+      "sha256": "262980f8dd86dcf0bb441085e65836e55721be0fc93052a05a0bf2bd3de77dee"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-alias.json.raw.gz",
+      "bytes": 224,
+      "sha256": "a02910b1426dabd359283d83a54a2751e656feeebd0253c549ef4f266bbba768"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-registry-teardown.json",
+      "bytes": 37,
+      "sha256": "13c926f0156760f17b95604ca4b3b4e8d4430e556dbb4a31b68dbff09a026253"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime-registry-teardown.json.raw.gz",
+      "bytes": 61,
+      "sha256": "868819e74c741b7ffe7c398f7fbd502cece55eca934256c265927f69b3f41a73"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime.json",
+      "bytes": 387,
+      "sha256": "e85e7d3eb2b0bb1769d1969a7ac50c6e9b4d40c7b9c67b83e4fe2ecb5c601fa0"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime.json.raw.gz",
+      "bytes": 266,
+      "sha256": "15755c0ab90ef7cc237efa81b6b3b61f5152a450fae85c5c332c38c7107f1d0b"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime.list.gz",
+      "bytes": 275,
+      "sha256": "a2ec63ea88a7c1a1527c4bc7402904291538823e80fbd7342fa296898b06ca75"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime.stderr.gz",
+      "bytes": 235,
+      "sha256": "fa82218b6ab7c913e8c2775b38fab057dceec4d4a9166275d0bef4de4ee4e310"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime.stdout.gz",
+      "bytes": 330,
+      "sha256": "c27b40dcaa648adf386c1090e7aefaf1ff942dc64afb8b0f7a7efed25308a86c"
+    },
+    {
+      "path": "windows-native/short-temp-elevated-platform-runtime.transcript.gz",
+      "bytes": 473,
+      "sha256": "c16bd30f009909a1688dfc0eb045d01496a0f229e85cfa5d9ae892ef06c37ac6"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-app-runtime.transcript.gz",
+      "bytes": 765,
+      "sha256": "af1d67af5791b4e927017ad85091c2af913880b07ad6b94148f05ec3859f6744"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-alias.json",
+      "bytes": 267,
+      "sha256": "ef9710a440dbf71f9f045a8b5c568422b3650309fc7dd6fdde3cb4cb823c1d1b"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-alias.json.raw.gz",
+      "bytes": 224,
+      "sha256": "6f3bdff539ac394b64f8b9fecc4ea378b56370a71db1c8dd3b03221ab1353b12"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-registry-teardown.json",
+      "bytes": 37,
+      "sha256": "13c926f0156760f17b95604ca4b3b4e8d4430e556dbb4a31b68dbff09a026253"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime-registry-teardown.json.raw.gz",
+      "bytes": 61,
+      "sha256": "868819e74c741b7ffe7c398f7fbd502cece55eca934256c265927f69b3f41a73"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime.json",
+      "bytes": 318,
+      "sha256": "8ac11b4f18ed0c03ecb858a00ed12cd2e93bd4a68af9fd126d9cbd477eec7b01"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime.json.raw.gz",
+      "bytes": 211,
+      "sha256": "53d7795bfacf0c7468d56d04bdc274921af8f72ecf9310e34892d48cd877ebb4"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime.list.gz",
+      "bytes": 275,
+      "sha256": "a2ec63ea88a7c1a1527c4bc7402904291538823e80fbd7342fa296898b06ca75"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime.stderr.gz",
+      "bytes": 230,
+      "sha256": "77d50fec12d606572d4321ffd96fc7c738ab6b50a8f77a048fd3eb1b11437859"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime.stdout.gz",
+      "bytes": 329,
+      "sha256": "cf74560dd779f25b0aad4feda38a2dbc75fd9e544f1d438461566e224a8a8931"
+    },
+    {
+      "path": "windows-native/short-temp-ordinary-platform-runtime.transcript.gz",
+      "bytes": 473,
+      "sha256": "c93becb11b93fd350b9d5384625338757b504153a983b66d46a50bdd44ba2a8e"
+    },
+    {
+      "path": "windows-app/RUNTIME_BINARIES.json",
+      "bytes": 470,
+      "sha256": "db13d30716b7031b7080cb32052512e72ee48be7d3d2b6412ba1885e9350c8d2"
+    },
+    {
+      "path": "windows-app/RUNTIME_OWNER.json",
+      "bytes": 1597,
+      "sha256": "cae1ebe98d082c2ada823abb7b5d4875b2b6fab66a5f9b7701d61c3793d88b58"
+    },
+    {
+      "path": "windows-app/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "windows-app/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "windows-app/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-app/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "03664da720bad2e14e7f3f809b516db7c71194d4b9166a75040d29e8f678174b"
+    },
+    {
+      "path": "windows-app/cleanup-runtime.ps1",
+      "bytes": 546,
+      "sha256": "a5d32f88178304b8eb428fca2b80ee459c524fcfe1d27b531bd58ae8ed99553d"
+    },
+    {
+      "path": "windows-app/elevated-app-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-app/elevated-app-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "b881af20eb3219f34d5d9208d8f0871f503d53ed1388e526ecd71c7ba52cefa2"
+    },
+    {
+      "path": "windows-app/elevated-app-runtime.ps1",
+      "bytes": 4701,
+      "sha256": "7b7e5d0776dd8eec56f7f3a8a07b10cf9abeba20317d68635e9124fcbbe07580"
+    },
+    {
+      "path": "windows-app/ordinary-app-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-app/ordinary-app-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "ee88222804dafe05b379be244980dfbf5826f9af7d29bf2f87835abc30358afb"
+    },
+    {
+      "path": "windows-app/ordinary-app-runtime.ps1",
+      "bytes": 4659,
+      "sha256": "abf6c53d2e7041db59b8892dccab42a43792d3604d3227e4143a123d0f89d99e"
+    },
+    {
+      "path": "windows-app/run-native.py",
+      "bytes": 17964,
+      "sha256": "e1013c0075c28a04969b3d7e3c83c6d9408667f6661cc81264506b9134aad7d8"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime-alias.json",
+      "bytes": 262,
+      "sha256": "3632a434ccf7f738e18190cc5cd1b9d52d43e45c2f9ad7ec93806436feb54b79"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime-alias.json.raw.gz",
+      "bytes": 221,
+      "sha256": "fb14ea84d06d78ee08cba213786ddd3cbafea9579deab6735175b80c2dfbce02"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime.json",
+      "bytes": 382,
+      "sha256": "c4675dcf519aec37004bd4271e21e2cec2da8ca615faf7630c70fc75e417adcb"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime.json.raw.gz",
+      "bytes": 262,
+      "sha256": "aabef555b16c55b10e33ab3f9affc8fa54342ffe46038af4d04d8a45f49e0c89"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime.list.gz",
+      "bytes": 963,
+      "sha256": "f2d50ad2398e5539912b425651c7ed8d5d23f5d2c89fdba7b71609a90948ff1e"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime.stderr.gz",
+      "bytes": 65,
+      "sha256": "14c048076696e2a49fe9170ee08f2cd7b29851876f54e4bb5ed933e8112c9d7d"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime.stdout.gz",
+      "bytes": 1022,
+      "sha256": "2a303ea64f3bde7863164ce44bc777ec1db3b04dd9420d4fb894be2530146a47"
+    },
+    {
+      "path": "windows-app/short-temp-elevated-app-runtime.transcript.gz",
+      "bytes": 473,
+      "sha256": "c25b1dcc6e381199b035caf451afa77a2cc23ce0ce72e99de128e1b9b9c1764b"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime-alias.json",
+      "bytes": 262,
+      "sha256": "7751390b9b077abfcb840803fd03d34007716f341d3f2082d4e25dfcc955cd60"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime-alias.json.raw.gz",
+      "bytes": 221,
+      "sha256": "3a4a627aa6f2e5a31e8ea7e52e987faece8a8908bbf677aff0a6b1cf8ef7d70a"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime.json",
+      "bytes": 313,
+      "sha256": "9c37dbb25afbdc927718f5755d8ac666ca6ce1e2db34b177b8d7e297751d8c3d"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime.json.raw.gz",
+      "bytes": 207,
+      "sha256": "991f4621d2a78a91f733e2ce7fe8c62b9e9127fa3578348b09d99b076f2bcbf4"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime.list.gz",
+      "bytes": 963,
+      "sha256": "f2d50ad2398e5539912b425651c7ed8d5d23f5d2c89fdba7b71609a90948ff1e"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime.stderr.gz",
+      "bytes": 65,
+      "sha256": "14c048076696e2a49fe9170ee08f2cd7b29851876f54e4bb5ed933e8112c9d7d"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime.stdout.gz",
+      "bytes": 1023,
+      "sha256": "e080d4636430df178f7d69382d30d95b389358bde6e3a43a4f87d50c80f1c47f"
+    },
+    {
+      "path": "windows-app/short-temp-ordinary-app-runtime.transcript.gz",
+      "bytes": 472,
+      "sha256": "4190899d5a196df90342319b7a4d18a023b324596142f404c5e569de8f38849b"
+    },
+    {
+      "path": "windows-parent-count/RUNTIME_BINARIES.json",
+      "bytes": 475,
+      "sha256": "a8f3d99ea56fe7103b526ae772477b321bf94b3551d80807e4094faf983cd431"
+    },
+    {
+      "path": "windows-parent-count/RUNTIME_OWNER.json",
+      "bytes": 1597,
+      "sha256": "a767e469a1af0487577e3eb5a79a5eef59117ee5b595656246baad3c5c029f22"
+    },
+    {
+      "path": "windows-parent-count/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "windows-parent-count/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "windows-parent-count/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-parent-count/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "5c7e65219294c52328d41c1cb65b08994f17ae852c511a6a2ca9ca43b4f731d3"
+    },
+    {
+      "path": "windows-parent-count/cleanup-runtime.ps1",
+      "bytes": 546,
+      "sha256": "da7517c92c3f4fcd9bd92f708ef8224f3cf096c9ba3a4fde58215bf24ac651f3"
+    },
+    {
+      "path": "windows-parent-count/elevated-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-parent-count/elevated-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "a54935523ebe22886f22816e3ef4522b3864561314618365a42e8812f2f163f9"
+    },
+    {
+      "path": "windows-parent-count/elevated-platform-runtime.ps1",
+      "bytes": 4753,
+      "sha256": "6496764394ce24156aa455a80cf7cb9459f425e320459003fa099fcc93bc91e6"
+    },
+    {
+      "path": "windows-parent-count/ordinary-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-parent-count/ordinary-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "333954e95de72aeccdeaf0d40afbf29185bcaca4de15b72841eb48152c04f2e3"
+    },
+    {
+      "path": "windows-parent-count/ordinary-platform-runtime.ps1",
+      "bytes": 4711,
+      "sha256": "c523579d12a4bfeabc46998410f436062c38ac380314aa5338939036e9e0bb5a"
+    },
+    {
+      "path": "windows-parent-count/run-native.py",
+      "bytes": 17854,
+      "sha256": "5ab2d25ac0353dd3d5d49a8f0d3d3af6103eac29bc29c1de23e078ef318eb172"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-alias.json",
+      "bytes": 267,
+      "sha256": "262980f8dd86dcf0bb441085e65836e55721be0fc93052a05a0bf2bd3de77dee"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-alias.json.raw.gz",
+      "bytes": 224,
+      "sha256": "a02910b1426dabd359283d83a54a2751e656feeebd0253c549ef4f266bbba768"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-registry-teardown.json",
+      "bytes": 37,
+      "sha256": "94914fe82db434a40190a73114d6c776d2491ec6f435729563a455cdb81c5348"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime-registry-teardown.json.raw.gz",
+      "bytes": 61,
+      "sha256": "1125c048255711438a919866e8bde19801ae9e148f7f5976bebb2a49e4b60d86"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime.json",
+      "bytes": 387,
+      "sha256": "6566bab388e7367785e159ddaf0e2e6c7e6dd2bec3727766bec780de93485267"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime.json.raw.gz",
+      "bytes": 267,
+      "sha256": "a1a63fe01741032a03ea3c9786c39da3eabb31506e4414490d6a402adafea000"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime.list.gz",
+      "bytes": 302,
+      "sha256": "bf481aab6b5d4dfd8c1ff3a3d7dff87eea54e5bd280f88113bbab61f48fc92b5"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime.stderr.gz",
+      "bytes": 253,
+      "sha256": "a6e62ad4ae52dd5c82c405c69c9946af8a214a1ab522df04f12b86d99d14c1fd"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime.stdout.gz",
+      "bytes": 359,
+      "sha256": "7445bd027fcd8a314bfa75ac6d4c3456bc16c3ef0f5aee9a22347db94b72b6c0"
+    },
+    {
+      "path": "windows-parent-count/short-temp-elevated-platform-runtime.transcript.gz",
+      "bytes": 471,
+      "sha256": "851a69465bd7c7b3e403b8bd9a733d65bc784dc8092e716b46c20963a7d00f4b"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-alias.json",
+      "bytes": 267,
+      "sha256": "ef9710a440dbf71f9f045a8b5c568422b3650309fc7dd6fdde3cb4cb823c1d1b"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-alias.json.raw.gz",
+      "bytes": 224,
+      "sha256": "6f3bdff539ac394b64f8b9fecc4ea378b56370a71db1c8dd3b03221ab1353b12"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-registry-teardown.json",
+      "bytes": 37,
+      "sha256": "94914fe82db434a40190a73114d6c776d2491ec6f435729563a455cdb81c5348"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime-registry-teardown.json.raw.gz",
+      "bytes": 61,
+      "sha256": "1125c048255711438a919866e8bde19801ae9e148f7f5976bebb2a49e4b60d86"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime.json",
+      "bytes": 318,
+      "sha256": "8ac11b4f18ed0c03ecb858a00ed12cd2e93bd4a68af9fd126d9cbd477eec7b01"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime.json.raw.gz",
+      "bytes": 211,
+      "sha256": "53d7795bfacf0c7468d56d04bdc274921af8f72ecf9310e34892d48cd877ebb4"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime.list.gz",
+      "bytes": 302,
+      "sha256": "bf481aab6b5d4dfd8c1ff3a3d7dff87eea54e5bd280f88113bbab61f48fc92b5"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime.stderr.gz",
+      "bytes": 252,
+      "sha256": "3bdd522238dfc3c7c34ab3ca91099e71f21e72c5d254328c1e904a06050d6414"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime.stdout.gz",
+      "bytes": 359,
+      "sha256": "d95a94dfe4bf34aabe0c248b31fbb17b48f82dfafbdd6d7809d541cc03df200a"
+    },
+    {
+      "path": "windows-parent-count/short-temp-ordinary-platform-runtime.transcript.gz",
+      "bytes": 471,
+      "sha256": "4f9939e760f63251fe146c3120be5bf275a673c3da0709e67d07ca5e3ea27119"
+    },
+    {
+      "path": "windows-complete/RUNTIME_BINARIES.json",
+      "bytes": 475,
+      "sha256": "f10e1c958a3e9652310d776ce9127085c42d2bd2f4b78fe37b90a1d0837bf9bd"
+    },
+    {
+      "path": "windows-complete/RUNTIME_OWNER.json",
+      "bytes": 1597,
+      "sha256": "744f8c64440a3549daf6e43b58b881c0829b12912953cb5350e625a2eacef183"
+    },
+    {
+      "path": "windows-complete/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "windows-complete/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "windows-complete/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-complete/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "67bf114d272a9bf77be80cb1702250f20fa3191637443ec54108e984a7f98e26"
+    },
+    {
+      "path": "windows-complete/cleanup-runtime.ps1",
+      "bytes": 546,
+      "sha256": "2709b7f57326017f0f0730be6d892cdbc278008ffa94b6dc01ae38bbfc9c7982"
+    },
+    {
+      "path": "windows-complete/elevated-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-complete/elevated-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "0e479a90a87edcee67d70c8ccf75f025c133025541df9ee914c6127f93c98896"
+    },
+    {
+      "path": "windows-complete/elevated-platform-runtime.ps1",
+      "bytes": 4753,
+      "sha256": "6496764394ce24156aa455a80cf7cb9459f425e320459003fa099fcc93bc91e6"
+    },
+    {
+      "path": "windows-complete/ordinary-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "windows-complete/ordinary-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "f36b063ff8e21c0a6be53996dfd5506e1913e2b3e355d6d1b741134211bf6141"
+    },
+    {
+      "path": "windows-complete/ordinary-platform-runtime.ps1",
+      "bytes": 4711,
+      "sha256": "c523579d12a4bfeabc46998410f436062c38ac380314aa5338939036e9e0bb5a"
+    },
+    {
+      "path": "windows-complete/run-native.py",
+      "bytes": 17857,
+      "sha256": "0af1fe944159b95fa12fa54bb625e6781e2d3adbad25d963fa59452879263e26"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-alias.json",
+      "bytes": 267,
+      "sha256": "262980f8dd86dcf0bb441085e65836e55721be0fc93052a05a0bf2bd3de77dee"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-alias.json.raw.gz",
+      "bytes": 224,
+      "sha256": "a02910b1426dabd359283d83a54a2751e656feeebd0253c549ef4f266bbba768"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-registry-teardown.json",
+      "bytes": 37,
+      "sha256": "5fdb562daa2a567dc427a1b6a423a7448497e8da2457260e8f2a516a659cf80e"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime-registry-teardown.json.raw.gz",
+      "bytes": 61,
+      "sha256": "60f0cf185ca913d48634d6b26ef9710a32d2e821ab8ae3016d6cae4ab4d4d325"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime.json",
+      "bytes": 387,
+      "sha256": "a2ff6c0dd1b80d58ae61c7a69a556fdce8284834f07f09233e4185cf16a2c8b5"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime.json.raw.gz",
+      "bytes": 267,
+      "sha256": "d4eb31def6aaea6ece941bcf6eba1955b945bb78aabf51b88ab34577263a150f"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime.list.gz",
+      "bytes": 334,
+      "sha256": "fdee5b0157d2677e2acb278f9816cb8a01999ffa70aebe6015aeed5a03ad130c"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime.stderr.gz",
+      "bytes": 270,
+      "sha256": "9b662b5b895bb2d6f51a76619d28f77065ed84a7507f73fb0a5f4e423fa0c643"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime.stdout.gz",
+      "bytes": 393,
+      "sha256": "0cc5b4991c1f447f03aa1e97fa2f422f1b311d1321c7cfd43ff81edb1cf0b578"
+    },
+    {
+      "path": "windows-complete/short-temp-elevated-platform-runtime.transcript.gz",
+      "bytes": 473,
+      "sha256": "f70d13c13c28b8daf7d5267ce5d5282629b5ab1e27c4f6f4d6ffdb9f4669c177"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-alias.json",
+      "bytes": 267,
+      "sha256": "ef9710a440dbf71f9f045a8b5c568422b3650309fc7dd6fdde3cb4cb823c1d1b"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-alias.json.raw.gz",
+      "bytes": 224,
+      "sha256": "6f3bdff539ac394b64f8b9fecc4ea378b56370a71db1c8dd3b03221ab1353b12"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-launch.json",
+      "bytes": 156,
+      "sha256": "32341ec9c6e1c5bb63f4c8f27980445ed129bef78318e478f983b059bb2ca78a"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-launch.json.raw.gz",
+      "bytes": 152,
+      "sha256": "568a85ee6c1cc7d64a5b624953e8dfa2c72e1bac169b34fa376beb7bf3a85856"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-launch.stderr.gz",
+      "bytes": 20,
+      "sha256": "53685dd9e809d07865ca452b8b9022fd1cc749d6dabd94173df2ee917bd14524"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-launch.stdout.gz",
+      "bytes": 803,
+      "sha256": "22dbca7b856691e3083cd170b9166d1844407d87f608c9b28e04f9f3ab5e4e79"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-registry-teardown.json",
+      "bytes": 37,
+      "sha256": "5fdb562daa2a567dc427a1b6a423a7448497e8da2457260e8f2a516a659cf80e"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime-registry-teardown.json.raw.gz",
+      "bytes": 61,
+      "sha256": "60f0cf185ca913d48634d6b26ef9710a32d2e821ab8ae3016d6cae4ab4d4d325"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime.json",
+      "bytes": 318,
+      "sha256": "8ac11b4f18ed0c03ecb858a00ed12cd2e93bd4a68af9fd126d9cbd477eec7b01"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime.json.raw.gz",
+      "bytes": 211,
+      "sha256": "53d7795bfacf0c7468d56d04bdc274921af8f72ecf9310e34892d48cd877ebb4"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime.list.gz",
+      "bytes": 334,
+      "sha256": "fdee5b0157d2677e2acb278f9816cb8a01999ffa70aebe6015aeed5a03ad130c"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime.stderr.gz",
+      "bytes": 271,
+      "sha256": "3c0501136fb447c4078860dbdcc95f8e2b3d65c45bdceb4bc99842de73691f72"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime.stdout.gz",
+      "bytes": 393,
+      "sha256": "3e3e78f9b1038380a9e747382fe08fee01d7da27b0006975c53444a4864ef343"
+    },
+    {
+      "path": "windows-complete/short-temp-ordinary-platform-runtime.transcript.gz",
+      "bytes": 471,
+      "sha256": "7f093fefb79047cf685621e9f45c8f800e5f3db3a9c3e02cb9168e90e550d9b8"
+    },
+    {
+      "path": "desktop-alias-fixed/GRAPHICS_RUNTIME.json",
+      "bytes": 434,
+      "sha256": "9ce6773607b2390fb65b8a3b3207dc0c7ac0d51ccea88de3f2e161e2293de566"
+    },
+    {
+      "path": "desktop-alias-fixed/RUNTIME_BINARIES.json",
+      "bytes": 472,
+      "sha256": "6011a719679744dc87731d14908ec3c7d7312291e6a54c39db42a5506f288a5a"
+    },
+    {
+      "path": "desktop-alias-fixed/RUNTIME_OWNER.json",
+      "bytes": 2374,
+      "sha256": "29f33f8b9dcde16e3f0bfa8098bbc351b673b2024c2dca7db2cba5fa2c102c95"
+    },
+    {
+      "path": "desktop-alias-fixed/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "desktop-alias-fixed/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "desktop-alias-fixed/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "desktop-alias-fixed/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "af3317999347b69a038e65113a11072fba642a65cf4989da82dec98e9678430b"
+    },
+    {
+      "path": "desktop-alias-fixed/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "5b3a2fb0026b3d547debbb849d0e6e1b5efa761a0f1716acec8b406774f3a9b1"
+    },
+    {
+      "path": "desktop-alias-fixed/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "desktop-alias-fixed/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "3fbacbc29f81ef2a567268b200851f17a3745bce989c1e6e774d7c4351151bfc"
+    },
+    {
+      "path": "desktop-alias-fixed/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10276,
+      "sha256": "01a85c47543e5f7a198bf2b52151f39d3f9b7fff098657111e8f771cbf47146f"
+    },
+    {
+      "path": "desktop-alias-fixed/run-native.py",
+      "bytes": 15411,
+      "sha256": "118a04c581766c763d0554de5cad464deced5cfb595e9c5508d0bc304bf8f3b6"
+    },
+    {
+      "path": "desktop-alias-fixed/short-temp-ordinary-folder-desktop-directory.png",
+      "bytes": 65206,
+      "sha256": "08f459977934ca35d851b8049f87ceead4ac6f833a59e5b0eee398b430869a2c"
+    },
+    {
+      "path": "desktop-alias-fixed/short-temp-ordinary-folder-desktop-error.txt.gz",
+      "bytes": 265,
+      "sha256": "c8f72e35a1a7642b12b9d1268f32263018f7a6486c6081dd0fef9b053f45004c"
+    },
+    {
+      "path": "desktop-alias-fixed/short-temp-ordinary-folder-desktop-repair.png",
+      "bytes": 93742,
+      "sha256": "c3b61ed36361dc358ce7a3dada3f97d880cef36ff56aef7885c64afc9d6d2a4c"
+    },
+    {
+      "path": "desktop-alias-fixed/short-temp-ordinary-folder-desktop-services.png",
+      "bytes": 93742,
+      "sha256": "c3b61ed36361dc358ce7a3dada3f97d880cef36ff56aef7885c64afc9d6d2a4c"
+    },
+    {
+      "path": "desktop-alias-fixed/short-temp-ordinary-folder-desktop.transcript.gz",
+      "bytes": 653,
+      "sha256": "bc41bfff51849b6eff1542c6fc98764b6ad33300cd9ef194ee293d3ebe8da746"
+    },
+    {
+      "path": "desktop-final/GRAPHICS_RUNTIME.json",
+      "bytes": 530,
+      "sha256": "7b03bdecd0c6178a97deff6e07dd3f14928c64f780f12608f69c46f25290e241"
+    },
+    {
+      "path": "desktop-final/RUNTIME_BINARIES.json",
+      "bytes": 472,
+      "sha256": "fb931726249a037b1b9051e496d998e5d645941a76db6354f057423fb0148a54"
+    },
+    {
+      "path": "desktop-final/RUNTIME_OWNER.json",
+      "bytes": 2434,
+      "sha256": "657afe5a322f253a53649eeabe5c758a3d3f5c5d4967a57abefdbeae3d85950e"
+    },
+    {
+      "path": "desktop-final/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "desktop-final/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "desktop-final/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "desktop-final/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "789fb0e2ee71a17c80d92a3be21d6ae9b93fe3c155dcf632a22a5042400f3580"
+    },
+    {
+      "path": "desktop-final/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "2e9cb4a8ba23631342238c22b0c938f410beafe920c4f1043a412829bddaba8e"
+    },
+    {
+      "path": "desktop-final/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "desktop-final/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "b5316aa320242b0dce2579c23193f09f2f26595ad3d3586d9ec65354fac34b00"
+    },
+    {
+      "path": "desktop-final/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10433,
+      "sha256": "47f61986ca476b7c052e4731fc741be338283ab5fdba483b755f713a6149ffeb"
+    },
+    {
+      "path": "desktop-final/run-native.py",
+      "bytes": 15882,
+      "sha256": "5ad46fe2a3f8c72974411aa441834ba4fd966dfb28f7cbc5e1aabf52f3db8807"
+    },
+    {
+      "path": "desktop-final/short-temp-ordinary-folder-desktop-directory.png",
+      "bytes": 66537,
+      "sha256": "d94c25981d81a473e5e3902806a9622300c57fabc7b38cc0f721732fd16eb99f"
+    },
+    {
+      "path": "desktop-final/short-temp-ordinary-folder-desktop-error.txt.gz",
+      "bytes": 304,
+      "sha256": "50218e0382c1d243d7c0dd34fd26783046933ffafa4db845df38548ca402c764"
+    },
+    {
+      "path": "desktop-final/short-temp-ordinary-folder-desktop-services.png",
+      "bytes": 94546,
+      "sha256": "ce6f7ad55ad3e08f085821e739aa57eb115a8ebc666d28a17de17bed996c6ae8"
+    },
+    {
+      "path": "desktop-final/short-temp-ordinary-folder-desktop.transcript.gz",
+      "bytes": 697,
+      "sha256": "f00bf781d1738862780e7951ce4b679c311e460ecabb141ff670e608131b32fb"
+    },
+    {
+      "path": "desktop-verified/GRAPHICS_RUNTIME.json",
+      "bytes": 530,
+      "sha256": "7b03bdecd0c6178a97deff6e07dd3f14928c64f780f12608f69c46f25290e241"
+    },
+    {
+      "path": "desktop-verified/RUNTIME_BINARIES.json",
+      "bytes": 472,
+      "sha256": "fb931726249a037b1b9051e496d998e5d645941a76db6354f057423fb0148a54"
+    },
+    {
+      "path": "desktop-verified/RUNTIME_OWNER.json",
+      "bytes": 2434,
+      "sha256": "fc9608036a4e1b0f7336e2678bb441f52e5eb2a898bbac46169233be9a62b9c0"
+    },
+    {
+      "path": "desktop-verified/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "desktop-verified/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "desktop-verified/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "desktop-verified/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "3f4467d08b1663ac8a02be0360126635d893e277d11b23e0e62e0970fde4bf04"
+    },
+    {
+      "path": "desktop-verified/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "20822f1a0db6fdcded7ca50bd7f534a1cab7afe52a2e456c14c5dde1ed80cfff"
+    },
+    {
+      "path": "desktop-verified/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "desktop-verified/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "e0adcd3331f8eebbfcb9de3646875ff1374e5879a9565759abed99b18868134a"
+    },
+    {
+      "path": "desktop-verified/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10433,
+      "sha256": "47f61986ca476b7c052e4731fc741be338283ab5fdba483b755f713a6149ffeb"
+    },
+    {
+      "path": "desktop-verified/run-native.py",
+      "bytes": 15882,
+      "sha256": "5ad46fe2a3f8c72974411aa441834ba4fd966dfb28f7cbc5e1aabf52f3db8807"
+    },
+    {
+      "path": "desktop-verified/short-temp-ordinary-folder-desktop-directory.png",
+      "bytes": 66537,
+      "sha256": "d94c25981d81a473e5e3902806a9622300c57fabc7b38cc0f721732fd16eb99f"
+    },
+    {
+      "path": "desktop-verified/short-temp-ordinary-folder-desktop-error.txt.gz",
+      "bytes": 265,
+      "sha256": "c8f72e35a1a7642b12b9d1268f32263018f7a6486c6081dd0fef9b053f45004c"
+    },
+    {
+      "path": "desktop-verified/short-temp-ordinary-folder-desktop-repair.png",
+      "bytes": 95075,
+      "sha256": "beb7eb92bf990a852f717bd7b4ef4d85000e545556c966fbb1a56b294beacaa9"
+    },
+    {
+      "path": "desktop-verified/short-temp-ordinary-folder-desktop-services.png",
+      "bytes": 93700,
+      "sha256": "f644e6128e09c983d02c7b746a6fa155c016248ec63e378e0a2930628cf96993"
+    },
+    {
+      "path": "desktop-verified/short-temp-ordinary-folder-desktop.transcript.gz",
+      "bytes": 654,
+      "sha256": "171f6d972a1aa1177f82225a857cb1baa576707fcef1abc9a894d8d68ef21f9b"
+    },
+    {
+      "path": "desktop-pointer/GRAPHICS_RUNTIME.json",
+      "bytes": 530,
+      "sha256": "7b03bdecd0c6178a97deff6e07dd3f14928c64f780f12608f69c46f25290e241"
+    },
+    {
+      "path": "desktop-pointer/RUNTIME_BINARIES.json",
+      "bytes": 472,
+      "sha256": "fb931726249a037b1b9051e496d998e5d645941a76db6354f057423fb0148a54"
+    },
+    {
+      "path": "desktop-pointer/RUNTIME_OWNER.json",
+      "bytes": 2434,
+      "sha256": "2441833172c022f74fb32dd07e81561da8690c9a3cab74e71a6896fe00f267e9"
+    },
+    {
+      "path": "desktop-pointer/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "desktop-pointer/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "desktop-pointer/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "desktop-pointer/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "995f8058a253c6d2ee47a93cb4c7cb4cc1b378fc4a971c59f8d2e8200cbc1443"
+    },
+    {
+      "path": "desktop-pointer/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "efdffd41cfaa61dfd116020f2b2e39cb378204537cb922fd0bd833af51076774"
+    },
+    {
+      "path": "desktop-pointer/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "desktop-pointer/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "dd6c3c71b5dc620a6e8be86650e8b73522a1602ed9e172e37d0f28c596ef99e5"
+    },
+    {
+      "path": "desktop-pointer/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10550,
+      "sha256": "3aea6155252ece50d0469ddb35489b4418375102a8f834081c740dced56bf1a5"
+    },
+    {
+      "path": "desktop-pointer/run-native.py",
+      "bytes": 15882,
+      "sha256": "5ad46fe2a3f8c72974411aa441834ba4fd966dfb28f7cbc5e1aabf52f3db8807"
+    },
+    {
+      "path": "desktop-pointer/short-temp-ordinary-folder-desktop-directory.png",
+      "bytes": 66537,
+      "sha256": "d94c25981d81a473e5e3902806a9622300c57fabc7b38cc0f721732fd16eb99f"
+    },
+    {
+      "path": "desktop-pointer/short-temp-ordinary-folder-desktop-error.txt.gz",
+      "bytes": 342,
+      "sha256": "92129f19f54d3d1cc9ae87cbc56469661e16df6fd27df80bde3a1b5fc7c678ea"
+    },
+    {
+      "path": "desktop-pointer/short-temp-ordinary-folder-desktop-repair.png",
+      "bytes": 94821,
+      "sha256": "d6a4ab4f4014d9b0b814583f23506a9e97bcca0b1b6f0e2cf82583bbf04e28a3"
+    },
+    {
+      "path": "desktop-pointer/short-temp-ordinary-folder-desktop-services.png",
+      "bytes": 93700,
+      "sha256": "f644e6128e09c983d02c7b746a6fa155c016248ec63e378e0a2930628cf96993"
+    },
+    {
+      "path": "desktop-pointer/short-temp-ordinary-folder-desktop.transcript.gz",
+      "bytes": 824,
+      "sha256": "e4c15c17127fff5c1560af7d52d3a74f21855d310e61e163935d26aef3ab371c"
+    },
+    {
+      "path": "desktop-session/RUNTIME_OWNER.json",
+      "bytes": 1722,
+      "sha256": "ad5705108ce2fdd27d2613578fbdf7f27a350ba345e765d9fe389e8aaecbdd4b"
+    },
+    {
+      "path": "desktop-session/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "desktop-session/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "desktop-session/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "desktop-session/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "4cb93cd0847a52e8e99b9605c3437cd0c5c8c9d5a557ba7c044870bf32be8e42"
+    },
+    {
+      "path": "desktop-session/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "29a9e787f21bfb07736bc849f5e7bd58bda49c56df363b890b877812bfc68200"
+    },
+    {
+      "path": "desktop-session/run-native.py",
+      "bytes": 15882,
+      "sha256": "5ad46fe2a3f8c72974411aa441834ba4fd966dfb28f7cbc5e1aabf52f3db8807"
+    },
+    {
+      "path": "desktop-shell/GRAPHICS_RUNTIME.json",
+      "bytes": 530,
+      "sha256": "7b03bdecd0c6178a97deff6e07dd3f14928c64f780f12608f69c46f25290e241"
+    },
+    {
+      "path": "desktop-shell/RUNTIME_BINARIES.json",
+      "bytes": 472,
+      "sha256": "fb931726249a037b1b9051e496d998e5d645941a76db6354f057423fb0148a54"
+    },
+    {
+      "path": "desktop-shell/RUNTIME_OWNER.json",
+      "bytes": 2434,
+      "sha256": "af9ced35eca5d3895a8bb47e3c791d89a4d4b71f9b90799908adf60ea80f940c"
+    },
+    {
+      "path": "desktop-shell/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "desktop-shell/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "desktop-shell/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "desktop-shell/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "420164ea69b688a8eafd804c898c59a4dad923ff2aedff20be272f8bacc78e5f"
+    },
+    {
+      "path": "desktop-shell/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "baffe314482d6d2ec62809237f1fabb6ab7c42b0562d4ca7c77e12ee36328fd9"
+    },
+    {
+      "path": "desktop-shell/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "desktop-shell/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "5a3c282547ecad25adcb08acfcdca3a56e9afd723c2759a46eb115055ea98012"
+    },
+    {
+      "path": "desktop-shell/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10555,
+      "sha256": "46ac20818d22afd1ee04d4a33c10fe1b65c6e7f411da202948c59ada87452a23"
+    },
+    {
+      "path": "desktop-shell/run-native.py",
+      "bytes": 15954,
+      "sha256": "bb270f90dc2e26b765d86df7785269d54a8009922d4b97fbfc11cfa108751b54"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop-background-address.png",
+      "bytes": 70181,
+      "sha256": "b33c20c0b7a489f7d66ac90ed7fa38646a29d5a1279add4b62001a03a3405a83"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop-background.png",
+      "bytes": 66523,
+      "sha256": "2db48cfa36c252c7543cb85c0a73eef2d46591d30df61b7a4a23800054c91b82"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop-directory-address.png",
+      "bytes": 66511,
+      "sha256": "8865419fdd76836c05e57993364f8956e8a8bfaf185953760ec8d4982c452cfd"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop-directory.png",
+      "bytes": 66537,
+      "sha256": "d94c25981d81a473e5e3902806a9622300c57fabc7b38cc0f721732fd16eb99f"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop-error.txt.gz",
+      "bytes": 277,
+      "sha256": "7a183d658ff65aab4499c32cdd6d124ba3e19e5d0c97614eca50a8255ddcf8ae"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop-repair.png",
+      "bytes": 94941,
+      "sha256": "0c33b4f0568aa60cbfc5dd7c113129eb7e3d987a788211d0a27144a5b05ee7f4"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop-services.png",
+      "bytes": 93700,
+      "sha256": "f644e6128e09c983d02c7b746a6fa155c016248ec63e378e0a2930628cf96993"
+    },
+    {
+      "path": "desktop-shell/short-temp-ordinary-folder-desktop.transcript.gz",
+      "bytes": 746,
+      "sha256": "46b2225f986fee29d6a30df07cd92257a332242407e7ff4c609efc92dcec25ba"
+    },
+    {
+      "path": "drive-control/GRAPHICS_RUNTIME.json",
+      "bytes": 530,
+      "sha256": "7b03bdecd0c6178a97deff6e07dd3f14928c64f780f12608f69c46f25290e241"
+    },
+    {
+      "path": "drive-control/RUNTIME_BINARIES.json",
+      "bytes": 472,
+      "sha256": "fb931726249a037b1b9051e496d998e5d645941a76db6354f057423fb0148a54"
+    },
+    {
+      "path": "drive-control/RUNTIME_OWNER.json",
+      "bytes": 2434,
+      "sha256": "9304510b82a3471cd8632e354877e65de736d562dbd2a5ff4026319af876be98"
+    },
+    {
+      "path": "drive-control/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "drive-control/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "drive-control/actor.ps1",
+      "bytes": 10850,
+      "sha256": "130e8100da0c3e59c0d7a0a498ed5a63519288773008d02993f0e7d51ac7fdf9"
+    },
+    {
+      "path": "drive-control/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "drive-control/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "2549b28e4fbfddf2b0fb9604824b7939b89cd1add80bdd0b3cc7bb7b47624fcc"
+    },
+    {
+      "path": "drive-control/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "997157be210ed972fd5b0d14c8d2fe600f03af5c44f5c21535e2ce98230ee92a"
+    },
+    {
+      "path": "drive-control/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "drive-control/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "e293e61510df23d2187808a6a3f24481b80b1d12ed406ad30649bdec8feef220"
+    },
+    {
+      "path": "drive-control/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10850,
+      "sha256": "130e8100da0c3e59c0d7a0a498ed5a63519288773008d02993f0e7d51ac7fdf9"
+    },
+    {
+      "path": "drive-control/run-native.py",
+      "bytes": 15861,
+      "sha256": "2a0a45eaf7a4dcbe3fc7973e907d21a5fdfe032414237945d4218fe42bc454df"
+    },
+    {
+      "path": "drive-control/short-temp-ordinary-folder-desktop-error.txt.gz",
+      "bytes": 277,
+      "sha256": "7a183d658ff65aab4499c32cdd6d124ba3e19e5d0c97614eca50a8255ddcf8ae"
+    },
+    {
+      "path": "drive-control/short-temp-ordinary-folder-desktop.transcript.gz",
+      "bytes": 680,
+      "sha256": "206db641864e12055608c2adb61ac54143fa52a35bbd67126e55e96a7790f6cf"
+    },
+    {
+      "path": "native-onscreen/GRAPHICS_RUNTIME.json",
+      "bytes": 530,
+      "sha256": "7b03bdecd0c6178a97deff6e07dd3f14928c64f780f12608f69c46f25290e241"
+    },
+    {
+      "path": "native-onscreen/RUNTIME_BINARIES.json",
+      "bytes": 472,
+      "sha256": "59ed9e228f50b6f8ba65a25cb07bf1fe3e5da93d7fdb664ffe7359e3c91b17bb"
+    },
+    {
+      "path": "native-onscreen/RUNTIME_OWNER.json",
+      "bytes": 2434,
+      "sha256": "0c8650b87ee9644dc44e2cdc1a6403d0eb0b721a9b7026c54a74753c815c4814"
+    },
+    {
+      "path": "native-onscreen/RUNTIME_TEARDOWN.json",
+      "bytes": 141,
+      "sha256": "483fda5fe9070e3282d1a23ca18edca97ad18127ba34a0fa37778d9262a34af6"
+    },
+    {
+      "path": "native-onscreen/RUNTIME_TEARDOWN.json.raw.gz",
+      "bytes": 130,
+      "sha256": "060aa77e8e4e1e58763ba7510fee5f88e5613b13d5d2f1cd46450be5f08cfb62"
+    },
+    {
+      "path": "native-onscreen/actor-input.ps1",
+      "bytes": 10586,
+      "sha256": "427db5d0ac9fa8f673853c948cac31c19f9ff3215cb09673d42f1cb854416df1"
+    },
+    {
+      "path": "native-onscreen/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "native-onscreen/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "3c4158cb1fdcd7908ba7db5cde9765a686b85468f7e0f3d4fb587ed01e8e8cfa"
+    },
+    {
+      "path": "native-onscreen/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "c74b40a54b000490f20e9d43661a9760e2c1fcd8279447cbed91af82d9430118"
+    },
+    {
+      "path": "native-onscreen/native-controls-input.ps1",
+      "bytes": 4832,
+      "sha256": "e0617d5d07fd4167c50f07352f240c8cd06fefafebde2219d48bbfa180605702"
+    },
+    {
+      "path": "native-onscreen/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "native-onscreen/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "c37cffef1a5c7a6e111d27158a6d00806d12dc855bb7d19a943d65fa83f85878"
+    },
+    {
+      "path": "native-onscreen/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10586,
+      "sha256": "427db5d0ac9fa8f673853c948cac31c19f9ff3215cb09673d42f1cb854416df1"
+    },
+    {
+      "path": "native-onscreen/run-native.py",
+      "bytes": 15954,
+      "sha256": "15f5b0124b58108502127a093c8b43d7509597eba63cc8d0333de1c5cbba7e1c"
+    },
+    {
+      "path": "native-onscreen/short-temp-ordinary-folder-desktop-directory.png",
+      "bytes": 66537,
+      "sha256": "d94c25981d81a473e5e3902806a9622300c57fabc7b38cc0f721732fd16eb99f"
+    },
+    {
+      "path": "native-onscreen/short-temp-ordinary-folder-desktop-error.txt.gz",
+      "bytes": 265,
+      "sha256": "209f1af74a555dc150d86e4bb7b89c7f1049b70a1880d5d8d9e7edbd88c276a0"
+    },
+    {
+      "path": "native-onscreen/short-temp-ordinary-folder-desktop-repair.png",
+      "bytes": 95418,
+      "sha256": "4a7f64deb9bc9d9dd04077f5eb199c8bde76afb01717b2a7d38acd3bd9360cae"
+    },
+    {
+      "path": "native-onscreen/short-temp-ordinary-folder-desktop-services.png",
+      "bytes": 94665,
+      "sha256": "36c9106c55a0563a44cddbb400d13f36085da0fd9b2bcd481053b4b000361c77"
+    },
+    {
+      "path": "native-onscreen/short-temp-ordinary-folder-desktop.transcript.gz",
+      "bytes": 760,
+      "sha256": "67c6033757502a50aed849faecdf70e2d79c6a945cd319d6f9101489b5e6fa1a"
+    },
+    {
+      "path": "native-final/elevated-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "c9707205847cf7d2b8c87c5281afd5380c9865a8c2d61267f3c43f75ab3aa197"
+    },
+    {
+      "path": "native-final/ordinary-platform-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "89a569d84627aaadf6dc0af91508e123cdc6a6a789d5a5c0a34fc52356f0903d"
+    },
+    {
+      "path": "native-final/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "e9216ae2bf0548d975ca14d0ffb636c30239a2720c30875355daf26e40869c2d"
+    },
+    {
+      "path": "native-final/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10555,
+      "sha256": "46ac20818d22afd1ee04d4a33c10fe1b65c6e7f411da202948c59ada87452a23"
+    },
+    {
+      "path": "native-final/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "native-final/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "5396357643a5a0068d8b156b3870b146e53e9cec8f6eb64e65a9ddfd1d95701d"
+    },
+    {
+      "path": "native-final/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 751,
+      "sha256": "72ff89547d5dcdb83c79e14812508de54b82644990a9c62e4d3f57cbabaf7a59"
+    },
+    {
+      "path": "native-final/ordinary-platform-runtime.ps1",
+      "bytes": 4711,
+      "sha256": "c523579d12a4bfeabc46998410f436062c38ac380314aa5338939036e9e0bb5a"
+    },
+    {
+      "path": "native-final/ordinary-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "native-final/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "9a15614957e1503731c6f598a741eff6bbbcd127b15755ebef44ac14f60bd6c9"
+    },
+    {
+      "path": "native-final/elevated-platform-runtime.ps1",
+      "bytes": 4753,
+      "sha256": "6496764394ce24156aa455a80cf7cb9459f425e320459003fa099fcc93bc91e6"
+    },
+    {
+      "path": "native-final/elevated-platform-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "native-stable-card/cleanup-runtime.ps1",
+      "bytes": 1462,
+      "sha256": "8590ab414317ba336bdd502fa6434b420ea09dc42a9ad2ff302f40153708ff33"
+    },
+    {
+      "path": "native-stable-card/ordinary-folder-desktop-runtime.ps1",
+      "bytes": 10482,
+      "sha256": "74efcb0a699de4a9844e87379b50bc03aee28f93f4a916b07fc5b7f1518f4218"
+    },
+    {
+      "path": "native-stable-card/cleanup-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "native-stable-card/cleanup-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "03664da720bad2e14e7f3f809b516db7c71194d4b9166a75040d29e8f678174b"
+    },
+    {
+      "path": "native-stable-card/ordinary-folder-desktop-runtime-controller.json",
+      "bytes": 52,
+      "sha256": "3db6d8c8fa7fc7bfba04ae85d60fc1839e17e5437fbefa5fe5c4ee9d56a9767b"
+    },
+    {
+      "path": "native-stable-card/run-native.py",
+      "bytes": 15954,
+      "sha256": "15f5b0124b58108502127a093c8b43d7509597eba63cc8d0333de1c5cbba7e1c"
+    },
+    {
+      "path": "native-stable-card/ordinary-folder-desktop-runtime-pid.json",
+      "bytes": 14,
+      "sha256": "d4fe982413dd9a29d74c504fcfdc6e80423eb733d66002d3edaf655263030657"
+    }
+  ]
+}

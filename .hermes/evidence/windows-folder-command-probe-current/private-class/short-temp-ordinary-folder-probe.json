@@ -1,0 +1,70 @@
+{
+  "scope": "Actual ShellExecuteEx of private ordinary-token volatile class-key verbs, source executable Help only; no default association changes",
+  "status": "observed",
+  "cases": [
+    {
+      "error": 0,
+      "started": true,
+      "directory": "plain",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\plain\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "raw",
+      "exit": 0
+    },
+    {
+      "error": 0,
+      "started": true,
+      "directory": "plain",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\plain\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "doubled",
+      "exit": 0
+    },
+    {
+      "error": 0,
+      "started": true,
+      "directory": "literal%1",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%1\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "raw",
+      "exit": 0
+    },
+    {
+      "error": -2147221003,
+      "started": false,
+      "directory": "literal%1",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%%1\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "doubled",
+      "exit": 0
+    },
+    {
+      "error": 0,
+      "started": true,
+      "directory": "literal%V",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%V\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "raw",
+      "exit": 0
+    },
+    {
+      "error": -2147221003,
+      "started": false,
+      "directory": "literal%V",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%%V\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "doubled",
+      "exit": 0
+    },
+    {
+      "error": 0,
+      "started": true,
+      "directory": "100% literal",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\100% literal\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "raw",
+      "exit": 0
+    },
+    {
+      "error": -2147221003,
+      "started": false,
+      "directory": "100% literal",
+      "command": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\100%% literal\\ottrin.exe\" --help -- \"%1\"",
+      "encoding": "doubled",
+      "exit": 0
+    }
+  ]
+}

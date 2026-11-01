@@ -1,0 +1,15 @@
+{
+  "nonce": "d2f32bdb-8923-403e-8ece-1d1c0175c379",
+  "commands": {
+    "Ottrin.QA.82c5a3a98ac4437db41de5092fd3c03e": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%%1\\ottrin.exe\" --help -- \"%1\"",
+    "Ottrin.QA.a743af221b534c32bbd9ef44a6c95954": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\100%% literal\\ottrin.exe\" --help -- \"%1\"",
+    "Ottrin.QA.ba2aca70ed0a46f5b1046329c688065e": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%%V\\ottrin.exe\" --help -- \"%1\"",
+    "Ottrin.QA.eb6154979cfa4117bdcdd5117f479130": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%1\\ottrin.exe\" --help -- \"%1\"",
+    "Ottrin.QA.8c58da7ef4ab4f39aeb5fd11d5083bee": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\plain\\ottrin.exe\" --help -- \"%1\"",
+    "Ottrin.QA.03a001b55f404662b7ced156bc0e80fe": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\literal%V\\ottrin.exe\" --help -- \"%1\"",
+    "Ottrin.QA.9b28667f07104152ad72ca82312fa3af": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\plain\\ottrin.exe\" --help -- \"%1\"",
+    "Ottrin.QA.41dba7463efe4cfea40cc98466c0d3e4": "\"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-probe\\100% literal\\ottrin.exe\" --help -- \"%1\""
+  },
+  "removed": true,
+  "anchor": "Software\\Ottrin.CommandProbe.d2f32bdb8923403e8ece1d1c0175c379"
+}

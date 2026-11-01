@@ -1,0 +1,14 @@
+{
+  "observations": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-app.exe",
+      "resource_section_present": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin.exe",
+      "resource_section_present": false
+    }
+  ],
+  "scope": "PE section inventory; native Explorer icon extraction still needs a dedicated check",
+  "follow_up": "Embed the existing canonical application icon in Windows executables; registry and NSIS currently reference executable icon index0"
+}

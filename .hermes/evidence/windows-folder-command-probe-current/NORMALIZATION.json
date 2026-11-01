@@ -1,0 +1,10 @@
+{
+  "normalized": [
+    "RUNTIME_TEARDOWN.json",
+    "private-class/short-temp-ordinary-folder-probe.json",
+    "private-class/RUNTIME_TEARDOWN.json",
+    "private-class/short-temp-ordinary-folder-probe-registry-owner.json"
+  ],
+  "original_bytes_preserved": true,
+  "parsed_values_unchanged": true
+}

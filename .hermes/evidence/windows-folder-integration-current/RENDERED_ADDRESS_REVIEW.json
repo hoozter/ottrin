@@ -1,0 +1,23 @@
+{
+  "method": "Direct visual inspection of all three original native screenshots",
+  "results": [
+    {
+      "case": "directory",
+      "file": "native-stable-card/short-temp-ordinary-folder-desktop-directory-address.png",
+      "sha256": "f4b12a4e298b8f20b743078bf7c53bd368d5b7505dc402239703cd44f2e68e4e",
+      "review": "Rendered address matches requested directory; extended-length prefix is shown; drive root is C:\\"
+    },
+    {
+      "case": "background",
+      "file": "native-stable-card/short-temp-ordinary-folder-desktop-background-address.png",
+      "sha256": "09d259b8d940c4bbeabe2984b05859fb2982cf08b4f1fbf904c9337efcfa0d21",
+      "review": "Rendered address matches requested directory; extended-length prefix is shown; drive root is C:\\"
+    },
+    {
+      "case": "drive",
+      "file": "native-stable-card/short-temp-ordinary-folder-desktop-drive-address.png",
+      "sha256": "85071620b9ea5ef59d5fd0f9b8ef919bcf900aee6b1b1a21d4d2a9010e97c380",
+      "review": "Rendered address matches requested directory; extended-length prefix is shown; drive root is C:\\"
+    }
+  ]
+}

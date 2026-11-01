@@ -1938,3 +1938,20 @@ contract, not a global replacement for Windows native system dialogs.
 The example passes actual source Linux Save/folder/cancel/caller-loss checks with
 a non-text native directory. Strict GNU Windows core/app/UI all-target lint passes for the example. Its
 Windows runtime execution is separate from the direct native caller checks.
+
+
+## Optional Windows folder menu actions
+
+Services → Desktop integration → Folder menu actions and the headless
+`ottrin folders enable|disable|status [--json]` commands use the same per-user
+implementation. It adds **Open in Ottrin** to folder, folder-background and drive
+menus. Windows 11 may place static verbs under **Show more options**. Existing
+folder defaults remain unchanged; this is an explicit additional menu action.
+
+The three registry verbs, native executable path, ownership marker and receipt
+commit together in one native registry transaction. An abandoned transaction
+rolls back. Repair restores missing owned data; changed or unknown data refuses
+replacement/removal. Disable removes owned commands and only recorded empty
+parents, preserving unrelated handlers and settings. No administrator permission
+is required. Moving a portable copy requires Update / repair from its new location.
+Windows folder-link default preference remains separate roadmap work.

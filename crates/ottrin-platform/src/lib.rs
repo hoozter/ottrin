@@ -1,5 +1,8 @@
 #[cfg(target_os = "linux")]
 pub mod folder_integration;
+#[cfg(target_os = "windows")]
+#[path = "windows_folder_integration.rs"]
+pub mod folder_integration;
 #[cfg(target_os = "linux")]
 mod integration_preferences;
 #[cfg(target_os = "linux")]
@@ -2106,15 +2109,12 @@ impl PlatformOps for DefaultPlatform {
             if !is_executable_available("powershell.exe") && !is_executable_available("powershell")
             {
                 return PrivilegedAvailability::Misconfigured(
-                    "PowerShell not found; UAC launcher unavailable".to_string(),
+                    "Windows PowerShell is unavailable. Administrator operations need Windows PowerShell to display the permission prompt.".to_string(),
                 );
             }
             let helper = resolve_helper_name("ottrin-priv-helper.exe");
             if !is_executable_available(&helper) {
-                return PrivilegedAvailability::Misconfigured(format!(
-                    "Privileged helper '{}' not found (set OTTRIN_PRIV_HELPER or use --helper-path)",
-                    helper
-                ));
+                return PrivilegedAvailability::Misconfigured("The administrator helper is missing from this package. Restore the complete portable package or reinstall Ottrin.".into());
             }
             PrivilegedAvailability::Ready
         }

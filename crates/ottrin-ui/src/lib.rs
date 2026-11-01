@@ -3664,9 +3664,9 @@ pub struct OttrinApp {
     portal_status: Option<ottrin_platform::portal_integration::PortalStatus>,
     #[cfg(target_os = "linux")]
     portal_status_rx: Option<Receiver<ottrin_platform::portal_integration::PortalStatus>>,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     folder_status: Option<ottrin_platform::folder_integration::FolderStatus>,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     folder_status_rx: Option<Receiver<ottrin_platform::folder_integration::FolderStatus>>,
     show_settings: bool,
     // Active settings category tab
@@ -3989,9 +3989,9 @@ impl OttrinApp {
             portal_status: None,
             #[cfg(target_os = "linux")]
             portal_status_rx: None,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             folder_status: None,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             folder_status_rx: None,
             show_settings: false,
             settings_tab: SettingsTab::General,
@@ -20918,6 +20918,9 @@ impl OttrinApp {
             {
                 self.portal_status = None;
                 self.portal_status_rx = None;
+            }
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
+            {
                 self.folder_status = None;
                 self.folder_status_rx = None;
             }
@@ -20975,7 +20978,7 @@ impl OttrinApp {
         ui.add_space(14.0);
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     fn render_folder_integration_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
         if let Some(status) = self
             .folder_status_rx
@@ -20996,13 +20999,13 @@ impl OttrinApp {
         }
         appearance_editor::settings_surface(c).inner_margin(12).show(ui,|ui| {
             ui.set_min_width(ui.available_width());
-            ui.label(RichText::new("Folder opening").strong().color(c.text));
-            ui.label("Choose Ottrin for your desktop's directory links. Applications can also use their own file manager or a separate file-reveal service.");
+            ui.label(RichText::new(if cfg!(target_os="windows"){"Folder menu actions"}else{"Folder opening"}).strong().color(c.text));
+            ui.label(if cfg!(target_os="windows"){ "Add Open in Ottrin to folder, drive and folder-background menus. On Windows 11, use Show more options. Windows keeps its current default file manager." }else{ "Choose Ottrin for your desktop's directory links. Applications can also use their own file manager or a separate file-reveal service." });
             if let Some(status)=self.folder_status.clone() {
                 Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
                 ui.horizontal_wrapped(|ui| {
-                    if ui.add(egui::Button::new(if status.enabled {"Update / repair folder setup"}else{"Use Ottrin for folders"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable);}
-                    if status.enabled && ui.add(egui::Button::new("Restore previous handler").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
+                    if ui.add(egui::Button::new(if status.enabled {"Update / repair folder setup"}else if cfg!(target_os="windows"){"Enable folder menu actions"}else{"Use Ottrin for folders"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable);}
+                    if status.enabled && ui.add(egui::Button::new(if cfg!(target_os="windows"){"Remove folder menu actions"}else{"Restore previous handler"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
                     if ui.add(egui::Button::new("Refresh status").themed(&c)).clicked() {self.folder_status=None;}
                 });
             }else{ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
@@ -21036,13 +21039,13 @@ impl OttrinApp {
             });
         }
         ui.add_enabled_ui(!busy, |ui| {
-            ui.label(RichText::new("Administrator helper").strong().color(c.text));
+            ui.label(RichText::new(if cfg!(target_os="windows"){"Administrator operations"}else{"Administrator helper"}).strong().color(c.text));
             match &self.privileged_availability {
-                PrivilegedAvailability::Ready => Self::render_service_status(ui, "Installed and ready", ready_color),
-                PrivilegedAvailability::Misconfigured(_) => Self::render_service_status(ui, "Setup needed", c.error),
+                PrivilegedAvailability::Ready => Self::render_service_status(ui, if cfg!(target_os="windows"){"Ready — Windows prompts when needed"}else{"Installed and ready"}, ready_color),
+                PrivilegedAvailability::Misconfigured(message) => Self::render_service_status(ui, if cfg!(target_os="windows"){message}else{"Setup needed"}, c.error),
                 PrivilegedAvailability::Unsupported(message) => Self::render_service_status(ui, message, c.text_muted),
             }
-            ui.label("Lets Ottrin request administrator permission when a file operation needs it. Setup requires your administrator password.");
+            ui.label(if cfg!(target_os="windows"){"The bundled helper uses Windows’ administrator prompt when a protected file operation needs elevation."}else{"Lets Ottrin request administrator permission when a file operation needs it. Setup requires your administrator password."});
             #[cfg(target_os = "linux")]
             ui.label("Setup also installs the HTML preview sandbox from this package.");
             #[cfg(target_os = "linux")]
@@ -21130,11 +21133,12 @@ impl OttrinApp {
                     self.privileged_availability = self.platform.privileged_availability();
                 }
             });
-            #[cfg(target_os="linux")]
+            #[cfg(any(target_os="linux",target_os="windows"))]
             {
                 ui.add_space(16.0);
                 ui.label(RichText::new("Desktop integration").strong().color(c.heading));
                 ui.add_space(8.0);
+                #[cfg(target_os="linux")]
                 self.render_portal_settings(ui,c);
                 self.render_folder_integration_settings(ui,c);
             }

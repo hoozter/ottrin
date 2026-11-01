@@ -1,0 +1,22 @@
+{
+  "nonce": "d2f32bdb-8923-403e-8ece-1d1c0175c379",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "source": {
+    "base_revision": "8e57b0f5069701e6ae3e02bfdf8b527b96f3ea27",
+    "working_tree": [
+      "?? AGENTS.md"
+    ],
+    "files": {
+      "crates/ottrin-core/src/picker.rs": "a9ed2461bce1ad3e68834c9e4e513c5c5c287f1c88b6c492240e260f2d4b0f69",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

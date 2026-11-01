@@ -1,0 +1,11 @@
+{
+  "first_control": "New-Item hard link was denied before the inner registration loop; no verb entries were created",
+  "preserved_ambiguous_ancestors": [
+    "HKCU\\Software\\Classes\\Directory",
+    "HKCU\\Software\\Classes\\Directory\\shell"
+  ],
+  "reason": "The first control opened/created this standard container before recording whether it existed. Ownership of possibly empty ancestors is not proven, so they are retained on the designated shared QA VM. No default values were written. Subsequent probes use a nonce-bound volatile private class instead.",
+  "consumer": "Shared standard Windows folder-registration container for the current integration QA; no user action requested",
+  "final_control": "private-class/short-temp-ordinary-folder-probe.json: raw quoted executable paths work; percent doubling breaks percent-containing names",
+  "registry_cleanup": "private-class/short-temp-ordinary-folder-probe-registry-owner.json confirms private root removed; VM off and original profiles retained"
+}

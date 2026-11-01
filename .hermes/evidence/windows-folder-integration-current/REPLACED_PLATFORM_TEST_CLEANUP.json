@@ -1,0 +1,16 @@
+{
+  "retired_executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-c40aea5fd597ebbb.exe",
+  "current_replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-5d4b21ab5d11dd66.exe",
+  "same_compiler_configuration": {
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "target": 11464258118835825082,
+    "profile": 4539089746505721204,
+    "rustflags": [],
+    "compile_kind": 8200324069407742093
+  },
+  "logical_bytes": 474734330,
+  "replacement_execution_scope": "Nine native folder/parser/registry tests under ordinary and elevated Windows tokens; full unrelated platform suite not rerun here",
+  "current_dependencies_and_binaries_preserved": true,
+  "filesystem_free_delta": 474763264
+}

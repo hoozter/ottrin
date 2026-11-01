@@ -1,0 +1,41 @@
+{
+  "uiRepairVerified": true,
+  "windows": [
+    {
+      "requestedDirectory": "C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal",
+      "case": "directory",
+      "requestedDirectoryReview": "Captured full address screenshot requires review",
+      "commandLine": "\"C:\\OttrinJobFixtureQA\\fixture-launch.exe\" -- \"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal\\.\"",
+      "exit": 0
+    },
+    {
+      "requestedDirectory": "C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal",
+      "case": "background",
+      "requestedDirectoryReview": "Captured full address screenshot requires review",
+      "commandLine": "\"C:\\OttrinJobFixtureQA\\fixture-launch.exe\" -- \"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal\\.\"",
+      "exit": 0
+    },
+    {
+      "requestedDirectory": "C:\\",
+      "case": "drive",
+      "requestedDirectoryReview": "Captured full address screenshot requires review",
+      "commandLine": "\"C:\\OttrinJobFixtureQA\\fixture-launch.exe\" -- \"C:\\\\.\"",
+      "exit": 0
+    }
+  ],
+  "enabled": {
+    "enabled": true,
+    "ready": true,
+    "detail": "Enabled \u2014 Open in Ottrin is available in folder menus"
+  },
+  "defaultsPreserved": true,
+  "scope": "Production per-user folder CLI,actual merged Shell verbs,source main/Services GUI,repair and uninstall; compatibility renderer on virtual graphics",
+  "off": {
+    "enabled": false,
+    "ready": false,
+    "detail": "Off \u2014 Windows folder menus keep their current actions"
+  },
+  "sourcePreserved": true,
+  "status": "pass",
+  "folderButtonRow": 545
+}
