@@ -56,3 +56,22 @@ The rendered regression covers startup, shrinking, complete preview visibility, 
 The exact AppImage from clean `903c55395691828cbde81f889a8a5b846c0eebb4` (SHA-256 `4a6a0bdadeca8d37bbe9cb079dec735e20dd7510ea303188feabf3aa12a08748`) passes private native Linux Dark/Light resizing from 1100 × 690 to 800 × 600, visible adjacent text preview, vertical selection and clean exit. All five packaged executables match workspace release output. Owned apps, daemon, bus, display, profile and extracts were removed. `dist/packages/MILLER_RESIZE_ACCEPTANCE.json` records this focused scope. Native Windows resize and other preview types remain pending.
 
 The same AppImage also passes PDF preview resizing in Dark and Light at 100%, with the rendered PDF and wrapped Fit/zoom/Expand controls visible. The clean `2b3acb2` Windows portable (SHA-256 `633c9cbe386536041d3d53f895a17a9833249cfff610b9556d1a2aa8cd961416`) passes the originally failing real 1100 × 690 to 800 × 600 text-preview resize as a medium-integrity interactive user, with a matching executable hash, empty stderr and exit zero. Native result, screenshot and unchanged prior-installation checksum are retained in `.hermes/evidence/windows-refresh-20261012/`; owned guest fixtures/task were removed and the VM is shut off. This extends the focused receipt, not full platform acceptance.
+
+## Preview scroll ownership and accessible metadata — 2026-11-01
+
+A body that reserves a metadata footer owns its scrolling; the padded preview
+frame must not wrap it in a second scroll area. Visual pages retain frame
+scrolling, including the always-reserved fit-width PDF gutter. The complete
+frame/body regression uses real wheel input and verifies a stationary footer
+for text, highlighted code, archives, spreadsheets, structured DOCX and extracted
+text in both themes at100/150/200% text size. Existing footer geometry cases now
+also use the common frame, preserving their declared body viewport dimensions.
+
+The Miller Info area scales within a bounded part of its pane and scrolls
+metadata overflow. Enlarged text must leave the actual Details toggle clickable
+and the final metadata field reachable, including short/narrow panes. The
+rendered regression covers both themes,180/250px widths,300/450px heights and
+100/135/200% text with actual wheel and pointer events. Both final regression
+cases reject the original arrangement. Source checks and delivery scopes are
+recorded separately in `.hermes/evidence/preview-scroll-current/`; these source
+observations do not accept a new package or physical display.

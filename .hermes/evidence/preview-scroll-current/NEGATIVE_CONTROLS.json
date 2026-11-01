@@ -1,0 +1,10 @@
+{
+  "base_revision": "c7f4daee8faa81ceb7bd42e970192a81f51da2b2",
+  "status": "Both final regressions reject the original scrolling and metadata arrangement",
+  "metadata_control": "Original render_miller_file_preview from base,with only the new enum signature adapter; final accessibility test unchanged except name",
+  "body_control": "Final full-frame/body regression with the former outer Frame scrolling restored; test unchanged except name",
+  "controlled_lib_sha256": "29b480b37d93f537a7eafedbc53993747d3561011c8f91a4bdc1e4e5033a210f",
+  "controlled_preview_render_sha256": "70c8ae1ca3c7a4b32d0911fa0b014a65d2e1d1c64c3d3c26df767b4285aa6eb8",
+  "returncode": 101,
+  "restoration": "Original working source restored in finally before any final builds"
+}

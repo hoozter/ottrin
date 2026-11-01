@@ -14132,7 +14132,7 @@ impl OttrinApp {
                                         preview_render::preview_content_frame(
                                             ui,
                                             Vec2::new(ui.available_width(), 118.0),
-                                            false,
+                                            preview_render::PreviewScroll::Frame,
                                             |ui| {
                                                 // Clip to allocated rect so overflowing
                                                 // text never pushes metadata rows away.
@@ -18812,7 +18812,10 @@ impl OttrinApp {
                 let info_bottom_pad = 24.0; // keep clear of scrollbar grab zone
                 let info_body_h = if info_open {
                     let base = 100.0; // name + type + size + modified + location
-                    if details_open { base + 90.0 } else { base }
+                    let desired = (if details_open { base + 90.0 } else { base }) * c.font_scale;
+                    // Metadata remains usable with enlarged text without taking
+                    // the whole preview pane. Its own viewport scrolls overflow.
+                    desired.min((height - info_header_h - info_bottom_pad).max(0.0) * 0.5)
                 } else {
                     0.0
                 };
@@ -18886,8 +18889,15 @@ impl OttrinApp {
                 // ── Preview area (top, fills remaining space) ──────────
                 let preview_h =
                     (height - info_total_h - (ui.cursor().top() - toolbar_top))
-                        .max(80.0);
-                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), use_visual_renderer && visual_fit && visual_fit_width, |ui| {
+                        .max(0.0);
+                let scrolling = if use_shared_body_renderer {
+                    preview_render::PreviewScroll::Body
+                } else if use_visual_renderer && visual_fit && visual_fit_width {
+                    preview_render::PreviewScroll::WidthFittedPage
+                } else {
+                    preview_render::PreviewScroll::Frame
+                };
+                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), scrolling, |ui| {
                 if use_visual_renderer {
                     if let Some(img) = self.cached_shared_visual_preview_widget(
                         &entry.path,
@@ -19042,123 +19052,132 @@ impl OttrinApp {
                         Vec2::new(width, info_body_h),
                     );
                     ui.scope_builder(UiBuilder::new().max_rect(body_rect), |ui| {
-                        let ipad = 12.0;
-                        ui.horizontal(|ui| {
-                            ui.add_space(ipad);
-                            ui.vertical(|ui| {
-                                let info_w = (width - ipad * 2.0).max(100.0);
-                                ui.set_max_width(info_w);
+                        ui.set_clip_rect(ui.clip_rect().intersect(body_rect));
+                        ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
+                        ScrollArea::vertical()
+                            .id_salt(("miller_info_body", &entry.path))
+                            .max_height(info_body_h)
+                            .min_scrolled_height(0.0)
+                            .auto_shrink([false, false])
+                            .show(ui, |ui| {
+                                let ipad = 12.0;
+                                ui.horizontal(|ui| {
+                                    ui.add_space(ipad);
+                                    ui.vertical(|ui| {
+                                        let info_w = (ui.available_width() - ipad).max(0.0);
+                                        ui.set_max_width(info_w);
 
-                                // File type
-                                ui.label(RichText::new(&type_desc).color(lc).size(10.0 * c.font_scale));
-                                ui.add_space(6.0);
+                                        // File type
+                                        ui.label(RichText::new(&type_desc).color(lc).size(10.0 * c.font_scale));
+                                        ui.add_space(6.0);
 
-                                // Metadata rows helper — inline "Label: value"
-                                let meta_row = |ui: &mut egui::Ui, label: &str, value: &str| {
-                                    ui.horizontal(|ui| {
-                                        ui.label(
-                                            RichText::new(format!("{label}:")).color(lc).size(10.0 * c.font_scale),
-                                        );
-                                        ui.add(
-                                            egui::Label::new(
-                                                RichText::new(value).color(vc).size(10.0 * c.font_scale),
-                                            )
-                                            .truncate(),
-                                        );
-                                    });
-                                };
+                                        // Metadata rows helper — inline "Label: value"
+                                        let meta_row = |ui: &mut egui::Ui, label: &str, value: &str| {
+                                            ui.horizontal(|ui| {
+                                                ui.label(
+                                                    RichText::new(format!("{label}:")).color(lc).size(10.0 * c.font_scale),
+                                                );
+                                                ui.add(
+                                                    egui::Label::new(
+                                                        RichText::new(value).color(vc).size(10.0 * c.font_scale),
+                                                    )
+                                                    .truncate(),
+                                                );
+                                            });
+                                        };
 
-                                // Size — clickable to cycle units
-                                if let Some(size) = entry.size_bytes {
-                                    let units = format_size_units(size);
-                                    if units.len() > 1 {
-                                        let size_cycle_id =
-                                            ui.id().with(("size_cycle", &entry.path));
-                                        let idx: usize = ui.ctx().data_mut(|d| {
-                                            *d.get_persisted_mut_or_default::<usize>(size_cycle_id)
-                                        });
-                                        let display = &units[idx % units.len()];
-                                        ui.horizontal(|ui| {
-                                            ui.label(RichText::new("Size:").color(lc).size(10.0 * c.font_scale));
-                                            let resp = ui.add(
+                                        // Size — clickable to cycle units
+                                        if let Some(size) = entry.size_bytes {
+                                            let units = format_size_units(size);
+                                            if units.len() > 1 {
+                                                let size_cycle_id =
+                                                    ui.id().with(("size_cycle", &entry.path));
+                                                let idx: usize = ui.ctx().data_mut(|d| {
+                                                    *d.get_persisted_mut_or_default::<usize>(size_cycle_id)
+                                                });
+                                                let display = &units[idx % units.len()];
+                                                ui.horizontal(|ui| {
+                                                    ui.label(RichText::new("Size:").color(lc).size(10.0 * c.font_scale));
+                                                    let resp = ui.add(
+                                                        egui::Label::new(
+                                                            RichText::new(display)
+                                                                .color(c.accent)
+                                                                .size(10.0 * c.font_scale)
+                                                                .underline(),
+                                                        )
+                                                        .sense(Sense::click()),
+                                                    );
+                                                    if resp.clicked() {
+                                                        let next = (idx + 1) % units.len();
+                                                        ui.ctx().data_mut(|d| {
+                                                            d.insert_persisted(size_cycle_id, next)
+                                                        });
+                                                        ui.ctx().request_repaint();
+                                                    }
+                                                    if resp.hovered() {
+                                                        ui.ctx().set_cursor_icon(
+                                                            egui::CursorIcon::PointingHand,
+                                                        );
+                                                    }
+                                                });
+                                            } else {
+                                                meta_row(ui, "Size", &format_size(size));
+                                            }
+                                        }
+                                        if let Some(secs) = entry.modified_unix_secs {
+                                            meta_row(ui, "Modified", &format_modified(secs));
+                                        }
+                                        if let Some(parent) = entry.path.parent() {
+                                            meta_row(ui, "Location", &path_label(parent));
+                                        }
+
+                                        // ── Details toggle ──────────
+                                        ui.add_space(4.0);
+                                        let dtoggle = if details_open {
+                                            "\u{E5CE} Details"
+                                        } else {
+                                            "\u{E5CF} Details"
+                                        };
+                                        if ui
+                                            .add(
                                                 egui::Label::new(
-                                                    RichText::new(display)
-                                                        .color(c.accent)
-                                                        .size(10.0 * c.font_scale)
-                                                        .underline(),
+                                                    RichText::new(dtoggle).color(c.accent).size(10.0 * c.font_scale),
                                                 )
                                                 .sense(Sense::click()),
-                                            );
-                                            if resp.clicked() {
-                                                let next = (idx + 1) % units.len();
-                                                ui.ctx().data_mut(|d| {
-                                                    d.insert_persisted(size_cycle_id, next)
-                                                });
-                                                ui.ctx().request_repaint();
-                                            }
-                                            if resp.hovered() {
-                                                ui.ctx().set_cursor_icon(
-                                                    egui::CursorIcon::PointingHand,
-                                                );
-                                            }
-                                        });
-                                    } else {
-                                        meta_row(ui, "Size", &format_size(size));
-                                    }
-                                }
-                                if let Some(secs) = entry.modified_unix_secs {
-                                    meta_row(ui, "Modified", &format_modified(secs));
-                                }
-                                if let Some(parent) = entry.path.parent() {
-                                    meta_row(ui, "Location", &path_label(parent));
-                                }
+                                            )
+                                            .clicked()
+                                        {
+                                            let new_val = !details_open;
+                                            ui.ctx()
+                                                .data_mut(|d| d.insert_persisted(details_id, new_val));
+                                            ui.ctx().request_repaint();
+                                        }
 
-                                // ── Details toggle ──────────
-                                ui.add_space(4.0);
-                                let dtoggle = if details_open {
-                                    "\u{E5CE} Details"
-                                } else {
-                                    "\u{E5CF} Details"
-                                };
-                                if ui
-                                    .add(
-                                        egui::Label::new(
-                                            RichText::new(dtoggle).color(c.accent).size(10.0 * c.font_scale),
-                                        )
-                                        .sense(Sense::click()),
-                                    )
-                                    .clicked()
-                                {
-                                    let new_val = !details_open;
-                                    ui.ctx()
-                                        .data_mut(|d| d.insert_persisted(details_id, new_val));
-                                    ui.ctx().request_repaint();
-                                }
-
-                                if details_open {
-                                    ui.add_space(2.0);
-                                    if let Some(ext) =
-                                        entry.path.extension().and_then(|e| e.to_str())
-                                    {
-                                        meta_row(ui, "Extension", &format!(".{ext}"));
-                                    }
-                                    meta_row(ui, "Full path", &path_label(&entry.path));
-                                    let detail = self.cached_info_details(entry);
-                                    if let Some(owner) = detail.owner.as_deref() {
-                                        meta_row(ui, "Owner", owner);
-                                    }
-                                    if let Some(group) = detail.group.as_deref() {
-                                        meta_row(ui, "Group", group);
-                                    }
-                                    if let Some(perms) = detail.permissions.as_deref() {
-                                        meta_row(ui, "Permissions", perms);
-                                    }
-                                    if let Some(dims) = detail.image_dimensions.as_deref() {
-                                        meta_row(ui, "Dimensions", dims);
-                                    }
-                                }
+                                        if details_open {
+                                            ui.add_space(2.0);
+                                            if let Some(ext) =
+                                                entry.path.extension().and_then(|e| e.to_str())
+                                            {
+                                                meta_row(ui, "Extension", &format!(".{ext}"));
+                                            }
+                                            meta_row(ui, "Full path", &path_label(&entry.path));
+                                            let detail = self.cached_info_details(entry);
+                                            if let Some(owner) = detail.owner.as_deref() {
+                                                meta_row(ui, "Owner", owner);
+                                            }
+                                            if let Some(group) = detail.group.as_deref() {
+                                                meta_row(ui, "Group", group);
+                                            }
+                                            if let Some(perms) = detail.permissions.as_deref() {
+                                                meta_row(ui, "Permissions", perms);
+                                            }
+                                            if let Some(dims) = detail.image_dimensions.as_deref() {
+                                                meta_row(ui, "Dimensions", dims);
+                                            }
+                                        }
+                                    });
+                                });
                             });
-                        });
                     });
                 });
             },
@@ -20405,7 +20424,6 @@ impl OttrinApp {
                     }
 
                     self.render_office_provider_fallback_notice(ui, &path);
-                    preview_render::preview_content_frame(ui, ui.available_size(), self.preview.text_editor.is_none() && self.preview.visual_fit && self.preview.visual_fit_width && (preview_uses_visual_preview(&path, preview.kind) || uses_office_provider), |ui| {
                     let specialized_body_renderer = (preview.kind == PreviewKind::Text
                         && self.preview.text_editor.is_some())
                         || (preview.kind == PreviewKind::OfficeMetadata
@@ -20417,6 +20435,15 @@ impl OttrinApp {
                     #[cfg(target_os = "linux")]
                     let use_shared_body_renderer = use_shared_body_renderer
                         && !preview_uses_media_playback(preview.kind);
+                    let scrolling = if use_shared_body_renderer || self.preview.text_editor.is_some() {
+                        preview_render::PreviewScroll::Body
+                    } else if self.preview.visual_fit && self.preview.visual_fit_width
+                        && (preview_uses_visual_preview(&path, preview.kind) || uses_office_provider) {
+                        preview_render::PreviewScroll::WidthFittedPage
+                    } else {
+                        preview_render::PreviewScroll::Frame
+                    };
+                    preview_render::preview_content_frame(ui, ui.available_size(), scrolling, |ui| {
                     if use_shared_body_renderer {
                         let _ = render_shared_preview_body(
                             ui,
@@ -36630,6 +36657,103 @@ mod tests {
                         })
                         .count();
                     assert_eq!(full_tooltips, 1, "show the full path once on hover");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn miller_details_toggle_and_final_field_remain_accessible_at_large_text() {
+        let fixture = tempfile::tempdir().unwrap();
+        std::fs::write(fixture.path().join("note.txt"), "metadata fixture").unwrap();
+        let entry = listing::list_directory(fixture.path(), false)
+            .unwrap()
+            .remove(0);
+        for theme in [ottrin_core::ThemeMode::Light, ottrin_core::ThemeMode::Dark] {
+            for width in [180.0, 250.0] {
+                for scale in [1.0, 1.35, 2.0] {
+                    for height in [300.0, 450.0] {
+                        let mut app = OttrinApp::default();
+                        app.state.config.theme = theme;
+                        app.colors = Colors::for_config(&app.state.config, None);
+                        app.colors.font_scale = scale;
+                        let mut details = build_info_panel_details(&entry.path);
+                        details.permissions = Some("Final permissions fixture".into());
+                        app.info_panel_details = Some((entry.path.clone(), details));
+                        let ctx = Context::default();
+                        let mut click = None;
+                        let mut click_frame = None;
+                        let mut scroll_point = egui::Pos2::ZERO;
+                        let mut saw_final_field = false;
+                        for frame in 0..220 {
+                            let mut events = Vec::new();
+                            if let (Some(pos), Some(start)) = (click, click_frame)
+                                && (frame == start || frame == start + 1)
+                            {
+                                events = vec![
+                                    egui::Event::PointerMoved(pos),
+                                    egui::Event::PointerButton {
+                                        pos,
+                                        button: egui::PointerButton::Primary,
+                                        pressed: frame == start,
+                                        modifiers: Default::default(),
+                                    },
+                                ];
+                            }
+                            if frame >= 30 && frame % 10 == 0 {
+                                events.extend([
+                                    egui::Event::PointerMoved(scroll_point),
+                                    egui::Event::MouseWheel {
+                                        unit: egui::MouseWheelUnit::Point,
+                                        delta: Vec2::new(0.0, -90.0),
+                                        modifiers: Default::default(),
+                                    },
+                                ]);
+                            }
+                            let output = ctx.run(
+                                egui::RawInput {
+                                    time: Some(frame as f64 / 60.0),
+                                    screen_rect: Some(Rect::from_min_size(
+                                        egui::Pos2::ZERO,
+                                        Vec2::new(width + 16.0, height + 16.0),
+                                    )),
+                                    events,
+                                    ..Default::default()
+                                },
+                                |ctx| {
+                                    egui::CentralPanel::default().show(ctx, |ui| {
+                                        app.render_miller_file_preview(ui, &entry, width, height);
+                                    });
+                                },
+                            );
+                            for shape in &output.shapes {
+                                if let egui::Shape::Text(text) = &shape.shape {
+                                    let bounds = text.galley.rect.translate(text.pos.to_vec2());
+                                    if text.galley.job.text.ends_with(" Details") {
+                                        scroll_point = shape.clip_rect.center();
+                                        if frame >= 25
+                                            && click_frame.is_none()
+                                            && shape.clip_rect.contains_rect(bounds)
+                                        {
+                                            click = Some(bounds.center());
+                                            click_frame = Some(frame + 1);
+                                        }
+                                    }
+                                    if frame > 60
+                                        && text.galley.job.text == "Final permissions fixture"
+                                        && shape.clip_rect.contains_rect(bounds)
+                                    {
+                                        saw_final_field = true;
+                                    }
+                                }
+                            }
+                        }
+                        assert!(click.is_some(), "actual Details toggle");
+                        assert!(
+                            saw_final_field,
+                            "final metadata row inaccessible: scale={scale},height={height}"
+                        );
+                    }
                 }
             }
         }

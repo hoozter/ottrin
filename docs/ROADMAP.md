@@ -18,6 +18,18 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
+- **Preview scrolling and enlarged metadata in verification (2026-11-01).**
+  Shared text/code/archive/spreadsheet/DOCX/extracted bodies now own their scrolling;
+  the common frame keeps scrolling for visual pages and unstructured content.
+  Width-fitted PDF pages retain their stable reserved gutter. The rendered full-frame
+  regression checks one vertical handle, actual wheel movement and stationary
+  metadata in Light/Dark at100/150/200%. The Info body now scales within a bounded
+  viewport; actual scroll/click checks reach Details and the final field at
+  180/250px,300/450px heights and100/135/200% in both themes. Both final regressions
+  reject the original arrangement. Full Linux UI verification passes412 regular
+  tests with one existing ignore and no filters. Native Windows verification and
+  exact package delivery are in progress; the usable e79b915e cohort below remains
+  authoritative. Evidence: `preview-scroll-current/`.
 - **Current delivery: Linux and Windows e79b915e (2026-11-01).** All four
   Linux formats at `dist/packages/` and the single Windows ZIP/NSIS/MSI candidate
   at `dist/windows-candidate/` now contain the preview-footer,Column-entry,

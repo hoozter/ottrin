@@ -99,11 +99,20 @@ pub(crate) fn spreadsheet_content_width(
     spreadsheet_column_width(available, overview)
 }
 
+/// The body owns scrolling when it reserves a fixed metadata footer. Visual
+/// pages and unstructured cards instead scroll inside the common frame.
+#[derive(Clone, Copy)]
+pub(crate) enum PreviewScroll {
+    Body,
+    Frame,
+    WidthFittedPage,
+}
+
 /// Shared allocation boundary for main Preview and Quick Inspector content.
 pub(crate) fn preview_content_frame<R>(
     ui: &mut egui::Ui,
     size: Vec2,
-    width_fitted: bool,
+    scrolling: PreviewScroll,
     contents: impl FnOnce(&mut egui::Ui) -> R,
 ) -> egui::InnerResponse<R> {
     let (outer, response) = ui.allocate_exact_size(size, Sense::hover());
@@ -120,16 +129,21 @@ pub(crate) fn preview_content_frame<R>(
     // determines its own width. Near the height boundary, a conditional solid
     // scrollbar otherwise alternates forever between wide/overflowing and
     // narrow/fitting. Reserve its vertical gutter throughout this fit mode.
-    let scroll = if width_fitted {
-        ScrollArea::vertical()
-            .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysVisible)
-    } else {
-        ScrollArea::both()
+    let inner = match scrolling {
+        PreviewScroll::Body => contents(&mut child),
+        PreviewScroll::Frame | PreviewScroll::WidthFittedPage => {
+            let scroll = if matches!(scrolling, PreviewScroll::WidthFittedPage) {
+                ScrollArea::vertical()
+                    .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysVisible)
+            } else {
+                ScrollArea::both()
+            };
+            scroll
+                .auto_shrink([false, false])
+                .show(&mut child, contents)
+                .inner
+        }
     };
-    let inner = scroll
-        .auto_shrink([false, false])
-        .show(&mut child, contents)
-        .inner;
     egui::InnerResponse { inner, response }
 }
 
@@ -192,8 +206,10 @@ pub(crate) fn render_shared_preview_body(
         }
         PreviewKind::ArchiveMetadata => render_archive_body_preview(ui, c, name, &preview.body),
         PreviewKind::AudioMetadata => {
-            render_metadata_card_preview(ui, c, MI_MUSIC_NOTE, name, &preview.body);
-            render_preview_card_action(ui, c, path, preview);
+            ScrollArea::both().show(ui, |ui| {
+                render_metadata_card_preview(ui, c, MI_MUSIC_NOTE, name, &preview.body);
+                render_preview_card_action(ui, c, path, preview);
+            });
         }
         PreviewKind::EpsMetadata => {
             render_document_body_preview(ui, c, MI_OPEN_IN_NEW, name, &preview.body);
@@ -646,7 +662,9 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
     let (metadata, listing) = split_archive_listing(body);
     let listing = listing.unwrap_or("").trim_end();
     if listing.is_empty() {
-        render_metadata_card_preview(ui, c, MI_FOLDER_ZIP, name, metadata);
+        ScrollArea::both().show(ui, |ui| {
+            render_metadata_card_preview(ui, c, MI_FOLDER_ZIP, name, metadata);
+        });
         return;
     }
 
@@ -1056,7 +1074,9 @@ pub(crate) fn render_document_body_preview(
         });
         render_preview_footer(ui, c, name, metadata);
     } else {
-        render_metadata_card_preview(ui, c, icon, name, metadata);
+        ScrollArea::both().show(ui, |ui| {
+            render_metadata_card_preview(ui, c, icon, name, metadata);
+        });
     }
 }
 
@@ -1864,24 +1884,34 @@ mod tests {
                 },
                 |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
-                        preview_content_frame(ui, Vec2::new(360.0, 400.0), true, |ui| {
-                            if frame < 5 {
-                                ui.allocate_exact_size(Vec2::new(1600.0, 700.0), Sense::hover());
-                            } else {
-                                ui.vertical_centered(|ui| {
-                                    let size = fit_size(
-                                        Vec2::new(600.0, 684.0),
-                                        ui.available_size(),
-                                        PreviewSizingMode::FitWidth,
+                        preview_content_frame(
+                            ui,
+                            Vec2::new(360.0, 400.0),
+                            PreviewScroll::WidthFittedPage,
+                            |ui| {
+                                if frame < 5 {
+                                    ui.allocate_exact_size(
+                                        Vec2::new(1600.0, 700.0),
+                                        Sense::hover(),
                                     );
-                                    widths.push(
-                                        ui.add(egui::Image::new(&texture).fit_to_exact_size(size))
+                                } else {
+                                    ui.vertical_centered(|ui| {
+                                        let size = fit_size(
+                                            Vec2::new(600.0, 684.0),
+                                            ui.available_size(),
+                                            PreviewSizingMode::FitWidth,
+                                        );
+                                        widths.push(
+                                            ui.add(
+                                                egui::Image::new(&texture).fit_to_exact_size(size),
+                                            )
                                             .rect
                                             .width(),
-                                    );
-                                });
-                            }
-                        });
+                                        );
+                                    });
+                                }
+                            },
+                        );
                     });
                 },
             );
@@ -1893,6 +1923,251 @@ mod tests {
             max - min < 0.1,
             "fit width continues oscillating: {widths:?}"
         );
+    }
+
+    fn assert_one_body_scrollbar_and_stationary_footer(preview: &PreviewData, anchor: &str) {
+        for theme in [ottrin_core::ThemeMode::Light, ottrin_core::ThemeMode::Dark] {
+            for scale in [1.0, 1.5, 2.0] {
+                let ctx = egui::Context::default();
+                ctx.set_visuals(if theme == ottrin_core::ThemeMode::Light {
+                    egui::Visuals::light()
+                } else {
+                    egui::Visuals::dark()
+                });
+                let handle_color = Color32::from_rgb(211, 17, 131);
+                ctx.style_mut(|style| {
+                    style.spacing.scroll = egui::style::ScrollStyle::solid();
+                    style.spacing.scroll.foreground_color = true;
+                    for visuals in [
+                        &mut style.visuals.widgets.inactive,
+                        &mut style.visuals.widgets.hovered,
+                        &mut style.visuals.widgets.active,
+                    ] {
+                        visuals.fg_stroke.color = handle_color;
+                        visuals.bg_fill = handle_color;
+                    }
+                });
+                let mut colors = Colors::for_config(
+                    &ottrin_core::AppConfig {
+                        theme,
+                        ..Default::default()
+                    },
+                    None,
+                );
+                colors.font_scale = scale;
+                let name = &preview.title;
+                let footer_prefix = format!("{name} ·");
+                let mut selected_sheet = None;
+                let mut footer_before = None;
+                let mut text_before = None;
+                let mut footer_point = egui::Pos2::ZERO;
+                let mut body_point = egui::Pos2::ZERO;
+                for frame in 0..100 {
+                    let events = match frame {
+                        30 => vec![
+                            egui::Event::PointerMoved(body_point),
+                            egui::Event::MouseWheel {
+                                unit: egui::MouseWheelUnit::Point,
+                                delta: Vec2::new(0.0, -180.0),
+                                modifiers: Default::default(),
+                            },
+                        ],
+                        60 => vec![
+                            egui::Event::PointerMoved(footer_point),
+                            egui::Event::MouseWheel {
+                                unit: egui::MouseWheelUnit::Point,
+                                delta: Vec2::new(0.0, -180.0),
+                                modifiers: Default::default(),
+                            },
+                        ],
+                        _ => Vec::new(),
+                    };
+                    let output = ctx.run(
+                        egui::RawInput {
+                            time: Some(frame as f64 / 60.0),
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(320.0, 450.0),
+                            )),
+                            events,
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                preview_content_frame(
+                                    ui,
+                                    ui.available_size(),
+                                    PreviewScroll::Body,
+                                    |ui| {
+                                        render_shared_preview_body(
+                                            ui,
+                                            colors,
+                                            Path::new(name),
+                                            name,
+                                            preview,
+                                            &mut selected_sheet,
+                                            PreviewBodySizing::default(),
+                                        );
+                                    },
+                                );
+                            });
+                        },
+                    );
+                    let footer = output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text)
+                                if text.galley.job.text.starts_with(&footer_prefix) =>
+                            {
+                                Some(text)
+                            }
+                            _ => None,
+                        })
+                        .expect("actual metadata footer");
+                    if frame == 25 {
+                        let handles = output.shapes.iter().filter(|shape| matches!(&shape.shape,
+                        egui::Shape::Rect(rect) if rect.fill == handle_color && rect.rect.height() > rect.rect.width()
+                    )).count();
+                        assert_eq!(handles, 1, "one vertical scrollbar: {name}, scale {scale}");
+                        footer_before = Some(footer.pos);
+                        footer_point = footer.galley.rect.translate(footer.pos.to_vec2()).center();
+                        text_before = output.shapes.iter().find_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text) if text.galley.job.text.starts_with(anchor) => {
+                                body_point = shape.clip_rect.center();
+                                Some(text.pos)
+                            }
+                            _ => None,
+                        });
+                    }
+                    if frame == 55 {
+                        let after = output.shapes.iter().find_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text) if text.galley.job.text.starts_with(anchor) => {
+                                Some(text.pos)
+                            }
+                            _ => None,
+                        });
+                        let before = text_before.expect("visible initial body anchor");
+                        assert!(
+                            after.is_none_or(|pos| pos.y < before.y - 20.0),
+                            "wheel must move the body anchor upward or outside the clip: {name},scale={scale},before={before:?},after={after:?},pointer={body_point:?}"
+                        );
+                    }
+                    if frame > 25 {
+                        assert_eq!(
+                            Some(footer.pos),
+                            footer_before,
+                            "footer moved at frame {frame}, scale {scale}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn shared_preview_bodies_have_one_scrollbar_and_stationary_footers() {
+        for (kind, name, marker, body) in [
+            (
+                PreviewKind::Text,
+                "scroll.txt",
+                "Scrollable text content",
+                format!(
+                    "Filetype: Text\n\nExtracted text:\n{}",
+                    "Scrollable text content\n".repeat(100)
+                ),
+            ),
+            (
+                PreviewKind::Text,
+                "scroll.rs",
+                "let value",
+                format!(
+                    "Filetype: Rust source\n\nExtracted text:\n{}",
+                    "let value = 1;\n".repeat(100)
+                ),
+            ),
+            (
+                PreviewKind::ArchiveMetadata,
+                "scroll.zip",
+                "first.txt",
+                format!(
+                    "Filetype: Archive\nContents:\nfirst.txt\n{}",
+                    (0..100)
+                        .map(|n| format!("file{n}.txt\n"))
+                        .collect::<String>()
+                ),
+            ),
+            (
+                PreviewKind::EpsMetadata,
+                "scroll.eps",
+                "This text view",
+                format!(
+                    "Filetype: EPS document\n\nExtracted text:\n{}",
+                    "Extracted text\n".repeat(100)
+                ),
+            ),
+        ] {
+            assert_one_body_scrollbar_and_stationary_footer(
+                &PreviewData {
+                    title: name.into(),
+                    kind,
+                    body,
+                    document: None,
+                    spreadsheet: None,
+                    open_external: false,
+                },
+                marker,
+            );
+        }
+        let sheet = PreviewData {
+            title: "scroll.xlsx".into(),
+            kind: PreviewKind::OfficeMetadata,
+            body: "Filetype: XLSX document".into(),
+            document: None,
+            open_external: false,
+            spreadsheet: Some(SpreadsheetPreview {
+                sheets: vec![ottrin_preview::SpreadsheetSheet {
+                    id: "sheet".into(),
+                    name: "Sheet".into(),
+                    cells: (0..100)
+                        .map(|row| ottrin_preview::SpreadsheetCell {
+                            row,
+                            column: 0,
+                            text: format!("Body cell {row}"),
+                        })
+                        .collect(),
+                    omissions: vec![],
+                }],
+                omissions: vec![],
+            }),
+        };
+        assert_one_body_scrollbar_and_stationary_footer(&sheet, "Body cell 0");
+        let fixture = tempfile::tempdir().unwrap();
+        let path = fixture.path().join("scroll.docx");
+        std::fs::write(
+            &path,
+            include_bytes!("../../ottrin-preview/tests/fixtures/docx-lists.docx"),
+        )
+        .unwrap();
+        let mut document = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
+            path,
+            kind_hint: ottrin_core::EntryKind::File,
+        });
+        document.title = "scroll.docx".into();
+        document.body = "Filetype: DOCX document".into();
+        let blocks = document.document.as_ref().unwrap().blocks.clone();
+        document.document.as_mut().unwrap().blocks = (0..50).flat_map(|_| blocks.clone()).collect();
+        // Keep the initial anchor unique even when the following fixture
+        // paragraphs repeat, so culling cannot substitute a later copy.
+        let DocxBlock::Paragraph(paragraph) = &mut document.document.as_mut().unwrap().blocks[0]
+        else {
+            panic!("paragraph fixture")
+        };
+        let DocxParagraphContent::Text(run) = &mut paragraph.content[0] else {
+            panic!("text fixture")
+        };
+        run.text.insert_str(0, "Unique scroll anchor: ");
+        assert_one_body_scrollbar_and_stationary_footer(&document, "Unique scroll anchor: ");
     }
 
     #[test]
@@ -1909,31 +2184,32 @@ mod tests {
                 egui::CentralPanel::default().show(ctx, |ui| {
                     let origin = ui.cursor().min;
                     let outer = Rect::from_min_size(origin, Vec2::new(320.0, 240.0));
-                    let result = preview_content_frame(ui, outer.size(), false, |ui| {
-                        let clip = ui.clip_rect();
-                        let content = if size.x < 100.0 {
-                            let texture = ui.ctx().load_texture(
-                                "small image fixture",
-                                egui::ColorImage::filled([24, 18], Color32::WHITE),
-                                Default::default(),
+                    let result =
+                        preview_content_frame(ui, outer.size(), PreviewScroll::Frame, |ui| {
+                            let clip = ui.clip_rect();
+                            let content = if size.x < 100.0 {
+                                let texture = ui.ctx().load_texture(
+                                    "small image fixture",
+                                    egui::ColorImage::filled([24, 18], Color32::WHITE),
+                                    Default::default(),
+                                );
+                                ui.add(egui::Image::new(&texture)).rect
+                            } else {
+                                ui.allocate_exact_size(size, Sense::hover()).0
+                            };
+                            assert!(
+                                outer.shrink(16.0).contains_rect(clip),
+                                "missing common minimum padding: {clip:?} in {outer:?}"
                             );
-                            ui.add(egui::Image::new(&texture)).rect
-                        } else {
-                            ui.allocate_exact_size(size, Sense::hover()).0
-                        };
-                        assert!(
-                            outer.shrink(16.0).contains_rect(clip),
-                            "missing common minimum padding: {clip:?} in {outer:?}"
-                        );
-                        if size.x < 100.0 {
-                            assert_eq!(
-                                content.size(),
-                                size,
-                                "small images keep natural dimensions"
-                            );
-                            assert!(outer.shrink(16.0).contains_rect(content));
-                        }
-                    });
+                            if size.x < 100.0 {
+                                assert_eq!(
+                                    content.size(),
+                                    size,
+                                    "small images keep natural dimensions"
+                                );
+                                assert!(outer.shrink(16.0).contains_rect(content));
+                            }
+                        });
                     assert_eq!(
                         result.response.rect, outer,
                         "overflow must not expand the frame"
@@ -2359,13 +2635,25 @@ mod tests {
                 let mut viewport = Rect::NOTHING;
                 let output = context.run(
                     egui::RawInput {
-                        screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, size)),
+                        // `size` describes the body viewport; include the common
+                        // frame's padding without silently narrowing that matrix.
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            size + Vec2::splat(2.0 * PREVIEW_CONTENT_PADDING),
+                        )),
                         ..Default::default()
                     },
                     |context| {
                         egui::CentralPanel::default().show(context, |ui| {
-                            viewport = ui.max_rect();
-                            render(ui, colors);
+                            preview_content_frame(
+                                ui,
+                                ui.available_size(),
+                                PreviewScroll::Body,
+                                |ui| {
+                                    viewport = ui.max_rect();
+                                    render(ui, colors);
+                                },
+                            );
                         });
                     },
                 );

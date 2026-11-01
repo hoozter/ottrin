@@ -1,0 +1,27 @@
+{
+  "status": "Linux full source checks pass; native Windows runtime and package delivery pending",
+  "base_revision": "c7f4daee8faa81ceb7bd42e970192a81f51da2b2",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "b6952bf54c8f77eeb550493a9f5ac2ea82072059990320d65259da1dae397323",
+    "crates/ottrin-ui/src/preview_render.rs": "3da8043f6ec564282bc0d8b3427db4eddcf0f70fc024739f0d20952f8eaca480"
+  },
+  "linux": {
+    "regular_ui": 412,
+    "existing_ignores": 1,
+    "filters": 0,
+    "strict_all_target_clippy": "pass"
+  },
+  "windows": {
+    "GNU_test_binary_build": "pass",
+    "strict_all_target_clippy": "pass",
+    "native_ordinary_elevated": "pending"
+  },
+  "negative_controls": "Both final regressions reject original behavior; FINAL_NEGATIVE_CONTROLS.log.gz",
+  "rendered_matrix": {
+    "body": "Light/Dark;100/150/200%;text/code/archive/spreadsheet/DOCX/extracted text;one scrollbar,actual body wheel,stationary footer,footer wheel",
+    "metadata": "Light/Dark;180/250px;300/450px;100/135/200%;actual wheel/click to Details and last field",
+    "PDF": "Existing switch-from-overflowing fit-width stability regression retained and passed"
+  },
+  "delivery": "Usable Linux/Windows e79b915e unchanged until fresh exact-package acceptance",
+  "cleanup": "Private test HOME/XDG roots removed by test-workspace; native fixture producer owns teardown; shared compiler caches reused,final incremental cleanup pending"
+}

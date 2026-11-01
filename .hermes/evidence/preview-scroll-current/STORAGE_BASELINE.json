@@ -1,0 +1,10 @@
+{
+  "paths": {
+    "target/debug/deps": 22735870164,
+    "target/debug/incremental": 9025436348,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394187666,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25259894782
+  },
+  "task_root": "/home/campbell/Projects/Ottrin/.hermes/evidence/preview-scroll-current",
+  "purpose": "Preview scroll ownership and accessible metadata regression checks; shared compiler caches reused."
+}
