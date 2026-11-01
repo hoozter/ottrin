@@ -1,0 +1,7 @@
+{
+  "scope": "Properties rendered width/metadata test at both scroll positions, Dark/Light and100/175percent text; Linux focused test passes. Hosted Windows execution pending.",
+  "cause": "Long Windows location can push Permissions below540px; previous test required all metadata visible without scrolling. A too-large forced scroll offset is rejected by the local control; measured content/viewport bottom is used.",
+  "status": "Linux pass; Windows pending",
+  "source_changed": "test only; no product behavior changes",
+  "cleanup": "Owned isolated test profiles/processes removed by test-workspace; unchanged incremental guard applied; current executable and useful shared caches retained"
+}

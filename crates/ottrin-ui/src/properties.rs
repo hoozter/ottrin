@@ -343,34 +343,45 @@ mod tests {
                 let ctx = Context::default();
                 crate::install_application_fonts(&ctx);
                 crate::theme_colors::apply_to_context(&ctx, &colors);
-                let mut output = None;
-                for _ in 0..2 {
-                    output = Some(ctx.run(
-                        egui::RawInput {
-                            screen_rect: Some(egui::Rect::from_min_size(
-                                egui::Pos2::ZERO,
-                                egui::vec2(720.0, 540.0),
-                            )),
-                            ..Default::default()
-                        },
-                        |ctx| {
-                            egui::CentralPanel::default().show(ctx, |ui| {
-                                egui::ScrollArea::vertical().show(ui, |ui| {
-                                    render_properties(ui, colors, &config, &properties)
+                let mut texts = Vec::new();
+                // Long native paths can push Permissions below the viewport.
+                // Inspect both scroll positions rather than requiring every row
+                // to fit on screen at the largest text scale.
+                let mut bottom = 0.0;
+                for at_bottom in [false, true] {
+                    for _ in 0..2 {
+                        let output = ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(egui::Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    egui::vec2(720.0, 540.0),
+                                )),
+                                ..Default::default()
+                            },
+                            |ctx| {
+                                egui::CentralPanel::default().show(ctx, |ui| {
+                                    let scroll = egui::ScrollArea::vertical()
+                                        .vertical_scroll_offset(if at_bottom {
+                                            bottom
+                                        } else {
+                                            0.0
+                                        })
+                                        .show(ui, |ui| {
+                                            render_properties(ui, colors, &config, &properties)
+                                        });
+                                    bottom = (scroll.content_size.y - scroll.inner_rect.height())
+                                        .max(0.0);
                                 });
-                            });
-                        },
-                    ));
+                            },
+                        );
+                        texts.extend(output.shapes.into_iter().filter_map(
+                            |shape| match shape.shape {
+                                egui::Shape::Text(text) => Some(text),
+                                _ => None,
+                            },
+                        ));
+                    }
                 }
-                let texts: Vec<_> = output
-                    .unwrap()
-                    .shapes
-                    .into_iter()
-                    .filter_map(|shape| match shape.shape {
-                        egui::Shape::Text(text) => Some(text),
-                        _ => None,
-                    })
-                    .collect();
                 for label in [
                     "Details",
                     "Location",
@@ -378,10 +389,15 @@ mod tests {
                     "Modified",
                     "Created",
                     "Permissions",
+                    #[cfg(unix)]
+                    "Mode",
+                    #[cfg(windows)]
+                    "Read-only attribute",
                 ] {
                     assert!(
                         texts.iter().any(|text| text.galley.job.text == label),
-                        "Missing metadata label: {label}"
+                        "Missing metadata label: {label}; scale {scale}; rendered {:?}",
+                        texts.iter().map(|t| &t.galley.job.text).collect::<Vec<_>>()
                     );
                 }
                 for text in texts {
