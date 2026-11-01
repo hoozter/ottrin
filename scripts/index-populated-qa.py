@@ -70,9 +70,9 @@ try:
         config.mkdir()
         (config/'config.json').write_text(json.dumps({'theme': 'Dark', 'default_view_mode': 'Miller',
             'list_columns': ['Name', 'Kind', 'Size', 'Modified'],
-            'command_frame_always_visible': False, 'restore_session': False,
+            'command_frame_always_visible': False,
             'show_hidden_files': False, 'target': {'current': None},
-            'last_session_dirs': [], 'search_setup_completed': True,
+            'search_setup_completed': True,
             'search': {'include_roots': [str(corpus)], 'exclude_roots': [],
                        'refresh_interval_hours': 0, 'content_indexing_enabled': args.content,
                        'content_include_roots': [str(corpus)] if args.content else [],

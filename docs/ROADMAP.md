@@ -1,5 +1,18 @@
 # Ottrin roadmap
 
+## Unused session configuration cleanup — source, 2026-11-01
+
+Removed the unused restore_session and last_session_dirs fields and their defaults.
+They had no runtime consumers, Settings control or current roadmap requirement.
+The maintained populated-index and Windows desktop fixtures no longer write them.
+Historical evidence inputs remain unchanged. No personal settings file is edited.
+
+All41 core tests pass, including active view/preferences round trips. Strict
+all-target platform/app/UI checks pass on Linux and Windows GNU. This is schema
+cleanup, not implementation of session restoration or package acceptance.
+Evidence: `.hermes/evidence/unused-session-config-current/`. Continue desktop
+integration and remaining software/package gates with the external waits parked.
+
 ## Windows executable icons — source, 2026-11-01
 
 Both app and index-daemon Windows images now embed the existing canonical ICO
@@ -483,7 +496,7 @@ roadmap completion. A source pass does not establish package or owner acceptance
 
 1. **Retain the HTML security regression gate.** Latest completed8e57b0f5 hosted
    run41325738936 passes Linux, Windows and search jobs;983f8e29 also passes.
-   Folder-action checkpoint9242ef29 is pushed; run41336693431 is in progress.
+   Folder-action checkpoint9242ef29 run41336693431 now passes all three jobs.
    The earlier0e85f745 seccomp0 observation remains an unexplained failed control.
    Per-process histories preserve every sample and the full assertion. Investigate
    a recurrence using those histories; do not waive the gate or describe the
@@ -509,8 +522,6 @@ roadmap completion. A source pass does not establish package or owner acceptance
    a required failed gate, not waived or assigned to the owner; investigate a
    materially different corrective path instead of repeating equivalent controls.
    Preserve the explicit native-platform and physical-device scope boundaries.
-   Remove the unused AppConfig restore_session/last_session_dirs fields after
-   checking all producers; they currently provide no session-restoration behavior.
    Windows executable icon resources pass native source checks; collect the new
    hosted MSVC release gate and include them in exact-package acceptance.
 5. **Finish release preparation.** Implement and verify remaining MSIX/release

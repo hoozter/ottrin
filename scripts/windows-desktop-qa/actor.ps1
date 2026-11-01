@@ -46,7 +46,7 @@ function MutableFixturePath([string]$relative){
 }
 function WriteFixtureConfig {
  $config=Get-Content "$root\config-template.json" -Raw|ConvertFrom-Json
- $config.theme='Dark';$config.default_view_mode='List';$config.bookmarks=@();$config.last_session_dirs=@();$config.restore_session=$false
+ $config.theme='Dark';$config.default_view_mode='List';$config.bookmarks=@()
  $config.search.include_roots=@($fixture);$config.search.exclude_roots=@();$config.search.use_system_locate=$false;$config.search.manage_locate_db=$false;$config.search.refresh_interval_hours=0;$config.search.content_indexing_enabled=$false
  [IO.File]::WriteAllText("$env:APPDATA\ottrin\config.json",($config|ConvertTo-Json -Depth 40),[Text.UTF8Encoding]::new($false))
 }

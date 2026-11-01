@@ -1,0 +1,23 @@
+{
+  "status": "pass scoped source cleanup",
+  "source_base": "60e92257394a621b1873a6958c43a1b15d8e0e7f",
+  "files": {
+    "crates/ottrin-core/src/lib.rs": "058eb258f5495a457416df95467b7af4e682fe4a9b88dcf879b4b9a73df645ee",
+    "scripts/index-populated-qa.py": "dee9545fd94f4dfe2a1ef2c244aa9e31c12d4eb3146d1b8cdab7af5ad9625551",
+    "scripts/windows-desktop-qa/actor.ps1": "aa02c6a1782767d5c678c669da56c262a6e7b1184e1f4ef2c4fd11a291cea61c"
+  },
+  "validation": [
+    "All41 Linux core tests including active view/preferences round trips",
+    "Strict all-target downstream Linux/GNU checks",
+    "No runtime/maintained-script references to removed fields",
+    "Populated-index Python producer parses after seed cleanup"
+  ],
+  "scope": "Two unused fields/defaults and maintained producer assignments removed; no new session-restoration behavior or compatibility layer",
+  "personal_files_modified": false,
+  "native_resources_allocated": false,
+  "cleanup": "Guard inspection/application and storage comparison retained; current binaries and useful compiler caches preserved",
+  "limits": [
+    "No new package acceptance claimed",
+    "Historical evidence inputs remain immutable"
+  ]
+}

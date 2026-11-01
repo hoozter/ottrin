@@ -913,7 +913,6 @@ pub struct AppConfig {
     #[serde(default = "default_view_scale")]
     pub grid_view_scale: f32,
     pub command_frame_always_visible: bool,
-    pub restore_session: bool,
     pub show_hidden_files: bool,
     /// Show generated image thumbnails in List view.
     #[serde(default)]
@@ -928,8 +927,6 @@ pub struct AppConfig {
     #[serde(default)]
     pub folder_grid_thumbnails: BTreeMap<String, bool>,
     pub target: TargetState,
-    /// Tab directories to restore on next launch.
-    pub last_session_dirs: Vec<PathBuf>,
     /// User-editable bookmarks: (icon_char, display_name, path).
     /// The icon_char is a Material Icons codepoint string (e.g. "\u{E88A}").
     #[serde(default)]
@@ -984,14 +981,12 @@ impl Default for AppConfig {
             list_view_scale: default_view_scale(),
             grid_view_scale: default_view_scale(),
             command_frame_always_visible: false,
-            restore_session: true,
             show_hidden_files: false,
             list_show_thumbnails: false,
             grid_show_thumbnails: false,
             folder_list_thumbnails: BTreeMap::new(),
             folder_grid_thumbnails: BTreeMap::new(),
             target: TargetState::default(),
-            last_session_dirs: Vec::new(),
             bookmarks: Vec::new(),
             search: SearchConfig::default(),
             search_setup_completed: false,
