@@ -1,0 +1,26 @@
+{
+  "removed": [
+    {
+      "path": ".hermes/evidence/linux-picker-package-current/__pycache__/native-actions.cpython-312.pyc",
+      "purpose": "Completed QA interpreter cache or stale transport PID; no active consumer"
+    },
+    {
+      "path": ".hermes/evidence/windows-picker-gui-current/observer.pid",
+      "purpose": "Completed QA interpreter cache or stale transport PID; no active consumer"
+    },
+    {
+      "path": ".hermes/evidence/windows-picker-package-current/__pycache__/native_compiler.cpython-312.pyc",
+      "purpose": "Completed QA interpreter cache or stale transport PID; no active consumer"
+    },
+    {
+      "path": ".hermes/evidence/windows-picker-package-current/accept.pid",
+      "purpose": "Completed QA interpreter cache or stale transport PID; no active consumer"
+    },
+    {
+      "path": ".hermes/evidence/windows-picker-package-current/native.pid",
+      "purpose": "Completed QA interpreter cache or stale transport PID; no active consumer"
+    }
+  ],
+  "VM": "off",
+  "retained": "Actual evidence, reusable scripts, current packages and useful compiler caches"
+}
