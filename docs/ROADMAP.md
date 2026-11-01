@@ -1,5 +1,26 @@
 # Ottrin roadmap
 
+## Shared title alignment — source follow-up, 2026-11-01
+
+Exact f33de33a AppImage QA confirms the long-title overflow/Close correction, but
+comparison with the prior Inspector finds unintended centering of short titles.
+The sized-label layout overrode the intended leading alignment. A new regression
+fails before the correction with a226-point text start instead of the shared
+6-point inset. An explicit left-to-right label region after Close now retains
+both long-title bounds and common leading alignment. All454 UI tests pass with
+one existing namespace fixture ignored; strict Linux/Windows checks pass. Real
+source long/short window checks and one clean-source package refresh continue.
+
+All f33de33a Linux content, chooser/integration, read-only/close and10000-file
+index scopes retain their exact receipts, but the visual cohort is rejected.
+Windows assembly was intentionally canceled after release compilation; its
+producer stopped children and removed staging. All rejected Linux package runtime
+copies/extractions are removed after closed-profile/consumer checks. Stable
+25b38c8f deliverables remain unchanged. Compact controls are under
+`.hermes/evidence/desktop-package-current/rejected-f33/`; source/alignment evidence
+is `.hermes/evidence/title-alignment-current/`. Continue exact package/native
+acceptance and remaining roadmap gates; owner/external waits remain parked.
+
 ## Long-title overflow — source correction, 2026-11-01
 
 Exact e171dcef AppImage visual QA found a real long-filename Properties overflow:

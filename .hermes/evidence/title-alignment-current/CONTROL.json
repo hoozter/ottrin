@@ -1,0 +1,8 @@
+{
+  "status": "unintended short-title centering found in exact package visual comparison",
+  "source": "f33de33a",
+  "image": "../desktop-package-current/rejected-f33/linux/main-light150/note-after-right.png",
+  "baseline": "../desktop-package-current/rejected-e171/linux/main-light150/note-after-right.png",
+  "cause": "add_sized supplies a centered widget layout, so Label.halign alone does not retain the prior left title placement",
+  "next": "Use an explicitly left-to-right label region after reserving Close; assert both short and long title text starts. Wait for active producer before changing compiler inputs."
+}

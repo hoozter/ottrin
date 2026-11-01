@@ -1,0 +1,6 @@
+{
+  "pid": 4118520,
+  "identity": "Exact owned build-portable.py argv and UID checked",
+  "reason": "Normal release compilation finished; cancel assembly before next alignment correction. Existing producer owns child stop and failed-staging teardown; no compiled runtime cache removed.",
+  "source": "f33de33a"
+}

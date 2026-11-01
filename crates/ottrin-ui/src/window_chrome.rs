@@ -36,18 +36,18 @@ pub(crate) fn render_custom_titlebar(
                 if close_btn.clicked() {
                     *close_requested = true;
                 }
-                ui.add_sized(
-                    [ui.available_width(), CUSTOM_TITLEBAR_HEIGHT],
-                    egui::Label::new(
-                        RichText::new(title)
-                            .color(colors.heading)
-                            .size(12.5 * colors.font_scale)
-                            .strong(),
+                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                    ui.add(
+                        egui::Label::new(
+                            RichText::new(title)
+                                .color(colors.heading)
+                                .size(12.5 * colors.font_scale)
+                                .strong(),
+                        )
+                        .truncate(),
                     )
-                    .truncate()
-                    .halign(Align::Min),
-                )
-                .on_hover_text(title);
+                    .on_hover_text(title);
+                });
             });
         });
     if allow_drag {
@@ -407,6 +407,65 @@ mod tests {
                         close,
                         "Close was not clickable at width {width}, scale {scale}"
                     );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn short_and_truncated_titles_share_the_leading_edge() {
+        for dark in [true, false] {
+            for scale in [1.0, 1.75] {
+                for title in [
+                    "Quick Inspector — note.txt".to_owned(),
+                    "long title ".repeat(40),
+                ] {
+                    let ctx = Context::default();
+                    crate::install_application_fonts(&ctx);
+                    let mut colors = Colors::preset(ottrin_core::ThemePreset::Ottrin, dark);
+                    colors.font_scale = scale;
+                    crate::theme_colors::apply_to_context(&ctx, &colors);
+                    for _ in 0..2 {
+                        let output = ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    Vec2::new(640.0, 240.0),
+                                )),
+                                ..Default::default()
+                            },
+                            |ctx| {
+                                egui::CentralPanel::default()
+                                    .frame(Frame::NONE)
+                                    .show(ctx, |ui| {
+                                        render_custom_titlebar(
+                                            ui,
+                                            ctx,
+                                            colors,
+                                            colors.titlebar_bg,
+                                            &title,
+                                            false,
+                                            &mut false,
+                                        );
+                                    });
+                            },
+                        );
+                        let text = output
+                            .shapes
+                            .iter()
+                            .find_map(|shape| match &shape.shape {
+                                egui::Shape::Text(text) if text.galley.job.text == title => {
+                                    Some(text)
+                                }
+                                _ => None,
+                            })
+                            .expect("Title must be rendered");
+                        assert!(
+                            (text.pos.x - 6.0).abs() < 0.5,
+                            "Title moved from the shared leading edge at scale {scale}: {}",
+                            text.pos.x
+                        );
+                    }
                 }
             }
         }

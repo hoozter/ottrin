@@ -1,0 +1,104 @@
+{
+  "status": "source checks pass; replacement cohort pending",
+  "scope": "Preserve prior common leading edge for short and truncated shared window titles while retaining bounded layout and clickable Close",
+  "before": "Exact f33 package short Inspector title was centered; added test fails with226.09375-point text start instead of6",
+  "after": "Explicit left-to-right label region follows reserved Close; both title cases use6-point inset in Dark/Light at100/175percent text",
+  "checks": {
+    "ui_passed": 454,
+    "ignored_existing_mount_namespace_fixture": 1,
+    "strict_linux_and_windows_gnu": true
+  },
+  "source_gui": {
+    "properties-light150": {
+      "source_binary_sha256": "0a623dd76fdee3a010a645e1a7705ca7e06a0e06b7126fc5ed13c185e89c2a40",
+      "scope": "Actual source Light150 Properties, long metadata, normal native-pointer Close, no index/config/source mutation",
+      "native_close_button_clicked": true,
+      "status": "pass",
+      "normal_exit": 0,
+      "source_and_config_preserved": true,
+      "no_index_started": true,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-be3l9amg",
+        "owned_processes_reaped": [
+          {
+            "pid": 4131123,
+            "exit": 0
+          },
+          {
+            "pid": 4131126,
+            "exit": 0
+          },
+          {
+            "pid": 4131127,
+            "exit": 15
+          },
+          {
+            "pid": 4131175,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    },
+    "properties-short-light150": {
+      "source_binary_sha256": "0a623dd76fdee3a010a645e1a7705ca7e06a0e06b7126fc5ed13c185e89c2a40",
+      "scope": "Actual source Light150 Properties, short title, normal native-pointer Close, no index/config/source mutation",
+      "native_close_button_clicked": true,
+      "status": "pass",
+      "normal_exit": 0,
+      "source_and_config_preserved": true,
+      "no_index_started": true,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-qyncp_3k",
+        "owned_processes_reaped": [
+          {
+            "pid": 4131312,
+            "exit": 0
+          },
+          {
+            "pid": 4131315,
+            "exit": 0
+          },
+          {
+            "pid": 4131316,
+            "exit": 15
+          },
+          {
+            "pid": 4131364,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    }
+  },
+  "visual_review": "Reviewed both bottom.png images: short/long title at same left edge, correct truncation/bounded detail cards and visible Close. Both actual pointer closes exit normally with unchanged file/config and no index.",
+  "cleanup": "Rejected f33 Linux staging/extraction removed after identity,link,consumer and closed-profile checks. Owned Windows assembly intentionally canceled after compile; producer stopped child and removed staging. Source GUI resources removed. Guard initially refused transient PID4131484, inspected absent; unchanged retry removed12 remaining sessions,0.51GiB reported. Partial progress not assigned invented total.",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/title-alignment-current",
+      "purpose": "Compact source/control receipts,screenshots and reproducers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-package-current",
+      "purpose": "Compact rejected controls plus current build/QA drivers; no generated runtime remains from rejected cohorts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+      "purpose": "Current verified source app; shared compiler caches/current outputs preserved"
+    }
+  ],
+  "packages_published": false
+}
