@@ -1,0 +1,31 @@
+{
+  "owned_bytecode_removed": [
+    "native/__pycache__/run-native.cpython-312.pyc"
+  ],
+  "lossless_compressed_evidence": [
+    "REGRESSION_FINAL.log",
+    "REGRESSION.log",
+    "LINUX_LINT.log",
+    "WINDOWS_BUILD.log",
+    "RENDERED_REGRESSIONS.log",
+    "INCREMENTAL_APPLY.log",
+    "INCREMENTAL_INSPECT.log",
+    "CLEANUP.log",
+    "NATIVE.log",
+    "WINDOWS_LINT.log",
+    "windows-build.jsonl",
+    "native/short-temp-elevated-ui-runtime.stderr",
+    "native/short-temp-elevated-ui-runtime-launch.stdout",
+    "native/short-temp-elevated-ui-runtime.transcript",
+    "native/short-temp-ordinary-ui-runtime.stdout",
+    "native/short-temp-elevated-ui-runtime.list",
+    "native/short-temp-ordinary-ui-runtime-launch.stdout",
+    "native/short-temp-ordinary-ui-runtime.stderr",
+    "native/short-temp-elevated-ui-runtime.stdout",
+    "native/short-temp-elevated-ui-runtime-launch.stderr",
+    "native/short-temp-ordinary-folder-desktop.transcript",
+    "native/short-temp-ordinary-ui-runtime-launch.stderr",
+    "native/short-temp-ordinary-ui-runtime.list",
+    "native/short-temp-ordinary-ui-runtime.transcript"
+  ]
+}

@@ -1955,3 +1955,11 @@ replacement/removal. Disable removes owned commands and only recorded empty
 parents, preserving unrelated handlers and settings. No administrator permission
 is required. Moving a portable copy requires Update / repair from its new location.
 Windows folder-link default preference remains separate roadmap work.
+
+
+Desktop integration status refreshes retain the last result and action layout
+while a background query runs. An existing query coalesces another refresh;
+only Refresh is disabled until the result arrives. Initial setup checks still
+show loading until a first result is available. Portal and folder cards share
+this request mechanism. Rendered UI regressions verify stable action positions
+through an in-flight refresh and display of the returned status.

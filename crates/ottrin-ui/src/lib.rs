@@ -20939,6 +20939,24 @@ impl OttrinApp {
         });
     }
 
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    fn request_service_status<T: Send + 'static>(
+        ctx: &Context,
+        pending: &mut Option<Receiver<T>>,
+        load: impl FnOnce() -> T + Send + 'static,
+    ) {
+        if pending.is_some() {
+            return;
+        }
+        let (tx, rx) = mpsc::channel();
+        *pending = Some(rx);
+        let ctx = ctx.clone();
+        std::thread::spawn(move || {
+            let _ = tx.send(load());
+            ctx.request_repaint();
+        });
+    }
+
     #[cfg(target_os = "linux")]
     fn render_portal_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
         if let Some(status) = self
@@ -20949,14 +20967,12 @@ impl OttrinApp {
             self.portal_status = Some(status);
             self.portal_status_rx = None;
         }
-        if self.portal_status.is_none() && self.portal_status_rx.is_none() {
-            let (tx, rx) = std::sync::mpsc::channel();
-            self.portal_status_rx = Some(rx);
-            let ctx = ui.ctx().clone();
-            std::thread::spawn(move || {
-                let _ = tx.send(ottrin_platform::portal_integration::status());
-                ctx.request_repaint();
-            });
+        if self.portal_status.is_none() {
+            Self::request_service_status(
+                ui.ctx(),
+                &mut self.portal_status_rx,
+                ottrin_platform::portal_integration::status,
+            );
         }
         appearance_editor::settings_surface(c).inner_margin(12).show(ui, |ui| {
             ui.set_min_width(ui.available_width());
@@ -20971,7 +20987,7 @@ impl OttrinApp {
                     }
                     if status.enabled && ui.add(egui::Button::new("Update / repair setup").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::portal_integration::enable);}
                     if ui.add_enabled(status.pending,egui::Button::new("Apply pending change").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::portal_integration::apply);}
-                    if ui.add(egui::Button::new("Refresh status").themed(&c)).clicked() {self.portal_status=None;}
+                    if ui.add_enabled(self.portal_status_rx.is_none(),egui::Button::new("Refresh status").themed(&c)).clicked() {Self::request_service_status(ui.ctx(),&mut self.portal_status_rx,ottrin_platform::portal_integration::status);}
                 });
             } else {ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
         });
@@ -20988,14 +21004,12 @@ impl OttrinApp {
             self.folder_status = Some(status);
             self.folder_status_rx = None;
         }
-        if self.folder_status.is_none() && self.folder_status_rx.is_none() {
-            let (tx, rx) = std::sync::mpsc::channel();
-            self.folder_status_rx = Some(rx);
-            let ctx = ui.ctx().clone();
-            std::thread::spawn(move || {
-                let _ = tx.send(ottrin_platform::folder_integration::status());
-                ctx.request_repaint();
-            });
+        if self.folder_status.is_none() {
+            Self::request_service_status(
+                ui.ctx(),
+                &mut self.folder_status_rx,
+                ottrin_platform::folder_integration::status,
+            );
         }
         appearance_editor::settings_surface(c).inner_margin(12).show(ui,|ui| {
             ui.set_min_width(ui.available_width());
@@ -21006,7 +21020,7 @@ impl OttrinApp {
                 ui.horizontal_wrapped(|ui| {
                     if ui.add(egui::Button::new(if status.enabled {"Update / repair folder setup"}else if cfg!(target_os="windows"){"Enable folder menu actions"}else{"Use Ottrin for folders"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable);}
                     if status.enabled && ui.add(egui::Button::new(if cfg!(target_os="windows"){"Remove folder menu actions"}else{"Restore previous handler"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
-                    if ui.add(egui::Button::new("Refresh status").themed(&c)).clicked() {self.folder_status=None;}
+                    if ui.add_enabled(self.folder_status_rx.is_none(),egui::Button::new("Refresh status").themed(&c)).clicked() {Self::request_service_status(ui.ctx(),&mut self.folder_status_rx,ottrin_platform::folder_integration::status);}
                 });
             }else{ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
         });
@@ -27046,6 +27060,122 @@ mod tests {
             PathBuf::from("/run/user/0/ottrin-administrator/session-4242")
         );
         assert_eq!(paths.store, paths.directory.join("search.db"));
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    fn check_service_refresh_layout<T>(
+        install_pending: impl FnOnce(&mut OttrinApp, Receiver<T>),
+        render: fn(&mut OttrinApp, &mut egui::Ui, Colors),
+        action_label: &str,
+        updated: T,
+    ) {
+        let mut app = OttrinApp::default();
+        let (reply, pending) = mpsc::channel();
+        install_pending(&mut app, pending);
+        let ctx = Context::default();
+        let mut frame = |events: Vec<egui::Event>| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(900.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let colors = app.colors;
+                        render(&mut app, ui, colors);
+                    });
+                },
+            )
+        };
+        fn label(output: &egui::FullOutput, name: &str) -> Rect {
+            output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) if text.galley.job.text == name => {
+                        Some(Rect::from_min_size(text.pos, text.galley.size()))
+                    }
+                    _ => None,
+                })
+                .unwrap_or_else(|| panic!("Missing visible service control: {name}"))
+        }
+        let _ = frame(Vec::new());
+        let before = frame(Vec::new());
+        let repair = label(&before, action_label);
+        let point = label(&before, "Refresh status").center();
+        for pressed in [true, false] {
+            let _ = frame(vec![
+                egui::Event::PointerMoved(point),
+                egui::Event::PointerButton {
+                    pos: point,
+                    button: egui::PointerButton::Primary,
+                    pressed,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ]);
+        }
+        let waiting = frame(Vec::new());
+        assert_eq!(
+            label(&waiting, action_label),
+            repair,
+            "An in-flight refresh must not remove or move its action row"
+        );
+        reply.send(updated).unwrap();
+        let completed = frame(Vec::new());
+        assert_eq!(label(&completed, action_label), repair);
+        let _ = label(&completed, "Needs repair");
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[test]
+    fn folder_refresh_keeps_actions_in_place_until_new_status_arrives() {
+        use ottrin_platform::folder_integration::FolderStatus;
+        check_service_refresh_layout(
+            |app, pending| {
+                app.folder_status = Some(FolderStatus {
+                    enabled: true,
+                    ready: true,
+                    detail: "Ready".into(),
+                });
+                app.folder_status_rx = Some(pending);
+            },
+            OttrinApp::render_folder_integration_settings,
+            "Update / repair folder setup",
+            FolderStatus {
+                enabled: true,
+                ready: false,
+                detail: "Needs repair".into(),
+            },
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn portal_refresh_keeps_actions_in_place_until_new_status_arrives() {
+        use ottrin_platform::portal_integration::PortalStatus;
+        check_service_refresh_layout(
+            |app, pending| {
+                app.portal_status = Some(PortalStatus {
+                    enabled: true,
+                    ready: true,
+                    pending: false,
+                    detail: "Ready".into(),
+                });
+                app.portal_status_rx = Some(pending);
+            },
+            OttrinApp::render_portal_settings,
+            "Update / repair setup",
+            PortalStatus {
+                enabled: true,
+                ready: false,
+                pending: false,
+                detail: "Needs repair".into(),
+            },
+        );
     }
 
     #[test]

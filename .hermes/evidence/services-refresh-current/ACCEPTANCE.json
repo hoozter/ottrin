@@ -1,0 +1,69 @@
+{
+  "status": "pass scoped source checkpoint",
+  "source_base": "9242ef29943cd79fca28a6b2686280985370302d",
+  "source_files": {
+    "crates/ottrin-core/src/picker.rs": "a9ed2461bce1ad3e68834c9e4e513c5c5c287f1c88b6c492240e260f2d4b0f69",
+    "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+    "crates/ottrin-ui/src/lib.rs": "dfe6cf7e10ce9a585126d40a3b4e0d8d6004b05369f2d61f1f50d4950d29658d"
+  },
+  "linux": "Two rendered portal/folder regressions plus strict all-target platform/app/UI lint",
+  "windows": "One rendered folder regression each under ordinary and elevated tokens; strict GNU lint and full test-executable compilation",
+  "native_gui": {
+    "refresh_then_repair": true,
+    "row_before_and_after": 545,
+    "shell_actions": [
+      "directory",
+      "background",
+      "drive"
+    ],
+    "normal_close": true,
+    "original_defaults_and_source_preserved": true,
+    "removed_integration": true,
+    "graphics": "Accepted Mesa compatibility runtime on virtual graphics",
+    "visual_review": "Original Settings screenshot shows success and Ready; all three address bars match requested directories",
+    "reviewed_original_images": [
+      {
+        "path": "native/short-temp-ordinary-folder-desktop-repair.png",
+        "sha256": "0ff6bbd62e545f93b1dae299a2cef39bd40d811ced55a1d23c22ea9a23576a84"
+      },
+      {
+        "path": "native/short-temp-ordinary-folder-desktop-directory-address.png",
+        "sha256": "fd324715cc0230126239646c38172cd86c4c7808b07435e9d5bffa3bcafdf747"
+      },
+      {
+        "path": "native/short-temp-ordinary-folder-desktop-background-address.png",
+        "sha256": "fecf2d10804c3959558537770f83d2e69e2f6b6db5abd8bfbe28f1b2ee158253"
+      },
+      {
+        "path": "native/short-temp-ordinary-folder-desktop-drive-address.png",
+        "sha256": "85071620b9ea5ef59d5fd0f9b8ef919bcf900aee6b1b1a21d4d2a9010e97c380"
+      }
+    ]
+  },
+  "teardown": {
+    "guest_root_removed": true,
+    "guest_off": true,
+    "original_profiles_and_definition_preserved": true,
+    "owned_processes": 0
+  },
+  "cleanup": {
+    "obsolete_incremental_sessions_removed": 23,
+    "reported_incremental_reclaimed_gib": 1.48,
+    "retired_test_receipt": "REPLACED_UI_TEST_CLEANUP.json",
+    "remaining_task_storage": "Compact evidence and source producers at this directory; current compiler outputs/useful caches retained in target. No owned temporary profile, extraction, mount or runtime staging remains."
+  },
+  "original_windows_json_preserved": [
+    "native/short-temp-elevated-ui-runtime.json",
+    "native/RUNTIME_TEARDOWN.json",
+    "native/short-temp-elevated-ui-runtime-launch.json",
+    "native/short-temp-elevated-ui-runtime-alias.json",
+    "native/short-temp-ordinary-ui-runtime-alias.json",
+    "native/short-temp-ordinary-ui-runtime.json",
+    "native/short-temp-ordinary-ui-runtime-launch.json"
+  ],
+  "limits": [
+    "Focused source acceptance; no full unrelated UI suite rerun",
+    "Native actual GUI reviewed in dark mode with compatibility rendering",
+    "Stable Linux/Windows packages remain25b38c8f; release and owner acceptance remain separate"
+  ]
+}

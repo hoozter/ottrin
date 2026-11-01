@@ -1,0 +1,16 @@
+{
+  "retired_executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-9f89d5d24748fe9b.exe",
+  "current_replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-3bf3a33854807ff4.exe",
+  "same_compiler_configuration": {
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "target": 11039074169040111439,
+    "profile": 4539089746505721204,
+    "rustflags": [],
+    "compile_kind": 8200324069407742093
+  },
+  "logical_bytes": 754782128,
+  "replacement_execution_scope": "Rendered refresh regression under ordinary and elevated Windows tokens plus actual GUI refresh/repair and three Shell launches; unrelated UI tests not rerun here",
+  "current_dependencies_and_binaries_preserved": true,
+  "filesystem_free_delta": 754827264
+}

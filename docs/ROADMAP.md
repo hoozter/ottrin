@@ -1,5 +1,23 @@
 # Ottrin roadmap
 
+## Stable desktop-integration refresh — source, 2026-11-01
+
+Portal and folder cards now keep their last status and action layout during a
+manual background refresh. One shared request helper coalesces pending work;
+Refresh is disabled until a response arrives. Two rendered Linux regressions
+verify unchanged action positions and display of the returned status. The folder
+regression also passes under ordinary and administrator Windows tokens.
+
+Actual source GUI now passes Refresh immediately followed by Repair, with the
+same measured action-row position before and after Refresh. The damaged owned
+entry is restored, and reviewed Settings shows success plus Ready. Folder,
+background and drive shell launches, normal close, removal, original defaults
+and source preservation pass again. The owned root/processes are removed and
+the retained VM is off. Strict Linux/GNU checks pass. Evidence:
+`.hermes/evidence/services-refresh-current/`. This is focused source acceptance;
+stable packages still25b38c8f. Continue executable icons, default-folder preference,
+FileManager1 and the remaining software/package gates.
+
 ## Windows folder menu actions — source, 2026-11-01
 
 Optional per-user **Open in Ottrin** actions now share one backend between
@@ -19,9 +37,9 @@ actual drive launch exposed the closing-quote/trailing-backslash error; director
 commands now end in a dot component and pass both native parsing and GUI checks.
 Failed QA controls remain recorded, including incorrect session-field assertions,
 coordinate/input assumptions and cancellation. Every completed control removed
-its root/processes and stopped the retained VM. Manual Refresh currently removes
-the action row while its status query runs; keep controls stable in the next UI
-checkpoint. These source checks do not establish final-package acceptance.
+its root/processes and stopped the retained VM. Manual Refresh removed
+the action row while its status query ran; the later refresh checkpoint above
+corrects that behavior and verifies the original sequence. These source checks do not establish final-package acceptance.
 Evidence: `.hermes/evidence/windows-folder-integration-current/` and the bounded
 native command-quoting probe under `windows-folder-command-probe-current`.
 Packages remain25b38c8f. Default-folder preference and FileManager1 remain work.
@@ -441,8 +459,9 @@ Audited: 2026-11-01. This section and the delivery table are the active queue;
 checkpoint narratives retain historical evidence only. Test totals do not measure
 roadmap completion. A source pass does not establish package or owner acceptance.
 
-1. **Retain the HTML security regression gate.** Latest pushed8e57b0f5 hosted
+1. **Retain the HTML security regression gate.** Latest completed8e57b0f5 hosted
    run41325738936 passes Linux, Windows and search jobs;983f8e29 also passes.
+   Folder-action checkpoint9242ef29 is pushed; run41336693431 is in progress.
    The earlier0e85f745 seccomp0 observation remains an unexplained failed control.
    Per-process histories preserve every sample and the full assertion. Investigate
    a recurrence using those histories; do not waive the gate or describe the
@@ -452,8 +471,9 @@ roadmap completion. A source pass does not establish package or owner acceptance
    at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
    pushed and its Linux production lifecycle now passes. Actual sandboxed
    development-caller Open/Save and document export also pass. Still required:
-   standard FileManager1 reveal, supported Windows
-   folder actions/default preference and final packaged cooperating-app acceptance.
+   standard FileManager1 reveal, the reversible Windows default-folder preference
+   and final packaged cooperating-app acceptance. Windows menu actions pass native
+   parser/registry and actual Shell/Services checks at9242ef29.
    Direct Windows owner/Open/Save/lease checks and a constrained Flatpak caller
    pass in source; they do not establish final browser/package acceptance.
 3. **Deliver one coherent package cohort.** Stable Linux formats and Windows
@@ -469,7 +489,6 @@ roadmap completion. A source pass does not establish package or owner acceptance
    Preserve the explicit native-platform and physical-device scope boundaries.
    Remove the unused AppConfig restore_session/last_session_dirs fields after
    checking all producers; they currently provide no session-restoration behavior.
-   Keep desktop integration controls stable during manual status refresh.
    Verify/embed the canonical Windows executable icon: current source and accepted
    candidate PE files lack a resource section despite shell/NSIS icon-index0 references.
 5. **Finish release preparation.** Implement and verify remaining MSIX/release
