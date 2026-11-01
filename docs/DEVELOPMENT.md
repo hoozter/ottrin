@@ -1883,9 +1883,24 @@ They register a hidden per-user desktop entry for `inode/directory`, using the
 stable application launcher and a managed icon. A receipt records exact owned
 files and the previous default. Disable restores that default while preserving
 unrelated preference edits. Modified owned files refuse destructive replacement.
-The actual desktop parser validates Exec before setup. This covers directory
-links; applications using a separate FileManager1 service may still use another
-manager. No personal desktop preference changes occur during source QA.
+The actual desktop parser validates Exec before setup. The same receipt owns an
+on-demand D-Bus activation file for `org.freedesktop.FileManager1`, object
+`/org/freedesktop/FileManager1`. `ShowFolders` opens folder contents; `ShowItems`
+reveals entries in their parents (including folders/broken links); each distinct
+input gets its own window. `ShowItemProperties` opens one read-only metadata
+window with an item selector. Every URI in a batch is validated before launching.
+Only local file URIs are supported; operational paths preserve native units.
+The portal shares the same native URI encoder.
+
+The headless `ottrin file-manager` backend labels itself `ottrin-filemgr`, waits
+on D-Bus events and starts no index or renderer until a request needs a window.
+It never queues behind or replaces another provider. Existing desktop managers
+can retain the well-known name until they exit. Enable/repair/disable calls the
+private `org.ottrin.FileManager.Stop` interface without auto-activation; missing
+or foreign providers are retained. Normal backend exit reaps owned window
+children while running, and does not close user windows. Final-package and
+startup-notification focus acceptance remain separately scoped in the roadmap.
+No personal desktop preference changes occur during source QA.
 
 Index diagnostic progress paths are human-readable labels only; the index retains
 its native operation paths. Labels must never be parsed back into file targets.

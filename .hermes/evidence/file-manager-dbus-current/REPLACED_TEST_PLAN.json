@@ -1,0 +1,30 @@
+[
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-3ec86bde0f8d579d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-0bbfeb4b30b8fbaa",
+    "sha256": "260d104ddce49cac300d46f1d05202e965619e73e84c2ae1fe2b3b136ff110d6",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 11039074169040111439,
+      "profile": 4539089746505721204,
+      "rustflags": [],
+      "compile_kind": 0
+    },
+    "bytes": 772233031
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-78311865f0064c30",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-5a95d0376980cc28",
+    "sha256": "153d5beaad7ef39f0a40bb358788ab7c6443005e07cdf3ab166a27766c9bfeb8",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 11464258118835825082,
+      "profile": 4539089746505721204,
+      "rustflags": [],
+      "compile_kind": 0
+    },
+    "bytes": 63192361
+  }
+]

@@ -1,6 +1,8 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 #[cfg(target_os = "linux")]
+mod file_manager;
+#[cfg(target_os = "linux")]
 mod portal;
 #[cfg(target_os = "linux")]
 mod portal_options;
@@ -131,6 +133,8 @@ fn parse_cli_arguments(args: &[OsString]) -> Result<CliArguments, String> {
 enum HeadlessAction {
     #[cfg(target_os = "linux")]
     Portal,
+    #[cfg(target_os = "linux")]
+    FileManager,
     #[cfg(any(target_os = "linux", target_os = "windows"))]
     IntegrationManagement {
         integration: DesktopIntegration,
@@ -974,6 +978,8 @@ fn print_cli_help() {
     println!("  ottrin                         Open the file manager");
     println!("  ottrin <FILE>                  Open the file directly in Quick Inspector");
     println!("  ottrin <DIRECTORY>             Open the file manager in that directory");
+    #[cfg(target_os = "linux")]
+    println!("  ottrin file-manager           Run the on-demand desktop file-manager interface");
     println!("  ottrin --properties <PATH>... Show a read-only themed properties window");
     println!("  ottrin --select <PATH>         Reveal an entry in its parent folder");
     println!("  ottrin search <QUERY> [--json] Search indexed files (-s)");
@@ -1148,6 +1154,12 @@ fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
             }
             [] => HeadlessAction::Invalid("preview requires a file path".to_string()),
             _ => HeadlessAction::Invalid("preview accepts exactly one file path".to_string()),
+        }),
+        #[cfg(target_os = "linux")]
+        "file-manager" => Some(if args.len() == 1 {
+            HeadlessAction::FileManager
+        } else {
+            HeadlessAction::Invalid("file-manager accepts no arguments".into())
         }),
         "--properties" => {
             let paths = if args.get(1).is_some_and(|value| value == "--") {
@@ -1473,6 +1485,8 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     }
     match action {
         #[cfg(target_os = "linux")]
+        HeadlessAction::FileManager => return file_manager::run(),
+        #[cfg(target_os = "linux")]
         HeadlessAction::Portal => return portal::run(),
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         HeadlessAction::IntegrationManagement {
@@ -1534,7 +1548,9 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 
     match action {
         #[cfg(target_os = "linux")]
-        HeadlessAction::Portal => unreachable!("portal starts before index routing"),
+        HeadlessAction::Portal | HeadlessAction::FileManager => {
+            unreachable!("desktop interfaces start before index routing")
+        }
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         HeadlessAction::IntegrationManagement { .. } => {
             unreachable!("integration starts before index routing")

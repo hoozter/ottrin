@@ -209,14 +209,7 @@ fn enable_at(
     let executable = executable
         .to_str()
         .ok_or("The desktop activation path must be UTF-8")?;
-    let quoted = format!(
-        "\"{}\"",
-        executable
-            .replace('\\', "\\\\")
-            .replace('"', "\\\"")
-            .replace('`', "\\`")
-            .replace('$', "\\$")
-    );
+    let quoted = super::integration_storage::dbus_executable(Path::new(executable))?;
     // systemd performs its own specifier/environment expansion; it does not
     // use the D-Bus command line grammar above.
     let unit_quoted = format!(

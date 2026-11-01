@@ -9,6 +9,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+const FILE_MANAGER_BUS: &str = "org.freedesktop.FileManager1";
 const ID: &str = "org.ottrin.Ottrin.Folders.desktop";
 const GROUP: &str = "Default Applications";
 const MIME: &str = "inode/directory";
@@ -127,13 +128,17 @@ pub fn status() -> FolderStatus {
         let selected = effective.is_some_and(|(path, value)| {
             path == record.config && value.split(';').next() == Some(ID)
         });
-        let ready = intact && selected;
+        let activation = d
+            .data
+            .join(format!("dbus-1/services/{FILE_MANAGER_BUS}.service"));
+        let complete = record.files.iter().any(|file| file.path == activation);
+        let ready = intact && selected && complete;
         Ok::<_, String>((
             true,
             ready,
             if ready {
                 "Enabled — directory links open in Ottrin".into()
-            } else if intact {
+            } else if intact && complete {
                 "Installed — another directory handler is selected".into()
             } else {
                 "Folder setup needs repair; existing files have been retained".into()
@@ -173,7 +178,9 @@ fn desktop_argument(path: &Path) -> Result<String, String> {
 }
 pub fn enable() -> Result<String, String> {
     normal_user()?;
-    enable_at(&Directories::current()?, &super::application_launch_path()?)
+    let message = enable_at(&Directories::current()?, &super::application_launch_path()?)?;
+    stop_owned_file_manager()?;
+    Ok(message)
 }
 fn enable_at(d: &Directories, executable: &Path) -> Result<String, String> {
     let prior = registration(d)?;
@@ -238,15 +245,26 @@ fn enable_at(d: &Directories, executable: &Path) -> Result<String, String> {
     let assets = vec![
         (d.data.join("applications").join(ID), desktop.into_bytes()),
         (icon, ICON.to_vec()),
+        (
+            d.data
+                .join(format!("dbus-1/services/{FILE_MANAGER_BUS}.service")),
+            format!(
+                "[D-BUS Service]\nName={FILE_MANAGER_BUS}\nExec={} file-manager\n",
+                storage::dbus_executable(executable)?
+            )
+            .into_bytes(),
+        ),
     ];
-    if prior.is_none() {
-        for (path, _) in &assets {
-            if fs::symlink_metadata(path).is_ok() {
-                return Err(format!(
-                    "Existing integration file retained: {}",
-                    path.display()
-                ));
-            }
+    for (path, _) in &assets {
+        if !prior
+            .as_ref()
+            .is_some_and(|record| record.files.iter().any(|file| &file.path == path))
+            && fs::symlink_metadata(path).is_ok()
+        {
+            return Err(format!(
+                "Existing integration file retained: {}",
+                path.display()
+            ));
         }
     }
     let installed = preferences::replace(&current, GROUP, MIME, Some(&format!("{ID};")))?;
@@ -272,11 +290,13 @@ fn enable_at(d: &Directories, executable: &Path) -> Result<String, String> {
         storage::atomic_write(&path, &data)?;
     }
     storage::atomic_write(&record.config, record.installed.as_bytes())?;
-    Ok("Directory links now open in Ottrin. Applications that use their own file manager or a separate reveal service keep that behavior.".into())
+    Ok("Directory links now open in Ottrin. Standard show-in-folder and Properties requests use Ottrin on demand. An already-running desktop file manager keeps its current reveal service until it exits. Applications with their own file manager keep that behavior.".into())
 }
 pub fn disable() -> Result<String, String> {
     normal_user()?;
-    disable_at(&Directories::current()?)
+    let message = disable_at(&Directories::current()?)?;
+    stop_owned_file_manager()?;
+    Ok(message)
 }
 fn disable_at(d: &Directories) -> Result<String, String> {
     let Some(record) = registration(d)? else {
@@ -310,6 +330,47 @@ fn disable_at(d: &Directories) -> Result<String, String> {
     Ok("Previous directory handler restored; Ottrin's integration files removed".into())
 }
 
+/// Never activate or stop another provider. Our private control interface is absent there.
+fn stop_owned_file_manager() -> Result<(), String> {
+    if std::env::var_os("DBUS_SESSION_BUS_ADDRESS").is_none() {
+        return Ok(());
+    }
+    let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE)
+        .map_err(|e| e.to_string())?;
+    match bus.call_sync(
+        Some(FILE_MANAGER_BUS),
+        "/org/freedesktop/FileManager1",
+        "org.ottrin.FileManager",
+        "Stop",
+        None,
+        None,
+        gio::DBusCallFlags::NO_AUTO_START,
+        2000,
+        gio::Cancellable::NONE,
+    ) {
+        Ok(_) => Ok(()),
+        Err(error) => {
+            let name = gio::DBusError::remote_error(&error);
+            if name.as_deref().is_some_and(|name| {
+                matches!(
+                    name,
+                    "org.freedesktop.DBus.Error.NameHasNoOwner"
+                        | "org.freedesktop.DBus.Error.ServiceUnknown"
+                        | "org.freedesktop.DBus.Error.UnknownMethod"
+                        | "org.freedesktop.DBus.Error.UnknownInterface"
+                        | "org.freedesktop.DBus.Error.UnknownObject"
+                )
+            }) {
+                Ok(())
+            } else {
+                Err(format!(
+                    "Configuration saved; cannot stop Ottrin's desktop interface: {error}"
+                ))
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -326,6 +387,33 @@ mod tests {
         fs::write(&path, b"#!/bin/sh\nexit 0\n").unwrap();
         fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
         path
+    }
+    #[test]
+    fn reveal_activation_never_replaces_an_unowned_provider_even_during_repair() {
+        let root = tempfile::tempdir().unwrap();
+        let d = directories(root.path());
+        let exe = fixture_executable(&d, "ottrin");
+        enable_at(&d, &exe).unwrap();
+        let mut record = registration(&d).unwrap().unwrap();
+        let service = d
+            .data
+            .join(format!("dbus-1/services/{FILE_MANAGER_BUS}.service"));
+        assert!(
+            storage::read_text(&service)
+                .unwrap()
+                .unwrap()
+                .contains(" file-manager\n")
+        );
+        record.files.retain(|file| file.path != service);
+        storage::atomic_write(&receipt(&d), &serde_json::to_vec(&record).unwrap()).unwrap();
+        let foreign = b"[D-BUS Service]\nName=org.freedesktop.FileManager1\nExec=/usr/bin/false\n";
+        storage::atomic_write(&service, foreign).unwrap();
+        let receipt_before = fs::read(receipt(&d)).unwrap();
+        assert!(enable_at(&d, &exe).unwrap_err().contains("retained"));
+        assert_eq!(fs::read(&service).unwrap(), foreign);
+        assert_eq!(fs::read(receipt(&d)).unwrap(), receipt_before);
+        disable_at(&d).unwrap();
+        assert_eq!(fs::read(service).unwrap(), foreign);
     }
     #[test]
     fn directory_override_restores_previous_handler_and_keeps_unrelated_edits() {

@@ -1,0 +1,25 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-5w2bnapg",
+  "owned_processes_reaped": [
+    {
+      "pid": 4001673,
+      "exit": 0
+    },
+    {
+      "pid": 4001689,
+      "exit": 0
+    },
+    {
+      "pid": 4001690,
+      "exit": 15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "D-Bus GUI readiness timeout",
+  "profile_removed": true
+}

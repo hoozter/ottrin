@@ -2,10 +2,13 @@
 use ottrin_core::picker::{
     PickerChoice, PickerFilter, PickerMode, PickerPattern, PickerRequest, PickerResponse,
 };
+use ottrin_platform::local_file_uri as file_uri;
+#[cfg(test)]
+use std::os::unix::ffi::OsStrExt;
 use std::{
     collections::HashMap,
     ffi::OsString,
-    os::unix::ffi::{OsStrExt, OsStringExt},
+    os::unix::ffi::OsStringExt,
     path::{Path, PathBuf},
 };
 use zbus::zvariant::{OwnedValue, Value};
@@ -176,21 +179,7 @@ pub(super) fn request(
 fn value<T: Into<Value<'static>>>(value: T) -> Result<OwnedValue, String> {
     OwnedValue::try_from(value.into()).map_err(|e| e.to_string())
 }
-fn file_uri(path: &Path) -> Result<String, String> {
-    if !path.is_absolute() {
-        return Err("Chooser returned a non-absolute path".into());
-    }
-    let mut uri = String::from("file://");
-    for byte in path.as_os_str().as_bytes() {
-        if byte.is_ascii_alphanumeric() || b"/-._~".contains(byte) {
-            uri.push(*byte as char)
-        } else {
-            use std::fmt::Write as _;
-            write!(&mut uri, "%{byte:02X}").map_err(|e| e.to_string())?;
-        }
-    }
-    Ok(uri)
-}
+
 fn available_path(
     directory: &Path,
     name: &std::ffi::OsStr,
@@ -420,13 +409,18 @@ mod tests {
         .unwrap();
         assert_eq!(code, 0);
         let uris = Vec::<String>::try_from(reply.remove("uris").unwrap()).unwrap();
-        let prefix = file_uri(dir.path()).unwrap();
+        let decoded: Vec<_> = uris
+            .iter()
+            .map(|uri| ottrin_platform::local_path_from_uri(uri).unwrap())
+            .collect();
         assert_eq!(
-            uris,
+            decoded,
             vec![
-                format!("{prefix}/name%80%20%281%29.txt"),
-                format!("{prefix}/name%80%20%282%29.txt"),
-                format!("{prefix}/other.txt")
+                dir.path()
+                    .join(OsString::from_vec(b"name\x80 (1).txt".to_vec())),
+                dir.path()
+                    .join(OsString::from_vec(b"name\x80 (2).txt".to_vec())),
+                dir.path().join("other.txt"),
             ]
         );
         assert_eq!(std::fs::read(original).unwrap(), b"unchanged");

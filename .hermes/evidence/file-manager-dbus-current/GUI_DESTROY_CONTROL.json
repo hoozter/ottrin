@@ -1,0 +1,75 @@
+{
+  "binary_sha256": "6c675f77043e3ad87eeb8833a5262afa3b686621d2e4bf9238b54272dec3015b",
+  "cases": [
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4003375,
+      "normal_close": true
+    },
+    {
+      "method": "ShowFolders",
+      "native_argv_preserved": true,
+      "window_pid": 4003486,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItems",
+      "native_argv_preserved": true,
+      "window_pid": 4003588,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4003686,
+      "normal_close": false
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4003774,
+      "normal_close": true
+    }
+  ],
+  "backend_memory_kib": {
+    "VmSize": "326284 kB",
+    "VmRSS": "14724 kB"
+  },
+  "idle": {
+    "duration_seconds": 5,
+    "cpu_ticks": 0,
+    "clock_ticks_per_second": 100
+  },
+  "active_window_survived_backend_restart": true,
+  "status": "pass",
+  "source_preserved": true,
+  "registration_removed": true,
+  "foreign_owner_not_replaced": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-0_8m0d06",
+    "owned_processes_reaped": [
+      {
+        "pid": 4003304,
+        "exit": 0
+      },
+      {
+        "pid": 4003309,
+        "exit": 0
+      },
+      {
+        "pid": 4003310,
+        "exit": 15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        4003540
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

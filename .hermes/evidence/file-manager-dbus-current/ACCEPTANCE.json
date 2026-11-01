@@ -1,0 +1,111 @@
+{
+  "binary_sha256": "6c675f77043e3ad87eeb8833a5262afa3b686621d2e4bf9238b54272dec3015b",
+  "cases": [
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4004112,
+      "normal_close": true
+    },
+    {
+      "method": "ShowFolders",
+      "native_argv_preserved": true,
+      "window_pid": 4004329,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItems",
+      "native_argv_preserved": true,
+      "window_pid": 4004451,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4004553,
+      "normal_close": false
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4004637,
+      "normal_close": true
+    }
+  ],
+  "backend_smaps_rollup": {
+    "Rss": "14436 kB",
+    "Pss": "10360 kB",
+    "Private_Clean": "7936 kB",
+    "Private_Dirty": "2348 kB"
+  },
+  "backend_memory_kib": {
+    "VmSize": "326284 kB",
+    "VmRSS": "14436 kB"
+  },
+  "idle": {
+    "duration_seconds": 5,
+    "cpu_ticks": 0,
+    "clock_ticks_per_second": 100
+  },
+  "active_window_survived_backend_restart": true,
+  "status": "pass",
+  "source_preserved": true,
+  "registration_removed": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-x6gpqw9r",
+    "owned_processes_reaped": [
+      {
+        "pid": 4004035,
+        "exit": 0
+      },
+      {
+        "pid": 4004038,
+        "exit": 0
+      },
+      {
+        "pid": 4004039,
+        "exit": 15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        4004382
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "scope": "Source Linux FileManager1 activation and actual GUI; existing Ottrin name-owner conflict, not native Dolphin acceptance. Strict Linux/Windows GNU all-target checks;49 app+2daemon+3CLI;1native URI and6folder tests pass.",
+  "existing_ottrin_owner_not_replaced": true,
+  "control_limitations": {
+    "gui": "Alt+F4 timed out in the private WM; profile/process teardown completed.",
+    "gui-final": "Rejected despite producer status=pass. xdotool windowclose destroys X windows and logs show winit TranslateCoordinates/GetGeometry panics. Process disappearance does not prove normal close. Re-run with in-app Close/Escape and require no application panic.",
+    "profile_cleanup": "Both completed controls removed their profiles/processes/mounts."
+  },
+  "cleanup": {
+    "executables_retired": 2,
+    "logical_bytes": 835425392,
+    "current_binaries_and_dependencies_preserved": true
+  },
+  "incremental_sessions_removed": 38,
+  "incremental_recovered_gib_reported": 1.23,
+  "pending_software": [
+    "Startup-notification focus",
+    "Multiple-window independent child reaping acceptance",
+    "Exact packaged lifecycle and longer resource checks"
+  ],
+  "packages_changed": false,
+  "remaining_task_storage": [
+    {
+      "path": ".hermes/evidence/file-manager-dbus-current",
+      "purpose": "Compact receipts, reviewed screenshots and reproducible controls; no disposable profiles/mounts/processes remain"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+      "purpose": "Current source QA build retained for further integration and package work; shared compiler caches retained"
+    }
+  ],
+  "gui_producer_sha256": "1c80258f892ab9f5d99ed86866d384a6ebe10429c1042589ea3bd7a88d515a34"
+}

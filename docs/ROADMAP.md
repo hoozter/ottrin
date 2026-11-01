@@ -1,5 +1,31 @@
 # Ottrin roadmap
 
+## Standard Linux file-manager interface — source, 2026-11-01
+
+Optional folder setup now registers an on-demand FileManager1 backend alongside
+the directory association. ShowFolders opens contents; ShowItems selects entries
+in their parent, including broken links; ShowItemProperties opens the shared
+read-only metadata window. All inputs validate before launch and native units
+are preserved. Registration refuses foreign activation files, including when
+repairing an earlier receipt. Repair/removal stops only Ottrin’s private control
+interface without activating another provider; an existing name owner is retained.
+Children use the stable application launcher and survive backend restart.
+
+Actual private-session D-Bus activation/three-method signatures, folder/reveal/
+batch Properties windows, invalid-batch refusal, existing Ottrin owner conflict,
+restart/re-activation, active-window continuity and removal pass. Reviewed address
+bars/selection and native argv agree. Normal in-app close is panic-free; earlier
+Alt+F4 timeout and XDestroy-based close controls are rejected and retained.
+An idle five-second source sample has zero CPU ticks and about10 MiB PSS; this
+is not longer-term or exact-package resource acceptance. Source bytes and host
+preferences are preserved; all private profiles/processes/mounts are removed.
+Linux49 app/two daemon/three CLI, one URI and six folder tests pass, with strict
+Linux/Windows GNU checks. Cleanup retired two replaced test executables
+(835,425,392 bytes) and38 obsolete incremental sessions (1.23 GiB reported).
+Evidence: `.hermes/evidence/file-manager-dbus-current/`. Startup-notification
+focus, broader/multiple-window reaping and final packaged integration remain
+independent software gates. Continue those and the ordered queue below.
+
 ## Properties and reveal foundation — source, 2026-11-01
 
 A separate read-only Properties window shares the application theme, fonts, icon
@@ -527,7 +553,7 @@ roadmap completion. A source pass does not establish package or owner acceptance
    at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
    pushed and its Linux production lifecycle now passes. Actual sandboxed
    development-caller Open/Save and document export also pass. Still required:
-   standard FileManager1 reveal, the reversible Windows default-folder preference
+   FileManager1 startup-focus/multiple-window and exact-package acceptance, the reversible Windows default-folder preference
    and final packaged cooperating-app acceptance. Windows menu actions pass native
    parser/registry and actual Shell/Services checks at9242ef29.
    Direct Windows owner/Open/Save/lease checks and a constrained Flatpak caller

@@ -53,3 +53,20 @@ impl Directories {
         })
     }
 }
+
+/// D-Bus service Exec grammar; percent signs are literal, unlike desktop entries/systemd.
+pub(super) fn dbus_executable(path: &Path) -> Result<String, String> {
+    let text = path
+        .to_str()
+        .ok_or("Desktop activation needs a UTF-8 executable path")?;
+    if text.contains(['\n', '\r']) {
+        return Err("Unsupported newline in desktop activation path".into());
+    }
+    Ok(format!(
+        "\"{}\"",
+        text.replace('\\', "\\\\")
+            .replace('"', "\\\"")
+            .replace('`', "\\`")
+            .replace('$', "\\$")
+    ))
+}

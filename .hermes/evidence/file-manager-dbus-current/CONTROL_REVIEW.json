@@ -1,0 +1,5 @@
+{
+  "gui": "Alt+F4 timed out in the private WM; profile/process teardown completed.",
+  "gui-final": "Rejected despite producer status=pass. xdotool windowclose destroys X windows and logs show winit TranslateCoordinates/GetGeometry panics. Process disappearance does not prove normal close. Re-run with in-app Close/Escape and require no application panic.",
+  "profile_cleanup": "Both completed controls removed their profiles/processes/mounts."
+}
