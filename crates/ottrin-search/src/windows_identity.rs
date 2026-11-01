@@ -72,6 +72,19 @@ impl IndexDaemonIdentity {
         Ok(())
     }
 
+    pub(crate) fn open_terminable_process(&self, pid: u32) -> Result<IndexPeerProcess, String> {
+        let process = open_process(
+            pid,
+            PROCESS_QUERY_LIMITED_INFORMATION
+                | PROCESS_SYNCHRONIZE
+                | windows_sys::Win32::System::Threading::PROCESS_TERMINATE,
+        )?;
+        if process_handle_user_sid(process.as_raw_handle())? != self.sid {
+            return Err("The index daemon peer belongs to another Windows user".into());
+        }
+        Ok(IndexPeerProcess(process))
+    }
+
     /// Capture and authenticate the process object, avoiding PID reuse while waiting.
     pub(crate) fn open_process(&self, pid: u32) -> Result<IndexPeerProcess, String> {
         let process = open_process(pid, PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SYNCHRONIZE)?;
@@ -85,6 +98,20 @@ impl IndexDaemonIdentity {
 pub(crate) struct IndexPeerProcess(OwnedHandle);
 
 impl IndexPeerProcess {
+    pub(crate) fn terminate(&self) -> Result<(), String> {
+        // SAFETY: this owned process handle was explicitly opened with termination rights.
+        if unsafe {
+            windows_sys::Win32::System::Threading::TerminateProcess(self.0.as_raw_handle(), 0)
+        } == 0
+        {
+            return Err(format!(
+                "Cannot stop incompatible index peer: {}",
+                io::Error::last_os_error()
+            ));
+        }
+        Ok(())
+    }
+
     pub(crate) fn executable(&self) -> Result<PathBuf, String> {
         let mut buffer = vec![0u16; 32768];
         let mut length = buffer.len() as u32;

@@ -29,6 +29,8 @@ mod daemon_protocol;
 mod daemon_server;
 #[cfg(any(unix, target_os = "windows"))]
 mod daemon_transport;
+mod daemon_wire;
+pub use daemon_wire::encode_search_response;
 mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
 mod mutation;

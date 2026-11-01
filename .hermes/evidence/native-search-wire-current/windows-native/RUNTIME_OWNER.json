@@ -1,0 +1,39 @@
+{
+  "nonce": "179867b2-6b4c-480c-8693-a9b9d44ef9d4",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "source": {
+    "base_revision": "8cd433ccc133b122f6bacb9bef9bda14872a7018",
+    "working_tree": [
+      " M crates/ottrin-app/src/main.rs",
+      " M crates/ottrin-search/src/daemon_client.rs",
+      " M crates/ottrin-search/src/daemon_protocol.rs",
+      " M crates/ottrin-search/src/lib.rs",
+      " M crates/ottrin-search/src/windows_daemon.rs",
+      " M crates/ottrin-search/src/windows_identity.rs",
+      " M docs/DEVELOPMENT.md",
+      " M docs/ROADMAP.md",
+      " M scripts/index-populated-qa.py",
+      "?? AGENTS.md",
+      "?? crates/ottrin-search/src/daemon_wire.rs"
+    ],
+    "files": {
+      "crates/ottrin-app/src/main.rs": "e9dad41f62f70831d6cda02181dd35ab4542d14b63c076fa431d01f57f2739a4",
+      "crates/ottrin-core/src/picker.rs": "a9ed2461bce1ad3e68834c9e4e513c5c5c287f1c88b6c492240e260f2d4b0f69",
+      "crates/ottrin-search/src/daemon_client.rs": "f7f0f2a11edeebf4c567b12eaf62bcf4e311bfd24069427aec6355e0b3d3893d",
+      "crates/ottrin-search/src/daemon_protocol.rs": "ceebe1dc564b9c3100461b7b8ddb1117acca2e533ae604cb44d9ee416d487f5f",
+      "crates/ottrin-search/src/daemon_wire.rs": "ff9739cd38f492b34bdf48af4fb0a2e0f713fc47519bcbff2ff711573ed5c2d5",
+      "crates/ottrin-search/src/lib.rs": "86f05a45e36f2934e6f5b43c4e0c84da4fa9ce89ced070177b99bf5ccbf5dc17",
+      "crates/ottrin-search/src/windows_daemon.rs": "4044a79ac15a863e510b65c327a47509b8ddb6947dbe48bff6538ffa55b6fc94",
+      "crates/ottrin-search/src/windows_identity.rs": "c5a9cbaa6451d4f76e440fdbb010e1b64e6178159a828cd7b976f6938da99a0e",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

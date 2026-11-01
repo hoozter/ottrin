@@ -89,7 +89,7 @@ try:
         database = root/'cache/ottrin/search.db'
 
         def request(kind, **extra):
-            payload = json.dumps({'version': 1, 'request': {'type': kind, **extra}}).encode()
+            payload = json.dumps({'version': 2, 'request': {'type': kind, **extra}}).encode()
             with socket.socket(socket.AF_UNIX) as client:
                 client.settimeout(3)
                 client.connect(str(endpoint))
@@ -104,7 +104,7 @@ try:
                 size = struct.unpack('!I', exact(4))[0]
                 assert size <= 1024*1024
                 response = json.loads(exact(size))
-                assert response['version'] == 1
+                assert response['version'] == 2
                 assert response['response']['type'] != 'error', response
                 return response['response']
 
@@ -134,7 +134,7 @@ try:
                 matching = sorted((p for p in expected if Path(p).name.startswith(prefix)),
                                   key=lambda p: Path(p).name)
                 response = search_response(prefix)
-                returned = {item['path']: item['size_bytes'] for item in response['items']}
+                returned = {os.fsdecode(bytes.fromhex(item['path']['units_hex'])): item['size_bytes'] for item in response['items']}
                 if response['total'] != len(matching) or returned != {p: expected[p] for p in matching[:500]}:
                     return False
             return True
@@ -159,7 +159,7 @@ try:
                 matching = sorted((path for path, content in expected_content.items() if token in content), key=lambda path: Path(path).name)
                 queried = search_result(token, content_search=True)
                 response = queried['response']
-                if response.get('error') or queried.get('warning') or response['total'] != len(matching) or {item['path'] for item in response['items']} != set(matching[:500]):
+                if response.get('error') or queried.get('warning') or response['total'] != len(matching) or {os.fsdecode(bytes.fromhex(item['path']['units_hex'])) for item in response['items']} != set(matching[:500]):
                     result['last_content_observation_error'] = {'query': token, 'expected': len(matching), 'response_total': response['total'], 'error': response.get('error'), 'warning': queried.get('warning')}
                     return False
             result.pop('last_content_observation_error', None)

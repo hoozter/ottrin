@@ -1,0 +1,5 @@
+{
+  "pid": 3764020,
+  "exists": false,
+  "action": "Retry unchanged guard only after actual exit; no new process exception"
+}

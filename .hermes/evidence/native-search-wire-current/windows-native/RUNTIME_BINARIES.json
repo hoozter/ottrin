@@ -1,0 +1,22 @@
+{
+  "fixture-search.exe": {
+    "sha256": "10734097c1d2fd5584edb5f91edb29e47ff8d60cf8efe14f7d25f951ade76dee",
+    "raw_sha256": "9f0a2122ff092b94617715a36ccab3a367d7efd3fffe4b6655d1820956df79e3",
+    "source_date_epoch": 1793547379
+  },
+  "fixture-launch.exe": {
+    "sha256": "3925f3bf82badc32adb039ddc8d3d534725e0fda8c6b6aa58d71edd747c0a76e",
+    "raw_sha256": "3a836e220a0a080a629219fe03c0811165bfc397ff2d5c12a8e7903147877314",
+    "source_date_epoch": 1793547289
+  },
+  "ottrin-indexd.exe": {
+    "sha256": "3dbc66a2bca8ec33a122b24ca1a70941995ac38f5573d522902605740ae669dd",
+    "raw_sha256": "79e395129ccc1c711e0a63f23d3eb65299dcaad060941b4e0cdc1ceeb456a657",
+    "source_date_epoch": 1793547267
+  },
+  "previous-indexd.exe": {
+    "sha256": "439f124bdaa9f4e03f55d316b876790abf5c847dcb427e5bd74ba450779430d6",
+    "raw_sha256": "56607bbb7263f56659aedb100037129c12e7a9e67d748efe6c210fb8d2775019",
+    "source_date_epoch": 1793527019
+  }
+}

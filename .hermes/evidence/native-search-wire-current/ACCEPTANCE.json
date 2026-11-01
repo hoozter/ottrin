@@ -1,0 +1,51 @@
+{
+  "status": "scoped_pass",
+  "protocol": 2,
+  "scope": "Lossless native query/config/result wire plus authenticated incompatible daemon replacement; persisted config schema unchanged",
+  "checks": {
+    "search": {
+      "passed": 243,
+      "failed": 0,
+      "ignored": 2,
+      "ignored_scope": "existing FTS storage measurements"
+    },
+    "app": 45,
+    "indexd": 2,
+    "cli": 3,
+    "platform_integration": 14,
+    "lint": "strict Linux platform/app/UI/search all-target and GNU app/UI/search all-target pass",
+    "format": "pass",
+    "windows_build": "app/UI/search test cohort, GNU, successful compiler manifest"
+  },
+  "actual": {
+    "linux_native_query": "gui-query-fixed/RESULT.json",
+    "linux_native_json_cli": "gui-query-cli-fixed/RESULT.json",
+    "linux_old_package_upgrade": "upgrade/RESULT.json",
+    "windows_native_tests": "8 protocol tests each ordinary/elevated; native UTF-16 paths",
+    "windows_old_package_upgrade": "windows-native/short-temp-ordinary-search-runtime-upgrade.json",
+    "windows_teardown": "windows-native/RUNTIME_TEARDOWN.json; VM off, definition unchanged, profiles retained"
+  },
+  "known_controls": {
+    "initial_build": "Concurrent source edits made a build use the prior search library with a newer app caller; failed missing symbol. Stable final inputs rebuilt successfully before all live checks.",
+    "initial_cli_driver": "CLI and exact-path assertions passed, then QA driver shadowed its data directory variable; corrected producer rerun passes and owned context teardown covered both.",
+    "cleanup_refusal": "Guard stopped on unreadable transient PID3764020. Revalidated actual exit and reran unchanged guard without new exceptions.",
+    "prior_hosted": "29450ee2 platform lib-test lint omitted locally; pure ordering correction8cd433cc is pushed for fresh CI."
+  },
+  "cleanup": {
+    "incrementals": "51 candidates identified; initial guard partial removal, then final nine removed (0.37 GiB reported for final run); guard complete",
+    "owned_runtime": "all Linux profiles/processes/mounts and Windows QA root/actors removed; retained QA VM shut off",
+    "temporary": "owned stripping/compression staging and task bytecode removed",
+    "remaining": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/native-search-wire-current",
+        "purpose": "compact acceptance receipts, screenshots, compressed logs and reproducible QA producers; audit consumer"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target",
+        "purpose": "current binaries and useful shared compiler caches"
+      }
+    ]
+  },
+  "packages": "stable packages remain source25b38c8f; source cohort not packaged; public release unchanged",
+  "next": "Commit/push this checkpoint, finish remaining desktop/cooperating-app integration and coherent exact-package acceptance; Windows full suite continues on CI"
+}

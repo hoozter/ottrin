@@ -1,5 +1,30 @@
 # Ottrin roadmap
 
+## Native search transport and daemon replacement — source, 2026-11-01
+
+The native result-path failure is now fixed in protocol 2. Query roots, all
+configuration roots (including runtime volume roots), indexed volume locations
+and result paths share the canonical native-unit codec. The JSON search CLI uses
+the same result contract. Persisted preferences keep their existing schema.
+Round-trip checks cover Unix non-text bytes and compile for Windows native units.
+
+Actual private-desktop query now returns the exact native-byte fixture path. A
+second private fixture extracts the index daemon from accepted portable25b38c8f,
+proves protocol1 readiness, runs current `index ensure`, observes the old process
+exit and protocol2 readiness, and verifies unchanged preferences/source. Retirement
+pins the authenticated process and requires the dedicated daemon role; it does
+not add a legacy protocol parser. A non-index peer refusal test guards termination.
+
+Evidence: `.hermes/evidence/native-search-wire-current/`. All owned profiles,
+processes, old-package extraction and mounts are removed. Strict Linux/GNU checks, 243 Linux search tests (two measurement ignores),
+45 app/two daemon/three CLI and14 platform integration tests pass. Windows passes
+all eight protocol tests under ordinary/elevated tokens and actual accepted
+protocol1-to-source-protocol2 replacement with unchanged preferences/source. The
+QA root is removed and VM off. Exact-package delivery remains pending; stable
+packages remain25b38c8f. Continue the
+remaining integration and roadmap outcomes after this transport checkpoint.
+
+
 ## Folder integration and native index diagnostics — source, 2026-11-01
 
 Optional Linux folder opening now uses one reversible per-user MIME association,
@@ -329,13 +354,46 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 ## Current checkpoint and next work
 
-Audited: 2026-11-01
+Audited: 2026-11-01. This section and the delivery table are the active queue;
+checkpoint narratives retain historical evidence only. Test totals do not measure
+roadmap completion. A source pass does not establish package or owner acceptance.
 
-This section and the current delivery table below define the working state.
-Subsequent checkpoint narratives are historical evidence: their “next”, “pending”,
-“current” and cleanup statements apply to their recorded revision and run, not
-necessarily to the present checkout. Artifact receipts define acceptance only for
-their named hashes. Test counts are scoped observations, not completion measures.
+1. **Finish native search transport checkpoint.** Linux actual native query/JSON
+   output and accepted-daemon upgrade pass, as do 243 search tests, app/daemon/CLI
+   checks and widened Linux/GNU lint. Native Windows protocol and upgrade checks
+   pass; QA VM/root teardown and compiler cleanup are complete. Finish evidence,
+   commit and push. Do not park fixable failures as owner waits.
+2. **Finish desktop/cooperating-app integration.** Portal source/lifecycle passes
+   at 87999cf8. Reversible Linux default-directory dispatch passes actual GIO/GUI
+   at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
+   pushed and awaits a fresh lifecycle run. Still required: actual sandboxed
+   frontend/document export, standard FileManager1 reveal, supported Windows
+   folder actions and cooperating-app native picker acceptance.
+3. **Deliver one coherent package cohort.** Stable Linux formats and Windows
+   candidates remain25b38c8f. Rebuild from a clean verified checkpoint, verify
+   exact packaged chooser/integration/upgrade/native paths and bounded resource
+   behavior, update receipts and remove superseded generated output. Refresh the
+   enabled personal index only through its verified upgrade path.
+4. **Close remaining software roadmap gates.** Complete outstanding daily-driver,
+   editing/recovery, file-operation/conflict/undo, theme/layout/accessibility,
+   renderer/Office/media and installation lifecycle acceptance. MSI rollback is
+   a required failed gate, not waived or assigned to the owner; investigate a
+   materially different corrective path instead of repeating equivalent controls.
+   Preserve the explicit native-platform and physical-device scope boundaries.
+5. **Finish release preparation.** Implement and verify remaining MSIX/release
+   tooling independently. Linux signing identity, Store identity/submission,
+   unavailable physical hardware and final owner acceptance stay on the waiting
+   list below. macOS remains deferred. Continue other ready work during any wait.
+
+The goal stays active while any independently executable outcome remains. Its
+completion requires a final audit showing that all remaining items genuinely
+need the owner or an unavailable external resource.
+
+## Historical checkpoint evidence
+
+The following recorded builds/checks are preserved for provenance. Their old
+“next”, “current” and cleanup statements apply to those revisions, not the active
+queue above. Exact artifact receipts establish only their named hash/scope.
 
 - **Current Linux and Windows startup delivery: cf6e465a (2026-11-01).**
   Global GUI options are parsed before target dispatch. Actual launches accept
@@ -907,26 +965,7 @@ checkpoint above; full startup freshness validation is intentionally retained.
 Historical variants/scopes:
 `index-progress-rate-current/ACCEPTANCE.json`.
 
-Resume at the unfinished operation, not the start of an older checkpoint:
-
-1. Reproduce and repair the remaining preview layout issues recorded in
-   `linux-navigation-package-current/FOLLOW_UPS.json`: adjacent Inspector scroll
-   indicators and accessibility of the Details toggle/expanded metadata at large
-   text sizes. Establish rendered failures before source changes;preserve fixed
-   footers and width-fitted PDF gutter stability,then deliver affected packages.
-
-2. Continue available Windows renderer preference/override,Office-preview and
-   daily-driver software acceptance in separate bounded fixtures. The aborted
-   extra Copy Replace→Rename→Undo chain is not accepted;finish it independently
-   rather than extending an unrelated viewer fixture. Native GPU/override paths
-   are not inferred from loaded DLL names. Keep installer lifecycle/rollback
-   gates required;do not repeat equivalent independent MSI controls.
-
-3. Complete other dependency-ready preview/editing,file-operation and packaging
-   outcomes,then the required themed picker/folder integration. Park owner,
-   unavailable physical-device and external release-identity waits separately;
-   they do not block independently executable work. Release publication/signing
-   and final owner acceptance remain unaccepted.
+The active order is maintained in **Current checkpoint and next work** above.
 
 CI push filters now omit commits that change only roadmap/status delivery
 receipts (`docs/ROADMAP.md`, `.hermes/evidence/**`, `dist/**`). Source, workflow,
@@ -1016,7 +1055,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | --- | --- | --- |
 | Linux | Four25b38c8f formats; complete hosted checks; actual Dark100/Light150 chooser/native-path/persistence/read-only checks and bounded resource samples. Enabled personal service uses the accepted runtime. | Finish external picker/folder integration and remaining software/theme acceptance before parked owner/device checks. |
 | Windows |25b38c8f ZIP/NSIS/MSI candidate;58 matching files, complete hosted source checks and scoped native CLI/renderer/chooser/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) includes the QA-controller failure and exact scope limits. | Finish external picker/folder integration and remaining software acceptance. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Shared chooser,picker-only preferences and seven internal callers verified in source; native/Linux GUI scopes above. | Finish packaged parent ownership acceptance,portal/cooperating-app and reversible folder integration,then exact-package/resource acceptance. Existing-index search is source-verified. Park owner/physical/external waits. |
+| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade is under final native verification. | Finish sandboxed frontend export, FileManager1, Windows folder/cooperating-app integration and exact-package/resource acceptance. Park only genuine owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

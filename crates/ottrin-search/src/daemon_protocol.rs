@@ -5,7 +5,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 
-pub(super) const PROTOCOL_VERSION: u16 = 1;
+pub(super) const PROTOCOL_VERSION: u16 = 2;
 pub(super) const MAX_FRAME_BYTES: usize = 1024 * 1024;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -13,10 +13,20 @@ pub(super) const MAX_FRAME_BYTES: usize = 1024 * 1024;
 pub(super) enum DaemonRequest {
     Ping,
     Status,
-    Query { query: SearchQuery },
-    UpdateConfig { config: SearchConfig },
-    Reconcile { operation_id: u64 },
-    Rebuild { operation_id: u64 },
+    Query {
+        #[serde(with = "crate::daemon_wire::SearchQueryWire")]
+        query: SearchQuery,
+    },
+    UpdateConfig {
+        #[serde(with = "crate::daemon_wire::SearchConfigWire")]
+        config: SearchConfig,
+    },
+    Reconcile {
+        operation_id: u64,
+    },
+    Rebuild {
+        operation_id: u64,
+    },
     ClearStorage,
     Shutdown,
     PrepareUpgrade,
@@ -42,6 +52,7 @@ pub(super) enum DaemonResponse {
         diagnostics: Box<SearchIndexDiagnostics>,
     },
     Query {
+        #[serde(with = "crate::daemon_wire::SearchQueryResultWire")]
         result: SearchQueryResult,
     },
     Complete,
@@ -147,6 +158,95 @@ mod tests {
             handle.index.read().unwrap().active_root.as_ref(),
             Some(&native)
         );
+    }
+
+    #[cfg(any(unix, windows))]
+    #[test]
+    fn native_paths_round_trip_queries_config_and_results() {
+        #[cfg(unix)]
+        let path = {
+            use std::os::unix::ffi::OsStringExt;
+            std::path::PathBuf::from(std::ffi::OsString::from_vec(b"/root/native\x80".to_vec()))
+        };
+        #[cfg(windows)]
+        let path = {
+            use std::os::windows::ffi::OsStringExt;
+            std::path::PathBuf::from(std::ffi::OsString::from_wide(&[67, 58, 92, 0xd800]))
+        };
+        let query = SearchQuery {
+            text: "native".into(),
+            scope: ottrin_core::SearchScope::Global,
+            root_path: Some(path.clone()),
+            include_hidden_system: false,
+            sort: ottrin_core::SearchSort::Name,
+            limit: 10,
+            offset: 0,
+            content_search: false,
+        };
+        let config = SearchConfig {
+            include_roots: vec![path.clone()],
+            active_indexed_volume_roots: vec![path.clone()],
+            exclude_roots: vec![path.clone()],
+            content_include_roots: vec![path.clone()],
+            content_exclude_roots: vec![path.clone()],
+            indexed_volumes: vec![ottrin_core::IndexedVolumeLocation {
+                identity: "native-volume".into(),
+                last_known_path: path.clone(),
+            }],
+            ..Default::default()
+        };
+        for request in [
+            DaemonRequest::Query { query },
+            DaemonRequest::UpdateConfig { config },
+        ] {
+            let frame = RequestFrame {
+                version: PROTOCOL_VERSION,
+                request,
+            };
+            let mut bytes = Vec::new();
+            write_frame(&mut bytes, &frame).unwrap();
+            let decoded: RequestFrame = read_frame(&mut Cursor::new(bytes)).unwrap();
+            assert_eq!(decoded, frame);
+        }
+        let item = ottrin_core::SearchResultItem {
+            path: path.clone(),
+            parent_path: path.clone(),
+            name: "native".into(),
+            kind: ottrin_core::EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(1),
+            modified_unix_secs: None,
+            content_snippet: None,
+            name_lower: String::new(),
+            path_str: String::new(),
+            path_lower: String::new(),
+        };
+        let frame = ResponseFrame {
+            version: PROTOCOL_VERSION,
+            response: DaemonResponse::Query {
+                result: SearchQueryResult {
+                    response: ottrin_core::SearchResponse {
+                        items: vec![item.clone()],
+                        total: 1,
+                        status: ottrin_core::SearchIndexStatus::Ready,
+                        error: None,
+                    },
+                    warning: None,
+                },
+            },
+        };
+        let mut bytes = Vec::new();
+        write_frame(&mut bytes, &frame).unwrap();
+        let decoded: ResponseFrame = read_frame(&mut Cursor::new(bytes)).unwrap();
+        let DaemonResponse::Query { result } = decoded.response else {
+            panic!("query response required")
+        };
+        assert_eq!(result.response.items, vec![item]);
+        // The persistence representation is deliberately unchanged.
+        let ordinary = serde_json::to_value(SearchConfig::default()).unwrap();
+        assert!(ordinary["include_roots"][0].is_string());
+        assert!(ordinary.get("active_indexed_volume_roots").is_none());
     }
 
     #[test]

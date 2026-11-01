@@ -1,0 +1,22 @@
+{
+  "ensureExit": 0,
+  "scope": "Ordinary token, accepted candidate daemon -> current source daemon; private profile",
+  "sourcePreserved": true,
+  "preferencesPreserved": true,
+  "oldExit": 0,
+  "newPid": 7472,
+  "after": {
+    "version": 2,
+    "response": {
+      "type": "pong"
+    }
+  },
+  "newExecutable": "C:\\OttrinJobFixtureQA\\ottrin-indexd.exe",
+  "before": {
+    "version": 1,
+    "response": {
+      "type": "pong"
+    }
+  },
+  "status": "pass"
+}

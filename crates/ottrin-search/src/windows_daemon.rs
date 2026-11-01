@@ -99,6 +99,13 @@ pub fn ensure_windows_search_daemon(
         }
         client.prepare_upgrade_and_wait()?;
     }
+    if client.server_pid().is_ok()
+        && client
+            .ping()
+            .is_err_and(|error| error.starts_with("index daemon protocol mismatch:"))
+    {
+        client.retire_incompatible_daemon()?;
+    }
     let child = spawn_daemon_without_inherited_handles(executable)
         .map_err(|error| format!("Cannot start the index daemon: {error}"))?;
     wait_for_daemon(executable, Some(&child))

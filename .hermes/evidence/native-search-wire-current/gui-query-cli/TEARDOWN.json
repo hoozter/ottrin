@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-fcavcvkf",
+  "owned_processes_reaped": [
+    {
+      "pid": 3752699,
+      "exit": 0
+    },
+    {
+      "pid": 3752702,
+      "exit": 0
+    },
+    {
+      "pid": 3752703,
+      "exit": 15
+    },
+    {
+      "pid": 3752768,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      3752830
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "unsupported operand type(s) for /: 'dict' and 'str'",
+  "profile_removed": true
+}

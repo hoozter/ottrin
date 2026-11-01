@@ -1889,3 +1889,23 @@ manager. No personal desktop preference changes occur during source QA.
 
 Index diagnostic progress paths are human-readable labels only; the index retains
 its native operation paths. Labels must never be parsed back into file targets.
+
+## Native search wire paths
+
+Index protocol 2 represents query roots, all configuration root lists, indexed
+volume locations and result paths using `ottrin_core::native_path::NativePath`.
+The daemon wire derives are separate from persisted AppConfig serde; runtime
+volume roots are sent over the wire even though preferences omit them. Search
+`--json` uses the same native result representation. Consumers decode the
+`encoding` and `units_hex` fields rather than treating them as display text.
+Human-readable CLI output continues to use path labels. The existing socket
+name is an endpoint namespace; frame version 2 defines its payload contract.
+
+An authenticated incompatible daemon is replaced without parsing an old wire
+format. Installed Linux services use the existing stop/install/start workflow.
+Session Linux peers require SO_PEERPIDFD, the same user and the dedicated
+`ottrin-indexd --index-daemon` role before SIGTERM through the pinned descriptor.
+Windows captures the authenticated process handle, checks its dedicated index
+executable name and terminates that process object. Replacement waits for exit;
+unknown endpoint owners are retained. SQLite owns transaction recovery; user
+preferences and indexed source files are not modified by retirement.

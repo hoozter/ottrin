@@ -1267,6 +1267,19 @@ fn daemon_uses_executable(
 #[cfg(unix)]
 fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
     let unit_path = ottrin_search::sqlite_systemd_service_path();
+    #[cfg(target_os = "linux")]
+    if let Ok(client) = ottrin_search::SearchDaemonClient::connect_default()
+        && client.server_pid().is_ok()
+        && client
+            .ping()
+            .is_err_and(|error| error.starts_with("index daemon protocol mismatch:"))
+    {
+        if unit_path.is_file() {
+            ottrin_search::SearchService::install_sqlite_schedule(&configured_search_config())?;
+        } else {
+            client.retire_incompatible_daemon()?;
+        }
+    }
     if let Some(client) = connected_index_daemon() {
         let executable = index_daemon_executable()
             .map_err(|error| format!("could not locate the Ottrin index daemon: {error}"))?;
@@ -1559,7 +1572,7 @@ fn print_search_response(response: ottrin_core::SearchResponse, json: bool) -> R
     if json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&response)
+            ottrin_search::encode_search_response(&response)
                 .map_err(|error| format!("could not encode search response: {error}"))?
         );
     } else {

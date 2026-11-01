@@ -72,6 +72,103 @@ impl SearchDaemonClient {
         }
     }
 
+    /// Replace a protocol-incompatible daemon only after authenticating its OS
+    /// process and dedicated executable role. This never interprets an old wire schema.
+    #[cfg(target_os = "linux")]
+    pub fn retire_incompatible_daemon(&self) -> Result<(), String> {
+        use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+        let stream = UnixStream::connect(&self.socket_path).map_err(|e| e.to_string())?;
+        let peer = crate::daemon::peer_credentials(&stream)?;
+        if peer.uid != crate::daemon::current_uid() || peer.pid <= 0 {
+            return Err("Refusing to replace a foreign index peer".into());
+        }
+        // SO_PEERPIDFD (Linux 6.5+) captures the socket peer's process object,
+        // rather than opening a potentially reused numeric PID.
+        let mut fd: libc::c_int = -1;
+        let mut length = std::mem::size_of_val(&fd) as libc::socklen_t;
+        // SAFETY: fd and length are live writable outputs of the advertised size.
+        if unsafe {
+            libc::getsockopt(
+                stream.as_raw_fd(),
+                libc::SOL_SOCKET,
+                77,
+                (&mut fd as *mut libc::c_int).cast(),
+                &mut length,
+            )
+        } != 0
+        {
+            return Err(format!(
+                "Cannot pin incompatible index peer: {}",
+                std::io::Error::last_os_error()
+            ));
+        }
+        // SAFETY: successful SO_PEERPIDFD transfers a new owned descriptor.
+        let process = unsafe { OwnedFd::from_raw_fd(fd) };
+        let mut poll = libc::pollfd {
+            fd: process.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        // SAFETY: poll references one live initialized descriptor, with no wait.
+        if unsafe { libc::poll(&mut poll, 1, 0) } != 0 {
+            return Ok(());
+        }
+        let root = PathBuf::from(format!("/proc/{}", peer.pid));
+        let executable = std::fs::read_link(root.join("exe")).map_err(|e| e.to_string())?;
+        let name = executable.file_name().unwrap_or_default().to_string_lossy();
+        let arguments = std::fs::read(root.join("cmdline")).map_err(|e| e.to_string())?;
+        if !matches!(name.as_ref(), "ottrin-indexd" | "ottrin-indexd (deleted)")
+            || !arguments
+                .split(|b| *b == 0)
+                .any(|arg| arg == b"--index-daemon")
+        {
+            return Err(
+                "Refusing to terminate an endpoint without the dedicated index-daemon role".into(),
+            );
+        }
+        // Recheck liveness after /proc inspection. The signal still targets the
+        // pinned process object, never a replacement numeric PID.
+        // SAFETY: poll points to one initialized descriptor.
+        if unsafe { libc::poll(&mut poll, 1, 0) } != 0 {
+            return Ok(());
+        }
+        // SAFETY: pidfd_send_signal accepts this owned pidfd and a null siginfo.
+        if unsafe {
+            libc::syscall(
+                libc::SYS_pidfd_send_signal,
+                process.as_raw_fd(),
+                libc::SIGTERM,
+                std::ptr::null::<libc::siginfo_t>(),
+                0,
+            )
+        } != 0
+        {
+            return Err(format!(
+                "Cannot stop incompatible index peer: {}",
+                std::io::Error::last_os_error()
+            ));
+        }
+        // SAFETY: poll references one initialized descriptor; bounded 30s wait.
+        if unsafe { libc::poll(&mut poll, 1, 30_000) } <= 0 {
+            return Err("Incompatible index daemon did not exit within 30 seconds".into());
+        }
+        Ok(())
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn retire_incompatible_daemon(&self) -> Result<(), String> {
+        let stream = crate::WindowsIndexPipeStream::connect(&self.identity, CLIENT_IO_TIMEOUT)
+            .map_err(|e| e.to_string())?;
+        let process = self.identity.open_terminable_process(stream.peer_pid())?;
+        if process.executable()?.file_name() != Some(std::ffi::OsStr::new("ottrin-indexd.exe")) {
+            return Err(
+                "Refusing to terminate an endpoint without the dedicated index-daemon role".into(),
+            );
+        }
+        process.terminate()?;
+        process.wait_for_exit(Duration::from_secs(30))
+    }
+
     /// Package removal must also release session daemons, without stopping a
     /// portable/AppImage daemon sharing the same user's endpoint.
     #[cfg(target_os = "linux")]
@@ -445,6 +542,19 @@ mod query_lifetime_tests {
     use super::*;
     use ottrin_core::{SearchIndexStatus, SearchResponse, SearchScope, SearchSort};
     use std::time::Instant;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn incompatible_peer_without_index_role_is_preserved() {
+        let root = tempfile::tempdir().unwrap();
+        let socket = root.path().join("peer.sock");
+        let _listener = std::os::unix::net::UnixListener::bind(&socket).unwrap();
+        let client = SearchDaemonClient::new(socket);
+        let error = client.retire_incompatible_daemon().unwrap_err();
+        assert!(error.contains("dedicated index-daemon role"), "{error}");
+        // The peer here is this test process. Reaching this line verifies it
+        // was preserved; the owned socket disappears with its temporary root.
+    }
 
     #[test]
     fn abandoned_remote_query_reaps_provider_on_cancel_and_disconnect() {

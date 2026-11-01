@@ -1,0 +1,56 @@
+{
+  "scope": "Accepted portable protocol1 daemon replaced by current source headless ensure; private profile only",
+  "old_binary_sha256": "bb2f419d5605c6703f3cb53e0ab233686db79982b2dfe5c36cd0082f5fd07679",
+  "before": {
+    "version": 1,
+    "response": {
+      "type": "pong"
+    }
+  },
+  "new_binary_sha256": "45535184d649b5b15720b14518931804a5e5daa314b67c31f63376d70414175c",
+  "ensure": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "previous_exit": -15,
+  "after": {
+    "version": 2,
+    "response": {
+      "type": "pong"
+    }
+  },
+  "status": "pass",
+  "preferences_preserved": true,
+  "source_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-2gph9cjw",
+    "owned_processes_reaped": [
+      {
+        "pid": 3747166,
+        "exit": 0
+      },
+      {
+        "pid": 3747169,
+        "exit": 0
+      },
+      {
+        "pid": 3747170,
+        "exit": 15
+      },
+      {
+        "pid": 3747233,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        3747296
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
