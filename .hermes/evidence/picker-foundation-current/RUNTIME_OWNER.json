@@ -1,0 +1,28 @@
+{
+  "nonce": "41783c83-e4c2-46c0-8849-c895f64a74b5",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "source": {
+    "base_revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+    "working_tree": [
+      " M crates/ottrin-core/src/lib.rs",
+      " M crates/ottrin-ui/src/lib.rs",
+      " M dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+      "?? AGENTS.md",
+      "?? crates/ottrin-core/src/picker.rs"
+    ],
+    "files": {
+      "crates/ottrin-core/src/lib.rs": "a8050b42a0603348e083bcd3b4ccf7b7023393e0ffecbb7d98ef1c308cabb3fe",
+      "crates/ottrin-core/src/picker.rs": "57bbdf0a99ec053968864f8314d09eefeafaee587bb940379c3e9599bb02ea36",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/lib.rs": "671bf747505a91459dddc28a09b63e00a002e8046cea2fcaecac5d0dc40dc02c"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

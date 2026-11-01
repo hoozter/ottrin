@@ -1,0 +1,35 @@
+{
+  "status": "source/native checks pass; picker UI and fresh package acceptance pending",
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "a8050b42a0603348e083bcd3b4ccf7b7023393e0ffecbb7d98ef1c308cabb3fe",
+    "crates/ottrin-core/src/picker.rs": "57bbdf0a99ec053968864f8314d09eefeafaee587bb940379c3e9599bb02ea36",
+    "crates/ottrin-ui/src/lib.rs": "671bf747505a91459dddc28a09b63e00a002e8046cea2fcaecac5d0dc40dc02c"
+  },
+  "Linux": {
+    "core_tests": 34,
+    "regular_ui": 413,
+    "existing_ignored_ui": 1,
+    "filtered": 0,
+    "strict_all_target_lint": "pass"
+  },
+  "Windows": {
+    "ordinary_regular_ui": 386,
+    "elevated_regular_ui": 386,
+    "existing_ignored_ui": 4,
+    "filtered": 0,
+    "strict_GNU_all_target_lint": "pass",
+    "native_core_contract_test_execution": "not claimed; current Windows execution is the complete UI suite"
+  },
+  "regression": "POINTER_NEGATIVE.log reproduces correct file selection with offscreen preview; POINTER_FIXED.log and both full platform UI suites pass after primary click reveal. The initial test-construction compile error is separate.",
+  "scope": "Core picker caller contract and Miller/notice source repairs; no actual picker UI,portal,folder integration,resource or new packaged UI acceptance yet.",
+  "cleanup": {
+    "native_root_removed": true,
+    "guest_off": true,
+    "original_profiles_preserved": true,
+    "incremental_sessions_retired": 24,
+    "filesystem_recovered_GiB": 1.17,
+    "newest_finalized_sessions_preserved": true,
+    "inspection_refusal": "Existing non-dumpable desktop processes revalidated against previous identity/system executable review; no mappings claimed read and no new exceptions introduced."
+  },
+  "delivery": "Current cf6e465a Linux and Windows deliverables remain authoritative. These newer source repairs need fresh exact-package UI acceptance."
+}

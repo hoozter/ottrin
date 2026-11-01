@@ -1,0 +1,4 @@
+Obsolete/unpublished sessions identified: 24
+Removed 20/24 obsolete sessions
+Removed 24/24 obsolete sessions
+Filesystem space recovered: 1.17 GiB

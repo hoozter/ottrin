@@ -18514,6 +18514,11 @@ impl OttrinApp {
                                                     resp.secondary_clicked(),
                                                 );
                                             }
+                                            if resp.clicked()
+                                                && matches!(entry.kind, EntryKind::File)
+                                            {
+                                                self.request_miller_reveal(tab_id);
+                                            }
                                             ui.ctx().request_repaint();
                                         }
                                         if resp.double_clicked() {
@@ -21965,7 +21970,7 @@ impl OttrinApp {
                 ui.set_min_width(390.0);
                 ui.label(RichText::new("Graphics compatibility enabled").color(self.colors.heading).size(18.0 * self.colors.font_scale).strong());
                 ui.add_space(6.0);
-                ui.label("Ottrin detected remote, virtual, or problem graphics and selected its bundled OpenGL compatibility renderer for responsiveness.");
+                ui.label(format!("Ottrin is using its bundled OpenGL compatibility renderer. Selection reason: {}.", graphics_renderer_reason_label(self.graphics_runtime.selection.reason)));
                 ui.add_space(8.0);
                 ui.label(RichText::new("Ottrin did not change your system drivers. You can choose a different renderer for a future launch in Settings.").color(self.colors.text_muted).size(11.0 * self.colors.font_scale));
                 ui.add_space(12.0);
@@ -36470,6 +36475,79 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn miller_pointer_file_selection_reveals_the_complete_preview() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("one/two/three/four/five");
+        std::fs::create_dir_all(directory.join("a-folder")).unwrap();
+        std::fs::write(directory.join("pick.txt"), "read-only preview").unwrap();
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
+        app.state.config.folder_column_widths.clear();
+        app.state.config.miller_view_scale = 1.0;
+        app.set_tab_view_mode(tab_id, ViewMode::Miller);
+        app.navigate_miller_pointer_folder(tab_id, directory.clone());
+        let ctx = Context::default();
+        let mut target = None;
+        for frame in 0..160 {
+            app.poll_listing_results();
+            let events = match (frame, target) {
+                (80, Some(pos)) => vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+                (81, Some(pos)) => vec![egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers: egui::Modifiers::NONE,
+                }],
+                _ => Vec::new(),
+            };
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(800.0, 600.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            );
+            if frame == 79 {
+                target = output.shapes.iter().find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) if text.galley.job.text == "pick.txt" => {
+                        let point = text.pos + Vec2::new(10.0, text.galley.size().y / 2.0);
+                        shape.clip_rect.contains(point).then_some(point)
+                    }
+                    _ => None,
+                });
+                assert!(
+                    target.is_some(),
+                    "the current folder's file row must be clickable"
+                );
+            }
+        }
+        assert_eq!(
+            app.selected_entry_for_preview().map(|entry| entry.path),
+            Some(directory.join("pick.txt"))
+        );
+        assert!(
+            app.tab_ui[&tab_id].miller_preview_visible,
+            "a pointer-selected file must reveal the complete preview, without requiring a keyboard navigation event"
+        );
     }
 
     #[test]

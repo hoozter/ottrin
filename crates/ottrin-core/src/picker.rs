@@ -1,0 +1,308 @@
+//! The shared caller contract for Ottrin's on-demand file chooser.
+//!
+//! A chooser selects paths; it never creates, truncates, or edits the selected file.
+//! Callers retain responsibility for opening it and handling later filesystem races.
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, HashSet};
+use std::path::PathBuf;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum PickerMode {
+    #[default]
+    Open,
+    Save,
+    Folder,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", content = "value", rename_all = "snake_case")]
+pub enum PickerPattern {
+    Glob(String),
+    Mime(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PickerFilter {
+    pub name: String,
+    pub patterns: Vec<PickerPattern>,
+}
+
+/// Empty options represent a boolean choice, with selected equal to true or false.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PickerChoice {
+    pub id: String,
+    pub label: String,
+    pub options: Vec<(String, String)>,
+    pub selected: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(default, deny_unknown_fields)]
+pub struct PickerRequest {
+    pub mode: PickerMode,
+    pub title: String,
+    pub accept_label: String,
+    pub parent_window: String,
+    pub initial_directory: Option<PathBuf>,
+    pub filename: String,
+    pub multiple: bool,
+    pub filters: Vec<PickerFilter>,
+    pub current_filter: Option<usize>,
+    pub choices: Vec<PickerChoice>,
+}
+
+impl PickerRequest {
+    pub fn validate(&self) -> Result<(), String> {
+        fn text(value: &str, name: &str, limit: usize) -> Result<(), String> {
+            if value.contains('\0') || value.len() > limit {
+                return Err(format!(
+                    "Invalid {name}: contains NUL or exceeds {limit} bytes"
+                ));
+            }
+            Ok(())
+        }
+        text(&self.title, "title", 1024)?;
+        text(&self.accept_label, "accept label", 256)?;
+        text(&self.parent_window, "parent window", 1024)?;
+        text(&self.filename, "filename", 4096)?;
+        if self
+            .initial_directory
+            .as_ref()
+            .is_some_and(|path| !path.is_absolute())
+        {
+            return Err("The initial directory must be an absolute path".into());
+        }
+        if self.multiple && self.mode == PickerMode::Save {
+            return Err("Save requests select one filename".into());
+        }
+        if !self.filename.is_empty() && !is_picker_filename(&self.filename) {
+            return Err("The suggested filename must be a single filename".into());
+        }
+        if self.filters.len() > 128 || self.choices.len() > 64 {
+            return Err("Too many filters or choices".into());
+        }
+        if self
+            .current_filter
+            .is_some_and(|index| index >= self.filters.len())
+        {
+            return Err("The selected filter does not exist".into());
+        }
+        for filter in &self.filters {
+            text(&filter.name, "filter name", 1024)?;
+            if filter.patterns.is_empty() || filter.patterns.len() > 128 {
+                return Err("A filter must contain between one and128 patterns".into());
+            }
+            for pattern in &filter.patterns {
+                let value = match pattern {
+                    PickerPattern::Glob(value) | PickerPattern::Mime(value) => value,
+                };
+                text(value, "filter pattern", 1024)?;
+                if value.is_empty() {
+                    return Err("Filter patterns cannot be empty".into());
+                }
+                if matches!(pattern, PickerPattern::Mime(_))
+                    && (!value.contains('/') || value.contains(char::is_whitespace))
+                {
+                    return Err(format!("Invalid MIME filter: {value}"));
+                }
+            }
+        }
+        let mut ids = HashSet::new();
+        for choice in &self.choices {
+            text(&choice.id, "choice identifier", 256)?;
+            text(&choice.label, "choice label", 1024)?;
+            if choice.id.is_empty() || !ids.insert(&choice.id) {
+                return Err("Choice identifiers must be nonempty and unique".into());
+            }
+            if choice.options.len() > 128 {
+                return Err("Too many options in a choice".into());
+            }
+            let mut option_ids = HashSet::new();
+            for (id, label) in &choice.options {
+                text(id, "option identifier", 256)?;
+                text(label, "option label", 1024)?;
+                if id.is_empty() || !option_ids.insert(id) {
+                    return Err("Option identifiers must be nonempty and unique".into());
+                }
+            }
+            let selected_exists = if choice.options.is_empty() {
+                matches!(choice.selected.as_str(), "true" | "false")
+            } else {
+                option_ids.contains(&choice.selected)
+            };
+            if !selected_exists {
+                return Err(format!("Invalid selection for choice {}", choice.id));
+            }
+        }
+        Ok(())
+    }
+
+    pub fn window_title(&self) -> &str {
+        if !self.title.is_empty() {
+            &self.title
+        } else {
+            match self.mode {
+                PickerMode::Open => "Open file",
+                PickerMode::Save => "Save file",
+                PickerMode::Folder => "Choose folder",
+            }
+        }
+    }
+
+    pub fn action_label(&self) -> &str {
+        if !self.accept_label.is_empty() {
+            &self.accept_label
+        } else {
+            match self.mode {
+                PickerMode::Open => "Open",
+                PickerMode::Save => "Save",
+                PickerMode::Folder => "Choose folder",
+            }
+        }
+    }
+
+    pub fn cancelled_response(&self) -> PickerResponse {
+        PickerResponse {
+            accepted: false,
+            paths: Vec::new(),
+            current_filter: self.current_filter,
+            choices: self
+                .choices
+                .iter()
+                .map(|choice| (choice.id.clone(), choice.selected.clone()))
+                .collect(),
+        }
+    }
+}
+
+/// A save filename cannot escape the currently displayed directory. Reject both
+/// separators on both platforms so cooperating applications share one contract.
+pub fn is_picker_filename(value: &str) -> bool {
+    !value.is_empty() && !matches!(value, "." | "..") && !value.contains(['/', '\\', ':', '\0'])
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PickerResponse {
+    pub accepted: bool,
+    pub paths: Vec<PathBuf>,
+    pub current_filter: Option<usize>,
+    pub choices: BTreeMap<String, String>,
+}
+
+impl PickerResponse {
+    /// Check the response envelope before a cooperating caller uses any paths.
+    /// Filesystem state can still change after the dialog returns.
+    pub fn validate_for(&self, request: &PickerRequest) -> Result<(), String> {
+        request.validate()?;
+        if self.accepted {
+            if self.paths.is_empty() || (!request.multiple && self.paths.len() != 1) {
+                return Err("The chooser returned an invalid number of paths".into());
+            }
+            let mut paths = HashSet::new();
+            if self
+                .paths
+                .iter()
+                .any(|path| !path.is_absolute() || !paths.insert(path))
+            {
+                return Err("The chooser returned a relative or duplicate path".into());
+            }
+        } else if !self.paths.is_empty() {
+            return Err("A cancelled chooser cannot return selected paths".into());
+        }
+        if self
+            .current_filter
+            .is_some_and(|index| index >= request.filters.len())
+        {
+            return Err("The chooser returned an unknown filter".into());
+        }
+        if self.choices.len() != request.choices.len() {
+            return Err("The chooser returned a different set of choices".into());
+        }
+        for choice in &request.choices {
+            let selected = self
+                .choices
+                .get(&choice.id)
+                .ok_or("A caller choice is missing")?;
+            let valid = if choice.options.is_empty() {
+                matches!(selected.as_str(), "true" | "false")
+            } else {
+                choice.options.iter().any(|(id, _)| id == selected)
+            };
+            if !valid {
+                return Err(format!("Invalid returned choice {}", choice.id));
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn caller_requests_reject_ambiguous_choices_and_path_escaping_filenames() {
+        let mut request = PickerRequest {
+            mode: PickerMode::Save,
+            filename: "theme.json".into(),
+            ..Default::default()
+        };
+        assert!(request.validate().is_ok());
+        for filename in [
+            "../theme.json",
+            "sub/theme.json",
+            "sub\\theme.json",
+            "..",
+            ".",
+            "bad\0name",
+            "C:theme.json",
+        ] {
+            request.filename = filename.into();
+            assert!(request.validate().is_err(), "{filename:?}");
+        }
+        request.filename.clear();
+        request.multiple = true;
+        assert!(request.validate().is_err());
+        request.multiple = false;
+        request.choices = vec![PickerChoice {
+            id: "encoding".into(),
+            label: "Encoding".into(),
+            options: vec![("utf8".into(), "UTF-8".into())],
+            selected: "other".into(),
+        }];
+        assert!(request.validate().is_err());
+        request.choices[0].selected = "utf8".into();
+        assert!(request.validate().is_ok());
+        request.choices.push(request.choices[0].clone());
+        assert!(request.validate().is_err());
+    }
+
+    #[test]
+    fn cancellation_keeps_caller_choice_identities_and_returns_no_paths() {
+        let request = PickerRequest {
+            choices: vec![PickerChoice {
+                id: "readonly".into(),
+                label: "Read only".into(),
+                options: Vec::new(),
+                selected: "true".into(),
+            }],
+            ..Default::default()
+        };
+        assert!(request.validate().is_ok());
+        let result = request.cancelled_response();
+        assert!(result.validate_for(&request).is_ok());
+        assert!(!result.accepted);
+        assert!(result.paths.is_empty());
+        assert_eq!(result.choices["readonly"], "true");
+        assert_eq!(request.action_label(), "Open");
+        assert_eq!(
+            serde_json::from_str::<PickerResponse>(&serde_json::to_string(&result).unwrap())
+                .unwrap(),
+            result
+        );
+    }
+}

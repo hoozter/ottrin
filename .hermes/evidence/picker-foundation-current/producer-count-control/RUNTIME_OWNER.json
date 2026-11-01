@@ -1,0 +1,25 @@
+{
+  "nonce": "bdd0efe6-ace0-4bb0-a3dd-47500ed9473b",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "failed",
+  "source": {
+    "base_revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+    "working_tree": [
+      " M crates/ottrin-core/src/lib.rs",
+      " M crates/ottrin-ui/src/lib.rs",
+      " M dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+      "?? AGENTS.md",
+      "?? crates/ottrin-core/src/picker.rs"
+    ],
+    "files": {
+      "crates/ottrin-core/src/lib.rs": "a8050b42a0603348e083bcd3b4ccf7b7023393e0ffecbb7d98ef1c308cabb3fe",
+      "crates/ottrin-core/src/picker.rs": "57bbdf0a99ec053968864f8314d09eefeafaee587bb940379c3e9599bb02ea36",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/lib.rs": "671bf747505a91459dddc28a09b63e00a002e8046cea2fcaecac5d0dc40dc02c"
+    }
+  },
+  "error": "TimeoutError('Existing ordinary WTS profile unavailable before fixture allocation')",
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

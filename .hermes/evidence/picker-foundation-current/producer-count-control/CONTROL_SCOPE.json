@@ -1,0 +1,8 @@
+{
+  "status": "Failed producer preflight before root allocation; no product test acceptance",
+  "cause": "A global385-to386 test-count replacement altered the embedded SID suffix1673105385 to1673105386. The expected-account ownership guard therefore refused.",
+  "resolution": "Regenerate from prior producer with replacements limited to the exact test-result and report strings; preserve all ownership identifiers. Reuse already compiled exact test binary.",
+  "guest_off": true,
+  "no_owned_root_allocated": true,
+  "original_accounts_and_profiles_unmodified": true
+}

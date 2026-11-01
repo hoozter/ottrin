@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "scope": "Publish already accepted cf6 artifacts against their clean source checkpoint; preserve newer ongoing source work",
+  "paths_restored_sha256": {
+    "crates/ottrin-core/src/lib.rs": "a8050b42a0603348e083bcd3b4ccf7b7023393e0ffecbb7d98ef1c308cabb3fe",
+    "crates/ottrin-ui/src/lib.rs": "671bf747505a91459dddc28a09b63e00a002e8046cea2fcaecac5d0dc40dc02c"
+  },
+  "temporary_patch_removed": true,
+  "new_picker_module_and_owner_AGENTS_preserved": true
+}

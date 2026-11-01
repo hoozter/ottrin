@@ -54,7 +54,7 @@ their named hashes. Test counts are scoped observations, not completion measures
   repairs still require fresh package/UI acceptance. Evidence: `picker-foundation-current/`.
 - **Required picker/folder integration is active work.** The public caller contract
   for Open/Save/folder requests,filters,choices,cancellation and response validation
-  is implemented in the working tree; all34 Linux core tests pass. The actual
+  is implemented in source; all34 Linux core tests pass. The actual
   shared UI,internal adoption,portal/cooperating-app integration,reversible folder
   controls and resource/startup acceptance remain required. Park owner,physical
   and release-identity waits while completing this milestone.

@@ -1,0 +1,6 @@
+{
+  "negative": "POINTER_NEGATIVE.log: actual deep-column pointer click selects pick.txt but complete-preview visibility fails. Initial test-construction compilation error is separate and does not count as a negative control.",
+  "fix": "Primary Miller file clicks request the same explicit reveal used by navigation. Keyboard and manual-scroll policy remains subject to existing regression checks.",
+  "additional_fix": "Compatibility notice uses the existing runtime selection reason, including explicit CLI override, rather than claiming automatic hardware detection.",
+  "picker": "Core public request/response model is wired; UI, external integration, resource measurements and package delivery remain pending."
+}
