@@ -1,0 +1,71 @@
+{
+  "mainConfigUnchanged": true,
+  "indexStateUnchanged": true,
+  "scope": "Actual ordinary-token cooperating caller, source picker, native owner, Open/Save, EOF and owner loss",
+  "status": "pass",
+  "originalPreserved": true,
+  "cases": [
+    {
+      "nativeOwnerVerified": true,
+      "callerEnabledStatePreserved": true,
+      "accepted": true,
+      "case": "open",
+      "exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c004f0074007400720069006e004a006f0062004600690078007400750072006500510041005c0064006100740061005c00730068006f00720074002d00740065006d0070002d006f007200640069006e006100720079002d007000690063006b00650072002d00630061006c006c00650072005c0063006f0072007000750073005c00630061006c006c00650072002d00660069006c0065002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "nativeOwnerVerified": true,
+      "callerEnabledStatePreserved": true,
+      "accepted": true,
+      "case": "save",
+      "exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c004f0074007400720069006e004a006f0062004600690078007400750072006500510041005c0064006100740061005c00730068006f00720074002d00740065006d0070002d006f007200640069006e006100720079002d007000690063006b00650072002d00630061006c006c00650072005c0063006f0072007000750073005c00630061006c006c00650072002d0073006100760065002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "nativeOwnerVerified": true,
+      "callerEnabledStatePreserved": true,
+      "accepted": false,
+      "case": "disconnect",
+      "exit": 0,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "nativeOwnerVerified": true,
+      "callerEnabledStatePreserved": true,
+      "accepted": false,
+      "case": "owner-loss",
+      "exit": 0,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    }
+  ]
+}

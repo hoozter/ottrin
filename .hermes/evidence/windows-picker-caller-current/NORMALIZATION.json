@@ -1,0 +1,10 @@
+{
+  "scope": "Raw CRLF JSON bytes retained in matching .raw.gz; normalized JSON must parse to equal original data",
+  "encodings": {
+    "graphics-final/short-temp-ordinary-picker-caller-owner.json": "Windows PowerShell ANSI cp1252",
+    "graphics-final/short-temp-ordinary-picker-caller-graphics.json": "utf-8",
+    "graphics-final/short-temp-ordinary-picker-caller.json": "utf-8",
+    "graphics-final/RUNTIME_TEARDOWN.json": "utf-8"
+  },
+  "verified_archived_json_count": 9
+}

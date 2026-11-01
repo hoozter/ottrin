@@ -1,0 +1,21 @@
+{
+  "owner": 328006,
+  "childTitle": "Ottrin \u2014 Native caller owner-loss",
+  "case": "owner-loss",
+  "parent": 328006,
+  "parentTitle": "Owned Ottrin caller owner-loss",
+  "request": {
+    "parent_window": "win32:50146",
+    "title": "Native caller owner-loss",
+    "filename": {
+      "encoding": "windows-utf16-le",
+      "units_hex": ""
+    },
+    "mode": "open",
+    "initial_directory": {
+      "encoding": "windows-utf16-le",
+      "units_hex": "0043003a005c004f0074007400720069006e004a006f0062004600690078007400750072006500510041005c0064006100740061005c00730068006f00720074002d00740065006d0070002d006f007200640069006e006100720079002d007000690063006b00650072002d00630061006c006c00650072005c0063006f0072007000750073"
+    }
+  },
+  "child": 459222
+}

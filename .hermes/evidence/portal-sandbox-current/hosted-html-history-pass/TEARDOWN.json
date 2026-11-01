@@ -1,0 +1,20 @@
+{
+  "owned_files": {
+    "/usr/libexec/ottrin/ottrin-html-render": "350caddce9e6280ffb31bc3567bdaa527f23f8e8dab5f6830a4179b4de32b5f1",
+    "/usr/libexec/ottrin/ottrin-priv-helper": "fea8d0b577f46a3c929e41785dc3f64578aa7eb2a0fc423ffabc339ea37c1550",
+    "/usr/share/ottrin/ottrin-html-render.apparmor": "a8f6c1bc4e4e610aa955b0cce20432df14fdbaef754766bd98923a0d64e39d2d",
+    "/etc/apparmor.d/ottrin-html-render": "a8f6c1bc4e4e610aa955b0cce20432df14fdbaef754766bd98923a0d64e39d2d",
+    "/usr/share/polkit-1/actions/org.ottrin.filesystem.policy": "2df13b82cd905acb38b3be589dacdf3d9b7ea0cffb1126997b751766c64cb969",
+    "/usr/share/xdg-desktop-portal/portals/ottrin.portal": "caed280d5896837a4eaeb24205b2116ba0c3be72fbbb1828963e705aa50ea3a4"
+  },
+  "new_directories": [
+    "/usr/libexec/ottrin",
+    "/usr/share/ottrin",
+    "/usr/share/xdg-desktop-portal",
+    "/usr/share/xdg-desktop-portal/portals"
+  ],
+  "restriction": "1",
+  "browser_sha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+  "status": "cleaned",
+  "profile_unloaded": true
+}

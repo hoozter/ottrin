@@ -1,0 +1,40 @@
+{
+  "status": "scoped_pass",
+  "scope": "Actual ordinary interactive Windows direct cooperating caller and source picker using accepted pinned Mesa runtime",
+  "product": "0e85f745 compiled application with later source-only QA/docs changes; exact stripped/raw executable hashes in graphics-final/RUNTIME_BINARIES.json",
+  "checks": [
+    "Open returns correct native path",
+    "Save returns target without creating it; caller then creates owned output",
+    "Native Win32 owner matches caller in every case",
+    "Caller enabled state preserved",
+    "EOF cancels visible chooser",
+    "Owner window loss cancels visible chooser",
+    "Source bytes and main config unchanged",
+    "Existing index process set unchanged"
+  ],
+  "result": "graphics-final/short-temp-ordinary-picker-caller.json",
+  "graphics": "graphics-final/GRAPHICS_RUNTIME.json plus loaded module hashes in short-temp-ordinary-picker-caller-graphics.json",
+  "failed_controls": {
+    "initial": "Bare debug source executable lacks required OpenGL compatibility runtime; driver mistook anonymous startup window for picker",
+    "retry": "Adds transcript and captured owner mismatch",
+    "owner-probe": "Proves untitled bootstrap and OpenGL2 failure, not live picker ownership defect",
+    "graphics-fixed": "Runtime transfer PowerShell quoting error; no GUI execution",
+    "graphics-final": "Actual complete runtime, real-title selector and all four cases pass"
+  },
+  "limits": [
+    "Explicit compatibility renderer under virtual graphics; no physical GPU/native backend acceptance",
+    "Source executable plus accepted runtime, not a new complete packaged cohort",
+    "No universal Windows dialog replacement"
+  ],
+  "cleanup": {
+    "all_attempts": "QA root/process cleanup, original profiles retained, owned VM off and definition unchanged per receipts",
+    "staging": "All stripped executable and compression staging removed by TemporaryDirectory; no DLL copy retained outside receipts/VM root, which is removed",
+    "superseded": "Retired four failed-control launch producers; retained final producer, actor source and compact executed-input/control evidence",
+    "remaining_storage": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-caller-current",
+        "purpose": "compact receipts, screenshots and final reproducible QA producers for audit"
+      }
+    ]
+  }
+}

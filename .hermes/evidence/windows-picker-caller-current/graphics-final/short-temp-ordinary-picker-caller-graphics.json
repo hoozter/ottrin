@@ -1,0 +1,17 @@
+[
+  {
+    "path": "C:\\OttrinJobFixtureQA\\opengl32.dll",
+    "sha256": "52119774EB912D07C3ABFB6E3E894981F425B3C79D852F5363927E38FA3BDE7E",
+    "name": "opengl32.dll"
+  },
+  {
+    "path": "C:\\OttrinJobFixtureQA\\libgallium_wgl.dll",
+    "sha256": "A3917A52CC893F614C9E415F5442EB2981DD46BA636FC64B35D5BD4BE0FAEC7B",
+    "name": "libgallium_wgl.dll"
+  },
+  {
+    "path": "C:\\OttrinJobFixtureQA\\DXIL.dll",
+    "sha256": "CBCFE883A09FD0CA1F98ABDF3A9553B560895E3283A136DA82A8381253A169DF",
+    "name": "DXIL.dll"
+  }
+]

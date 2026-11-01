@@ -1909,3 +1909,32 @@ Windows captures the authenticated process handle, checks its dedicated index
 executable name and terminates that process object. Replacement waits for exit;
 unknown endpoint owners are retained. SQLite owns transaction recovery; user
 preferences and indexed source files are not modified by retirement.
+
+## Cooperating Rust caller example
+
+`crates/ottrin-core/examples/picker_client.rs` is a minimal blocking CLI caller
+using the public `PickerRequest`, `PickerResponse` and native-path serde types:
+
+```sh
+cargo run -p ottrin-core --example picker_client -- /path/to/ottrin-app save /absolute/folder suggested.txt
+```
+
+Modes are `open`, `save` and `folder`. Optional trailing arguments are a filename
+and a native parent identifier (`x11:HEX`, `wayland:TOKEN` or `win32:HEX` for the
+matching window system). Pass an empty filename when supplying only a parent.
+The request keeps its stdin lease open until the response arrives; ordinary
+`wait_with_output()` would close stdin too early for this protocol. Errors close
+the lease and give the owned chooser a bounded shutdown opportunity. Losing the
+caller process also closes its lease and cancels the chooser.
+
+The example validates the response envelope, then prints its native-path JSON.
+It never opens or writes the selected target. A Save selection creates no file;
+the caller performs its own save and handles filesystem races. UI applications
+must run blocking I/O on a worker and keep their native event loop responsive.
+The picker attaches to the supplied parent without changing the caller's enabled
+state; the caller owns its own interaction policy. This is a cooperating-app
+contract, not a global replacement for Windows native system dialogs.
+
+The example passes actual source Linux Save/folder/cancel/caller-loss checks with
+a non-text native directory. Strict GNU Windows core/app/UI all-target lint passes for the example. Its
+Windows runtime execution is separate from the direct native caller checks.

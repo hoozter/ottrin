@@ -1,5 +1,33 @@
 # Ottrin roadmap
 
+## Cooperating caller follow-up — source, 2026-11-01
+
+A minimal Rust example uses the shared picker/native-path contract and retains
+the caller lease until a validated bounded response arrives. Actual Linux source
+GUI checks pass Save, folder, user cancellation and automatic chooser exit after
+abrupt caller loss in a non-text native directory. No selected file is created
+by the chooser; original bytes, main preferences and stopped index remain intact.
+Evidence: `.hermes/evidence/picker-caller-example-current/`. Windows execution of
+this example remains separate from the direct native caller fixture.
+
+The Windows direct caller fixture first mistook an untitled OpenGL bootstrap
+window for the picker. Captured stderr proves its bare debug executable lacked
+the accepted Mesa compatibility runtime, so its owner mismatch is not product
+defect evidence. A runtime transfer attempt also exposed a QA PowerShell quoting error before
+application execution. The final fixture stages pinned accepted runtime DLLs and
+requires the real picker title. Native owner/Open/Save/EOF/owner-loss checks
+now pass. The chooser leaves Save creation to its caller; source bytes, main
+preferences and index process state are unchanged. Loaded app-local Mesa module
+paths/hashes are verified. Final QA root removal and VM shutdown pass. Every completed attempt removed its root/processes and shut off
+the retained VM. Source fixes are not inferred from failed QA setup.
+
+Hosted983f8e29 Linux/search jobs pass. Its HTML process histories show seccomp2
+in every sample, with unchanged security assertions. This successful run does
+not establish the cause of0e85f745's earlier mode0 observation; keep that control
+and the diagnostic histories for further investigation. Windows CI is pending.
+Stable packages remain25b38c8f; continue remaining independent roadmap work.
+
+
 ## Sandboxed portal Open/Save acceptance — source, 2026-11-01
 
 A genuine Flatpak development sandbox now exercises the public FileChooser API
@@ -1086,7 +1114,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | --- | --- | --- |
 | Linux | Four25b38c8f formats; complete hosted checks; actual Dark100/Light150 chooser/native-path/persistence/read-only checks and bounded resource samples. Enabled personal service uses the accepted runtime. | Finish external picker/folder integration and remaining software/theme acceptance before parked owner/device checks. |
 | Windows |25b38c8f ZIP/NSIS/MSI candidate;58 matching files, complete hosted source checks and scoped native CLI/renderer/chooser/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) includes the QA-controller failure and exact scope limits. | Finish external picker/folder integration and remaining software acceptance. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade is under final native verification. | Sandboxed development-caller Open/Save/export passes; finish FileManager1, Windows folder/cooperating-app integration and exact-package/resource acceptance. Park only genuine owner/physical/external waits. |
+| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade and direct Windows parent/lease caller checks pass in source. | Sandboxed development-caller Open/Save/export passes; finish FileManager1, Windows folder/cooperating-app integration and exact-package/resource acceptance. Park only genuine owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

@@ -1,0 +1,20 @@
+{
+  "status": "scoped_pass",
+  "scope": "Minimal blocking cooperating Rust caller using shared request/response/native-path contract",
+  "source": "crates/ottrin-core/examples/picker_client.rs",
+  "actual_linux": "gui/RESULT.json: Save,folder,cancel,abrupt caller loss; native byte directory; source unchanged; no main config/index/file creation by chooser",
+  "checks": "Linux example lint/build, strict GNU Windows core/app/UI all-target lint, formatting pass",
+  "windows_limit": "Direct Windows native caller checks pass separately; this Rust example was not executed on Windows",
+  "cleanup": {
+    "owned_runtime": "Linux private profiles, chooser/caller processes and mounts removed",
+    "incremental": "One obsolete session removed, guard reports0.01GiB; final GNU metadata cleanup recorded separately",
+    "current_example_binary": {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/examples/picker_client",
+      "purpose": "Current reusable Cargo example artifact; shared compiler cache/current binary, not disposable profile data"
+    },
+    "remaining_evidence": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-caller-example-current",
+      "purpose": "compact acceptance receipts and reproducible producer"
+    }
+  }
+}
