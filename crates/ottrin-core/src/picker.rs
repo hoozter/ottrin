@@ -46,6 +46,7 @@ pub struct PickerRequest {
     pub title: String,
     pub accept_label: String,
     pub parent_window: String,
+    #[serde(with = "crate::native_path::optional")]
     pub initial_directory: Option<PathBuf>,
     pub filename: String,
     pub multiple: bool,
@@ -68,12 +69,13 @@ impl PickerRequest {
         text(&self.accept_label, "accept label", 256)?;
         text(&self.parent_window, "parent window", 1024)?;
         text(&self.filename, "filename", 4096)?;
-        if self
-            .initial_directory
-            .as_ref()
-            .is_some_and(|path| !path.is_absolute())
-        {
-            return Err("The initial directory must be an absolute path".into());
+        if let Some(path) = &self.initial_directory {
+            crate::native_path::NativePath::encode(path)
+                .decode()
+                .map_err(|error| format!("Invalid initial directory: {error}"))?;
+            if !path.is_absolute() {
+                return Err("The initial directory must be an absolute path".into());
+            }
         }
         if self.multiple && self.mode == PickerMode::Save {
             return Err("Save requests select one filename".into());
@@ -188,6 +190,7 @@ pub fn is_picker_filename(value: &str) -> bool {
 #[serde(deny_unknown_fields)]
 pub struct PickerResponse {
     pub accepted: bool,
+    #[serde(with = "crate::native_path::list")]
     pub paths: Vec<PathBuf>,
     pub current_filter: Option<usize>,
     pub choices: BTreeMap<String, String>,
@@ -201,6 +204,11 @@ impl PickerResponse {
         if self.accepted {
             if self.paths.is_empty() || (!request.multiple && self.paths.len() != 1) {
                 return Err("The chooser returned an invalid number of paths".into());
+            }
+            for path in &self.paths {
+                crate::native_path::NativePath::encode(path)
+                    .decode()
+                    .map_err(|error| format!("Invalid selected path: {error}"))?;
             }
             let mut paths = HashSet::new();
             if self
@@ -304,5 +312,65 @@ mod tests {
                 .unwrap(),
             result
         );
+    }
+    #[cfg(any(unix, windows))]
+    #[test]
+    fn picker_request_and_response_transport_preserves_native_path_units() {
+        #[cfg(unix)]
+        let path = {
+            use std::os::unix::ffi::OsStringExt;
+            PathBuf::from(std::ffi::OsString::from_vec(
+                b"/folder\x81/item\x80.txt".to_vec(),
+            ))
+        };
+        #[cfg(windows)]
+        let path = {
+            use std::os::windows::ffi::OsStringExt;
+            PathBuf::from(std::ffi::OsString::from_wide(&[
+                67, 58, 92, 102, 111, 108, 100, 101, 114, 92, 0xd800, 46, 116, 120, 116,
+            ]))
+        };
+        let request = PickerRequest {
+            initial_directory: Some(path.parent().unwrap().into()),
+            ..Default::default()
+        };
+        let response = PickerResponse {
+            accepted: true,
+            paths: vec![path],
+            current_filter: None,
+            choices: BTreeMap::new(),
+        };
+        let request_json =
+            serde_json::to_vec(&request).expect("Native caller folder must be serializable");
+        assert_eq!(
+            serde_json::from_slice::<PickerRequest>(&request_json).unwrap(),
+            request
+        );
+        let response_json = serde_json::to_vec(&response)
+            .expect("Native selected path must be serializable without loss");
+        assert_eq!(
+            serde_json::from_slice::<PickerResponse>(&response_json).unwrap(),
+            response
+        );
+        response.validate_for(&request).unwrap();
+    }
+    #[test]
+    fn path_wire_rejects_strings_foreign_encodings_unknown_fields_and_nul_units() {
+        assert!(
+            serde_json::from_str::<PickerRequest>(r#"{"initial_directory":"/old-string-wire"}"#)
+                .is_err()
+        );
+        for path in [
+            r#"{"encoding":"unix-bytes","units_hex":"0"}"#,
+            r#"{"encoding":"unix-bytes","units_hex":"2f00"}"#,
+            r#"{"encoding":"windows-utf16-le","units_hex":"0043003a005c0000"}"#,
+            r#"{"encoding":"unix-bytes","units_hex":"2f61","extra":true}"#,
+        ] {
+            let input = format!("{{\"initial_directory\":{path}}}");
+            assert!(
+                serde_json::from_str::<PickerRequest>(&input).is_err(),
+                "{input}"
+            );
+        }
     }
 }

@@ -396,7 +396,7 @@ impl PickerDialog {
             grid: self.grid,
             hidden: self.hidden,
             preview: self.preview_enabled,
-            last_directory: Some(ottrin_platform::move_recovery::NativePath::encode(
+            last_directory: Some(ottrin_core::native_path::NativePath::encode(
                 &self.directory,
             )),
         }
@@ -701,16 +701,27 @@ impl PickerDialog {
             return;
         }
         let paths = if self.request.mode == PickerMode::Save {
-            if !is_picker_filename(&self.filename) {
-                self.error =
-                    Some("Enter one filename. Use Location to choose another folder.".into());
-                return;
-            }
-            if let Err(error) = ottrin_platform::validate_creation_name(&self.filename) {
-                self.error = Some(error.to_string());
-                return;
-            }
-            let path = self.directory.join(&self.filename);
+            // A displayed filename may contain replacement glyphs. Keep the selected
+            // native path authoritative until editing clears selection.
+            let path = if let Some(path) = self.selected.first().filter(|path| {
+                path.parent() == Some(self.directory.as_path())
+                    && path
+                        .file_name()
+                        .is_some_and(|name| name.to_string_lossy() == self.filename)
+            }) {
+                path.clone()
+            } else {
+                if !is_picker_filename(&self.filename) {
+                    self.error =
+                        Some("Enter one filename. Use Location to choose another folder.".into());
+                    return;
+                }
+                if let Err(error) = ottrin_platform::validate_creation_name(&self.filename) {
+                    self.error = Some(error.to_string());
+                    return;
+                }
+                self.directory.join(&self.filename)
+            };
             if self
                 .request
                 .current_filter
@@ -2053,7 +2064,7 @@ mod tests {
             grid: true,
             hidden: true,
             preview: true,
-            last_directory: Some(ottrin_platform::move_recovery::NativePath::encode(
+            last_directory: Some(ottrin_core::native_path::NativePath::encode(
                 remembered.path(),
             )),
         };
@@ -2356,5 +2367,66 @@ mod tests {
         assert_eq!(query.text, "(photos) (type:folder | type:link)");
         drop(app);
         assert!(cancelled.load(Ordering::Acquire));
+    }
+    #[cfg(any(unix, windows))]
+    #[test]
+    fn save_selection_and_response_preserve_native_filename_without_mutating_the_file() {
+        let root = tempfile::tempdir().unwrap();
+        #[cfg(unix)]
+        let filename = {
+            use std::os::unix::ffi::OsStringExt;
+            std::ffi::OsString::from_vec(b"original\x80.txt".to_vec())
+        };
+        #[cfg(windows)]
+        let filename = {
+            use std::os::windows::ffi::OsStringExt;
+            std::ffi::OsString::from_wide(&[
+                111, 114, 105, 103, 105, 110, 97, 108, 0xd800, 46, 116, 120, 116,
+            ])
+        };
+        let path = root.path().join(filename);
+        std::fs::write(&path, "preserve original").unwrap();
+        let ctx = Context::default();
+        let mut dialog = PickerDialog::new(
+            PickerRequest {
+                mode: PickerMode::Save,
+                initial_directory: Some(root.path().into()),
+                ..Default::default()
+            },
+            &ctx,
+            Default::default(),
+        )
+        .unwrap();
+        wait_listing(&mut dialog);
+        let visible = dialog.visible_entries();
+        assert_eq!(visible.len(), 1);
+        dialog.select(visible.get(0), 0, &visible, Default::default());
+        dialog.accept(false);
+        let until = Instant::now() + Duration::from_secs(3);
+        while dialog.validating {
+            dialog.poll();
+            assert!(Instant::now() < until);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(
+            dialog.overwrite,
+            Some(path.clone()),
+            "Existing selected native path must not turn into a different lossy filename"
+        );
+        dialog.accept(true);
+        while dialog.validating {
+            dialog.poll();
+            assert!(Instant::now() < until);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        let response = dialog.take_result().unwrap();
+        assert_eq!(response.paths, vec![path.clone()]);
+        assert_eq!(
+            serde_json::from_slice::<PickerResponse>(&serde_json::to_vec(&response).unwrap())
+                .unwrap(),
+            response
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), b"preserve original");
+        assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 1);
     }
 }

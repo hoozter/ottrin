@@ -1,5 +1,5 @@
 //! Picker-only preferences. Explicit caller locations always take precedence.
-use ottrin_platform::move_recovery::NativePath;
+use ottrin_core::native_path::NativePath;
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};

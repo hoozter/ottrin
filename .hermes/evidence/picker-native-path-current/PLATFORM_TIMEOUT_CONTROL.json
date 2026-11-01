@@ -1,0 +1,10 @@
+{
+  "status": "Incomplete native platform control; not a source pass",
+  "budget_seconds": 300,
+  "advertised_tests": 536,
+  "completed_pass_lines": 55,
+  "existing_ignored_lines": 1,
+  "observed_progress": "The owned process accumulated CPU and advanced through several nested filesystem controls between observations. It was terminated by the bounded actor without a completed test result.",
+  "teardown": "Root removed, processes stopped, original profiles preserved, guest off.",
+  "followup": "Rerun only platform scopes using two libtest threads and a 30-minute actor budget; retain all assertions and require complete inventory matching with zero failures/filters."
+}

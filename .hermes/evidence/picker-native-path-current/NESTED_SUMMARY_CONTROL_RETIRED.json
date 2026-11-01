@@ -1,0 +1,22 @@
+{
+  "observed": "Native platform children have filtered summaries; the existing zero-filter predicate correctly selected the completed parent result. The ordinary 457+79 result matched all536 inventory entries.",
+  "unused_speculative_consumer_retired": [
+    {
+      "path": ".hermes/evidence/picker-native-path-current/native_results.py",
+      "bytes": 819
+    },
+    {
+      "path": ".hermes/evidence/picker-native-path-current/SUMMARY_READER_CONTROLS.log",
+      "bytes": 122
+    },
+    {
+      "path": ".hermes/evidence/picker-native-path-current/NESTED_SUMMARY_REVIEW.json",
+      "bytes": 690
+    },
+    {
+      "path": ".hermes/evidence/picker-native-path-current/platform-elevated",
+      "bytes": 14833
+    }
+  ],
+  "no_changed_test_assertions_or_extra_elevated_run": true
+}

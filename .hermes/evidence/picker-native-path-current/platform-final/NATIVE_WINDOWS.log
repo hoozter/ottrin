@@ -1,0 +1,4 @@
+Domain 'ottrin-copy-cleanup-qa' started
+
+ordinary-platform: complete 457 passed, 79 ignored, zero filtered; inventory matched
+elevated-platform: complete 457 passed, 79 ignored, zero filtered; inventory matched

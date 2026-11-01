@@ -1,5 +1,6 @@
 //! Group-wide retirement after retained payloads have been reclaimed.
 use super::*;
+use ottrin_core::native_path::NativePath;
 use rustix::fd::OwnedFd;
 use rustix::fs::{AtFlags, FlockOperation, flock};
 

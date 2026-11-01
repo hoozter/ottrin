@@ -16,9 +16,9 @@ use std::sync::{Arc, OnceLock};
 #[serde(deny_unknown_fields)]
 pub(in crate::move_transaction) struct Origin {
     forward_transaction_id: String,
-    original: move_recovery::NativePath,
+    original: ottrin_core::native_path::NativePath,
     original_parent: WindowsStableIdentity,
-    publication: move_recovery::NativePath,
+    publication: ottrin_core::native_path::NativePath,
     publication_parent: WindowsStableIdentity,
     publication_identity: WindowsStableIdentity,
     #[serde(default)]
@@ -89,7 +89,9 @@ impl Guard {
     }
 }
 
-fn path(encoded: &move_recovery::NativePath) -> Result<std::path::PathBuf, PlatformError> {
+fn path(
+    encoded: &ottrin_core::native_path::NativePath,
+) -> Result<std::path::PathBuf, PlatformError> {
     encoded.decode().map_err(io)
 }
 fn pending(record: &Record, error: impl std::fmt::Display) -> PlatformError {
@@ -402,9 +404,9 @@ pub(in crate::move_transaction) fn issue_if_owned(
     }
     let origin = Origin {
         forward_transaction_id: record.transaction_id.clone(),
-        original: move_recovery::NativePath::encode(&before),
+        original: ottrin_core::native_path::NativePath::encode(&before),
         original_parent: record.source_parent_identity,
-        publication: move_recovery::NativePath::encode(&after),
+        publication: ottrin_core::native_path::NativePath::encode(&after),
         publication_parent: record.destination_parent_identity,
         publication_identity: identity,
         retained: if record.conflict == crate::ConflictAction::Overwrite {

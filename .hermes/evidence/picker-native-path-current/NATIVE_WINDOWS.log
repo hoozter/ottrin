@@ -1,0 +1,15 @@
+Domain 'ottrin-copy-cleanup-qa' started
+
+ordinary-ui: complete 409 passed, 4 ignored, zero filtered; inventory matched
+elevated-ui: complete 409 passed, 4 ignored, zero filtered; inventory matched
+ordinary-core: complete 38 passed, 0 ignored, zero filtered; inventory matched
+elevated-core: complete 38 passed, 0 ignored, zero filtered; inventory matched
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-native-path-current/run-native.py", line 127, in <module>
+    n.download('results/' + phase + suffix, p / (phase + suffix))
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-office-contract-current/transport.py", line 21, in download
+    h=qga('guest-file-open',{'path':remote(name),'mode':'rb'})
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-20261011/guest_exec.py", line 9, in qga
+    raise RuntimeError(f'{command} failed for {DOMAIN}: {result.stderr.strip()}')
+RuntimeError: guest-file-open failed for ottrin-copy-cleanup-qa: error: internal error: unable to execute QEMU agent command 'guest-file-open': failed to open file 'C:\OttrinJobFixtureQA\results\short-temp-ordinary-platform-runtime.json': The system cannot find the file specified.

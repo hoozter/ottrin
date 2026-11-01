@@ -1017,17 +1017,17 @@ pub(crate) struct WindowsOverwriteRecord {
     schema_minor: u16,
     transaction_id: String,
     phase: WindowsOverwritePhase,
-    source: move_recovery::NativePath,
+    source: ottrin_core::native_path::NativePath,
     source_parent_identity: move_recovery::WindowsStableIdentity,
     source_identity: move_recovery::WindowsStableIdentity,
-    destination_parent: move_recovery::NativePath,
+    destination_parent: ottrin_core::native_path::NativePath,
     destination_parent_identity: move_recovery::WindowsStableIdentity,
-    target: move_recovery::NativePath,
+    target: ottrin_core::native_path::NativePath,
     destination_identity: move_recovery::WindowsStableIdentity,
-    transaction_directory: move_recovery::NativePath,
+    transaction_directory: ottrin_core::native_path::NativePath,
     transaction_directory_identity: move_recovery::WindowsStableIdentity,
-    replacement: move_recovery::NativePath,
-    retained_displaced: move_recovery::NativePath,
+    replacement: ottrin_core::native_path::NativePath,
+    retained_displaced: ottrin_core::native_path::NativePath,
     retained_identity: move_recovery::WindowsStableIdentity,
 }
 
@@ -1116,7 +1116,7 @@ struct WindowsCrossVolumeRecord {
     schema_minor: u16,
     transaction_id: String,
     phase: WindowsCrossVolumePhase,
-    source: move_recovery::NativePath,
+    source: ottrin_core::native_path::NativePath,
     source_parent_identity: move_recovery::WindowsStableIdentity,
     source_identity: move_recovery::WindowsStableIdentity,
     #[serde(default = "default_windows_cross_volume_source_kind")]
@@ -1129,20 +1129,20 @@ struct WindowsCrossVolumeRecord {
     source_link_is_directory: Option<bool>,
     #[serde(default)]
     source_manifest: Vec<WindowsDirectoryJournalEntry>,
-    destination_parent: move_recovery::NativePath,
+    destination_parent: ottrin_core::native_path::NativePath,
     destination_parent_identity: move_recovery::WindowsStableIdentity,
     #[serde(default)]
     destination_identity: Option<move_recovery::WindowsStableIdentity>,
     #[serde(default)]
     destination_manifest: Vec<WindowsDirectoryJournalEntry>,
     conflict: ConflictAction,
-    target_candidates: Vec<move_recovery::NativePath>,
-    transaction_directory: move_recovery::NativePath,
+    target_candidates: Vec<ottrin_core::native_path::NativePath>,
+    transaction_directory: ottrin_core::native_path::NativePath,
     transaction_directory_identity: move_recovery::WindowsStableIdentity,
-    candidate: move_recovery::NativePath,
+    candidate: ottrin_core::native_path::NativePath,
     candidate_identity: Option<move_recovery::WindowsStableIdentity>,
     #[serde(default)]
-    retained_displaced: Option<move_recovery::NativePath>,
+    retained_displaced: Option<ottrin_core::native_path::NativePath>,
     #[serde(default)]
     undo_origin: Option<windows_undo::cross::Origin>,
     #[serde(default)]
@@ -1205,7 +1205,7 @@ impl WindowsCrossVolumeRecord {
     fn retained_path(&self) -> Result<Option<PathBuf>, PlatformError> {
         self.retained_displaced
             .as_ref()
-            .map(move_recovery::NativePath::decode)
+            .map(ottrin_core::native_path::NativePath::decode)
             .transpose()
             .map_err(|error| PlatformError::Io(error.to_string()))
     }
@@ -2891,14 +2891,14 @@ fn advance_windows_cross_volume_rename_target(
     let candidates = record
         .target_candidates
         .iter()
-        .map(move_recovery::NativePath::decode)
+        .map(ottrin_core::native_path::NativePath::decode)
         .collect::<Result<Vec<_>, _>>()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let next = next_windows_rename_candidate(&candidates)
         .ok_or_else(|| PlatformError::Io("Windows cross-volume target journal is empty".into()))?;
     record
         .target_candidates
-        .push(move_recovery::NativePath::encode(&next));
+        .push(ottrin_core::native_path::NativePath::encode(&next));
     persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
         PlatformError::ClaimedRecoveryPending {
             transaction: record
@@ -3363,7 +3363,7 @@ fn start_windows_cross_volume_move(
         schema_minor: move_recovery::JOURNAL_SCHEMA_MINOR,
         transaction_id: encode_transaction_id(transaction_id),
         phase: WindowsCrossVolumePhase::Prepared,
-        source: move_recovery::NativePath::encode(source),
+        source: ottrin_core::native_path::NativePath::encode(source),
         source_parent_identity,
         source_identity,
         source_kind,
@@ -3372,20 +3372,22 @@ fn start_windows_cross_volume_move(
         source_link_target,
         source_link_is_directory,
         source_manifest,
-        destination_parent: move_recovery::NativePath::encode(destination_dir),
+        destination_parent: ottrin_core::native_path::NativePath::encode(destination_dir),
         destination_parent_identity,
         destination_identity,
         destination_manifest,
         conflict,
-        target_candidates: vec![move_recovery::NativePath::encode(target)],
-        transaction_directory: move_recovery::NativePath::encode(&transaction_path),
+        target_candidates: vec![ottrin_core::native_path::NativePath::encode(target)],
+        transaction_directory: ottrin_core::native_path::NativePath::encode(&transaction_path),
         transaction_directory_identity: transaction_identity,
-        candidate: move_recovery::NativePath::encode(
+        candidate: ottrin_core::native_path::NativePath::encode(
             &transaction_path.join(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME),
         ),
         candidate_identity: None,
         retained_displaced: (conflict == ConflictAction::Overwrite).then(|| {
-            move_recovery::NativePath::encode(&transaction_path.join(WINDOWS_RETAINED_NAME))
+            ottrin_core::native_path::NativePath::encode(
+                &transaction_path.join(WINDOWS_RETAINED_NAME),
+            )
         }),
         undo_origin: undo.map(|(origin, _)| origin.clone()),
         undo_transaction: None,
@@ -5526,17 +5528,17 @@ fn start_windows_same_volume_overwrite(
         schema_minor: move_recovery::JOURNAL_SCHEMA_MINOR,
         transaction_id: encode_transaction_id(transaction_id),
         phase: WindowsOverwritePhase::Prepared,
-        source: move_recovery::NativePath::encode(source),
+        source: ottrin_core::native_path::NativePath::encode(source),
         source_parent_identity,
         source_identity,
-        destination_parent: move_recovery::NativePath::encode(destination_dir),
+        destination_parent: ottrin_core::native_path::NativePath::encode(destination_dir),
         destination_parent_identity,
-        target: move_recovery::NativePath::encode(target),
+        target: ottrin_core::native_path::NativePath::encode(target),
         destination_identity,
-        transaction_directory: move_recovery::NativePath::encode(&transaction_path),
+        transaction_directory: ottrin_core::native_path::NativePath::encode(&transaction_path),
         transaction_directory_identity,
-        replacement: move_recovery::NativePath::encode(&replacement),
-        retained_displaced: move_recovery::NativePath::encode(&retained_displaced),
+        replacement: ottrin_core::native_path::NativePath::encode(&replacement),
+        retained_displaced: ottrin_core::native_path::NativePath::encode(&retained_displaced),
         retained_identity: destination_identity,
     };
     persist_windows_overwrite_record(&recovery_root, &record).map_err(|error| {
@@ -8495,9 +8497,9 @@ fn collect_source_tree_snapshot(
         let target = rustix::fs::readlinkat(opened, "", Vec::new())
             .map_err(|e| PlatformError::Io(e.to_string()))?;
         move_recovery::SourceContentEvidence::Symlink {
-            target: move_recovery::NativePath::encode(Path::new(&std::ffi::OsString::from_vec(
-                target.into_bytes(),
-            ))),
+            target: ottrin_core::native_path::NativePath::encode(Path::new(
+                &std::ffi::OsString::from_vec(target.into_bytes()),
+            )),
         }
     } else {
         return Err(PlatformError::InvalidSource(relative.display().to_string()));

@@ -1,0 +1,65 @@
+{
+  "status": "Owned native-path cleanup complete",
+  "incremental_sessions_retired": 37,
+  "final_guarded_pass_reported_recovered_GiB": 2.04,
+  "partial_first_pass_recovered_bytes": "Not separately quantified; final 2.04GiB is not a combined claim",
+  "superseded_UI_test": {
+    "retired_artifacts": 1,
+    "logical_bytes": 736185433,
+    "filesystem_free_delta": 736227328,
+    "current_binaries_dependencies_and_test_replacements_preserved": true
+  },
+  "retired_routine_outputs": [
+    {
+      "path": "scripts/__pycache__",
+      "bytes": 6090
+    },
+    {
+      "path": "scripts/linux-desktop-qa/__pycache__",
+      "bytes": 13571
+    },
+    {
+      "path": ".hermes/evidence/picker-native-path-current/__pycache__",
+      "bytes": 15096
+    },
+    {
+      "path": ".hermes/evidence/windows-office-contract-current/__pycache__",
+      "bytes": 4949
+    },
+    {
+      "path": ".hermes/evidence/picker-native-path-current/CHECK.log",
+      "bytes": 324
+    },
+    {
+      "path": ".hermes/evidence/picker-native-path-current/CORE.log",
+      "bytes": 3294
+    }
+  ],
+  "private_GUI_profiles_removed": true,
+  "both_native_QA_roots_removed": true,
+  "guest_off": true,
+  "remaining_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-native-path-current",
+      "purpose": "Compact native-path source, regression, full native and actual GUI receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-startup-availability-current",
+      "purpose": "Completed startup failure control; pending source repair and passing replacement"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-picker-package-current",
+      "purpose": "Prepared next package producers; no staging allocated"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-package-current",
+      "purpose": "Prepared next candidate producers; no staging allocated"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current compiled binaries/test replacements and useful shared compiler state"
+    }
+  ],
+  "after_sizes": "32380829782\ttarget/debug/deps\n12061075562\ttarget/debug/incremental\n27515811114\ttarget/x86_64-pc-windows-gnu/debug/deps\n27063399151\ttarget/x86_64-pc-windows-gnu/debug/incremental\n571141\t.hermes/evidence/picker-native-path-current\n",
+  "preserved": "Stable dist artifacts, retained VM environments/profiles, personal data/service, owner AGENTS.md and useful shared caches"
+}

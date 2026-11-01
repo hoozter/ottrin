@@ -1,0 +1,17 @@
+{
+  "fixture-ui.exe": {
+    "sha256": "0d3537c72f3ea6e6006ce89cc0b3fbfabf98ddc2b32f1350770e1698f0c2af84",
+    "raw_sha256": "7a126c8188264ce6d8eedb4dc3a503e42321d083844aea2d3fa280aaeca32e4c",
+    "source_date_epoch": 1793515119
+  },
+  "fixture-core.exe": {
+    "sha256": "2da532a065b8a21504fc9ef34b85c2d141ca1a212a30835ffdd622a044574d81",
+    "raw_sha256": "2d06c6e3d948a6d2cd4e135c95c02fa5ca3d781d88a671e23d24d89da225ab65",
+    "source_date_epoch": 1793515077
+  },
+  "fixture-platform.exe": {
+    "sha256": "f822828b7e949bf21fbd4609e60e14ffbcb3a24e0c4644a5f39683ef630cd601",
+    "raw_sha256": "84b8443dbef40ed01511f5d2aab99e8ea85faa0bbc23c92f2142e712fe8a5516",
+    "source_date_epoch": 1793515230
+  }
+}

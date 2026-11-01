@@ -1688,3 +1688,74 @@ and [two namespace restriction modes](https://gitlab.com/apparmor/apparmor/-/wik
 The separate fixed-entry rendering, executable-mapping/preload, Chromium sandbox,
 script/network and arbitrary-command checks remain required. Ottrin never changes
 these global sysctls.
+
+## On-demand chooser protocol
+
+`ottrin picker` reads one JSON request from standard input, opens the shared
+Ottrin chooser, and writes one JSON response to standard output. Diagnostics go
+to standard error. Requests are bounded to 128 KiB and validated before graphics
+startup. A cancelled chooser returns `accepted: false` and an empty path list.
+The calling application opens or saves the returned path; the chooser does not
+create, truncate or edit it. Callers must still handle later filesystem changes.
+
+This protocol is current source work awaiting packaged delivery. Foreign parent
+attachment and platform integration remain separate roadmap work; accepting a
+`parent_window` token does not yet establish that attachment.
+
+### Paths
+
+`initial_directory` is null or a native-path object. Every member of response
+`paths` is a native-path object too. Plain JSON path strings are rejected.
+
+On Linux, objects use `encoding: "unix-bytes"` and `units_hex` contains lowercase
+hex byte pairs from the native pathname. For example, `/tmp` is:
+
+```json
+{"encoding":"unix-bytes","units_hex":"2f746d70"}
+```
+
+On Windows, objects use `encoding: "windows-utf16-le"` and `units_hex` contains
+four lowercase hex digits per native UTF-16 code unit. For example, `C:\tmp` is:
+
+```json
+{"encoding":"windows-utf16-le","units_hex":"0043003a005c0074006d0070"}
+```
+
+This preserves Linux non-UTF-8 bytes and Windows unmatched UTF-16 units. Decoders
+reject a foreign platform encoding, malformed units, unknown object fields and
+NUL units. Initial directories and accepted paths must be absolute. The shared
+`ottrin_core::native_path` implementation also serves picker preferences and
+filesystem recovery records; existing persisted recovery representations remain
+unchanged. Rust callers keep `PathBuf` in memory and use the request/response
+Serde implementations for the wire representation.
+
+### Request and response
+
+A minimal Linux request selecting text documents from `/tmp`:
+
+```json
+{
+  "mode":"open",
+  "title":"Open a document",
+  "initial_directory":{"encoding":"unix-bytes","units_hex":"2f746d70"},
+  "filters":[{"name":"Text documents","patterns":[{"kind":"glob","value":"*.txt"}]}]
+}
+```
+
+Modes are `open`, `save` and `folder`. Optional fields include `accept_label`,
+`parent_window`, the suggested UTF-8 `filename`, `multiple`, `filters`,
+`current_filter` and `choices`. Save selects one filename. Filters contain glob
+or MIME patterns. Choice IDs are unique, and returned values must belong to the
+caller-supplied options; a choice with no options is boolean (`true`/`false`).
+Request/response validation is authoritative in `ottrin_core::picker`.
+
+Accepted responses contain `accepted`, native `paths`, `current_filter` and
+`choices`. Use `PickerResponse::validate_for` before consuming a response.
+A Save selection of an existing native filename preserves that exact selected
+path through overwrite confirmation, including when its display label contains
+replacement characters. Editing the filename clears that selection and creates
+a newly validated typed-name candidate.
+
+Directory browsing works with the index stopped. Explicit **Indexed folders**
+search uses the existing index asynchronously and never starts it. This protocol
+does not replace other applications' native dialogs by itself.

@@ -1,0 +1,14 @@
+{
+    "ProcessId":  3076,
+    "Name":  "fixture-platform.exe",
+    "UserModeTime":  461406250,
+    "KernelModeTime":  855625000
+}
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_removal ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_exit_child ... ignored, abrupt-exit child; owned empty root supplied by parent
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_finalizes_metadata_and_replays_its_admitted_proof ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalog_handoffs ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pending ... ok
+test copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal ...

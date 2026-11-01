@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::move_recovery::LinuxJournalDirectory;
+use ottrin_core::native_path::NativePath;
 use rustix::fs::{Mode, OFlags};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};

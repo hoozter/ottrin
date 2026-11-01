@@ -155,23 +155,23 @@ impl Saved {
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct Entry {
-    path: move_recovery::NativePath,
+    path: ottrin_core::native_path::NativePath,
     identity: WindowsStableIdentity,
     bytes: Option<Vec<u8>>,
-    link: Option<move_recovery::NativePath>,
+    link: Option<ottrin_core::native_path::NativePath>,
 }
 fn snapshot(root: &Path) -> Vec<Entry> {
     fn visit(path: &Path, entries: &mut Vec<Entry>) {
         let identity = move_recovery::stable_identity_of_entry(path).unwrap();
         entries.push(Entry {
-            path: move_recovery::NativePath::encode(path),
+            path: ottrin_core::native_path::NativePath::encode(path),
             identity,
             bytes: identity
                 .is_regular_file_without_reparse()
                 .then(|| std::fs::read(path).unwrap()),
-            link: identity
-                .is_symbolic_link()
-                .then(|| move_recovery::NativePath::encode(&std::fs::read_link(path).unwrap())),
+            link: identity.is_symbolic_link().then(|| {
+                ottrin_core::native_path::NativePath::encode(&std::fs::read_link(path).unwrap())
+            }),
         });
         if identity.is_directory_without_reparse() {
             let mut children = std::fs::read_dir(path)
@@ -193,7 +193,7 @@ fn snapshot(root: &Path) -> Vec<Entry> {
 struct Fixture {
     retired: bool,
     primary: WindowsStableIdentity,
-    secondary: move_recovery::NativePath,
+    secondary: ottrin_core::native_path::NativePath,
     secondary_identity: WindowsStableIdentity,
     token: [u8; 16],
     saved: Vec<Saved>,
@@ -335,7 +335,7 @@ fn prepare(retired: bool) {
     let fixture = Fixture {
         retired,
         primary: move_recovery::stable_identity_of_entry(&root).unwrap(),
-        secondary: move_recovery::NativePath::encode(&secondary),
+        secondary: ottrin_core::native_path::NativePath::encode(&secondary),
         secondary_identity: move_recovery::stable_identity_of_entry(&secondary).unwrap(),
         token,
         saved,

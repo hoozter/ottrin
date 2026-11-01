@@ -3,10 +3,8 @@ use super::{
     EntryVersion, PlatformError, WindowsStableIdentity, io, links, metadata, namespace, security,
     stable_identity_from_handle, tree,
 };
-use crate::{
-    move_recovery::NativePath,
-    windows_fs::{self, RelativeOptions},
-};
+use crate::windows_fs::{self, RelativeOptions};
+use ottrin_core::native_path::NativePath;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{

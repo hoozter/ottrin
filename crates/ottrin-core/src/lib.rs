@@ -1,3 +1,4 @@
+pub mod native_path;
 pub mod picker;
 
 use serde::{Deserialize, Serialize};

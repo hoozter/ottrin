@@ -1,0 +1,72 @@
+{
+  "status": "Native picker path integrity verified in source; GUI startup repair and packaged delivery remain next",
+  "base_revision": "cbecabd6ac7f9e3e44726036c80b7515d15c5eb4",
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "8e9638a9bd9c0238e7a9bca87391bafe5296d2ebf517d80e5f07b04a66f668d0",
+    "crates/ottrin-core/src/picker.rs": "d1d672e4f677edfaa44bb93b92b44b46383650c2c9861deb01ffb0c8f017a6cd",
+    "crates/ottrin-platform/src/copy_cleanup.rs": "9ea499f8fa36248b9f31b14a2a569b8e644c4d0251a5d9179c3ead3784b900f8",
+    "crates/ottrin-platform/src/copy_finalization.rs": "2d43098ce045c00a7363b2263d04b7addb84125c3fccd9e96586dc1497c9ae1e",
+    "crates/ottrin-platform/src/copy_recovery.rs": "7fc22e628453875f9239f52e77aaaa6cea74072f3699a5fdfb694d6b2f4b6c44",
+    "crates/ottrin-platform/src/copy_transaction.rs": "dbceed56c3cea8b0e02cb1577f68f28c22ca8df01a97e168ec481234918e9f02",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "a065f3eb5cf434b441f638160cf4c82323723a8f46c2ccf036c447dce78489b8",
+    "crates/ottrin-platform/src/move_recovery.rs": "864c5107818bcb47db53565c73373486ae8a82631a9fde2f64ff892c0f72d650",
+    "crates/ottrin-platform/src/move_transaction.rs": "78c85cdae2769b64b21cf2e607393c9dfd99e02bfc5e7f88ab1e8e247e3d9ddc",
+    "crates/ottrin-platform/src/move_transaction/windows_completion/controls.rs": "36b4489e8ff369073f3395ba852129f9305a0051f9a1b80590985b93e92c569b",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/cross.rs": "a38fc797df36d33f2872e1fec8b4c61ab9d3475e13d581f72959d6f6db0434f6",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/cross/offline_tests.rs": "f066306636f2b8120e281b3e0fde1c2be1c81e8ecd1e6c3616be54762dc107c6",
+    "crates/ottrin-platform/src/move_transaction/windows_undo/cross/retained.rs": "01676ee102063965b5db721f256af65a11a9e53b54715acd09768902238eb22f",
+    "crates/ottrin-ui/src/picker.rs": "9bcf089472f1254d6cb92be42af73d3ae2efe61a8a03616cab9d3dedbf47eedb",
+    "crates/ottrin-ui/src/picker_preferences.rs": "1f10d0ec41d6eaedbfdbd0a277ba8fb536090d8dd06be356f5bade9bcd552c05",
+    "crates/ottrin-core/src/native_path.rs": "fa157abe7639d947740d52ddd3c324ab6daf2369be21ba66f37769c78bf8a73a"
+  },
+  "Linux": {
+    "core": 39,
+    "platform_regular": 417,
+    "platform_existing_ignored": 4,
+    "UI_regular": 437,
+    "UI_existing_ignored": 1,
+    "app": 27,
+    "indexd": 2,
+    "daemon_CLI": 3,
+    "filtered": 0,
+    "strict_all_target_lint": "pass"
+  },
+  "Windows": {
+    "core_regular_per_token": 38,
+    "platform_regular_per_token": 457,
+    "platform_existing_ignored_per_token": 79,
+    "UI_regular_per_token": 409,
+    "UI_existing_ignored_per_token": 4,
+    "tokens": [
+      "ordinary",
+      "elevated"
+    ],
+    "filtered": 0,
+    "strict_GNU_all_target_lint": "pass",
+    "full_platform_advertised_entries": 536
+  },
+  "actual_Linux_GUI": {
+    "binary_sha256": "15f31281a80124d7b8292ed12ff222615bf647202391ff6b1259138b1f720ffc",
+    "normal_exit": 0,
+    "native_request_folder_and_selected_filename_bytes_verified": true,
+    "original_file_bytes_unchanged": true,
+    "index_socket_created": false,
+    "profile_removed": true
+  },
+  "regressions": {
+    "NEGATIVE.log": "Old response PathBuf serialization rejects a selected non-UTF8 path; new wire round-trips native units.",
+    "SAVE_NEGATIVE.log": "Old Save path loses the selected native filename; fixed existing-file overwrite/response regression passes on Linux and native Windows."
+  },
+  "controls": {
+    "first_native_platform": "Initial 300-second serial actor stopped before parent completion. UI/core scopes before it pass; no full platform acceptance from that run. Root/process/profile teardown completed.",
+    "final_native_platform": "Bounded two-thread ordinary/elevated runs each pass457 plus79 existing ignores, matching536 inventory entries; no test assertions removed or ignored.",
+    "incremental_cleanup": "First guard stopped after20 sessions on an unreadable transient process. That process exited; final same guarded retry removed17 sessions with no new exception."
+  },
+  "preservation": "Recovery/path-preference serialized representation unchanged; one codec in core; callers updated without an old-module alias. No personal service, configuration, index or user files modified.",
+  "limits": [
+    "Stable cf6 packages unchanged until upcoming delivery",
+    "Actual Windows picker window/resource and exact-package acceptance remain open",
+    "External ownership, portal/cooperating-app and reversible folder associations remain required",
+    "Main GUI still blocks on index readiness; separately reproduced in index-startup-availability-current and scheduled next"
+  ]
+}

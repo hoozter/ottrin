@@ -11,7 +11,7 @@ use crate::move_transaction::{
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(in crate::move_transaction) struct Binding {
-    directory: move_recovery::NativePath,
+    directory: ottrin_core::native_path::NativePath,
     identity: WindowsStableIdentity,
     pub(super) entry: WindowsStableIdentity,
 }
@@ -148,7 +148,7 @@ pub(super) fn bind(root: &Path, record: &Record) -> Result<Binding, PlatformErro
         return Err(stale(&retained));
     }
     Ok(Binding {
-        directory: move_recovery::NativePath::encode(
+        directory: ottrin_core::native_path::NativePath::encode(
             &std::path::absolute(record.transaction_path()?).map_err(io)?,
         ),
         identity: record.transaction_directory_identity,

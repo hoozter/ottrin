@@ -85,6 +85,8 @@ selection from indexed results uses that result's parent folder. View, hidden-fi
 preview and last-folder preferences are remembered separately from main-window
 settings; an application's requested starting folder takes precedence.
 
+Cooperating applications use the [native path request/response protocol](DEVELOPMENT.md#on-demand-chooser-protocol).
+
 ## Appearance and themes
 
 Open **Settings → Appearance** to choose a built-in theme or one of **Your themes**.

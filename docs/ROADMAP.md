@@ -93,6 +93,28 @@ their named hashes. Test counts are scoped observations, not completion measures
   Private desktop profiles and the native QA root are removed; guest is off.
   These are source checks,not final package,Windows picker-window or resource
   acceptance. Evidence: `picker-index-current/`.
+- **Native picker path integrity is verified in source,not yet packaged.**
+  One lossless native-path codec now serves picker IPC,preferences and recovery
+  records. Existing persisted recovery bytes stay unchanged. Picker requests/results
+  preserve Linux non-UTF-8 bytes and Windows unmatched UTF-16 units; malformed,
+  foreign-platform,NUL and unknown-field inputs are rejected. Existing Save
+  selections keep their exact native path through fresh overwrite confirmation.
+  Failing-before controls reproduce both old JSON serialization failure and the
+  selected-name-to-lossy-path defect. Linux passes39 core,417 platform and437 UI
+  tests,plus app/indexd/CLI checks. Native ordinary/elevated Windows passes38 core,
+  457 platform and409 UI tests per token,with existing ignores and zero filters.
+  Strict Linux/GNU Windows lint passes. Actual Linux chooser GUI preserves native
+  folder/filename bytes in its response,original file bytes and index independence.
+  The initial five-minute platform harness was incomplete; the final bounded
+  two-thread runs pass all536 advertised entries per token. Exact receipts retain
+  the original incomplete control. Evidence: `picker-native-path-current/`.
+- **Main-window index readiness remains an independently executable repair.**
+  A controlled non-ready index reproduces startup exiting1 after30 seconds without
+  opening the file-manager window. Its source still performs readiness work before
+  graphics startup; UI diagnostics/configuration also make synchronous RPC calls.
+  Decouple browsing/window availability from that work,verify recovery without a
+  local fallback scanner,then refresh the usable package cohort. The source/control
+  is in `index-startup-availability-current/`; this is not a repaired-package claim.
 - **MSI rollback remains a required failed gate.** Reviewed upstream evidence
   corroborates the failure family but establishes no safe authoring correction.
   Keep its exact receipts and external investigation boundary; do not repeat the

@@ -1,5 +1,10 @@
+#[cfg(any(target_os = "linux", test))]
+use ottrin_core::native_path::NativePath;
+use ottrin_core::native_path::{NativePathError, decode_hex, encode_hex};
 use serde::{Deserialize, Deserializer, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+#[cfg(any(target_os = "linux", all(test, unix)))]
+use std::path::PathBuf;
 use thiserror::Error;
 
 #[cfg(target_os = "linux")]
@@ -115,7 +120,7 @@ impl SourceTreeSnapshot {
     pub(super) fn relative_paths(&self) -> Result<Vec<PathBuf>, JournalError> {
         self.entries
             .iter()
-            .map(|entry| entry.path.decode())
+            .map(|entry| entry.path.decode().map_err(JournalError::from))
             .collect()
     }
     pub fn from_entries(entries: Vec<(PathBuf, LinuxStableIdentity)>) -> Self {
@@ -194,20 +199,6 @@ impl SourceTreeSnapshot {
                         && left.content == right.content
                 })
     }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum NativePathEncoding {
-    UnixBytes,
-    WindowsUtf16Le,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct NativePath {
-    encoding: NativePathEncoding,
-    units_hex: String,
 }
 
 #[cfg(target_os = "linux")]
@@ -544,10 +535,8 @@ pub enum JournalError {
     UnsupportedSchema { major: u16, minor: u16 },
     #[error("invalid transaction ID")]
     InvalidTransactionId,
-    #[error("journal path encoding does not match this platform")]
-    WrongPlatformEncoding,
-    #[error("invalid native path units")]
-    InvalidNativePathUnits,
+    #[error(transparent)]
+    NativePath(#[from] NativePathError),
     #[error("invalid prepared source path")]
     InvalidPreparedSourcePath,
     #[error("invalid Linux stable identity")]
@@ -4644,7 +4633,7 @@ impl LinuxRecoveryLock<'_> {
         }
         let original_name = original_name
             .decode()
-            .map_err(LinuxObserveClaimedError::InvalidOriginalName)?;
+            .map_err(|error| LinuxObserveClaimedError::InvalidOriginalName(error.into()))?;
         let claimed = match openat(
             &local.directory,
             "claimed",
@@ -5842,7 +5831,7 @@ impl LinuxRecoveryLock<'_> {
         }
         let original_name = original_name
             .decode()
-            .map_err(LinuxObserveOriginalError::InvalidOriginalName)?;
+            .map_err(|error| LinuxObserveOriginalError::InvalidOriginalName(error.into()))?;
         let original = match openat(
             &source_parent.directory,
             &original_name,
@@ -5968,7 +5957,7 @@ impl LinuxRecoveryLock<'_> {
         }
         let transaction_name = transaction_name
             .decode()
-            .map_err(LinuxClaimSourceError::InvalidTransactionName)?;
+            .map_err(|error| LinuxClaimSourceError::InvalidTransactionName(error.into()))?;
         let named_transaction = match statat(
             &source_parent.directory,
             &transaction_name,
@@ -5999,7 +5988,7 @@ impl LinuxRecoveryLock<'_> {
         after_placement_check().map_err(LinuxClaimSourceError::Rename)?;
         let original_name = original_name
             .decode()
-            .map_err(LinuxClaimSourceError::InvalidOriginalName)?;
+            .map_err(|error| LinuxClaimSourceError::InvalidOriginalName(error.into()))?;
         renameat_with(
             &source_parent.directory,
             &original_name,
@@ -6148,81 +6137,6 @@ impl LinuxRecoveryLock<'_> {
                 },
             )?;
         Ok(LinuxClaimIntentJournals::MatchingPair)
-    }
-}
-
-impl NativePath {
-    pub fn encode(path: &Path) -> Self {
-        #[cfg(unix)]
-        {
-            use std::os::unix::ffi::OsStrExt;
-            Self {
-                encoding: NativePathEncoding::UnixBytes,
-                units_hex: encode_hex(path.as_os_str().as_bytes()),
-            }
-        }
-        #[cfg(windows)]
-        {
-            use std::os::windows::ffi::OsStrExt;
-            let units_hex = path
-                .as_os_str()
-                .encode_wide()
-                .map(|unit| format!("{unit:04x}"))
-                .collect();
-            Self {
-                encoding: NativePathEncoding::WindowsUtf16Le,
-                units_hex,
-            }
-        }
-        #[cfg(not(any(unix, windows)))]
-        {
-            Self {
-                encoding: NativePathEncoding::UnixBytes,
-                units_hex: encode_hex(path.to_string_lossy().as_bytes()),
-            }
-        }
-    }
-
-    pub fn decode(&self) -> Result<PathBuf, JournalError> {
-        #[cfg(unix)]
-        {
-            use std::ffi::OsString;
-            use std::os::unix::ffi::OsStringExt;
-            if self.encoding != NativePathEncoding::UnixBytes {
-                return Err(JournalError::WrongPlatformEncoding);
-            }
-            Ok(PathBuf::from(OsString::from_vec(decode_hex(
-                &self.units_hex,
-            )?)))
-        }
-        #[cfg(windows)]
-        {
-            use std::ffi::OsString;
-            use std::os::windows::ffi::OsStringExt;
-            if self.encoding != NativePathEncoding::WindowsUtf16Le {
-                return Err(JournalError::WrongPlatformEncoding);
-            }
-            if !self.units_hex.len().is_multiple_of(4) {
-                return Err(JournalError::InvalidNativePathUnits);
-            }
-            let units = self
-                .units_hex
-                .as_bytes()
-                .chunks_exact(4)
-                .map(decode_u16_hex)
-                .collect::<Result<Vec<_>, _>>()?;
-            Ok(PathBuf::from(OsString::from_wide(&units)))
-        }
-        #[cfg(not(any(unix, windows)))]
-        {
-            if self.encoding != NativePathEncoding::UnixBytes {
-                return Err(JournalError::WrongPlatformEncoding);
-            }
-            let bytes = decode_hex(&self.units_hex)?;
-            let text =
-                String::from_utf8(bytes).map_err(|_| JournalError::InvalidNativePathUnits)?;
-            Ok(PathBuf::from(text))
-        }
     }
 }
 
@@ -6428,11 +6342,13 @@ impl PendingDestinationRecord {
     }
 
     pub fn source_parent(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.source_parent.decode()
+        self.source_parent.decode().map_err(JournalError::from)
     }
 
     pub fn source_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.source_transaction_name.decode()
+        self.source_transaction_name
+            .decode()
+            .map_err(JournalError::from)
     }
 
     pub fn source_transaction_identity(&self) -> LinuxStableIdentity {
@@ -6440,7 +6356,7 @@ impl PendingDestinationRecord {
     }
 
     pub fn original_name(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.original_name.decode()
+        self.original_name.decode().map_err(JournalError::from)
     }
 
     pub fn original_name_matches_path(&self, source_name: &Path) -> bool {
@@ -6456,7 +6372,9 @@ impl PendingDestinationRecord {
     }
 
     pub fn pending_destination_name(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.pending_destination_name.decode()
+        self.pending_destination_name
+            .decode()
+            .map_err(JournalError::from)
     }
 
     pub fn destination_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
@@ -6468,6 +6386,7 @@ impl PendingDestinationRecord {
                 )
             })?
             .decode()
+            .map_err(JournalError::from)
     }
 
     pub fn destination_transaction_identity(&self) -> Option<LinuxStableIdentity> {
@@ -6644,7 +6563,7 @@ impl PublishedRecord {
     }
 
     pub fn source_parent(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.source_parent.decode()
+        self.source_parent.decode().map_err(JournalError::from)
     }
 
     pub fn source_parent_identity(&self) -> LinuxStableIdentity {
@@ -6652,11 +6571,13 @@ impl PublishedRecord {
     }
 
     pub fn original_name(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.original_name.decode()
+        self.original_name.decode().map_err(JournalError::from)
     }
 
     pub fn source_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.source_transaction_name.decode()
+        self.source_transaction_name
+            .decode()
+            .map_err(JournalError::from)
     }
 
     pub fn source_transaction_identity(&self) -> LinuxStableIdentity {
@@ -6668,7 +6589,9 @@ impl PublishedRecord {
     }
 
     pub fn pending_destination_name(&self) -> Result<std::path::PathBuf, JournalError> {
-        self.pending_destination_name.decode()
+        self.pending_destination_name
+            .decode()
+            .map_err(JournalError::from)
     }
 
     pub fn destination_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
@@ -6680,6 +6603,7 @@ impl PublishedRecord {
                 )
             })?
             .decode()
+            .map_err(JournalError::from)
     }
 
     pub fn destination_transaction_identity(&self) -> Option<LinuxStableIdentity> {
@@ -7037,48 +6961,6 @@ impl<'de> Deserialize<'de> for JournalHeader {
     {
         let raw = RawJournalHeader::deserialize(deserializer)?;
         Self::try_from(raw).map_err(serde::de::Error::custom)
-    }
-}
-
-fn encode_hex(bytes: &[u8]) -> String {
-    const DIGITS: &[u8; 16] = b"0123456789abcdef";
-    let mut encoded = String::with_capacity(bytes.len() * 2);
-    for byte in bytes {
-        encoded.push(DIGITS[usize::from(byte >> 4)] as char);
-        encoded.push(DIGITS[usize::from(byte & 0x0f)] as char);
-    }
-    encoded
-}
-
-fn decode_hex(encoded: &str) -> Result<Vec<u8>, JournalError> {
-    if !encoded.len().is_multiple_of(2) {
-        return Err(JournalError::InvalidNativePathUnits);
-    }
-    encoded
-        .as_bytes()
-        .chunks_exact(2)
-        .map(|digits| {
-            let high = decode_nibble(digits[0])?;
-            let low = decode_nibble(digits[1])?;
-            Ok((high << 4) | low)
-        })
-        .collect()
-}
-
-#[cfg(windows)]
-fn decode_u16_hex(digits: &[u8]) -> Result<u16, JournalError> {
-    let mut value = 0_u16;
-    for digit in digits {
-        value = (value << 4) | u16::from(decode_nibble(*digit)?);
-    }
-    Ok(value)
-}
-
-fn decode_nibble(digit: u8) -> Result<u8, JournalError> {
-    match digit {
-        b'0'..=b'9' => Ok(digit - b'0'),
-        b'a'..=b'f' => Ok(digit - b'a' + 10),
-        _ => Err(JournalError::InvalidNativePathUnits),
     }
 }
 
@@ -8005,36 +7887,6 @@ mod tests {
         );
 
         assert_eq!(result, Err(JournalError::InvalidPreparedSourcePath));
-    }
-
-    #[test]
-    fn malformed_native_path_units_are_rejected() {
-        for units_hex in ["0", "0x"] {
-            let encoded = NativePath {
-                #[cfg(unix)]
-                encoding: NativePathEncoding::UnixBytes,
-                #[cfg(windows)]
-                encoding: NativePathEncoding::WindowsUtf16Le,
-                #[cfg(not(any(unix, windows)))]
-                encoding: NativePathEncoding::UnixBytes,
-                units_hex: units_hex.into(),
-            };
-            assert_eq!(encoded.decode(), Err(JournalError::InvalidNativePathUnits));
-        }
-    }
-
-    #[test]
-    fn foreign_platform_path_encoding_is_rejected() {
-        let encoded = NativePath {
-            #[cfg(unix)]
-            encoding: NativePathEncoding::WindowsUtf16Le,
-            #[cfg(windows)]
-            encoding: NativePathEncoding::UnixBytes,
-            #[cfg(not(any(unix, windows)))]
-            encoding: NativePathEncoding::WindowsUtf16Le,
-            units_hex: String::new(),
-        };
-        assert_eq!(encoded.decode(), Err(JournalError::WrongPlatformEncoding));
     }
 
     #[cfg(windows)]

@@ -1,0 +1,14 @@
+{
+  "status": "Preparatory producers parse; builds deliberately not started while full native platform QA consumes the guest/RAM",
+  "producers": [
+    ".hermes/evidence/linux-picker-package-current/verify-packages.py",
+    ".hermes/evidence/linux-picker-package-current/build.py",
+    ".hermes/evidence/linux-picker-package-current/build-rpm.py",
+    ".hermes/evidence/windows-picker-package-current/native_compiler.py",
+    ".hermes/evidence/windows-picker-package-current/verify-final-bytes.py",
+    ".hermes/evidence/windows-picker-package-current/build-portable.py",
+    ".hermes/evidence/windows-picker-package-current/native-package.py"
+  ],
+  "source": "Adapted accepted cf6 build/content/native compiler producers to one owned Linux and Windows picker staging path; fresh Windows compiler ownership nonce",
+  "next": "Finish native-path checkpoint, baseline output sizes and source revision, then build and accept exact candidate artifacts before promotion"
+}

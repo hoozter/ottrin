@@ -4,8 +4,9 @@
 //! restart Undo or deletion authority: recovery must validate both namespace
 //! bindings and contents before making any change.
 
-use super::move_recovery::{NativePath, SourceTreeSnapshot};
+use super::move_recovery::SourceTreeSnapshot;
 use super::{PathMoveIdentity, PlatformError};
+use ottrin_core::native_path::NativePath;
 use rustix::fs::{Mode, OFlags};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};

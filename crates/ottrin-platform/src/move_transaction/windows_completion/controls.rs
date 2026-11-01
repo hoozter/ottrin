@@ -15,9 +15,9 @@ pub(in crate::move_transaction) struct FileEvidence {
 pub(in crate::move_transaction) struct Owner {
     pub transaction: [u8; 16],
     pub kind: WindowsJournalKind,
-    pub directory: move_recovery::NativePath,
+    pub directory: ottrin_core::native_path::NativePath,
     pub identity: Identity,
-    pub parent: move_recovery::NativePath,
+    pub parent: ottrin_core::native_path::NativePath,
     pub parent_identity: Identity,
     pub central: FileEvidence,
     pub local: FileEvidence,
@@ -126,9 +126,9 @@ impl Owner {
         let result = Self {
             transaction,
             kind,
-            directory: move_recovery::NativePath::encode(directory),
+            directory: ottrin_core::native_path::NativePath::encode(directory),
             identity,
-            parent: move_recovery::NativePath::encode(
+            parent: ottrin_core::native_path::NativePath::encode(
                 directory
                     .parent()
                     .ok_or_else(|| super::io("journal directory has no parent"))?,

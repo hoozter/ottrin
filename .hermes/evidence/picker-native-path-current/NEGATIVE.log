@@ -1,0 +1,22 @@
+   Compiling ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+    Finished `test` profile [optimized + debuginfo] target(s) in 5.90s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_core-f537903df95abb79)
+
+running 1 test
+test picker::tests::picker_request_and_response_transport_preserves_native_path_units ... FAILED
+
+failures:
+
+---- picker::tests::picker_request_and_response_transport_preserves_native_path_units stdout ----
+
+thread 'picker::tests::picker_request_and_response_transport_preserves_native_path_units' (2986430) panicked at crates/ottrin-core/src/picker.rs:342:14:
+Native selected path must be serializable without loss: Error("path contains invalid UTF-8 characters", line: 0, column: 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    picker::tests::picker_request_and_response_transport_preserves_native_path_units
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-core --lib`

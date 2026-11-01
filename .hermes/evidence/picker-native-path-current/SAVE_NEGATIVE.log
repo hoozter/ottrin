@@ -1,0 +1,28 @@
+   Compiling ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 30.91s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-00f4da14c3c90eed)
+
+running 1 test
+test picker::tests::save_selection_preserves_native_filename_until_the_user_edits_it ... FAILED
+
+failures:
+
+---- picker::tests::save_selection_preserves_native_filename_until_the_user_edits_it stdout ----
+
+thread 'picker::tests::save_selection_preserves_native_filename_until_the_user_edits_it' (2990209) panicked at crates/ottrin-ui/src/picker.rs:2400:9:
+assertion `left == right` failed: Existing selected native path must not turn into a different lossy filename
+  left: None
+ right: Some("/tmp/ot-yhkguxyy/t/.tmp8Iqo2p/original\x80.txt")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    picker::tests::save_selection_preserves_native_filename_until_the_user_edits_it
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 437 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

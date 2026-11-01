@@ -1985,7 +1985,7 @@ mod tests {
 
     #[test]
     fn completed_copy_journal_binds_publication_and_overwrite_backup() {
-        use super::super::move_recovery::{NativePath, SourceTreeSnapshot};
+        use super::super::move_recovery::SourceTreeSnapshot;
         for overwrite in [false, true] {
             let root = TestDir::new("journal-published");
             let source = root.0.join("item");
@@ -2016,7 +2016,8 @@ mod tests {
                     .unwrap()
             );
             assert_eq!(record["phase"], "published");
-            let target: NativePath = serde_json::from_value(record["publication"].clone()).unwrap();
+            let target: ottrin_core::native_path::NativePath =
+                serde_json::from_value(record["publication"].clone()).unwrap();
             assert_eq!(target.decode().unwrap(), destination.join("item"));
             let content: SourceTreeSnapshot =
                 serde_json::from_value(record["publication_content"].clone()).unwrap();
