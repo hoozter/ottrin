@@ -1,0 +1,37 @@
+{
+  "scope": "Nested KWin Wayland source Properties, real surface/activation request; synthetic token does not establish compositor grant for a real caller",
+  "binary_sha256": "bafa68ae99a917164a7c2d84679e9d8e2d4e872ffe777417f8319c733ba480de",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ddv6kqv1",
+    "owned_processes_reaped": [
+      {
+        "pid": 4012453,
+        "exit": 0
+      },
+      {
+        "pid": 4012456,
+        "exit": 0
+      },
+      {
+        "pid": 4012457,
+        "exit": 15
+      },
+      {
+        "pid": 4012510,
+        "exit": 0
+      },
+      {
+        "pid": 4012511,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "Owned Wayland readiness timeout",
+    "profile_removed": true
+  }
+}

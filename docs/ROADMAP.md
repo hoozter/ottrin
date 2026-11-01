@@ -1,5 +1,36 @@
 # Ottrin roadmap
 
+## Desktop activation and independent window reaping — source, 2026-11-01
+
+Main, picker and Properties windows now share startup notification. X11 startup
+IDs and completion messages, or Wayland activation requests, are applied before
+the initially hidden window is revealed. Used environment tokens are cleared
+before any application thread/library initialization, so descendants do not
+inherit them. Activation failure reports its error and still shows the window.
+The file-manager backend forwards the request token, polls child pidfds without
+timers, and immediately reaps any closed window regardless of creation order.
+
+Actual X11 D-Bus/GUI checks preserve quoted/backslash startup IDs, show/select
+native paths, close normally, re-activate after backend restart and reap the
+second batch window while the first remains open. A virtual KWin OpenGL
+compositor receives the native Wayland activation request, reports a real active
+Properties window and closes it normally, with no index/preferences/source
+changes. The token is synthetic: this does not establish real-caller compositor
+policy or physical-seat acceptance. The earlier nested-Xvfb/DRI3 and unsupported
+QPainter controls are retained; their private resources are removed.
+
+Linux49 app/two daemon/three CLI tests and452 UI tests pass, with one ignored
+existing mount-namespace fixture. Strict Linux/Windows GNU checks pass. Evidence:
+`.hermes/evidence/file-manager-lifecycle-current/`. Cleanup retired16 superseded
+Linux app products with matching compiler settings, no hard-link/active/fingerprint
+consumers, retaining the verified current binary and shared dependencies. Their
+logical size is12,935,471,730 bytes. Final guarded incremental cleanup removed29 obsolete sessions (1.07 GiB
+reported). Actual source chooser Save/folder/cancel/caller-loss checks also pass
+with the requested X11 startup ID, using the retained verified Rust caller.
+All owned processes/profiles/mounts are removed; compact receipts and the current
+source app/shared caches remain for the next work. Stable packages remain25b38c8f; continue the Windows default
+folder preference and exact-package/cooperating-caller/software gates.
+
 ## Standard Linux file-manager interface — source, 2026-11-01
 
 Optional folder setup now registers an on-demand FileManager1 backend alongside
@@ -553,7 +584,7 @@ roadmap completion. A source pass does not establish package or owner acceptance
    at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
    pushed and its Linux production lifecycle now passes. Actual sandboxed
    development-caller Open/Save and document export also pass. Still required:
-   FileManager1 startup-focus/multiple-window and exact-package acceptance, the reversible Windows default-folder preference
+   FileManager1 final packaged/cooperating-caller acceptance, the reversible Windows default-folder preference
    and final packaged cooperating-app acceptance. Windows menu actions pass native
    parser/registry and actual Shell/Services checks at9242ef29.
    Direct Windows owner/Open/Save/lease checks and a constrained Flatpak caller

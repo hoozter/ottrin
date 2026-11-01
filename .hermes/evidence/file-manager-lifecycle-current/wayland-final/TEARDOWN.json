@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-ktbcsnnk",
+  "owned_processes_reaped": [
+    {
+      "pid": 4013922,
+      "exit": 0
+    },
+    {
+      "pid": 4013925,
+      "exit": 0
+    },
+    {
+      "pid": 4013926,
+      "exit": 15
+    },
+    {
+      "pid": 4013978,
+      "exit": 0
+    },
+    {
+      "pid": 4013979,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Failed to gain real time thread priority (See CAP_SYS_NICE in the capabilities(7) man page). error: Operation not permitted\nKWIN environment variables: QList(\"KWIN_COMPOSE=Q\")\nAccepting client connections on sockets: QList(\"ottrin-wayland-qa\")\nkwin_wayland_x11windowed: X11 server is missing support for DRI3 1.2+, which the nested X11 backend requires\n",
+  "profile_removed": true
+}

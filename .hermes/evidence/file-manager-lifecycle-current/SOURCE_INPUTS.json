@@ -1,0 +1,7 @@
+{
+  "crates/ottrin-app/src/file_manager.rs": "5bac4e88c13a47d71dc45b20b799225097187ecd0f2ed826c83d9a97b194466d",
+  "crates/ottrin-app/src/main.rs": "92b1fc2c4418aed4be4a5cb580d73c4d2141066f7d8ef248466f8b798855528d",
+  "crates/ottrin-ui/src/startup_notification.rs": "3a5e88934bfe954c3de790c17c8320cb71b9180be56bc0610cfd2597890be192",
+  "crates/ottrin-ui/src/lib.rs": "46e1943e3350b807aa86047f85e73c6b366167467e0c59f60e17868030f754ca",
+  "crates/ottrin-ui/Cargo.toml": "cd9e37655843910f4bbcb343d8b042bbcfba2c7d8d56dbd99b352627c16a3203"
+}

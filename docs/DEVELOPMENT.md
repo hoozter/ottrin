@@ -1885,7 +1885,7 @@ files and the previous default. Disable restores that default while preserving
 unrelated preference edits. Modified owned files refuse destructive replacement.
 The actual desktop parser validates Exec before setup. The same receipt owns an
 on-demand D-Bus activation file for `org.freedesktop.FileManager1`, object
-`/org/freedesktop/FileManager1`. `ShowFolders` opens folder contents; `ShowItems`
+`/org/freedesktop/FileManager1` ([standard interface](https://wiki.freedesktop.org/www/Specifications/file-manager-interface/)). `ShowFolders` opens folder contents; `ShowItems`
 reveals entries in their parents (including folders/broken links); each distinct
 input gets its own window. `ShowItemProperties` opens one read-only metadata
 window with an item selector. Every URI in a batch is validated before launching.
@@ -1897,9 +1897,14 @@ on D-Bus events and starts no index or renderer until a request needs a window.
 It never queues behind or replaces another provider. Existing desktop managers
 can retain the well-known name until they exit. Enable/repair/disable calls the
 private `org.ottrin.FileManager.Stop` interface without auto-activation; missing
-or foreign providers are retained. Normal backend exit reaps owned window
-children while running, and does not close user windows. Final-package and
-startup-notification focus acceptance remain separately scoped in the roadmap.
+or foreign providers are retained. Owned child pidfds are polled together without timers, so closing a later window
+reaps it immediately even while an earlier window remains open. Backend exit
+does not close user windows. Shared startup notification applies the X11 startup
+property/completion message or Wayland activation request before revealing each
+window. Tokens are taken and cleared at the start of main, before threads or
+GUI/D-Bus initialization, and are not inherited by descendants. Optional
+activation errors are reported while still showing the usable window. Real
+caller/compositor-policy and final-package acceptance remain separately scoped.
 No personal desktop preference changes occur during source QA.
 
 Index diagnostic progress paths are human-readable labels only; the index retains

@@ -1,0 +1,89 @@
+{
+  "binary_sha256": "bafa68ae99a917164a7c2d84679e9d8e2d4e872ffe777417f8319c733ba480de",
+  "cases": [
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4011544,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowFolders",
+      "native_argv_preserved": true,
+      "window_pid": 4011743,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItems",
+      "native_argv_preserved": true,
+      "window_pid": 4011848,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4012088,
+      "normal_close": false,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4012161,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    }
+  ],
+  "backend_smaps_rollup": {
+    "Rss": "14772 kB",
+    "Pss": "10754 kB",
+    "Private_Clean": "8324 kB",
+    "Private_Dirty": "2348 kB"
+  },
+  "backend_memory_kib": {
+    "VmSize": "326324 kB",
+    "VmRSS": "14772 kB"
+  },
+  "idle": {
+    "duration_seconds": 5,
+    "cpu_ticks": 0,
+    "clock_ticks_per_second": 100
+  },
+  "later_batch_child_reaped_while_first_open": true,
+  "active_window_survived_backend_restart": true,
+  "status": "pass",
+  "source_preserved": true,
+  "registration_removed": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-uhit5jfp",
+    "owned_processes_reaped": [
+      {
+        "pid": 4011425,
+        "exit": 0
+      },
+      {
+        "pid": 4011484,
+        "exit": 0
+      },
+      {
+        "pid": 4011485,
+        "exit": 15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        4011796
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:64 / /var/tmp/.ottrin-picker-qa-uhit5jfp/runtime/doc rw,nosuid,nodev,relatime shared:159 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "existing_ottrin_owner_not_replaced": true
+}

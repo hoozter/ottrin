@@ -1,7 +1,11 @@
 #[cfg(target_os = "linux")]
+mod startup_notification;
+#[cfg(target_os = "linux")]
 use ottrin_platform::LinuxMoveRecoveryPlan as NativeMoveRecoveryPlan;
 #[cfg(target_os = "windows")]
 use ottrin_platform::WindowsMoveRecoveryPlan as NativeMoveRecoveryPlan;
+#[cfg(target_os = "linux")]
+pub use startup_notification::StartupNotification;
 #[cfg(all(test, target_os = "windows"))]
 #[path = "../../../tests/support/windows_oplock.rs"]
 mod test_oplock;

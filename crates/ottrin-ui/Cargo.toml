@@ -28,7 +28,7 @@ zbus = "5.14"
 x11rb = "0.13"
 wayland-client = "0.31"
 wayland-backend = { version = "0.3", features = ["client_system", "dlopen"] }
-wayland-protocols = { version = "0.32", features = ["client", "unstable"] }
+wayland-protocols = { version = "0.32", features = ["client", "unstable", "staging"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

@@ -1,0 +1,231 @@
+{
+  "replacement": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+  "replacement_sha256": "bafa68ae99a917164a7c2d84679e9d8e2d4e872ffe777417f8319c733ba480de",
+  "remove": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-7b0f17bab9520bc2",
+      "sha256": "45535184d649b5b15720b14518931804a5e5daa314b67c31f63376d70414175c",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 847364835
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-5f13e91ba2dfd5fd",
+      "sha256": "01c3972f6d378d391a8558471bcbb711c54d0bf2df8431ba4c0ceae0934d358d",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 845882479
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-5e8cf5148afdb316",
+      "sha256": "31bed7686c95e96c6ef8ae8cb7963bc116bfc3a276b67b28db471e01c8c37fa7",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 785697995
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-c7ca7c68a9a8f4c2",
+      "sha256": "38160fdb2103bd6b98ad8073b1ed37576c6b58aa7bace1f9ead161e1e963a71e",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 786947621
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-e0f25bacfc7bd0a4",
+      "sha256": "749f489686ac894559fb6a3febb71d758ea734b3ba5d2a41037c462921a46502",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 842833084
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-e58b0b0896f08824",
+      "sha256": "ae30ce3fadd838d62787f59f357524e6ee65d27e816df89fc39d40ad71e4acf0",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 822210768
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-74b3387302465f8d",
+      "sha256": "005ff267cd81d15c17a7a478f44c38e21be57983000cb2919a9c0bf42a6da2ce",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 782862572
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-37be2fa7445820e7",
+      "sha256": "debec2e75d0744d901c7d183c985de6e4e59c6d1849e002740829c8208296523",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 837374317
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-b4da44c410526567",
+      "sha256": "354dfad74791a895baa933e73bc67356fbf342ebba7ffd7ee60ba383a58b4313",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 811636567
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ae821644c424f90c",
+      "sha256": "61a10464668305d7ed590988cc1ca29165d827981030540280416747d07cac6a",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 778234549
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ac48fc1a87bd4fdf",
+      "sha256": "f6284e0e8a4bad19c7e9b36c2e40a57aa0898fb7b48bcda6c6872e43caf72a0d",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 818467888
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-1279c700bb66751e",
+      "sha256": "f48bddb6886b126c48a8ecb14943ba0a00e53adee36f60b818108bf54a2daf2e",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 789879190
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-042d7117c6ab6306",
+      "sha256": "476de7829e6f7e6e0244761b65d61ccc219b2ae912897d542675783a74d322e6",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 777220005
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8a2b23490b6bbdc1",
+      "sha256": "3b01c0b03b0de66bdf8e02340052ca442122b57f25019f94b223171d5ef1bbc8",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 835983213
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-448a710ffbf24cc3",
+      "sha256": "85fa7210156de326dbff83c478021abb163198b84377de43a3d27ccb73cc8dc0",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 787174446
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-34b45de95a75322e",
+      "sha256": "9dae6b03a4d6f2eeec34309a01a35dd51083f9174ae721d521214aa2ee7a01b1",
+      "matching_compiler_settings": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "profile": 6367705407909804931,
+        "target": 17573561801879140266,
+        "path": 3586702553900163283,
+        "rustflags": [],
+        "compile_kind": 0
+      },
+      "bytes": 785702201
+    }
+  ],
+  "retain": []
+}

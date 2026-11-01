@@ -48,6 +48,8 @@ enum GuiLaunchTarget {
 
 #[derive(Debug, Default, PartialEq, Eq)]
 struct CliArguments {
+    #[cfg(target_os = "linux")]
+    startup: ottrin_ui::StartupNotification,
     command: Vec<OsString>,
     renderer_override: Option<String>,
     helper_path: Option<PathBuf>,
@@ -389,6 +391,24 @@ fn windows_graphics_evidence() -> GraphicsEvidence {
 }
 
 fn main() {
+    #[cfg(target_os = "linux")]
+    let startup = {
+        let value = ottrin_ui::StartupNotification {
+            x11: std::env::var("DESKTOP_STARTUP_ID")
+                .ok()
+                .filter(|v| !v.is_empty()),
+            wayland: std::env::var("XDG_ACTIVATION_TOKEN")
+                .ok()
+                .filter(|v| !v.is_empty()),
+        };
+        // SAFETY: this is the first work in main, before spawning any application
+        // threads or calling GUI/D-Bus libraries. Descendants must not inherit used tokens.
+        unsafe {
+            std::env::remove_var("DESKTOP_STARTUP_ID");
+            std::env::remove_var("XDG_ACTIVATION_TOKEN");
+        }
+        value
+    };
     let args: Vec<OsString> = std::env::args_os().skip(1).collect();
     #[cfg(unix)]
     if args.as_slice() == ["--index-daemon"] {
@@ -406,6 +426,8 @@ fn main() {
             std::process::exit(2);
         }
     };
+    #[cfg(target_os = "linux")]
+    let cli = CliArguments { startup, ..cli };
     if cli.help {
         print_cli_help();
         return;
@@ -498,6 +520,8 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
     let graphics_runtime = graphics_runtime_status(renderer_override.is_some(), &config);
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
+    #[cfg(target_os = "linux")]
+    let startup = cli.startup;
     let standalone_inspector = matches!(gui_target, Some(GuiLaunchTarget::QuickInspector(_)));
     let main_viewport = main_viewport_geometry(standalone_inspector, window_size);
     let window_title = application_window_title();
@@ -511,6 +535,8 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
     );
     #[cfg(target_os = "windows")]
     let options = windows_initial_window_options(options, standalone_inspector);
+    #[cfg(target_os = "linux")]
+    let options = startup_window_options(options, &startup);
     eframe::run_native(
         &window_title,
         options,
@@ -543,6 +569,8 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
                 }
                 None => {}
             }
+            #[cfg(target_os = "linux")]
+            startup.apply(cc);
             Ok(Box::new(app))
         }),
     )
@@ -714,7 +742,20 @@ fn application_window_options(
         ..Default::default()
     }
 }
+#[cfg(target_os = "linux")]
+fn startup_window_options(
+    mut options: NativeOptions,
+    startup: &ottrin_ui::StartupNotification,
+) -> NativeOptions {
+    if startup.pending() {
+        options.viewport = options.viewport.with_visible(false);
+    }
+    options
+}
+
 fn run_properties_gui(paths: Vec<PathBuf>, cli: CliArguments) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    let startup = cli.startup;
     let current = std::env::current_dir().map_err(|e| e.to_string())?;
     let mut seen = HashSet::new();
     let paths: Vec<_> = paths
@@ -748,10 +789,17 @@ fn run_properties_gui(paths: Vec<PathBuf>, cli: CliArguments) -> Result<(), Stri
     );
     #[cfg(target_os = "windows")]
     let options = windows_initial_window_options(options, false);
+    #[cfg(target_os = "linux")]
+    let options = startup_window_options(options, &startup);
     eframe::run_native(
         &title,
         options,
-        Box::new(move |cc| Ok(Box::new(ottrin_ui::PropertiesApp::new(cc, paths, runtime)?))),
+        Box::new(move |cc| {
+            let app = ottrin_ui::PropertiesApp::new(cc, paths, runtime)?;
+            #[cfg(target_os = "linux")]
+            startup.apply(cc);
+            Ok(Box::new(app))
+        }),
     )
     .map_err(|e| e.to_string())
 }
@@ -761,6 +809,8 @@ fn run_picker_gui(
     cli: CliArguments,
     cancel_on_disconnect: bool,
 ) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    let startup = cli.startup;
     let renderer_override = graphics_renderer_override(cli.renderer_override.as_deref())?;
     let config = load_config();
     let runtime = graphics_runtime_status(renderer_override.is_some(), &config);
@@ -780,6 +830,8 @@ fn run_picker_gui(
     let options = picker_window_system_options(options, &request.parent_window)?;
     #[cfg(target_os = "windows")]
     let options = windows_initial_window_options(options, false);
+    #[cfg(target_os = "linux")]
+    let options = startup_window_options(options, &startup);
     let outcome = std::sync::Arc::new(std::sync::Mutex::new(None));
     let result = outcome.clone();
     let cancelled = request.cancelled_response();
@@ -795,9 +847,10 @@ fn run_picker_gui(
                     ctx.request_repaint()
                 })?;
             }
-            Ok(Box::new(ottrin_ui::PickerApp::new(
-                cc, request, runtime, outcome, cancelled,
-            )?))
+            let app = ottrin_ui::PickerApp::new(cc, request, runtime, outcome, cancelled)?;
+            #[cfg(target_os = "linux")]
+            startup.apply(cc);
+            Ok(Box::new(app))
         }),
     )
     .map_err(|error| error.to_string())?;

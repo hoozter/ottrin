@@ -98,7 +98,8 @@ async fn launch(method: Method, uris: Vec<String>, startup_id: String) -> zbus::
                     cmd.env_remove("DESKTOP_STARTUP_ID")
                         .env_remove("XDG_ACTIVATION_TOKEN");
                     if !startup_id.is_empty() {
-                        cmd.env("DESKTOP_STARTUP_ID", &startup_id);
+                        cmd.env("DESKTOP_STARTUP_ID", &startup_id)
+                            .env("XDG_ACTIVATION_TOKEN", &startup_id);
                     }
                     children.push(cmd.spawn().map_err(|e| {
                         zbus::fdo::Error::Failed(format!("Cannot open Ottrin: {e}"))
@@ -108,11 +109,7 @@ async fn launch(method: Method, uris: Vec<String>, startup_id: String) -> zbus::
             })();
             // Reply after validation/spawn, not after the user closes the windows. Always reap.
             let _ = sent.send_blocking(result);
-            for mut child in children {
-                if let Err(error) = child.wait() {
-                    eprintln!("ottrin file manager: cannot reap window: {error}");
-                }
-            }
+            reap_windows(children);
         })
         .map_err(|e| zbus::fdo::Error::Failed(e.to_string()))?;
     received
@@ -120,6 +117,62 @@ async fn launch(method: Method, uris: Vec<String>, startup_id: String) -> zbus::
         .await
         .map_err(|e| zbus::fdo::Error::Failed(e.to_string()))?
 }
+/// Wait on all children concurrently without timers, and reap each as soon as it exits.
+fn reap_windows(children: Vec<Child>) {
+    use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+    let mut waiting = Vec::new();
+    for child in children {
+        // SAFETY: child.id is an owned, unreaped child, so its PID cannot be reused.
+        let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
+        if fd < 0 {
+            eprintln!(
+                "ottrin file manager: cannot supervise window: {}",
+                std::io::Error::last_os_error()
+            );
+            wait_window(child);
+        } else {
+            // SAFETY: pidfd_open returned a new owned descriptor.
+            waiting.push((child, unsafe { OwnedFd::from_raw_fd(fd as i32) }));
+        }
+    }
+    while !waiting.is_empty() {
+        let mut polls: Vec<_> = waiting
+            .iter()
+            .map(|(_, fd)| libc::pollfd {
+                fd: fd.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            })
+            .collect();
+        // SAFETY: every poll descriptor remains owned and live for the complete call.
+        let result = unsafe { libc::poll(polls.as_mut_ptr(), polls.len() as libc::nfds_t, -1) };
+        if result < 0 {
+            let error = std::io::Error::last_os_error();
+            if error.kind() == std::io::ErrorKind::Interrupted {
+                continue;
+            }
+            eprintln!("ottrin file manager: window supervision failed: {error}");
+            for (child, _) in waiting {
+                wait_window(child);
+            }
+            return;
+        }
+        for index in (0..polls.len()).rev() {
+            if polls[index].revents != 0 {
+                let (child, _) = waiting.swap_remove(index);
+                wait_window(child);
+            }
+        }
+    }
+}
+fn wait_window(mut child: Child) {
+    match child.wait() {
+        Ok(status) if status.success() => {}
+        Ok(status) => eprintln!("ottrin file manager: window exited with {status}"),
+        Err(error) => eprintln!("ottrin file manager: cannot reap window: {error}"),
+    }
+}
+
 struct Control {
     stopped: async_channel::Sender<()>,
 }

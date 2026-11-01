@@ -1,0 +1,54 @@
+{
+  "scope": "Virtual KWin Wayland source Properties, real surface/activation request; synthetic token does not establish compositor grant for a real caller",
+  "binary_sha256": "bafa68ae99a917164a7c2d84679e9d8e2d4e872ffe777417f8319c733ba480de",
+  "native_window": {
+    "pid": 4015233,
+    "caption": "Ottrin \u2014 Properties \u2014 fixture.txt",
+    "width": 720,
+    "height": 540,
+    "active": true
+  },
+  "status": "pass",
+  "native_wayland_activation_sent": true,
+  "normal_close": true,
+  "source_preserved": true,
+  "no_index_or_preferences": true,
+  "compositor_pid": 4015231,
+  "app_pid": 4015233,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-1s3iwf2w",
+    "owned_processes_reaped": [
+      {
+        "pid": 4015176,
+        "exit": 0
+      },
+      {
+        "pid": 4015181,
+        "exit": 0
+      },
+      {
+        "pid": 4015182,
+        "exit": 15
+      },
+      {
+        "pid": 4015230,
+        "exit": 0
+      },
+      {
+        "pid": 4015231,
+        "exit": 15
+      },
+      {
+        "pid": 4015233,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
