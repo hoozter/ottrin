@@ -86,7 +86,8 @@ pub struct PickerRequest {
     pub parent_window: String,
     #[serde(with = "crate::native_path::optional")]
     pub initial_directory: Option<PathBuf>,
-    pub filename: String,
+    #[serde(with = "crate::native_path::os_string")]
+    pub filename: std::ffi::OsString,
     pub multiple: bool,
     pub filters: Vec<PickerFilter>,
     pub current_filter: Option<usize>,
@@ -107,7 +108,9 @@ impl PickerRequest {
         text(&self.accept_label, "accept label", 256)?;
         text(&self.parent_window, "parent window", 1024)?;
         PickerParentWindow::parse(&self.parent_window)?;
-        text(&self.filename, "filename", 4096)?;
+        if self.filename.as_encoded_bytes().len() > 4096 {
+            return Err("The suggested filename exceeds4096 native encoded bytes".into());
+        }
         if let Some(path) = &self.initial_directory {
             crate::native_path::NativePath::encode(path)
                 .decode()
@@ -119,7 +122,7 @@ impl PickerRequest {
         if self.multiple && self.mode == PickerMode::Save {
             return Err("Save requests select one filename".into());
         }
-        if !self.filename.is_empty() && !is_picker_filename(&self.filename) {
+        if !self.filename.is_empty() && !is_picker_native_filename(&self.filename) {
             return Err("The suggested filename must be a single filename".into());
         }
         if self.filters.len() > 128 || self.choices.len() > 64 {
@@ -222,7 +225,17 @@ impl PickerRequest {
 /// A save filename cannot escape the currently displayed directory. Reject both
 /// separators on both platforms so cooperating applications share one contract.
 pub fn is_picker_filename(value: &str) -> bool {
-    !value.is_empty() && !matches!(value, "." | "..") && !value.contains(['/', '\\', ':', '\0'])
+    is_picker_native_filename(std::ffi::OsStr::new(value))
+}
+
+pub fn is_picker_native_filename(value: &std::ffi::OsStr) -> bool {
+    !value.is_empty()
+        && value != "."
+        && value != ".."
+        && !value
+            .as_encoded_bytes()
+            .iter()
+            .any(|b| matches!(b, b'/' | b'\\' | b':' | 0))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -411,6 +424,7 @@ mod tests {
         };
         let request = PickerRequest {
             initial_directory: Some(path.parent().unwrap().into()),
+            filename: path.file_name().unwrap().into(),
             ..Default::default()
         };
         let response = PickerResponse {
@@ -419,6 +433,7 @@ mod tests {
             current_filter: None,
             choices: BTreeMap::new(),
         };
+        request.validate().unwrap();
         let request_json =
             serde_json::to_vec(&request).expect("Native caller folder must be serializable");
         assert_eq!(
@@ -432,6 +447,23 @@ mod tests {
             response
         );
         response.validate_for(&request).unwrap();
+    }
+    #[test]
+    fn filename_wire_rejects_text_foreign_units_and_path_components() {
+        assert!(serde_json::from_str::<PickerRequest>(r#"{"filename":"theme.json"}"#).is_err());
+        for value in [
+            r#"{"encoding":"unix-bytes","units_hex":"6100"}"#,
+            r#"{"encoding":"windows-utf16-le","units_hex":"00610000"}"#,
+        ] {
+            assert!(
+                serde_json::from_str::<PickerRequest>(&format!("{{\"filename\":{value}}}"))
+                    .is_err()
+            );
+        }
+        let value = crate::native_path::NativePath::encode(std::path::Path::new("../escape"));
+        let input = serde_json::json!({"filename":value});
+        let request: PickerRequest = serde_json::from_value(input).unwrap();
+        assert!(request.validate().is_err());
     }
     #[test]
     fn path_wire_rejects_strings_foreign_encodings_unknown_fields_and_nul_units() {

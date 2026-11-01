@@ -337,7 +337,7 @@ impl PickerDialog {
             Some(directory) => directory,
             None => preferences.directory()?.unwrap_or_else(default_home_dir),
         };
-        let filename = OsString::from(&request.filename);
+        let filename = request.filename.clone();
         let choices = request
             .choices
             .iter()
@@ -2546,69 +2546,81 @@ mod tests {
     #[cfg(any(unix, windows))]
     #[test]
     fn native_save_name_survives_refresh_and_navigation_without_a_selection() {
-        let root = tempfile::tempdir().unwrap();
-        #[cfg(unix)]
-        let filename = {
-            use std::os::unix::ffi::OsStringExt;
-            std::ffi::OsString::from_vec(b"original\x80.txt".to_vec())
-        };
-        #[cfg(windows)]
-        let filename = {
-            use std::os::windows::ffi::OsStringExt;
-            std::ffi::OsString::from_wide(&[111, 0xd800, 46, 116, 120, 116])
-        };
-        let original = root.path().join(&filename);
-        std::fs::write(&original, b"preserve original").unwrap();
-        let other = root.path().join("other");
-        std::fs::create_dir(&other).unwrap();
-        let ctx = Context::default();
-        let mut dialog = PickerDialog::new(
-            PickerRequest {
-                mode: PickerMode::Save,
-                initial_directory: Some(root.path().into()),
-                ..Default::default()
-            },
-            &ctx,
-            Default::default(),
-        )
-        .unwrap();
-        wait_listing(&mut dialog);
-        let visible = dialog.visible_entries();
-        let index = visible
-            .iter()
-            .position(|entry| entry.path == original)
+        for supplied in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            #[cfg(unix)]
+            let filename = {
+                use std::os::unix::ffi::OsStringExt;
+                std::ffi::OsString::from_vec(b"original\x80.txt".to_vec())
+            };
+            #[cfg(windows)]
+            let filename = {
+                use std::os::windows::ffi::OsStringExt;
+                std::ffi::OsString::from_wide(&[111, 0xd800, 46, 116, 120, 116])
+            };
+            let original = root.path().join(&filename);
+            std::fs::write(&original, b"preserve original").unwrap();
+            let other = root.path().join("other");
+            std::fs::create_dir(&other).unwrap();
+            let ctx = Context::default();
+            let mut dialog = PickerDialog::new(
+                PickerRequest {
+                    mode: PickerMode::Save,
+                    initial_directory: Some(root.path().into()),
+                    filename: if supplied {
+                        filename.clone()
+                    } else {
+                        OsString::new()
+                    },
+                    ..Default::default()
+                },
+                &ctx,
+                Default::default(),
+            )
             .unwrap();
-        dialog.select(visible.get(index), index, &visible, Default::default());
-        dialog.hidden = true;
-        dialog.scan();
-        wait_listing(&mut dialog);
-        assert!(dialog.selected.is_empty());
-        dialog.accept(false);
-        let until = Instant::now() + Duration::from_secs(3);
-        while dialog.validating {
-            dialog.poll();
-            assert!(Instant::now() < until);
-            std::thread::sleep(Duration::from_millis(1));
+            wait_listing(&mut dialog);
+            if supplied {
+                assert_eq!(dialog.filename, filename);
+                assert!(dialog.selected.is_empty());
+            } else {
+                let visible = dialog.visible_entries();
+                let index = visible
+                    .iter()
+                    .position(|entry| entry.path == original)
+                    .unwrap();
+                dialog.select(visible.get(index), index, &visible, Default::default());
+            }
+            dialog.hidden = true;
+            dialog.scan();
+            wait_listing(&mut dialog);
+            assert!(dialog.selected.is_empty());
+            dialog.accept(false);
+            let until = Instant::now() + Duration::from_secs(3);
+            while dialog.validating {
+                dialog.poll();
+                assert!(Instant::now() < until);
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            assert_eq!(
+                dialog.overwrite,
+                Some(original.clone()),
+                "Refreshing must not replace native filename units with display glyphs"
+            );
+            dialog.navigate(other.clone());
+            wait_listing(&mut dialog);
+            dialog.accept(false);
+            while dialog.validating {
+                dialog.poll();
+                assert!(Instant::now() < until);
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            assert_eq!(
+                dialog.take_result().unwrap().paths,
+                vec![other.join(filename)]
+            );
+            assert_eq!(std::fs::read(&original).unwrap(), b"preserve original");
+            assert_eq!(std::fs::read_dir(other).unwrap().count(), 0);
         }
-        assert_eq!(
-            dialog.overwrite,
-            Some(original.clone()),
-            "Refreshing must not replace native filename units with display glyphs"
-        );
-        dialog.navigate(other.clone());
-        wait_listing(&mut dialog);
-        dialog.accept(false);
-        while dialog.validating {
-            dialog.poll();
-            assert!(Instant::now() < until);
-            std::thread::sleep(Duration::from_millis(1));
-        }
-        assert_eq!(
-            dialog.take_result().unwrap().paths,
-            vec![other.join(filename)]
-        );
-        assert_eq!(std::fs::read(&original).unwrap(), b"preserve original");
-        assert_eq!(std::fs::read_dir(other).unwrap().count(), 0);
     }
 
     #[cfg(any(unix, windows))]

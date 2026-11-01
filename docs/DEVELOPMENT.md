@@ -1698,10 +1698,13 @@ startup. A cancelled chooser returns `accepted: false` and an empty path list.
 The calling application opens or saves the returned path; the chooser does not
 create, truncate or edit it. Callers must still handle later filesystem changes.
 
-The base protocol is delivered in the source25b38c8f package cohort. Native parent
-attachment is newer source work, with separate acceptance evidence under
-`.hermes/evidence/picker-parent-current/`; platform registration and portal
-integration remain roadmap work.
+The base chooser is delivered in the source25b38c8f package cohort. Native parent
+attachment, caller leases and native filename request fields are newer source
+work, with separate acceptance evidence under `picker-parent-current/`,
+`picker-disconnect-current/` and `picker-native-name-request-current/` in
+`.hermes/evidence/`. This protocol documentation describes the current source;
+consult the exact package receipt for a built application's scope. Platform
+registration and portal integration remain roadmap work.
 
 ### Parent windows and cancellation
 
@@ -1744,7 +1747,11 @@ unresponsive owned process.
 
 ### Paths
 
-`initial_directory` is null or a native-path object. Every member of response
+`initial_directory` is null or a native-path object. The optional suggested
+`filename` uses the same native-unit object, with a single filename rather than
+a directory path. Plain text filename fields are rejected; callers must encode
+them using the platform units too. This preserves non-UTF-8 bytes and unmatched
+UTF-16 units supplied by native applications. Every member of response
 `paths` is a native-path object too. Plain JSON path strings are rejected.
 
 On Linux, objects use `encoding: "unix-bytes"` and `units_hex` contains lowercase
@@ -1789,7 +1796,7 @@ A minimal Linux request selecting text documents from `/tmp`:
 ```
 
 Modes are `open`, `save` and `folder`. Optional fields include `accept_label`,
-`parent_window`, the suggested UTF-8 `filename`, `multiple`, `filters`,
+`parent_window`, the suggested native-unit `filename`, `multiple`, `filters`,
 `current_filter` and `choices`. Save selects one filename. Filters contain glob
 or MIME patterns. Choice IDs are unique, and returned values must belong to the
 caller-supplied options; a choice with no options is boolean (`true`/`false`).

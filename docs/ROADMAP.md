@@ -1,6 +1,35 @@
 # Ottrin roadmap
 
 
+## Native suggested filenames — source work, 2026-11-01
+
+Caller-supplied suggested filenames now use the shared native-unit codec instead
+of a UTF-8-only text field. All current callers are updated and the superseded
+wire form is rejected; no theme/main-preference schema changes. This closes the
+portal current-file hint gap for non-UTF-8 Linux names and unmatched Windows
+UTF-16 units. The same native basename validator rejects escaping components.
+
+Six core contract and27 Linux picker-related tests pass. Native Windows passes
+six contract and28 picker-related tests per ordinary/elevated token, including
+native request roundtrips and fresh Save validation after refresh/navigation.
+Strict core/UI/app all-target Linux/GNU-Windows lint passes. Actual Linux GUI
+accepts a native filename hint without selecting a row,shows fresh overwrite
+confirmation and returns the exact original pathname with an open caller lease;
+original bytes remain,no lossy replacement file appears and no index/main config
+is created. The preceding executable rejects that native filename request before
+graphics; its control is retained.
+
+All owned native roots and private Linux profiles/displays/buses/helpers are
+removed, original Windows profiles preserved and VM off. The unchanged guarded
+cleanup retired51 obsolete incremental sessions; transient unreadable-PID refusals
+were retained and each process was verified exited before a fresh guarded retry.
+No exception was added. Current binaries,compiler-matched test executables,useful
+latest caches and compact evidence remain. Stable packages are still source25b38c8f;
+Windows actual caller-hint GUI and new cohort acceptance remain independent work.
+Evidence: `.hermes/evidence/picker-native-name-request-current/ACCEPTANCE.json`.
+Continue the Linux portal backend and reversible opt-in integration next.
+
+
 ## Caller-disconnect milestone — source work, 2026-11-01
 
 The external chooser now offers `picker --cancel-on-disconnect`: one bounded JSON

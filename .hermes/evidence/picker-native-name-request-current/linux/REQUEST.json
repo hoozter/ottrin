@@ -1,0 +1,12 @@
+{
+  "mode": "save",
+  "title": "Native caller filename QA",
+  "initial_directory": {
+    "encoding": "unix-bytes",
+    "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d743463366e7132742f66697874757265"
+  },
+  "filename": {
+    "encoding": "unix-bytes",
+    "units_hex": "6f726967696e616c802e747874"
+  }
+}

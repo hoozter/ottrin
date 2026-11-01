@@ -1,0 +1,100 @@
+{
+  "status": "pass within source,actual Linux GUI and native Windows contract/UI scopes",
+  "base_revision": "55bd9be081aca57a4a45a1d8fc5c2ac2cd30bf18",
+  "source_files": {
+    "crates/ottrin-core/src/native_path.rs": "13fac04d04d18ab1d4ecb7502faf6ad376950733940711bf31bbf6f0ebcb6680",
+    "crates/ottrin-core/src/picker.rs": "a9ed2461bce1ad3e68834c9e4e513c5c5c287f1c88b6c492240e260f2d4b0f69",
+    "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+    "crates/ottrin-ui/src/internal_picker.rs": "2044e4036f2e67264bc89856b2ffdfdce8b8b95f2c566715f2890e0615e54459",
+    "crates/ottrin-ui/src/picker.rs": "c32109678e981ff0b3edc6e5cccaba886b3e95505425d45be6e35419f11f552f"
+  },
+  "linux_core": "6 picker contract tests passed;35 other core tests filtered",
+  "linux_ui": "27 picker-related tests passed;422 other UI tests filtered",
+  "windows_native": {
+    "ordinary-ui": "test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 398 filtered out; finished in 0.84s",
+    "elevated-ui": "test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 398 filtered out; finished in 0.81s",
+    "ordinary-core": "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.05s",
+    "elevated-core": "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.06s"
+  },
+  "strict_lint": "Linux/GNU Windows core+app+UI all-target checks pass",
+  "linux_gui": {
+    "binary_sha256": "debec2e75d0744d901c7d183c985de6e4e59c6d1849e002740829c8208296523",
+    "scope": "Actual source chooser NativePath filename request, Save/overwrite exact response and caller-lease acceptance; no package or Windows GUI acceptance",
+    "status": "pass",
+    "normal_exit": 0,
+    "response": {
+      "accepted": true,
+      "paths": [
+        {
+          "encoding": "unix-bytes",
+          "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d743463366e7132742f666978747572652f6f726967696e616c802e747874"
+        }
+      ],
+      "current_filter": null,
+      "choices": {}
+    },
+    "caller_hint_accepted_without_row_selection": true,
+    "original_bytes_preserved": true,
+    "no_lossy_replacement_file_created": true,
+    "no_index_started": true,
+    "no_main_config_written": true,
+    "teardown": {
+      "status": "closed",
+      "profile": "/var/tmp/.ottrin-picker-qa-t4c6nq2t",
+      "owned_processes_reaped": [
+        {
+          "pid": 3428226,
+          "exit": 0
+        },
+        {
+          "pid": 3428229,
+          "exit": 0
+        },
+        {
+          "pid": 3428230,
+          "exit": 15
+        },
+        {
+          "pid": 3428280,
+          "exit": 0
+        }
+      ],
+      "owned_children": {
+        "stopped": [],
+        "unreadable_foreign_processes_preserved": 5
+      },
+      "owned_mounts_unmounted": [],
+      "profile_removed": true
+    }
+  },
+  "old_protocol_control": {
+    "status": "reproduced native suggested-name protocol gap before graphics",
+    "binary_sha256": "3e6b9524b54ce6a1c4d210f9bd1a6d383726b526c0c99098a11bfe152e938187",
+    "request": {
+      "mode": "save",
+      "filename": {
+        "encoding": "unix-bytes",
+        "units_hex": "6f726967696e616c802e747874"
+      }
+    },
+    "exit": 2,
+    "stderr": "ottrin picker: Invalid picker request: invalid type: map, expected a string at line 1 column 29\n",
+    "stdout": "",
+    "private_profile": "/tmp/ot-6jgp7f69"
+  },
+  "protocol_change": "Suggested filename is a native-unit object using the shared NativePath codec. UTF-8-only filename wire removed,all current callers updated;main settings/theme schema unchanged.",
+  "cleanup": {
+    "root_removed": true,
+    "guest_off": true,
+    "Linux_private_profiles_displays_helpers_removed": true,
+    "obsolete_incremental_sessions_retired": 51,
+    "last_guarded_batch_only_reclaimed_gib": 0.47,
+    "guard_refusals": "All refused transient PIDs rechecked exited before any retry;no inspection exceptions added;complete raw controls and final guard success retained",
+    "retained": "Current compiler-matched binaries,test executables,dependency libraries,useful latest caches and compact evidence;no package stage"
+  },
+  "limits": [
+    "Source milestone;stable packages still source25b38c8f",
+    "No actual Windows filename-hint chooser GUI or new package acceptance;native Windows tests do exercise unmatched UTF-16 request and fresh Save validation",
+    "No portal backend/registration yet"
+  ]
+}

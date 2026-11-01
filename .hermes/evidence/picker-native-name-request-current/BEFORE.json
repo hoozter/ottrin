@@ -1,0 +1,15 @@
+{
+  "status": "reproduced native suggested-name protocol gap before graphics",
+  "binary_sha256": "3e6b9524b54ce6a1c4d210f9bd1a6d383726b526c0c99098a11bfe152e938187",
+  "request": {
+    "mode": "save",
+    "filename": {
+      "encoding": "unix-bytes",
+      "units_hex": "6f726967696e616c802e747874"
+    }
+  },
+  "exit": 2,
+  "stderr": "ottrin picker: Invalid picker request: invalid type: map, expected a string at line 1 column 29\n",
+  "stdout": "",
+  "private_profile": "/tmp/ot-6jgp7f69"
+}

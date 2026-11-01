@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "attempts": 2,
+  "scope": "Every attempt uses the unchanged live-consumer/newest-session/exclusive-lock guard. A retry is permitted only after all PIDs from its refusal no longer exist; no exception added.",
+  "previous_refused_pid_3438171_exited": true
+}

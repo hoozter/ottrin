@@ -66,7 +66,7 @@ impl OttrinApp {
         PickerRequest {
             mode,
             title: title.into(),
-            filename,
+            filename: filename.into(),
             filters: vec![PickerFilter {
                 name: "Ottrin theme JSON".into(),
                 patterns: vec![PickerPattern::Glob("*.json".into())],

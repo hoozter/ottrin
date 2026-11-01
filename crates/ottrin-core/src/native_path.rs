@@ -267,3 +267,24 @@ pub mod list {
             .collect()
     }
 }
+
+/// Native filenames use the same platform-unit wire representation as paths.
+/// Filename shape and request limits are checked by the picker contract.
+pub mod os_string {
+    use super::*;
+    use serde::{Deserializer, Serializer};
+    pub fn serialize<S: Serializer>(
+        name: &std::ffi::OsString,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        NativePath::encode(Path::new(name)).serialize(serializer)
+    }
+    pub fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<std::ffi::OsString, D::Error> {
+        NativePath::deserialize(deserializer)?
+            .decode()
+            .map(PathBuf::into_os_string)
+            .map_err(serde::de::Error::custom)
+    }
+}

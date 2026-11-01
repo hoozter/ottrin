@@ -1,0 +1,17 @@
+{
+  "before_partial_retirement_human_du": {
+    "target/debug/deps": "35GiB",
+    "target/debug/incremental": "13GiB",
+    "target/x86_64-pc-windows-gnu/debug/deps": "32GiB",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "29GiB"
+  },
+  "configuration": "Core+UI+app Windows compilation shares the established application dependency/features cohort. Existing test executable configuration filenames are reused;not retained as versioned outputs.",
+  "retired": "51 obsolete/unpublished incremental sessions in exact native/Windows roots;current newest sessions and dependency caches preserved",
+  "qa_resources": "Native roots,transfer staging,private Linux profiles/displays/buses/processes and C helpers removed;VM off",
+  "task_created_storage_remaining": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-native-name-request-current",
+    "purpose": "Compact reproducible acceptance/failure evidence and reusable QA producers",
+    "pending_consumer": "Next coherent package acceptance and portal integration"
+  },
+  "current_deliverables": "Stable dist paths preserved at prior verified source25b38c8f"
+}

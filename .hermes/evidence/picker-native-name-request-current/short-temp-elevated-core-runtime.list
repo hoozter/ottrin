@@ -1,0 +1,8 @@
+picker::tests::caller_requests_reject_ambiguous_choices_and_path_escaping_filenames: test
+picker::tests::cancellation_keeps_caller_choice_identities_and_returns_no_paths: test
+picker::tests::external_parent_identity_is_explicit_and_lossless: test
+picker::tests::filename_wire_rejects_text_foreign_units_and_path_components: test
+picker::tests::path_wire_rejects_strings_foreign_encodings_unknown_fields_and_nul_units: test
+picker::tests::picker_request_and_response_transport_preserves_native_path_units: test
+
+6 tests, 0 benchmarks
