@@ -1,0 +1,12 @@
+{
+  "baseline": "Native parent BUILD_STORAGE.json and previous guarded retirement; current session reused target and compiler caches",
+  "before_disconnect_retirement": {
+    "target/debug/deps": "35GiB",
+    "target/debug/incremental": "13GiB",
+    "target/x86_64-pc-windows-gnu/debug/deps": "33GiB",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "29GiB"
+  },
+  "configuration": "App+UI features compiled together for native Windows checks. Parent-only superseded UI executable/fingerprint/dep-info retired after matching settings,live-consumer,hardlink/reference and current native test checks. Reuse this app+UI configuration for subsequent milestones.",
+  "owned_staging": "Temporary stripped/gzip transfer directory removed by producer; native roots removed,VM off;Linux profiles/compiled C helper removed",
+  "retained": "Current debug binaries/current native test executables,dependencies,newest per-configuration compiler sessions and compact evidence;no additional package stage"
+}

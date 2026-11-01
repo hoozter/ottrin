@@ -1,6 +1,39 @@
 # Ottrin roadmap
 
 
+## Caller-disconnect milestone — source work, 2026-11-01
+
+The external chooser now offers `picker --cancel-on-disconnect`: one bounded JSON
+line starts the chooser and the caller keeps stdin open as a lifetime lease.
+Closing it cancels normally and saves picker-only preferences. The reader blocks
+without polling; unexpected additional data cancels instead of creating another
+request. The ordinary EOF-delimited protocol remains explicit and usable. A late
+disconnect cannot replace an already accepted selection.
+
+Linux passes32 application unit tests, two indexd tests, three CLI integration
+tests and24 focused picker UI tests. Actual private X11 GUI confirms a held-open
+lease stays usable, EOF closes normally, changed Grid/Preview preferences persist,
+additional data cancels, ordinary EOF mode stays open until native close, original
+bytes remain and no main config/index is created. Windows passes28 focused picker
+UI tests per ordinary/elevated token and all29 application unit tests per token;
+strict all-target Linux/GNU-Windows checks pass. The first native application check
+correctly rejected an accidentally Unix-scoped new test; its annotation is fixed,
+existing test scoping restored and both final application runs pass. The failed
+control remains recorded. Windows actual lease GUI/package acceptance remains.
+
+All owned native roots/processes and Linux profiles/displays/buses/helpers are
+removed; original Windows profiles are preserved and VM off. Guarded cleanup
+retired17 obsolete incremental sessions (0.85GiB) plus a compiler-matched737MB
+superseded test executable/fingerprint/dep-info. Current binaries and useful caches
+remain. The stable packages still use source25b38c8f; batch these integration
+changes into the next coherent package cohort.
+
+Evidence: `.hermes/evidence/picker-disconnect-current/ACCEPTANCE.json`.
+Next: implement the opt-in Linux FileChooser backend and reversible registration,
+then supported cooperating-app Windows and folder integration. Owner/external
+acceptance waits do not block this work.
+
+
 ## Native picker parent milestone — source work, 2026-11-01
 
 The external chooser now validates explicit X11/Wayland/Windows parent identities,

@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "retired": 1,
+  "logical_bytes_removed": 737064523,
+  "retained": "Current matching test replacements,dependency libraries,current binaries and useful compiler caches",
+  "scope": "Focused current chooser and real Win32 ownership execution,not an assertion of repeated full platform acceptance"
+}

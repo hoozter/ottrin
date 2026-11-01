@@ -1724,6 +1724,24 @@ Cancel, native window-manager close and parent loss return cancellation and
 save picker-only preferences. Accepted results are retained through native
 shutdown. Closing a chooser does not start or stop an index daemon.
 
+### Caller lifetime lease
+
+`ottrin picker --cancel-on-disconnect` reads a single newline-terminated JSON
+request, bounded to128KiB. The caller must flush that line and keep the stdin
+pipe open while the chooser is active. Closing the pipe cancels the chooser
+normally, including its previews, and saves picker preferences. An unexpected
+byte after the request also cancels; it is not another command. The waiting
+reader blocks without a polling timer. The process ends when the chooser closes,
+so it needs no always-running GUI or additional background service.
+
+The ordinary `ottrin picker` EOF-delimited request remains a separate explicit
+mode. EOF finishes its request; it does not immediately cancel that chooser.
+Both modes use the same validator and return one JSON response. A late disconnect
+cannot overwrite an already accepted selection. Portal backends should retain
+the stdin lease for their request's lifetime, close it on request Close or caller
+loss, await normal child completion, and reserve forced teardown for an
+unresponsive owned process.
+
 ### Paths
 
 `initial_directory` is null or a native-path object. Every member of response

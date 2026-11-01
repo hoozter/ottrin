@@ -1,0 +1,60 @@
+{
+  "binary_sha256": "3e6b9524b54ce6a1c4d210f9bd1a6d383726b526c0c99098a11bfe152e938187",
+  "scope": "Actual debug-source X11 picker stdin lifetime,preference saving and normal EOF-protocol regression;no Windows or package GUI acceptance",
+  "lease_cancel": {
+    "normal_exit": 0,
+    "preferences_saved": {
+      "grid": true,
+      "hidden": false,
+      "preview": true,
+      "last_directory": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d39766374336338362f66697874757265"
+      }
+    }
+  },
+  "extra_data_cancel_exit": 0,
+  "ordinary_eof_not_cancelled_until_native_close": true,
+  "status": "pass",
+  "original_bytes_preserved": true,
+  "no_index_started": true,
+  "no_main_config_written": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-9vct3c86",
+    "owned_processes_reaped": [
+      {
+        "pid": 3398626,
+        "exit": 0
+      },
+      {
+        "pid": 3398629,
+        "exit": 0
+      },
+      {
+        "pid": 3398630,
+        "exit": 15
+      },
+      {
+        "pid": 3398684,
+        "exit": 0
+      },
+      {
+        "pid": 3398923,
+        "exit": 0
+      },
+      {
+        "pid": 3398969,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 5
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:65 / /var/tmp/.ottrin-picker-qa-9vct3c86/runtime/doc rw,nosuid,nodev,relatime shared:588 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

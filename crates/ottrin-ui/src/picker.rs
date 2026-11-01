@@ -1436,6 +1436,7 @@ impl Drop for PickerDialog {
 /// file-manager operation workers. Only explicit indexed search connects to an existing index.
 pub struct PickerApp {
     parent: Option<crate::picker_parent::PickerParent>,
+    caller_cancelled: Arc<AtomicBool>,
     dialog: PickerDialog,
     config: AppConfig,
     colors: Colors,
@@ -1456,6 +1457,7 @@ impl PickerApp {
         request: PickerRequest,
         runtime: ottrin_core::GraphicsRuntimeStatus,
         outcome: Arc<std::sync::Mutex<Option<PickerResponse>>>,
+        caller_cancelled: Arc<AtomicBool>,
     ) -> Result<Self, String> {
         crate::install_application_fonts(&cc.egui_ctx);
         egui_extras::install_image_loaders(&cc.egui_ctx);
@@ -1465,6 +1467,7 @@ impl PickerApp {
         let parent = crate::picker_parent::PickerParent::attach(cc, &request.parent_window)?;
         Ok(Self {
             parent,
+            caller_cancelled,
             dialog: PickerDialog::new(
                 request,
                 &cc.egui_ctx,
@@ -1483,7 +1486,9 @@ impl PickerApp {
 }
 impl PickerApp {
     fn render_window(&mut self, ctx: &Context) {
-        if self.parent.as_ref().is_some_and(|parent| parent.gone()) {
+        if self.caller_cancelled.load(Ordering::Acquire)
+            || self.parent.as_ref().is_some_and(|parent| parent.gone())
+        {
             self.dialog.cancel();
         }
         if ctx.input(|i| i.viewport().close_requested()) {
@@ -1530,10 +1535,13 @@ impl PickerApp {
 
     fn finish_response(&mut self) -> bool {
         if let Some(result) = self.dialog.take_result() {
-            if let Err(error) = self.dialog.preferences().save() {
-                eprintln!("ottrin: Could not remember picker preferences: {error}");
+            let mut outcome = self.outcome.lock().expect("picker outcome");
+            if outcome.is_none() {
+                if let Err(error) = self.dialog.preferences().save() {
+                    eprintln!("ottrin: Could not remember picker preferences: {error}");
+                }
+                *outcome = Some(result);
             }
-            *self.outcome.lock().expect("picker outcome") = Some(result);
             true
         } else {
             false
@@ -1595,6 +1603,7 @@ mod tests {
         wait_listing(&mut dialog);
         PickerApp {
             parent: None,
+            caller_cancelled: Arc::new(AtomicBool::new(false)),
             dialog,
             config,
             colors,
@@ -1656,6 +1665,29 @@ mod tests {
                 ],
             );
         }
+    }
+
+    #[test]
+    fn late_caller_disconnect_cannot_replace_an_accepted_response() {
+        let directory = tempfile::tempdir().unwrap();
+        let ctx = Context::default();
+        let request = PickerRequest {
+            mode: PickerMode::Folder,
+            initial_directory: Some(directory.path().into()),
+            ..Default::default()
+        };
+        let mut app = host(&ctx, request, true, 1.0);
+        let accepted = PickerResponse {
+            accepted: true,
+            paths: vec![directory.path().into()],
+            current_filter: None,
+            choices: Default::default(),
+        };
+        app.dialog.result = Some(accepted.clone());
+        assert!(app.finish_response());
+        app.caller_cancelled.store(true, Ordering::Release);
+        frame(&mut app, &ctx, Vec2::new(940.0, 640.0), 1.0, vec![]);
+        assert_eq!(app.outcome.lock().unwrap().as_ref(), Some(&accepted));
     }
 
     #[test]

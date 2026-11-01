@@ -128,7 +128,9 @@ enum HeadlessAction {
         offset: usize,
     },
     Preview(PathBuf),
-    Picker,
+    Picker {
+        cancel_on_disconnect: bool,
+    },
     OpenPath(PathBuf),
     SelectPath(PathBuf),
     DropStatus,
@@ -355,8 +357,16 @@ fn main() {
         return;
     }
     let action = cli_headless_action(&cli.command);
-    if matches!(&action, Some(HeadlessAction::Picker)) {
-        let request = match read_picker_request(std::io::stdin().lock()) {
+    if let Some(HeadlessAction::Picker {
+        cancel_on_disconnect,
+    }) = &action
+    {
+        let cancel_on_disconnect = *cancel_on_disconnect;
+        let request = match if cancel_on_disconnect {
+            read_picker_request_line(std::io::stdin().lock())
+        } else {
+            read_picker_request(std::io::stdin().lock())
+        } {
             Ok(request) => request,
             Err(error) => {
                 eprintln!("ottrin picker: {error}");
@@ -364,7 +374,7 @@ fn main() {
             }
         };
         install_windows_startup_panic_hook();
-        if let Err(error) = run_picker_gui(request, cli) {
+        if let Err(error) = run_picker_gui(request, cli, cancel_on_disconnect) {
             eprintln!("ottrin picker: {error}");
             std::process::exit(1);
         }
@@ -547,18 +557,71 @@ fn read_picker_request(
         .take(MAX_PICKER_REQUEST_BYTES as u64 + 1)
         .read_to_end(&mut bytes)
         .map_err(|error| error.to_string())?;
+    decode_picker_request(&bytes)
+}
+
+fn decode_picker_request(bytes: &[u8]) -> Result<ottrin_core::picker::PickerRequest, String> {
     if bytes.len() > MAX_PICKER_REQUEST_BYTES {
         return Err("Picker request exceeds 128 KiB".into());
     }
-    let request = serde_json::from_slice(&bytes)
+    let request = serde_json::from_slice(bytes)
         .map_err(|error| format!("Invalid picker request: {error}"))?;
     ottrin_ui::PickerApp::validate_request(&request)?;
     Ok(request)
 }
 
+/// The disconnect-aware form uses one newline-terminated JSON frame; stdin stays
+/// open as a lifetime lease. It does not require a polling thread or a service.
+fn read_picker_request_line(
+    reader: impl std::io::BufRead,
+) -> Result<ottrin_core::picker::PickerRequest, String> {
+    use std::io::BufRead as _;
+    let mut bytes = Vec::new();
+    reader
+        .take(MAX_PICKER_REQUEST_BYTES as u64 + 1)
+        .read_until(b'\n', &mut bytes)
+        .map_err(|error| error.to_string())?;
+    if bytes.last() != Some(&b'\n') {
+        return Err(
+            "Disconnect-aware picker requires one newline-terminated JSON request, at most128KiB"
+                .into(),
+        );
+    }
+    bytes.pop();
+    decode_picker_request(&bytes)
+}
+
+fn watch_picker_disconnect(
+    mut reader: impl std::io::Read + Send + 'static,
+    cancelled: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    wake: impl FnOnce() + Send + 'static,
+) -> Result<(), String> {
+    std::thread::Builder::new()
+        .name("picker-caller".into())
+        .spawn(move || {
+            let mut byte = [0];
+            loop {
+                match reader.read(&mut byte) {
+                    Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
+                    Err(error) => eprintln!("ottrin picker: caller connection failed: {error}"),
+                    Ok(0) => {}
+                    Ok(_) => {
+                        eprintln!("ottrin picker: unexpected data after the request; cancelling")
+                    }
+                }
+                cancelled.store(true, std::sync::atomic::Ordering::Release);
+                wake();
+                break;
+            }
+        })
+        .map(|_| ())
+        .map_err(|error| error.to_string())
+}
+
 fn run_picker_gui(
     request: ottrin_core::picker::PickerRequest,
     cli: CliArguments,
+    cancel_on_disconnect: bool,
 ) -> Result<(), String> {
     let renderer_override = graphics_renderer_override(cli.renderer_override.as_deref())?;
     let config = load_config();
@@ -590,8 +653,15 @@ fn run_picker_gui(
         &title,
         options,
         Box::new(move |cc| {
+            let cancelled = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+            if cancel_on_disconnect {
+                let ctx = cc.egui_ctx.clone();
+                watch_picker_disconnect(std::io::stdin(), cancelled.clone(), move || {
+                    ctx.request_repaint()
+                })?;
+            }
             Ok(Box::new(ottrin_ui::PickerApp::new(
-                cc, request, runtime, outcome,
+                cc, request, runtime, outcome, cancelled,
             )?))
         }),
     )
@@ -756,6 +826,9 @@ fn print_cli_help() {
     println!();
     println!("Usage:");
     println!("  ottrin picker                   Open an Ottrin chooser using a JSON stdin request");
+    println!(
+        "    --cancel-on-disconnect        Read one JSON line and cancel when the caller closes stdin"
+    );
     println!("  ottrin                         Open the file manager");
     println!("  ottrin <FILE>                  Open the file directly in Quick Inspector");
     println!("  ottrin <DIRECTORY>             Open the file manager in that directory");
@@ -855,11 +928,15 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
     match command {
         "search" | "-s" => Some(parse_search_action(&args[1..])),
         "index" => Some(parse_index_action(&args[1..])),
-        "picker" => Some(if args.len() == 1 {
-            HeadlessAction::Picker
-        } else {
-            HeadlessAction::Invalid("picker reads one JSON request from standard input".into())
-        }),
+        "picker" => Some(
+            if args.len() == 1 || (args.len() == 2 && args[1] == "--cancel-on-disconnect") {
+                HeadlessAction::Picker {
+                    cancel_on_disconnect: args.len() == 2,
+                }
+            } else {
+                HeadlessAction::Invalid("picker reads one JSON request from standard input".into())
+            },
+        ),
         "preview" | "-p" => Some(match &args[1..] {
             [path] if !path.is_empty() => HeadlessAction::Preview(PathBuf::from(path)),
             [separator, path] if separator == "--" && !path.is_empty() => {
@@ -1249,7 +1326,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             Ok(())
         }
         HeadlessAction::Preview(_)
-        | HeadlessAction::Picker
+        | HeadlessAction::Picker { .. }
         | HeadlessAction::OpenPath(_)
         | HeadlessAction::SelectPath(_) => {
             unreachable!("GUI paths start before headless routing")
@@ -1571,6 +1648,76 @@ fn cargo_helper_artifact_from_messages(
 mod tests {
     use super::*;
 
+    #[test]
+    fn disconnect_protocol_has_one_bounded_request_frame_and_keeps_the_lease() {
+        use std::io::Read as _;
+        let mut reader = std::io::Cursor::new(b"{\"mode\":\"open\"}\nlease".as_slice());
+        assert_eq!(
+            read_picker_request_line(&mut reader).unwrap().mode,
+            ottrin_core::picker::PickerMode::Open
+        );
+        let mut remaining = String::new();
+        reader.read_to_string(&mut remaining).unwrap();
+        assert_eq!(remaining, "lease");
+        assert!(read_picker_request_line(b"{}".as_slice()).is_err());
+        assert!(
+            read_picker_request_line(vec![b'x'; MAX_PICKER_REQUEST_BYTES + 2].as_slice()).is_err()
+        );
+        assert!(matches!(
+            cli_headless_action(&["picker".into(), "--cancel-on-disconnect".into()]),
+            Some(HeadlessAction::Picker {
+                cancel_on_disconnect: true
+            })
+        ));
+        assert!(matches!(
+            cli_headless_action(&[
+                "picker".into(),
+                "--cancel-on-disconnect".into(),
+                "extra".into()
+            ]),
+            Some(HeadlessAction::Invalid(_))
+        ));
+    }
+
+    #[test]
+    fn caller_lease_blocks_without_polling_retries_interrupts_and_wakes_on_eof() {
+        use std::sync::{
+            Arc,
+            atomic::{AtomicBool, Ordering},
+            mpsc,
+        };
+        struct Reader {
+            input: mpsc::Receiver<std::io::Result<usize>>,
+            entered: mpsc::Sender<()>,
+        }
+        impl std::io::Read for Reader {
+            fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> {
+                self.entered.send(()).unwrap();
+                self.input.recv().unwrap()
+            }
+        }
+        let (tx, rx) = mpsc::channel();
+        let (entered, blocked) = mpsc::channel();
+        let (wake, woken) = mpsc::channel();
+        let cancelled = Arc::new(AtomicBool::new(false));
+        watch_picker_disconnect(
+            Reader { input: rx, entered },
+            cancelled.clone(),
+            move || wake.send(()).unwrap(),
+        )
+        .unwrap();
+        blocked.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert!(!cancelled.load(Ordering::Acquire));
+        assert!(woken.try_recv().is_err());
+        tx.send(Err(std::io::Error::from(std::io::ErrorKind::Interrupted)))
+            .unwrap();
+        blocked.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert!(!cancelled.load(Ordering::Acquire));
+        tx.send(Ok(0)).unwrap();
+        woken.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert!(cancelled.load(Ordering::Acquire));
+    }
+
     #[cfg(unix)]
     #[test]
     fn picker_requests_are_bounded_and_validated_before_graphics_startup() {
@@ -1597,7 +1744,9 @@ mod tests {
             parse_cli_arguments(&["picker".into(), "--renderer".into(), "opengl".into()]).unwrap();
         assert!(matches!(
             cli_headless_action(&cli.command),
-            Some(HeadlessAction::Picker)
+            Some(HeadlessAction::Picker {
+                cancel_on_disconnect: false
+            })
         ));
         assert!(matches!(
             cli_headless_action(&["picker".into(), "extra".into()]),

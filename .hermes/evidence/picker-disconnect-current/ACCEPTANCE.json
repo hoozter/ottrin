@@ -1,0 +1,97 @@
+{
+  "status": "pass within focused source,actual Linux GUI and native Windows unit scopes",
+  "base_revision": "968794181ceb441cbcd5eca382b1756f574fea7f",
+  "source_files": {
+    "crates/ottrin-app/src/main.rs": "c88a5a1d4816f686aa46f44a406a767668135d6e184834fb37157f3f2149575c",
+    "crates/ottrin-core/src/picker.rs": "54ffffc78c821940382727d34aac30c454af65975e000b7a85f43cd5e13572bb",
+    "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+    "crates/ottrin-ui/src/picker.rs": "9903451f3c78d013067ecd42d79101482505152b257c369c4ed6757c2b38ecb4"
+  },
+  "linux_app_results": [
+    "test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.70s"
+  ],
+  "linux_picker_ui": "24 passed;425 other UI tests filtered",
+  "strict_lint": "Linux and GNU Windows app/UI all-target checks pass",
+  "windows_picker": "28 passed per ordinary/elevated token,398 other UI tests filtered; includes parent API and late-disconnect response regression",
+  "windows_app": "29 passed per ordinary/elevated token,zero filters,final corrected test annotation",
+  "linux_gui": {
+    "binary_sha256": "3e6b9524b54ce6a1c4d210f9bd1a6d383726b526c0c99098a11bfe152e938187",
+    "scope": "Actual debug-source X11 picker stdin lifetime,preference saving and normal EOF-protocol regression;no Windows or package GUI acceptance",
+    "lease_cancel": {
+      "normal_exit": 0,
+      "preferences_saved": {
+        "grid": true,
+        "hidden": false,
+        "preview": true,
+        "last_directory": {
+          "encoding": "unix-bytes",
+          "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d39766374336338362f66697874757265"
+        }
+      }
+    },
+    "extra_data_cancel_exit": 0,
+    "ordinary_eof_not_cancelled_until_native_close": true,
+    "status": "pass",
+    "original_bytes_preserved": true,
+    "no_index_started": true,
+    "no_main_config_written": true,
+    "teardown": {
+      "status": "closed",
+      "profile": "/var/tmp/.ottrin-picker-qa-9vct3c86",
+      "owned_processes_reaped": [
+        {
+          "pid": 3398626,
+          "exit": 0
+        },
+        {
+          "pid": 3398629,
+          "exit": 0
+        },
+        {
+          "pid": 3398630,
+          "exit": 15
+        },
+        {
+          "pid": 3398684,
+          "exit": 0
+        },
+        {
+          "pid": 3398923,
+          "exit": 0
+        },
+        {
+          "pid": 3398969,
+          "exit": 0
+        }
+      ],
+      "owned_children": {
+        "stopped": [],
+        "unreadable_foreign_processes_preserved": 5
+      },
+      "owned_mounts_unmounted": [
+        "65 34 0:65 / /var/tmp/.ottrin-picker-qa-9vct3c86/runtime/doc rw,nosuid,nodev,relatime shared:588 - fuse.portal portal rw,user_id=1000,group_id=1000"
+      ],
+      "profile_removed": true
+    }
+  },
+  "controls": [
+    "Initial native run completed both UI scopes but its required-test check correctly rejected the application scope: a Unix-only attribute was misplaced on the new framing test. Existing annotation restored to its original test; new portable framing test runs and passes under both tokens in app-final. Initial failure is retained,not declared passed.",
+    "Linux GUI binary predates only the test-annotation repair; production code is unchanged. Stable packages retain source25b38c8f."
+  ],
+  "cleanup": {
+    "all_owned_native_roots_removed": true,
+    "guest_off": true,
+    "original_native_profiles_preserved": true,
+    "linux_private_desktops_profiles_helpers_removed": true,
+    "obsolete_incremental_sessions": 17,
+    "incremental_reclaimed_gib": 0.85,
+    "superseded_test_executable_bytes": 737064523
+  },
+  "limits": [
+    "No actual Windows stdin-lease GUI or packaged integration acceptance",
+    "No portal backend or folder registration in this checkpoint",
+    "Full broader platform and physical acceptance retain earlier artifact scopes"
+  ]
+}

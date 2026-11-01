@@ -1,0 +1,28 @@
+{
+  "nonce": "cc4eddf0-2097-4798-a980-f97f330a7d75",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "failed",
+  "source": {
+    "base_revision": "968794181ceb441cbcd5eca382b1756f574fea7f",
+    "working_tree": [
+      " M crates/ottrin-app/src/main.rs",
+      " M crates/ottrin-ui/src/picker.rs",
+      " M docs/DEVELOPMENT.md",
+      "?? AGENTS.md"
+    ],
+    "files": {
+      "crates/ottrin-app/src/main.rs": "8708f2585d48d514e0ff8bf76f441b651fbc127ec1cb42ffd0bd423f8f0ad654",
+      "crates/ottrin-core/src/picker.rs": "54ffffc78c821940382727d34aac30c454af65975e000b7a85f43cd5e13572bb",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/picker.rs": "9903451f3c78d013067ecd42d79101482505152b257c369c4ed6757c2b38ecb4"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "error": "AssertionError('tests::disconnect_protocol_has_one_bounded_request_frame_and_keeps_the_lease')",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

@@ -1,0 +1,19 @@
+{
+  "exit": 0,
+  "remainingTempEntries": [
+    {
+      "Name": "4a2eyk3f",
+      "Attributes": 16,
+      "Length": null
+    }
+  ],
+  "uiRemainingEntries": [],
+  "tempEntries": 1,
+  "phase": "short-temp-elevated-ui-runtime",
+  "actorTempEntries": [
+    "4a2eyk3f"
+  ],
+  "owner": "S-1-5-32-544",
+  "administrator": true,
+  "user": "S-1-5-21-3183210791-1673105385-3262580894-1001"
+}
