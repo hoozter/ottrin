@@ -1,0 +1,37 @@
+{
+  "status": "scoped_pass",
+  "scope": "Actual Flatpak development sandbox, real installed private frontend, source chooser, document FUSE Open and Save",
+  "final": "open-save/RESULT.json",
+  "open_control_pass": "open3/RESULT.json",
+  "failed_controls": {
+    "open": "Unsupported flatpak --system build option; no application failure",
+    "open2": "Two Documents services shared one runtime mount; second exited; final producer uses exclusive runtime root and requires live owned service"
+  },
+  "source": "0e85f745 product binaries; subsequent platform helper move has no semantic change",
+  "hosted_lifecycle": "8cd433cc Linux success; portal and folder actual setup/update/default resolution/restoration/removal in ../folder-integration-current/hosted-linux-pass/ACCEPTANCE.json",
+  "remaining_ci_failure": "0e85f745 run41322511138 HTML witness sees one seccomp0; gate unchanged, histories added for next hosted run",
+  "limits": [
+    "No installed browser workflow claimed",
+    "No final package acceptance",
+    "New diagnostic history producer has syntax check only until hosted run"
+  ],
+  "cleanup": {
+    "owned_profiles_processes_mounts": "All attempts report removed/closed; Documents exits release FUSE mounts; no compiled client retained",
+    "compiler": "No new Rust build/cache allocation in this checkpoint",
+    "remaining_storage": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/portal-sandbox-current",
+        "purpose": "compact QA producers, screenshots, logs and control/acceptance receipts for audit"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/folder-integration-current/hosted-linux-pass",
+        "purpose": "downloaded successful hosted lifecycle receipt"
+      }
+    ]
+  },
+  "primary_references": [
+    "https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html",
+    "https://flatpak.github.io/xdg-desktop-portal/docs/documents-and-fuse.html",
+    "https://raw.githubusercontent.com/flatpak/xdg-desktop-portal/1.18.4/src/file-chooser.c"
+  ]
+}

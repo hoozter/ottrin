@@ -1,5 +1,34 @@
 # Ottrin roadmap
 
+## Sandboxed portal Open/Save acceptance — source, 2026-11-01
+
+A genuine Flatpak development sandbox now exercises the public FileChooser API
+through the installed frontend, Ottrin source chooser and live Documents FUSE
+service. The caller verifies that the original host file is inaccessible, opens
+its native-byte filename through the returned document URI, then saves a new file
+through a second exported URI. Host checks verify exact saved bytes and unchanged
+original bytes. This is a real constrained development caller, not an installed
+browser or final-package acceptance. Only the private document mount is bound
+into the caller; its host fixture directory is not exposed.
+
+The first QA command used an unsupported build option. A second attempt exposed
+a test-fixture conflict between two document services sharing a runtime root.
+The final producer allocates its own runtime and requires its document process
+to remain live. Open and Open+Save pass; all attempts removed their profiles,
+actors, mounts and compiled client. Compact controls and final evidence are in
+`.hermes/evidence/portal-sandbox-current/`. Hosted8cd433cc now passes the real
+portal and folder production lifecycle, including restoration and removal.
+
+Latest0e85f745 hosted Linux stops at the HTML sandbox witness gate: one renderer
+was sampled with seccomp0; six others have2. Existing profile/capability/NNP
+checks and pixel rendering pass, but the full security gate remains failed.
+The producer now records per-process start epochs, command lines and every
+security sample without changing the acceptance assertion. A fresh hosted run
+is needed to distinguish startup observations from a lasting defect. Do not
+waive the gate or claim the pipeline is green. Windows jobs remain in progress.
+Stable packages still25b38c8f; continue integration and software acceptance.
+
+
 ## Native search transport and daemon replacement — source, 2026-11-01
 
 The native result-path failure is now fixed in protocol 2. Query roots, all
@@ -358,16 +387,18 @@ Audited: 2026-11-01. This section and the delivery table are the active queue;
 checkpoint narratives retain historical evidence only. Test totals do not measure
 roadmap completion. A source pass does not establish package or owner acceptance.
 
-1. **Finish native search transport checkpoint.** Linux actual native query/JSON
-   output and accepted-daemon upgrade pass, as do 243 search tests, app/daemon/CLI
-   checks and widened Linux/GNU lint. Native Windows protocol and upgrade checks
-   pass; QA VM/root teardown and compiler cleanup are complete. Finish evidence,
-   commit and push. Do not park fixable failures as owner waits.
+1. **Resolve latest hosted HTML witness failure.** Protocol2 source and native
+   Linux/Windows upgrade checks are committed/pushed at0e85f745 with completed
+   teardown and cleanup. Its hosted Linux run41322511138 failed the renderer
+   seccomp witness gate. Added process histories retain the full assertion;
+   collect the next hosted evidence and fix the underlying cause. Other ready
+   integration work continues while CI runs. Windows full CI is pending.
 2. **Finish desktop/cooperating-app integration.** Portal source/lifecycle passes
    at 87999cf8. Reversible Linux default-directory dispatch passes actual GIO/GUI
    at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
-   pushed and awaits a fresh lifecycle run. Still required: actual sandboxed
-   frontend/document export, standard FileManager1 reveal, supported Windows
+   pushed and its Linux production lifecycle now passes. Actual sandboxed
+   development-caller Open/Save and document export also pass. Still required:
+   standard FileManager1 reveal, supported Windows
    folder actions and cooperating-app native picker acceptance.
 3. **Deliver one coherent package cohort.** Stable Linux formats and Windows
    candidates remain25b38c8f. Rebuild from a clean verified checkpoint, verify
@@ -1055,7 +1086,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | --- | --- | --- |
 | Linux | Four25b38c8f formats; complete hosted checks; actual Dark100/Light150 chooser/native-path/persistence/read-only checks and bounded resource samples. Enabled personal service uses the accepted runtime. | Finish external picker/folder integration and remaining software/theme acceptance before parked owner/device checks. |
 | Windows |25b38c8f ZIP/NSIS/MSI candidate;58 matching files, complete hosted source checks and scoped native CLI/renderer/chooser/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) includes the QA-controller failure and exact scope limits. | Finish external picker/folder integration and remaining software acceptance. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade is under final native verification. | Finish sandboxed frontend export, FileManager1, Windows folder/cooperating-app integration and exact-package/resource acceptance. Park only genuine owner/physical/external waits. |
+| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade is under final native verification. | Sandboxed development-caller Open/Save/export passes; finish FileManager1, Windows folder/cooperating-app integration and exact-package/resource acceptance. Park only genuine owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

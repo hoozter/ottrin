@@ -1,0 +1,41 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-neq6qsh4",
+  "owned_processes_reaped": [
+    {
+      "pid": 3766690,
+      "exit": 0
+    },
+    {
+      "pid": 3766694,
+      "exit": 0
+    },
+    {
+      "pid": 3766695,
+      "exit": 15
+    },
+    {
+      "pid": 3766752,
+      "exit": 0
+    },
+    {
+      "pid": 3766754,
+      "exit": 6
+    },
+    {
+      "pid": 3766755,
+      "exit": -15
+    },
+    {
+      "pid": 3766756,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "error: Unknown option --system\n",
+  "profile_removed": true
+}

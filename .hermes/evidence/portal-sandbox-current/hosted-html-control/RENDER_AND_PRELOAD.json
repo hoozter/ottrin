@@ -1,0 +1,96 @@
+{
+  "status": "fail",
+  "uid": 1001,
+  "controller_userns": "user:[4026531837]",
+  "restriction_before": "1",
+  "preload_control_executed": true,
+  "unconfined_transition_restriction": "1",
+  "direct_profile_change_probe": {
+    "baseline": {
+      "uid": 1001,
+      "euid": 1001,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "unconfined",
+      "change_rc": -2,
+      "change_errno": 0,
+      "userns_rc": 0,
+      "userns_errno": 0,
+      "label_after_userns": "unprivileged_userns (enforce)",
+      "mountns_rc": -1,
+      "mountns_errno": 1
+    },
+    "transition": {
+      "uid": 1001,
+      "euid": 1001,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "ottrin-html-render//&unconfined (enforce)",
+      "change_rc": 0,
+      "change_errno": 0,
+      "userns_rc": 0,
+      "userns_errno": 0,
+      "label_after_userns": "ottrin-html-render//&unprivileged_userns (enforce)",
+      "mountns_rc": -1,
+      "mountns_errno": 1
+    }
+  },
+  "direct_profile_change": "unconfined restrictions stacked; in-namespace privileged operation denied",
+  "arbitrary_command_flags_refused": true,
+  "exit": 0,
+  "renderer_witnesses": {
+    "5228": {
+      "userns": "user:[4026532324]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5241": {
+      "userns": "user:[4026532324]",
+      "seccomp": "0",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5242": {
+      "userns": "user:[4026532324]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5243": {
+      "userns": "user:[4026532324]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5253": {
+      "userns": "user:[4026532324]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5295": {
+      "userns": "user:[4026532324]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5306": {
+      "userns": "user:[4026532324]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    }
+  },
+  "caller_preload_denied": true,
+  "error": "AssertionError({'5228': {'userns': 'user:[4026532324]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5241': {'userns': 'user:[4026532324]', 'seccomp': '0', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5242': {'userns': 'user:[4026532324]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5243': {'userns': 'user:[4026532324]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5253': {'userns': 'user:[4026532324]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5295': {'userns': 'user:[4026532324]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5306': {'userns': 'user:[4026532324]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}})",
+  "restriction_after": "1",
+  "host_restriction_unchanged": true
+}

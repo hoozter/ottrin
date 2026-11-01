@@ -1,0 +1,68 @@
+{
+  "scope": "Actual Flatpak development sandbox/public FileChooser/frontend/source chooser/document export; not installed-browser or package acceptance",
+  "binary_sha256": "b8ac59d7b130a9d27728d0b24d3d8bfab382a07ee3e37cae28175a69be3a6eb0",
+  "sandbox_command": [
+    "flatpak",
+    "build",
+    "--runtime",
+    "--readonly",
+    "--die-with-parent",
+    "--nofilesystem=host",
+    "--nofilesystem=home",
+    "--unshare=network",
+    "--nosocket=session-bus",
+    "--nosocket=system-bus",
+    "--nosocket=x11",
+    "--nosocket=wayland",
+    "--talk-name=org.freedesktop.portal.Desktop",
+    "--bind-mount=/var/tmp/.ottrin-picker-qa-6unnjkr4/runtime/doc=/var/tmp/.ottrin-picker-qa-6unnjkr4/runtime/doc",
+    "/var/tmp/.ottrin-picker-qa-6unnjkr4/sandbox",
+    "/app/bin/qa-client",
+    "/var/tmp/.ottrin-picker-qa-6unnjkr4/fixture"
+  ],
+  "client_exit": 1,
+  "client_output": "READY original_inaccessible=true sandbox_identity=org.ottrin.SandboxQA\nUnexpected response 0\n",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-6unnjkr4",
+    "owned_processes_reaped": [
+      {
+        "pid": 3766878,
+        "exit": 0
+      },
+      {
+        "pid": 3766886,
+        "exit": 0
+      },
+      {
+        "pid": 3766888,
+        "exit": 15
+      },
+      {
+        "pid": 3766943,
+        "exit": 0
+      },
+      {
+        "pid": 3766945,
+        "exit": 6
+      },
+      {
+        "pid": 3766946,
+        "exit": -15
+      },
+      {
+        "pid": 3766947,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "96 34 0:64 / /var/tmp/.ottrin-picker-qa-6unnjkr4/runtime/doc rw,nosuid,nodev,relatime shared:159 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "error": "READY original_inaccessible=true sandbox_identity=org.ottrin.SandboxQA\nUnexpected response 0\n",
+    "profile_removed": true
+  }
+}

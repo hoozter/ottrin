@@ -1,0 +1,65 @@
+{
+  "scope": "Actual Flatpak development sandbox/public FileChooser/frontend/source chooser/document export; not installed-browser or package acceptance",
+  "binary_sha256": "b8ac59d7b130a9d27728d0b24d3d8bfab382a07ee3e37cae28175a69be3a6eb0",
+  "sandbox_command": [
+    "flatpak",
+    "--system",
+    "build",
+    "--runtime",
+    "--readonly",
+    "--die-with-parent",
+    "--nofilesystem=host",
+    "--nofilesystem=home",
+    "--unshare=network",
+    "--nosocket=session-bus",
+    "--nosocket=system-bus",
+    "--nosocket=x11",
+    "--nosocket=wayland",
+    "--talk-name=org.freedesktop.portal.Desktop",
+    "--bind-mount=/var/tmp/.ottrin-picker-qa-neq6qsh4/runtime/doc=/var/tmp/.ottrin-picker-qa-neq6qsh4/runtime/doc",
+    "/var/tmp/.ottrin-picker-qa-neq6qsh4/sandbox",
+    "/app/bin/qa-client",
+    "/var/tmp/.ottrin-picker-qa-neq6qsh4/fixture"
+  ],
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-neq6qsh4",
+    "owned_processes_reaped": [
+      {
+        "pid": 3766690,
+        "exit": 0
+      },
+      {
+        "pid": 3766694,
+        "exit": 0
+      },
+      {
+        "pid": 3766695,
+        "exit": 15
+      },
+      {
+        "pid": 3766752,
+        "exit": 0
+      },
+      {
+        "pid": 3766754,
+        "exit": 6
+      },
+      {
+        "pid": 3766755,
+        "exit": -15
+      },
+      {
+        "pid": 3766756,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "error: Unknown option --system\n",
+    "profile_removed": true
+  }
+}

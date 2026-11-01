@@ -1,0 +1,43 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-6unnjkr4",
+  "owned_processes_reaped": [
+    {
+      "pid": 3766878,
+      "exit": 0
+    },
+    {
+      "pid": 3766886,
+      "exit": 0
+    },
+    {
+      "pid": 3766888,
+      "exit": 15
+    },
+    {
+      "pid": 3766943,
+      "exit": 0
+    },
+    {
+      "pid": 3766945,
+      "exit": 6
+    },
+    {
+      "pid": 3766946,
+      "exit": -15
+    },
+    {
+      "pid": 3766947,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "96 34 0:64 / /var/tmp/.ottrin-picker-qa-6unnjkr4/runtime/doc rw,nosuid,nodev,relatime shared:159 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "READY original_inaccessible=true sandbox_identity=org.ottrin.SandboxQA\nUnexpected response 0\n",
+  "profile_removed": true
+}

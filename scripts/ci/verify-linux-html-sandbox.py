@@ -39,7 +39,7 @@ try:
 
   with (out/'stdout.txt').open('w') as stdout,(out/'stderr.txt').open('w') as stderr:
    p=subprocess.Popen(['systemd-run','--user','--wait','--collect','--pipe','--quiet','--unit='+unit,'--property=Type=exec','--property=MemoryMax=512M','--property=TasksMax=256','--property=RuntimeMaxSec=20s','--property=LimitCORE=0','--setenv=LD_PRELOAD='+str(root/'injection.so'),'--setenv=OTTRIN_PROBE_MARKER='+str(root/'injected'),str(owned),str(root),'256'],stdout=stdout,stderr=stderr)
-   deadline=time.monotonic()+25;witnesses={}
+   deadline=time.monotonic()+25;witnesses={};histories={};started=time.monotonic();report['renderer_histories']=histories
    while p.poll() is None and time.monotonic()<deadline:
     cg=subprocess.run(['systemctl','--user','show',unit+'.service','--property=ControlGroup','--value'],capture_output=True,text=True).stdout.strip()
     if cg.startswith('/user.slice/'):
@@ -48,14 +48,22 @@ try:
       for pid in ids:
        proc=Path('/proc')/pid
        try:
+        start_before=(proc/'stat').read_text().rsplit(') ',1)[1].split()[19]
         args=(proc/'cmdline').read_bytes();s=(proc/'status').read_text();label=(proc/'attr/current').read_text().strip()
         if b'--type=renderer' in args:
          fields={k:v.strip() for k,v in (line.split(':',1) for line in s.splitlines() if ':' in line)}
-         witnesses[pid]={'userns':os.readlink(proc/'ns/user'),'seccomp':fields.get('Seccomp'),'caps':fields.get('CapEff'),'no_new_privs':fields.get('NoNewPrivs'),'profile':label}
+         witness={'userns':os.readlink(proc/'ns/user'),'seccomp':fields.get('Seccomp'),'caps':fields.get('CapEff'),'no_new_privs':fields.get('NoNewPrivs'),'profile':label}
+         start_after=(proc/'stat').read_text().rsplit(') ',1)[1].split()[19]
+         identity=pid+':'+start_before
+         history=histories.setdefault(identity,{'pid':pid,'start_ticks':start_before,'cmdline':args.decode(errors='backslashreplace').split('\0'),'samples':[]})
+         history['samples'].append({'elapsed_ms':round((time.monotonic()-started)*1000),'same_process_epoch':start_before==start_after,**witness})
+         # Preserve the existing all-renderer security assertion. Histories are
+         # diagnostic evidence, not a reason to discard an unprotected sample.
+         witnesses[pid]=witness
        except (FileNotFoundError,ProcessLookupError):pass
      except FileNotFoundError:pass
     time.sleep(.01)
-   report['exit']=p.wait(timeout=5);report['renderer_witnesses']=witnesses
+   report['exit']=p.wait(timeout=5);report['renderer_witnesses']=witnesses;report['renderer_histories']=histories
   assert report['exit']==0,(out/'stderr.txt').read_text()
   assert not (root/'injected').exists(),'Caller-controlled preload executed under the trusted profile'
   report['caller_preload_denied']=True

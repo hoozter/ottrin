@@ -1,0 +1,75 @@
+{
+  "scope": "Actual Flatpak development sandbox/public FileChooser/frontend/source chooser/document export; not installed-browser or package acceptance",
+  "binary_sha256": "b8ac59d7b130a9d27728d0b24d3d8bfab382a07ee3e37cae28175a69be3a6eb0",
+  "sandbox_command": [
+    "flatpak",
+    "build",
+    "--runtime",
+    "--readonly",
+    "--die-with-parent",
+    "--nofilesystem=host",
+    "--nofilesystem=home",
+    "--unshare=network",
+    "--nosocket=session-bus",
+    "--nosocket=system-bus",
+    "--nosocket=x11",
+    "--nosocket=wayland",
+    "--talk-name=org.freedesktop.portal.Desktop",
+    "--bind-mount=/var/tmp/.ottrin-picker-qa-2nki9f4r/portal-runtime/doc=/var/tmp/.ottrin-picker-qa-2nki9f4r/portal-runtime/doc",
+    "/var/tmp/.ottrin-picker-qa-2nki9f4r/sandbox",
+    "/app/bin/qa-client",
+    "/var/tmp/.ottrin-picker-qa-2nki9f4r/fixture"
+  ],
+  "client_exit": 0,
+  "client_output": "READY original_inaccessible=true sandbox_identity=org.ottrin.SandboxQA\nPASS exported_uri=file:///var/tmp/.ottrin-picker-qa-2nki9f4r/portal-runtime/doc/3e7cdbaf/original%80.txt bytes=35\n",
+  "save_client_exit": 0,
+  "save_client_output": "READY original_inaccessible=true sandbox_identity=org.ottrin.SandboxQA\nPASS saved_uri=file:///var/tmp/.ottrin-picker-qa-2nki9f4r/portal-runtime/doc/95b139d0/saved-from-sandbox.txt\n",
+  "caller_save_verified": true,
+  "status": "pass",
+  "original_preserved": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-2nki9f4r",
+    "owned_processes_reaped": [
+      {
+        "pid": 3768470,
+        "exit": 0
+      },
+      {
+        "pid": 3768489,
+        "exit": 0
+      },
+      {
+        "pid": 3768493,
+        "exit": 15
+      },
+      {
+        "pid": 3768554,
+        "exit": 0
+      },
+      {
+        "pid": 3768556,
+        "exit": 0
+      },
+      {
+        "pid": 3768571,
+        "exit": -15
+      },
+      {
+        "pid": 3768572,
+        "exit": 0
+      },
+      {
+        "pid": 3768673,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

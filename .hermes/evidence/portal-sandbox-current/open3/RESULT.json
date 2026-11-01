@@ -1,0 +1,68 @@
+{
+  "scope": "Actual Flatpak development sandbox/public FileChooser/frontend/source chooser/document export; not installed-browser or package acceptance",
+  "binary_sha256": "b8ac59d7b130a9d27728d0b24d3d8bfab382a07ee3e37cae28175a69be3a6eb0",
+  "sandbox_command": [
+    "flatpak",
+    "build",
+    "--runtime",
+    "--readonly",
+    "--die-with-parent",
+    "--nofilesystem=host",
+    "--nofilesystem=home",
+    "--unshare=network",
+    "--nosocket=session-bus",
+    "--nosocket=system-bus",
+    "--nosocket=x11",
+    "--nosocket=wayland",
+    "--talk-name=org.freedesktop.portal.Desktop",
+    "--bind-mount=/var/tmp/.ottrin-picker-qa-ssyswx1i/portal-runtime/doc=/var/tmp/.ottrin-picker-qa-ssyswx1i/portal-runtime/doc",
+    "/var/tmp/.ottrin-picker-qa-ssyswx1i/sandbox",
+    "/app/bin/qa-client",
+    "/var/tmp/.ottrin-picker-qa-ssyswx1i/fixture"
+  ],
+  "client_exit": 0,
+  "client_output": "READY original_inaccessible=true sandbox_identity=org.ottrin.SandboxQA\nPASS exported_uri=file:///var/tmp/.ottrin-picker-qa-ssyswx1i/portal-runtime/doc/c9c3d3d0/original%80.txt bytes=35\n",
+  "status": "pass",
+  "original_preserved": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ssyswx1i",
+    "owned_processes_reaped": [
+      {
+        "pid": 3767411,
+        "exit": 0
+      },
+      {
+        "pid": 3767414,
+        "exit": 0
+      },
+      {
+        "pid": 3767415,
+        "exit": 15
+      },
+      {
+        "pid": 3767514,
+        "exit": 0
+      },
+      {
+        "pid": 3767516,
+        "exit": 0
+      },
+      {
+        "pid": 3767531,
+        "exit": -15
+      },
+      {
+        "pid": 3767532,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
