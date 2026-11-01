@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "retired": 7,
+  "logical_bytes_removed": 3847189124,
+  "retained": "Current binaries and test replacements,dependency libraries,other compiler configurations and useful caches"
+}

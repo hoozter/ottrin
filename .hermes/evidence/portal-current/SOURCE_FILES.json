@@ -1,0 +1,20 @@
+{
+  "Cargo.lock": "b10fb61c0b103503398b745218138603ae3bda63eeeac701320e896e52fa06f9",
+  "crates/ottrin-app/Cargo.toml": "9863bbfba74bc674e0198f02189087b1e2c9dfff2934f1bd0a84b997f9ed34bb",
+  "crates/ottrin-app/src/main.rs": "fe2810794ffa486fce738d62c234883b6e188e124314ea64ad8ef3c483c75a68",
+  "crates/ottrin-platform/src/bin/setup/mod.rs": "bfa7729b94a1a70012e6b6ef9ee2bea588a43875911a57422fbbae158c207474",
+  "crates/ottrin-platform/src/lib.rs": "a0beaa9bd638a9f5428393e32a6d5324114b28aae95c97a382edab543e96b0d8",
+  "crates/ottrin-ui/src/launcher.rs": "4f97654f7940944b16029169516b2c9460c94c5b8ee4225481febf0fb4373cd9",
+  "crates/ottrin-ui/src/lib.rs": "b1ab80220302a86173cf02108d3b0c44df97a6dd9377f941559fae9a3ddeb994",
+  "docs/DEVELOPMENT.md": "d3cd4fad41f03464f1fec180b94c53b7fae77482ecf7a1ba463c85e18dcda9c3",
+  "docs/ROADMAP.md": "c7f3b28050e314d899412085956759fddce5576b84e8fb65239df5b48a28a63f",
+  "packaging/linux/package-appimage.sh": "70a2a48b1572bf5ede45137fe7e8f98a44941c4093aa2b6fea66fef8cbbe4def",
+  "packaging/linux/package-portable.sh": "97f13bac288a749eabfb4be185f18edfb34ad384c5068c642880d248b0da13eb",
+  "packaging/linux/package-rpm.sh": "8e041258c5b97bb4b76a3762220ba4b5b81c1e41c0894356883e4557d4f3d953",
+  "packaging/linux/stage-native-package.sh": "4ad604f0e8d85f43da35f509698f14093609594c7784835d60218c2c8b8e22be",
+  "crates/ottrin-app/src/portal.rs": "d6a5d3b33e99f2413d03c7bd4151dcae1f777f543a4aa5dc06e605e4754e48df",
+  "crates/ottrin-app/src/portal_options.rs": "cf390473639708348595d057a778db5967ad819cc5a9d63ab50100740dc33846",
+  "crates/ottrin-platform/src/portal_config.rs": "ba4e45d55a87fa179eeaf188a09499c240e7a86df379b14281f0c4ebc1556d63",
+  "crates/ottrin-platform/src/portal_integration.rs": "8a349ca0572082ceecd60cabe08034554eeca085405def39bb3cdfc72c5c0842",
+  "packaging/linux/ottrin.portal": "caed280d5896837a4eaeb24205b2116ba0c3be72fbbb1828963e705aa50ea3a4"
+}

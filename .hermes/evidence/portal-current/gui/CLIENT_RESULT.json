@@ -1,0 +1,53 @@
+{
+  "status": "pass",
+  "results": {
+    "unauthorized": {
+      "error": "GDBus.Error:org.freedesktop.DBus.Error.AccessDenied: Only the desktop portal frontend may request a chooser"
+    },
+    "cancel": {
+      "code": 1,
+      "values": {}
+    },
+    "save": {
+      "code": 0,
+      "values": {
+        "uris": [
+          "file:///var/tmp/.ottrin-picker-qa-y0m5pz7o/fixture/original%80.txt"
+        ],
+        "choices": []
+      }
+    },
+    "batch": {
+      "code": 0,
+      "values": {
+        "uris": [
+          "file:///var/tmp/.ottrin-picker-qa-y0m5pz7o/fixture/original%80%20%281%29.txt",
+          "file:///var/tmp/.ottrin-picker-qa-y0m5pz7o/fixture/original%80%20%282%29.txt",
+          "file:///var/tmp/.ottrin-picker-qa-y0m5pz7o/fixture/second.txt"
+        ],
+        "choices": []
+      }
+    },
+    "duplicate": {
+      "error": "GDBus.Error:org.freedesktop.DBus.Error.InvalidArgs: Portal request already active"
+    },
+    "unauthorized_close": {
+      "error": "GDBus.Error:org.freedesktop.DBus.Error.AccessDenied: Only this portal request's frontend can close it"
+    },
+    "concurrent_a": {
+      "code": 1,
+      "values": {}
+    },
+    "concurrent_b": {
+      "code": 1,
+      "values": {}
+    },
+    "lost_owner": {
+      "error": "The connection is closed"
+    },
+    "reconnected": {
+      "code": 1,
+      "values": {}
+    }
+  }
+}

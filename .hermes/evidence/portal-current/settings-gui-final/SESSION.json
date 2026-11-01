@@ -1,0 +1,17 @@
+{
+  "profile": "/var/tmp/.ottrin-picker-qa-6dywfjqq",
+  "fixture": "/var/tmp/.ottrin-picker-qa-6dywfjqq/fixture",
+  "app_pid": 3560698,
+  "app_start_time": "18446622",
+  "window": "8388611",
+  "environment": {
+    "DISPLAY": ":2",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-kPHLY4QZAs,guid=863a1318a8c6151fcb1dc7eb6ae73897",
+    "HOME": "/var/tmp/.ottrin-picker-qa-6dywfjqq/home",
+    "XDG_CONFIG_HOME": "/var/tmp/.ottrin-picker-qa-6dywfjqq/config",
+    "XDG_CACHE_HOME": "/var/tmp/.ottrin-picker-qa-6dywfjqq/cache",
+    "XDG_DATA_HOME": "/var/tmp/.ottrin-picker-qa-6dywfjqq/data",
+    "XDG_STATE_HOME": "/var/tmp/.ottrin-picker-qa-6dywfjqq/state",
+    "XDG_RUNTIME_DIR": "/var/tmp/.ottrin-picker-qa-6dywfjqq/runtime"
+  }
+}

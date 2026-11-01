@@ -49,6 +49,7 @@ install -m 0644 "$ROOT/assets/icon.png" "$APPDIR/usr/share/icons/hicolor/256x256
 install -m 0644 "$ROOT/packaging/linux/ottrin.appdata.xml" "$APPDIR/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml"
 install -m 0644 "$ROOT/packaging/linux/org.ottrin.filesystem.policy" "$APPDIR/usr/share/polkit-1/actions/"
 install -m 0644 "$ROOT/packaging/linux/ottrin-index.service.in" "$APPDIR/usr/share/ottrin/"
+install -D -m 0644 "$ROOT/packaging/linux/ottrin.portal" "$APPDIR/usr/share/xdg-desktop-portal/portals/ottrin.portal"
 install -m 0644 "$ROOT/packaging/linux/ottrin-html-render.apparmor" "$APPDIR/usr/share/ottrin/"
 install -m 0644 "$ROOT/README.md" "$ROOT/LICENSE" "$APPDIR/usr/share/doc/ottrin/"
 install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \

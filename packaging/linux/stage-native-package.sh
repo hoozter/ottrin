@@ -39,6 +39,7 @@ mkdir -p \
   "$DEST/usr/share/icons/hicolor/256x256/apps" \
   "$DEST/usr/share/metainfo" \
   "$DEST/usr/share/ottrin" \
+  "$DEST/usr/share/xdg-desktop-portal/portals" \
   "$DEST/usr/share/polkit-1/actions" \
   "$DEST/usr/share/doc/ottrin"
 
@@ -52,6 +53,7 @@ install -m 0755 "$BUILD_DIR/ottrin-legacy-doc-render" "$DEST/usr/bin/ottrin-lega
 install -m 0755 "$BUILD_DIR/ottrin-media-playback" "$DEST/usr/bin/ottrin-media-playback"
 install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$DEST/usr/libexec/ottrin/ottrin-priv-helper"
 install -m 0755 "$BUILD_DIR/ottrin-html-render" "$DEST/usr/libexec/ottrin/ottrin-html-render"
+install -m 0644 "$ROOT/packaging/linux/ottrin.portal" "$DEST/usr/share/xdg-desktop-portal/portals/ottrin.portal"
 install -m 0644 "$ROOT/packaging/linux/ottrin-html-render.apparmor" "$DEST/usr/share/ottrin/"
 install -m 0755 "$ROOT/packaging/linux/native-package-lifecycle.sh" "$DEST/usr/libexec/ottrin/native-package-lifecycle"
 install -m 0644 "$ROOT/assets/icon.svg" "$DEST/usr/share/icons/hicolor/scalable/apps/ottrin.svg"

@@ -1,5 +1,44 @@
 # Ottrin roadmap
 
+## Linux FileChooser portal — source checkpoint, 2026-11-01
+
+The native broker now implements FileChooser version 4 OpenFile, SaveFile and
+SaveFiles through the real desktop-portal frontend. Caller authentication,
+independent request cancellation, frontend disconnect, native filenames,
+filter/choice translation and collision-free batch suggestions are implemented.
+X11 callers select the X11 event loop even inside Wayland desktops. The broker
+keeps no GUI or index resident; a controlled ten-second idle sample recorded zero
+CPU ticks and approximately 16 MB RSS.
+
+Services now has an explicitly optional **Application file dialogs** card with
+Off/Configured/Ready status, enable, update/repair, disable, apply and refresh.
+Per-user activation uses the stable package launcher and an on-demand systemd
+unit. Only the chooser provider is edited; prior preferences and other providers
+are preserved. Disable removes untouched generated overrides and keeps user
+edits. Apply checks active requests/sessions before restarting the desktop
+portal. Ready additionally requires the installed definition, matching activation
+files and a reachable version 4 backend. First-time definition setup can use the
+normal administrator-helper prompt; no personal desktop registration was changed
+by this work.
+
+Actual owned X11 tests pass through the installed 1.18.4 frontend: D-Bus activation,
+Cancel, exact non-UTF-8 Save with overwrite, batch targets, caller loss and a
+reload refused while a real dialog is open. The real frontend's private-runtime
+document FUSE mount was denied, so this is **not sandboxed-application/document
+export acceptance**. Native reload tests intercept systemctl; actual user-manager
+restart/registration acceptance is still required. Actual source Services is
+visually checked using the shared settings frame, with normal close, index
+continuity and unchanged fixture files.
+
+Evidence: `.hermes/evidence/portal-current/`. This is source work; stable Linux
+packages and the Windows candidate remain the accepted `25b38c8f` cohort. Continue
+production activation/package acceptance, sandbox document export investigation,
+cooperating-app Windows integration and reversible folder handlers. Then deliver
+one coherent package cohort and continue remaining software/theme acceptance.
+Owner release identities, physical-device checks and final personal acceptance
+remain on the waiting list; they do not block this independent work.
+
+
 
 ## Native suggested filenames — source work, 2026-11-01
 

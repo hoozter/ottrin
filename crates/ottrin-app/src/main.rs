@@ -1,5 +1,10 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
+#[cfg(target_os = "linux")]
+mod portal;
+#[cfg(target_os = "linux")]
+mod portal_options;
+
 use eframe::{NativeOptions, egui};
 use ottrin_core::{
     ConflictAction, FileCommand, GraphicsEvidence, GraphicsRendererChoice, GraphicsRuntimeStatus,
@@ -106,6 +111,8 @@ fn parse_cli_arguments(args: &[String]) -> Result<CliArguments, String> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum HeadlessAction {
+    #[cfg(target_os = "linux")]
+    Portal,
     IndexEnsure,
     IndexUpdate {
         json: bool,
@@ -618,6 +625,33 @@ fn watch_picker_disconnect(
         .map_err(|error| error.to_string())
 }
 
+#[cfg(target_os = "linux")]
+fn picker_window_system_options(
+    mut options: NativeOptions,
+    parent: &str,
+) -> Result<NativeOptions, String> {
+    use ottrin_core::picker::PickerParentWindow;
+    let parent = PickerParentWindow::parse(parent)?;
+    if parent == PickerParentWindow::None {
+        return Ok(options);
+    }
+    if matches!(parent, PickerParentWindow::Windows(_)) {
+        return Err("Windows picker parents are unavailable on Linux".into());
+    }
+    options.event_loop_builder = Some(Box::new(move |builder| match parent {
+        PickerParentWindow::X11(_) => {
+            use winit::platform::x11::EventLoopBuilderExtX11;
+            builder.with_x11();
+        }
+        PickerParentWindow::Wayland(_) => {
+            use winit::platform::wayland::EventLoopBuilderExtWayland;
+            builder.with_wayland();
+        }
+        _ => {}
+    }));
+    Ok(options)
+}
+
 fn run_picker_gui(
     request: ottrin_core::picker::PickerRequest,
     cli: CliArguments,
@@ -643,6 +677,8 @@ fn run_picker_gui(
             .with_icon(load_window_icon()),
         ..Default::default()
     };
+    #[cfg(target_os = "linux")]
+    let options = picker_window_system_options(options, &request.parent_window)?;
     #[cfg(target_os = "windows")]
     let options = windows_initial_window_options(options, false);
     let outcome = std::sync::Arc::new(std::sync::Mutex::new(None));
@@ -825,6 +861,8 @@ fn print_cli_help() {
     println!("Ottrin — find, inspect, and manage files");
     println!();
     println!("Usage:");
+    #[cfg(target_os = "linux")]
+    println!("  ottrin portal                   Run the desktop file-dialog backend");
     println!("  ottrin picker                   Open an Ottrin chooser using a JSON stdin request");
     println!(
         "    --cancel-on-disconnect        Read one JSON line and cancel when the caller closes stdin"
@@ -928,6 +966,12 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
     match command {
         "search" | "-s" => Some(parse_search_action(&args[1..])),
         "index" => Some(parse_index_action(&args[1..])),
+        #[cfg(target_os = "linux")]
+        "portal" => Some(if args.len() == 1 {
+            HeadlessAction::Portal
+        } else {
+            HeadlessAction::Invalid("portal accepts no arguments".into())
+        }),
         "picker" => Some(
             if args.len() == 1 || (args.len() == 2 && args[1] == "--cancel-on-disconnect") {
                 HeadlessAction::Picker {
@@ -1219,6 +1263,8 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         return Err(error.clone());
     }
     match action {
+        #[cfg(target_os = "linux")]
+        HeadlessAction::Portal => return portal::run(),
         HeadlessAction::DropStatus => {
             print_drop_status(&load_config().target);
             return Ok(());
@@ -1228,6 +1274,8 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     }
 
     match action {
+        #[cfg(target_os = "linux")]
+        HeadlessAction::Portal => unreachable!("portal starts before index routing"),
         HeadlessAction::IndexEnsure => {
             #[cfg(unix)]
             // SAFETY: geteuid has no preconditions and no side effects.
@@ -1647,6 +1695,19 @@ fn cargo_helper_artifact_from_messages(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn portal_entry_is_headless_and_rejects_unowned_arguments() {
+        assert_eq!(
+            cli_headless_action(&["portal".into()]),
+            Some(HeadlessAction::Portal)
+        );
+        assert!(matches!(
+            cli_headless_action(&["portal".into(), "extra".into()]),
+            Some(HeadlessAction::Invalid(_))
+        ));
+    }
 
     #[test]
     fn disconnect_protocol_has_one_bounded_request_frame_and_keeps_the_lease() {

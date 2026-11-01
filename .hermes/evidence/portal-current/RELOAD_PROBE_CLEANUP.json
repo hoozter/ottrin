@@ -1,0 +1,7 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/portal-current/reload-probe",
+  "bytes": 58741000,
+  "sha256": "4ec83f05919e4ec65f91756fb790c62cba0f5f16247f5bd3ace4076c924c83ee",
+  "purpose": "Native production apply guard against isolated real frontend; final consumer real-gui-registration-final completed.",
+  "removed": true
+}

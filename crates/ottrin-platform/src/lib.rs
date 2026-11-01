@@ -1,3 +1,7 @@
+#[cfg(target_os = "linux")]
+pub mod portal_integration;
+#[cfg(target_os = "linux")]
+mod portal_config;
 #[cfg(all(test, target_os = "windows"))]
 #[path = "../../../tests/support/windows_oplock.rs"]
 mod test_oplock;
@@ -1256,6 +1260,23 @@ pub fn install_privileged_helper() -> Result<String, String> {
     }
     #[cfg(not(target_os = "linux"))]
     Err("Helper installation is managed by the installer on this platform.".to_string())
+}
+
+/// Stable application entry point for launchers and desktop activation.
+pub fn application_launch_path() -> Result<PathBuf, String> {
+    let executable = std::env::current_exe().map_err(|e|e.to_string())?;
+    #[cfg(target_os = "linux")]
+    {
+        if let (Some(image), Some(directory)) = (std::env::var_os("APPIMAGE"), std::env::var_os("APPDIR")) {
+            let directory=PathBuf::from(directory);
+            if executable.starts_with(&directory) && Path::new(&image).is_file() {return Ok(image.into());}
+        }
+        if let Some(parent)=executable.parent() && parent.ends_with("libexec/ottrin") {
+            let wrapper=parent.join("../../bin/ottrin");
+            if wrapper.is_file() {return wrapper.canonicalize().map_err(|e|e.to_string());}
+        }
+    }
+    Ok(executable)
 }
 
 fn resolve_helper_name(default_name: &str) -> String {

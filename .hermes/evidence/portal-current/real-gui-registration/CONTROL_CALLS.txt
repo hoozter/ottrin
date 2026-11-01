@@ -1,0 +1,2 @@
+--user --no-ask-password --no-pager restart xdg-desktop-portal.service
+--user --no-ask-password --no-pager restart xdg-desktop-portal.service

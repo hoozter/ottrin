@@ -1,0 +1,649 @@
+//! Explicit, reversible per-user FileChooser registration. Called on a worker.
+use super::portal_config;
+use serde::{Deserialize, Serialize};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
+const BUS: &str = "org.freedesktop.impl.portal.desktop.ottrin";
+const UNIT: &str = "ottrin-portal.service";
+const DEFINITION: &[u8] = include_bytes!("../../../packaging/linux/ottrin.portal");
+
+#[derive(Clone, Debug)]
+pub struct PortalStatus {
+    pub enabled: bool,
+    pub ready: bool,
+    pub pending: bool,
+    pub detail: String,
+}
+#[derive(Serialize, Deserialize)]
+struct Registration {
+    enabled: bool,
+    applied: bool,
+    created: bool,
+    config: PathBuf,
+    previous: Option<String>,
+    original: String,
+    installed: String,
+    files: Vec<(PathBuf, String)>,
+}
+struct Paths {
+    config: PathBuf,
+    data: PathBuf,
+    state: PathBuf,
+}
+impl Paths {
+    fn current() -> Result<Self, String> {
+        let home = std::env::var_os("HOME")
+            .map(PathBuf::from)
+            .ok_or("HOME is unavailable")?;
+        Ok(Self {
+            config: std::env::var_os("XDG_CONFIG_HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| home.join(".config")),
+            data: std::env::var_os("XDG_DATA_HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| home.join(".local/share")),
+            state: std::env::var_os("XDG_STATE_HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| home.join(".local/state"))
+                .join("ottrin/portal-registration.json"),
+        })
+    }
+    fn names() -> Vec<String> {
+        std::env::var("XDG_CURRENT_DESKTOP")
+            .unwrap_or_default()
+            .split(':')
+            .filter(|s| {
+                !s.is_empty()
+                    && s.chars()
+                        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+            })
+            .map(|s| format!("{}-portals.conf", s.to_ascii_lowercase()))
+            .chain(std::iter::once("portals.conf".into()))
+            .collect()
+    }
+    fn configuration(&self) -> Result<(PathBuf, String), String> {
+        let names = Self::names();
+        let local = self.config.join("xdg-desktop-portal");
+        let mut directories = vec![local.clone()];
+        directories.extend(
+            std::env::var("XDG_CONFIG_DIRS")
+                .unwrap_or_else(|_| "/etc/xdg".into())
+                .split(':')
+                .filter(|p| Path::new(p).is_absolute())
+                .map(|p| Path::new(p).join("xdg-desktop-portal")),
+        );
+        directories.push(PathBuf::from("/etc/xdg-desktop-portal"));
+        directories.push(self.data.join("xdg-desktop-portal"));
+        directories.extend(
+            std::env::var("XDG_DATA_DIRS")
+                .unwrap_or_else(|_| "/usr/local/share:/usr/share".into())
+                .split(':')
+                .filter(|p| Path::new(p).is_absolute())
+                .map(|p| Path::new(p).join("xdg-desktop-portal")),
+        );
+        directories.push(PathBuf::from("/usr/share/xdg-desktop-portal"));
+        for directory in directories {
+            for name in &names {
+                let path = directory.join(name);
+                if let Some(data) = read_regular(&path)? {
+                    return Ok((
+                        if directory == local {
+                            path
+                        } else {
+                            local.join(&names[0])
+                        },
+                        data,
+                    ));
+                }
+            }
+        }
+        Ok((local.join(&names[0]), String::new()))
+    }
+}
+fn read_regular(path: &Path) -> Result<Option<String>, String> {
+    match fs::symlink_metadata(path) {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(e.to_string()),
+        Ok(metadata) if !metadata.is_file() || metadata.len() > 1024 * 1024 => Err(format!(
+            "Unsafe or oversized configuration retained: {}",
+            path.display()
+        )),
+        Ok(_) => fs::read_to_string(path)
+            .map(Some)
+            .map_err(|e| e.to_string()),
+    }
+}
+fn write(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    use std::io::Write;
+    let parent = path.parent().ok_or("Missing configuration directory")?;
+    fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    // Refuse symlink targets. Atomic replacement never follows a target link.
+    read_regular(path)?;
+    let mut file = tempfile::NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
+    file.write_all(bytes)
+        .and_then(|()| file.as_file().sync_all())
+        .map_err(|e| e.to_string())?;
+    file.persist(path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+fn systemctl(arguments: &[&str]) -> Result<(), String> {
+    let result = Command::new("systemctl")
+        .args(["--user", "--no-ask-password", "--no-pager"])
+        .args(arguments)
+        .output()
+        .map_err(|e| e.to_string())?;
+    if result.status.success() {
+        Ok(())
+    } else {
+        Err(String::from_utf8_lossy(&result.stderr).trim().to_owned())
+    }
+}
+fn registration(paths: &Paths) -> Result<Option<Registration>, String> {
+    read_regular(&paths.state)?
+        .map(|data| {
+            serde_json::from_str(&data).map_err(|e| format!("Portal setup receipt is invalid: {e}"))
+        })
+        .transpose()
+}
+pub fn status() -> PortalStatus {
+    let result = (|| {
+        let paths = Paths::current()?;
+        let Some(record) = registration(&paths)? else {
+            return Ok((
+                false,
+                false,
+                false,
+                "Off — applications use your desktop's file picker".into(),
+            ));
+        };
+        let valid = fs::read("/usr/share/xdg-desktop-portal/portals/ottrin.portal")
+            .ok()
+            .as_deref()
+            == Some(DEFINITION)
+            && record
+                .files
+                .iter()
+                .all(|(path, data)| read_regular(path).ok().flatten().as_ref() == Some(data));
+        let (effective_path, effective) = paths.configuration()?;
+        let selected = effective_path == record.config
+            && portal_config::chooser(&effective)?.as_deref() == Some("ottrin");
+        let reachable = !record.enabled || !record.applied || backend_ready().is_ok();
+        Ok::<_, String>((
+            record.enabled,
+            record.enabled && record.applied && valid && selected && reachable,
+            !record.applied || !reachable,
+            if !record.enabled {
+                "Off — apply the change to restore the desktop picker in running applications"
+                    .into()
+            } else if valid && selected && record.applied && reachable {
+                "Enabled — Ottrin handles supported portal file dialogs".into()
+            } else if valid && selected {
+                "Configured — apply the change when no portal dialogs or sessions are active".into()
+            } else {
+                "Setup needs repair; existing configuration has been retained".into()
+            },
+        ))
+    })();
+    match result {
+        Ok((enabled, ready, pending, detail)) => PortalStatus {
+            enabled,
+            ready,
+            pending,
+            detail,
+        },
+        Err(detail) => PortalStatus {
+            enabled: false,
+            ready: false,
+            pending: false,
+            detail,
+        },
+    }
+}
+
+fn normal_user() -> Result<(), String> {
+    if unsafe { libc::geteuid() } == 0 {
+        Err("Configure desktop file dialogs from a normal user session".into())
+    } else {
+        Ok(())
+    }
+}
+
+pub fn enable() -> Result<String, String> {
+    normal_user()?;
+    if std::env::var_os("XDG_DESKTOP_PORTAL_DIR").is_some() {
+        return Err("A custom desktop portal directory overrides normal desktop configuration. Remove that override before enabling the Ottrin picker.".into());
+    }
+    let paths = Paths::current()?;
+    if fs::read("/usr/share/xdg-desktop-portal/portals/ottrin.portal")
+        .ok()
+        .as_deref()
+        != Some(DEFINITION)
+    {
+        super::install_privileged_helper()?;
+        if fs::read("/usr/share/xdg-desktop-portal/portals/ottrin.portal")
+            .ok()
+            .as_deref()
+            != Some(DEFINITION)
+        {
+            return Err("Administrator setup did not install the desktop portal definition".into());
+        }
+    }
+    enable_at(&paths, &super::application_launch_path()?, systemctl)
+}
+fn enable_at(
+    paths: &Paths,
+    executable: &Path,
+    mut control: impl FnMut(&[&str]) -> Result<(), String>,
+) -> Result<String, String> {
+    let executable = executable
+        .to_str()
+        .ok_or("The desktop activation path must be UTF-8")?;
+    let quoted = format!(
+        "\"{}\"",
+        executable
+            .replace('\\', "\\\\")
+            .replace('"', "\\\"")
+            .replace('`', "\\`")
+            .replace('$', "\\$")
+    );
+    // systemd performs its own specifier/environment expansion; it does not
+    // use the D-Bus command line grammar above.
+    let unit_quoted = format!(
+        "\"{}\"",
+        executable
+            .replace('\\', "\\\\")
+            .replace('"', "\\\"")
+            .replace('%', "%%")
+            .replace('$', "$$")
+    );
+    if executable.contains(['\n', '\r']) {
+        return Err("Unsupported newline in desktop activation path".into());
+    }
+    let prior = registration(paths)?;
+    if let Some(prior) = &prior {
+        if !prior.enabled {
+            return Err("Apply the pending disable before enabling the picker again.".into());
+        }
+        for (path, expected) in &prior.files {
+            if let Some(data) = read_regular(path)?
+                && data != *expected
+            {
+                return Err(format!(
+                    "Modified activation file retained: {}",
+                    path.display()
+                ));
+            }
+        }
+    }
+    let (config, current) = if let Some(prior) = &prior {
+        (
+            prior.config.clone(),
+            read_regular(&prior.config)?.unwrap_or_default(),
+        )
+    } else {
+        paths.configuration()?
+    };
+    let created = if let Some(prior) = &prior {
+        prior.created && current == prior.installed
+    } else {
+        read_regular(&config)?.is_none()
+    };
+    let previous = if let Some(prior) = &prior {
+        prior.previous.clone()
+    } else {
+        portal_config::chooser(&current)?
+    };
+    let original = if let Some(prior) = &prior {
+        if current == prior.installed {
+            prior.original.clone()
+        } else {
+            portal_config::replace(&current, prior.previous.as_deref())?
+        }
+    } else {
+        current.clone()
+    };
+    let installed = portal_config::replace(&current, Some("ottrin"))?;
+    let files = vec![
+        (
+            paths.data.join(format!("dbus-1/services/{BUS}.service")),
+            format!("[D-BUS Service]\nName={BUS}\nExec={quoted} portal\nSystemdService={UNIT}\n"),
+        ),
+        (
+            paths.config.join(format!("systemd/user/{UNIT}")),
+            format!(
+                "[Unit]\nDescription=Ottrin on-demand file picker\n[Service]\nType=dbus\nBusName={BUS}\nExecStart={} portal\nKillMode=control-group\nTimeoutStopSec=5\n",
+                unit_quoted
+            ),
+        ),
+    ];
+    for (path, _) in &files {
+        if prior.is_none() && fs::symlink_metadata(path).is_ok() {
+            return Err(format!(
+                "Existing activation file retained: {}",
+                path.display()
+            ));
+        }
+    }
+    // Save ownership and restoration information before changing any setting.
+    let record = Registration {
+        enabled: true,
+        applied: false,
+        created,
+        config,
+        previous,
+        original,
+        installed,
+        files,
+    };
+    write(
+        &paths.state,
+        &serde_json::to_vec(&record).map_err(|e| e.to_string())?,
+    )?;
+    for (path, data) in &record.files {
+        write(path, data.as_bytes())?;
+    }
+    control(&["daemon-reload"])?;
+    write(&record.config, record.installed.as_bytes())?;
+    Ok("Ottrin file picker configured. Apply the change to reload the desktop portal.".into())
+}
+
+pub fn disable() -> Result<String, String> {
+    normal_user()?;
+    let paths = Paths::current()?;
+    ensure_idle()?;
+    disable_at(&paths, systemctl)
+}
+fn disable_at(
+    paths: &Paths,
+    mut control: impl FnMut(&[&str]) -> Result<(), String>,
+) -> Result<String, String> {
+    let Some(mut record) = registration(paths)? else {
+        return Ok("Ottrin file picker is already off".into());
+    };
+    for (path, expected) in &record.files {
+        if let Some(data) = read_regular(path)?
+            && data != *expected
+        {
+            return Err(format!(
+                "Modified activation file retained: {}",
+                path.display()
+            ));
+        }
+    }
+    let data = read_regular(&record.config)?.unwrap_or_default();
+    if portal_config::chooser(&data)?.as_deref() == Some("ottrin") {
+        let restored = if data == record.installed {
+            record.original.clone()
+        } else {
+            portal_config::replace(&data, record.previous.as_deref())?
+        };
+        if record.created && data == record.installed {
+            fs::remove_file(&record.config).map_err(|e| e.to_string())?;
+        } else {
+            write(&record.config, restored.as_bytes())?;
+        }
+    }
+    control(&["stop", UNIT])?;
+    for (path, _) in &record.files {
+        match fs::remove_file(path) {
+            Ok(()) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    control(&["daemon-reload"])?;
+    record.enabled = false;
+    record.applied = false;
+    write(
+        &paths.state,
+        &serde_json::to_vec(&record).map_err(|e| e.to_string())?,
+    )?;
+    Ok("Previous file picker restored. Apply the change to reload the desktop portal.".into())
+}
+
+/// Reload only after confirming that the frontend has no live requests/sessions.
+/// This runs in a worker and never interrupts an active dialog or screen share.
+fn ensure_idle() -> Result<(), String> {
+    let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE)
+        .map_err(|e| e.to_string())?;
+    ensure_idle_on(&bus)
+}
+fn ensure_idle_on(bus: &gio::DBusConnection) -> Result<(), String> {
+    use gio::glib::variant::ToVariant;
+    let owner = bus
+        .call_sync(
+            Some("org.freedesktop.DBus"),
+            "/org/freedesktop/DBus",
+            "org.freedesktop.DBus",
+            "NameHasOwner",
+            Some(&("org.freedesktop.portal.Desktop",).to_variant()),
+            None,
+            gio::DBusCallFlags::NONE,
+            2000,
+            gio::Cancellable::NONE,
+        )
+        .map_err(|e| e.to_string())?;
+    if !owner
+        .get::<(bool,)>()
+        .ok_or("Invalid portal ownership reply")?
+        .0
+    {
+        return Ok(());
+    }
+    for path in [
+        "/org/freedesktop/portal/desktop/request",
+        "/org/freedesktop/portal/desktop/session",
+    ] {
+        let response = bus
+            .call_sync(
+                Some("org.freedesktop.portal.Desktop"),
+                path,
+                "org.freedesktop.DBus.Introspectable",
+                "Introspect",
+                None,
+                None,
+                gio::DBusCallFlags::NO_AUTO_START,
+                2000,
+                gio::Cancellable::NONE,
+            )
+            .map_err(|e| format!("Cannot confirm the desktop portal is idle: {e}"))?;
+        let xml = response
+            .get::<(String,)>()
+            .ok_or("Invalid portal introspection reply")?
+            .0;
+        if xml.contains("<node name=") {
+            return Err("A desktop portal dialog or session is active. Close it before applying this change.".into());
+        }
+    }
+    Ok(())
+}
+fn backend_ready() -> Result<(), String> {
+    use gio::glib::variant::ToVariant;
+    let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE)
+        .map_err(|e| e.to_string())?;
+    let reply = bus
+        .call_sync(
+            Some(BUS),
+            "/org/freedesktop/portal/desktop",
+            "org.freedesktop.DBus.Properties",
+            "Get",
+            Some(&("org.freedesktop.impl.portal.FileChooser", "version").to_variant()),
+            None,
+            gio::DBusCallFlags::NO_AUTO_START,
+            3000,
+            gio::Cancellable::NONE,
+        )
+        .map_err(|e| {
+            format!("The desktop portal restarted, but Ottrin's picker is not ready: {e}")
+        })?;
+    let (value,) = reply
+        .get::<(gio::glib::Variant,)>()
+        .ok_or("Invalid Ottrin portal version reply")?;
+    if value.get::<u32>() == Some(4) {
+        Ok(())
+    } else {
+        Err("Unexpected Ottrin file picker version".into())
+    }
+}
+
+pub fn apply() -> Result<String, String> {
+    normal_user()?;
+    let paths = Paths::current()?;
+    let Some(mut record) = registration(&paths)? else {
+        return Ok("No pending file picker changes".into());
+    };
+    ensure_idle()?;
+    systemctl(&["restart", "xdg-desktop-portal.service"])?;
+    if record.enabled {
+        backend_ready()?;
+        record.applied = true;
+        write(
+            &paths.state,
+            &serde_json::to_vec(&record).map_err(|e| e.to_string())?,
+        )?;
+    } else {
+        fs::remove_file(&paths.state).map_err(|e| e.to_string())?;
+    }
+    Ok("Desktop file picker preference applied".into())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn fixture(root: &Path) -> Paths {
+        Paths {
+            config: root.join("config"),
+            data: root.join("data"),
+            state: root.join("state/registration.json"),
+        }
+    }
+    #[test]
+    fn enable_disable_preserves_other_providers_and_unrelated_user_changes() {
+        let directory = tempfile::tempdir().unwrap();
+        let paths = fixture(directory.path());
+        let config = paths
+            .config
+            .join("xdg-desktop-portal")
+            .join(&Paths::names()[0]);
+        write(
+            &config,
+            b"# keep\n[preferred]\ndefault=kde;gtk\norg.freedesktop.impl.portal.FileChooser=kde\n",
+        )
+        .unwrap();
+        let mut commands = Vec::new();
+        enable_at(&paths, Path::new("/opt/My Ottrin/ottrin"), |args| {
+            commands.push(args.join(" "));
+            Ok(())
+        })
+        .unwrap();
+        let record = registration(&paths).unwrap().unwrap();
+        assert!(record.enabled && !record.applied);
+        assert_eq!(commands, vec!["daemon-reload"]);
+        assert!(
+            record
+                .files
+                .iter()
+                .all(|(p, d)| fs::read_to_string(p).unwrap() == *d)
+        );
+        assert!(
+            record.files[0]
+                .1
+                .contains("Exec=\"/opt/My Ottrin/ottrin\" portal")
+        );
+        let edited = fs::read_to_string(&config)
+            .unwrap()
+            .replace("default=kde;gtk", "default=gtk");
+        write(&config, edited.as_bytes()).unwrap();
+        enable_at(&paths, Path::new("/opt/New Ottrin/ottrin"), |_| Ok(())).unwrap();
+        let updated = registration(&paths).unwrap().unwrap();
+        assert!(updated.files[0].1.contains("/opt/New Ottrin/ottrin"));
+        disable_at(&paths, |_| Ok(())).unwrap();
+        let restored = fs::read_to_string(&config).unwrap();
+        assert_eq!(
+            portal_config::chooser(&restored).unwrap().as_deref(),
+            Some("kde")
+        );
+        assert!(restored.contains("default=gtk") && restored.starts_with("# keep"));
+        assert!(record.files.iter().all(|(p, _)| !p.exists()));
+        assert!(!registration(&paths).unwrap().unwrap().enabled);
+    }
+    #[test]
+    fn activation_uses_each_consumers_literal_path_grammar() {
+        let directory = tempfile::tempdir().unwrap();
+        let paths = fixture(directory.path());
+        enable_at(
+            &paths,
+            Path::new("/opt/Ottrin $USER 100% `local`/app"),
+            |_| Ok(()),
+        )
+        .unwrap();
+        let record = registration(&paths).unwrap().unwrap();
+        let unit = &record.files[1].1;
+        assert!(
+            unit.contains("ExecStart=\"/opt/Ottrin $$USER 100%% `local`/app\" portal"),
+            "{unit}"
+        );
+        let dbus = &record.files[0].1;
+        assert!(!dbus.contains("100%%"));
+        assert!(dbus.contains("\\$USER"));
+    }
+
+    #[test]
+    fn generated_override_is_removed_but_user_edits_after_install_are_retained() {
+        let directory = tempfile::tempdir().unwrap();
+        let paths = fixture(directory.path());
+        enable_at(&paths, Path::new("/opt/ottrin"), |_| Ok(())).unwrap();
+        let record = registration(&paths).unwrap().unwrap();
+        assert!(record.created);
+        disable_at(&paths, |_| Ok(())).unwrap();
+        assert!(!record.config.exists());
+        fs::remove_file(&paths.state).unwrap();
+        enable_at(&paths, Path::new("/opt/ottrin"), |_| Ok(())).unwrap();
+        let record = registration(&paths).unwrap().unwrap();
+        let edited = format!("{}\n# new user preference\n", record.installed);
+        write(&record.config, edited.as_bytes()).unwrap();
+        enable_at(&paths, Path::new("/opt/new-ottrin"), |_| Ok(())).unwrap();
+        disable_at(&paths, |_| Ok(())).unwrap();
+        assert!(
+            fs::read_to_string(record.config)
+                .unwrap()
+                .contains("# new user preference")
+        );
+    }
+
+    #[test]
+    fn modified_activation_file_blocks_uninstall_before_preferences_change() {
+        let directory = tempfile::tempdir().unwrap();
+        let paths = fixture(directory.path());
+        enable_at(&paths, Path::new("/opt/ottrin"), |_| Ok(())).unwrap();
+        let record = registration(&paths).unwrap().unwrap();
+        write(&record.files[0].0, b"foreign edit").unwrap();
+        assert!(disable_at(&paths, |_| panic!("must not stop anything")).is_err());
+        assert_eq!(
+            fs::read_to_string(&record.config).unwrap(),
+            record.installed
+        );
+        assert_eq!(
+            fs::read_to_string(&record.files[0].0).unwrap(),
+            "foreign edit"
+        );
+    }
+    #[test]
+    fn foreign_activation_and_symlink_preferences_are_retained() {
+        let directory = tempfile::tempdir().unwrap();
+        let paths = fixture(directory.path());
+        let activation = paths.data.join(format!("dbus-1/services/{BUS}.service"));
+        write(&activation, b"foreign").unwrap();
+        assert!(enable_at(&paths, Path::new("/opt/ottrin"), |_| panic!("no commands")).is_err());
+        assert!(!paths.state.exists());
+        let target = directory.path().join("target");
+        fs::write(&target, "keep").unwrap();
+        let link = directory.path().join("link");
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+        assert!(write(&link, b"changed").is_err());
+        assert_eq!(fs::read_to_string(target).unwrap(), "keep");
+    }
+}

@@ -1,0 +1,94 @@
+{
+  "binary_sha256": "67e5f547f2844aace1b6da75c4734c35c8603f79263b1ac11c95ff1e8fc9c0ae",
+  "scope": "Production definition plus native reload guard,intercepted systemctl on private PATH; Actual installed xdg-desktop-portal1.18.4 frontend,public FileChooser API,D-Bus backend activation and actual source chooser in owned X11;registration assets are private test files,not yet production setup/package acceptance",
+  "idle_reload_guard": {
+    "code": 0,
+    "stdout": "Desktop file picker preference applied\n",
+    "stderr": ""
+  },
+  "active_dialog_reload_guard": {
+    "code": 2,
+    "stdout": "",
+    "stderr": "A desktop portal dialog or session is active. Close it before applying this change.\n"
+  },
+  "completed_dialog_reload_guard": {
+    "code": 0,
+    "stdout": "Desktop file picker preference applied\n",
+    "stderr": ""
+  },
+  "status": "pass",
+  "real_frontend_activated_backend": true,
+  "public_responses": {
+    "status": "pass",
+    "requests": {
+      "cancel": "/org/freedesktop/portal/desktop/request/1_4/cancel",
+      "save": "/org/freedesktop/portal/desktop/request/1_4/save",
+      "batch": "/org/freedesktop/portal/desktop/request/1_4/batch"
+    },
+    "responses": {
+      "/org/freedesktop/portal/desktop/request/1_4/save": [
+        0,
+        {
+          "choices": [],
+          "uris": [
+            "file:///var/tmp/.ottrin-picker-qa-cs7ybzr1/fixture/original%80.txt"
+          ]
+        }
+      ],
+      "/org/freedesktop/portal/desktop/request/1_4/batch": [
+        0,
+        {
+          "choices": [],
+          "uris": [
+            "file:///var/tmp/.ottrin-picker-qa-cs7ybzr1/fixture/original%80%20%281%29.txt",
+            "file:///var/tmp/.ottrin-picker-qa-cs7ybzr1/fixture/other.txt"
+          ]
+        }
+      ]
+    }
+  },
+  "original_bytes_preserved": true,
+  "no_files_created_by_save_or_batch": true,
+  "no_index_started": true,
+  "no_main_config_written": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-cs7ybzr1",
+    "owned_processes_reaped": [
+      {
+        "pid": 3550521,
+        "exit": 0
+      },
+      {
+        "pid": 3550524,
+        "exit": 0
+      },
+      {
+        "pid": 3550525,
+        "exit": 15
+      },
+      {
+        "pid": 3550575,
+        "exit": 0
+      },
+      {
+        "pid": 3550576,
+        "exit": -15
+      },
+      {
+        "pid": 3550587,
+        "exit": -15
+      },
+      {
+        "pid": 3550588,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

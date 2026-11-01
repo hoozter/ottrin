@@ -1,0 +1,41 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-jrwf9t6u",
+  "owned_processes_reaped": [
+    {
+      "pid": 3475872,
+      "exit": 0
+    },
+    {
+      "pid": 3475876,
+      "exit": 0
+    },
+    {
+      "pid": 3475877,
+      "exit": 15
+    },
+    {
+      "pid": 3475929,
+      "exit": 0
+    },
+    {
+      "pid": 3475930,
+      "exit": -15
+    },
+    {
+      "pid": 3475939,
+      "exit": -15
+    },
+    {
+      "pid": 3475940,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Owned real portal readiness timeout",
+  "profile_removed": true
+}

@@ -1,0 +1,12 @@
+{
+  "request": {
+    "code": 0,
+    "stdout": "('<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\\n                      \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\\n<!-- GDBus 2.80.0 -->\\n<node>\\n</node>\\n',)\n",
+    "stderr": ""
+  },
+  "session": {
+    "code": 0,
+    "stdout": "('<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\\n                      \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\\n<!-- GDBus 2.80.0 -->\\n<node>\\n</node>\\n',)\n",
+    "stderr": ""
+  }
+}

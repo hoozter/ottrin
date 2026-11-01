@@ -1,0 +1,79 @@
+{
+  "status": "pass within the stated source scopes; delivery and real registration remain open",
+  "source_base": "6ffcd7a51e0958a5e06772450c7e853bc0b0322a",
+  "final_debug_binary_sha256": "d86e17da71e6a65896a011dcee80e8c6e64b76fb004136d7bb3f60a22d91fb5e",
+  "checks": {
+    "app_tests": "APP_FINAL_TESTS.log",
+    "registration_tests": "REGISTRATION_TESTS.log",
+    "service_tests": "SERVICES_TESTS.log",
+    "installer_tests": "HELPER_TESTS.log",
+    "linux_lint": "LINUX_FINAL_LINT.log",
+    "windows_lint": "REGISTRATION_WINDOWS_LINT.log"
+  },
+  "actual_gui_runs": {
+    "gui": {
+      "status": "pass",
+      "binary_sha256": "749f489686ac894559fb6a3febb71d758ea734b3ba5d2a41037c462921a46502",
+      "profile_removed": true
+    },
+    "gui-forced-x11": {
+      "status": "pass",
+      "binary_sha256": "457a9924aaa7be0b94b260ad5a5ae17d4c4a663e46de16c028920ba115c6b77f",
+      "profile_removed": true
+    },
+    "real-gui-configured": {
+      "status": "pass",
+      "binary_sha256": "457a9924aaa7be0b94b260ad5a5ae17d4c4a663e46de16c028920ba115c6b77f",
+      "profile_removed": true
+    },
+    "real-gui-registration": {
+      "status": "pass",
+      "binary_sha256": "67e5f547f2844aace1b6da75c4734c35c8603f79263b1ac11c95ff1e8fc9c0ae",
+      "profile_removed": true
+    },
+    "real-gui-registration-final": {
+      "status": "pass",
+      "binary_sha256": "1f97f2f49b9eaff193aca7a328e63e6c2e36fe08ba51a9e6c8f308416b936b3c",
+      "profile_removed": true
+    },
+    "settings-gui": {
+      "status": "pass: normal close,index continuity,saved theme and unchanged declared files; visual review recorded separately",
+      "binary_sha256": "7c74c5f0e8b82b251bd9c2b5d2e34812724f948c5c052d2770c9e73ea3b932ae",
+      "profile_removed": true
+    },
+    "settings-gui-final": {
+      "status": "pass: normal close,index continuity,saved theme and unchanged declared files; visual review recorded separately",
+      "binary_sha256": "4d6f416629c26bc95c583e60d54e4b10b45cbb42e94b20b1b1c3fb8d0bedba7d",
+      "profile_removed": true
+    }
+  },
+  "scope_limits": [
+    "GUI screenshots and live portal tests precede the final activation-path quoting correction; that correction is covered by eight final registration/config tests and strict Linux checks. Backend,chooser and final Services visual implementations are unchanged.",
+    "Real frontend public API and native reload guard tested. systemctl intercepted on private PATH; no actual personal frontend restart or administrator registration performed.",
+    "Private document portal FUSE mount denied: no sandboxed document-export or actual browser acceptance.",
+    "No new Windows chooser/native GUI or installer lifecycle claim. Linux-only integration excluded from Windows; shared launch resolver passes GNU all-target lint.",
+    "Stable Linux packages and Windows candidate remain source25b38c8f. New coherent package delivery is outstanding."
+  ],
+  "controls": [
+    "Initial lint failures corrected; final check logs above are authoritative.",
+    "real-gui initial fixture misplaced override configuration; real-gui-configured and subsequent runs correct it.",
+    "Incremental relative-path refusal and inaccessible transient PID retained; unchanged guard applied only with normalized absolute roots after the refused PID exited."
+  ],
+  "cleanup": {
+    "obsolete_incremental_sessions": 43,
+    "incremental_space_recovered_report": "1.38 GiB",
+    "replaced_test_executables": {
+      "status": "pass",
+      "retired": 7,
+      "logical_bytes_removed": 3847189124,
+      "retained": "Current binaries and test replacements,dependency libraries,other compiler configurations and useful caches"
+    },
+    "native_reload_probe_removed": true,
+    "owned_desktops_buses_profiles_and_test_processes_closed": true,
+    "current_deliverables_preserved": true,
+    "remaining_task_created_storage": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/portal-current",
+      "purpose": "Compact acceptance receipts,producer scripts,source test logs and scoped screenshots; no runtime profile,extracted package or native probe retained."
+    }
+  }
+}

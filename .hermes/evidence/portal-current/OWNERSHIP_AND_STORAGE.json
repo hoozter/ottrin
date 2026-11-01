@@ -1,0 +1,12 @@
+{
+  "scope": "portal-current source, native tests and owned private desktops",
+  "checkpoint_sizes_bytes_before_final_builds": {
+    "target/debug/deps": 46451103510,
+    "target/debug/incremental": 14295232691,
+    "target/x86_64-pc-windows-gnu/debug/deps": 34305493194,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 30056556928,
+    ".hermes/evidence/portal-current": 466798
+  },
+  "note": "These are the observed continuation checkpoint sizes, not a reconstructed baseline before the earlier backend work. Reuse existing compiler caches. Cleanup owner: portal-current. Native QA reload-probe is disposable and must be removed after its final consumer. All desktops use OwnedDesktop or the isolated workspace teardown. No personal portal setup or frontend restart is authorized by a test fixture.",
+  "extra_configuration": "Helper-only test target verifies the protected installer. Windows lint retains the app+UI feature configuration. No new target tree is used."
+}

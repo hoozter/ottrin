@@ -1,0 +1,21 @@
+{
+  "/org/freedesktop/portal/desktop/request/1_4/save": [
+    0,
+    {
+      "choices": [],
+      "uris": [
+        "file:///var/tmp/.ottrin-picker-qa-aze57v5h/fixture/original%80.txt"
+      ]
+    }
+  ],
+  "/org/freedesktop/portal/desktop/request/1_4/batch": [
+    0,
+    {
+      "choices": [],
+      "uris": [
+        "file:///var/tmp/.ottrin-picker-qa-aze57v5h/fixture/original%80%20%281%29.txt",
+        "file:///var/tmp/.ottrin-picker-qa-aze57v5h/fixture/other.txt"
+      ]
+    }
+  ]
+}

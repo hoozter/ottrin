@@ -1,0 +1,5 @@
+{
+  "cancel": "/org/freedesktop/portal/desktop/request/1_4/cancel",
+  "save": "/org/freedesktop/portal/desktop/request/1_4/save",
+  "batch": "/org/freedesktop/portal/desktop/request/1_4/batch"
+}

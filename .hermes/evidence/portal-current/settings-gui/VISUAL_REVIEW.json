@@ -1,0 +1,5 @@
+{
+  "scope": "Owned source GUI; Off status visible,Apply disabled,Refresh returns status,no privileged install attempted. Card framing needs reuse of settings_surface before final review.",
+  "portal_receipt_absent_after_disabled_apply": true,
+  "refreshed": true
+}

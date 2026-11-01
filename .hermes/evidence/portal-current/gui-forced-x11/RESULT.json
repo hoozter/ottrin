@@ -1,0 +1,109 @@
+{
+  "binary_sha256": "457a9924aaa7be0b94b260ad5a5ae17d4c4a663e46de16c028920ba115c6b77f",
+  "scope": "Source backend standard FileChooser D-Bus methods and actual private X11 chooser;fake frontend owns its standard name;not yet installed real portal activation or Windows/package acceptance",
+  "native_parent_attached": true,
+  "quiet_backend": {
+    "seconds": 10.000441476004198,
+    "cpu_percent_one_core": 0.0,
+    "rss_bytes": 16060416,
+    "process_name": "ottrin-portal"
+  },
+  "status": "pass",
+  "results": {
+    "status": "pass",
+    "results": {
+      "unauthorized": {
+        "error": "GDBus.Error:org.freedesktop.DBus.Error.AccessDenied: Only the desktop portal frontend may request a chooser"
+      },
+      "cancel": {
+        "code": 1,
+        "values": {}
+      },
+      "save": {
+        "code": 0,
+        "values": {
+          "uris": [
+            "file:///var/tmp/.ottrin-picker-qa-fxb59k2m/fixture/original%80.txt"
+          ],
+          "choices": []
+        }
+      },
+      "batch": {
+        "code": 0,
+        "values": {
+          "choices": [],
+          "uris": [
+            "file:///var/tmp/.ottrin-picker-qa-fxb59k2m/fixture/original%80%20%281%29.txt",
+            "file:///var/tmp/.ottrin-picker-qa-fxb59k2m/fixture/original%80%20%282%29.txt",
+            "file:///var/tmp/.ottrin-picker-qa-fxb59k2m/fixture/second.txt"
+          ]
+        }
+      },
+      "duplicate": {
+        "error": "GDBus.Error:org.freedesktop.DBus.Error.InvalidArgs: Portal request already active"
+      },
+      "unauthorized_close": {
+        "error": "GDBus.Error:org.freedesktop.DBus.Error.AccessDenied: Only this portal request's frontend can close it"
+      },
+      "concurrent_a": {
+        "code": 1,
+        "values": {}
+      },
+      "concurrent_b": {
+        "code": 1,
+        "values": {}
+      },
+      "lost_owner": {
+        "error": "The connection is closed"
+      },
+      "reconnected": {
+        "code": 1,
+        "values": {}
+      }
+    }
+  },
+  "original_bytes_preserved": true,
+  "no_files_created_by_batch": true,
+  "no_index_started": true,
+  "no_main_config_written": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-fxb59k2m",
+    "owned_processes_reaped": [
+      {
+        "pid": 3475248,
+        "exit": 0
+      },
+      {
+        "pid": 3475254,
+        "exit": 0
+      },
+      {
+        "pid": 3475255,
+        "exit": 15
+      },
+      {
+        "pid": 3475307,
+        "exit": 0
+      },
+      {
+        "pid": 3475308,
+        "exit": -15
+      },
+      {
+        "pid": 3475318,
+        "exit": 0
+      },
+      {
+        "pid": 3475322,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

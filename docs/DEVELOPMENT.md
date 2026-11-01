@@ -1813,6 +1813,40 @@ Directory browsing works with the index stopped. Explicit **Indexed folders**
 search uses the existing index asynchronously and never starts it. This protocol
 does not replace other applications' native dialogs by itself.
 
+## Linux desktop FileChooser integration
+
+`ottrin portal` runs the on-demand `org.freedesktop.impl.portal.desktop.ottrin`
+backend, implementing FileChooser version 4 (`OpenFile`, `SaveFile`, `SaveFiles`).
+Only the current desktop-portal frontend may call these methods. Its per-request
+object supports cancellation; frontend disconnect also cancels owned choosers.
+The broker holds the chooser's stdin lease and pins its process with a Linux
+pidfd for bounded cancellation. It does not start indexing or keep a GUI open.
+
+The frontend performs document-portal export. Ottrin returns lossless local file
+URIs, selected filters and caller choices. SaveFiles chooses a folder and returns
+nonconflicting suggested targets without creating them. The caller performs the
+save. A supplied native `current_file` wins over the UTF-8 `current_name` hint.
+X11 parent requests force the X11 event loop even inside a Wayland desktop.
+
+**Settings → Services → Application file dialogs** owns explicit enable, update,
+disable, apply and refresh actions. Its worker installs per-user D-Bus activation
+and a user systemd unit, targeting the published AppImage/portable launcher.
+The packaged/root-installed `.portal` definition makes the provider discoverable;
+one-time registration can use the existing authenticated helper setup. There is
+no login-started GUI. The broker remains resident after activation until its
+service is stopped; this avoids activation/idle-exit races.
+
+Only `org.freedesktop.impl.portal.FileChooser` is changed in the effective portal
+preference file. Other provider settings and comments are retained. The private
+setup receipt records prior preferences and exact owned activation files.
+Disable restores the prior chooser and removes an untouched generated override;
+unrelated edits are retained, and modified activation files prevent removal.
+Apply refuses active frontend requests/sessions before restarting its user unit.
+Ready status requires the configured files, applied preference and a reachable
+version 4 backend. Desktop configuration reload and actual sandbox document export
+remain separate acceptance checks; private-runtime FUSE failures must not be
+reported as passing sandboxed-application coverage.
+
 ## Main-window index availability
 
 Opening the file manager must not wait for an index RPC or daemon readiness.

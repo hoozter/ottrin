@@ -3664,6 +3664,10 @@ pub struct OttrinApp {
     index_startup_rx: Option<Receiver<Result<(), String>>>,
     service_action_rx: Option<Receiver<Result<String, String>>>,
     service_action_result: Option<Result<String, String>>,
+    #[cfg(target_os = "linux")]
+    portal_status: Option<ottrin_platform::portal_integration::PortalStatus>,
+    #[cfg(target_os = "linux")]
+    portal_status_rx: Option<Receiver<ottrin_platform::portal_integration::PortalStatus>>,
     show_settings: bool,
     // Active settings category tab
     settings_tab: SettingsTab,
@@ -3981,6 +3985,10 @@ impl OttrinApp {
             index_startup_rx: None,
             service_action_rx: None,
             service_action_result: None,
+            #[cfg(target_os = "linux")]
+            portal_status: None,
+            #[cfg(target_os = "linux")]
+            portal_status_rx: None,
             show_settings: false,
             settings_tab: SettingsTab::General,
             graphics_runtime,
@@ -20902,6 +20910,8 @@ impl OttrinApp {
             });
         if let Some(result) = result {
             self.service_action_rx = None;
+            #[cfg(target_os = "linux")]
+            { self.portal_status = None; }
             self.search_ui.sqlite_schedule_status = None;
             self.search_service.refresh();
             self.privileged_availability = self.platform.privileged_availability();
@@ -20915,6 +20925,38 @@ impl OttrinApp {
             ui.painter().circle_filled(dot.center(), 4.0, color);
             ui.label(RichText::new(text).color(color));
         });
+    }
+
+    #[cfg(target_os = "linux")]
+    fn render_portal_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
+        if let Some(status)=self.portal_status_rx.as_ref().and_then(|rx|rx.try_recv().ok()) {
+            self.portal_status=Some(status);
+            self.portal_status_rx=None;
+        }
+        if self.portal_status.is_none() && self.portal_status_rx.is_none() {
+            let (tx,rx)=std::sync::mpsc::channel();
+            self.portal_status_rx=Some(rx);
+            let ctx=ui.ctx().clone();
+            std::thread::spawn(move || {let _=tx.send(ottrin_platform::portal_integration::status());ctx.request_repaint();});
+        }
+        appearance_editor::settings_surface(c).inner_margin(12).show(ui, |ui| {
+            ui.set_min_width(ui.available_width());
+            ui.label(RichText::new("Application file dialogs").strong().color(c.text));
+            ui.label("Use Ottrin's themed picker in applications that support the Linux desktop portal. Other desktop integrations keep their existing providers.");
+            ui.label("One-time desktop registration may request administrator permission. Ottrin opens a window only when a file dialog is requested.");
+            if let Some(status)=self.portal_status.clone() {
+                Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
+                ui.horizontal_wrapped(|ui| {
+                    if ui.add_enabled(status.enabled || !status.pending,egui::Button::new(if status.enabled {"Disable Ottrin picker"} else {"Enable Ottrin picker"}).themed(&c)).clicked() {
+                        self.begin_service_action(ui.ctx(), if status.enabled {ottrin_platform::portal_integration::disable} else {ottrin_platform::portal_integration::enable});
+                    }
+                    if status.enabled && ui.add(egui::Button::new("Update / repair setup").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::portal_integration::enable);}
+                    if ui.add_enabled(status.pending,egui::Button::new("Apply pending change").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::portal_integration::apply);}
+                    if ui.add(egui::Button::new("Refresh status").themed(&c)).clicked() {self.portal_status=None;}
+                });
+            } else {ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
+        });
+        ui.add_space(14.0);
     }
 
     fn render_services_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
@@ -20943,6 +20985,8 @@ impl OttrinApp {
             });
         }
         ui.add_enabled_ui(!busy, |ui| {
+            #[cfg(target_os = "linux")]
+            self.render_portal_settings(ui, c);
             ui.label(RichText::new("Administrator helper").strong().color(c.text));
             match &self.privileged_availability {
                 PrivilegedAvailability::Ready => Self::render_service_status(ui, "Installed and ready", ready_color),

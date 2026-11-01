@@ -48,6 +48,7 @@ package_linux_pdfium "$STAGE/libexec/ottrin/pdfium"
 package_search_runtime linux-x86_64 "$STAGE/libexec/ottrin" "$STAGE/third-party-notices/ripgrep"
 install -D -m 0644 "$ROOT/crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md" "$STAGE/third-party-notices/BUNDLED_FONTS.md"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
+install -D -m 0644 "$ROOT/packaging/linux/ottrin.portal" "$STAGE/share/xdg-desktop-portal/portals/ottrin.portal"
 cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
   "$ROOT/packaging/linux/ottrin-html-render.apparmor" \
   "$ROOT/packaging/linux/ottrin.appdata.xml" \

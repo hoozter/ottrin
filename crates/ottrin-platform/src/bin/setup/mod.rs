@@ -6,6 +6,8 @@ use std::path::Path;
 const HTML_POLICY: &[u8] =
     include_bytes!("../../../../../packaging/linux/ottrin-html-render.apparmor");
 
+const PORTAL_DEFINITION: &[u8] = include_bytes!("../../../../../packaging/linux/ottrin.portal");
+
 const POLICY: &[u8] = include_bytes!("../../../../../packaging/linux/org.ottrin.filesystem.policy");
 
 pub fn install() -> Result<(), String> {
@@ -93,8 +95,27 @@ fn install_at(root: &Path, helper: &[u8], html: &[u8], owner: u32) -> std::io::R
         "usr/share/ottrin",
         "usr/share/polkit-1",
         "usr/share/polkit-1/actions",
+        "usr/share/xdg-desktop-portal",
+        "usr/share/xdg-desktop-portal/portals",
     ] {
         protected_directory(&root.join(relative), owner)?;
+    }
+    let portal = root.join("usr/share/xdg-desktop-portal/portals/ottrin.portal");
+    match fs::symlink_metadata(&portal) {
+        Ok(metadata) => {
+            if !metadata.is_file() || metadata.uid() != owner || metadata.mode() & 0o022 != 0 {
+                return Err(std::io::Error::other(
+                    "Unsafe Ottrin portal definition; retained unchanged",
+                ));
+            }
+            if fs::read(&portal)? != PORTAL_DEFINITION {
+                return Err(std::io::Error::other(
+                    "Modified Ottrin portal definition retained; setup did not replace it",
+                ));
+            }
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
     }
     write_protected(
         &root.join("usr/libexec/ottrin/ottrin-priv-helper"),
@@ -119,7 +140,8 @@ fn install_at(root: &Path, helper: &[u8], html: &[u8], owner: u32) -> std::io::R
         POLICY,
         0o644,
         owner,
-    )
+    )?;
+    write_protected(&portal, PORTAL_DEFINITION, 0o644, owner)
 }
 
 /// Activate only our policy on hosts that need/support AppArmor 4. Hosts without
@@ -194,28 +216,40 @@ pub fn remove_html_policy() -> Result<(), String> {
 mod tests {
     use super::*;
 
-    fn fixture() -> std::path::PathBuf {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-setup-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ));
-        fs::create_dir(&root).unwrap();
-        fs::set_permissions(&root, fs::Permissions::from_mode(0o755)).unwrap();
-        root
+    fn fixture() -> tempfile::TempDir {
+        tempfile::Builder::new()
+            .prefix("ottrin-helper-install-")
+            .permissions(fs::Permissions::from_mode(0o755))
+            .tempdir()
+            .unwrap()
     }
 
     #[test]
+    fn modified_portal_definition_is_preserved_before_any_helper_replacement() {
+        let directory = fixture();
+        let root = directory.path();
+        let owner = fs::metadata(root).unwrap().uid();
+        install_at(root, b"original", b"HTML sandbox", owner).unwrap();
+        let portal = root.join("usr/share/xdg-desktop-portal/portals/ottrin.portal");
+        assert_eq!(fs::read(&portal).unwrap(), PORTAL_DEFINITION);
+        assert_eq!(fs::metadata(&portal).unwrap().mode() & 0o777, 0o644);
+        fs::write(&portal, b"custom definition").unwrap();
+        assert!(install_at(root, b"replacement", b"HTML sandbox", owner).is_err());
+        assert_eq!(fs::read(&portal).unwrap(), b"custom definition");
+        assert_eq!(
+            fs::read(root.join("usr/libexec/ottrin/ottrin-priv-helper")).unwrap(),
+            b"original"
+        );
+    }
+    #[test]
     fn install_and_update_preserve_other_files_and_set_permissions() {
-        let root = fixture();
-        let owner = fs::metadata(&root).unwrap().uid();
-        install_at(&root, b"first", b"HTML sandbox", owner).unwrap();
+        let directory = fixture();
+        let root = directory.path();
+        let owner = fs::metadata(root).unwrap().uid();
+        install_at(root, b"first", b"HTML sandbox", owner).unwrap();
         let helper = root.join("usr/libexec/ottrin/ottrin-priv-helper");
         fs::write(root.join("usr/libexec/ottrin/other"), "keep").unwrap();
-        install_at(&root, b"second", b"HTML sandbox", owner).unwrap();
+        install_at(root, b"second", b"HTML sandbox", owner).unwrap();
         assert_eq!(fs::read(&helper).unwrap(), b"second");
         assert_eq!(fs::metadata(helper).unwrap().mode() & 0o777, 0o755);
         let html = root.join("usr/libexec/ottrin/ottrin-html-render");
@@ -231,34 +265,33 @@ mod tests {
             fs::read_to_string(root.join("usr/libexec/ottrin/other")).unwrap(),
             "keep"
         );
-        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
     fn refuses_symlink_target_without_touching_destination() {
-        let root = fixture();
-        let owner = fs::metadata(&root).unwrap().uid();
-        install_at(&root, b"original", b"HTML sandbox", owner).unwrap();
+        let directory = fixture();
+        let root = directory.path();
+        let owner = fs::metadata(root).unwrap().uid();
+        install_at(root, b"original", b"HTML sandbox", owner).unwrap();
         let helper = root.join("usr/libexec/ottrin/ottrin-priv-helper");
         let other = root.join("keep");
         fs::write(&other, b"preserve").unwrap();
         fs::remove_file(&helper).unwrap();
         std::os::unix::fs::symlink(&other, helper).unwrap();
-        assert!(install_at(&root, b"replacement", b"HTML sandbox", owner).is_err());
+        assert!(install_at(root, b"replacement", b"HTML sandbox", owner).is_err());
         assert_eq!(fs::read(other).unwrap(), b"preserve");
-        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
     fn refuses_symlink_and_writable_namespaces() {
-        let root = fixture();
-        let owner = fs::metadata(&root).unwrap().uid();
+        let directory = fixture();
+        let root = directory.path();
+        let owner = fs::metadata(root).unwrap().uid();
         std::os::unix::fs::symlink("/usr", root.join("usr")).unwrap();
-        assert!(install_at(&root, b"test", b"HTML sandbox", owner).is_err());
+        assert!(install_at(root, b"test", b"HTML sandbox", owner).is_err());
         fs::remove_file(root.join("usr")).unwrap();
         fs::create_dir(root.join("usr")).unwrap();
         fs::set_permissions(root.join("usr"), fs::Permissions::from_mode(0o777)).unwrap();
-        assert!(install_at(&root, b"test", b"HTML sandbox", owner).is_err());
-        fs::remove_dir_all(root).unwrap();
+        assert!(install_at(root, b"test", b"HTML sandbox", owner).is_err());
     }
 }

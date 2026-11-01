@@ -1,0 +1,79 @@
+{
+  "binary_sha256": "457a9924aaa7be0b94b260ad5a5ae17d4c4a663e46de16c028920ba115c6b77f",
+  "scope": "Actual installed xdg-desktop-portal1.18.4 frontend,public FileChooser API,D-Bus backend activation and actual source chooser in owned X11;registration assets are private test files,not yet production setup/package acceptance",
+  "status": "pass",
+  "real_frontend_activated_backend": true,
+  "public_responses": {
+    "status": "pass",
+    "requests": {
+      "cancel": "/org/freedesktop/portal/desktop/request/1_4/cancel",
+      "save": "/org/freedesktop/portal/desktop/request/1_4/save",
+      "batch": "/org/freedesktop/portal/desktop/request/1_4/batch"
+    },
+    "responses": {
+      "/org/freedesktop/portal/desktop/request/1_4/save": [
+        0,
+        {
+          "choices": [],
+          "uris": [
+            "file:///var/tmp/.ottrin-picker-qa-ghaki1u_/fixture/original%80.txt"
+          ]
+        }
+      ],
+      "/org/freedesktop/portal/desktop/request/1_4/batch": [
+        0,
+        {
+          "choices": [],
+          "uris": [
+            "file:///var/tmp/.ottrin-picker-qa-ghaki1u_/fixture/original%80%20%281%29.txt",
+            "file:///var/tmp/.ottrin-picker-qa-ghaki1u_/fixture/other.txt"
+          ]
+        }
+      ]
+    }
+  },
+  "original_bytes_preserved": true,
+  "no_files_created_by_save_or_batch": true,
+  "no_index_started": true,
+  "no_main_config_written": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ghaki1u_",
+    "owned_processes_reaped": [
+      {
+        "pid": 3478997,
+        "exit": 0
+      },
+      {
+        "pid": 3479000,
+        "exit": 0
+      },
+      {
+        "pid": 3479003,
+        "exit": 15
+      },
+      {
+        "pid": 3479053,
+        "exit": 0
+      },
+      {
+        "pid": 3479054,
+        "exit": -15
+      },
+      {
+        "pid": 3479064,
+        "exit": -15
+      },
+      {
+        "pid": 3479065,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

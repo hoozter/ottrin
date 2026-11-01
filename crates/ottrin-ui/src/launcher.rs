@@ -1,15 +1,6 @@
 use ottrin_core::default_home_dir;
 use std::path::PathBuf;
 
-fn launcher_target_path() -> Option<PathBuf> {
-    if let Some(appimage) = std::env::var_os("APPIMAGE").map(PathBuf::from)
-        && appimage.exists()
-    {
-        return Some(appimage);
-    }
-    std::env::current_exe().ok()
-}
-
 fn launcher_link_path() -> PathBuf {
     #[cfg(target_os = "windows")]
     {
@@ -32,8 +23,7 @@ pub(crate) fn launcher_status() -> Option<String> {
 
 pub(crate) fn install_terminal_launcher() -> Result<String, String> {
     let link = launcher_link_path();
-    let target = launcher_target_path()
-        .ok_or_else(|| "Could not determine the current Ottrin executable path.".to_string())?;
+    let target = ottrin_platform::application_launch_path()?;
     if let Some(parent) = link.parent() {
         std::fs::create_dir_all(parent)
             .map_err(|e| format!("Failed to create {}: {}", parent.display(), e))?;

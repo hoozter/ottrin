@@ -86,6 +86,7 @@ fi
 /usr/share/polkit-1/actions/org.ottrin.filesystem.policy
 /usr/share/ottrin/ottrin-index.service.in
 /usr/share/ottrin/ottrin-html-render.apparmor
+/usr/share/xdg-desktop-portal/portals/ottrin.portal
 /usr/share/doc/ottrin
 EOF
 
