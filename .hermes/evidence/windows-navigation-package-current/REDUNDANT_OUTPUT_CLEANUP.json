@@ -1,0 +1,402 @@
+{
+  "recorded": "2026-11-01T00:30:18.009752+00:00",
+  "removed": [
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-long-space.stdout",
+      "bytes": 1486,
+      "sha256": "fe78d9b50acef1dc30cf23185662cc56ac4604eae5199dee558f0bc7455a332f"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/final-raw-bytes.stdout",
+      "bytes": 1442,
+      "sha256": "07b96e532d02fbeef01172a53f84b0e809d3249d9636cfaff64665d994f6e68f"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-launch-2.stdout",
+      "bytes": 953,
+      "sha256": "64333f02de0ccf1ed666fc3d2b5cdbb345dd369ee04cc349928ea3da06e01834"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/note-back-vcf.stdout",
+      "bytes": 1530,
+      "sha256": "800206faa785f1afb85745bd02236530a62f3d1ffcf99f1568ff77a13a326626"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/select-long-again.stdout",
+      "bytes": 1216,
+      "sha256": "e9294170510027208b3e16f7995dc0c83d6f6ef9fcab15bf05dbc1975440a15a"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/cycle-2.stdout",
+      "bytes": 1216,
+      "sha256": "76ddadac8a137dc604a819cd7db250c9c1a1bce037fa8f514a3d731e183ec466"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/vcf-space-close.stdout",
+      "bytes": 1214,
+      "sha256": "79076715fb55e0718356d3dfc61ad5e6f54d4261ef32027055a91abc01216008"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/inking-no.stdout",
+      "bytes": 663,
+      "sha256": "31dd47894327b2cda9a8df86d5ae9d6c98ef65758e1001727a6183603728224a"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-verify-copy.stdout",
+      "bytes": 5422,
+      "sha256": "70824245d728b897c18092f8ab45a0454af9e06105c6985a37bd2fb5f9e41f41"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/gui-observe.stdout",
+      "bytes": 663,
+      "sha256": "cb62930fd19f33833003de6ace8cda52a70ee14b95bd9040385501fb91ab04ac"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/select-long-text.stdout",
+      "bytes": 1216,
+      "sha256": "8a201fe3bc179c310300926bda7a41ef427e2bedbd60ee8c47de83771559398e"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/verify-readonly-text.stdout",
+      "bytes": 5446,
+      "sha256": "f4dd0936389fe194849ccb325e3331fd897ab794c709346e8ba840d3d7467ffe"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-finish.stdout",
+      "bytes": 358,
+      "sha256": "50d8cbe2bd523f409be433bdf28360ccc303f34e591107edc4745a81c72ff040"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/readonly-text-focus.stdout",
+      "bytes": 1582,
+      "sha256": "50be9e038bce382796755629e3c19cd9b5935f59cf47bd7bcade3c9916049cf1"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-launch-0.stdout",
+      "bytes": 790,
+      "sha256": "b6cf73e504bd861a999e155e2dff74e365065622a544a988ed9dcf325a670596"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/long-readonly-focus.stdout",
+      "bytes": 1584,
+      "sha256": "b11ddbe3b957abf6d480ff6e1388e01dae178924905c4adf1a0b0bd8316ce604"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-offers-no.stdout",
+      "bytes": 663,
+      "sha256": "0e75acb01316fe7193204a415a7c542ba44fae0a7069f7dc017b48848b1d426c"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/vcf-focus-for-space.stdout",
+      "bytes": 1532,
+      "sha256": "2bea30b703080232559e0cbef93dd71fbdc4f9014a48ff2b6825050fc0ad38a1"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-location-accept.stdout",
+      "bytes": 664,
+      "sha256": "6b34c6737df7b2793f86039f8b063b1c18cc39e6f53a6ba08b04bd55ed80c032"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/readonly-next-contact.stdout",
+      "bytes": 1530,
+      "sha256": "4bf4e7783a956b0136863d94c20db172d222404d7b40980bf0595c45e9122009"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/view-menu.stdout",
+      "bytes": 1216,
+      "sha256": "6c55c3a53aed800bc4081996a8cc799de6589d9c783e569dd3acdede0add94ff"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/cycle-0.stdout",
+      "bytes": 1216,
+      "sha256": "1f557dc4f1279b2655fbb6468264eb703b9b0b4d790331ddb24e4135b784fc6b"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/offers-no.stdout",
+      "bytes": 663,
+      "sha256": "c1d31019c4f98436db97daddb247fa9cb30fea1b2137251ce2d2a45d64b63899"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/launch-sequence-1.stdout",
+      "bytes": 665,
+      "sha256": "718e0523e30891c40a8bd490041ca95d951c17e2948fb29aeb16abe615dea7f9"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-offers-accept.stdout",
+      "bytes": 664,
+      "sha256": "6a2d790a1aff55dfc87be02f8e6cef9f925e90407d10a2074ba7577cb1e0a448"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/vcf-focus.stdout",
+      "bytes": 1532,
+      "sha256": "e9c53cedb084c9e89bd6c5bd912b077f5fd3756542ba4cb4c7ffd5bbee4bc63d"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-normal-close.stdout",
+      "bytes": 1183,
+      "sha256": "39cc9680e455e1d102c76097e88f0f093ea1f9f4ecadb860b10eb7bc52220ca3"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/launch-sequence-0.stdout",
+      "bytes": 790,
+      "sha256": "8aec5150a6ae2efc2b87ebb789e7770d6cac746ea748f5b06462fceb976b5063"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-copy.stdout",
+      "bytes": 1214,
+      "sha256": "b82d920be1ab7e3a1c4dcf25af193c725204039a18524508d83247685bab3c51"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/metadata-hover.stdout",
+      "bytes": 1217,
+      "sha256": "0715ffd74abbc1482181e4fc8e838983ae637c921b9664f89341c94021247d5d"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-cycle-0.stdout",
+      "bytes": 1216,
+      "sha256": "143249bfdc1ba602da79354886d9dd350d538efc2e9276ef6eca65b3a7f4066f"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-view-menu.stdout",
+      "bytes": 1216,
+      "sha256": "571c422ab837edb96eebd272b45c392254f0ec8dd7dac30d151d43d4f4aa5e9f"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-launch-3.stdout",
+      "bytes": 1218,
+      "sha256": "15e65dbdec2d2523d914c3c82a22eb33dd84d7a6386866de5852047d7cce9b9d"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/long-space-close.stdout",
+      "bytes": 1214,
+      "sha256": "d7442c9e1b9f4999bfab4f6d62e58c89fc196193daaa12d152b9537f7ed76cf3"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/gui-onboard.stdout",
+      "bytes": 663,
+      "sha256": "7f7898d058ccf1b95caf5091ebc95083ac916d5313ccafde8142241cdb7fb2fd"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/launch-sequence-3.stdout",
+      "bytes": 1218,
+      "sha256": "35137bf2135b1e17bf22ccf61159da7bbb745e58cbe2a0b65a22501b3efe43e8"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-literal-verify.stdout",
+      "bytes": 5435,
+      "sha256": "0a0bc7f9bf25a069bdba8518da2d69050ed1c89f8fa6e7800bfcd645b52a9710"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-select-destination.stdout",
+      "bytes": 1216,
+      "sha256": "7ffaaad9631dd0d7a61d2472f9b3d48dd0366b52efcf87979dab45f1688490f8"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-inking-accept.stdout",
+      "bytes": 664,
+      "sha256": "c9b18ffce65fe6a557bb4bb99bbec69eec28122de86040707141857e8af76274"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-column.stdout",
+      "bytes": 1216,
+      "sha256": "6bd1140ca7710d224c3fdfb0392f4245d3bd142c352f794f7d8cff0183210411"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-destination.stdout",
+      "bytes": 1214,
+      "sha256": "c9f784d976f9444910dcb1c19103c589130184dc08bfd15055294e36c16d69ba"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/inking-accept.stdout",
+      "bytes": 664,
+      "sha256": "4234df1cbf65c6f264ed3bb29753dbdb763aaa61085cd5aa2f1282945f3822e7"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-location-no.stdout",
+      "bytes": 663,
+      "sha256": "f05572471a26d4e8187f055a023cb232e49b7dfa086ca1275abcf3e800c8e426"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-long-reopen.stdout",
+      "bytes": 1584,
+      "sha256": "0d5d65a98c44d206a4e4a6bec2e2359a8601f6864d5ffc543ee48ded3592cc6a"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-location-hover.stdout",
+      "bytes": 1217,
+      "sha256": "dffe49520fa5824fba6e80990b7c0be912be64352e05b535fddd72ca9ea9ba95"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/open-text-inspector.stdout",
+      "bytes": 1582,
+      "sha256": "a0d579aa6384cc6c220b6aea9bbb90e9e1f75ba90327bf3d08e2152b94a1866c"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-open-inspector.stdout",
+      "bytes": 1582,
+      "sha256": "29df5ff1115a09523dacb3e316ee0222509bec336129c5638b529ff3fe653d69"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-next-contact.stdout",
+      "bytes": 1530,
+      "sha256": "8b4faf1cd98a40a079e976f654361e67eb6d8a6853b60e9132c17a63d05276c7"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-cycle-2.stdout",
+      "bytes": 1216,
+      "sha256": "e91f937179ab3d44acbdd80020a3af8525732d01b0a8ef4cbc0f79c1b57218d0"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/gui-onboard-accept.stdout",
+      "bytes": 664,
+      "sha256": "c549090e48e3b4f326a3818703f5da8dc6e4eac9a4642442054214c547ba82ab"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-observe.stdout",
+      "bytes": 663,
+      "sha256": "3a81616203092ae928c7a61bcdccc1fe6e2368384056051f68af863dfad7cc72"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/open-long-again.stdout",
+      "bytes": 1584,
+      "sha256": "635f83aed49214a6f5139cddc4b87e4276f89878fc625e147c4e870a15e130ac"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-inking-no.stdout",
+      "bytes": 663,
+      "sha256": "44b879d00363881ec0f6fb87a50fc3c6a3dccebc5089174a3a91bb12ed4b4367"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/rename-select-all.stdout",
+      "bytes": 408,
+      "sha256": "8b837dad11d76a52f821f21bb4e8a6395158f308a9989e415f5e4006b3ba9427"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-select-note.stdout",
+      "bytes": 1216,
+      "sha256": "f10de5ee80554cdc88777496dd00376a2ffe3046c52afa240a64a1725e478c4a"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-vcf-next.stdout",
+      "bytes": 1527,
+      "sha256": "cfeac00d167e5f75ff368bef2e5e811eb79fb65121b19d2c3e4d26c6da7ed76e"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-select-long.stdout",
+      "bytes": 1216,
+      "sha256": "34c95f59b781e73b2ba5b0fb7ec626861ab9b4f80831d2c0a8dd9e68ea591472"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-paste.stdout",
+      "bytes": 1214,
+      "sha256": "95d8ea96bda87afc91ff7ff1819ad4ebb90714244c484bcd14754c777881e455"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/default-renderer-collection.stdout",
+      "bytes": 2143,
+      "sha256": "8eff355f49640699246cd786edce4d8f830c015aa472c2d4006113d5226beca8"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/launch-sequence-2.stdout",
+      "bytes": 953,
+      "sha256": "55979e2f92be203296445f9710eb89c40d658c5f1321a75d98e4ae14583b7c12"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-vcf-close-space.stdout",
+      "bytes": 1486,
+      "sha256": "cc72bc737c584adbaca6baeee15988a85a4d89e01ffbd0f77075fbd4fcfbf162"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-vcf-back.stdout",
+      "bytes": 1530,
+      "sha256": "a57850a0b3b4147d6855ffb6bb9979558f1a751f23fb4f0aa5c9b60fc7af6031"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/column-click.stdout",
+      "bytes": 1216,
+      "sha256": "fc7b62e7c72802489fcbb9a333562a0651d965cc3035436967c4e9370fe35b53"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-long-focus.stdout",
+      "bytes": 1584,
+      "sha256": "d2ccc066cba0f8d5d842d84ec6fc18c42d87f77294152d97f7e1d6f8c36489c7"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-rename-open.stdout",
+      "bytes": 1214,
+      "sha256": "3bb29b3b551fe5a0caef0539344b7db1c1d259c43e36f44fb78d78646c0161d0"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/chain-replace.stdout",
+      "bytes": 1216,
+      "sha256": "58ea250cfd71078624ed974488a8871450d1e007b154cd4a40cfd41c263eb764"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/offers-accept.stdout",
+      "bytes": 664,
+      "sha256": "44ed1b0712863ab280f1d58cc09d6ce63683520069836b45f876e3dce86ff627"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-long-reselect.stdout",
+      "bytes": 1216,
+      "sha256": "5aff0612c18f15a42426ed0427633318ea7ca52abef1e26a54454154deb4a6f5"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-vcf-focus.stdout",
+      "bytes": 1532,
+      "sha256": "6335d2e63b5a6c0c4f40d1508cbfc70da83333e7bd22c86d5158f6ea1f498e2c"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/vcf-next-note.stdout",
+      "bytes": 1527,
+      "sha256": "339b97629f084da85b9b9b66d6aeaa77db1761ca5f7b5861648353a2bd40f35d"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-vcf-focus-space.stdout",
+      "bytes": 1532,
+      "sha256": "cd684e0a1a669ff0df1eac1cffbcebfb9b6a560f95ac187ebce562d3f32fdb20"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-launch-1.stdout",
+      "bytes": 665,
+      "sha256": "003d1fcf7236a8dfe5f5748ce451bc7c0894a3be88b3a1af544d89a9a0b8d983"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-cycle-1.stdout",
+      "bytes": 1216,
+      "sha256": "f3728301f7a8b0d971241eacc576f2a486ca267c0383c9025c8e5adc6a6c5df6"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/cycle-1.stdout",
+      "bytes": 1216,
+      "sha256": "81a3a8dc8be37350aada6a289c46d5a65f1f3b5828631426bb5f9e9e3cb33b40"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/core-text-focus.stdout",
+      "bytes": 1582,
+      "sha256": "c7c175861eafc8d81131d58f14a55d811c2ae67acbc62362390a430706610e63"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/native.pid",
+      "bytes": 4,
+      "purpose": "dead process marker;all owned guest processes already ended"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-package-current/accept.pid",
+      "bytes": 4,
+      "purpose": "dead process marker;all owned guest processes already ended"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-gui-current/observer.pid",
+      "bytes": 4,
+      "purpose": "dead process marker;all owned guest processes already ended"
+    },
+    {
+      "name": ".hermes/evidence/windows-navigation-gui-lease-control/observer.pid",
+      "bytes": 3,
+      "purpose": "dead process marker;all owned guest processes already ended"
+    }
+  ],
+  "preserved": "Canonical commands.jsonl,per-event JSON,accepted and failed session receipts,artifact/native/GUI/byte/pref/teardown evidence and meaningful build/failure logs",
+  "scope": "Completed QA caller console echoes and dead PID markers only;no package,source,user profile or acceptance assertion changed"
+}
