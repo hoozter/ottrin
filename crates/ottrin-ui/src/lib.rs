@@ -91,6 +91,8 @@ mod file_row;
 mod picker;
 mod picker_parent;
 pub use picker::PickerApp;
+mod properties;
+pub use properties::PropertiesApp;
 mod icons;
 mod image_ops;
 mod internal_picker;
@@ -3758,9 +3760,10 @@ impl OttrinApp {
         self.request_miller_reveal(tab_id);
     }
 
-    /// Open a file's parent in the main window and reveal that file when its listing arrives.
-    pub fn select_file_at_startup(&mut self, path: PathBuf) {
+    /// Reveal an entry in its parent; filesystem roots open their own contents.
+    pub fn reveal_path_at_startup(&mut self, path: PathBuf) {
         let Some(parent) = path.parent().map(Path::to_path_buf) else {
+            self.open_directory_at_startup(path);
             return;
         };
         let tab_id = self.state.active_tab().id;
@@ -3773,7 +3776,7 @@ impl OttrinApp {
     /// cache, renderer, and error presentation used by Space in the file manager. The file's
     /// immediate parent is loaded as navigation context so arrows can move through siblings.
     pub fn open_quick_inspector_file(&mut self, path: PathBuf) {
-        self.select_file_at_startup(path.clone());
+        self.reveal_path_at_startup(path.clone());
         let metadata = std::fs::metadata(&path).ok();
         let modified_unix_secs = metadata
             .as_ref()
@@ -3804,7 +3807,7 @@ impl OttrinApp {
             return false;
         };
         self.quick_inspector_only = false;
-        self.select_file_at_startup(path);
+        self.reveal_path_at_startup(path);
         true
     }
 
@@ -35850,7 +35853,7 @@ mod tests {
                 app.state.config.miller_view_scale = 1.0;
                 app.set_tab_view_mode(tab_id, previous);
                 if selected {
-                    app.select_file_at_startup(path.clone());
+                    app.reveal_path_at_startup(path.clone());
                 } else {
                     app.navigate_tab_to(tab_id, directory.clone());
                 }
@@ -36134,7 +36137,7 @@ mod tests {
         app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
         app.state.config.folder_column_widths.clear();
         app.state.config.miller_view_scale = 1.0;
-        app.select_file_at_startup(path.clone());
+        app.reveal_path_at_startup(path.clone());
         let tab_id = app.state.active_tab().id;
         let ctx = Context::default();
         for frame in 0..60 {

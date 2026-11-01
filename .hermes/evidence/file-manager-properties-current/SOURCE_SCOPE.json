@@ -1,0 +1,16 @@
+{
+  "scope": "Standalone read-only properties and reveal foundation; FileManager1 registration and final packaged acceptance still pending",
+  "changes": [
+    "Shared application branding/native options and themed properties chrome",
+    "Asynchronous nonrecursive metadata, broken links and permission bits",
+    "Exact calendar dates and pre-epoch timestamps",
+    "Native entry reveal including folders, links and roots"
+  ],
+  "source_inputs": [
+    "crates/ottrin-ui/src/properties.rs",
+    "crates/ottrin-app/src/main.rs",
+    "crates/ottrin-core/src/lib.rs",
+    "crates/ottrin-platform/src/lib.rs"
+  ],
+  "packages_changed": false
+}

@@ -1,0 +1,84 @@
+{
+  "binary_sha256": "4c971f6c846375ef4aa9aa70b648235967f596c0f10652ecd1cc3d3df792cd5b",
+  "cases": [
+    {
+      "theme": "Dark",
+      "scale": "1",
+      "normal_close": true,
+      "preferences_and_source_preserved": true,
+      "index_not_started": true,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-16n94w25",
+        "owned_processes_reaped": [
+          {
+            "pid": 3994542,
+            "exit": 0
+          },
+          {
+            "pid": 3994545,
+            "exit": 0
+          },
+          {
+            "pid": 3994546,
+            "exit": 15
+          },
+          {
+            "pid": 3994643,
+            "exit": 0
+          },
+          {
+            "pid": 3994701,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    },
+    {
+      "theme": "Light",
+      "scale": "1.5",
+      "normal_close": true,
+      "preferences_and_source_preserved": true,
+      "index_not_started": true,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-g1f1a22u",
+        "owned_processes_reaped": [
+          {
+            "pid": 3994757,
+            "exit": 0
+          },
+          {
+            "pid": 3994760,
+            "exit": 0
+          },
+          {
+            "pid": 3994761,
+            "exit": 15
+          },
+          {
+            "pid": 3994808,
+            "exit": 0
+          },
+          {
+            "pid": 3994867,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    }
+  ],
+  "status": "pass"
+}

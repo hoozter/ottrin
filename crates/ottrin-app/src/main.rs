@@ -159,6 +159,7 @@ enum HeadlessAction {
         offset: usize,
     },
     Preview(PathBuf),
+    Properties(Vec<PathBuf>),
     Picker {
         cancel_on_disconnect: bool,
     },
@@ -406,6 +407,15 @@ fn main() {
         return;
     }
     let action = cli_headless_action(&cli.command);
+    if let Some(HeadlessAction::Properties(paths)) = &action {
+        install_windows_startup_panic_hook();
+        if let Err(error) = run_properties_gui(paths.clone(), cli) {
+            eprintln!("ottrin properties: {error}");
+            report_windows_startup_failure("Ottrin properties could not start", &error);
+            std::process::exit(1);
+        }
+        return;
+    }
     if let Some(HeadlessAction::Picker {
         cancel_on_disconnect,
     }) = &action
@@ -444,7 +454,7 @@ fn main() {
                 std::process::exit(2);
             }
         },
-        Some(HeadlessAction::SelectPath(path)) => match resolve_preview_path(&path) {
+        Some(HeadlessAction::SelectPath(path)) => match resolve_select_path(&path) {
             Ok(path) => Some(GuiLaunchTarget::Select(path)),
             Err(error) => {
                 eprintln!("ottrin: {error}");
@@ -487,22 +497,14 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
     let standalone_inspector = matches!(gui_target, Some(GuiLaunchTarget::QuickInspector(_)));
     let main_viewport = main_viewport_geometry(standalone_inspector, window_size);
     let window_title = application_window_title();
-    let options = NativeOptions {
-        renderer: renderer_for_selection(
-            graphics_runtime.is_windows,
-            graphics_runtime.selection.choice,
-        ),
-        viewport: egui::ViewportBuilder::default()
-            .with_app_id(ottrin_ui::DESKTOP_APPLICATION_ID)
+    let options = application_window_options(
+        egui::ViewportBuilder::default()
             .with_title(window_title.clone())
             .with_visible(main_viewport.visible)
-            .with_decorations(false)
-            .with_transparent(main_viewport_transparent(graphics_runtime.is_windows))
             .with_inner_size(main_viewport.inner_size)
-            .with_min_inner_size(main_viewport.min_inner_size)
-            .with_icon(load_window_icon()),
-        ..Default::default()
-    };
+            .with_min_inner_size(main_viewport.min_inner_size),
+        &graphics_runtime,
+    );
     #[cfg(target_os = "windows")]
     let options = windows_initial_window_options(options, standalone_inspector);
     eframe::run_native(
@@ -533,7 +535,7 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
                     app.open_directory_at_startup(path);
                 }
                 Some(GuiLaunchTarget::Select(path)) => {
-                    app.select_file_at_startup(path);
+                    app.reveal_path_at_startup(path);
                 }
                 None => {}
             }
@@ -694,6 +696,62 @@ fn picker_window_system_options(
     Ok(options)
 }
 
+fn application_window_options(
+    viewport: egui::ViewportBuilder,
+    runtime: &GraphicsRuntimeStatus,
+) -> NativeOptions {
+    NativeOptions {
+        renderer: renderer_for_selection(runtime.is_windows, runtime.selection.choice),
+        viewport: viewport
+            .with_app_id(ottrin_ui::DESKTOP_APPLICATION_ID)
+            .with_decorations(false)
+            .with_transparent(main_viewport_transparent(runtime.is_windows))
+            .with_icon(load_window_icon()),
+        ..Default::default()
+    }
+}
+fn run_properties_gui(paths: Vec<PathBuf>, cli: CliArguments) -> Result<(), String> {
+    let current = std::env::current_dir().map_err(|e| e.to_string())?;
+    let mut seen = HashSet::new();
+    let paths: Vec<_> = paths
+        .into_iter()
+        .map(|path| {
+            if path.is_absolute() {
+                path
+            } else {
+                current.join(path)
+            }
+        })
+        .filter(|path| seen.insert(path.clone()))
+        .collect();
+    if paths.is_empty() {
+        return Err("--properties needs at least one entry path".into());
+    }
+    let renderer = graphics_renderer_override(cli.renderer_override.as_deref())?;
+    let config = load_config();
+    let runtime = graphics_runtime_status(renderer.is_some(), &config);
+    let title = format!(
+        "{} — {}",
+        application_window_title(),
+        ottrin_ui::PropertiesApp::title(&paths)
+    );
+    let options = application_window_options(
+        egui::ViewportBuilder::default()
+            .with_title(&title)
+            .with_inner_size([720.0, 540.0])
+            .with_min_inner_size([480.0, 360.0]),
+        &runtime,
+    );
+    #[cfg(target_os = "windows")]
+    let options = windows_initial_window_options(options, false);
+    eframe::run_native(
+        &title,
+        options,
+        Box::new(move |cc| Ok(Box::new(ottrin_ui::PropertiesApp::new(cc, paths, runtime)?))),
+    )
+    .map_err(|e| e.to_string())
+}
+
 fn run_picker_gui(
     request: ottrin_core::picker::PickerRequest,
     cli: CliArguments,
@@ -707,18 +765,13 @@ fn run_picker_gui(
         application_window_title(),
         request.window_title()
     );
-    let options = NativeOptions {
-        renderer: renderer_for_selection(runtime.is_windows, runtime.selection.choice),
-        viewport: egui::ViewportBuilder::default()
-            .with_app_id(ottrin_ui::DESKTOP_APPLICATION_ID)
+    let options = application_window_options(
+        egui::ViewportBuilder::default()
             .with_title(&title)
-            .with_decorations(false)
-            .with_transparent(main_viewport_transparent(runtime.is_windows))
             .with_inner_size([940.0, 640.0])
-            .with_min_inner_size([680.0, 480.0])
-            .with_icon(load_window_icon()),
-        ..Default::default()
-    };
+            .with_min_inner_size([680.0, 480.0]),
+        &runtime,
+    );
     #[cfg(target_os = "linux")]
     let options = picker_window_system_options(options, &request.parent_window)?;
     #[cfg(target_os = "windows")]
@@ -921,7 +974,8 @@ fn print_cli_help() {
     println!("  ottrin                         Open the file manager");
     println!("  ottrin <FILE>                  Open the file directly in Quick Inspector");
     println!("  ottrin <DIRECTORY>             Open the file manager in that directory");
-    println!("  ottrin --select <FILE>         Open the parent folder with the file selected");
+    println!("  ottrin --properties <PATH>... Show a read-only themed properties window");
+    println!("  ottrin --select <PATH>         Reveal an entry in its parent folder");
     println!("  ottrin search <QUERY> [--json] Search indexed files (-s)");
     println!("                       [--content] Also search the configured content folders");
     println!("                       [--limit N] [--offset N] Select a result page");
@@ -1095,13 +1149,27 @@ fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
             [] => HeadlessAction::Invalid("preview requires a file path".to_string()),
             _ => HeadlessAction::Invalid("preview accepts exactly one file path".to_string()),
         }),
+        "--properties" => {
+            let paths = if args.get(1).is_some_and(|value| value == "--") {
+                &args[2..]
+            } else {
+                &args[1..]
+            };
+            Some(
+                if paths.is_empty() || paths.iter().any(|path| path.is_empty()) {
+                    HeadlessAction::Invalid("--properties needs at least one entry path".into())
+                } else {
+                    HeadlessAction::Properties(paths.iter().map(PathBuf::from).collect())
+                },
+            )
+        }
         "--select" => Some(match &args[1..] {
             [path] if !path.is_empty() => HeadlessAction::SelectPath(PathBuf::from(path)),
             [separator, path] if separator == "--" && !path.is_empty() => {
                 HeadlessAction::SelectPath(PathBuf::from(path))
             }
-            [] => HeadlessAction::Invalid("--select requires a file path".to_string()),
-            _ => HeadlessAction::Invalid("--select accepts exactly one file path".to_string()),
+            [] => HeadlessAction::Invalid("--select requires an entry path".to_string()),
+            _ => HeadlessAction::Invalid("--select accepts exactly one entry path".to_string()),
         }),
         "drop" => Some(match args.get(1).and_then(|value| value.to_str()) {
             Some("status") if args.len() == 2 => HeadlessAction::DropStatus,
@@ -1363,6 +1431,26 @@ fn resolve_direct_open_path(path: &std::path::Path) -> Result<GuiLaunchTarget, S
     }
 }
 
+fn resolve_select_path(path: &std::path::Path) -> Result<PathBuf, String> {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map_err(|e| e.to_string())?
+            .join(path)
+    };
+    // Resolve ancestors while keeping a symbolic link itself as the selected item.
+    let resolved = match (absolute.parent(), absolute.file_name()) {
+        (Some(parent), Some(name)) => std::fs::canonicalize(parent)
+            .map_err(|e| format!("Cannot open the parent folder: {e}"))?
+            .join(name),
+        _ => std::fs::canonicalize(&absolute).map_err(|e| e.to_string())?,
+    };
+    std::fs::symlink_metadata(&resolved)
+        .map_err(|e| format!("Cannot reveal {}: {e}", resolved.display()))?;
+    Ok(resolved)
+}
+
 fn resolve_preview_path(path: &std::path::Path) -> Result<PathBuf, String> {
     let resolved = std::fs::canonicalize(path).map_err(|error| match error.kind() {
         std::io::ErrorKind::NotFound => {
@@ -1549,6 +1637,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             Ok(())
         }
         HeadlessAction::Preview(_)
+        | HeadlessAction::Properties(_)
         | HeadlessAction::Picker { .. }
         | HeadlessAction::OpenPath(_)
         | HeadlessAction::SelectPath(_) => {
@@ -1883,6 +1972,47 @@ mod tests {
             use std::os::windows::ffi::OsStringExt;
             OsString::from_wide(&[110, 97, 116, 105, 118, 101, 0xd800, 46, 116, 120, 116])
         }
+    }
+
+    #[test]
+    fn properties_accepts_native_batches_and_reveal_accepts_folders_and_roots() {
+        let root = tempfile::tempdir().unwrap();
+        let folder = root.path().join("folder");
+        std::fs::create_dir(&folder).unwrap();
+        assert_eq!(
+            resolve_select_path(&folder).unwrap(),
+            std::fs::canonicalize(&folder).unwrap()
+        );
+        let absolute = std::fs::canonicalize(&folder).unwrap();
+        let volume = absolute.ancestors().last().unwrap();
+        assert_eq!(resolve_select_path(volume).unwrap(), volume);
+        let native = PathBuf::from(native_argument_fixture());
+        assert_eq!(
+            cli_headless_action(&[
+                "--properties".into(),
+                "--".into(),
+                native.clone().into_os_string(),
+                folder.clone().into_os_string()
+            ]),
+            Some(HeadlessAction::Properties(vec![native, folder]))
+        );
+        assert!(matches!(
+            cli_headless_action(&["--properties".into()]),
+            Some(HeadlessAction::Invalid(_))
+        ));
+    }
+    #[cfg(unix)]
+    #[test]
+    fn reveal_selects_a_link_in_its_parent_instead_of_following_the_target() {
+        let root = tempfile::tempdir().unwrap();
+        let link = root.path().join(native_argument_fixture());
+        std::os::unix::fs::symlink("missing target", &link).unwrap();
+        assert_eq!(
+            resolve_select_path(&link).unwrap(),
+            std::fs::canonicalize(root.path())
+                .unwrap()
+                .join(link.file_name().unwrap())
+        );
     }
 
     #[cfg(any(unix, target_os = "windows"))]
@@ -2662,7 +2792,7 @@ mod tests {
         assert_eq!(
             cli_headless_action(&["--select".into()]),
             Some(HeadlessAction::Invalid(
-                "--select requires a file path".to_string()
+                "--select requires an entry path".to_string()
             ))
         );
     }

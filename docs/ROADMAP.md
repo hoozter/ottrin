@@ -1,5 +1,26 @@
 # Ottrin roadmap
 
+## Properties and reveal foundation — source, 2026-11-01
+
+A separate read-only Properties window shares the application theme, fonts, icon
+and window chrome. It reads metadata asynchronously without starting the index,
+rendering previews or writing preferences. It displays exact local timestamps,
+regular-file size, symbolic-link targets and native permissions. An existing
+calendar approximation could display the wrong month; exact calendar conversion
+now replaces it. Reveal accepts folders, roots and broken links without following
+the selected link. Multiple Properties inputs retain native path units.
+
+Linux43 core,48 app/two daemon/three CLI, two Properties rendering/permission and
+one broken-link metadata tests pass; strict Linux/Windows GNU checks pass. Real
+Dark100/Light150 file/link windows close normally and preserve preferences/source
+without starting an index. Reviewed group widths are consistent. All owned
+profiles/processes are removed; three replaced test executables (756,170,826 bytes)
+and eight obsolete incremental sessions (0.37 GiB reported) are retired. Evidence:
+`.hermes/evidence/file-manager-properties-current/`. Native Windows Properties
+and exact packages remain separate gates. Continue FileManager1 and the queue
+below. Hosted60e92257 run41341026830 now passes all jobs, including MSVC icon
+resource/native Shell pixel verification;41d26cd5 also passes all jobs.
+
 ## Unused session configuration cleanup — source, 2026-11-01
 
 Removed the unused restore_session and last_session_dirs fields and their defaults.

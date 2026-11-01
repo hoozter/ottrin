@@ -1376,31 +1376,69 @@ pub fn format_size_units(bytes: u64) -> Vec<String> {
     }
 }
 
-/// Format a Unix timestamp as a short relative or absolute string.
+/// Format a Unix timestamp as a short relative or exact calendar-month label.
 pub fn format_modified(unix_secs: u64) -> String {
+    let Some(date) = i64::try_from(unix_secs)
+        .ok()
+        .and_then(|seconds| chrono::DateTime::from_timestamp(seconds, 0))
+    else {
+        return "Outside supported date range".into();
+    };
     let now = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_secs())
+        .map(|duration| duration.as_secs())
         .unwrap_or(0);
-    let ago = now.saturating_sub(unix_secs);
-    if ago < 60 {
-        "just now".to_string()
-    } else if ago < 3_600 {
-        format!("{} min ago", ago / 60)
-    } else if ago < 86_400 {
-        format!("{} hr ago", ago / 3_600)
-    } else if ago < 86_400 * 30 {
-        format!("{} days ago", ago / 86_400)
-    } else {
-        // Approximate year/month
-        let days = unix_secs / 86_400;
-        let year = 1970u64 + days / 365;
-        let month = ((days % 365) / 30) + 1;
-        let months = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-        ];
-        format!("{} {}", months[(month as usize).min(11)], year)
+    if unix_secs > now {
+        return date
+            .with_timezone(&chrono::Local)
+            .format("%Y-%m-%d %H:%M %:z")
+            .to_string();
     }
+    match now - unix_secs {
+        0..60 => "just now".into(),
+        ago @ 60..3_600 => format!("{} min ago", ago / 60),
+        ago @ 3_600..86_400 => format!("{} hr ago", ago / 3_600),
+        ago @ 86_400..2_592_000 => format!("{} days ago", ago / 86_400),
+        _ => date
+            .with_timezone(&chrono::Local)
+            .format("%b %Y")
+            .to_string(),
+    }
+}
+fn system_time_utc(time: std::time::SystemTime) -> Option<chrono::DateTime<chrono::Utc>> {
+    let (seconds, nanos) = match time.duration_since(std::time::UNIX_EPOCH) {
+        Ok(duration) => (
+            i64::try_from(duration.as_secs()).ok()?,
+            duration.subsec_nanos(),
+        ),
+        Err(error) => {
+            let duration = error.duration();
+            let seconds = i64::try_from(duration.as_secs()).ok()?.checked_neg()?;
+            if duration.subsec_nanos() == 0 {
+                (seconds, 0)
+            } else {
+                (
+                    seconds.checked_sub(1)?,
+                    1_000_000_000 - duration.subsec_nanos(),
+                )
+            }
+        }
+    };
+    chrono::DateTime::from_timestamp(seconds, nanos)
+}
+/// Full local metadata timestamp, including pre-epoch values and the UTC offset.
+pub fn format_file_timestamp(time: Option<std::time::SystemTime>) -> String {
+    let Some(time) = time else {
+        return "Unavailable".into();
+    };
+    system_time_utc(time)
+        .map(|value| {
+            value
+                .with_timezone(&chrono::Local)
+                .format("%Y-%m-%d %H:%M:%S %:z")
+                .to_string()
+        })
+        .unwrap_or_else(|| "Outside supported date range".into())
 }
 
 pub fn platform_case_mode_current() -> PlatformCaseMode {
@@ -2139,6 +2177,28 @@ mod tests {
             .reason,
             GraphicsRendererReason::CommandLineOverride,
         );
+    }
+
+    #[test]
+    fn metadata_timestamps_preserve_pre_epoch_fractions_and_reject_overflow() {
+        use std::time::{Duration, UNIX_EPOCH};
+        let before = system_time_utc(UNIX_EPOCH - Duration::from_millis(500)).unwrap();
+        assert_eq!(before.timestamp(), -1);
+        assert_eq!(before.timestamp_subsec_nanos(), 500_000_000);
+        assert_eq!(system_time_utc(UNIX_EPOCH).unwrap().timestamp(), 0);
+        assert_eq!(format_file_timestamp(None), "Unavailable");
+        assert_eq!(format_modified(u64::MAX), "Outside supported date range");
+    }
+
+    #[test]
+    fn modified_calendar_dates_and_future_times_are_truthful() {
+        // January 15, 2024 at noon UTC stays January in every supported local zone.
+        assert_eq!(format_modified(1_705_320_000), "Jan 2024");
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        assert_ne!(format_modified(now + 86_400), "just now");
     }
 
     #[test]

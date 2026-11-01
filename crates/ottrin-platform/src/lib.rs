@@ -261,6 +261,9 @@ pub struct FileProperties {
     pub readonly: bool,
     pub created: Option<SystemTime>,
     pub modified: Option<SystemTime>,
+    pub symlink_target: Option<PathBuf>,
+    #[cfg(unix)]
+    pub unix_mode: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1450,7 +1453,7 @@ impl PlatformOps for DefaultPlatform {
                 "Retained Move recovery is supported only on Linux and Windows",
             )),
             FileCommand::ShowProperties { target } => {
-                let props = read_properties(target)?;
+                let props = read_file_properties(target)?;
                 Ok(Some(props))
             }
             FileCommand::Chmod { target, mode_str } => {
@@ -4304,10 +4307,13 @@ fn create_symlink(link: &Path, target: &Path) -> Result<(), String> {
     }
 }
 
-fn read_properties(path: &Path) -> Result<FileProperties, PlatformError> {
+/// Metadata for the entry itself, including broken symbolic links; never edits its target.
+pub fn read_file_properties(path: &Path) -> Result<FileProperties, PlatformError> {
     let metadata = std::fs::symlink_metadata(path).map_err(|e| PlatformError::Io(e.to_string()))?;
 
-    let kind = if metadata.is_dir() {
+    let kind = if metadata.file_type().is_symlink() {
+        EntryKind::Symlink
+    } else if metadata.is_dir() {
         EntryKind::Directory
     } else if metadata.is_file() {
         EntryKind::File
@@ -4322,12 +4328,38 @@ fn read_properties(path: &Path) -> Result<FileProperties, PlatformError> {
         readonly: metadata.permissions().readonly(),
         created: metadata.created().ok(),
         modified: metadata.modified().ok(),
+        symlink_target: if metadata.file_type().is_symlink() {
+            Some(std::fs::read_link(path).map_err(|e| PlatformError::Io(e.to_string()))?)
+        } else {
+            None
+        },
+        #[cfg(unix)]
+        unix_mode: {
+            use std::os::unix::fs::MetadataExt;
+            metadata.mode() & 0o7777
+        },
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn file_properties_keep_a_broken_native_link_and_its_permission_bits() {
+        use std::os::unix::{ffi::OsStringExt, fs::symlink};
+        let root = tempfile::tempdir().unwrap();
+        let name = std::ffi::OsString::from_vec(b"link\x80".to_vec());
+        let target = PathBuf::from(std::ffi::OsString::from_vec(b"missing\x81".to_vec()));
+        let path = root.path().join(name);
+        symlink(&target, &path).unwrap();
+        let properties = read_file_properties(&path).unwrap();
+        assert_eq!(properties.path, path);
+        assert_eq!(properties.kind, EntryKind::Symlink);
+        assert_eq!(properties.symlink_target, Some(target));
+        assert_eq!(properties.unix_mode, 0o777);
+    }
 
     #[test]
     fn open_with_native_choices_bind_target_filter_deduplicate_and_sort() {

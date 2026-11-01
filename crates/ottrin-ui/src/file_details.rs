@@ -1,5 +1,5 @@
 use super::path_display::path_label;
-use ottrin_core::{EntryKind, format_modified};
+use ottrin_core::{EntryKind, format_file_timestamp};
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
@@ -39,6 +39,9 @@ pub(crate) fn file_type_description(path: &Path, kind: EntryKind) -> String {
     }
     if kind == EntryKind::Symlink {
         return "Symbolic Link".into();
+    }
+    if kind == EntryKind::Other {
+        return "Other filesystem entry".into();
     }
     let ext = path
         .extension()
@@ -171,13 +174,11 @@ pub(crate) fn build_info_panel_details(path: &Path) -> InfoPanelDetails {
     let created = meta
         .created()
         .ok()
-        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-        .map(|d| format_modified(d.as_secs()));
+        .map(|time| format_file_timestamp(Some(time)));
     let accessed = meta
         .accessed()
         .ok()
-        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-        .map(|d| format_modified(d.as_secs()));
+        .map(|time| format_file_timestamp(Some(time)));
     let child_count = if meta.is_dir() {
         std::fs::read_dir(path)
             .ok()
@@ -203,7 +204,7 @@ pub(crate) fn build_info_panel_details(path: &Path) -> InfoPanelDetails {
     };
 
     #[cfg(unix)]
-    let permissions = Some(format_unix_permissions(&meta));
+    let permissions = Some(format_unix_permissions(meta.mode()));
     #[cfg(not(unix))]
     let permissions = None;
 
@@ -256,16 +257,30 @@ pub(crate) fn build_info_panel_details(path: &Path) -> InfoPanelDetails {
 }
 
 #[cfg(unix)]
-fn format_unix_permissions(meta: &std::fs::Metadata) -> String {
-    let mode = meta.mode() & 0o777;
+pub(crate) fn format_unix_permissions(mode: u32) -> String {
+    let mode = mode & 0o7777;
     let mut out = String::with_capacity(9);
     for shift in [6, 3, 0] {
         let part = ((mode >> shift) & 0o7) as u8;
         out.push(if part & 0o4 != 0 { 'r' } else { '-' });
         out.push(if part & 0o2 != 0 { 'w' } else { '-' });
-        out.push(if part & 0o1 != 0 { 'x' } else { '-' });
+        let executable = part & 0o1 != 0;
+        let special =
+            mode & match shift {
+                6 => 0o4000,
+                3 => 0o2000,
+                _ => 0o1000,
+            } != 0;
+        out.push(match (special, executable, shift) {
+            (true, true, 0) => 't',
+            (true, false, 0) => 'T',
+            (true, true, _) => 's',
+            (true, false, _) => 'S',
+            (false, true, _) => 'x',
+            _ => '-',
+        });
     }
-    format!("{out} ({mode:03o})")
+    format!("{out} ({mode:04o})")
 }
 
 #[cfg(unix)]
