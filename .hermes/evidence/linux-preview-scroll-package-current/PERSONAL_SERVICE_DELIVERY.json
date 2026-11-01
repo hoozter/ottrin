@@ -1,0 +1,59 @@
+{
+  "status": "pass",
+  "before": {
+    "MainPID": "2275700",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "old_exe": "/tmp/.mount_OttrinwH8qW4/usr/bin/ottrin-indexd",
+  "old_mount": "/tmp/.mount_OttrinwH8qW4",
+  "before_sha256": {
+    "config": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "unit": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+    "wrapper": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d"
+  },
+  "expected_daemon_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "reason": "Release retired AppImage runtime after cohort replacement;daemon ELF is byte-identical. No new CPU measurement or algorithm change.",
+  "after": {
+    "MainPID": "2493327",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "index_status": {
+    "active_root": "/home/campbell",
+    "active_root_index": 1,
+    "configured_roots": 1,
+    "database_bytes": 889032704,
+    "detail": "Indexing \u00b7 1 files found",
+    "error": null,
+    "estimated_total_items": null,
+    "freelist_bytes": 663633920,
+    "freelist_pages": 162020,
+    "indexed_items": 128329,
+    "last_completed_indexed_items": 128329,
+    "last_progress_unix_secs": 1793495430,
+    "last_scan_completed_unix_secs": 1793495418,
+    "last_scan_duration_ms": null,
+    "last_scan_started_unix_secs": 1793495429,
+    "snapshot_revision": 1,
+    "status": "ready",
+    "total_roots": 1,
+    "wal_bytes": 4272472,
+    "watched_roots": 1,
+    "watcher_error": null,
+    "watcher_ready": true
+  },
+  "old_mount_removed": true,
+  "after_sha256": {
+    "config": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "unit": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+    "wrapper": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d"
+  },
+  "enabled": "enabled",
+  "runtime_gui_sha256": "c7ee7f20447d9fa3e2999b101f09dfd9449695a9c29b1b3dcc631026fe6c2592",
+  "runtime_gui_matches_current_release": true,
+  "source_revision": "83ae6b978a74f5f07f2be49a83e3a5515e348a03",
+  "daemon_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
+  "configuration_unit_wrapper_unchanged": true,
+  "personal_user_files_not_modified_by_agent": true
+}

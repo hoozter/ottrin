@@ -1,0 +1,33 @@
+{
+  "retired_intermediate_development_logs": [
+    {
+      "name": "TEXT_CHECK.log",
+      "bytes": 442,
+      "sha256": "39659bc3092de1ecc200c987a1116105e482f8ab3bb4491c1519e7ca728b7071"
+    },
+    {
+      "name": "BODY_MATRIX.log",
+      "bytes": 3834,
+      "sha256": "cdfa599ab87c26cbca841cc75e33e311af42c0c140e4d3d6d43e0bc89c882350"
+    },
+    {
+      "name": "DETAILS_CHECK.log",
+      "bytes": 435,
+      "sha256": "1e9a527a67b66dbbd31d14a0f41c7ad478a3646ad899250787232e90e1717341"
+    },
+    {
+      "name": "SCROLL_CHECK.log",
+      "bytes": 445,
+      "sha256": "6c1ee8b9dea7c8a7e78a8662d44a4e16931ab73b4a62222f0311693022d7e93f"
+    }
+  ],
+  "scope": "Intermediate oracle construction used a repeated DOCX anchor and first subtracted common padding from declared body dimensions. Final unique-anchor/full-frame oracle and both original-behavior negative controls are retained; final412/385/385 complete suites and strict lint pass. These intermediate development logs are superseded,not acceptance failures.",
+  "final_logs_gzip_byte_exact": true,
+  "empty_outputs_removed": [
+    "FORMAT.log"
+  ],
+  "final_source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "b6952bf54c8f77eeb550493a9f5ac2ea82072059990320d65259da1dae397323",
+    "crates/ottrin-ui/src/preview_render.rs": "3da8043f6ec564282bc0d8b3427db4eddcf0f70fc024739f0d20952f8eaca480"
+  }
+}

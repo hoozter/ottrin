@@ -1,0 +1,21 @@
+{
+  "status": "QA entrypoint permission failure; no MSI compilation or administrative extraction acceptance",
+  "before": {
+    "mode": "0o664",
+    "sha256": "974630de7c9cc9c664984b50b7fcec771904c314bedc74146876886b65caba29"
+  },
+  "reason": "Copying the text script with write_text lost its executable mode. The package-msi preflight correctly refused it before invoking WiX.",
+  "cleanup": {
+    "status": "failed",
+    "domain": "ottrin-copy-cleanup-qa",
+    "guest_root": "C:\\OttrinCIPackageQA",
+    "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+    "phase": "compile",
+    "error": "AssertionError(1)",
+    "root_removed": true,
+    "shutdown_transport_disconnected": true,
+    "guest_off": true
+  },
+  "correction": "Preserve executable mode755 and assert executable entrypoint before VM allocation; fresh owned nonce for retry",
+  "production_source_or_staged_portable_nsis_changed": false
+}

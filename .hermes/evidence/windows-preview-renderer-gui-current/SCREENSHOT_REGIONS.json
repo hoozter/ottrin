@@ -1,0 +1,177 @@
+{
+  "scope": "Exact owned window pixel crops only; no colors or content changed. Full desktop and duplicate frames retired.",
+  "regions": [
+    {
+      "original": "14-launch.png",
+      "original_sha256": "b94a89d881b98b399c189465a77f0ab44ce41e148c8e37d94a36676bf4055c86",
+      "window": {
+        "handle": 328256,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "retained": "14-launch-window.png",
+      "retained_sha256": "4123aa8157e01d0213c3f3d934b64f7abf6eb24ac7ddfbb2ea7e8e842917d295",
+      "window_rgb_sha256": "ef36d0ef733eeb62b23b7dec6dcd7149bd75d208012019418254061e9f772946"
+    },
+    {
+      "original": "16-click.png",
+      "original_sha256": "3c12f31afba25f4a868bc2bfca41781b3306df68a30598df2babe5a977ac9218",
+      "window": {
+        "handle": 655992,
+        "left": 130,
+        "bottom": 770,
+        "top": 130,
+        "right": 1050,
+        "title": "Ottrin Settings"
+      },
+      "retained": "16-click-window.png",
+      "retained_sha256": "6775330c4c28e6ee9b9ed20b8cf67e9482a6e1e8cdd22c678a2201ebf5f730da",
+      "window_rgb_sha256": "ae2a82b3604579e7787abf646be8eefb48dbb9d378e829df2e7555a177248a11"
+    },
+    {
+      "original": "22-click.png",
+      "original_sha256": "e03c6df705871d1b98f1728a23c8615bbb0907fbaa7c526925edfd88c992cb65",
+      "window": {
+        "handle": 852150,
+        "left": 26,
+        "bottom": 666,
+        "top": 26,
+        "right": 946,
+        "title": "Ottrin Settings"
+      },
+      "retained": "22-click-window.png",
+      "retained_sha256": "3ad8696965bd289c407124208e5d47e605a005402ec26ac4676240ec1468f48f",
+      "window_rgb_sha256": "57ce3646d2cdadfb9cf57d37374face5421ce5fc2253840a7e8220602997a412"
+    }
+  ],
+  "removed": [
+    {
+      "name": "21-click.png",
+      "bytes": 767922,
+      "sha256": "f8372be34048ebca72bc48ad10538e1e436c6f2c9a015c2f24297c1b2ff67d4d"
+    },
+    {
+      "name": "08-dismiss-shell.png",
+      "bytes": 2585976,
+      "sha256": "21b0690d00b6c686e1b4fd2f7c657e15aa85488bfdacce384fa8b97c316f1210"
+    },
+    {
+      "name": "15-click.png",
+      "bytes": 767939,
+      "sha256": "7daddff45d82ba96d402f8b40d2d882c2a1a8192acf90f8f6882ac32196582ad"
+    },
+    {
+      "name": "22-click.png",
+      "bytes": 603806,
+      "sha256": "e03c6df705871d1b98f1728a23c8615bbb0907fbaa7c526925edfd88c992cb65"
+    },
+    {
+      "name": "01-observe.png",
+      "bytes": 219352,
+      "sha256": "28795c1df1acb63ba08df74c2022a9aa6d5ea327df1560734fa77436874e7ef7"
+    },
+    {
+      "name": "19-close.png",
+      "bytes": 2586359,
+      "sha256": "45ad745a755f3041335edf10057ae65579885b5e5d3273d6ed19643639324c95"
+    },
+    {
+      "name": "12-click.png",
+      "bytes": 753065,
+      "sha256": "0eeb8f9b823f47f6354268c1ddd0c81de4fed2f1ed8f23cf8cd36336353ce632"
+    },
+    {
+      "name": "10-launch.png",
+      "bytes": 738162,
+      "sha256": "14e829b24e6d236591e1871af17e876c155dffafc1f073273ba5eabe294427f6"
+    },
+    {
+      "name": "04-onboard.png",
+      "bytes": 214256,
+      "sha256": "a84850c23a54433d9ca229974ce4517799fa5ad359049148aa86e46aae0b967d"
+    },
+    {
+      "name": "desktop.png",
+      "bytes": 2586397,
+      "sha256": "6dcc344eb9e3d78b2ab0e70168c2252c9e9249439945694af0dab9971aa2cfd3"
+    },
+    {
+      "name": "16-click.png",
+      "bytes": 675051,
+      "sha256": "3c12f31afba25f4a868bc2bfca41781b3306df68a30598df2babe5a977ac9218"
+    },
+    {
+      "name": "06-onboard.png",
+      "bytes": 218990,
+      "sha256": "f82f6e85a53092057b480ec87528716022dc72fc7557d5c1150a10a5ad21a038"
+    },
+    {
+      "name": "18-click.png",
+      "bytes": 753322,
+      "sha256": "9c63dd0ae8fe23dc4d68d82ae307d8bbc6c2dfd833a5a3de8027a70f6ccdab7f"
+    },
+    {
+      "name": "03-onboard.png",
+      "bytes": 218233,
+      "sha256": "a808e43ddc2528c61ba58d73970a144d4f02e88eaf90cc5ec2c88b612ad0b639"
+    },
+    {
+      "name": "17-click.png",
+      "bytes": 676632,
+      "sha256": "be096db078409f6f6935771d25f2d559ddfdb2330b2fc9c5d5acc1172b947861"
+    },
+    {
+      "name": "09-prepare.png",
+      "bytes": 2585976,
+      "sha256": "21b0690d00b6c686e1b4fd2f7c657e15aa85488bfdacce384fa8b97c316f1210"
+    },
+    {
+      "name": "07-onboard.png",
+      "bytes": 1397440,
+      "sha256": "51159191c05adc2ff8e69f87048a3d7b7eb51371393199008ca2555ff9e55ef4"
+    },
+    {
+      "name": "02-onboard.png",
+      "bytes": 215566,
+      "sha256": "617bf6f4f02dc759958e9599c975125d05b273db6d75610abc2a9ac6eae6abf2"
+    },
+    {
+      "name": "11-click.png",
+      "bytes": 722001,
+      "sha256": "71247bafcdbb0a4d830f1c048f16ad156cce453f0b6f64aa64256d90c36b1445"
+    },
+    {
+      "name": "23-click.png",
+      "bytes": 753060,
+      "sha256": "101d40bfb31899bc6a6ba2cf0d4ce4a19617d4fd280cd78c14ac0e1dd2ed39ef"
+    },
+    {
+      "name": "13-close.png",
+      "bytes": 2586356,
+      "sha256": "7ba9bdae48019d3016403d66788f96c50835d8e3520cfa7a70eedb0f01fd8c01"
+    },
+    {
+      "name": "05-onboard.png",
+      "bytes": 221637,
+      "sha256": "65a35cfbbd9af04a9649f12d9a4042c3b64cf168e6a45d6349fc9d329c522d82"
+    },
+    {
+      "name": "24-close.png",
+      "bytes": 2586397,
+      "sha256": "6dcc344eb9e3d78b2ab0e70168c2252c9e9249439945694af0dab9971aa2cfd3"
+    },
+    {
+      "name": "20-launch.png",
+      "bytes": 753347,
+      "sha256": "fc2ff2c6df9029a3825c2b3e8917cb175fef7213fcb53c3f9f85b912551f206e"
+    },
+    {
+      "name": "14-launch.png",
+      "bytes": 755003,
+      "sha256": "b94a89d881b98b399c189465a77f0ab44ce41e148c8e37d94a36676bf4055c86"
+    }
+  ]
+}

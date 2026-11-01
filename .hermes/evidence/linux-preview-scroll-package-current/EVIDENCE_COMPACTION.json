@@ -1,0 +1,55 @@
+{
+  "retired": [
+    {
+      "file": "dark100/initial.png",
+      "sha256": "16f341780feaa26d4224d63fb210de0867ce441b57dcdb32a4177ab461a01f7c",
+      "bytes": 111290,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    },
+    {
+      "file": "dark100/04-inspector.png",
+      "sha256": "f6c9c49392fd27b0c78022659be69472a997f451e8352eadf8eed8f4882f13b0",
+      "bytes": 93739,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    },
+    {
+      "file": "dark100/07-readonly-space-closed.png",
+      "sha256": "8f17c19d426f49628038175d9cae976e6ef5e33d2ececb81c0d77d049f1ff6d8",
+      "bytes": 109490,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    },
+    {
+      "file": "dark100/08-format-fixtures.png",
+      "sha256": "ad2e0eca2a93c30f7baec8a3d6a30dfd3581f7545420c59e052d20cc0c34eb6c",
+      "bytes": 39971,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    },
+    {
+      "file": "dark100/14-docx-body.png",
+      "sha256": "8b96fc63f7d6e258352adcbc8078067d037acb1ebd1945cec823dba1c21224b0",
+      "bytes": 109337,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    },
+    {
+      "file": "dark100/15-pdf-after-code.png",
+      "sha256": "a6bd345a6b8d1af4137cacfc3990b914a7f96e57f4e79ac708354afecdd8ce92",
+      "bytes": 73922,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    },
+    {
+      "file": "dark100/16-pdf-settled.png",
+      "sha256": "395a6896b5cb27463f10ce56b6ad5a6009950e715906f4a1ffd8a66680e23e2b",
+      "bytes": 67094,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    },
+    {
+      "file": "light150/initial.png",
+      "sha256": "5adc3ea1ef8d139aa0d4e0b3465decca7a59df66fcac2634234367ad1dee7c76",
+      "bytes": 173124,
+      "reason": "Duplicate or transitional frame; complete before/after/core format/final-field/VCF/PDF frames and process/byte receipts retained"
+    }
+  ],
+  "reclaimed_bytes": 777967,
+  "image_content_changed": false,
+  "comparison_pairs_preserved": 7
+}

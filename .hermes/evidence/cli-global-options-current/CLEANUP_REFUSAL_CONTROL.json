@@ -1,0 +1,7 @@
+{
+  "status": "Transient process gap investigated before retry",
+  "refusal": "First guarded attempt deleted one obsolete session, then refused a second entry because process2621301 could not be inspected.",
+  "inspection": "ps and /proc inspection confirm process2621301 has exited; no exception or bypass added. Retry the same locked cleanup after consumers have ended.",
+  "pid_still_exists": false,
+  "outcome": "After confirming the process exited, the same guarded tool removed the remaining session; two retired in total. Retry reports0.09GiB; combined recovered size not measured."
+}

@@ -1,0 +1,36 @@
+{
+  "status": "Application source/native checks pass; actual new package CLI override pending",
+  "source_sha256": {
+    "crates/ottrin-app/src/main.rs": "0919f0fa365077d46994412d615fb7be03e18cea444e75675159d2d10379e79f"
+  },
+  "Linux": {
+    "application_tests": 26,
+    "ignored": 0,
+    "filtered": 0,
+    "strict_all_target_lint": "pass"
+  },
+  "Windows": {
+    "ordinary_application_tests": 23,
+    "elevated_application_tests": 23,
+    "ignored": 0,
+    "filtered": 0,
+    "strict_GNU_all_target_lint": "pass",
+    "same_exact_test_binary": true,
+    "platform_count_explanation": "NATIVE_SCOPE.json;three cfg(unix) tests are absent on Windows,not skipped"
+  },
+  "negative_control": "Actual83ae ordinary portable rejects folder followed by renderer option before graphics initialization; NATIVE_NEGATIVE_CONTROL.json",
+  "changes": [
+    "Parse global GUI options once before command/target dispatch",
+    "Remove separate renderer/helper/help scans",
+    "Preserve literal option-like targets and help queries after --",
+    "Reject empty,unsupported and repeated option values;explicit helper overrides outrank development autobuild"
+  ],
+  "cleanup": {
+    "owned_native_roots_removed": true,
+    "original_profiles_preserved": true,
+    "guest_off_and_definition_unchanged": true,
+    "incremental_cleanup": "Two obsolete sessions retired using guarded tool; transient process-inspection refusal investigated before retry. Newest sessions and compiler caches preserved."
+  },
+  "delivery": "Usable Linux83ae and Windows e79 preserved until a fresh verified replacement. Windows83ae unpromoted stage retired285938418bytes after failed CLI dispatch scope; earlier UI/persistence positives retained separately.",
+  "format_check": "pass"
+}

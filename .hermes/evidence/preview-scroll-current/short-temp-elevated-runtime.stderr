@@ -1,0 +1,12 @@
+PDF preview render failed for /not-loaded-yet.pdf: PDFium runtime is unavailable; set OTTRIN_PDFIUM_DIR or package pdfium/lib beside Ottrin
+Affinity preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-affinity-600-1793494111101417900.AfDeSiGn: Affinity input contains no qualifying complete embedded PNG
+SVG thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-blocked-svg-raster-cache-600.svg: SVG contains blocked references (file/http/https image references are not permitted)
+PLY preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-ply-preview-600.ply: PLY header is invalid or outside bounded preview limits: header line is unterminated or too long
+SQLite thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-600-1793494111381513300.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-600-1793494111381513300.Sqlite: SQLite header is unsafe: truncated 100-byte database header
+SQLite thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-600-1793494111381513300.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+SQLite preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-replaced-600-1793494111381513300.sQLiTe3: SQLite header is unsafe: truncated 100-byte database header
+STL thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-stl-preview-600.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+STL preview render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-stl-preview-600.stl: STL is neither a complete ASCII mesh nor a length-consistent binary mesh
+SVG thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-blocked-svg-thumbnail-600.svg: SVG contains blocked references (file/http/https image references are not permitted)
+SVG thumbnail render failed for C:\OTTRIN~4\data\SHORT-~1\t\ottrin-oversized-svg-thumbnail-600.svg: SVG could not be parsed for visual preview: SVG data parsing failed cause the document does not have a root node

@@ -1,0 +1,328 @@
+{
+  "regions": [
+    {
+      "original": "15-hover.png",
+      "original_sha256": "60888fb651328098bbca2c0048d98599c2bc061258d3d87cab7281338348fdc4",
+      "original_size": [
+        1280,
+        800
+      ],
+      "window": {
+        "handle": 393814,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "retained": "15-hover-window.png",
+      "retained_sha256": "19487ba46f7d461e0568f08ad731309c07548ef7f36f01a3aa484643d5aeb356",
+      "window_rgb_sha256": "1e1b00c9f1740a2b6decf285e5b32c726c84771742280143322a8b62bb74b480",
+      "scope": "Exact owned window pixels; no content,color or contrast changes"
+    },
+    {
+      "original": "17-click.png",
+      "original_sha256": "c74a1bf4a73fe8537572504103b4d066092272acea6d56467630705875e36cf0",
+      "original_size": [
+        1280,
+        800
+      ],
+      "window": {
+        "handle": 393814,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "retained": "17-click-window.png",
+      "retained_sha256": "dfb88293f0df8f165a1ed7f8714786b0f570467468f2167c1c717fb7012e913b",
+      "window_rgb_sha256": "8f311ed47d998373b9b789d0853323c4dc610ef161760fe0cae7409bd280b473",
+      "scope": "Exact owned window pixels; no content,color or contrast changes"
+    },
+    {
+      "original": "19-click.png",
+      "original_sha256": "51efc9555c72cf91d9a194ae08336ad4b13dcfc8b0ea2a376a16ff42746d6477",
+      "original_size": [
+        1280,
+        800
+      ],
+      "window": {
+        "handle": 393814,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "retained": "19-click-window.png",
+      "retained_sha256": "7ac321ecc58bd0bb83021485c553d1680cd85b796eeb2ffac151d4fb2e8379f0",
+      "window_rgb_sha256": "4b823851b32d974f8bbb2bf29fa093ba8cfe72f7f4c775326582d5e20e52cff4",
+      "scope": "Exact owned window pixels; no content,color or contrast changes"
+    },
+    {
+      "original": "21-hover.png",
+      "original_sha256": "6323efd0f967a69b2355a8ce4fe18ce4241cf787fb4f95aaf310d09bafec9bba",
+      "original_size": [
+        1280,
+        800
+      ],
+      "window": {
+        "handle": 393814,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "retained": "21-hover-window.png",
+      "retained_sha256": "30d5765d64cd501025fb5ec9eb74e5d93935ce129eae7e0a05d79f4183497172",
+      "window_rgb_sha256": "a043e08fb574e8ca8266bcf6cfa7c4b67e79d97ebd6b8cb95518ea1c0fef6ed8",
+      "scope": "Exact owned window pixels; no content,color or contrast changes"
+    },
+    {
+      "original": "22-click.png",
+      "original_sha256": "a4e3234f2aef6ff309052f05b4581cda7e14a9467967a07858848055cd156982",
+      "original_size": [
+        1280,
+        800
+      ],
+      "window": {
+        "handle": 983754,
+        "left": 104,
+        "bottom": 664,
+        "top": 104,
+        "right": 824,
+        "title": "Ottrin Quick Inspector \u2014 a deliberately long preview filename for wrapped metadata.txt"
+      },
+      "retained": "22-click-window.png",
+      "retained_sha256": "50f337b47b2f17ca7998745b9e2424ef0e4e668e66a074d391a577ac2557b63f",
+      "window_rgb_sha256": "53c126a813347aa47646466feaa4470bd882c2dd5a3bc0662cd5230f41a3f031",
+      "scope": "Exact owned window pixels; no content,color or contrast changes"
+    },
+    {
+      "original": "24-key.png",
+      "original_sha256": "bb532df6f8d2e3d0292c0d562c67dadbbbc4d8b39fc2730a7aa4ef62b87207cc",
+      "original_size": [
+        1280,
+        800
+      ],
+      "window": {
+        "handle": 983754,
+        "left": 104,
+        "bottom": 664,
+        "top": 104,
+        "right": 824,
+        "title": "Ottrin Quick Inspector \u2014 contact.vcf"
+      },
+      "retained": "24-key-window.png",
+      "retained_sha256": "f72650089c0d634656a9feb8de2bf3bc5ca980fa76d274a6f55a4b89a8dc17d3",
+      "window_rgb_sha256": "3e5517658101bcbec05b22a6224a0e28dbc43133b3e96cb226e17cbdceb37294",
+      "scope": "Exact owned window pixels; no content,color or contrast changes"
+    },
+    {
+      "original": "26-key.png",
+      "original_sha256": "419ea6978853141f93aca51fa8f649bcfde7d3ca2ac8f410621cf2ab4b2212b2",
+      "original_size": [
+        1280,
+        800
+      ],
+      "window": {
+        "handle": 983754,
+        "left": 104,
+        "bottom": 664,
+        "top": 104,
+        "right": 824,
+        "title": "Ottrin Quick Inspector \u2014 note.txt"
+      },
+      "retained": "26-key-window.png",
+      "retained_sha256": "2e66a2c6d3de1ffe4ec350b95c9e6d22cbd76c2cf26053fcc66fe15c10e1f40b",
+      "window_rgb_sha256": "cbf008b3736a99b4b1e494a2e571f1b5169940090fca8ae43524b8d0c9b8827c",
+      "scope": "Exact owned window pixels; no content,color or contrast changes"
+    }
+  ],
+  "retired_full_or_redundant_desktops": [
+    {
+      "name": "01-observe.png",
+      "bytes": 225004,
+      "sha256": "9289e63d8e08ebbc53516296070b1b0bbf67c7c51e6c585136906e700b1d7cce"
+    },
+    {
+      "name": "02-onboard.png",
+      "bytes": 222125,
+      "sha256": "8ca66aa6441a0907e608d6fe190fa8f645db35e55b3a778ce87b2c105835ca17"
+    },
+    {
+      "name": "03-onboard.png",
+      "bytes": 223563,
+      "sha256": "261154b892596234bc9c30b8903c7931d69e2012d08a43a1ed112a6d4df8be95"
+    },
+    {
+      "name": "04-onboard.png",
+      "bytes": 220786,
+      "sha256": "9c96583e3d5a1f110e076cd1f320792c88c17025a92bcdb0e92d37893a706fbb"
+    },
+    {
+      "name": "05-onboard.png",
+      "bytes": 226931,
+      "sha256": "5c6957bbbe9192aac312b4516c8e03b24436ef05c5aae4f5d62f13a5c8a58620"
+    },
+    {
+      "name": "06-onboard.png",
+      "bytes": 224860,
+      "sha256": "79b9f830ee1782ff7361a90a7d59dca8a7cd9a8fc75fc9f4c23cec5f5c905736"
+    },
+    {
+      "name": "07-onboard.png",
+      "bytes": 1768800,
+      "sha256": "d79ab80aeb26e6f71d9f36628165bfe2449df8683e46b8a0a2db04b84e1394fd"
+    },
+    {
+      "name": "08-dismiss-shell.png",
+      "bytes": 3015133,
+      "sha256": "e0ca6e4eb6ab5490b3f00e6da0151542385b9f78437cac2a19f2b4e1dcdf2de1"
+    },
+    {
+      "name": "09-prepare.png",
+      "bytes": 3015133,
+      "sha256": "e0ca6e4eb6ab5490b3f00e6da0151542385b9f78437cac2a19f2b4e1dcdf2de1"
+    },
+    {
+      "name": "10-fixture-write.png",
+      "bytes": 3015114,
+      "sha256": "63203806d1eebe36cc7f59b4d5204b18e41c7f925ba3464ebe9ecc20428ec321"
+    },
+    {
+      "name": "11-launch.png",
+      "bytes": 838329,
+      "sha256": "a203c606e40240aacf57f9f550aaea0dea2aa6aa457e42f1f797ceaaef3df1fe"
+    },
+    {
+      "name": "12-click.png",
+      "bytes": 846412,
+      "sha256": "d62ffbc94d38bb0b864a13365dd81933a5378dfb63b78a665f8ec51e039b3fac"
+    },
+    {
+      "name": "13-click.png",
+      "bytes": 868629,
+      "sha256": "5780bd07e4e8058d11c38ffb6d6986778d75d1676e624ae4f303d5c31f7576d0"
+    },
+    {
+      "name": "14-click.png",
+      "bytes": 877153,
+      "sha256": "d3725751d964b89198b652f0b38df3e43762861d6223a1a3054d3f58f56f13f7"
+    },
+    {
+      "name": "15-hover.png",
+      "bytes": 913666,
+      "sha256": "60888fb651328098bbca2c0048d98599c2bc061258d3d87cab7281338348fdc4"
+    },
+    {
+      "name": "16-hover.png",
+      "bytes": 910854,
+      "sha256": "6157f854ab73613e969f58e8337e586027d3ccef0f3cba8f7bab5230037a3d29"
+    },
+    {
+      "name": "17-click.png",
+      "bytes": 903397,
+      "sha256": "c74a1bf4a73fe8537572504103b4d066092272acea6d56467630705875e36cf0"
+    },
+    {
+      "name": "18-click.png",
+      "bytes": 846575,
+      "sha256": "9e2a9fff7d7076aaf15a485c5fa891943c70781a2c85507c344c32285f84551f"
+    },
+    {
+      "name": "19-click.png",
+      "bytes": 825866,
+      "sha256": "51efc9555c72cf91d9a194ae08336ad4b13dcfc8b0ea2a376a16ff42746d6477"
+    },
+    {
+      "name": "20-click.png",
+      "bytes": 903366,
+      "sha256": "265df19dc16d6bbaccaf64bca305bc412f1568151d8992e7e1562444df308a30"
+    },
+    {
+      "name": "21-hover.png",
+      "bytes": 906343,
+      "sha256": "6323efd0f967a69b2355a8ce4fe18ce4241cf787fb4f95aaf310d09bafec9bba"
+    },
+    {
+      "name": "22-click.png",
+      "bytes": 934574,
+      "sha256": "a4e3234f2aef6ff309052f05b4581cda7e14a9467967a07858848055cd156982"
+    },
+    {
+      "name": "23-click.png",
+      "bytes": 934609,
+      "sha256": "39f754341e4c0c6a7104c6fcf044e352c3476254234311a9460fc9fa8cb6a75b"
+    },
+    {
+      "name": "24-key.png",
+      "bytes": 824257,
+      "sha256": "bb532df6f8d2e3d0292c0d562c67dadbbbc4d8b39fc2730a7aa4ef62b87207cc"
+    },
+    {
+      "name": "25-click.png",
+      "bytes": 824173,
+      "sha256": "07de4948014f7e0d5f1a23d6958936a604967d7622b9c7e27d4f1a956f73de50"
+    },
+    {
+      "name": "26-key.png",
+      "bytes": 814087,
+      "sha256": "419ea6978853141f93aca51fa8f649bcfde7d3ca2ac8f410621cf2ab4b2212b2"
+    },
+    {
+      "name": "27-key.png",
+      "bytes": 824253,
+      "sha256": "3726224878ed8a07e4fadc255524c36910d54a10ed79387da4f1b12ff659f95f"
+    },
+    {
+      "name": "28-click.png",
+      "bytes": 824253,
+      "sha256": "3726224878ed8a07e4fadc255524c36910d54a10ed79387da4f1b12ff659f95f"
+    },
+    {
+      "name": "29-key.png",
+      "bytes": 874720,
+      "sha256": "4a07a4f6b95e6eb5c807e8dbc1c15c0895a9e3640dbbdce186ce1f7edac34ac6"
+    },
+    {
+      "name": "30-click.png",
+      "bytes": 903407,
+      "sha256": "9a8744bd0762855d419abc98e912120e92bd0e3e8728cf33697ef2e0669a8293"
+    },
+    {
+      "name": "31-click.png",
+      "bytes": 846864,
+      "sha256": "3b7e816fb80aa5c69155926150a7f292f1b9ac78d7f40e9e12ed7dfa8dc9f7c9"
+    },
+    {
+      "name": "32-click.png",
+      "bytes": 846877,
+      "sha256": "0f1dd5037878875020f88aafe236695d4a5e3262ad168934f3803f5b191d8209"
+    },
+    {
+      "name": "33-key.png",
+      "bytes": 903701,
+      "sha256": "a2cbecd505345aa789a39b03d9697a91a1ee3cc33d636203bb3f57c8e431b199"
+    },
+    {
+      "name": "34-verify.png",
+      "bytes": 903202,
+      "sha256": "d7e6894ebfa105b5444c185b218997ecc358970a1b418822f08d3b3589637537"
+    },
+    {
+      "name": "35-close.png",
+      "bytes": 3015645,
+      "sha256": "91e5ff8fa5bdf25ad5df215d7aff314cc95f4c9ef2c82dcd3f55523962e3390f"
+    },
+    {
+      "name": "desktop.png",
+      "bytes": 3015645,
+      "sha256": "91e5ff8fa5bdf25ad5df215d7aff314cc95f4c9ef2c82dcd3f55523962e3390f"
+    }
+  ],
+  "reclaimed_bytes": 39088306,
+  "policy": "Retain complete owned window regions and all canonical per-event JSON,byte/Close/cleanup receipts; retire onboarding/background and duplicate frames"
+}

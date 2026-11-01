@@ -1,0 +1,27 @@
+{
+  "nonce": "d1f5c886-5d2d-4eb6-9580-7a2c0feff4dc",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "failed",
+  "source": {
+    "base_revision": "83ae6b978a74f5f07f2be49a83e3a5515e348a03",
+    "working_tree": [
+      " M crates/ottrin-app/src/main.rs",
+      " M dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+      " M docs/ROADMAP.md",
+      " M docs/USER_GUIDE.md",
+      "?? AGENTS.md"
+    ],
+    "files": {
+      "crates/ottrin-app/src/main.rs": "0919f0fa365077d46994412d615fb7be03e18cea444e75675159d2d10379e79f",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "error": "AssertionError()",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

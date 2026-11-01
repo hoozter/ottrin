@@ -1,0 +1,10 @@
+{
+  "source": "83ae6b978a74f5f07f2be49a83e3a5515e348a03",
+  "archive_sha256": "b9ff3fe6a203d4ce79bc56803e3262a11fc191452b3341745d35b10a39db677d",
+  "scope": "Actual ordinary Windows portable launch; folder followed by --renderer opengl exits before any GUI",
+  "evidence_directory": ".hermes/evidence/windows-preview-renderer-gui-current",
+  "stderr": "ottrin: unknown command: C:\\OttrinWindowQA\\cases\\ordinary\\fixture\\source\n",
+  "renderer_initialization_executed": false,
+  "teardown": true,
+  "saved_preference_checks": "Automatic and Native persistence and successful native restart are separate positive scopes"
+}

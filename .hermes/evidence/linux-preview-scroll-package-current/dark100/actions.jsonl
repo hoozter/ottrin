@@ -1,0 +1,61 @@
+{"time": 1793494674.661231, "capture": "00-before-wheel"}
+{"time": 1793494675.3127246, "wheel": [940, 300], "down": true, "count": 5}
+{"time": 1793494675.813584, "capture": "01-body-scrolled"}
+{"time": 1793494675.863578, "check": "Actual AppImage wheel moves text while complete footer pixels remain identical", "footer_region": [832, 536, 1048, 580], "body_region": [832, 134, 1048, 530]}
+{"time": 1793494676.2668273, "click": [853, 714], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494676.769408, "capture": "02-details-expanded"}
+{"time": 1793494688.0335958, "wheel": [952, 678], "down": true, "count": 4}
+{"time": 1793494688.5355353, "capture": "03-details-final-field"}
+{"time": 1793494688.9369884, "click": [875, 103], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494689.4048715, "capture": "04-inspector"}
+{"time": 1793494711.9680839, "capture": "05-inspector-before-wheel"}
+{"time": 1793494712.6184773, "wheel": [350, 300], "down": true, "count": 5}
+{"time": 1793494713.083879, "capture": "06-inspector-scrolled"}
+{"time": 1793494713.1080666, "check": "Actual Inspector body wheel scroll and pixel-identical footer", "footer_region": [30, 514, 690, 538], "body_region": [30, 137, 690, 508]}
+{"time": 1793494713.5096948, "click": [180, 200], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494713.962763, "key": "space"}
+{"time": 1793494714.6186347, "capture": "07-readonly-space-closed"}
+{"time": 1793494714.6207016, "check": "Read-only clicked text Space closes Inspector; all nine declared files unchanged", "files": 9}
+{"time": 1793494714.702222, "key": "ctrl+l"}
+{"time": 1793494715.0716457, "key": "Return"}
+{"time": 1793494715.721948, "navigate": "/var/tmp/.opqa-_gxt1br6/fixture/preview"}
+{"time": 1793494715.8031585, "capture": "08-format-fixtures"}
+{"time": 1793494725.1613197, "click": [160, 140], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494725.6868248, "capture": "09-code-body"}
+{"time": 1793494770.7763832, "wheel": [700, 300], "down": true, "count": 5}
+{"time": 1793494771.3391774, "capture": "10-code-scrolled"}
+{"time": 1793494771.7438169, "click": [160, 112], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494772.2453094, "capture": "11-archive-body"}
+{"time": 1793494772.8957126, "wheel": [700, 300], "down": true, "count": 5}
+{"time": 1793494773.3936625, "capture": "12-archive-scrolled"}
+{"time": 1793494773.794883, "click": [160, 224], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494774.2904234, "capture": "13-sheet-body"}
+{"time": 1793494808.6571994, "check": "Format body wheel leaves complete footer pixels unchanged", "before": "09-code-body", "after": "10-code-scrolled", "footer_region": [314, 560, 1048, 586]}
+{"time": 1793494808.6948273, "check": "Format body wheel leaves complete footer pixels unchanged", "before": "11-archive-body", "after": "12-archive-scrolled", "footer_region": [314, 560, 1048, 586]}
+{"time": 1793494809.1032138, "click": [160, 168], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494809.6350138, "capture": "14-docx-body"}
+{"time": 1793494810.0396817, "click": [160, 140], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494810.8470056, "click": [160, 196], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494811.837064, "capture": "15-pdf-after-code"}
+{"time": 1793494823.5587618, "capture": "16-pdf-settled"}
+{"time": 1793494869.2734578, "click": [160, 140], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494870.0799353, "click": [160, 196], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494877.4487653, "capture": "17-pdf-stable-800"}
+{"time": 1793494878.1587512, "click": [160, 140], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494878.9620917, "click": [160, 196], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494885.5009434, "capture": "17-pdf-stable-560"}
+{"time": 1793494885.9084427, "click": [160, 168], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494886.4348214, "capture": "18-docx-settled"}
+{"time": 1793494919.456912, "click": [390, 152], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494920.079023, "capture": "19-docx-extracted-fallback"}
+{"time": 1793494920.1700685, "check": "Actual structured DOCX to extracted fallback keeps identical complete footer pixels"}
+{"time": 1793494920.2524743, "key": "ctrl+l"}
+{"time": 1793494920.6669796, "key": "Return"}
+{"time": 1793494921.3175275, "navigate": "/var/tmp/.opqa-_gxt1br6/fixture/contact"}
+{"time": 1793494921.745432, "click": [160, 85], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494922.2148993, "key": "space"}
+{"time": 1793494922.7665772, "capture": "20-vcf-readonly"}
+{"time": 1793494923.266673, "click": [180, 180], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793494923.769698, "key": "space"}
+{"time": 1793494924.358669, "check": "Actual VCF content click then Space closes Inspector; all nine declared file hashes remain unchanged"}
+{"time": 1793494924.8755105, "click": [1072, 18], "pointer_settled_before_press": true, "hold_seconds": 0.15}

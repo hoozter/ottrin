@@ -1,0 +1,126 @@
+native PID 5220
+Owned ordinary account ready; protected restoration data saved.
+
+uploaded interop.ps1
+uploaded actor.ps1
+uploaded cleanup.ps1
+uploaded config-template.json
+uploaded payload-manifest.json
+uploaded payload.zip
+native PID 6776
+Scripts parsed; exact candidate extracted.
+
+Prepared. Reboot once to enter the owned console.
+uploaded command.json
+native PID 6404
+{"cursor_x": 640, "id": "e4ce229d4c154468baebf318820bad87", "case": "ordinary", "foreground_pid": 3672, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 400, "op": "observe"}
+uploaded command.json
+native PID 6016
+{"cursor_x": 850, "id": "e9dbbc4e630b4574a65348ecd5fd74db", "case": "ordinary", "foreground_pid": 3672, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 465, "op": "onboard"}
+uploaded command.json
+native PID 8072
+{"cursor_x": 1050, "id": "acc157a0484146e2a01a3a62106706dc", "case": "ordinary", "foreground_pid": 3672, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "onboard"}
+uploaded command.json
+native PID 3048
+{"cursor_x": 850, "id": "5723582a27f844559cc25cb1678c609c", "case": "ordinary", "foreground_pid": 3672, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 465, "op": "onboard"}
+uploaded command.json
+native PID 7920
+{"cursor_x": 1050, "id": "0068b9cb33c1499b9de83a569e61cd6c", "case": "ordinary", "foreground_pid": 3672, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "onboard"}
+uploaded command.json
+native PID 5592
+{"cursor_x": 850, "id": "16a2bd1ec5cf4139b8234164b0ff962a", "case": "ordinary", "foreground_pid": 3672, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 535, "op": "onboard"}
+uploaded command.json
+native PID 5284
+{"cursor_x": 1050, "id": "cb3b8b3eb5d74c75b64c10878c94cb8b", "case": "ordinary", "foreground_pid": 5184, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "onboard"}
+uploaded command.json
+native PID 7688
+{"cursor_x": 1050, "id": "b6f1b2eeb246459f89ba623f1f6f7a87", "case": "ordinary", "foreground_pid": 4108, "screen_width": 1280, "screen_height": 800, "verification": {"status": "pass", "dismissed_owned_shell": 5184}, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "dismiss-shell"}
+uploaded command.json
+native PID 5596
+{"cursor_x": 1050, "id": "426d74ccd8064baabe0eb89143ad9633", "case": "ordinary", "foreground_pid": 5780, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "prepare"}
+uploaded command.json
+native PID 3668
+{"cursor_x": 1050, "id": "ec06dc7ad5114cbb8734b34cadd02f29", "case": "ordinary", "foreground_pid": 1196, "screen_width": 1280, "screen_height": 800, "verification": {"status": "pass", "sha256": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0", "created_file": "source\\a deliberately long preview filename for wrapped metadata.txt"}, "windows": [], "ordinary_user": true, "cursor_y": 667, "op": "fixture-write"}
+uploaded command.json
+native PID 6456
+{"cursor_x": 1050, "id": "84fe1ec5ef2b4c64846a9a6b7c20b5dc", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 667, "op": "launch"}
+uploaded command.json
+native PID 5284
+{"cursor_x": 420, "id": "bbd12a6fa25c4ec9a3f3ba27624ad1e0", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 151, "op": "click"}
+uploaded command.json
+native PID 1748
+{"cursor_x": 1062, "id": "4e956da3afc643b49e3d0bed503bb16e", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 90, "op": "click"}
+uploaded command.json
+native PID 2648
+{"cursor_x": 938, "id": "b1e7ced46ae74fa99af187f8f7f2947b", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 139, "op": "click"}
+uploaded command.json
+native PID 4372
+{"cursor_x": 1000, "id": "9e0ad8ff00b346d7bde9db7ce0ca4b12", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 610, "op": "hover"}
+uploaded command.json
+native PID 4264
+{"cursor_x": 930, "id": "6ff549771b0b4da8919d1e27286dc039", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 525, "op": "hover"}
+uploaded command.json
+native PID 480
+{"cursor_x": 900, "id": "a81f84b096834fc3934037110a6ebadd", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 631, "op": "click"}
+uploaded command.json
+native PID 1312
+{"cursor_x": 1094, "id": "ac8ae488155342bc855681e4cc2f455d", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 90, "op": "click"}
+uploaded command.json
+native PID 6036
+{"cursor_x": 1094, "id": "e07a341ef79f46a5a2428f9ccb08e4bd", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 90, "op": "click"}
+uploaded command.json
+native PID 3540
+{"cursor_x": 1094, "id": "7e18377a3bfd4acc8cebc7bb6aa703a8", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 90, "op": "click"}
+uploaded command.json
+native PID 6864
+{"cursor_x": 1000, "id": "47cbba73624e4c639b1bbaa4c30c53e6", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 520, "op": "hover"}
+uploaded command.json
+native PID 5984
+{"cursor_x": 925, "id": "c1362316f8dc4ec2be19aa001e09a7a0", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 983754, "left": 104, "bottom": 664, "top": 104, "right": 824, "title": "Ottrin Quick Inspector \u2014 a deliberately long preview filename for wrapped metadata.txt"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 137, "op": "click"}
+uploaded command.json
+native PID 7528
+{"cursor_x": 304, "id": "2ce819bef9f64d9b860458b4eff1204f", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 983754, "left": 104, "bottom": 664, "top": 104, "right": 824, "title": "Ottrin Quick Inspector \u2014 a deliberately long preview filename for wrapped metadata.txt"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 268, "op": "click"}
+uploaded command.json
+native PID 1332
+{"cursor_x": 304, "id": "767911fd67cc4aa58fd1316f6016bc51", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 983754, "left": 104, "bottom": 664, "top": 104, "right": 824, "title": "Ottrin Quick Inspector \u2014 contact.vcf"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 268, "op": "key"}
+uploaded command.json
+native PID 2816
+{"cursor_x": 204, "id": "04b39a5785734ce0ace6685755288521", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 983754, "left": 104, "bottom": 664, "top": 104, "right": 824, "title": "Ottrin Quick Inspector \u2014 contact.vcf"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 288, "op": "click"}
+uploaded command.json
+native PID 7904
+{"cursor_x": 204, "id": "c31dca8f29ef440584d16c8c2debed41", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 983754, "left": 104, "bottom": 664, "top": 104, "right": 824, "title": "Ottrin Quick Inspector \u2014 note.txt"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 288, "op": "key"}
+uploaded command.json
+native PID 7452
+{"cursor_x": 204, "id": "65c7ec70466e4372a0d0694a286e8f1c", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 983754, "left": 104, "bottom": 664, "top": 104, "right": 824, "title": "Ottrin Quick Inspector \u2014 contact.vcf"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 288, "op": "key"}
+uploaded command.json
+native PID 3564
+{"cursor_x": 204, "id": "03bdc463dbe44f3aa339a6905472a03a", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 983754, "left": 104, "bottom": 664, "top": 104, "right": 824, "title": "Ottrin Quick Inspector \u2014 contact.vcf"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 288, "op": "click"}
+uploaded command.json
+native PID 6236
+{"cursor_x": 204, "id": "ee654573af4b4aa2ae10d75f5206f96f", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 288, "op": "key"}
+uploaded command.json
+native PID 2140
+{"cursor_x": 700, "id": "f6395aed4ce145aaba9e20edd65dfd9d", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 120, "op": "click"}
+uploaded command.json
+native PID 7112
+{"cursor_x": 925, "id": "3e7d66a0abb741e3aaff530334f692ed", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 1639110, "left": 52, "bottom": 612, "top": 52, "right": 772, "title": "Ottrin Quick Inspector \u2014 a deliberately long preview filename for wrapped metadata.txt"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 137, "op": "click"}
+uploaded command.json
+native PID 4256
+{"cursor_x": 252, "id": "9002f4dc8e384ac88276c865f407131b", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 1639110, "left": 52, "bottom": 612, "top": 52, "right": 772, "title": "Ottrin Quick Inspector \u2014 a deliberately long preview filename for wrapped metadata.txt"}, {"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 216, "op": "click"}
+uploaded command.json
+native PID 1392
+{"cursor_x": 252, "id": "818e3d9c77de49aea19f10028d9fcf60", "case": "ordinary", "foreground_pid": 3848, "screen_width": 1280, "screen_height": 800, "verification": null, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 216, "op": "key"}
+uploaded command.json
+native PID 6580
+{"cursor_x": 252, "id": "e595f0b4333e44f6958314b8a6ae0b0f", "case": "ordinary", "foreground_pid": 4312, "screen_width": 1280, "screen_height": 800, "verification": {"label": "Clicked text and VCF navigation/Space preserve all five literal file contents", "status": "pass", "files": {"source\\note.txt": "source original\n", "source\\other.txt": "other original\n", "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n", "destination\\note.txt": "destination original\n", "source\\a deliberately long preview filename for wrapped metadata.txt": "Preview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\n"}, "absent": []}, "windows": [{"handle": 393814, "left": 128, "bottom": 716, "top": 36, "right": 1152, "title": "Ottrin"}, {"handle": 262644, "left": 0, "bottom": 6, "top": 0, "right": 6, "title": ""}], "ordinary_user": true, "cursor_y": 216, "op": "verify"}
+uploaded command.json
+native PID 5672
+{"cursor_x": 252, "id": "52b452d4889844e2b8816ec2141efcfa", "case": "ordinary", "foreground_pid": 3600, "screen_width": 1280, "screen_height": 800, "verification": {"status": "pass", "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion", "normal_app_close": [{"exit": 0, "pid": 3848}]}, "windows": [], "ordinary_user": true, "cursor_y": 216, "op": "close"}
+native PID 7164
+native PID 7360
+native PID 4004
+Owned fixtures removed, including protected transaction data.
+
+Domain 'ottrin-copy-cleanup-qa' is being shutdown
+
+Owned fixtures/account removed; guest shutdown requested. Verify domain off and unchanged XML.

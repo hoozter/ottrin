@@ -1,0 +1,42 @@
+{
+  "status": "pass within scoped actual-AppImage scrolling,metadata and read-only acceptance",
+  "source_revision": "83ae6b978a74f5f07f2be49a83e3a5515e348a03",
+  "appimage_sha256": "142be40d1ba3f90eef35138c78d28ce987814c3ccfcb869df7b589a7abd060ec",
+  "sessions": {
+    "dark100": {
+      "source_bytes_match": true,
+      "declared_files": 9,
+      "normal_exit": 0,
+      "profile_process_bus_display_mount_cleanup": true,
+      "theme": "Dark",
+      "display_scale": "1",
+      "saved_theme_and_column_view_preserved": true,
+      "body_and_inspector_footer_pixel_equality": true,
+      "actual_readonly_text_and_vcf_space_close": true,
+      "metadata_details_and_permissions_accessible": true
+    },
+    "light150": {
+      "source_bytes_match": true,
+      "declared_files": 9,
+      "normal_exit": 0,
+      "profile_process_bus_display_mount_cleanup": true,
+      "theme": "Light",
+      "display_scale": "1.5",
+      "saved_theme_and_column_view_preserved": true,
+      "body_and_inspector_footer_pixel_equality": true,
+      "actual_readonly_text_and_vcf_space_close": true,
+      "metadata_details_and_permissions_accessible": true
+    }
+  },
+  "checks": [
+    "Actual checksum-verified AppImage runtime in private Dark100 and Light150 desktops",
+    "One visible overflow text scrollbar in main preview and Inspector; actual wheel input moves the body with exactly unchanged complete footer pixels",
+    "Actual Details click and metadata wheel reach the final Permissions field in both sessions",
+    "Clicked read-only text and VCF content then Space closes Inspector; all nine declared files unchanged before and after normal Close",
+    "Dark actual highlighted code/archive wheel retain identical footer pixels; native structured DOCX/spreadsheet and extracted DOCX fallback remain bounded",
+    "Dark actual cached code-to-PDF transitions:30 captures each at800 and560px window heights retain stable colored PDF page bounds",
+    "Saved theme and Column view survive normal exit0; private profiles,processes,displays,buses and mounts removed"
+  ],
+  "pdf_scope": "PDF_STABILITY.json under dark100; first pending-render placeholder is distinct from settled cached-transition measurement. No all-PDF,physical GPU or provider-fidelity acceptance.",
+  "limits": "Scoped local preview delivery only. Other workflows,installed distro lifecycle,Windows,Office providers,physical devices,signing and final owner acceptance remain separately required."
+}

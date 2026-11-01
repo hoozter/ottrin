@@ -34,6 +34,72 @@ enum GuiLaunchTarget {
     Select(PathBuf),
 }
 
+#[derive(Debug, Default, PartialEq, Eq)]
+struct CliArguments {
+    command: Vec<String>,
+    renderer_override: Option<String>,
+    helper_path: Option<PathBuf>,
+    help: bool,
+}
+
+/// Separate global GUI options from the command before interpreting a target.
+/// Values after `--` belong to the command, including option-like filenames.
+fn parse_cli_arguments(args: &[String]) -> Result<CliArguments, String> {
+    let mut parsed = CliArguments::default();
+    let mut index = 0;
+    while let Some(argument) = args.get(index) {
+        if argument == "--" {
+            parsed.command.extend_from_slice(&args[index..]);
+            break;
+        }
+        if matches!(argument.as_str(), "--help" | "-h") {
+            parsed.help = true;
+            index += 1;
+            continue;
+        }
+        let option = if argument == "--renderer" || argument == "--helper-path" {
+            Some((argument.as_str(), None))
+        } else if let Some(value) = argument.strip_prefix("--renderer=") {
+            Some(("--renderer", Some(value)))
+        } else {
+            argument
+                .strip_prefix("--helper-path=")
+                .map(|value| ("--helper-path", Some(value)))
+        };
+        if let Some((name, inline)) = option {
+            let value = match inline {
+                Some(value) if !value.is_empty() => value.to_owned(),
+                None => {
+                    index += 1;
+                    args.get(index)
+                        .filter(|value| !value.is_empty() && !value.starts_with('-'))
+                        .cloned()
+                        .ok_or_else(|| format!("{name} requires a value"))?
+                }
+                _ => return Err(format!("{name} requires a value")),
+            };
+            if name == "--renderer" {
+                if parsed.renderer_override.is_some() {
+                    return Err("--renderer cannot be repeated".into());
+                }
+                parsed.renderer_override = Some(
+                    validate_renderer_override(Some(&value))?
+                        .ok_or_else(|| "--renderer requires a value".to_string())?,
+                );
+            } else {
+                if parsed.helper_path.is_some() {
+                    return Err("--helper-path cannot be repeated".into());
+                }
+                parsed.helper_path = Some(PathBuf::from(value));
+            }
+        } else {
+            parsed.command.push(argument.clone());
+        }
+        index += 1;
+    }
+    Ok(parsed)
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum HeadlessAction {
     IndexUpdate {
@@ -271,7 +337,18 @@ fn main() {
         eprintln!("ottrin index daemon: {error}");
         std::process::exit(1);
     }
-    let gui_target = match cli_headless_action(&args) {
+    let cli = match parse_cli_arguments(&args) {
+        Ok(cli) => cli,
+        Err(error) => {
+            eprintln!("ottrin: {error}");
+            std::process::exit(2);
+        }
+    };
+    if cli.help {
+        print_cli_help();
+        return;
+    }
+    let gui_target = match cli_headless_action(&cli.command) {
         Some(HeadlessAction::Preview(path)) => match resolve_preview_path(&path) {
             Ok(path) => Some(GuiLaunchTarget::QuickInspector(path)),
             Err(error) => {
@@ -295,7 +372,7 @@ fn main() {
         },
         _ => None,
     };
-    if gui_target.is_none() && handle_cli_action() {
+    if gui_target.is_none() && handle_cli_action(&cli.command) {
         return;
     }
     #[cfg(unix)]
@@ -311,18 +388,21 @@ fn main() {
         std::process::exit(1);
     }
     install_windows_startup_panic_hook();
-    if let Err(error) = run_gui(gui_target) {
+    if let Err(error) = run_gui(gui_target, cli) {
         eprintln!("ottrin: {error}");
         report_windows_startup_failure("Ottrin could not start", &error.to_string());
         std::process::exit(1);
     }
 }
 
-fn run_gui(gui_target: Option<GuiLaunchTarget>) -> eframe::Result<()> {
-    apply_cli_overrides();
-    ensure_dev_helper();
+fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Result<()> {
+    if let Some(path) = cli.helper_path {
+        set_privileged_helper_override(Some(path));
+    } else {
+        ensure_dev_helper();
+    }
 
-    let renderer_override = match graphics_renderer_override() {
+    let renderer_override = match graphics_renderer_override(cli.renderer_override.as_deref()) {
         Ok(renderer_override) => renderer_override,
         Err(error) => {
             eprintln!("ottrin: {error}");
@@ -452,13 +532,8 @@ fn show_windows_startup_failure_dialog(message: &str) {
     }
 }
 
-fn handle_cli_action() -> bool {
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.iter().any(|arg| arg == "--help" || arg == "-h") {
-        print_cli_help();
-        return true;
-    }
-    if let Some(action) = cli_headless_action(&args) {
+fn handle_cli_action(args: &[String]) -> bool {
+    if let Some(action) = cli_headless_action(args) {
         if let Err(error) = run_headless_action(action) {
             eprintln!("ottrin: {error}");
             std::process::exit(1);
@@ -545,11 +620,12 @@ fn print_cli_help() {
     println!("  ottrin drop status             Show Drop Folder state");
     println!("  ottrin drop copy <PATH>…       Copy paths into the Drop Folder");
     println!();
-    println!("Options:");
+    println!("Options (GUI options may appear before or after the file/directory target):");
     println!("  --renderer opengl  Recovery override for a compatible OpenGL driver");
     println!("  --helper-path PATH Developer override for privileged helper discovery");
     println!("  --uninstall        Remove Ottrin background jobs and generated data");
     println!("  --purge-config     With --uninstall, also remove saved preferences");
+    println!("Use -- before a literal option-like target or search query.");
 }
 
 fn parse_search_action(args: &[String]) -> HeadlessAction {
@@ -626,11 +702,17 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
         "index" => Some(parse_index_action(&args[1..])),
         "preview" | "-p" => Some(match &args[1..] {
             [path] if !path.is_empty() => HeadlessAction::Preview(PathBuf::from(path)),
+            [separator, path] if separator == "--" && !path.is_empty() => {
+                HeadlessAction::Preview(PathBuf::from(path))
+            }
             [] => HeadlessAction::Invalid("preview requires a file path".to_string()),
             _ => HeadlessAction::Invalid("preview accepts exactly one file path".to_string()),
         }),
         "--select" => Some(match &args[1..] {
             [path] if !path.is_empty() => HeadlessAction::SelectPath(PathBuf::from(path)),
+            [separator, path] if separator == "--" && !path.is_empty() => {
+                HeadlessAction::SelectPath(PathBuf::from(path))
+            }
             [] => HeadlessAction::Invalid("--select requires a file path".to_string()),
             _ => HeadlessAction::Invalid("--select accepts exactly one file path".to_string()),
         }),
@@ -640,8 +722,11 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
             Some(value) => HeadlessAction::Invalid(format!("unknown drop action: {value}")),
             None => HeadlessAction::Invalid("drop requires status or copy".to_string()),
         }),
-        "--renderer" | "--helper-path" | "--uninstall" | "--purge-config" => None,
-        value if value.starts_with("--renderer=") || value.starts_with("--helper-path=") => None,
+        "--" => Some(match &args[1..] {
+            [path] if !path.is_empty() => HeadlessAction::OpenPath(PathBuf::from(path)),
+            _ => HeadlessAction::Invalid("-- requires exactly one file or directory path".into()),
+        }),
+        "--uninstall" | "--purge-config" => None,
         _ => Some(
             direct_open_path(args)
                 .map(HeadlessAction::OpenPath)
@@ -1157,13 +1242,9 @@ fn print_index_diagnostics(
     Ok(())
 }
 
-fn graphics_renderer_override() -> Result<Option<String>, String> {
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    validate_renderer_override(
-        cli_renderer_override(&args)
-            .or_else(|| std::env::var("OTTRIN_RENDERER").ok())
-            .as_deref(),
-    )
+fn graphics_renderer_override(cli_override: Option<&str>) -> Result<Option<String>, String> {
+    let environment_override = std::env::var("OTTRIN_RENDERER").ok();
+    validate_renderer_override(cli_override.or(environment_override.as_deref()))
 }
 
 fn validate_renderer_override(renderer_override: Option<&str>) -> Result<Option<String>, String> {
@@ -1174,24 +1255,6 @@ fn validate_renderer_override(renderer_override: Option<&str>) -> Result<Option<
             "unsupported renderer override `{value}`; expected `opengl`"
         )),
     }
-}
-
-fn cli_renderer_override(args: &[String]) -> Option<String> {
-    let mut index = 0;
-    while index < args.len() {
-        if args[index] == "--renderer" {
-            if let Some(value) = args.get(index + 1).filter(|value| !value.is_empty()) {
-                return Some(value.clone());
-            }
-            index += 1;
-        } else if let Some(value) = args[index].strip_prefix("--renderer=")
-            && !value.is_empty()
-        {
-            return Some(value.to_owned());
-        }
-        index += 1;
-    }
-    None
 }
 
 fn remove_terminal_launcher_file() -> Result<String, String> {
@@ -1222,29 +1285,6 @@ fn load_window_icon() -> egui::IconData {
         rgba: image.into_raw(),
         width,
         height,
-    }
-}
-
-fn apply_cli_overrides() {
-    let args: Vec<String> = std::env::args().collect();
-    let mut helper_path: Option<PathBuf> = None;
-    let mut i = 1usize;
-    while i < args.len() {
-        let arg = &args[i];
-        if arg == "--helper-path" {
-            if i + 1 < args.len() {
-                helper_path = Some(PathBuf::from(&args[i + 1]));
-                i += 1;
-            }
-        } else if let Some(v) = arg.strip_prefix("--helper-path=")
-            && !v.is_empty()
-        {
-            helper_path = Some(PathBuf::from(v));
-        }
-        i += 1;
-    }
-    if let Some(path) = helper_path {
-        set_privileged_helper_override(Some(path));
     }
 }
 
@@ -1460,12 +1500,160 @@ mod tests {
     #[test]
     fn graphics_recovery_override_accepts_both_cli_forms() {
         assert_eq!(
-            cli_renderer_override(&["--renderer".into(), "opengl".into()]),
+            parse_cli_arguments(&["--renderer".into(), "opengl".into()])
+                .unwrap()
+                .renderer_override,
             Some("opengl".into())
         );
         assert_eq!(
-            cli_renderer_override(&["--renderer=opengl".into()]),
+            parse_cli_arguments(&["--renderer=opengl".into()])
+                .unwrap()
+                .renderer_override,
             Some("opengl".into())
+        );
+    }
+
+    #[test]
+    fn global_gui_options_preserve_target_and_action_in_either_position() {
+        let fixture = tempfile::tempdir().unwrap();
+        let directory = fixture.path().join("folder with spaces");
+        std::fs::create_dir(&directory).unwrap();
+        let file = directory.join("contact.vcf");
+        std::fs::write(&file, "BEGIN:VCARD\nEND:VCARD\n").unwrap();
+        for (command, expected) in [
+            (
+                vec![directory.to_string_lossy().into_owned()],
+                HeadlessAction::OpenPath(directory.clone()),
+            ),
+            (
+                vec![file.to_string_lossy().into_owned()],
+                HeadlessAction::OpenPath(file.clone()),
+            ),
+            (
+                vec!["preview".into(), file.to_string_lossy().into_owned()],
+                HeadlessAction::Preview(file.clone()),
+            ),
+            (
+                vec!["--select".into(), file.to_string_lossy().into_owned()],
+                HeadlessAction::SelectPath(file.clone()),
+            ),
+        ] {
+            for flags in [
+                vec!["--renderer".to_string(), "opengl".into()],
+                vec!["--renderer=OpenGL".to_string()],
+            ] {
+                for before in [true, false] {
+                    let args = if before {
+                        [flags.clone(), command.clone()].concat()
+                    } else {
+                        [command.clone(), flags.clone()].concat()
+                    };
+                    let parsed = parse_cli_arguments(&args).unwrap();
+                    assert_eq!(parsed.renderer_override.as_deref(), Some("opengl"));
+                    assert_eq!(
+                        cli_headless_action(&parsed.command),
+                        Some(expected.clone()),
+                        "{args:?}"
+                    );
+                }
+            }
+        }
+        assert_eq!(
+            resolve_direct_open_path(&directory).unwrap(),
+            GuiLaunchTarget::Directory(std::fs::canonicalize(&directory).unwrap())
+        );
+        assert_eq!(
+            resolve_direct_open_path(&file).unwrap(),
+            GuiLaunchTarget::QuickInspector(std::fs::canonicalize(&file).unwrap())
+        );
+        for before in [true, false] {
+            let target = vec![directory.to_string_lossy().into_owned()];
+            let flags = vec![
+                "--helper-path".into(),
+                "helper with spaces".into(),
+                "--renderer=opengl".into(),
+            ];
+            let args = if before {
+                [flags, target].concat()
+            } else {
+                [target, flags].concat()
+            };
+            let parsed = parse_cli_arguments(&args).unwrap();
+            assert_eq!(
+                parsed.helper_path,
+                Some(PathBuf::from("helper with spaces"))
+            );
+            assert_eq!(
+                cli_headless_action(&parsed.command),
+                Some(HeadlessAction::OpenPath(directory.clone()))
+            );
+        }
+    }
+
+    #[test]
+    fn global_gui_options_reject_missing_unsupported_or_repeated_values() {
+        for args in [
+            vec!["--renderer"],
+            vec!["--renderer="],
+            vec!["--renderer", "--help"],
+            vec!["--renderer=vulkan"],
+            vec!["--renderer", "   "],
+            vec!["--renderer", "opengl", "--renderer=opengl"],
+            vec!["--helper-path"],
+            vec!["--helper-path="],
+            vec!["--helper-path", "--renderer=opengl"],
+            vec!["--helper-path=first", "--helper-path", "second"],
+        ] {
+            assert!(
+                parse_cli_arguments(&args.iter().map(|s| s.to_string()).collect::<Vec<_>>())
+                    .is_err(),
+                "{args:?}"
+            );
+        }
+        let parsed = parse_cli_arguments(&["--helper-path=--literal".into()]).unwrap();
+        assert_eq!(parsed.helper_path, Some(PathBuf::from("--literal")));
+    }
+
+    #[test]
+    fn command_separator_preserves_literal_options_and_help_queries() {
+        for query in ["--renderer=opengl", "--helper-path", "--help"] {
+            let parsed =
+                parse_cli_arguments(&["search".into(), "--".into(), query.into()]).unwrap();
+            assert!(!parsed.help);
+            assert!(parsed.renderer_override.is_none() && parsed.helper_path.is_none());
+            assert_eq!(
+                cli_headless_action(&parsed.command),
+                Some(HeadlessAction::Search {
+                    query: query.into(),
+                    json: false,
+                    content: false,
+                    limit: None,
+                    offset: 0,
+                })
+            );
+        }
+        for (prefix, expected) in [
+            (
+                vec!["--".to_string()],
+                HeadlessAction::OpenPath(PathBuf::from("--renderer")),
+            ),
+            (
+                vec!["preview".into(), "--".into()],
+                HeadlessAction::Preview(PathBuf::from("--renderer")),
+            ),
+            (
+                vec!["--select".into(), "--".into()],
+                HeadlessAction::SelectPath(PathBuf::from("--renderer")),
+            ),
+        ] {
+            let parsed =
+                parse_cli_arguments(&[prefix, vec!["--renderer".into()]].concat()).unwrap();
+            assert_eq!(cli_headless_action(&parsed.command), Some(expected));
+        }
+        assert!(
+            parse_cli_arguments(&["--renderer=opengl".into(), "--help".into()])
+                .unwrap()
+                .help
         );
     }
 

@@ -1,0 +1,8 @@
+{
+  "status": "saved-preference collection did not execute; still unaccepted",
+  "error": "Python raw string ended in a backslash,causing SyntaxError before execution",
+  "operator_error": "Finish was dispatched without checking the collector exit status; teardown began before the missing preference check",
+  "passed_scopes": "Actual read-only navigation/Space,one-scrollbar presentation,metadata Details,normal app Close exit0,and all five independent post-close raw byte checks",
+  "correction": "Use PureWindowsPath,parse producer before use,and enforce checked sequential collector completion before finish. Verify persistence separately against the exact same portable hash in the renderer fixture.",
+  "production_source_and_candidate_bytes_changed": false
+}

@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "declared_files": 9,
+  "all_before_and_after_hashes_equal": true,
+  "files": {
+    "source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb",
+    "preview/archive preview.zip": "e5bb1e5e0a269cf4eab55992485f9a18ec7e57bb14d4cb85a06d6f5276016c3e",
+    "preview/page preview.pdf": "6d8441667a569577c70109a87ccf860d008bef8f1c0c861b3ad0e985d5f9ebe2",
+    "preview/sheet preview.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+    "preview/document preview with wrapped metadata.docx": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6",
+    "preview/code preview.rs": "c1449297fe4f460ed3ee8248a9183bc400f733afac5f29194da8048dd130015f",
+    "preview/a deliberately long preview filename for wrapped metadata.txt": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+    "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+    "one/two/three/four/five/a-long-parent-directory-name/another-long-parent-directory/selected preview with a long filename.txt": "f8382b99e231e20e834a20830693448a2b935b1fd4297c56a2e826841c6ab56f"
+  }
+}

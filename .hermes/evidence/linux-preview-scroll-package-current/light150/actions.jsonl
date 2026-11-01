@@ -1,0 +1,24 @@
+{"time": 1793495028.9601846, "capture": "00-before-wheel"}
+{"time": 1793495029.6207194, "wheel": [1410, 450], "down": true, "count": 5}
+{"time": 1793495030.2341084, "capture": "01-body-scrolled"}
+{"time": 1793495030.3272038, "check": "Light150 actual wheel moves body and keeps footer pixels identical", "footer_region": [1248, 804, 1572, 870], "body_region": [1248, 201, 1572, 795]}
+{"time": 1793495030.7308526, "click": [1280, 1071], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793495031.7012856, "wheel": [1428, 1017], "down": true, "count": 4}
+{"time": 1793495032.3465075, "capture": "02-details-final-field"}
+{"time": 1793495032.753364, "click": [1312, 154], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793495033.3451884, "capture": "03-inspector"}
+{"time": 1793495058.7360609, "wheel": [525, 450], "down": true, "count": 5}
+{"time": 1793495059.3401494, "capture": "04-inspector-scrolled"}
+{"time": 1793495059.3831086, "check": "Light150 actual Inspector body wheel and pixel-identical footer", "footer_region": [45, 771, 1035, 807], "body_region": [45, 206, 1035, 762]}
+{"time": 1793495059.7899513, "click": [270, 300], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793495060.2552257, "key": "space"}
+{"time": 1793495060.8812573, "key": "ctrl+l"}
+{"time": 1793495061.2711544, "key": "Return"}
+{"time": 1793495061.9215143, "navigate": "/var/tmp/.opqa-vp3nhxd8/fixture/contact"}
+{"time": 1793495062.329688, "click": [240, 128], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793495062.7856278, "key": "space"}
+{"time": 1793495063.1507506, "capture": "05-vcf-readonly"}
+{"time": 1793495063.5542085, "click": [270, 270], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793495064.0125055, "key": "space"}
+{"time": 1793495064.569797, "check": "Light150 clicked text and VCF Space close; all nine declared files unchanged"}
+{"time": 1793495064.9760094, "click": [1608, 27], "pointer_settled_before_press": true, "hold_seconds": 0.15}

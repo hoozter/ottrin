@@ -1,0 +1,6 @@
+{
+  "purpose": "Verify application startup/global-option handling on Linux and native Windows,ordinary/elevated tokens",
+  "compiler_settings": "Default application features;one job;shared target,cargo and rustup;no added flags or target trees",
+  "Windows_configuration": "Application default WGPU/DX12 feature graph is required for the real Windows app. Prior UI-only checks used their own default graph. Both existing configurations have current consumers;preserve useful shared dependencies.",
+  "cleanup_owner": "This task;native producer registered teardown before allocation;retire obsolete incremental sessions with guarded project script after same-configuration replacement passes."
+}

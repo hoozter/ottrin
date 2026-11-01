@@ -1,0 +1,13 @@
+{
+  "status": "Refused before allocating any guest or fixture root",
+  "reason": "Binary Cargo target is ottrin-app; its executable basename uses underscores. Producer now uses the authoritative compiler-artifact target name and executable,not an invented mapping.",
+  "previous_owner": {
+    "nonce": "36017427-ba9f-4584-ae38-c0bebdf8b668",
+    "guest_root": "C:\\OttrinJobFixtureQA",
+    "domain": "ottrin-copy-cleanup-qa",
+    "status": "failed",
+    "error": "AssertionError()"
+  },
+  "guest_was_started": false,
+  "production_code_or_data_changed": false
+}

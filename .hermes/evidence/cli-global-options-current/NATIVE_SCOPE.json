@@ -1,0 +1,12 @@
+{
+  "Linux_regular": 26,
+  "Windows_regular": 23,
+  "Linux_only_tests": [
+    "tests::administrator_gui_launch_does_not_start_index",
+    "tests::administrator_window_title_identifies_the_privileged_session",
+    "tests::initial_viewport_fits_taskbar_work_area_at_normal_and_scaled_dpi"
+  ],
+  "reason": "Three Unix-only tests are absent on Windows;none skipped or filtered. Ordinary Windows all23 passed and cleaned up. Producer wrongly compared to Linux26; preserve that failure as an oracle control,then run only the remaining elevated role.",
+  "ordinary_evidence": "ordinary-accepted",
+  "production_tests_failed": 0
+}

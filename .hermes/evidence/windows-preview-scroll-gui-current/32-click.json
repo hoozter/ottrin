@@ -1,0 +1,38 @@
+﻿{
+    "cursor_x":  252,
+    "id":  "9002f4dc8e384ac88276c865f407131b",
+    "case":  "ordinary",
+    "foreground_pid":  3848,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  1639110,
+                        "left":  52,
+                        "bottom":  612,
+                        "top":  52,
+                        "right":  772,
+                        "title":  "Ottrin Quick Inspector — a deliberately long preview filename for wrapped metadata.txt"
+                    },
+                    {
+                        "handle":  393814,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  262644,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  216,
+    "op":  "click"
+}

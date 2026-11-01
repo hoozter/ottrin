@@ -1,13 +1,13 @@
 {
   "status": "pass within Linux source,four-format contents and scoped actual-AppImage acceptance",
-  "source_revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "source_revision": "83ae6b978a74f5f07f2be49a83e3a5515e348a03",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "9a345ab581ae409220cc867f686a024c5e48a50a803f4b7baae56903bcbfaec0",
-    "Ottrin-0.1.0-x86_64.AppImage": "60cf72f25dded339ccf0e1a064c31eba901f2faf3af90a3fa227271aec198ca8",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "bc04c7a70d16cdb47cbc47dd9dbd7d5eeadc939ada9c0dd35371e84f5a8d99a1",
-    "ottrin_0.1.0_amd64.deb": "6f5dbd6f7ab2bb44ea16fd9088a87d58879f934a582f5ffac8505024baa7650c"
+    "ottrin-0.1.0-1.x86_64.rpm": "eb9572cc5c6e773e87e8604e3a11ddb52c42216a616bd63d636552b88c76a26c",
+    "Ottrin-0.1.0-x86_64.AppImage": "142be40d1ba3f90eef35138c78d28ce987814c3ccfcb869df7b589a7abd060ec",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7962461e7f84cc24e39d8fd65eeb507e45deab3599183d6755306e9e8a9be24f",
+    "ottrin_0.1.0_amd64.deb": "9f94d4e10f2931d6a96e42cac83f249a6aea02e40639aa9269946a4954e4ff49"
   },
-  "evidence": ".hermes/evidence/linux-navigation-package-current",
+  "evidence": ".hermes/evidence/linux-preview-scroll-package-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -15,48 +15,27 @@
     "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks",
-    "Actual checksum-verified AppImage runtime in Dark100 and Light150 private X11 sessions",
-    "Deep-path breadcrumbs stay inside the address area with directly clickable view controls;ancestor/current horizontal wheel access observed",
-    "Actual menu List-to-Column and toggle Grid-to-Column reveal current folder and selected-file preview",
-    "Deliberate main horizontal scrolling survives choosing already-active Column mode;1020x620 body pixels remain identical",
-    "Narrow Location value shows ellipsis and one full-path tooltip in both themes",
-    "Both actual read-only Inspectors close on Space after a settled content click;all five fixture files match declared raw bytes before and after normal Close",
-    "Both normal product closes exit0,persist theme/Miller preference and remove all owned private GUI resources"
+    "Actual checksum-verified AppImage runtime in private Dark100 and Light150 desktops",
+    "One visible overflow text scrollbar in main preview and Inspector; actual wheel input moves the body with exactly unchanged complete footer pixels",
+    "Actual Details click and metadata wheel reach the final Permissions field in both sessions",
+    "Clicked read-only text and VCF content then Space closes Inspector; all nine declared files unchanged before and after normal Close",
+    "Dark actual highlighted code/archive wheel retain identical footer pixels; native structured DOCX/spreadsheet and extracted DOCX fallback remain bounded",
+    "Dark actual cached code-to-PDF transitions:30 captures each at800 and560px window heights retain stable colored PDF page bounds",
+    "Saved theme and Column view survive normal exit0; private profiles,processes,displays,buses and mounts removed"
   ],
   "gui_acceptance": "GUI_ACCEPTANCE.json",
   "indexd_binary_sha256": "df3f961867b28e1071b1698ba78afc707469f5be285a6a9df8291b50247674df",
   "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
   "indexd_resource_evidence": ".hermes/evidence/linux-filename-index-package-current/packaged-daemon/PROFILE.json",
   "indexd_resource_scope": "Byte-identical daemon; earlier resource observations retain their original dates,workloads and artifact scopes. No new CPU or memory acceptance claimed.",
-  "native_source_evidence": "navigation-toolbar-current/SOURCE_CHECKS.json",
+  "native_source_evidence": "preview-scroll-current/SOURCE_NATIVE_ACCEPTANCE.json",
   "hosted_source_evidence": {
-    "run": 41251463739,
-    "source_revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+    "run": 41258195349,
+    "source_revision": "83ae6b978a74f5f07f2be49a83e3a5515e348a03",
     "linux_job": "success",
     "performance_job": "success",
     "windows_job_at_linux_promotion": "in_progress"
   },
   "scope": "Usable local Linux preview,not a public release or final daily-driver acceptance. Windows,installer rollback,Office providers,physical devices/GPU,signing and owner acceptance remain separate.",
-  "cleanup": "Both private GUI sessions closed normally and removed owned profiles,processes,displays,buses and mounts. Completed staging/extraction retired after publication. Current shared compiler outputs and compact evidence retained.",
-  "personal_service_delivery": {
-    "evidence": ".hermes/evidence/linux-navigation-package-current/PERSONAL_SERVICE_DELIVERY.json",
-    "source_revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
-    "pid": 2275700,
-    "enabled": "enabled",
-    "watcher_ready": true,
-    "configuration_unit_wrapper_unchanged": true,
-    "old_mount_removed": true,
-    "daemon_elf_unchanged": true,
-    "runtime_gui_matches_current_release": true,
-    "scope": "Authorized orderly runtime replacement only;no new CPU/memory observation or algorithm change"
-  },
-  "hosted_complete_source": {
-    "run": 41251463739,
-    "source_revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
-    "conclusion": "success",
-    "linux_workspace_lint_release": "success",
-    "windows_workspace_lint_release": "success",
-    "performance": "success",
-    "scope": "Complete hosted source checks;exact package GUI and installer scopes remain separate"
-  }
+  "cleanup": "Both private GUI sessions closed normally and removed owned profiles,processes,displays,buses and mounts. Completed staging/extraction retired after publication. Current shared compiler outputs and compact evidence retained."
 }

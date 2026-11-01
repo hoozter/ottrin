@@ -1,0 +1,34 @@
+{
+  "status": "pass within observed software-rendered cached transitions",
+  "sessions": [
+    {
+      "window_height": 800,
+      "colored_page_samples": 30,
+      "unique_visible_page_bounds": [
+        [
+          314,
+          134,
+          1038,
+          578
+        ]
+      ],
+      "transition": "Long overflowing code to width-fitted PDF; cache established after first paint",
+      "status": "stable across30 captures"
+    },
+    {
+      "window_height": 560,
+      "colored_page_samples": 30,
+      "unique_visible_page_bounds": [
+        [
+          314,
+          134,
+          1038,
+          338
+        ]
+      ],
+      "transition": "Long overflowing code to width-fitted PDF; cache established after first paint",
+      "status": "stable across30 captures"
+    }
+  ],
+  "scope": "Actual PDFium page pixels; source fit-width regression separately covers180 frames after overflowing content. No physical GPU or all PDF corpus claim."
+}

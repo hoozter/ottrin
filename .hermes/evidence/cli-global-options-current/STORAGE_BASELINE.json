@@ -1,0 +1,11 @@
+{
+  "base_revision": "83ae6b978a74f5f07f2be49a83e3a5515e348a03",
+  "paths": {
+    "target/debug/deps": 22735984439,
+    "target/debug/incremental": 9024740677,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394294989,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25259336058
+  },
+  "preserve": "Current Linux83ae and Windows e79 usable builds,personal service and configuration,owner AGENTS.md",
+  "purpose": "One authoritative global-option parser before command/target dispatch; use shared compiler settings and caches"
+}

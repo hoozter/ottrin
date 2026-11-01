@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "removed_staging": [
+    ".hermes/packaging-tmp/.linux-preview-scroll-stage",
+    ".hermes/packaging-tmp/.linux-preview-scroll-extract"
+  ],
+  "owned_GUI_processes_displays_buses_profiles_mounts": "removed; see session teardown receipts",
+  "retained": "Current four dist/packages deliverables; compact evidence and reusable QA scripts. Personal enabled index service deliberately running. Shared compiler caches preserved."
+}

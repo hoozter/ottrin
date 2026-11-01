@@ -1,0 +1,24 @@
+﻿{
+    "cursor_x":  252,
+    "id":  "52b452d4889844e2b8816ec2141efcfa",
+    "case":  "ordinary",
+    "foreground_pid":  3600,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "status":  "pass",
+                         "daemon_teardown":  "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+                         "normal_app_close":  [
+                                                  {
+                                                      "exit":  0,
+                                                      "pid":  3848
+                                                  }
+                                              ]
+                     },
+    "windows":  [
+
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  216,
+    "op":  "close"
+}

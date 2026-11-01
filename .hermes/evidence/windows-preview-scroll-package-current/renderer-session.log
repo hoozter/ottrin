@@ -1,0 +1,47 @@
+Domain 'ottrin-copy-cleanup-qa' started
+
+native PID 3648
+native PID 3520
+native PID 4404
+DESKTOP-81GHP8U\campbell
+
+native PID 5252
+{
+    "status":  "pass",
+    "new_process_names_refused":  true,
+    "ended_only_this_test_boot_console":  true,
+    "no_document_application_observed":  true,
+    "original_account_or_profile_removed":  false
+}
+
+native PID 3564
+native PID 4036
+native PID 3908
+native PID 4640
+owned-ready
+
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-scroll-package-current/renderer-session.py", line 68, in <module>
+    desktop(command['command'])
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-scroll-package-current/renderer-session.py", line 22, in desktop
+    if q.returncode:raise RuntimeError('Desktop driver failed: '+q.stdout[-2000:]+q.stderr[-2000:])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Desktop driver failed: uploaded command.json
+native PID 6084
+#< CLIXML
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04"><S S="Error">Owned actor failed_x000D__x000A_</S><S S="Error">At line:14 char:110_x000D__x000A_</S><S S="Error">+ ... \OttrinWindowQA\results\actor-error.txt)){throw 'Owned actor failed'}_x000D__x000A_</S><S S="Error">+                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~_x000D__x000A_</S><S S="Error">    + CategoryInfo          : OperationStopped: (Owned actor failed:String) [], RuntimeException_x000D__x000A_</S><S S="Error">    + FullyQualifiedErrorId : Owned actor failed_x000D__x000A_</S><S S="Error"> _x000D__x000A_</S></Objs>
+App exited: 
+
+ottrin: unknown command: C:\OttrinWindowQA\cases\ordinary\fixture\source
+
+
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/scripts/windows-desktop-qa/desktop.py", line 121, in <module>
+    wait(n.start(script))
+  File "/home/campbell/Projects/Ottrin/scripts/windows-desktop-qa/desktop.py", line 28, in wait
+    n.wait(pid, 45)
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-cleanup-current/transport.py", line 18, in wait
+    assert result.get('exitcode')==0,result
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'exitcode': 1, 'err-data': 'IzwgQ0xJWE1MDQo8T2JqcyBWZXJzaW9uPSIxLjEuMC4xIiB4bWxucz0iaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS9wb3dlcnNoZWxsLzIwMDQvMDQiPjxTIFM9IkVycm9yIj5Pd25lZCBhY3RvciBmYWlsZWRfeDAwMERfX3gwMDBBXzwvUz48UyBTPSJFcnJvciI+QXQgbGluZToxNCBjaGFyOjExMF94MDAwRF9feDAwMEFfPC9TPjxTIFM9IkVycm9yIj4rIC4uLiBcT3R0cmluV2luZG93UUFccmVzdWx0c1xhY3Rvci1lcnJvci50eHQpKXt0aHJvdyAnT3duZWQgYWN0b3IgZmFpbGVkJ31feDAwMERfX3gwMDBBXzwvUz48UyBTPSJFcnJvciI+KyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5feDAwMERfX3gwMDBBXzwvUz48UyBTPSJFcnJvciI+ICAgICsgQ2F0ZWdvcnlJbmZvICAgICAgICAgIDogT3BlcmF0aW9uU3RvcHBlZDogKE93bmVkIGFjdG9yIGZhaWxlZDpTdHJpbmcpIFtdLCBSdW50aW1lRXhjZXB0aW9uX3gwMDBEX194MDAwQV88L1M+PFMgUz0iRXJyb3IiPiAgICArIEZ1bGx5UXVhbGlmaWVkRXJyb3JJZCA6IE93bmVkIGFjdG9yIGZhaWxlZF94MDAwRF9feDAwMEFfPC9TPjxTIFM9IkVycm9yIj4gX3gwMDBEX194MDAwQV88L1M+PC9PYmpzPg==', 'exited': True}
+

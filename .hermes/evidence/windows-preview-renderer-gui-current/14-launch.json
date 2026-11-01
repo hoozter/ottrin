@@ -1,0 +1,30 @@
+﻿{
+    "cursor_x":  1094,
+    "id":  "9c17eb293492424c98ca08f93cf0f836",
+    "case":  "ordinary",
+    "foreground_pid":  872,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  null,
+    "windows":  [
+                    {
+                        "handle":  328256,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  458942,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  90,
+    "op":  "launch"
+}
