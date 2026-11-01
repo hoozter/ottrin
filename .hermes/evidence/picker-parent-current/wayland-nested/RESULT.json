@@ -1,0 +1,39 @@
+{
+  "binary_sha256": "4c2db9a0b07e45942758bfd56fc4b42794c49bf8e0186bc57453dfb052ace648",
+  "scope": "Actual native Wayland chooser attachment to GTK exported foreign parent and parent-loss cancellation in owned virtual KWin; not physical desktop or Windows acceptance",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-kih7u6gz",
+    "owned_processes_reaped": [
+      {
+        "pid": 3374139,
+        "exit": 0
+      },
+      {
+        "pid": 3374142,
+        "exit": 0
+      },
+      {
+        "pid": 3374143,
+        "exit": 15
+      },
+      {
+        "pid": 3374207,
+        "exit": 1
+      },
+      {
+        "pid": 3374209,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 5
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:65 / /var/tmp/.ottrin-picker-qa-kih7u6gz/runtime/doc rw,nosuid,nodev,relatime shared:588 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "error": "Owned desktop helper exited",
+    "profile_removed": true
+  }
+}

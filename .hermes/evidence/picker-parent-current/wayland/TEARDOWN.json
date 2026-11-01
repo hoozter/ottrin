@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-889mtcm_",
+  "owned_processes_reaped": [
+    {
+      "pid": 3370090,
+      "exit": 0
+    },
+    {
+      "pid": 3370097,
+      "exit": 0
+    },
+    {
+      "pid": 3370099,
+      "exit": 15
+    },
+    {
+      "pid": 3370306,
+      "exit": 15
+    },
+    {
+      "pid": 3370310,
+      "exit": 2
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Owned desktop helper exited",
+  "profile_removed": true
+}

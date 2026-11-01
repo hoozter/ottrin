@@ -6,6 +6,44 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
 use std::path::PathBuf;
 
+/// External native window identity. Linux follows the desktop portal convention;
+/// cooperating Windows applications pass `win32:` followed by a hexadecimal HWND.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PickerParentWindow {
+    None,
+    X11(u32),
+    Wayland(String),
+    Windows(usize),
+}
+
+impl PickerParentWindow {
+    pub fn parse(value: &str) -> Result<Self, String> {
+        if value.is_empty() {
+            return Ok(Self::None);
+        }
+        let invalid = || "Invalid picker parent window identifier".to_owned();
+        let (kind, handle) = value.split_once(':').ok_or_else(invalid)?;
+        if handle.is_empty() || handle.contains('\0') || handle.len() > 1024 {
+            return Err(invalid());
+        }
+        match kind {
+            "wayland" => Ok(Self::Wayland(handle.to_owned())),
+            "x11" | "win32" if handle.bytes().all(|b| b.is_ascii_hexdigit()) => {
+                let id = usize::from_str_radix(handle, 16).map_err(|_| invalid())?;
+                if id == 0 {
+                    return Err(invalid());
+                }
+                if kind == "x11" {
+                    Ok(Self::X11(u32::try_from(id).map_err(|_| invalid())?))
+                } else {
+                    Ok(Self::Windows(id))
+                }
+            }
+            _ => Err(invalid()),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum PickerMode {
@@ -68,6 +106,7 @@ impl PickerRequest {
         text(&self.title, "title", 1024)?;
         text(&self.accept_label, "accept label", 256)?;
         text(&self.parent_window, "parent window", 1024)?;
+        PickerParentWindow::parse(&self.parent_window)?;
         text(&self.filename, "filename", 4096)?;
         if let Some(path) = &self.initial_directory {
             crate::native_path::NativePath::encode(path)
@@ -251,6 +290,46 @@ impl PickerResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn external_parent_identity_is_explicit_and_lossless() {
+        assert_eq!(
+            PickerParentWindow::parse("").unwrap(),
+            PickerParentWindow::None
+        );
+        assert_eq!(
+            PickerParentWindow::parse("x11:ABC123").unwrap(),
+            PickerParentWindow::X11(0xabc123)
+        );
+        assert_eq!(
+            PickerParentWindow::parse("win32:1234").unwrap(),
+            PickerParentWindow::Windows(0x1234)
+        );
+        assert_eq!(
+            PickerParentWindow::parse("wayland:opaque:handle/α").unwrap(),
+            PickerParentWindow::Wayland("opaque:handle/α".into())
+        );
+        for bad in [
+            "1234",
+            "x11:",
+            "x11:0",
+            "x11:0x123",
+            "x11:100000000",
+            "x11:-1",
+            "x11: 123",
+            "win32:0",
+            "win32:GG",
+            "wayland:",
+            "wayland:bad\0",
+            "other:123",
+        ] {
+            let request = PickerRequest {
+                parent_window: bad.into(),
+                ..Default::default()
+            };
+            assert!(request.validate().is_err(), "{bad:?}");
+        }
+    }
 
     #[test]
     fn caller_requests_reject_ambiguous_choices_and_path_escaping_filenames() {

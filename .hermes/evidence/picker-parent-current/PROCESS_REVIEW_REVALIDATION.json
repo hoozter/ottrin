@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "source": ".hermes/evidence/preview-footer-layout-current/PROCESS_REVIEWS.json",
+  "reviewed_pids": [
+    1224,
+    3022,
+    57349
+  ],
+  "scope": "Recorded PID start/comm/cmdline plus declared immutable system executable and ancestors; no claim inaccessible mappings were read"
+}

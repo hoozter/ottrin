@@ -1,0 +1,32 @@
+{
+  "nonce": "afca2682-b9c3-4d41-9414-4f0e94354a3f",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "pass",
+  "source": {
+    "base_revision": "d97ae7fc4dd1ecf0334893fbad845373c7518d72",
+    "working_tree": [
+      " M Cargo.lock",
+      " M crates/ottrin-core/src/picker.rs",
+      " M crates/ottrin-ui/Cargo.toml",
+      " M crates/ottrin-ui/src/lib.rs",
+      " M crates/ottrin-ui/src/picker.rs",
+      "?? AGENTS.md",
+      "?? crates/ottrin-ui/src/picker_parent.rs"
+    ],
+    "files": {
+      "crates/ottrin-core/src/picker.rs": "54ffffc78c821940382727d34aac30c454af65975e000b7a85f43cd5e13572bb",
+      "crates/ottrin-ui/Cargo.toml": "1be09d85b72fffb7c5b7bb8d5a7af997e4c599fc23524bca98307d5605dbaf5c",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/lib.rs": "d8f85c9108aaa0557343ffcc822972adbcee89e9bdbb3dc74e1f997593e102c5",
+      "crates/ottrin-ui/src/picker.rs": "54e5cbb91f3c6bb81c87c4c8d9d66c6299e6d63d4999ffc76c1c5cd7f4993bc1",
+      "crates/ottrin-ui/src/picker_parent.rs": "c69c57792284e4f394dac2831cbe4c707e44343a8c929c567623bca22648d732"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

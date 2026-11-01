@@ -1,0 +1,37 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-4ruh2sa5",
+  "owned_processes_reaped": [
+    {
+      "pid": 3365934,
+      "exit": 0
+    },
+    {
+      "pid": 3365937,
+      "exit": 0
+    },
+    {
+      "pid": 3365938,
+      "exit": 15
+    },
+    {
+      "pid": 3365993,
+      "exit": -15
+    },
+    {
+      "pid": 3366029,
+      "exit": 0
+    },
+    {
+      "pid": 3366227,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Command '['/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage', 'picker']' timed out after 5 seconds",
+  "profile_removed": true
+}

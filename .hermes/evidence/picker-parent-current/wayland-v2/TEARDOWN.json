@@ -1,0 +1,37 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-kp7n7976",
+  "owned_processes_reaped": [
+    {
+      "pid": 3371573,
+      "exit": 0
+    },
+    {
+      "pid": 3371576,
+      "exit": 0
+    },
+    {
+      "pid": 3371577,
+      "exit": 15
+    },
+    {
+      "pid": 3371649,
+      "exit": 15
+    },
+    {
+      "pid": 3371689,
+      "exit": -15
+    },
+    {
+      "pid": 3371778,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Command '['/home/campbell/Projects/Ottrin/target/debug/ottrin-app', 'picker']' timed out after 5 seconds",
+  "profile_removed": true
+}

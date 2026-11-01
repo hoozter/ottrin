@@ -1,0 +1,42 @@
+{
+  "binary_sha256": "4c2db9a0b07e45942758bfd56fc4b42794c49bf8e0186bc57453dfb052ace648",
+  "scope": "Actual native Wayland chooser attachment to GTK exported foreign parent and parent-loss cancellation in owned virtual KWin; not physical desktop or Windows acceptance",
+  "exported_handle": "6d32010e-b855-40ba-84d5-09c8c16ad710",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-bhqzv6r8",
+    "owned_processes_reaped": [
+      {
+        "pid": 3373395,
+        "exit": 0
+      },
+      {
+        "pid": 3373414,
+        "exit": 0
+      },
+      {
+        "pid": 3373415,
+        "exit": 15
+      },
+      {
+        "pid": 3373483,
+        "exit": 15
+      },
+      {
+        "pid": 3373485,
+        "exit": -15
+      },
+      {
+        "pid": 3373567,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "error": "Command '['/usr/bin/python3', '-c', 'import ctypes,os,sys; assert ctypes.CDLL(None).prctl(0x59616d61,os.getppid(),0,0,0)==0; os.execv(sys.argv[1],sys.argv[1:])', '/home/campbell/Projects/Ottrin/target/debug/ottrin-app', 'picker']' timed out after 5 seconds",
+    "profile_removed": true
+  }
+}

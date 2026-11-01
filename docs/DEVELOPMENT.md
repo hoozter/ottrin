@@ -1698,9 +1698,31 @@ startup. A cancelled chooser returns `accepted: false` and an empty path list.
 The calling application opens or saves the returned path; the chooser does not
 create, truncate or edit it. Callers must still handle later filesystem changes.
 
-This protocol is current source work awaiting packaged delivery. Foreign parent
-attachment and platform integration remain separate roadmap work; accepting a
-`parent_window` token does not yet establish that attachment.
+The base protocol is delivered in the source25b38c8f package cohort. Native parent
+attachment is newer source work, with separate acceptance evidence under
+`.hermes/evidence/picker-parent-current/`; platform registration and portal
+integration remain roadmap work.
+
+### Parent windows and cancellation
+
+An empty `parent_window` opens an independent chooser. Linux callers can use
+`x11:` followed by their hexadecimal XID, or `wayland:` followed by an opaque
+xdg-foreign-v2 exported toplevel handle. Cooperating Windows callers use `win32:`
+followed by a hexadecimal HWND. Zero/invalid numeric handles, unknown schemes,
+missing handles and a different active window-system identifier are errors;
+Ottrin does not silently discard a requested parent.
+
+The chooser sets its X11 transient/dialog relationship, imports its Wayland
+foreign parent, or sets its Windows owner. It never disables the caller's window.
+The caller retains responsibility for its own modal input state and request
+cancellation. A closed/destroyed parent cancels the chooser; parent observation
+runs outside rendering. Wayland requires compositor xdg-foreign-v2 support.
+Owned queue/import objects are released before winit destroys its display;
+Ottrin never disconnects the borrowed display or destroys the caller's surface.
+
+Cancel, native window-manager close and parent loss return cancellation and
+save picker-only preferences. Accepted results are retained through native
+shutdown. Closing a chooser does not start or stop an index daemon.
 
 ### Paths
 

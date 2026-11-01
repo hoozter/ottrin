@@ -1435,6 +1435,7 @@ impl Drop for PickerDialog {
 /// Standalone host for portal and cooperating-application requests. It loads no
 /// file-manager operation workers. Only explicit indexed search connects to an existing index.
 pub struct PickerApp {
+    parent: Option<crate::picker_parent::PickerParent>,
     dialog: PickerDialog,
     config: AppConfig,
     colors: Colors,
@@ -1461,7 +1462,9 @@ impl PickerApp {
         let config = crate::load_config();
         let colors = Colors::for_config(&config, cc.egui_ctx.system_theme());
         crate::theme_colors::apply_to_context(&cc.egui_ctx, &colors);
+        let parent = crate::picker_parent::PickerParent::attach(cc, &request.parent_window)?;
         Ok(Self {
+            parent,
             dialog: PickerDialog::new(
                 request,
                 &cc.egui_ctx,
@@ -1480,6 +1483,12 @@ impl PickerApp {
 }
 impl PickerApp {
     fn render_window(&mut self, ctx: &Context) {
+        if self.parent.as_ref().is_some_and(|parent| parent.gone()) {
+            self.dialog.cancel();
+        }
+        if ctx.input(|i| i.viewport().close_requested()) {
+            self.dialog.cancel();
+        }
         self.appearance.poll();
         let colors = Colors::for_config(
             &self.config,
@@ -1514,17 +1523,33 @@ impl PickerApp {
         if self.dialog.overwrite.is_none() {
             crate::window_chrome::handle_viewport_resize(ctx);
         }
+        if self.finish_response() {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        }
+    }
+
+    fn finish_response(&mut self) -> bool {
         if let Some(result) = self.dialog.take_result() {
             if let Err(error) = self.dialog.preferences().save() {
                 eprintln!("ottrin: Could not remember picker preferences: {error}");
             }
             *self.outcome.lock().expect("picker outcome") = Some(result);
-            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            true
+        } else {
+            false
         }
     }
 }
 
 impl eframe::App for PickerApp {
+    fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        // Native parents borrow winit's display; release them before window teardown.
+        self.parent.take();
+        if self.outcome.lock().expect("picker outcome").is_none() {
+            self.dialog.cancel();
+            self.finish_response();
+        }
+    }
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         self.render_window(ctx);
     }
@@ -1569,6 +1594,7 @@ mod tests {
         let mut dialog = PickerDialog::new(request, ctx, PickerPreferences::default()).unwrap();
         wait_listing(&mut dialog);
         PickerApp {
+            parent: None,
             dialog,
             config,
             colors,

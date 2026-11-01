@@ -1,0 +1,134 @@
+{
+  "status": "pass within focused source checks and isolated native-parent acceptance",
+  "base_revision": "d97ae7fc4dd1ecf0334893fbad845373c7518d72",
+  "source_files": {
+    "crates/ottrin-core/src/picker.rs": "54ffffc78c821940382727d34aac30c454af65975e000b7a85f43cd5e13572bb",
+    "crates/ottrin-ui/Cargo.toml": "1be09d85b72fffb7c5b7bb8d5a7af997e4c599fc23524bca98307d5605dbaf5c",
+    "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+    "crates/ottrin-ui/src/lib.rs": "d8f85c9108aaa0557343ffcc822972adbcee89e9bdbb3dc74e1f997593e102c5",
+    "crates/ottrin-ui/src/picker.rs": "54e5cbb91f3c6bb81c87c4c8d9d66c6299e6d63d4999ffc76c1c5cd7f4993bc1",
+    "crates/ottrin-ui/src/picker_parent.rs": "c69c57792284e4f394dac2831cbe4c707e44343a8c929c567623bca22648d732"
+  },
+  "linux_core": "5 picker contract tests passed;35 other core tests filtered",
+  "linux_ui": "23 picker tests passed;425 other UI tests filtered",
+  "lint": "strict all-target Linux and GNU Windows checks pass",
+  "windows_native": "2 real Win32 parent API tests pass per ordinary/elevated token;423 other UI tests filtered;not packaged Windows chooser GUI acceptance",
+  "windows_cleanup": {
+    "status": "pass",
+    "root_removed": true,
+    "guest_off": true
+  },
+  "linux_gui": {
+    "x11-final-after": {
+      "binary": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+      "binary_sha256": "2208575cd66302b45d736a576d62f88711ce57b2d9a704860babb3fd164d50c0",
+      "scope": "Actual X11 foreign parent, parent loss and native WM close; isolated source GUI, no Windows/Wayland/package claim",
+      "attached": true,
+      "parent_loss_cancelled": true,
+      "native_close_preferences_saved": true,
+      "saved_preferences": {
+        "grid": false,
+        "hidden": false,
+        "preview": false,
+        "last_directory": {
+          "encoding": "unix-bytes",
+          "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d786639377a35675f2f66697874757265"
+        }
+      },
+      "original_bytes_preserved": true,
+      "no_index_started": true,
+      "status": "pass",
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-xf97z5g_",
+        "owned_processes_reaped": [
+          {
+            "pid": 3384992,
+            "exit": 0
+          },
+          {
+            "pid": 3385007,
+            "exit": 0
+          },
+          {
+            "pid": 3385010,
+            "exit": 15
+          },
+          {
+            "pid": 3385140,
+            "exit": -15
+          },
+          {
+            "pid": 3385189,
+            "exit": 0
+          },
+          {
+            "pid": 3385327,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 5
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    },
+    "wayland-final": {
+      "binary_sha256": "2208575cd66302b45d736a576d62f88711ce57b2d9a704860babb3fd164d50c0",
+      "scope": "Actual native Wayland chooser attachment to GTK exported foreign parent and parent-loss cancellation in owned virtual KWin; not physical desktop or Windows acceptance",
+      "exported_handle": "35b87eb7-d3a4-452d-9336-14167343a136",
+      "status": "pass",
+      "native_import_and_parent_request": true,
+      "parent_loss_cancelled": true,
+      "normal_exit": 0,
+      "preferences_saved": true,
+      "original_bytes_preserved": true,
+      "no_index_started": true,
+      "compositor_survived": true,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-xs45igwy",
+        "owned_processes_reaped": [
+          {
+            "pid": 3385938,
+            "exit": 0
+          },
+          {
+            "pid": 3386011,
+            "exit": 0
+          },
+          {
+            "pid": 3386013,
+            "exit": 15
+          },
+          {
+            "pid": 3386298,
+            "exit": 15
+          },
+          {
+            "pid": 3386314,
+            "exit": -15
+          },
+          {
+            "pid": 3386447,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 5
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    }
+  },
+  "limits": [
+    "Source milestone;stable packages remain source25b38c8f",
+    "No physical Wayland/X11 desktop or actual Windows external-parent chooser acceptance",
+    "No portal or folder registration implemented in this checkpoint",
+    "Earlier disabled-compositor and AltF4 controls retain their actual failures;final native WM request and composited Wayland tests pass"
+  ]
+}

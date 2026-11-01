@@ -1,0 +1,17 @@
+{
+  "before_human_du": {
+    "target/debug/deps": "31GiB",
+    "target/debug/incremental": "12GiB",
+    "target/x86_64-pc-windows-gnu/debug/deps": "30GiB",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "28GiB"
+  },
+  "after_before_guarded_retirement": {
+    "target/debug/deps": "33GiB",
+    "target/debug/incremental": "13GiB",
+    "target/x86_64-pc-windows-gnu/debug/deps": "30GiB",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "29GiB"
+  },
+  "guarded_cleanup": "34 obsolete finalized/unpublished incremental sessions removed;1.52GiB recovered;newest current crate/configuration sessions preserved",
+  "retained": "Current binaries,test executables,dependencies,useful newest caches and compact evidence",
+  "disposable_resources": "All test profiles,temporary C helpers,owned Xvfb/KWin/DBus instances and native test VM roots stopped and removed"
+}

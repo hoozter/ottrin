@@ -1,0 +1,56 @@
+{
+  "binary": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+  "binary_sha256": "4c2db9a0b07e45942758bfd56fc4b42794c49bf8e0186bc57453dfb052ace648",
+  "scope": "Actual X11 foreign parent, parent loss and native WM close; isolated source GUI, no Windows/Wayland/package claim",
+  "attached": true,
+  "parent_loss_cancelled": true,
+  "native_close_preferences_saved": true,
+  "saved_preferences": {
+    "grid": false,
+    "hidden": false,
+    "preview": false,
+    "last_directory": {
+      "encoding": "unix-bytes",
+      "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d73723537743936322f66697874757265"
+    }
+  },
+  "original_bytes_preserved": true,
+  "no_index_started": true,
+  "status": "pass",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-sr57t962",
+    "owned_processes_reaped": [
+      {
+        "pid": 3370091,
+        "exit": 0
+      },
+      {
+        "pid": 3370096,
+        "exit": 0
+      },
+      {
+        "pid": 3370098,
+        "exit": 15
+      },
+      {
+        "pid": 3370222,
+        "exit": -15
+      },
+      {
+        "pid": 3370253,
+        "exit": 0
+      },
+      {
+        "pid": 3370362,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

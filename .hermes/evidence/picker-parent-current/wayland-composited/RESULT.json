@@ -1,0 +1,49 @@
+{
+  "binary_sha256": "4c2db9a0b07e45942758bfd56fc4b42794c49bf8e0186bc57453dfb052ace648",
+  "scope": "Actual native Wayland chooser attachment to GTK exported foreign parent and parent-loss cancellation in owned virtual KWin; not physical desktop or Windows acceptance",
+  "exported_handle": "c5fd2990-92aa-4b8f-a2f0-3b3d57c84bbc",
+  "status": "pass",
+  "native_import_and_parent_request": true,
+  "parent_loss_cancelled": true,
+  "normal_exit": 0,
+  "preferences_saved": true,
+  "original_bytes_preserved": true,
+  "no_index_started": true,
+  "compositor_survived": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-59rintvx",
+    "owned_processes_reaped": [
+      {
+        "pid": 3376138,
+        "exit": 0
+      },
+      {
+        "pid": 3376148,
+        "exit": 0
+      },
+      {
+        "pid": 3376149,
+        "exit": 15
+      },
+      {
+        "pid": 3376209,
+        "exit": 15
+      },
+      {
+        "pid": 3376211,
+        "exit": -15
+      },
+      {
+        "pid": 3376286,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

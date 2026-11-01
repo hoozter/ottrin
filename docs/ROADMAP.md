@@ -1,6 +1,39 @@
 # Ottrin roadmap
 
 
+## Native picker parent milestone — source work, 2026-11-01
+
+The external chooser now validates explicit X11/Wayland/Windows parent identities,
+sets its native transient/imported/owner relationship and observes parent loss
+outside rendering. It cancels when the caller window disappears, without disabling
+the caller or starting an index. Native window-manager close now saves picker-only
+preferences and returns cancellation; accepted responses survive shutdown.
+
+Actual final-source X11 GUI verifies transient/dialog properties, parent-loss
+cancellation, WM_DELETE_WINDOW close, saved native folder, unchanged file bytes,
+exit0 and no index startup. Actual composited private Wayland GUI imports a GTK
+foreign-v2 exported parent and verifies parent-loss cancellation, preferences,
+unchanged bytes, exit0 and compositor survival. The preceding Wayland hang was a
+QA configuration error: the X11 desktop's inherited KWIN_COMPOSE=N disabled the
+virtual Wayland compositor; an owned backtrace located the blocked EGL swap.
+Final tests clear that X11-only setting. All private desktops, buses, helper
+binaries and profiles are removed.
+
+Five core picker contract tests and23 Linux picker UI tests pass; strict all-target
+Linux/GNU-Windows checks pass. Two actual Win32 ownership tests pass per ordinary
+and elevated token: native owner relation, caller stays enabled, destroyed owner
+is observed, and an absent owner is refused without mutating the child. These are
+focused API checks, not actual packaged Windows parent-window GUI acceptance.
+The owned Windows root/processes are removed, original profiles preserved and VM
+off. Guarded cleanup retired34 obsolete incremental sessions (1.52GiB) and exact
+compiler-matched superseded UI test executables; current caches/binaries remain.
+
+Evidence: `.hermes/evidence/picker-parent-current/ACCEPTANCE.json`. The stable
+packages below remain source25b38c8f. Package this milestone with the next coherent
+integration cohort. Continue portal/cooperating-app registration and reversible
+folder handlers; owner/physical/release waits stay parked.
+
+
 ## Delivery checkpoint — 2026-11-01, source25b38c8f
 
 The current Linux four-format deliverable and Windows internal ZIP/NSIS/MSI
@@ -749,7 +782,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | --- | --- | --- |
 | Linux | Four25b38c8f formats; complete hosted checks; actual Dark100/Light150 chooser/native-path/persistence/read-only checks and bounded resource samples. Enabled personal service uses the accepted runtime. | Finish external picker/folder integration and remaining software/theme acceptance before parked owner/device checks. |
 | Windows |25b38c8f ZIP/NSIS/MSI candidate;58 matching files, complete hosted source checks and scoped native CLI/renderer/chooser/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) includes the QA-controller failure and exact scope limits. | Finish external picker/folder integration and remaining software acceptance. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Shared chooser,picker-only preferences and seven internal callers verified in source; native/Linux GUI scopes above. | Finish external ownership,portal/cooperating-app and reversible folder integration,then exact-package/resource acceptance. Existing-index search is source-verified. Park owner/physical/external waits. |
+| Ottrin picker and folder integration | Shared chooser,picker-only preferences and seven internal callers verified in source; native/Linux GUI scopes above. | Finish packaged parent ownership acceptance,portal/cooperating-app and reversible folder integration,then exact-package/resource acceptance. Existing-index search is source-verified. Park owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

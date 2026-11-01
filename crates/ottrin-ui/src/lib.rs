@@ -89,6 +89,7 @@ mod file_details;
 mod file_grid;
 mod file_row;
 mod picker;
+mod picker_parent;
 pub use picker::PickerApp;
 mod icons;
 mod image_ops;

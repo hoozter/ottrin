@@ -20,10 +20,15 @@ mime_guess2 = "2.3"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "tiff", "ico"] }
 sha2 = "0.10"
 same-file = "1"
+raw-window-handle = "0.6"
 two-face = { version = "0.5.2", default-features = false, features = ["syntect-fancy"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 zbus = "5.14"
+x11rb = "0.13"
+wayland-client = "0.31"
+wayland-backend = { version = "0.3", features = ["client_system", "dlopen"] }
+wayland-protocols = { version = "0.32", features = ["client", "unstable"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
@@ -34,3 +39,6 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 
 [target.'cfg(target_os = "windows")'.dev-dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Ioctl", "Win32_System_Threading"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
