@@ -3664,6 +3664,10 @@ pub struct OttrinApp {
     portal_status: Option<ottrin_platform::portal_integration::PortalStatus>,
     #[cfg(target_os = "linux")]
     portal_status_rx: Option<Receiver<ottrin_platform::portal_integration::PortalStatus>>,
+    #[cfg(target_os = "linux")]
+    folder_status: Option<ottrin_platform::folder_integration::FolderStatus>,
+    #[cfg(target_os = "linux")]
+    folder_status_rx: Option<Receiver<ottrin_platform::folder_integration::FolderStatus>>,
     show_settings: bool,
     // Active settings category tab
     settings_tab: SettingsTab,
@@ -3985,6 +3989,10 @@ impl OttrinApp {
             portal_status: None,
             #[cfg(target_os = "linux")]
             portal_status_rx: None,
+            #[cfg(target_os = "linux")]
+            folder_status: None,
+            #[cfg(target_os = "linux")]
+            folder_status_rx: None,
             show_settings: false,
             settings_tab: SettingsTab::General,
             graphics_runtime,
@@ -20909,6 +20917,9 @@ impl OttrinApp {
             #[cfg(target_os = "linux")]
             {
                 self.portal_status = None;
+                self.portal_status_rx = None;
+                self.folder_status = None;
+                self.folder_status_rx = None;
             }
             self.search_ui.sqlite_schedule_status = None;
             self.search_service.refresh();
@@ -20964,6 +20975,41 @@ impl OttrinApp {
         ui.add_space(14.0);
     }
 
+    #[cfg(target_os = "linux")]
+    fn render_folder_integration_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
+        if let Some(status) = self
+            .folder_status_rx
+            .as_ref()
+            .and_then(|rx| rx.try_recv().ok())
+        {
+            self.folder_status = Some(status);
+            self.folder_status_rx = None;
+        }
+        if self.folder_status.is_none() && self.folder_status_rx.is_none() {
+            let (tx, rx) = std::sync::mpsc::channel();
+            self.folder_status_rx = Some(rx);
+            let ctx = ui.ctx().clone();
+            std::thread::spawn(move || {
+                let _ = tx.send(ottrin_platform::folder_integration::status());
+                ctx.request_repaint();
+            });
+        }
+        appearance_editor::settings_surface(c).inner_margin(12).show(ui,|ui| {
+            ui.set_min_width(ui.available_width());
+            ui.label(RichText::new("Folder opening").strong().color(c.text));
+            ui.label("Choose Ottrin for your desktop's directory links. Applications can also use their own file manager or a separate file-reveal service.");
+            if let Some(status)=self.folder_status.clone() {
+                Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
+                ui.horizontal_wrapped(|ui| {
+                    if ui.add(egui::Button::new(if status.enabled {"Update / repair folder setup"}else{"Use Ottrin for folders"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable);}
+                    if status.enabled && ui.add(egui::Button::new("Restore previous handler").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
+                    if ui.add(egui::Button::new("Refresh status").themed(&c)).clicked() {self.folder_status=None;}
+                });
+            }else{ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
+        });
+        ui.add_space(14.0);
+    }
+
     fn render_services_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
         let ready_color = Color32::from_rgb(80, 185, 110);
         ui.label(
@@ -20990,8 +21036,6 @@ impl OttrinApp {
             });
         }
         ui.add_enabled_ui(!busy, |ui| {
-            #[cfg(target_os = "linux")]
-            self.render_portal_settings(ui, c);
             ui.label(RichText::new("Administrator helper").strong().color(c.text));
             match &self.privileged_availability {
                 PrivilegedAvailability::Ready => Self::render_service_status(ui, "Installed and ready", ready_color),
@@ -21086,6 +21130,14 @@ impl OttrinApp {
                     self.privileged_availability = self.platform.privileged_availability();
                 }
             });
+            #[cfg(target_os="linux")]
+            {
+                ui.add_space(16.0);
+                ui.label(RichText::new("Desktop integration").strong().color(c.heading));
+                ui.add_space(8.0);
+                self.render_portal_settings(ui,c);
+                self.render_folder_integration_settings(ui,c);
+            }
         });
         if busy {
             ui.ctx().request_repaint_after(Duration::from_millis(100));
@@ -21841,7 +21893,7 @@ impl OttrinApp {
                                             diag.last_indexed_path
                                                 .as_ref()
                                                 .or(diag.active_root.as_ref())
-                                                .map(|p| path_label(p))
+                                                .cloned()
                                         } else {
                                             None
                                         };
@@ -25687,7 +25739,7 @@ fn search_scope_summary(scope: SearchScope, current_dir: &Path) -> String {
         SearchScope::Global => "Scope: Global index".to_string(),
         SearchScope::CurrentFolder => format!(
             "Scope: Current folder ({})",
-            compact_search_path(current_dir)
+            compact_search_label(&path_label(current_dir))
         ),
     }
 }
@@ -25769,7 +25821,7 @@ fn search_diagnostics_tooltip(
     if let Some(active_root) = diagnostics.active_root.as_ref() {
         lines.push(format!(
             "Current root: {}",
-            compact_search_path(active_root)
+            compact_search_label(active_root)
         ));
     }
     if let Some(detail) = diagnostics.detail.as_ref().filter(|d| !d.trim().is_empty()) {
@@ -25785,11 +25837,10 @@ fn search_diagnostics_tooltip(
     lines.join("\n")
 }
 
-fn compact_search_path(path: &Path) -> String {
-    let text = path_label(path);
+fn compact_search_label(text: &str) -> String {
     let max_chars = 56usize;
     if text.chars().count() <= max_chars {
-        return text;
+        return text.to_owned();
     }
     let tail: String = text
         .chars()

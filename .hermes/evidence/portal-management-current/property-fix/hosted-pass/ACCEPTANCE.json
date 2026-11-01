@@ -1,0 +1,109 @@
+{
+  "scope": "Actual source CLI,protected installed definition,real user-manager/D-Bus activation and preference restoration on a disposable runner; no GUI or sandbox caller acceptance",
+  "commands": [
+    {
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":false,\"ready\":false,\"pending\":false,\"detail\":\"Off \u2014 applications use your desktop's file picker\"}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Ottrin file picker configured. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":true,\"ready\":false,\"pending\":true,\"detail\":\"Configured \u2014 apply the change when no portal dialogs or sessions are active\"}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "apply"
+      ],
+      "stdout": "Desktop file picker preference applied\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":true,\"ready\":true,\"pending\":false,\"detail\":\"Enabled \u2014 Ottrin handles supported portal file dialogs\"}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Ottrin file picker configured. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "apply"
+      ],
+      "stdout": "Desktop file picker preference applied\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":true,\"ready\":true,\"pending\":false,\"detail\":\"Enabled \u2014 Ottrin handles supported portal file dialogs\"}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "disable"
+      ],
+      "stdout": "Previous file picker restored. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "apply"
+      ],
+      "stdout": "Desktop file picker preference applied\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":false,\"ready\":false,\"pending\":false,\"detail\":\"Off \u2014 applications use your desktop's file picker\"}\n",
+      "stderr": ""
+    }
+  ],
+  "status": "pass",
+  "ready": {
+    "enabled": true,
+    "ready": true,
+    "pending": false,
+    "detail": "Enabled \u2014 Ottrin handles supported portal file dialogs"
+  },
+  "off": {
+    "enabled": false,
+    "ready": false,
+    "pending": false,
+    "detail": "Off \u2014 applications use your desktop's file picker"
+  },
+  "broker_pid": 13369,
+  "prior_chooser_restored": true,
+  "unrelated_edit_preserved": true,
+  "managed_activation_removed": true,
+  "teardown": {
+    "owned_files_removed": true,
+    "original_unit_active_states_restored": true,
+    "manager_desktop_restored": true
+  }
+}

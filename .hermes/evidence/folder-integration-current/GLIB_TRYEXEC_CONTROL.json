@@ -1,0 +1,10 @@
+[
+  {
+    "name": "with 100%",
+    "parsed": false
+  },
+  {
+    "name": "with $USER 100% `local`",
+    "parsed": false
+  }
+]

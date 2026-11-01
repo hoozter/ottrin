@@ -1,5 +1,6 @@
 //! Explicit, reversible per-user FileChooser registration. Called on a worker.
-use super::portal_config;
+use super::integration_preferences;
+use super::integration_storage::{atomic_write as write, read_text as read_regular};
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
@@ -7,6 +8,7 @@ use std::{
     process::Command,
 };
 const BUS: &str = "org.freedesktop.impl.portal.desktop.ottrin";
+const CHOOSER: &str = "org.freedesktop.impl.portal.FileChooser";
 const UNIT: &str = "ottrin-portal.service";
 const DEFINITION: &[u8] = include_bytes!("../../../packaging/linux/ottrin.portal");
 
@@ -35,20 +37,11 @@ struct Paths {
 }
 impl Paths {
     fn current() -> Result<Self, String> {
-        let home = std::env::var_os("HOME")
-            .map(PathBuf::from)
-            .ok_or("HOME is unavailable")?;
+        let directories = super::integration_storage::Directories::current()?;
         Ok(Self {
-            config: std::env::var_os("XDG_CONFIG_HOME")
-                .map(PathBuf::from)
-                .unwrap_or_else(|| home.join(".config")),
-            data: std::env::var_os("XDG_DATA_HOME")
-                .map(PathBuf::from)
-                .unwrap_or_else(|| home.join(".local/share")),
-            state: std::env::var_os("XDG_STATE_HOME")
-                .map(PathBuf::from)
-                .unwrap_or_else(|| home.join(".local/state"))
-                .join("ottrin/portal-registration.json"),
+            config: directories.config,
+            data: directories.data,
+            state: directories.state.join("ottrin/portal-registration.json"),
         })
     }
     fn names() -> Vec<String> {
@@ -103,32 +96,6 @@ impl Paths {
         Ok((local.join(&names[0]), String::new()))
     }
 }
-fn read_regular(path: &Path) -> Result<Option<String>, String> {
-    match fs::symlink_metadata(path) {
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
-        Err(e) => Err(e.to_string()),
-        Ok(metadata) if !metadata.is_file() || metadata.len() > 1024 * 1024 => Err(format!(
-            "Unsafe or oversized configuration retained: {}",
-            path.display()
-        )),
-        Ok(_) => fs::read_to_string(path)
-            .map(Some)
-            .map_err(|e| e.to_string()),
-    }
-}
-fn write(path: &Path, bytes: &[u8]) -> Result<(), String> {
-    use std::io::Write;
-    let parent = path.parent().ok_or("Missing configuration directory")?;
-    fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    // Refuse symlink targets. Atomic replacement never follows a target link.
-    read_regular(path)?;
-    let mut file = tempfile::NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
-    file.write_all(bytes)
-        .and_then(|()| file.as_file().sync_all())
-        .map_err(|e| e.to_string())?;
-    file.persist(path).map_err(|e| e.to_string())?;
-    Ok(())
-}
 fn systemctl(arguments: &[&str]) -> Result<(), String> {
     let result = Command::new("systemctl")
         .args(["--user", "--no-ask-password", "--no-pager"])
@@ -169,7 +136,8 @@ pub fn status() -> PortalStatus {
                 .all(|(path, data)| read_regular(path).ok().flatten().as_ref() == Some(data));
         let (effective_path, effective) = paths.configuration()?;
         let selected = effective_path == record.config
-            && portal_config::chooser(&effective)?.as_deref() == Some("ottrin");
+            && integration_preferences::value(&effective, "preferred", CHOOSER)?
+                .is_some_and(|value| value.split(';').next() == Some("ottrin"));
         let reachable = !record.enabled || !record.applied || backend_ready().is_ok();
         Ok::<_, String>((
             record.enabled,
@@ -291,21 +259,32 @@ fn enable_at(
     } else {
         read_regular(&config)?.is_none()
     };
-    let previous = if let Some(prior) = &prior {
-        prior.previous.clone()
+    let current_value = integration_preferences::value(&current, "preferred", CHOOSER)?;
+    let still_owned =
+        integration_preferences::restore_provider(current_value.as_deref(), "ottrin", None).0;
+    let previous = if still_owned {
+        prior.as_ref().and_then(|record| record.previous.clone())
     } else {
-        portal_config::chooser(&current)?
+        current_value
     };
-    let original = if let Some(prior) = &prior {
+    let original = if let Some(prior) = &prior
+        && still_owned
+    {
         if current == prior.installed {
             prior.original.clone()
         } else {
-            portal_config::replace(&current, prior.previous.as_deref())?
+            integration_preferences::replace(
+                &current,
+                "preferred",
+                CHOOSER,
+                prior.previous.as_deref(),
+            )?
         }
     } else {
         current.clone()
     };
-    let installed = portal_config::replace(&current, Some("ottrin"))?;
+    let installed =
+        integration_preferences::replace(&current, "preferred", CHOOSER, Some("ottrin"))?;
     let files = vec![
         (
             paths.data.join(format!("dbus-1/services/{BUS}.service")),
@@ -374,11 +353,17 @@ fn disable_at(
         }
     }
     let data = read_regular(&record.config)?.unwrap_or_default();
-    if portal_config::chooser(&data)?.as_deref() == Some("ottrin") {
+    let current_value = integration_preferences::value(&data, "preferred", CHOOSER)?;
+    let (owned, new_value) = integration_preferences::restore_provider(
+        current_value.as_deref(),
+        "ottrin",
+        record.previous.as_deref(),
+    );
+    if owned {
         let restored = if data == record.installed {
             record.original.clone()
         } else {
-            portal_config::replace(&data, record.previous.as_deref())?
+            integration_preferences::replace(&data, "preferred", CHOOSER, new_value.as_deref())?
         };
         if record.created && data == record.installed {
             fs::remove_file(&record.config).map_err(|e| e.to_string())?;
@@ -563,7 +548,9 @@ mod tests {
         disable_at(&paths, |_| Ok(())).unwrap();
         let restored = fs::read_to_string(&config).unwrap();
         assert_eq!(
-            portal_config::chooser(&restored).unwrap().as_deref(),
+            integration_preferences::value(&restored, "preferred", CHOOSER)
+                .unwrap()
+                .as_deref(),
             Some("kde")
         );
         assert!(restored.contains("default=gtk") && restored.starts_with("# keep"));
@@ -611,6 +598,55 @@ mod tests {
             fs::read_to_string(record.config)
                 .unwrap()
                 .contains("# new user preference")
+        );
+    }
+
+    #[test]
+    fn modified_provider_lists_and_reselected_foreign_defaults_are_retained() {
+        let directory = tempfile::tempdir().unwrap();
+        let paths = fixture(directory.path());
+        enable_at(&paths, Path::new("/opt/ottrin"), |_| Ok(())).unwrap();
+        let record = registration(&paths).unwrap().unwrap();
+        let modified = integration_preferences::replace(
+            &record.installed,
+            "preferred",
+            CHOOSER,
+            Some("ottrin;gtk;"),
+        )
+        .unwrap();
+        write(&record.config, modified.as_bytes()).unwrap();
+        disable_at(&paths, |_| Ok(())).unwrap();
+        assert_eq!(
+            integration_preferences::value(
+                &read_regular(&record.config).unwrap().unwrap(),
+                "preferred",
+                CHOOSER
+            )
+            .unwrap()
+            .as_deref(),
+            Some("gtk;")
+        );
+        fs::remove_file(&paths.state).unwrap();
+        enable_at(&paths, Path::new("/opt/ottrin"), |_| Ok(())).unwrap();
+        let modified = integration_preferences::replace(
+            &read_regular(&record.config).unwrap().unwrap(),
+            "preferred",
+            CHOOSER,
+            Some("kde"),
+        )
+        .unwrap();
+        write(&record.config, modified.as_bytes()).unwrap();
+        enable_at(&paths, Path::new("/opt/new-ottrin"), |_| Ok(())).unwrap();
+        disable_at(&paths, |_| Ok(())).unwrap();
+        assert_eq!(
+            integration_preferences::value(
+                &read_regular(&record.config).unwrap().unwrap(),
+                "preferred",
+                CHOOSER
+            )
+            .unwrap()
+            .as_deref(),
+            Some("kde")
         );
     }
 

@@ -176,13 +176,15 @@ pub struct SearchIndexDiagnostics {
     pub indexed_items: usize,
     pub last_completed_indexed_items: Option<usize>,
     pub estimated_total_items: Option<usize>,
-    pub last_indexed_path: Option<PathBuf>,
+    /// Presentation-only progress label; original paths stay in the index.
+    pub last_indexed_path: Option<String>,
     pub configured_root_count: usize,
     pub watched_root_count: usize,
     pub watcher_ready: bool,
     pub watcher_last_setup_unix_secs: Option<u64>,
     pub watcher_last_error: Option<String>,
-    pub active_root: Option<PathBuf>,
+    /// Presentation-only root label, never a filesystem operation target.
+    pub active_root: Option<String>,
     pub active_root_index: usize,
     pub total_roots: usize,
     pub last_scan_started_unix_secs: Option<u64>,
@@ -690,13 +692,19 @@ impl SearchHandle {
             },
             last_completed_indexed_items: idx.last_completed_indexed_items,
             estimated_total_items: idx.estimated_total_items,
-            last_indexed_path: idx.last_indexed_path.clone(),
+            last_indexed_path: idx
+                .last_indexed_path
+                .as_deref()
+                .map(ottrin_core::native_path::display_label),
             configured_root_count: idx.configured_root_count,
             watched_root_count: idx.watched_root_count,
             watcher_ready: idx.watcher_ready,
             watcher_last_setup_unix_secs: idx.watcher_last_setup_unix_secs,
             watcher_last_error: idx.watcher_last_error.clone(),
-            active_root: idx.active_root.clone(),
+            active_root: idx
+                .active_root
+                .as_deref()
+                .map(ottrin_core::native_path::display_label),
             active_root_index: idx.active_root_index,
             total_roots: idx.total_roots,
             last_scan_started_unix_secs: idx.last_scan_started_unix_secs,

@@ -132,8 +132,9 @@ enum HeadlessAction {
     #[cfg(target_os = "linux")]
     Portal,
     #[cfg(target_os = "linux")]
-    PortalManagement {
-        action: PortalManagement,
+    IntegrationManagement {
+        integration: DesktopIntegration,
+        action: IntegrationAction,
         json: bool,
     },
     IndexEnsure,
@@ -170,11 +171,18 @@ enum HeadlessAction {
 
 #[cfg(target_os = "linux")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum PortalManagement {
+enum IntegrationAction {
     Status,
     Enable,
     Disable,
     Apply,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DesktopIntegration {
+    Portal,
+    Folders,
 }
 
 fn renderer_for_selection(is_windows: bool, choice: GraphicsRendererChoice) -> eframe::Renderer {
@@ -898,6 +906,8 @@ fn print_cli_help() {
         println!("  ottrin portal                   Run the desktop file-dialog backend");
         println!("  ottrin portal enable|disable|apply|status [--json]");
         println!("                                 Manage optional desktop file dialogs");
+        println!("  ottrin folders enable|disable|status [--json]");
+        println!("                                 Manage optional directory-link handling");
     }
     println!("  ottrin picker                   Open an Ottrin chooser using a JSON stdin request");
     println!(
@@ -1008,6 +1018,34 @@ fn text_command_arguments(args: &[OsString]) -> Result<Vec<String>, String> {
         .collect()
 }
 
+#[cfg(target_os = "linux")]
+fn parse_integration_management(
+    args: &[OsString],
+    integration: DesktopIntegration,
+) -> HeadlessAction {
+    let (action, json) =
+        match args {
+            [action] if action == "enable" => (IntegrationAction::Enable, false),
+            [action] if action == "disable" => (IntegrationAction::Disable, false),
+            [action] if action == "apply" && integration == DesktopIntegration::Portal => {
+                (IntegrationAction::Apply, false)
+            }
+            [action] if action == "status" => (IntegrationAction::Status, false),
+            [action, flag] if action == "status" && flag == "--json" => {
+                (IntegrationAction::Status, true)
+            }
+            _ => return HeadlessAction::Invalid(
+                "Integration accepts enable,disable or status [--json]; portal also accepts apply"
+                    .into(),
+            ),
+        };
+    HeadlessAction::IntegrationManagement {
+        integration,
+        action,
+        json,
+    }
+}
+
 fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
     let first = args.first()?;
     let command = first.to_str().unwrap_or("");
@@ -1023,34 +1061,17 @@ fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
                 .unwrap_or_else(HeadlessAction::Invalid),
         ),
         #[cfg(target_os = "linux")]
-        "portal" => Some(match &args[1..] {
-            [] => HeadlessAction::Portal,
-            [action] if action == "enable" => HeadlessAction::PortalManagement {
-                action: PortalManagement::Enable,
-                json: false,
-            },
-            [action] if action == "disable" => HeadlessAction::PortalManagement {
-                action: PortalManagement::Disable,
-                json: false,
-            },
-            [action] if action == "apply" => HeadlessAction::PortalManagement {
-                action: PortalManagement::Apply,
-                json: false,
-            },
-            [action] if action == "status" => HeadlessAction::PortalManagement {
-                action: PortalManagement::Status,
-                json: false,
-            },
-            [action, flag] if action == "status" && flag == "--json" => {
-                HeadlessAction::PortalManagement {
-                    action: PortalManagement::Status,
-                    json: true,
-                }
-            }
-            _ => HeadlessAction::Invalid(
-                "portal accepts enable,disable,apply or status [--json]".into(),
-            ),
-        }),
+        "portal" if args.len() == 1 => Some(HeadlessAction::Portal),
+        #[cfg(target_os = "linux")]
+        "portal" => Some(parse_integration_management(
+            &args[1..],
+            DesktopIntegration::Portal,
+        )),
+        #[cfg(target_os = "linux")]
+        "folders" => Some(parse_integration_management(
+            &args[1..],
+            DesktopIntegration::Folders,
+        )),
         "picker" => Some(
             if args.len() == 1 || (args.len() == 2 && args[1] == "--cancel-on-disconnect") {
                 HeadlessAction::Picker {
@@ -1347,19 +1368,45 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         #[cfg(target_os = "linux")]
         HeadlessAction::Portal => return portal::run(),
         #[cfg(target_os = "linux")]
-        HeadlessAction::PortalManagement { action, json } => {
-            use ottrin_platform::portal_integration;
-            let message = match action {
-                PortalManagement::Enable => portal_integration::enable()?,
-                PortalManagement::Disable => portal_integration::disable()?,
-                PortalManagement::Apply => portal_integration::apply()?,
-                PortalManagement::Status => {
-                    let status = portal_integration::status();
+        HeadlessAction::IntegrationManagement {
+            integration,
+            action,
+            json,
+        } => {
+            let message = match (integration, action) {
+                (DesktopIntegration::Portal, IntegrationAction::Enable) => {
+                    ottrin_platform::portal_integration::enable()?
+                }
+                (DesktopIntegration::Portal, IntegrationAction::Disable) => {
+                    ottrin_platform::portal_integration::disable()?
+                }
+                (DesktopIntegration::Portal, IntegrationAction::Apply) => {
+                    ottrin_platform::portal_integration::apply()?
+                }
+                (DesktopIntegration::Portal, IntegrationAction::Status) => {
+                    let status = ottrin_platform::portal_integration::status();
                     if json {
                         serde_json::to_string(&status).map_err(|e| e.to_string())?
                     } else {
                         status.detail
                     }
+                }
+                (DesktopIntegration::Folders, IntegrationAction::Enable) => {
+                    ottrin_platform::folder_integration::enable()?
+                }
+                (DesktopIntegration::Folders, IntegrationAction::Disable) => {
+                    ottrin_platform::folder_integration::disable()?
+                }
+                (DesktopIntegration::Folders, IntegrationAction::Status) => {
+                    let status = ottrin_platform::folder_integration::status();
+                    if json {
+                        serde_json::to_string(&status).map_err(|e| e.to_string())?
+                    } else {
+                        status.detail
+                    }
+                }
+                (DesktopIntegration::Folders, IntegrationAction::Apply) => {
+                    return Err("Folder changes apply immediately".into());
                 }
             };
             println!("{message}");
@@ -1375,7 +1422,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 
     match action {
         #[cfg(target_os = "linux")]
-        HeadlessAction::Portal | HeadlessAction::PortalManagement { .. } => {
+        HeadlessAction::Portal | HeadlessAction::IntegrationManagement { .. } => {
             unreachable!("portal starts before index routing")
         }
         HeadlessAction::IndexEnsure => {
@@ -1887,14 +1934,15 @@ mod tests {
             Some(HeadlessAction::Portal)
         );
         for (name, action) in [
-            ("enable", PortalManagement::Enable),
-            ("disable", PortalManagement::Disable),
-            ("apply", PortalManagement::Apply),
-            ("status", PortalManagement::Status),
+            ("enable", IntegrationAction::Enable),
+            ("disable", IntegrationAction::Disable),
+            ("apply", IntegrationAction::Apply),
+            ("status", IntegrationAction::Status),
         ] {
             assert_eq!(
                 cli_headless_action(&["portal".into(), name.into()]),
-                Some(HeadlessAction::PortalManagement {
+                Some(HeadlessAction::IntegrationManagement {
+                    integration: DesktopIntegration::Portal,
                     action,
                     json: false
                 })
@@ -1902,13 +1950,40 @@ mod tests {
         }
         assert_eq!(
             cli_headless_action(&["portal".into(), "status".into(), "--json".into()]),
-            Some(HeadlessAction::PortalManagement {
-                action: PortalManagement::Status,
+            Some(HeadlessAction::IntegrationManagement {
+                integration: DesktopIntegration::Portal,
+                action: IntegrationAction::Status,
                 json: true
             })
         );
         assert!(matches!(
             cli_headless_action(&["portal".into(), "enable".into(), "--json".into()]),
+            Some(HeadlessAction::Invalid(_))
+        ));
+        for (name, action) in [
+            ("enable", IntegrationAction::Enable),
+            ("disable", IntegrationAction::Disable),
+            ("status", IntegrationAction::Status),
+        ] {
+            assert_eq!(
+                cli_headless_action(&["folders".into(), name.into()]),
+                Some(HeadlessAction::IntegrationManagement {
+                    integration: DesktopIntegration::Folders,
+                    action,
+                    json: false
+                })
+            );
+        }
+        assert_eq!(
+            cli_headless_action(&["folders".into(), "status".into(), "--json".into()]),
+            Some(HeadlessAction::IntegrationManagement {
+                integration: DesktopIntegration::Folders,
+                action: IntegrationAction::Status,
+                json: true
+            })
+        );
+        assert!(matches!(
+            cli_headless_action(&["folders".into(), "apply".into()]),
             Some(HeadlessAction::Invalid(_))
         ));
         assert!(matches!(

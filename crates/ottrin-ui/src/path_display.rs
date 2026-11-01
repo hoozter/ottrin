@@ -1,28 +1,7 @@
 //! Human-readable labels only. Never parse these strings back into operation paths.
 use std::path::{Path, PathBuf};
 
-pub(crate) fn path_label(path: &Path) -> String {
-    let text = path.display().to_string();
-    #[cfg(windows)]
-    {
-        use std::path::{Component, Prefix};
-        if let Some(Component::Prefix(prefix)) = path.components().next() {
-            match prefix.kind() {
-                Prefix::VerbatimDisk(_) => {
-                    return text.strip_prefix(r"\\?\").unwrap_or(&text).to_owned();
-                }
-                Prefix::VerbatimUNC(_, _) => {
-                    if let Some(tail) = text.strip_prefix(r"\\?\UNC\") {
-                        return format!(r"\\{tail}");
-                    }
-                }
-                // Volume GUIDs and device namespaces have no equivalent short label.
-                _ => {}
-            }
-        }
-    }
-    text
-}
+pub(crate) use ottrin_core::native_path::display_label as path_label;
 
 pub(crate) struct PathCrumb {
     pub label: String,

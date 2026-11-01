@@ -1,0 +1,23 @@
+{
+  "status": "scoped_pass",
+  "scope": "Linux folder association, native URI dispatch and reversible preferences; source diagnostics fix",
+  "platform_tests": "14 integration tests pass",
+  "app_tests": "45 app + 2 daemon + 3 CLI pass",
+  "search_tests": {
+    "passed": 241,
+    "failed": 0,
+    "ignored_measurement_fixtures": 2
+  },
+  "lint": "Linux/GNU all-target strict checks pass",
+  "gui": "gui-index-fixed/RESULT.json; four live index Ready responses",
+  "known_followup": "gui-query-control reproduces native result serialization EOF; not closed by diagnostic fix",
+  "hosted_portal": "87999cf8 run 41315141490 success all jobs; property-fix/hosted-pass/ACCEPTANCE.json",
+  "hosted_folder": "pending new CI run",
+  "packages": "unchanged source25b38c8f",
+  "cleanup": {
+    "profiles_processes_mounts": "all owned GUI fixtures removed per TEARDOWN receipts",
+    "incremental": "43 obsolete sessions removed, guard reports 1.61 GiB recovered",
+    "remaining_storage": "compact evidence in folder-integration-current, index-diagnostic-label-current and portal-management-current/property-fix/hosted-pass; retained for audit; current compiler caches retained"
+  },
+  "combined_build_session": "Build logged success; combined session then exited143 before tests, cause unknown; search tests separately rerun and passed"
+}

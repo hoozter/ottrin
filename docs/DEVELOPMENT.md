@@ -1874,3 +1874,18 @@ queue. Configuration failures remain visible, and reconnect applies the latest
 configuration before queries. A ready worker has no periodic idle RPC; cached
 status reads may request a coalesced refresh after two seconds. This worker
 never starts a fallback local scanner or installs a service.
+
+## Optional Linux default folder opening
+
+Services → Desktop integration → Folder opening and the headless
+`ottrin folders enable|disable|status [--json]` commands share one implementation.
+They register a hidden per-user desktop entry for `inode/directory`, using the
+stable application launcher and a managed icon. A receipt records exact owned
+files and the previous default. Disable restores that default while preserving
+unrelated preference edits. Modified owned files refuse destructive replacement.
+The actual desktop parser validates Exec before setup. This covers directory
+links; applications using a separate FileManager1 service may still use another
+manager. No personal desktop preference changes occur during source QA.
+
+Index diagnostic progress paths are human-readable labels only; the index retains
+its native operation paths. Labels must never be parsed back into file targets.

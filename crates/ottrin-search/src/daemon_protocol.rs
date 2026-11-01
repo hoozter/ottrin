@@ -91,6 +91,64 @@ mod tests {
     use super::*;
     use std::io::Cursor;
 
+    #[cfg(any(unix, target_os = "windows"))]
+    #[test]
+    fn native_progress_paths_cannot_break_status_frames_or_replace_index_paths() {
+        #[cfg(unix)]
+        let native = {
+            use std::os::unix::ffi::OsStringExt;
+            std::path::PathBuf::from(std::ffi::OsString::from_vec(
+                b"/native\x80/file.txt".to_vec(),
+            ))
+        };
+        #[cfg(target_os = "windows")]
+        let native = {
+            use std::os::windows::ffi::OsStringExt;
+            std::path::PathBuf::from(std::ffi::OsString::from_wide(&[
+                67, 58, 92, 110, 0xd800, 92, 102,
+            ]))
+        };
+        let handle = crate::SearchHandle {
+            config: std::sync::Arc::new(std::sync::RwLock::new(
+                ottrin_core::SearchConfig::default(),
+            )),
+            index: std::sync::Arc::new(std::sync::RwLock::new(crate::IndexState {
+                last_indexed_path: Some(native.clone()),
+                active_root: Some(native.clone()),
+                ..Default::default()
+            })),
+            store_path: std::sync::Arc::new(std::path::PathBuf::new()),
+        };
+        let diagnostics = handle.diagnostics();
+        let expected = ottrin_core::native_path::display_label(&native);
+        assert_eq!(
+            diagnostics.last_indexed_path.as_deref(),
+            Some(expected.as_str())
+        );
+        assert_eq!(diagnostics.active_root.as_deref(), Some(expected.as_str()));
+        let mut bytes = Vec::new();
+        write_frame(
+            &mut bytes,
+            &ResponseFrame {
+                version: PROTOCOL_VERSION,
+                response: DaemonResponse::Status {
+                    diagnostics: Box::new(diagnostics),
+                },
+            },
+        )
+        .unwrap();
+        let decoded: ResponseFrame = read_frame(&mut Cursor::new(bytes)).unwrap();
+        assert!(matches!(decoded.response, DaemonResponse::Status { .. }));
+        assert_eq!(
+            handle.index.read().unwrap().last_indexed_path.as_ref(),
+            Some(&native)
+        );
+        assert_eq!(
+            handle.index.read().unwrap().active_root.as_ref(),
+            Some(&native)
+        );
+    }
+
     #[test]
     fn daemon_protocol_round_trips_one_bounded_frame() {
         let expected = RequestFrame {

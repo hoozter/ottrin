@@ -1,0 +1,214 @@
+{
+  "scope": "Source GIO default-handler resolution,native URI-to-argv dispatch,actual Services UI and reversible preferences in owned X11",
+  "binary_sha256": "120a5528f1fe53eadb408531312dc0ae97f3043e755eebc2c9bcf44acf8416c6",
+  "enabled_status": {
+    "enabled": true,
+    "ready": true,
+    "detail": "Enabled \u2014 directory links open in Ottrin"
+  },
+  "index_status_samples": [
+    {
+      "delay": 0.1,
+      "socket_exists": true,
+      "header_hex": "0000030a",
+      "response": {
+        "version": 1,
+        "response": {
+          "type": "status",
+          "diagnostics": {
+            "status": "Ready",
+            "loading_saved_snapshot": false,
+            "database_bytes": 28672,
+            "wal_bytes": 0,
+            "freelist_pages": 0,
+            "freelist_bytes": 0,
+            "snapshot_revision": 1,
+            "detail": "Ready \u00b7 2 indexed",
+            "indexed_items": 2,
+            "last_completed_indexed_items": 2,
+            "estimated_total_items": null,
+            "last_indexed_path": "/var/tmp/.ottrin-picker-qa-h8idew2z/fixture/source\ufffd 100% & `literal`/note.txt",
+            "configured_root_count": 1,
+            "watched_root_count": 1,
+            "watcher_ready": true,
+            "watcher_last_setup_unix_secs": 1793546354,
+            "watcher_last_error": null,
+            "active_root": null,
+            "active_root_index": 0,
+            "total_roots": 1,
+            "last_scan_started_unix_secs": 1793546354,
+            "last_scan_completed_unix_secs": 1793546354,
+            "last_scan_duration_ms": null,
+            "last_progress_unix_secs": 1793546354,
+            "last_error": null
+          }
+        }
+      }
+    },
+    {
+      "delay": 1,
+      "socket_exists": true,
+      "header_hex": "0000030a",
+      "response": {
+        "version": 1,
+        "response": {
+          "type": "status",
+          "diagnostics": {
+            "status": "Ready",
+            "loading_saved_snapshot": false,
+            "database_bytes": 28672,
+            "wal_bytes": 0,
+            "freelist_pages": 0,
+            "freelist_bytes": 0,
+            "snapshot_revision": 1,
+            "detail": "Ready \u00b7 2 indexed",
+            "indexed_items": 2,
+            "last_completed_indexed_items": 2,
+            "estimated_total_items": null,
+            "last_indexed_path": "/var/tmp/.ottrin-picker-qa-h8idew2z/fixture/source\ufffd 100% & `literal`/note.txt",
+            "configured_root_count": 1,
+            "watched_root_count": 1,
+            "watcher_ready": true,
+            "watcher_last_setup_unix_secs": 1793546354,
+            "watcher_last_error": null,
+            "active_root": null,
+            "active_root_index": 0,
+            "total_roots": 1,
+            "last_scan_started_unix_secs": 1793546354,
+            "last_scan_completed_unix_secs": 1793546354,
+            "last_scan_duration_ms": null,
+            "last_progress_unix_secs": 1793546354,
+            "last_error": null
+          }
+        }
+      }
+    },
+    {
+      "delay": 3,
+      "socket_exists": true,
+      "header_hex": "0000030a",
+      "response": {
+        "version": 1,
+        "response": {
+          "type": "status",
+          "diagnostics": {
+            "status": "Ready",
+            "loading_saved_snapshot": false,
+            "database_bytes": 28672,
+            "wal_bytes": 0,
+            "freelist_pages": 0,
+            "freelist_bytes": 0,
+            "snapshot_revision": 1,
+            "detail": "Ready \u00b7 2 indexed",
+            "indexed_items": 2,
+            "last_completed_indexed_items": 2,
+            "estimated_total_items": null,
+            "last_indexed_path": "/var/tmp/.ottrin-picker-qa-h8idew2z/fixture/source\ufffd 100% & `literal`/note.txt",
+            "configured_root_count": 1,
+            "watched_root_count": 1,
+            "watcher_ready": true,
+            "watcher_last_setup_unix_secs": 1793546354,
+            "watcher_last_error": null,
+            "active_root": null,
+            "active_root_index": 0,
+            "total_roots": 1,
+            "last_scan_started_unix_secs": 1793546354,
+            "last_scan_completed_unix_secs": 1793546354,
+            "last_scan_duration_ms": null,
+            "last_progress_unix_secs": 1793546354,
+            "last_error": null
+          }
+        }
+      }
+    },
+    {
+      "delay": 5,
+      "socket_exists": true,
+      "header_hex": "0000030a",
+      "response": {
+        "version": 1,
+        "response": {
+          "type": "status",
+          "diagnostics": {
+            "status": "Ready",
+            "loading_saved_snapshot": false,
+            "database_bytes": 28672,
+            "wal_bytes": 0,
+            "freelist_pages": 0,
+            "freelist_bytes": 0,
+            "snapshot_revision": 1,
+            "detail": "Ready \u00b7 2 indexed",
+            "indexed_items": 2,
+            "last_completed_indexed_items": 2,
+            "estimated_total_items": null,
+            "last_indexed_path": "/var/tmp/.ottrin-picker-qa-h8idew2z/fixture/source\ufffd 100% & `literal`/note.txt",
+            "configured_root_count": 1,
+            "watched_root_count": 1,
+            "watcher_ready": true,
+            "watcher_last_setup_unix_secs": 1793546354,
+            "watcher_last_error": null,
+            "active_root": null,
+            "active_root_index": 0,
+            "total_roots": 1,
+            "last_scan_started_unix_secs": 1793546354,
+            "last_scan_completed_unix_secs": 1793546354,
+            "last_scan_duration_ms": null,
+            "last_progress_unix_secs": 1793546354,
+            "last_error": null
+          }
+        }
+      }
+    }
+  ],
+  "native_query_header_hex": "",
+  "status": "pass",
+  "actual_default_dispatch": true,
+  "native_folder_argv_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d683869646577327a2f666978747572652f736f75726365802031303025202620606c69746572616c60",
+  "original_file_preserved": true,
+  "previous_handler_restored": true,
+  "unrelated_pdf_change_preserved": true,
+  "foreign_desktop_entry_preserved": true,
+  "managed_assets_removed": true,
+  "off_status": {
+    "enabled": false,
+    "ready": false,
+    "detail": "Off \u2014 your desktop keeps its current folder handler"
+  },
+  "main_closed_via_visible_button": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-h8idew2z",
+    "owned_processes_reaped": [
+      {
+        "pid": 3741160,
+        "exit": 0
+      },
+      {
+        "pid": 3741163,
+        "exit": 0
+      },
+      {
+        "pid": 3741164,
+        "exit": 15
+      },
+      {
+        "pid": 3741221,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        3741284
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "native_query_control": {
+    "status": "reproduced_failure",
+    "expected": "bounded query response containing native path",
+    "actual": "connection closed before frame header",
+    "next": "lossless query/config wire transport"
+  }
+}

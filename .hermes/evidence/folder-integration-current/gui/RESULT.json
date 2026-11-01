@@ -1,0 +1,55 @@
+{
+  "scope": "Source GIO default-handler resolution,native URI-to-argv dispatch,actual Services UI and reversible preferences in owned X11",
+  "binary_sha256": "e3a189b8cf09d6662995d31a45c28b789f35595192dfcdbbb6b29cf7c435ca0e",
+  "enabled_status": {
+    "enabled": true,
+    "ready": true,
+    "detail": "Enabled \u2014 directory links open in Ottrin"
+  },
+  "status": "pass",
+  "actual_default_dispatch": true,
+  "native_folder_argv_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d786d6866617138612f666978747572652f736f75726365802031303025202620606c69746572616c60",
+  "original_file_preserved": true,
+  "previous_handler_restored": true,
+  "unrelated_pdf_change_preserved": true,
+  "foreign_desktop_entry_preserved": true,
+  "managed_assets_removed": true,
+  "off_status": {
+    "enabled": false,
+    "ready": false,
+    "detail": "Off \u2014 your desktop keeps its current folder handler"
+  },
+  "main_closed_via_visible_button": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-xmhfaq8a",
+    "owned_processes_reaped": [
+      {
+        "pid": 3700626,
+        "exit": 0
+      },
+      {
+        "pid": 3700629,
+        "exit": 0
+      },
+      {
+        "pid": 3700630,
+        "exit": 15
+      },
+      {
+        "pid": 3700691,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        3700752
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "154 34 0:65 / /var/tmp/.ottrin-picker-qa-xmhfaq8a/runtime/doc rw,nosuid,nodev,relatime shared:582 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

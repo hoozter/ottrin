@@ -1,0 +1,27 @@
+[
+  {
+    "name": "plain",
+    "parsed": true,
+    "exec": "\"/tmp/ottrin-desktop-control-f4fyzchz/plain\""
+  },
+  {
+    "name": "with spaces",
+    "parsed": true,
+    "exec": "\"/tmp/ottrin-desktop-control-f4fyzchz/with spaces\""
+  },
+  {
+    "name": "with $USER",
+    "parsed": true,
+    "exec": "\"/tmp/ottrin-desktop-control-f4fyzchz/with \\\\$USER\""
+  },
+  {
+    "name": "with `ticks`",
+    "parsed": true,
+    "exec": "\"/tmp/ottrin-desktop-control-f4fyzchz/with \\\\`ticks\\\\`\""
+  },
+  {
+    "name": "with 100%",
+    "parsed": false,
+    "exec": "\"/tmp/ottrin-desktop-control-f4fyzchz/with 100%%\""
+  }
+]

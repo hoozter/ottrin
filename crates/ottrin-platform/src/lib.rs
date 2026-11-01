@@ -1,5 +1,9 @@
 #[cfg(target_os = "linux")]
-mod portal_config;
+pub mod folder_integration;
+#[cfg(target_os = "linux")]
+mod integration_preferences;
+#[cfg(target_os = "linux")]
+mod integration_storage;
 #[cfg(target_os = "linux")]
 pub mod portal_integration;
 #[cfg(all(test, target_os = "windows"))]

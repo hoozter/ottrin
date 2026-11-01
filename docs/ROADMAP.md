@@ -1,5 +1,38 @@
 # Ottrin roadmap
 
+## Folder integration and native index diagnostics — source, 2026-11-01
+
+Optional Linux folder opening now uses one reversible per-user MIME association,
+shared by Services and `ottrin folders enable|disable|status [--json]`. Actual
+GIO default dispatch opens a directory containing native non-text bytes without
+changing its files. Update/disable preserve unrelated MIME edits and restore the
+previous handler. Modified managed assets refuse replacement/removal. Real GLib
+validates the launcher before setup, including rejecting installation paths its
+Exec parser cannot represent. Standard FileManager1 reveal remains separate work.
+
+Services keeps helper and index state above optional desktop integration cards.
+This actual GUI test exposed a status RPC serialization failure for native
+non-text progress paths. Diagnostics now carry presentation labels while index
+operation paths retain exact native units. Four live samples remain Ready. All
+241 executed search tests pass; two storage measurement fixtures are intentionally
+ignored. Strict Linux/GNU checks pass; native Windows runtime coverage of this
+new regression remains pending. A separate live query control reproduces another
+serialization failure for native result paths; fixing query/config transport is
+the next independent task, not an acceptance wait.
+
+The corrected portal lifecycle now passes real hosted activation, readiness,
+update, restoration and teardown at 87999cf8 (run 41315141490); all Linux, Windows
+and search jobs pass. The extended folder lifecycle gate awaits its own hosted
+run. Stable packages remain 25b38c8f; these changes are not yet packaged.
+
+Evidence: `.hermes/evidence/folder-integration-current/`,
+`.hermes/evidence/index-diagnostic-label-current/`, and the property-fix hosted
+pass under `.hermes/evidence/portal-management-current/`. All owned GUI profiles,
+processes and mounts are removed. Compiler cleanup results accompany this
+checkpoint. Continue native query transport, remaining desktop/cooperating-app
+integration, package acceptance and the outstanding roadmap gates.
+
+
 ## Portal version metadata correction — source, 2026-11-01
 
 The first production lifecycle gate reached real activation but correctly refused
