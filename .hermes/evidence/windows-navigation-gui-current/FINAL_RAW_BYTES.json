@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "nonce": "515e9a9197d64025b53f05d21e8daddd",
+  "expected_manifest_sha256": "ca1a4341b963978034b7f514aedc41b893131fafe6aaa691d67ce572e5e56efe",
+  "files": {
+    "source\\note.txt": {
+      "bytes": 16,
+      "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source\\other.txt": {
+      "bytes": 15,
+      "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source\\contact.vcf": {
+      "bytes": 51,
+      "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "destination\\note.txt": {
+      "bytes": 21,
+      "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source\\a deliberately long preview filename for wrapped metadata.txt": {
+      "bytes": 3300,
+      "sha256": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+      "matches_independently_declared_utf8_bytes": true
+    }
+  },
+  "scope": "Independent raw guest-file reads,not text decoding or hash strings supplied to the UI verifier. Run after explicit normal product Close and before owned teardown."
+}

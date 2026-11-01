@@ -1,0 +1,14 @@
+{"time": 1793489149.32053, "click": [1514, 82], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793489149.893556, "capture": "01-direct-view-menu"}
+{"time": 1793489162.8260534, "click": [1308, 157], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793489164.0078516, "capture": "02-column-reveals-selection"}
+{"time": 1793489164.4129028, "click": [1562, 82], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793489165.214443, "click": [1562, 82], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793489165.7674587, "capture": "03-grid-selected"}
+{"time": 1793489166.1697862, "click": [1562, 82], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793489167.2488296, "capture": "04-grid-to-column-reveals"}
+{"time": 1793489168.6374152, "capture": "05-single-location-tooltip"}
+{"time": 1793489186.8198853, "click": [1313, 153], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793489249.9442196, "file_checkpoint": "07-readonly-closed-bytes", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92", "preview/a deliberately long preview filename for wrapped metadata.txt": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0", "preview/document preview with wrapped metadata.docx": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6", "one/two/three/four/five/a-long-parent-directory-name/another-long-parent-directory/selected preview with a long filename.txt": "f8382b99e231e20e834a20830693448a2b935b1fd4297c56a2e826841c6ab56f"}, "absent": []}
+{"time": 1793489250.1612554, "capture": "07-readonly-closed-bytes"}
+{"time": 1793489250.5613117, "click": [1608, 27], "pointer_settled_before_press": true, "hold_seconds": 0.15}

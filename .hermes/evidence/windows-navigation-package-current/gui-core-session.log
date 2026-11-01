@@ -1,0 +1,22 @@
+Domain 'ottrin-copy-cleanup-qa' started
+
+native PID 3692
+native PID 3496
+native PID 4424
+DESKTOP-81GHP8U\campbell
+
+native PID 5284
+{
+    "status":  "pass",
+    "new_process_names_refused":  true,
+    "ended_only_this_test_boot_console":  true,
+    "no_document_application_observed":  true,
+    "original_account_or_profile_removed":  false
+}
+
+native PID 3612
+native PID 3524
+native PID 4284
+native PID 5012
+owned-ready
+

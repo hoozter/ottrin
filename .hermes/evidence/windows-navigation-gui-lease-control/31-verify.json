@@ -1,0 +1,41 @@
+{
+  "cursor_x": 330,
+  "id": "9139e82d81c74526b80575dff6df8d07",
+  "case": "ordinary",
+  "foreground_pid": 5724,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "label": "read-only text and VCF navigation/Space preserve all five literal file contents",
+    "status": "pass",
+    "files": {
+      "source\\note.txt": "source original\n",
+      "source\\other.txt": "other original\n",
+      "source\\contact.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n",
+      "destination\\note.txt": "destination original\n",
+      "source\\a deliberately long preview filename for wrapped metadata.txt": "Preview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\n"
+    },
+    "absent": []
+  },
+  "windows": [
+    {
+      "handle": 262832,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 262816,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 294,
+  "op": "verify"
+}

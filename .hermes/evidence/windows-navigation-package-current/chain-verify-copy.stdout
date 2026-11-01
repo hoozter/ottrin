@@ -1,0 +1,54 @@
+{
+  "status": "waiting for owned input",
+  "guest_root": "C:\\OttrinWindowQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "phase": "interactive",
+  "nonce": "247d84e456ed4d0289a28df8c2d0d7dd",
+  "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+  "reboot_transport_disconnected": true,
+  "next_sequence": 38
+}
+{
+    "cursor_x":  612,
+    "id":  "6fd1280898da4468825f517605dfa223",
+    "case":  "ordinary",
+    "foreground_pid":  5068,
+    "screen_width":  1280,
+    "screen_height":  800,
+    "verification":  {
+                         "label":  "Copy Replace publishes source bytes before Rename/Undo chain",
+                         "status":  "pass",
+                         "files":  {
+                                       "source\\note.txt":  "source original\n",
+                                       "source\\other.txt":  "other original\n",
+                                       "source\\contact.vcf":  "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ottrin QA\r\nEND:VCARD\r\n",
+                                       "destination\\note.txt":  "source original\n",
+                                       "source\\a deliberately long preview filename for wrapped metadata.txt":  "Preview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\nPreview body remains scrollable.\n"
+                                   },
+                         "absent":  [
+
+                                    ]
+                     },
+    "windows":  [
+                    {
+                        "handle":  262832,
+                        "left":  128,
+                        "bottom":  716,
+                        "top":  36,
+                        "right":  1152,
+                        "title":  "Ottrin"
+                    },
+                    {
+                        "handle":  262816,
+                        "left":  0,
+                        "bottom":  6,
+                        "top":  0,
+                        "right":  6,
+                        "title":  ""
+                    }
+                ],
+    "ordinary_user":  true,
+    "cursor_y":  387,
+    "op":  "verify"
+}
+

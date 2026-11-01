@@ -1,0 +1,27 @@
+Domain 'ottrin-copy-cleanup-qa' started
+
+native PID 3652
+native PID 3568
+native PID 4752
+DESKTOP-81GHP8U\campbell
+
+native PID 4752
+{
+    "status":  "pass",
+    "new_process_names_refused":  true,
+    "ended_only_this_test_boot_console":  true,
+    "no_document_application_observed":  true,
+    "original_account_or_profile_removed":  false
+}
+
+native PID 3532
+native PID 3736
+native PID 3908
+native PID 4896
+owned-ready
+
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-navigation-package-current/gui-session.py", line 74, in <module>
+    else:raise TimeoutError('Owned GUI session lease expired; automatic teardown')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: Owned GUI session lease expired; automatic teardown

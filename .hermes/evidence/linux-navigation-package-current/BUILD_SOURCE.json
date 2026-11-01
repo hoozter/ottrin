@@ -1,0 +1,19 @@
+{
+  "source_revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "tracked_tree": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-navigation-stage",
+  "jobs": 1,
+  "recorded": "2026-10-31T23:12:00.378819+00:00",
+  "changes": "Current-directory/selection reveal on Column entry,bounded metadata with one full-value tooltip,and contained scrollable breadcrumbs preserving view controls",
+  "baseline_bytes": {
+    "target/debug/deps": 22735870164,
+    "target/debug/incremental": 9025436348,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394187666,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25259894782
+  },
+  "pending_consumers": [],
+  "preserve": "Current Linux3d469f31,Windows520d9c57,personal service/configuration/data,user AGENTS.md",
+  "native_source_evidence": "navigation-toolbar-current/SOURCE_CHECKS.json",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted scoped Linux preview,published;staging/extraction retired"
+}

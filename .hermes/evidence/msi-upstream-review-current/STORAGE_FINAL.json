@@ -1,0 +1,8 @@
+{
+  "recorded": "2026-11-01T00:27:36.144713+00:00",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/msi-upstream-review-current",
+  "purpose": "Compact source,exact-artifact,GUI/teardown or read-only upstream diagnostic evidence;not staging or user data",
+  "retained_bytes_before_receipt": 123512,
+  "temporary_profiles_processes_displays_buses_mounts_or_guest_fixtures_remaining": false,
+  "retained_bytes_excluding_this_receipt": 123512
+}

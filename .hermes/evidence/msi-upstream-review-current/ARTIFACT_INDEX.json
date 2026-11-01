@@ -1,0 +1,138 @@
+{
+  "reviewed": "2026-10-31T23:14:03.823354+00:00",
+  "run": {
+    "html_url": "https://github.com/Ken5998/luma/actions/runs/38078420379",
+    "head_sha": "279afe08abaed7f5c1e061f9fddeb5815ee2e2d4",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "artifacts": [
+    {
+      "id": 11679444240,
+      "name": "msi-standard-user-windows-2022",
+      "sha256": "df00015fb07eb8d844f09f7a1a22729e97c11fcc51d52a1ee48da413c0e35dd4",
+      "entries": [
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190643/cleanup-install.log",
+          "bytes": 94588
+        },
+        {
+          "name": "Probe.msi",
+          "bytes": 32768
+        },
+        {
+          "name": "standard-user-results/account-context.json",
+          "bytes": 204
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190643/cleanup-uninstall.log",
+          "bytes": 83338
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190643/failed-uninstall.log",
+          "bytes": 239128
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190643/result.json",
+          "bytes": 838
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190643/uninstall-after-rollback.log",
+          "bytes": 80840
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190643/install.log",
+          "bytes": 91646
+        },
+        {
+          "name": "standard-user-results/Probe.msi",
+          "bytes": 32768
+        },
+        {
+          "name": "standard-user-results/stderr.txt",
+          "bytes": 796
+        },
+        {
+          "name": "standard-user-results/stdout.txt",
+          "bytes": 310
+        },
+        {
+          "name": "standard-user-results/test-msi-rollback-probe.ps1",
+          "bytes": 6759
+        },
+        {
+          "name": "standard-user-results/test-msi-standard-user-ci.ps1",
+          "bytes": 6734
+        },
+        {
+          "name": "test-msi-rollback-probe.ps1",
+          "bytes": 6759
+        }
+      ]
+    },
+    {
+      "id": 11678613437,
+      "name": "msi-standard-user-windows-2025",
+      "sha256": "89fadc34b972eca8653a838cd925f8c5031e0140bd92c84c6a090ef9ad855cf0",
+      "entries": [
+        {
+          "name": "Probe.msi",
+          "bytes": 32768
+        },
+        {
+          "name": "standard-user-results/account-context.json",
+          "bytes": 204
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190623/cleanup-install.log",
+          "bytes": 94590
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190623/cleanup-uninstall.log",
+          "bytes": 83220
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190623/failed-uninstall.log",
+          "bytes": 239130
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190623/install.log",
+          "bytes": 91648
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190623/result.json",
+          "bytes": 840
+        },
+        {
+          "name": "standard-user-results/logs/msi-rollback-probe-20261010-190623/uninstall-after-rollback.log",
+          "bytes": 80842
+        },
+        {
+          "name": "standard-user-results/Probe.msi",
+          "bytes": 32768
+        },
+        {
+          "name": "standard-user-results/stderr.txt",
+          "bytes": 796
+        },
+        {
+          "name": "standard-user-results/stdout.txt",
+          "bytes": 310
+        },
+        {
+          "name": "standard-user-results/test-msi-rollback-probe.ps1",
+          "bytes": 6759
+        },
+        {
+          "name": "standard-user-results/test-msi-standard-user-ci.ps1",
+          "bytes": 6734
+        },
+        {
+          "name": "test-msi-rollback-probe.ps1",
+          "bytes": 6759
+        }
+      ]
+    }
+  ],
+  "boundary": "Downloaded immutable published diagnostic artifacts only; no third-party executable,MSI,script or action was executed."
+}

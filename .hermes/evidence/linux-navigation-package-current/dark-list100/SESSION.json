@@ -1,0 +1,21 @@
+{
+  "profile": "/var/tmp/.opqa-2fjg53su",
+  "fixture": "/var/tmp/.opqa-2fjg53su/fixture",
+  "app_pid": 2217711,
+  "app_start_time": "13511562",
+  "window": "8388611",
+  "source_revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "artifact_sha256": "60cf72f25dded339ccf0e1a064c31eba901f2faf3af90a3fa227271aec198ca8",
+  "theme": "Dark",
+  "scale": "1",
+  "environment": {
+    "DISPLAY": ":2",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-OUNcZ3HNrt,guid=12192160787e22619f041e9e6ae677d0",
+    "HOME": "/var/tmp/.opqa-2fjg53su/home",
+    "XDG_CONFIG_HOME": "/var/tmp/.opqa-2fjg53su/config",
+    "XDG_CACHE_HOME": "/var/tmp/.opqa-2fjg53su/cache",
+    "XDG_DATA_HOME": "/var/tmp/.opqa-2fjg53su/data",
+    "XDG_STATE_HOME": "/var/tmp/.opqa-2fjg53su/state",
+    "XDG_RUNTIME_DIR": "/var/tmp/.opqa-2fjg53su/runtime"
+  }
+}

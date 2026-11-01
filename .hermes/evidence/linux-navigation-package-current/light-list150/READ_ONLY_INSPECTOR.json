@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "window": "8388633",
+  "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "artifact_sha256": "60cf72f25dded339ccf0e1a064c31eba901f2faf3af90a3fa227271aec198ca8",
+  "input": "Settled primary click inside actual read-only text,then Space;Edit text was never entered",
+  "inspector_closed": true,
+  "all_five_fixture_files_match_independent_raw_bytes": true,
+  "expected_files": {
+    "source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb",
+    "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+    "preview/a deliberately long preview filename for wrapped metadata.txt": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+    "preview/document preview with wrapped metadata.docx": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6",
+    "one/two/three/four/five/a-long-parent-directory-name/another-long-parent-directory/selected preview with a long filename.txt": "f8382b99e231e20e834a20830693448a2b935b1fd4297c56a2e826841c6ab56f"
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "status": "read-only corroboration; no Ottrin fix or new local OS acceptance",
+  "reviewed": "2026-10-31T23:16:15.848951+00:00",
+  "issue": "https://github.com/wixtoolset/issues/issues/8574",
+  "issue_current_state": "open",
+  "upstream_run": "https://github.com/Ken5998/luma/actions/runs/38078420379",
+  "source_commit": "279afe08abaed7f5c1e061f9fddeb5815ee2e2d4",
+  "artifact_scope": "Both GitHub artifact download digests match published SHA256; reviewed account context,results and raw MSI logs on two distinct Server/MSI versions",
+  "cases": [
+    {
+      "upstream_artifact": "msi-standard-user-windows-2022.zip",
+      "account": {
+        "profilePath": "C:\\Users\\LumaMsi3d3902381f",
+        "accountSid": "S-1-5-21-1000861503-3182281758-1041194900-1003",
+        "elevated": false,
+        "osCaption": "Microsoft Windows Server 2022 Datacenter"
+      },
+      "result": {
+        "elevated": false,
+        "architecture": "x64",
+        "packageSha256": "e969dee0dd6f4dd76e1fa7bf50e939fc0ddfcdf5903e953e8d29b0b1b65003d0",
+        "windowsVersion": "21H2",
+        "windowsBuild": "20348.5622",
+        "msiVersion": "5.0.20348.5622",
+        "payloadStranded": true,
+        "cleanupPassed": true,
+        "selectionUnchanged": true,
+        "steps": [
+          {
+            "step": "install",
+            "exitCode": 0,
+            "filePresent": true
+          },
+          {
+            "step": "failed-uninstall",
+            "exitCode": 1603,
+            "filePresent": true
+          },
+          {
+            "step": "uninstall-after-rollback",
+            "exitCode": 0,
+            "filePresent": true
+          },
+          {
+            "step": "cleanup-install",
+            "exitCode": 0,
+            "filePresent": true
+          },
+          {
+            "step": "cleanup-uninstall",
+            "exitCode": 0,
+            "filePresent": false
+          }
+        ]
+      },
+      "raw_log_observations": {
+        "FileRemove_line": 359,
+        "deliberate_after_execution_failure_line": 385,
+        "rollback_FileCopy_line": 413,
+        "invalid_owner_1307_entries": 1
+      }
+    },
+    {
+      "upstream_artifact": "msi-standard-user-windows-2025.zip",
+      "account": {
+        "profilePath": "C:\\Users\\LumaMsifa00735f44",
+        "accountSid": "S-1-5-21-1643835476-1616584234-1346609752-1003",
+        "elevated": false,
+        "osCaption": "Microsoft Windows Server 2025 Datacenter"
+      },
+      "result": {
+        "elevated": false,
+        "architecture": "x64",
+        "packageSha256": "85a43bde123087f47454c8a97ed303a407778569fc1206b2376ab4b4ba50090a",
+        "windowsVersion": "24H2",
+        "windowsBuild": "26100.33438",
+        "msiVersion": "5.0.26100.33438",
+        "payloadStranded": true,
+        "cleanupPassed": true,
+        "selectionUnchanged": true,
+        "steps": [
+          {
+            "step": "install",
+            "exitCode": 0,
+            "filePresent": true
+          },
+          {
+            "step": "failed-uninstall",
+            "exitCode": 1603,
+            "filePresent": true
+          },
+          {
+            "step": "uninstall-after-rollback",
+            "exitCode": 0,
+            "filePresent": true
+          },
+          {
+            "step": "cleanup-install",
+            "exitCode": 0,
+            "filePresent": true
+          },
+          {
+            "step": "cleanup-uninstall",
+            "exitCode": 0,
+            "filePresent": false
+          }
+        ]
+      },
+      "raw_log_observations": {
+        "FileRemove_line": 359,
+        "deliberate_after_execution_failure_line": 385,
+        "rollback_FileCopy_line": 413,
+        "invalid_owner_1307_entries": 1
+      }
+    }
+  ],
+  "retained_text_entries": [
+    {
+      "upstream_archive": "msi-standard-user-windows-2022.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190643/cleanup-install.log",
+      "sha256": "2c7efdf5cbf7bc3fc4eaf680dd3345c52e0efd3208c005f216746637d432df63",
+      "retained": "msi-standard-user-windows-2022-cleanup-install.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2022.zip",
+      "entry": "standard-user-results/account-context.json",
+      "sha256": "f5f3429ca970fc1863fa7e4595c6d864e2885af8878b276be2dbba53fce65b78",
+      "retained": "msi-standard-user-windows-2022-account-context.json.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2022.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190643/cleanup-uninstall.log",
+      "sha256": "c94d7666cbdf6583414494875018f17d0f46ab686c24b6ee06af73c03e02d927",
+      "retained": "msi-standard-user-windows-2022-cleanup-uninstall.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2022.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190643/failed-uninstall.log",
+      "sha256": "e7cee0452203f196a786a45d235cb159f860a5641756a6d3880072432943f2bf",
+      "retained": "msi-standard-user-windows-2022-failed-uninstall.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2022.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190643/result.json",
+      "sha256": "21eba7474e06243832e52fa12bdd2aee8a7dc305914b4a7998db103195851512",
+      "retained": "msi-standard-user-windows-2022-result.json.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2022.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190643/uninstall-after-rollback.log",
+      "sha256": "37c49deabfe6531be49414bf20e337fe94ba76dbea816145393e64a708f506e5",
+      "retained": "msi-standard-user-windows-2022-uninstall-after-rollback.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2022.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190643/install.log",
+      "sha256": "0de59d141621708865eeb5ec743ced6e87840eb9fe97031ddef838bdd52dbbe0",
+      "retained": "msi-standard-user-windows-2022-install.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2025.zip",
+      "entry": "standard-user-results/account-context.json",
+      "sha256": "c0b823c43738aa79ba693d7d8596f957500d0932032d901e1f807c5cc57d777a",
+      "retained": "msi-standard-user-windows-2025-account-context.json.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2025.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190623/cleanup-install.log",
+      "sha256": "92c8ebc1d4cf1810659151c261229ebb502fa15f146c8e86f6478ddcac3932f7",
+      "retained": "msi-standard-user-windows-2025-cleanup-install.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2025.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190623/cleanup-uninstall.log",
+      "sha256": "8a93a82ad4be28d761f5c602cddb0032421abe40a0846774937c925e4ff964ec",
+      "retained": "msi-standard-user-windows-2025-cleanup-uninstall.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2025.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190623/failed-uninstall.log",
+      "sha256": "ecfd26eb86fe85995fed0b09815af7896a665017830a8d43e962a7aafa709b66",
+      "retained": "msi-standard-user-windows-2025-failed-uninstall.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2025.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190623/install.log",
+      "sha256": "323b3926c8b8eb7ded895337b42b006bc32523e55290cf7b207d28685daa2a76",
+      "retained": "msi-standard-user-windows-2025-install.log.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2025.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190623/result.json",
+      "sha256": "10d0c496e69a3e403ee7e04531ddf8e5a0f0711fcaa29468133c892c93a03f3c",
+      "retained": "msi-standard-user-windows-2025-result.json.gz"
+    },
+    {
+      "upstream_archive": "msi-standard-user-windows-2025.zip",
+      "entry": "standard-user-results/logs/msi-rollback-probe-20261010-190623/uninstall-after-rollback.log",
+      "sha256": "c542f6e78069476ac232779af2630c30ef3bd6bee5eea628d601650747fe6069",
+      "retained": "msi-standard-user-windows-2025-uninstall-after-rollback.log.gz"
+    }
+  ],
+  "inference": "Independent published controls reproduce the same per-user registration restoration family after actual file removal,then report successful uninstall while leaving the payload. This makes another unchanged file-only control on the retained26100 guest uninformative; further local investigation needs a distinct authoring/runtime hypothesis or a candidate fix. It does not establish a universal cause or a safe product workaround.",
+  "limits": [
+    "No third-party MSI,executable,script or action executed",
+    "Desktop26300 observations remain reported in the upstream comment,not independently artifact-verified here",
+    "Ottrin local evidence remains its own26100/msi5.0.26100.9168 scope",
+    "Failed MSI rollback gate remains required and unaccepted; all other ready roadmap work continues"
+  ],
+  "cleanup": "Original download ZIPs,including embedded third-party MSI binaries,removed after digest/text extraction. Only compressed text diagnostics,public metadata and review receipts remain; no VM/profile/process allocated."
+}

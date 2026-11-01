@@ -1,0 +1,180 @@
+{
+  "method": "Exact pixel-region selection from recorded owned-window rectangles;no color,content,geometry or text alterations. Reopened PNG pixels compared byte-for-byte to the original region. Unrelated desktop background and redundant screenshots retired.",
+  "entries": [
+    {
+      "original_name": "11-launch.png",
+      "original_sha256": "cc126461a2d0efbfe3168858d207ab2011dd3c4d2436456373ee77bff443b29e",
+      "screen_size": [
+        1280,
+        800
+      ],
+      "owned_window": {
+        "handle": 524998,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "crop_box": [
+        128,
+        36,
+        1152,
+        716
+      ],
+      "retained": "11-launch-window.png",
+      "retained_sha256": "1daf48fc8b82af9a57fe34b0627621485aece819c75dc2ed8139537090620a70",
+      "exact_rgb_pixels_sha256": "fcf5fabeb8d69e72c79c76ef406b7c38e11b3e43ca052c9ffdccc8d9722a73bf"
+    },
+    {
+      "original_name": "15-hover.png",
+      "original_sha256": "5559caf6b73c96f0cb91c94c7db3697d29d0ddfcd344a186c4ad0ac0305020f0",
+      "screen_size": [
+        1280,
+        800
+      ],
+      "owned_window": {
+        "handle": 524998,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "crop_box": [
+        128,
+        36,
+        1152,
+        716
+      ],
+      "retained": "15-hover-window.png",
+      "retained_sha256": "b1d99626f97a1c18fd2765332b52cc507e5e8f6cc5ac128c7e71a7bbfdda7229",
+      "exact_rgb_pixels_sha256": "cb70efbcbe4ab8faff899e1f04b9c4d4a97115f30a412a91803f766f4fb98237"
+    },
+    {
+      "original_name": "17-click.png",
+      "original_sha256": "61f086b28a10a759aff71dd7d5105a8c1dacefe9dceed2c71e547c49846e1f33",
+      "screen_size": [
+        1280,
+        800
+      ],
+      "owned_window": {
+        "handle": 524998,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "crop_box": [
+        128,
+        36,
+        1152,
+        716
+      ],
+      "retained": "17-click-window.png",
+      "retained_sha256": "de8bb55a1606b20136f157d2a1ac677ffaa57bc056da7a879a03dbcb7403f2b6",
+      "exact_rgb_pixels_sha256": "4b823851b32d974f8bbb2bf29fa093ba8cfe72f7f4c775326582d5e20e52cff4"
+    },
+    {
+      "original_name": "18-click.png",
+      "original_sha256": "3d391214914ae3129a028a5ecfea2a10a8412bf44c408fbcef9d3d3f19be8a7d",
+      "screen_size": [
+        1280,
+        800
+      ],
+      "owned_window": {
+        "handle": 524998,
+        "left": 128,
+        "bottom": 716,
+        "top": 36,
+        "right": 1152,
+        "title": "Ottrin"
+      },
+      "crop_box": [
+        128,
+        36,
+        1152,
+        716
+      ],
+      "retained": "18-click-window.png",
+      "retained_sha256": "f7186ec8db853634a47ee8fcf6494ab965ba8e22896a39025c091eb4ef54dc7b",
+      "exact_rgb_pixels_sha256": "cf283af3d0f5e298faeee33dadb32a1b8e0d8748deaf041859f24a3501fd0315"
+    },
+    {
+      "original_name": "19-click.png",
+      "original_sha256": "a7e131e9ae5a3547121629f6de405340be729753a03c7b501ba5f88cb686c0c9",
+      "screen_size": [
+        1280,
+        800
+      ],
+      "owned_window": {
+        "handle": 1180254,
+        "left": 52,
+        "bottom": 612,
+        "top": 52,
+        "right": 772,
+        "title": "Ottrin Quick Inspector \u2014 a deliberately long preview filename for wrapped metadata.txt"
+      },
+      "crop_box": [
+        52,
+        52,
+        772,
+        612
+      ],
+      "retained": "19-click-window.png",
+      "retained_sha256": "f6e9053c43cda14a46852aca843a7ac389e24e74466b22fe34cbea4d1005647d",
+      "exact_rgb_pixels_sha256": "53c126a813347aa47646466feaa4470bd882c2dd5a3bc0662cd5230f41a3f031"
+    },
+    {
+      "original_name": "21-key.png",
+      "original_sha256": "5680bc36733d42331a47cc0330c08b99087f9037f8e1400116b181fb4990bcb4",
+      "screen_size": [
+        1280,
+        800
+      ],
+      "owned_window": {
+        "handle": 1180254,
+        "left": 52,
+        "bottom": 612,
+        "top": 52,
+        "right": 772,
+        "title": "Ottrin Quick Inspector \u2014 contact.vcf"
+      },
+      "crop_box": [
+        52,
+        52,
+        772,
+        612
+      ],
+      "retained": "21-key-window.png",
+      "retained_sha256": "d12e4a3250440f7d199f66025446dec76b0ee9d93b4f655afbc441e49cd2eb7e",
+      "exact_rgb_pixels_sha256": "3e5517658101bcbec05b22a6224a0e28dbc43133b3e96cb226e17cbdceb37294"
+    },
+    {
+      "original_name": "23-key.png",
+      "original_sha256": "a07bb8683217900f8038fafe84d05411f1b5e039e428589fff52854b69db5744",
+      "screen_size": [
+        1280,
+        800
+      ],
+      "owned_window": {
+        "handle": 1180254,
+        "left": 52,
+        "bottom": 612,
+        "top": 52,
+        "right": 772,
+        "title": "Ottrin Quick Inspector \u2014 note.txt"
+      },
+      "crop_box": [
+        52,
+        52,
+        772,
+        612
+      ],
+      "retained": "23-key-window.png",
+      "retained_sha256": "34de37e2b88ff4ef9f3cab2977efab860134871b796df68f4d55f95e7351cb2f",
+      "exact_rgb_pixels_sha256": "cbf008b3736a99b4b1e494a2e571f1b5169940090fca8ae43524b8d0c9b8827c"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "recorded": "2026-11-01T00:27:36.140958+00:00",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-navigation-gui-current",
+  "purpose": "Compact source,exact-artifact,GUI/teardown or read-only upstream diagnostic evidence;not staging or user data",
+  "retained_bytes_before_receipt": 512303,
+  "temporary_profiles_processes_displays_buses_mounts_or_guest_fixtures_remaining": false,
+  "retained_bytes_excluding_this_receipt": 512303
+}

@@ -1,0 +1,43 @@
+{
+  "modules": [
+    {
+      "path": "C:\\OttrinWindowQA\\payload\\Ottrin-0.1.0-windows-x64\\bin\\opengl32.dll",
+      "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+      "name": "opengl32.dll",
+      "matches_exact_portable_payload": true
+    },
+    {
+      "path": "C:\\OttrinWindowQA\\payload\\Ottrin-0.1.0-windows-x64\\bin\\libgallium_wgl.dll",
+      "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+      "name": "libgallium_wgl.dll",
+      "matches_exact_portable_payload": true
+    },
+    {
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+      "sha256": "bacc237311e24faf7b6a373a724b706c205753ee4fded6e592aac051b9f0adc1",
+      "name": "d3d12.dll"
+    },
+    {
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "0843f2473d0e45f7c921bd45b758360c5a6fd6de7d7ab98fb11f9a1f6c724aa9",
+      "name": "dxgi.dll"
+    },
+    {
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3dcompiler_47.dll",
+      "sha256": "6b3dee26a3fa46adce2fd1c543b0a3605c5de16b636bd42341ade6f1d7a27a44",
+      "name": "d3dcompiler_47.dll"
+    },
+    {
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d10warp.dll",
+      "sha256": "432f391b8b0596902ed0573db1861c4f88fe209618db1c6a29bb668f2eca38c1",
+      "name": "d3d10warp.dll"
+    }
+  ],
+  "pid": 6588,
+  "command_line": "\"C:\\OttrinWindowQA\\payload\\Ottrin-0.1.0-windows-x64\\bin\\ottrin.exe\" C:\\OttrinWindowQA\\cases\\ordinary\\fixture\\source ",
+  "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "launch": "default",
+  "nonce": "247d84e456ed4d0289a28df8c2d0d7dd",
+  "boundary": "Loaded module provenance and rendered ordinary virtual desktop; physical-adapter acceptance remains separate",
+  "log_collection": "Read app.stdout/app.stderr after normal Close; the redirect writer holds the active files without read sharing"
+}

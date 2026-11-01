@@ -1,0 +1,22 @@
+{"time": 1793488873.3922925, "click": [1009, 55], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793488873.962188, "capture": "01-direct-view-menu"}
+{"time": 1793488885.0446987, "click": [872, 104], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793488886.2510374, "capture": "02-column-reveals-selection"}
+{"time": 1793488887.630236, "capture": "03-single-location-tooltip"}
+{"time": 1793488905.015196, "capture": "04-manual-scroll"}
+{"time": 1793488905.4472637, "click": [1009, 55], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793488906.034229, "capture": "05-same-mode-menu"}
+{"time": 1793488938.1193078, "click": [872, 104], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793488939.6016192, "capture": "06-same-mode-preserves-scroll"}
+{"time": 1793488940.0638816, "click": [1041, 55], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793488940.5491767, "capture": "07-list-again"}
+{"time": 1793488940.9527123, "click": [1041, 55], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793488941.4480793, "capture": "08-grid-selected"}
+{"time": 1793488941.851178, "click": [1041, 55], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793488943.067061, "capture": "09-grid-to-column-reveals"}
+{"time": 1793489001.541485, "capture": "10-breadcrumb-ancestors"}
+{"time": 1793489002.8600414, "capture": "11-breadcrumb-current-again"}
+{"time": 1793489003.263342, "click": [875, 102], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793489050.3704078, "file_checkpoint": "13-readonly-closed-bytes", "files": {"source/note.txt": "ebe31b0fb0be826003d16a44e0d02795ed99e14352f5412b19743abf21ea4bcb", "contact/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92", "preview/a deliberately long preview filename for wrapped metadata.txt": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0", "preview/document preview with wrapped metadata.docx": "29d4044efa1eabad7046a8bc1a4210bd1c9f2469b3f6848cca51c08462c7ecb6", "one/two/three/four/five/a-long-parent-directory-name/another-long-parent-directory/selected preview with a long filename.txt": "f8382b99e231e20e834a20830693448a2b935b1fd4297c56a2e826841c6ab56f"}, "absent": []}
+{"time": 1793489050.4763086, "capture": "13-readonly-closed-bytes"}
+{"time": 1793489050.880277, "click": [1072, 18], "pointer_settled_before_press": true, "hold_seconds": 0.15}

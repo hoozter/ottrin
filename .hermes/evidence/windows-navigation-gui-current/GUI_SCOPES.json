@@ -1,0 +1,77 @@
+{
+  "status": "pass",
+  "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "archive_sha256": "6fcabb80a05d0ebe89ad85a02f30530f4905d4b8e823d9eb6aae5aa03675efb3",
+  "environment": "Ordinary Windows11 IoT LTSC26100 virtual desktop,Dark100,default Automatic launch,1024x680 window on1280x800",
+  "view_switch_reveal_verified": true,
+  "metadata_hover_verified": true,
+  "readonly_navigation_verified": true,
+  "normal_close": {
+    "exit": 0,
+    "pid": 6856
+  },
+  "preferences_preserved": true,
+  "preferences": {
+    "status": "pass",
+    "default_view_mode": "Miller",
+    "config_sha256": "299b44d13f0deb97fd4d1c3802ffe550b1b039c31ee9921526ceae77421c8282",
+    "theme": "Dark",
+    "graphics_renderer": "Automatic",
+    "owned_payload_processes": 0
+  },
+  "final_raw_bytes": {
+    "source\\note.txt": {
+      "bytes": 16,
+      "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source\\other.txt": {
+      "bytes": 15,
+      "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source\\contact.vcf": {
+      "bytes": 51,
+      "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "destination\\note.txt": {
+      "bytes": 21,
+      "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
+      "matches_independently_declared_utf8_bytes": true
+    },
+    "source\\a deliberately long preview filename for wrapped metadata.txt": {
+      "bytes": 3300,
+      "sha256": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+      "matches_independently_declared_utf8_bytes": true
+    }
+  },
+  "cases": [
+    "Direct List/menu and Grid/toggle to Column show the selected source file and adjacent preview after layout settles",
+    "Narrow Location uses ellipsis with one full-path hover tooltip",
+    "Long text content click then Right navigates to VCF;VCF content click then Right navigates to note.txt;Left returns to VCF",
+    "VCF and long-text read-only content clicks followed by Space close each Inspector without entering Edit text",
+    "Literal contents of all five files verified;normal product Close exits0;independent raw QGA reads after close match every declared UTF8 byte",
+    "Dark/Miller and Automatic preferences persist;zero owned payload processes;complete owned account/profile/task/credential/root cleanup and guest off with unchanged XML"
+  ],
+  "reviewed_screens": [
+    "11-launch-window.png",
+    "15-hover-window.png",
+    "17-click-window.png",
+    "18-click-window.png",
+    "19-click-window.png",
+    "21-key-window.png",
+    "23-key-window.png"
+  ],
+  "cleanup": {
+    "fixtures_removed": true,
+    "guest_off": true,
+    "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626"
+  },
+  "prior_failed_attempt": "../windows-navigation-gui-lease-control/ACCEPTANCE.json;expired25-minute scope did not execute final close/raw-byte verification;not accepted",
+  "limits": [
+    "No new Copy/Move/Undo,Office-provider,installed lifecycle,MSI rollback,physical GPU/device or final release/owner acceptance",
+    "Default Automatic launch observed;native WGPU or override graphics coverage is not inferred merely from loaded DLLs",
+    "Fresh45-minute session completed only the core;prior extra Copy/Rename/Undo chain was not completed"
+  ]
+}

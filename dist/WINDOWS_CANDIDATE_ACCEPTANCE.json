@@ -1,20 +1,20 @@
 {
   "status": "pass within exact payload,native loader/CLI,scoped ordinary portable GUI and complete hosted source verification",
-  "source_commit": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+  "source_commit": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "b973224e1da039689d240e7154fb4de4c86c24d18f6f10fc474ad967c75e2bd8",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "96e3f7e02958d67e6fc6125e2ff4275d35a72f484c64779a31403b59d85d86bc",
-    "Ottrin-0.1.0-windows-x64.msi": "a244a06552f19bb0452ab6a2b2df769ac25e8016f908009f8bb7c0cf1079221f"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "6fcabb80a05d0ebe89ad85a02f30530f4905d4b8e823d9eb6aae5aa03675efb3",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "d07dfe51f4742343f809af426f53bed7448fa3359e91b47a0d8e7e8a1c9dded4",
+    "Ottrin-0.1.0-windows-x64.msi": "cfbcf1bc3e3d621e2984eb944f74d8b37d54ac6a24d21cf069dd0c9918581fde"
   },
   "payload_files": 58,
-  "payload_identity": ".hermes/evidence/windows-copy-undo-package-current/PAYLOAD_GUI_MANIFEST.json",
-  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-copy-undo-package-current",
+  "payload_identity": ".hermes/evidence/windows-navigation-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-navigation-package-current",
   "native_msi_administrative_extraction": {
     "entries_checked": 58,
     "status": "pass",
-    "msi_sha256": "a244a06552f19bb0452ab6a2b2df769ac25e8016f908009f8bb7c0cf1079221f",
+    "msi_sha256": "cfbcf1bc3e3d621e2984eb944f74d8b37d54ac6a24d21cf069dd0c9918581fde",
     "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
   },
   "native_loader_cli": {
@@ -44,83 +44,100 @@
   },
   "portable_gui_acceptance": {
     "status": "pass",
-    "source": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
-    "appearance": "Ordinary Windows NTFS VM,Dark/List100,default renderer; actual1024x680 window on1280x800 console",
-    "single_click_undo_verified": true,
-    "batch_click_undo_verified": true,
-    "old_path_occupants_preserved": true,
-    "accepted_actions": [
-      "Native clipboard Replace Copy,source preserved",
-      "External destination-parent rename plus unrelated replacement at original pathname",
-      "One real Undo click restores displaced original at current native location and preserves old-path replacement",
-      "Four-item batch Copy includes directory and nested file with every source preserved",
-      "External batch destination-parent rename plus old-path replacement",
-      "One real batch Undo click removes all copied entries at resolved destination; listing visibly empty; all originals and replacements preserved",
-      "Normal product Close exits0; final seven raw files exactly equal independent expected bytes; Dark/List saved preferences persist"
-    ],
+    "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+    "archive_sha256": "6fcabb80a05d0ebe89ad85a02f30530f4905d4b8e823d9eb6aae5aa03675efb3",
+    "environment": "Ordinary Windows11 IoT LTSC26100 virtual desktop,Dark100,default Automatic launch,1024x680 window on1280x800",
+    "view_switch_reveal_verified": true,
+    "metadata_hover_verified": true,
+    "readonly_navigation_verified": true,
     "normal_close": {
       "exit": 0,
-      "pid": 1888
+      "pid": 6856
     },
-    "raw_bytes": "FINAL_BYTES.json",
-    "saved_preferences": {
-      "theme": "Dark",
-      "default_view_mode": "List"
-    },
-    "single_undo": {
-      "click": "22-click.json",
-      "result": "23-verify.json"
-    },
-    "batch_copy": "34-verify.json",
-    "batch_undo": {
-      "click": "39-click.json",
-      "result": "40-verify.json",
-      "visible_empty_listing": "41-nav.png"
-    },
-    "post_close": "43-verify.json",
-    "screenshots": [
-      "10-launch.png",
-      "14-key.png",
-      "23-verify.png",
-      "33-click.png",
-      "40-verify.png",
-      "41-nav.png"
-    ],
-    "teardown": {
-      "actor_task_removed": true,
-      "original_files_preserved": true,
-      "profile_removed": true,
-      "temporary_password_removed": true,
-      "login_values_restored": true,
+    "preferences_preserved": true,
+    "preferences": {
       "status": "pass",
-      "ordinary_account_removed": true
+      "default_view_mode": "Miller",
+      "config_sha256": "299b44d13f0deb97fd4d1c3802ffe550b1b039c31ee9921526ceae77421c8282",
+      "theme": "Dark",
+      "graphics_renderer": "Automatic",
+      "owned_payload_processes": 0
     },
-    "persistent_definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+    "final_raw_bytes": {
+      "source\\note.txt": {
+        "bytes": 16,
+        "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
+        "matches_independently_declared_utf8_bytes": true
+      },
+      "source\\other.txt": {
+        "bytes": 15,
+        "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
+        "matches_independently_declared_utf8_bytes": true
+      },
+      "source\\contact.vcf": {
+        "bytes": 51,
+        "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+        "matches_independently_declared_utf8_bytes": true
+      },
+      "destination\\note.txt": {
+        "bytes": 21,
+        "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
+        "matches_independently_declared_utf8_bytes": true
+      },
+      "source\\a deliberately long preview filename for wrapped metadata.txt": {
+        "bytes": 3300,
+        "sha256": "ffb1bbbd2dd715aa00c03f410090c10fdc9b51344ece0c78bceb3f3e3d3e85f0",
+        "matches_independently_declared_utf8_bytes": true
+      }
+    },
+    "cases": [
+      "Direct List/menu and Grid/toggle to Column show the selected source file and adjacent preview after layout settles",
+      "Narrow Location uses ellipsis with one full-path hover tooltip",
+      "Long text content click then Right navigates to VCF;VCF content click then Right navigates to note.txt;Left returns to VCF",
+      "VCF and long-text read-only content clicks followed by Space close each Inspector without entering Edit text",
+      "Literal contents of all five files verified;normal product Close exits0;independent raw QGA reads after close match every declared UTF8 byte",
+      "Dark/Miller and Automatic preferences persist;zero owned payload processes;complete owned account/profile/task/credential/root cleanup and guest off with unchanged XML"
+    ],
+    "reviewed_screens": [
+      "11-launch-window.png",
+      "15-hover-window.png",
+      "17-click-window.png",
+      "18-click-window.png",
+      "19-click-window.png",
+      "21-key-window.png",
+      "23-key-window.png"
+    ],
+    "cleanup": {
+      "fixtures_removed": true,
+      "guest_off": true,
+      "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626"
+    },
+    "prior_failed_attempt": "../windows-navigation-gui-lease-control/ACCEPTANCE.json;expired25-minute scope did not execute final close/raw-byte verification;not accepted",
     "limits": [
-      "Portable GUI only; native installer extraction/CLI accepted separately",
-      "No installer lifecycle,rollback,physical GPU,DPI,Office or cross-volume expansion of scope",
-      "Earlier broader checks retain original artifact hashes; no release or final owner acceptance"
+      "No new Copy/Move/Undo,Office-provider,installed lifecycle,MSI rollback,physical GPU/device or final release/owner acceptance",
+      "Default Automatic launch observed;native WGPU or override graphics coverage is not inferred merely from loaded DLLs",
+      "Fresh45-minute session completed only the core;prior extra Copy/Rename/Undo chain was not completed"
     ]
   },
-  "source_checks": ".hermes/evidence/windows-copy-undo-admission-current/ACCEPTANCE.json",
+  "source_checks": ".hermes/evidence/navigation-toolbar-current/SOURCE_CHECKS.json",
   "hosted_source": {
-    "run": 40295923460,
-    "revision": "520d9c57fcb14b38d386feac9b7d02f0240c4360",
+    "run": 41251463739,
+    "revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
     "conclusion": "success",
-    "evidence": ".hermes/evidence/windows-copy-undo-package-current/HOSTED_CURRENT.json"
+    "evidence": ".hermes/evidence/windows-navigation-package-current/HOSTED_SOURCE.json"
   },
   "cleanup": {
-    "native_package": "windows-copy-undo-package-current/NATIVE_OWNER.json",
-    "portable_gui": "windows-copy-undo-gui-current/SESSION.json",
+    "native_package": "windows-navigation-package-current/NATIVE_OWNER.json",
+    "portable_gui": "windows-navigation-gui-current/SESSION.json",
     "guest_off": true,
     "original_guest_files_and_profiles_preserved": true,
     "account_profile_credential_task_and_extractions_removed": true
   },
   "public_windows_files_unchanged": true,
-  "linux_packages_unchanged": true,
+  "linux_source_cohort": "e79b915e;accepted separately at dist/packages",
   "limits": [
     "No install/upgrade/repair/rollback/uninstall acceptance for these hashes; MSI rollback remains required and unresolved",
-    "GUI scope ordinary Dark/List100/default renderer1024x680 on1280x800 NTFS VM",
+    "GUI scope ordinary Dark100/default launch1024x680 on1280x800 NTFS VM;List/Grid to Column,metadata,read-only navigation/Space,normal Close and five final raw files",
     "Earlier cross-volume,Office,appearance and physical evidence retain original hashes",
     "No production release,Store submission or final owner acceptance"
   ]

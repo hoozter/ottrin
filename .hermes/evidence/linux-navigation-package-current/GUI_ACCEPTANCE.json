@@ -1,0 +1,57 @@
+{
+  "status": "pass within scoped actual-AppImage navigation and metadata acceptance",
+  "source_revision": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "artifact_sha256": "60cf72f25dded339ccf0e1a064c31eba901f2faf3af90a3fa227271aec198ca8",
+  "sessions": {
+    "dark-list100": {
+      "source_bytes_match": true,
+      "files_checked": 5,
+      "normal_product_exit": 0,
+      "persisted_theme": "Dark",
+      "persisted_view": "Miller",
+      "private_profiles_processes_displays_buses_mounts_removed": true,
+      "observed": "Long-path controls directly usable;actual List/menu and Grid/toggle to Column reveal current folder/selected preview;single full Location tooltip;read-only Inspector content click then Space closes;complete preview footer",
+      "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+      "artifact_sha256": "60cf72f25dded339ccf0e1a064c31eba901f2faf3af90a3fa227271aec198ca8"
+    },
+    "light-list150": {
+      "source_bytes_match": true,
+      "files_checked": 5,
+      "normal_product_exit": 0,
+      "persisted_theme": "Light",
+      "persisted_view": "Miller",
+      "private_profiles_processes_displays_buses_mounts_removed": true,
+      "observed": "Long-path controls directly usable;actual List/menu and Grid/toggle to Column reveal current folder/selected preview;single full Location tooltip;read-only Inspector content click then Space closes;complete preview footer",
+      "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+      "artifact_sha256": "60cf72f25dded339ccf0e1a064c31eba901f2faf3af90a3fa227271aec198ca8"
+    }
+  },
+  "checks": [
+    "Actual checksum-verified AppImage runtime in Dark100 and Light150 private X11 sessions",
+    "Deep-path breadcrumbs stay inside the address area with directly clickable view controls;ancestor/current horizontal wheel access observed",
+    "Actual menu List-to-Column and toggle Grid-to-Column reveal current folder and selected-file preview",
+    "Deliberate main horizontal scrolling survives choosing already-active Column mode;1020x620 body pixels remain identical",
+    "Narrow Location value shows ellipsis and one full-path tooltip in both themes",
+    "Both actual read-only Inspectors close on Space after a settled content click;all five fixture files match declared raw bytes before and after normal Close",
+    "Both normal product closes exit0,persist theme/Miller preference and remove all owned private GUI resources"
+  ],
+  "reviewed_screens": {
+    "dark-list100": [
+      "initial.png",
+      "02-column-reveals-selection.png",
+      "03-single-location-tooltip.png",
+      "04-manual-scroll.png",
+      "08-grid-selected.png",
+      "09-grid-to-column-reveals.png",
+      "10-breadcrumb-ancestors.png",
+      "12-inspector.png"
+    ],
+    "light-list150": [
+      "initial.png",
+      "04-grid-to-column-reveals.png",
+      "05-single-location-tooltip.png",
+      "06-inspector.png"
+    ]
+  },
+  "limits": "Scoped software X11 preview acceptance,not a broad UI audit or final daily-driver/release acceptance. No fresh distribution installation,Windows,physical GPU/device,Office-provider,editing or installer lifecycle acceptance."
+}

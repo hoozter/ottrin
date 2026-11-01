@@ -1,0 +1,23 @@
+{
+  "status": "not accepted;lease expired before final normal Close/raw-byte verification",
+  "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "observed_scopes": [
+    "Actual default launch;direct List and Grid to Column reveal",
+    "One Location tooltip;read-only text/VCF content clicks,Right/Left file navigation and Space close",
+    "Five literal fixture contents verified before extra Copy chain",
+    "Public Copy Replace verified;Rename dialog opened,subsequent key request not accepted before timeout"
+  ],
+  "not_executed": [
+    "Final normal product Close",
+    "Final raw-byte verification",
+    "Completed Copy/Rename/Undo chain",
+    "Explicit alternate-renderer acceptance"
+  ],
+  "cleanup": {
+    "fixtures_removed": true,
+    "guest_off": true,
+    "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626"
+  },
+  "cause": "The operator expanded scope before completing core acceptance;bounded session expired. No product failure inferred.",
+  "next": "Fresh bounded session;finish core close/raw bytes first;extra workflows get separate sessions"
+}

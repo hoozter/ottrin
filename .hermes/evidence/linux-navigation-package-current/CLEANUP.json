@@ -1,0 +1,69 @@
+{
+  "recorded": "2026-11-01T00:29:11.309169+00:00",
+  "baseline_bytes": {
+    "target/debug/deps": 22735870164,
+    "target/debug/incremental": 9025436348,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394187666,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25259894782
+  },
+  "final_bytes": {
+    "target/debug/deps": 22735870164,
+    "target/debug/incremental": 9025436348,
+    "target/x86_64-pc-windows-gnu/debug/deps": 26394187666,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 25259894782
+  },
+  "delta_bytes": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 0
+  },
+  "purpose": "Shared compiler/dependency/test caches retained;same default profiles/features and one compiler job;no additional target tree",
+  "cleanup": [
+    "Six obsolete finalized sessions removed by guarded exact-root helper (0.40GiB);final helper inspection finds0",
+    "Unpromoted Linux489c72f4 stage/extraction retired184395452 bytes;Windows portable/payload194565603 bytes",
+    "After accepted replacement,previous Windows520d9c57 candidate retired285915692 bytes",
+    "Current Linux/Windows stage/extractions and all private desktops/accounts/profiles/tasks/credentials/guest roots removed",
+    "Unused never-executed Windows489c72f4 QA helpers removed after reference checks;historical portable receipt preserved",
+    "Redundant full-desktop captures retired after exact-pixel owned-window regions were validated;logs compressed byte-for-byte;owned bytecode/empty streams removed"
+  ],
+  "remaining": [
+    {
+      "path": "dist/packages",
+      "purpose": "Current accepted Linux e79b915e deliverables",
+      "pending_consumer": "User preview and later final-candidate acceptance"
+    },
+    {
+      "path": "dist/windows-candidate",
+      "purpose": "Current internal Windows e79b915e candidate",
+      "pending_consumer": "User preview and remaining explicitly scoped platform acceptance"
+    },
+    {
+      "path": ".hermes/evidence/linux-navigation-package-current",
+      "purpose": "Compact scoped acceptance,source identity and teardown receipts",
+      "pending_consumer": "Audit/reproduction;no live test resource"
+    },
+    {
+      "path": ".hermes/evidence/windows-navigation-package-current",
+      "purpose": "Current Windows artifact identity,native scopes and promotion/cleanup receipts",
+      "pending_consumer": "Audit/reproduction;no live test resource"
+    },
+    {
+      "path": ".hermes/evidence/windows-navigation-gui-current",
+      "purpose": "Accepted ordinary GUI/Close/raw-byte evidence",
+      "pending_consumer": "Audit;no account/profile/process remains"
+    },
+    {
+      "path": ".hermes/evidence/windows-navigation-gui-lease-control",
+      "purpose": "Failed lease/control and successful automatic teardown evidence",
+      "pending_consumer": "Audit only;not acceptance"
+    },
+    {
+      "path": ".hermes/evidence/msi-upstream-review-current",
+      "purpose": "Read-only public diagnostic text review;no third-party binary retained",
+      "pending_consumer": "Distinct future MSI investigation hypothesis/candidate fix"
+    }
+  ],
+  "personal_service": "Enabled Ready PID2275700 on current e79b915e runtime with byte-identical indexd;configuration preserved;intentional user integration,not disposable QA",
+  "earlier_privileged_cores": "Two previously documented root-owned cores remain on owner-authentication waiting list;not created by this checkpoint"
+}

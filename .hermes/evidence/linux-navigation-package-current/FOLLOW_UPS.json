@@ -1,0 +1,20 @@
+{
+  "status": "ready investigation after current cohort; not owner waits",
+  "items": [
+    {
+      "id": "preview-scroll-ownership",
+      "observation": "Light150 Quick Inspector text shows adjacent vertical scroll indicators in06-inspector.png. Source confirms preview_content_frame wraps all content in an outer ScrollArea while render_scrollable_preview_text supplies another vertical ScrollArea.",
+      "evidence": "light-list150/06-inspector.png",
+      "next": "Reproduce with a rendered full-frame/body test and real scrolling. Give the preview one authoritative scrolling boundary while preserving fixed footers and the width-fitted PDF gutter/stability controls. Cover text,code,archive,spreadsheet,DOCX/fallback and visual pages before changing callers.",
+      "owner_needed": false,
+      "accepted_fix": false
+    },
+    {
+      "id": "metadata-details-large-text",
+      "observation": "Info reserves fixed100/190-point body heights while labels scale with c.font_scale. Current tests verify bounded Location and hover,not access to the Details toggle or every expanded metadata row at enlarged text. This is an unverified gap,not a reproduced failure.",
+      "next": "Render and actually click Details at100/135/200% in narrow and short panes. Verify the toggle and final available metadata field are accessible; introduce bounded scrolling only if the reproduction demonstrates clipping.",
+      "owner_needed": false,
+      "accepted_fix": false
+    }
+  ]
+}

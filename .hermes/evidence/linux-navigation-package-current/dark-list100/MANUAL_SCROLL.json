@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "source": "e79b915eccec45ed2b9184ed3a1972fa2b969aef",
+  "real_input": "Eight horizontal Button6 wheel events over the file pane",
+  "same_mode_action": "Actual View Options \u2192 already-selected Column view",
+  "comparison": "Exact unchanged1020x620 body pixels before/after action",
+  "region": [
+    44,
+    120,
+    1064,
+    740
+  ],
+  "crop_sha256": "8a92db97b25fba17c8eb613aab2cd3261f3a14f3b4101a0306f9933d65455e5d",
+  "limits": "Actual selected deep folder/preview moved offscreen by deliberate scrolling; source regression additionally checks exact egui offset"
+}

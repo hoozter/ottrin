@@ -18,6 +18,45 @@ Subsequent checkpoint narratives are historical evidence: their “next”, “p
 necessarily to the present checkout. Artifact receipts define acceptance only for
 their named hashes. Test counts are scoped observations, not completion measures.
 
+- **Current delivery: Linux and Windows e79b915e (2026-11-01).** All four
+  Linux formats at `dist/packages/` and the single Windows ZIP/NSIS/MSI candidate
+  at `dist/windows-candidate/` now contain the preview-footer,Column-entry,
+  bounded-metadata,breadcrumb and single-tooltip corrections. Complete hosted
+  run **41251463739** passes Linux/Windows workspace tests,strict lint,release
+  builds and performance. Native UI checks pass410 regular Linux cases and383
+  Windows cases per ordinary/elevated token,with existing ignores retained.
+  Actual AppImage Dark100/Light150 checks verify direct controls at deep paths,
+  List/Grid-to-Column reveal,one full-path tooltip,read-only Inspector close,
+  unchanged five-file bytes and normal exit0 with saved theme/Miller preferences.
+  Deliberate Miller scrolling survives reselecting Column mode without movement.
+  Windows58-file payloads agree across all three formats;native loader/CLI and
+  MSI administrative extraction pass. Fresh ordinary Dark100/default-launch GUI
+  verifies the same view/metadata fixes,VCF/text arrow navigation and Space close,
+  normal exit0,saved Dark/Miller/Automatic preferences and five independent raw
+  file reads after close. The first Windows session expired before final checks;
+  it is retained as failed,not acceptance. The fresh bounded core run passes.
+  All owned accounts/profiles/tasks/credentials,desktops,buses,mounts,extractions
+  and staging are retired;retained VMs are off. The superseded Windows candidate
+  was removed after replacement (285,915,692 bytes). Current shared compiler
+  caches remain;earlier guarded cleanup retired six sessions/0.40GiB here.
+  Evidence: `navigation-toolbar-current/`, `linux-navigation-package-current/`
+  and `windows-navigation-package-current/`;artifact receipts remain authoritative.
+- **Personal Linux service current:** enabled/watched Ready PID2275700 uses
+  the e79b915e runtime;daemon bytes remain unchanged (`df3f9618`). Configuration,
+  unit and wrapper hashes are preserved;the old mount is gone. This is an orderly
+  runtime replacement,not a new CPU/memory acceptance or algorithm change.
+- **Independent MSI evidence reviewed:** upstream issue8574 remains open. Two
+  digest-verified published Server/MSI-version artifacts show actual FileRemove,
+  deliberate failure,rollback FileCopy,invalid-owner registration errors and a
+  later successful uninstall that strands the file. This corroborates the local
+  failure family;it is not a new Ottrin OS test,a causal conclusion or a fix.
+  Only compressed text diagnostics are retained;third-party MSI binaries were
+  not executed and downloaded archives are removed. Keep the rollback gate
+  required;further investigation needs a discriminating hypothesis or candidate
+  fix,while other ready work continues. Evidence: `msi-upstream-review-current/`.
+
+Earlier checkpoints below retain their recorded source/artifact scopes:
+
 - **Actual AppImage exposed toolbar defects (2026-11-01):** the clean489c72f4
   build passes all four-format content checks. Its actual deep-path List-to-
   Column menu action reveals the current directory and selected-file preview,
@@ -415,22 +454,24 @@ Historical variants/scopes:
 
 Resume at the unfinished operation, not the start of an older checkpoint:
 
-1. Finish native verification and clean package delivery of the Column-entry,
-   bounded metadata, breadcrumb and single-tooltip corrections above. Use the
-   actual long-path interface, ordinary Windows default renderer, literal-text
-   UI verification and independent final raw-byte reads after normal Close.
-   Prior rejected stages are removed; source checks alone are not delivery.
-   Then continue Windows transaction/alias/ancestor/resource/workflow,graphics
-   and installer lifecycle acceptance. Keep failed-uninstall MSI rollback
-   required and use a distinct proposed fix or justified OS comparison rather
-   than repeating its existing independent controls. Release publication/signing
-   remains unaccepted.
+1. Reproduce and repair the remaining preview layout issues recorded in
+   `linux-navigation-package-current/FOLLOW_UPS.json`: adjacent Inspector scroll
+   indicators and accessibility of the Details toggle/expanded metadata at large
+   text sizes. Establish rendered failures before source changes;preserve fixed
+   footers and width-fitted PDF gutter stability,then deliver affected packages.
 
-2. Continue dependency-ready preview/editing, file-operation and packaging
-   outcomes below, then platform acceptance. Earlier workflows retain their
-   named scopes. Required outcome4 (the themed picker and supported folder
-   integration) stays deferred until the preceding unblocked engineering is complete. Owner
-   testing does not block independently executable work.
+2. Continue available Windows renderer preference/override,Office-preview and
+   daily-driver software acceptance in separate bounded fixtures. The aborted
+   extra Copy Replace→Rename→Undo chain is not accepted;finish it independently
+   rather than extending an unrelated viewer fixture. Native GPU/override paths
+   are not inferred from loaded DLL names. Keep installer lifecycle/rollback
+   gates required;do not repeat equivalent independent MSI controls.
+
+3. Complete other dependency-ready preview/editing,file-operation and packaging
+   outcomes,then the required themed picker/folder integration. Park owner,
+   unavailable physical-device and external release-identity waits separately;
+   they do not block independently executable work. Release publication/signing
+   and final owner acceptance remain unaccepted.
 
 CI push filters now omit commits that change only roadmap/status delivery
 receipts (`docs/ROADMAP.md`, `.hermes/evidence/**`, `dist/**`). Source, workflow,
@@ -490,15 +531,18 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The current Linux cohort is built from clean `3d469f31`. Its full hosted Linux
-source checks, four-format contents and actual Light/Miller100 plus Dark/List150
-preview/read-only/normal-close/icon scopes are recorded above and in
-`.hermes/evidence/linux-preview-footer-package-current/ACCEPTANCE.json`.
-The configured service uses the current runtime with unchanged daemon bytes;
-previous resource/workflow receipts retain their dates and artifact hashes.
-All current private GUI/build/extraction fixtures are removed. Exact privileged
-cleanup of two earlier diagnostic cores remains on the waiting list. Broader
-platform,Office,picker,installer,signing and owner acceptance remain separate.
+The current Linux cohort is built from clean `e79b915e`. All four formats pass
+content/source checks and actual Dark100/Light150 AppImage navigation,metadata,
+read-only Inspector,byte-preservation and normal-close acceptance. The Windows
+internal candidate is the same source,with58 matching files across ZIP/NSIS/MSI,
+scoped native loader/administrative extraction and ordinary packaged GUI checks.
+Complete hosted Linux/Windows/performance verification passes for this source.
+The configured Linux service uses the current runtime and unchanged daemon bytes.
+Receipts: `.hermes/evidence/linux-navigation-package-current/ACCEPTANCE.json`
+and `.hermes/evidence/windows-navigation-package-current/ACCEPTANCE.json`.
+Earlier workflow/resource observations retain their original dates and hashes.
+All task staging and private fixtures are removed. The two earlier privileged
+core removals and final physical/owner/signing gates remain separate waits.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
@@ -521,10 +565,10 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | All four `3d469f31` formats pass current contents/source checks and scoped actual-AppImage Light/Miller100 and Dark/List150 preview/read-only/normal-close/icon acceptance. Full hosted Linux/performance pass;enabled service uses current runtime with unchanged daemon ELF and preserved configuration. Earlier workflows retain original hashes. | Complete ready Miller view/metadata corrections and remaining concentrated fresh-distro,device,media,elevation and final candidate acceptance. |
-| Windows | Internal `520d9c57` at `dist/windows-candidate/` agrees on58 files across portable/NSIS/MSI; native loader/CLI, single Replace and four-item batch Undo after destination-parent renames preserve old-path replacements; seven raw files and normal exit0 pass. Earlier cleanup/VCF scopes retain original hashes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) retains exact scopes. Full hosted `520d9c57` Linux/Windows workspace, lint and release pass;375 native UI cases pass per ordinary/elevated GNU token and on hosted MSVC. | Remaining transaction/alias/ancestor/resource/workflow, installer rollback/lifecycle, graphics and platform gates. Earlier broader GUI scopes retain their original hashes. |
-| Ottrin picker and folder integration | Required outcome 4 is approved and defined below. | Implement after the earlier implementation, packaging and platform-acceptance work. Keep user testing deferred while independent earlier work continues. |
-| Release | Signing integration exists in source; focused receipts identify tested artifacts. | Linux signing identity, exact downloaded signatures/checksums, release CI/workspace checks and the complete Linux/Windows candidate gates remain open. |
+| Linux | Four e79b915e formats;full hosted source checks;actual Dark100/Light150 view switching,breadcrumbs,metadata,read-only close and byte preservation;enabled service on current runtime. | Preview scrolling/large-text Details investigation,remaining concentrated software/platform acceptance,and later owner/device acceptance. |
+| Windows | e79b915e internal candidate;58 identical payload files across ZIP/NSIS/MSI;native CLI/administrative extraction;ordinary packaged view/VCF/text/Space/normal-close/five-raw-file checks;full hosted source verification. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) defines exact scopes. | Separate renderer/preference/Office/workflow and installed-lifecycle acceptance;MSI rollback remains failed,not waived. Earlier broader workflows retain their original hashes. |
+| Ottrin picker and folder integration | Required outcome4 is approved and defined below. | Implement after earlier unblocked engineering/software acceptance;park owner/physical/external waits so they do not block this required milestone. |
+| Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each
 checkpoint below retains its recorded source and artifact scope. These outcomes
