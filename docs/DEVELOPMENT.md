@@ -1759,3 +1759,20 @@ a newly validated typed-name candidate.
 Directory browsing works with the index stopped. Explicit **Indexed folders**
 search uses the existing index asynchronously and never starts it. This protocol
 does not replace other applications' native dialogs by itself.
+
+## Main-window index availability
+
+Opening the file manager must not wait for an index RPC or daemon readiness.
+The normal user window observes a separate `ottrin index ensure` process, which
+uses the existing package/service upgrade path and can complete if the window
+closes. This command is headless, rejects extra arguments and `--json`, and
+refuses automatic root-user startup on Unix. Standalone Inspector and picker
+launches do not request daemon startup.
+
+`remote_index` owns the UI connection, ordered configuration and cached
+diagnostics. Only its workers perform normal index RPCs. Queries are cancellable;
+long maintenance uses a separate worker so it cannot hold the status/query
+queue. Configuration failures remain visible, and reconnect applies the latest
+configuration before queries. A ready worker has no periodic idle RPC; cached
+status reads may request a coalesced refresh after two seconds. This worker
+never starts a fallback local scanner or installs a service.

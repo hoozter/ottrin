@@ -19,13 +19,17 @@ use std::io::Write;
 use std::os::unix::fs::MetadataExt;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "windows"))]
 use std::process::{Command, Stdio};
 #[cfg(unix)]
 use std::thread;
+#[cfg(any(unix, test))]
+use std::time::Duration;
 #[cfg(unix)]
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum GuiLaunchTarget {
@@ -102,6 +106,7 @@ fn parse_cli_arguments(args: &[String]) -> Result<CliArguments, String> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum HeadlessAction {
+    IndexEnsure,
     IndexUpdate {
         json: bool,
     },
@@ -392,18 +397,6 @@ fn main() {
     if gui_target.is_none() && handle_cli_action(&cli.command) {
         return;
     }
-    #[cfg(unix)]
-    if should_ensure_index_daemon(unsafe { libc::geteuid() })
-        && let Err(error) = ensure_index_daemon()
-    {
-        eprintln!("ottrin: {error}");
-        std::process::exit(1);
-    }
-    #[cfg(target_os = "windows")]
-    if let Err(error) = ensure_index_daemon() {
-        report_windows_startup_failure("Ottrin index could not start", &error);
-        std::process::exit(1);
-    }
     install_windows_startup_panic_hook();
     if let Err(error) = run_gui(gui_target, cli) {
         eprintln!("ottrin: {error}");
@@ -458,6 +451,21 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
         options,
         Box::new(move |cc| {
             let mut app = OttrinApp::new_with_graphics_status(cc, graphics_runtime);
+            #[cfg(any(unix, target_os = "windows"))]
+            {
+                #[cfg(unix)]
+                // SAFETY: geteuid has no preconditions and no side effects.
+                let required = should_ensure_index_daemon(unsafe { libc::geteuid() });
+                #[cfg(target_os = "windows")]
+                let required = true;
+                if required && !standalone_inspector {
+                    let ctx = cc.egui_ctx.clone();
+                    app.observe_index_startup(spawn_index_startup(
+                        run_index_bootstrap_process,
+                        move || ctx.request_repaint(),
+                    ));
+                }
+            }
             match gui_target {
                 Some(GuiLaunchTarget::QuickInspector(path)) => {
                     app.open_quick_inspector_file(path);
@@ -473,6 +481,59 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
             Ok(Box::new(app))
         }),
     )
+}
+
+/// A headless process owns runtime upgrades so closing the window cannot interrupt them.
+#[cfg(any(unix, target_os = "windows"))]
+fn run_index_bootstrap_process() -> Result<(), String> {
+    let executable = std::env::current_exe().map_err(|error| error.to_string())?;
+    let mut command = Command::new(executable);
+    command
+        .args(["index", "ensure"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped());
+    #[cfg(unix)]
+    command.process_group(0);
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+    let output = command
+        .output()
+        .map_err(|error| format!("Cannot launch index startup: {error}"))?;
+    if output.status.success() {
+        Ok(())
+    } else {
+        let detail = String::from_utf8_lossy(&output.stderr).trim().to_owned();
+        Err(if detail.is_empty() {
+            format!("Index startup failed ({})", output.status)
+        } else {
+            detail
+        })
+    }
+}
+
+/// Launch availability is independent of index readiness; errors are reported in the open UI.
+#[cfg(any(unix, target_os = "windows"))]
+fn spawn_index_startup(
+    start: impl FnOnce() -> Result<(), String> + Send + 'static,
+    wake: impl FnOnce() + Send + 'static,
+) -> std::sync::mpsc::Receiver<Result<(), String>> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let worker_tx = tx.clone();
+    let worker = std::thread::Builder::new()
+        .name("ottrin-index-startup".into())
+        .spawn(move || {
+            let result = start();
+            if let Err(error) = &result {
+                eprintln!("ottrin: Background indexing unavailable: {error}");
+            }
+            let _ = worker_tx.send(result);
+            wake();
+        });
+    if let Err(error) = worker {
+        let _ = tx.send(Err(format!("Cannot start index startup worker: {error}")));
+    }
+    rx
 }
 
 const MAX_PICKER_REQUEST_BYTES: usize = 128 * 1024;
@@ -704,6 +765,9 @@ fn print_cli_help() {
     println!("                       [--limit N] [--offset N] Select a result page");
     println!("  ottrin index [update] [--json]");
     println!("                                 Update the configured search index");
+    println!(
+        "  ottrin index ensure            Start this package's user index and wait for readiness"
+    );
     println!("  ottrin index status [--json]   Show persisted index status without starting it");
     println!("  ottrin index rebuild [--json]");
     println!("                                 Build and atomically publish a fresh index");
@@ -851,14 +915,14 @@ fn parse_index_action(args: &[String]) -> HeadlessAction {
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
-            "update" | "status" | "rebuild" | "service-install" | "service-status"
+            "ensure" | "update" | "status" | "rebuild" | "service-install" | "service-status"
             | "service-restart" | "service-remove"
                 if !action_seen =>
             {
                 action = args[index].as_str();
                 action_seen = true;
             }
-            "update" | "status" | "rebuild" | "service-install" | "service-status"
+            "ensure" | "update" | "status" | "rebuild" | "service-install" | "service-status"
             | "service-restart" | "service-remove" => {
                 return HeadlessAction::Invalid("index accepts exactly one action".to_string());
             }
@@ -877,6 +941,8 @@ fn parse_index_action(args: &[String]) -> HeadlessAction {
         index += 1;
     }
     match action {
+        "ensure" if !json => HeadlessAction::IndexEnsure,
+        "ensure" => HeadlessAction::Invalid("index ensure does not accept --json".into()),
         "status" => HeadlessAction::IndexStatus { json },
         "rebuild" => HeadlessAction::IndexRebuild { json },
         "service-install" if !json => HeadlessAction::IndexServiceInstall,
@@ -1085,6 +1151,24 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     }
 
     match action {
+        HeadlessAction::IndexEnsure => {
+            #[cfg(unix)]
+            // SAFETY: geteuid has no preconditions and no side effects.
+            if !should_ensure_index_daemon(unsafe { libc::geteuid() }) {
+                return Err(
+                    "Administrator indexing requires explicit service setup and scope selection"
+                        .into(),
+                );
+            }
+            #[cfg(any(unix, target_os = "windows"))]
+            {
+                ensure_index_daemon().map(|_| ())
+            }
+            #[cfg(not(any(unix, target_os = "windows")))]
+            {
+                Err("Background index startup is unavailable on this platform".into())
+            }
+        }
         HeadlessAction::IndexStatus { json } => {
             #[cfg(any(unix, target_os = "windows"))]
             if let Some(client) = connected_index_daemon() {
@@ -2126,5 +2210,56 @@ mod tests {
         assert!(contents.contains("Ottrin startup failure"));
         assert!(contents.contains("Summary: WGPU initialization failed"));
         assert!(contents.contains("Details: No wgpu backend feature"));
+    }
+    #[cfg(any(unix, target_os = "windows"))]
+    #[test]
+    fn slow_index_startup_returns_control_before_the_daemon_is_ready() {
+        let (entered, started) = std::sync::mpsc::channel();
+        let (release, gate) = std::sync::mpsc::channel();
+        let (wake, woke) = std::sync::mpsc::channel();
+        let result = spawn_index_startup(
+            move || {
+                entered.send(()).unwrap();
+                gate.recv_timeout(Duration::from_secs(2)).unwrap();
+                Ok(())
+            },
+            move || {
+                wake.send(()).unwrap();
+            },
+        );
+        started.recv_timeout(Duration::from_secs(2)).unwrap();
+        assert!(matches!(
+            result.try_recv(),
+            Err(std::sync::mpsc::TryRecvError::Empty)
+        ));
+        release.send(()).unwrap();
+        assert_eq!(result.recv_timeout(Duration::from_secs(2)).unwrap(), Ok(()));
+        woke.recv_timeout(Duration::from_secs(2)).unwrap();
+    }
+    #[cfg(any(unix, target_os = "windows"))]
+    #[test]
+    fn index_startup_failure_is_a_ui_result_instead_of_a_process_exit() {
+        let result = spawn_index_startup(|| Err("index unavailable".into()), || {});
+        assert_eq!(
+            result.recv_timeout(Duration::from_secs(2)).unwrap(),
+            Err("index unavailable".into())
+        );
+    }
+
+    #[test]
+    fn index_startup_broker_is_headless_and_rejects_ambiguous_arguments() {
+        assert_eq!(
+            cli_headless_action(&["index".into(), "ensure".into()]),
+            Some(HeadlessAction::IndexEnsure)
+        );
+        for args in [
+            vec!["index".into(), "ensure".into(), "--json".into()],
+            vec!["index".into(), "ensure".into(), "rebuild".into()],
+        ] {
+            assert!(matches!(
+                cli_headless_action(&args),
+                Some(HeadlessAction::Invalid(_))
+            ));
+        }
     }
 }

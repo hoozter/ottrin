@@ -76,6 +76,8 @@ const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer ins
 mod appearance_editor;
 mod config;
 mod operation_paths;
+#[cfg(any(unix, target_os = "windows"))]
+mod remote_index;
 mod transfer_probe;
 use operation_paths::{OperationPath, OperationPathIndex};
 mod copy_activity_cleanup;
@@ -2793,17 +2795,19 @@ struct AdministratorSessionIndex {
 
 struct UiSearchService {
     #[cfg(all(any(unix, target_os = "windows"), not(test)))]
-    client: Option<SearchDaemonClient>,
+    remote: Option<remote_index::RemoteIndex>,
     #[cfg(all(unix, not(test)))]
     administrator_session: Option<AdministratorSessionIndex>,
-    #[cfg(all(any(unix, target_os = "windows"), not(test)))]
-    diagnostics_cache: Mutex<(Instant, SearchIndexDiagnostics)>,
+    #[cfg(all(unix, not(test)))]
+    repaint: ResultRepaint,
+    #[cfg(all(unix, not(test)))]
+    administrator_error: Option<String>,
     #[cfg(any(not(any(unix, target_os = "windows")), test))]
     local: SearchService,
 }
 
 impl UiSearchService {
-    fn new(config: SearchConfig) -> Self {
+    fn new(config: SearchConfig, repaint: ResultRepaint) -> Self {
         #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
             // SAFETY: geteuid has no preconditions and no side effects.
@@ -2811,38 +2815,23 @@ impl UiSearchService {
             let required = daemon_connection_required(unsafe { libc::geteuid() });
             #[cfg(target_os = "windows")]
             let required = true;
-            let client = required.then(|| {
-                SearchDaemonClient::connect_default()
-                    .expect("the package-owned index daemon path was validated before GUI startup")
-            });
-            let diagnostics = client.as_ref().map_or_else(
-                || {
-                    SearchIndexDiagnostics::unavailable(
-                        "Administrator indexing is disabled until explicitly enabled".to_string(),
-                    )
-                },
-                |client| {
-                    client
-                        .diagnostics()
-                        .unwrap_or_else(SearchIndexDiagnostics::unavailable)
-                },
-            );
-            let mut service = Self {
-                client,
+            Self {
+                remote: required.then(|| remote_index::RemoteIndex::new(config, repaint.clone())),
+                #[cfg(unix)]
+                repaint,
                 #[cfg(unix)]
                 administrator_session: None,
-                diagnostics_cache: Mutex::new((Instant::now(), diagnostics)),
-            };
-            service.update_config(config);
-            service
+                #[cfg(unix)]
+                administrator_error: None,
+            }
         }
         #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
+            let _ = repaint;
             #[cfg(test)]
             {
-                let store = test_search_store_path();
                 Self {
-                    local: SearchService::new_with_store_path(config, store),
+                    local: SearchService::new_with_store_path(config, test_search_store_path()),
                 }
             }
             #[cfg(all(not(any(unix, target_os = "windows")), not(test)))]
@@ -2915,9 +2904,8 @@ impl UiSearchService {
             let _ = remove_administrator_session_index_directory(&paths);
             return Err(error);
         }
-        *self.diagnostics_cache.lock().expect("search diagnostics") =
-            (Instant::now(), service.diagnostics());
-        self.client = None;
+        self.administrator_error = None;
+        self.remote = None;
         self.administrator_session = Some(AdministratorSessionIndex { service, paths });
         Ok(())
     }
@@ -2934,7 +2922,10 @@ impl UiSearchService {
     fn stop_administrator_session_index(&mut self) {}
 
     #[cfg(all(unix, not(test)))]
-    fn connect_administrator_persistent_index(&mut self) -> Result<(), String> {
+    fn connect_administrator_persistent_index(
+        &mut self,
+        config: SearchConfig,
+    ) -> Result<(), String> {
         // SAFETY: geteuid has no preconditions and no side effects.
         if unsafe { libc::geteuid() } != 0 {
             return Err(
@@ -2947,10 +2938,8 @@ impl UiSearchService {
             if let Ok(client) = SearchDaemonClient::connect_default()
                 && client.ping().is_ok()
             {
-                let diagnostics = client.diagnostics()?;
-                self.client = Some(client);
-                *self.diagnostics_cache.lock().expect("search diagnostics") =
-                    (Instant::now(), diagnostics);
+                self.remote = Some(remote_index::RemoteIndex::new(config, self.repaint.clone()));
+                self.administrator_error = None;
                 return Ok(());
             }
             if Instant::now() >= deadline {
@@ -2961,20 +2950,18 @@ impl UiSearchService {
     }
 
     #[cfg(any(not(unix), test))]
-    fn connect_administrator_persistent_index(&mut self) -> Result<(), String> {
+    fn connect_administrator_persistent_index(
+        &mut self,
+        _config: SearchConfig,
+    ) -> Result<(), String> {
         Err("Persistent Administrator indexing is available only on Unix.".to_string())
     }
 
     fn disconnect_administrator_persistent_index(&mut self) {
         #[cfg(all(unix, not(test)))]
         {
-            self.client = None;
-            *self.diagnostics_cache.lock().expect("search diagnostics") = (
-                Instant::now(),
-                SearchIndexDiagnostics::unavailable(
-                    "Administrator indexing is disabled until explicitly enabled".to_string(),
-                ),
-            );
+            self.remote = None;
+            self.administrator_error = None;
         }
     }
 
@@ -3005,17 +2992,14 @@ impl UiSearchService {
                         session.service.stop();
                         let _ = remove_administrator_session_index_directory(&session.paths);
                     }
-                    *self.diagnostics_cache.lock().expect("search diagnostics") =
-                        (Instant::now(), SearchIndexDiagnostics::unavailable(error));
+                    self.administrator_error = Some(error);
                 }
             }
             return;
         }
         #[cfg(all(any(unix, target_os = "windows"), not(test)))]
-        if let Some(client) = &self.client
-            && let Err(error) = client.update_config(config)
-        {
-            self.record_daemon_error(error);
+        if let Some(remote) = &self.remote {
+            remote.update_config(config);
         }
         #[cfg(any(not(any(unix, target_os = "windows")), test))]
         self.local.update_config(config);
@@ -3024,25 +3008,20 @@ impl UiSearchService {
     fn diagnostics(&self) -> SearchIndexDiagnostics {
         #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
-            let mut cache = self.diagnostics_cache.lock().expect("search diagnostics");
             #[cfg(unix)]
             if let Some(session) = &self.administrator_session {
                 return session.service.diagnostics();
             }
-            if cache.0.elapsed() >= Duration::from_millis(100) {
-                let Some(client) = &self.client else {
-                    return cache.1.clone();
-                };
-                match client.diagnostics() {
-                    Ok(diagnostics) => *cache = (Instant::now(), diagnostics),
-                    Err(error) => {
-                        cache.0 = Instant::now();
-                        cache.1.status = SearchIndexStatus::Unavailable;
-                        cache.1.last_error = Some(error);
-                    }
-                }
+            if let Some(remote) = &self.remote {
+                return remote.diagnostics();
             }
-            cache.1.clone()
+            #[cfg(unix)]
+            if let Some(error) = &self.administrator_error {
+                return SearchIndexDiagnostics::unavailable(error.clone());
+            }
+            SearchIndexDiagnostics::unavailable(
+                "Administrator indexing is disabled until explicitly enabled",
+            )
         }
         #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
@@ -3050,11 +3029,18 @@ impl UiSearchService {
         }
     }
 
+    fn refresh(&self) {
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
+        if let Some(remote) = &self.remote {
+            remote.refresh();
+        }
+    }
+
     fn handle(&self) -> UiSearchHandle {
         #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
             UiSearchHandle {
-                remote: self.client.clone(),
+                remote: self.remote.as_ref().map(remote_index::RemoteIndex::handle),
                 #[cfg(unix)]
                 administrator_session: self
                     .administrator_session
@@ -3078,10 +3064,8 @@ impl UiSearchService {
                 session.service.rebuild_index();
                 return;
             }
-            if let Some(client) = self.client.clone() {
-                std::thread::spawn(move || {
-                    let _ = client.rebuild();
-                });
+            if let Some(remote) = &self.remote {
+                remote.rebuild();
             }
         }
         #[cfg(any(not(any(unix, target_os = "windows")), test))]
@@ -3098,31 +3082,21 @@ impl UiSearchService {
                 remove_administrator_session_index_directory(&session.paths)?;
                 return Ok(bytes);
             }
-            let Some(client) = &self.client else {
+            let Some(remote) = &self.remote else {
                 return Ok(0);
             };
-            let bytes = client.clear_storage()?;
-            client.shutdown()?;
-            Ok(bytes)
+            remote.clear_storage()
         }
         #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
             self.local.clear_storage()
         }
     }
-
-    #[cfg(all(any(unix, target_os = "windows"), not(test)))]
-    fn record_daemon_error(&self, error: String) {
-        let mut cache = self.diagnostics_cache.lock().expect("search diagnostics");
-        cache.0 = Instant::now();
-        cache.1.status = SearchIndexStatus::Unavailable;
-        cache.1.last_error = Some(error);
-    }
 }
 
 struct UiSearchHandle {
     #[cfg(all(any(unix, target_os = "windows"), not(test)))]
-    remote: Option<SearchDaemonClient>,
+    remote: Option<remote_index::Handle>,
     #[cfg(all(unix, not(test)))]
     administrator_session: Option<SearchHandle>,
     #[cfg(any(not(any(unix, target_os = "windows")), test))]
@@ -3149,7 +3123,7 @@ impl UiSearchHandle {
                     "Administrator indexing is disabled until explicitly enabled".to_string(),
                 );
             };
-            match remote.query_cancellable(query, cancelled) {
+            match remote.query(query, cancelled) {
                 Ok(result) if !cancelled.load(Ordering::Acquire) => result,
                 Ok(_) => unavailable_search_result("Search cancelled".to_string()),
                 Err(error) => unavailable_search_result(error),
@@ -3686,6 +3660,7 @@ pub struct OttrinApp {
     // About dialog visible
     show_about: bool,
     // Settings modal visible
+    index_startup_rx: Option<Receiver<Result<(), String>>>,
     service_action_rx: Option<Receiver<Result<String, String>>>,
     service_action_result: Option<Result<String, String>>,
     show_settings: bool,
@@ -3923,7 +3898,7 @@ impl OttrinApp {
             state,
             colors,
             tab_ui: HashMap::new(),
-            result_repaint,
+            result_repaint: result_repaint.clone(),
             listing_tx,
             listing_rx,
             op_tx,
@@ -3975,7 +3950,7 @@ impl OttrinApp {
                 "Status not initialized".to_string(),
             ),
             privileged_status: None,
-            search_service: UiSearchService::new(search_config),
+            search_service: UiSearchService::new(search_config, result_repaint.clone()),
             search_cancellation: None,
             search_started: false,
             search_ui: SearchUiState::default(),
@@ -4002,6 +3977,7 @@ impl OttrinApp {
             last_grid_cols: 4,
             list_col_px: [360.0, 140.0, 120.0, 180.0],
             show_about: false,
+            index_startup_rx: None,
             service_action_rx: None,
             service_action_result: None,
             show_settings: false,
@@ -20843,6 +20819,37 @@ impl OttrinApp {
         self.privileged_availability = self.platform.privileged_availability();
     }
 
+    /// Observe optional background startup without delaying construction or browsing.
+    pub fn observe_index_startup(&mut self, result: Receiver<Result<(), String>>) {
+        self.index_startup_rx = Some(result);
+    }
+
+    fn poll_index_startup(&mut self) {
+        let result = self
+            .index_startup_rx
+            .as_ref()
+            .and_then(|rx| match rx.try_recv() {
+                Ok(result) => Some(result),
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    Some(Err("Index startup worker stopped unexpectedly".into()))
+                }
+                Err(mpsc::TryRecvError::Empty) => None,
+            });
+        if let Some(result) = result {
+            self.index_startup_rx = None;
+            self.search_service.refresh();
+            if let Err(error) = result {
+                self.set_status_message(
+                    format!(
+                        "Background indexing unavailable: {error}. File browsing is available."
+                    ),
+                    false,
+                    15,
+                );
+            }
+        }
+    }
+
     fn begin_service_action(
         &mut self,
         ctx: &Context,
@@ -20875,6 +20882,7 @@ impl OttrinApp {
         if let Some(result) = result {
             self.service_action_rx = None;
             self.search_ui.sqlite_schedule_status = None;
+            self.search_service.refresh();
             self.privileged_availability = self.platform.privileged_availability();
             self.service_action_result = Some(result);
         }
@@ -20963,7 +20971,7 @@ impl OttrinApp {
             #[cfg(unix)]
             let stopped = ottrin_search::default_daemon_socket_path().is_ok_and(|path| !path.exists());
             #[cfg(all(target_os = "windows", not(test)))]
-            let stopped = diag.status == SearchIndexStatus::Unavailable && self.search_service.client.as_ref().is_some_and(|client| client.endpoint_present() == Ok(false));
+            let stopped = diag.status == SearchIndexStatus::Unavailable && SearchDaemonClient::connect_default().is_ok_and(|client| client.endpoint_present() == Ok(false));
             #[cfg(any(all(target_os = "windows", test), not(any(unix, target_os = "windows"))))]
             let stopped = false;
             let index_status = match diag.status {
@@ -21576,7 +21584,7 @@ impl OttrinApp {
                                                                     })
                                                                     .and_then(|message| {
                                                                         self.search_service
-                                                                            .connect_administrator_persistent_index()
+                                                                            .connect_administrator_persistent_index(self.state.config.search.clone())
                                                                             .map(|()| message)
                                                                     });
                                                                     match result {
@@ -21623,7 +21631,7 @@ impl OttrinApp {
                                                                 )
                                                                 .and_then(|message| {
                                                                     self.search_service
-                                                                        .connect_administrator_persistent_index()
+                                                                        .connect_administrator_persistent_index(self.state.config.search.clone())
                                                                         .map(|()| message)
                                                                 });
                                                                 match result {
@@ -23043,6 +23051,7 @@ impl eframe::App for OttrinApp {
         self.smart_panel_rect = None;
         self.preview_budget_remaining = PREVIEW_REQUESTS_PER_FRAME;
         // Process async results
+        self.poll_index_startup();
         self.poll_service_action();
         self.poll_listing_results();
         self.poll_op_results();

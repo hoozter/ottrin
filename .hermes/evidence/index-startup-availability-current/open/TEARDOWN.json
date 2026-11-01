@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-3j92kd8b",
+  "owned_processes_reaped": [
+    {
+      "pid": 3127706,
+      "exit": 0
+    },
+    {
+      "pid": 3127709,
+      "exit": 0
+    },
+    {
+      "pid": 3127710,
+      "exit": 15
+    },
+    {
+      "pid": 3127760,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      3127812
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Command '['/var/tmp/.ottrin-picker-qa-3j92kd8b/runtime-bin/ottrin-app', '/var/tmp/.ottrin-picker-qa-3j92kd8b/fixture']' timed out after 8 seconds",
+  "profile_removed": true
+}

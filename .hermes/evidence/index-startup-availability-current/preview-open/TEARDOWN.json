@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-w9q9ig47",
+  "owned_processes_reaped": [
+    {
+      "pid": 3138527,
+      "exit": 0
+    },
+    {
+      "pid": 3138564,
+      "exit": 0
+    },
+    {
+      "pid": 3138565,
+      "exit": 15
+    },
+    {
+      "pid": 3138624,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "File manager must open while indexing is unavailable",
+  "profile_removed": true
+}

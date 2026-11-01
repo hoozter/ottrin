@@ -1,0 +1,54 @@
+{
+  "expectation": "open",
+  "binary_sha256": "9466042ad00ba13c5142a2d48c4dea876263de8fe8a9879186d5bfbdd2017402",
+  "source_binary_before": {
+    "device": 66306,
+    "inode": 5823320,
+    "size": 835926880,
+    "mtime_ns": 1793520706868387668,
+    "links": 2
+  },
+  "scope": "Actual debug-source GUI under a non-ready package-owned test index; not package or resource acceptance",
+  "visible_within_deadline": true,
+  "observed_ms": 114.83,
+  "exit": 0,
+  "status": "pass: normal GUI open and close with non-ready index",
+  "test_index_started": false,
+  "index_never_became_ready": true,
+  "original_bytes_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-hakfu8kh",
+    "owned_processes_reaped": [
+      {
+        "pid": 3138980,
+        "exit": 0
+      },
+      {
+        "pid": 3138983,
+        "exit": 0
+      },
+      {
+        "pid": 3138984,
+        "exit": 15
+      },
+      {
+        "pid": 3139033,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "source_binary_after": {
+    "device": 66306,
+    "inode": 5823320,
+    "size": 835926880,
+    "mtime_ns": 1793520706868387668,
+    "links": 2
+  }
+}

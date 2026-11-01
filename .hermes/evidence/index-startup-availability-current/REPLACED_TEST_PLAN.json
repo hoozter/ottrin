@@ -1,0 +1,22 @@
+{
+  "old": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-c271490c9dc3ad7f.exe",
+  "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-05937bd1bf220906.exe",
+  "same_compiler_configuration": {
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "target": 11039074169040111439,
+    "profile": 4539089746505721204,
+    "rustflags": [],
+    "compile_kind": 8200324069407742093
+  },
+  "sha256": "7a126c8188264ce6d8eedb4dc3a503e42321d083844aea2d3fa280aaeca32e4c",
+  "logical_bytes": 736482683,
+  "paths": [
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-c271490c9dc3ad7f.exe",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-c271490c9dc3ad7f.d",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-c271490c9dc3ad7f/test-lib-ottrin_ui",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-c271490c9dc3ad7f/dep-test-lib-ottrin_ui",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-c271490c9dc3ad7f/test-lib-ottrin_ui.json",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-c271490c9dc3ad7f/invoked.timestamp"
+  ]
+}

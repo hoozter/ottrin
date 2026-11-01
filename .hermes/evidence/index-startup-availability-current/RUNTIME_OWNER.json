@@ -1,0 +1,32 @@
+{
+  "nonce": "e2deaebe-347c-4519-b0be-1d5417e3ca56",
+  "guest_root": "C:\\OttrinJobFixtureQA",
+  "domain": "ottrin-copy-cleanup-qa",
+  "status": "failed",
+  "source": {
+    "base_revision": "601c00ed293eb12e9322fd6b22a826a26998ff33",
+    "working_tree": [
+      " M .hermes/evidence/index-startup-availability-current/native-control.py",
+      " M crates/ottrin-app/src/main.rs",
+      " M crates/ottrin-ui/src/lib.rs",
+      " M docs/DEVELOPMENT.md",
+      " M docs/USER_GUIDE.md",
+      "?? AGENTS.md",
+      "?? crates/ottrin-ui/src/remote_index.rs"
+    ],
+    "files": {
+      "crates/ottrin-app/src/main.rs": "48fa971ef3dab4682a30c0d52e8299d2daa66b6742ed9634f63592c10e14edcc",
+      "crates/ottrin-core/src/picker.rs": "d1d672e4f677edfaa44bb93b92b44b46383650c2c9861deb01ffb0c8f017a6cd",
+      "crates/ottrin-ui/src/copy_activity_work.rs": "433af3cc11ca8ee6170d99a91b099ca05e6bfb51fad55e2c20411b17a2860625",
+      "crates/ottrin-ui/src/lib.rs": "a2817f913cfeed30e175d227633bb4fa244d29877d8e2686db06846a8d255c4f",
+      "crates/ottrin-ui/src/remote_index.rs": "67f2c19dda5ab6044f945f011cd579702736764bfaa6b27546c620ad9b0ea3d8"
+    }
+  },
+  "phase": "cleanup",
+  "active_controller_pid": null,
+  "active_controller_script_sha256": "23d6b96f4a85fe90d652257933a474d38fc1f7971d4044495dcb2700dad802dd",
+  "error": "RuntimeError(\"guest-file-open failed for ottrin-copy-cleanup-qa: error: internal error: unable to execute QEMU agent command 'guest-file-open': failed to open file 'C:\\\\OttrinJobFixtureQA\\\\results\\\\short-temp-ordinary-app-runtime.stdout': The system cannot find the file specified.\")",
+  "root_removed": true,
+  "shutdown_transport_disconnected": true,
+  "guest_off": true
+}

@@ -1,0 +1,50 @@
+{
+  "status": "pass within source and declared native GUI scopes; not package delivery",
+  "source_sha256": {
+    "crates/ottrin-app/src/main.rs": "48fa971ef3dab4682a30c0d52e8299d2daa66b6742ed9634f63592c10e14edcc",
+    "crates/ottrin-ui/src/lib.rs": "a2817f913cfeed30e175d227633bb4fa244d29877d8e2686db06846a8d255c4f",
+    "crates/ottrin-ui/src/remote_index.rs": "67f2c19dda5ab6044f945f011cd579702736764bfaa6b27546c620ad9b0ea3d8"
+  },
+  "Linux": {
+    "ui_regular": 443,
+    "ui_existing_ignored": 1,
+    "app": 30,
+    "strict_lint": true,
+    "format": true
+  },
+  "Windows": {
+    "ui_per_ordinary_elevated": 415,
+    "ui_existing_ignored": 4,
+    "app_per_ordinary_elevated": 27,
+    "app_ignored": 0,
+    "all_filters": 0,
+    "strict_cross_lint": true
+  },
+  "GUI": {
+    "nonready_index": "open-pointer/RESULT.json",
+    "standalone_inspector_no_index_launch": "preview-open-command/RESULT.json",
+    "startup_completes_after_window_close": "complete-open/RESULT.json"
+  },
+  "controls": {
+    "before": "blocked/RESULT.json",
+    "alt_f4_driver_failures": [
+      "open/RESULT.json",
+      "open-retry/RESULT.json"
+    ],
+    "invalid_driver_preview_argument": "preview-open/RESULT.json",
+    "native_application_inventory_harness_failure": "RUNTIME_OWNER.json",
+    "corrected_native_application_harness": "app-final/RUNTIME_OWNER.json"
+  },
+  "cleanup": {
+    "guarded_obsolete_incremental_sessions": 34,
+    "measured_incremental_gib": 1.18,
+    "transient_unreadable_process": "Initial cleanup refused PID3138195; it had exited before inspection. Fresh guarded run passed without adding an exception.",
+    "private_profiles_removed": true,
+    "native_guest_off": true
+  },
+  "pending": [
+    "fresh Linux four-format and Windows candidate builds",
+    "exact-package GUI/resource acceptance",
+    "remaining roadmap integration and owner acceptance"
+  ]
+}

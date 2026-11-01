@@ -1,0 +1,32 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-vnxspxpl",
+  "owned_processes_reaped": [
+    {
+      "pid": 3137584,
+      "exit": 0
+    },
+    {
+      "pid": 3137587,
+      "exit": 0
+    },
+    {
+      "pid": 3137588,
+      "exit": 15
+    },
+    {
+      "pid": 3137636,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      3137688
+    ],
+    "unreadable_foreign_processes_preserved": 5
+  },
+  "owned_mounts_unmounted": [
+    "96 34 0:64 / /var/tmp/.ottrin-picker-qa-vnxspxpl/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

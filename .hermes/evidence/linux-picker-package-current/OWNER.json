@@ -1,0 +1,7 @@
+{
+  "purpose": "Next exact-source picker package delivery; preparatory producer files only",
+  "state": "Waiting for source checkpoint and GUI startup availability repair before substantial builds; staging unallocated",
+  "staging": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-stage",
+  "staging_allocated": false,
+  "cleanup_owner": "Current roadmap goal; producers tear down failures and promotion retires completed staging"
+}

@@ -1,0 +1,12 @@
+{
+  "scope": "after startup source checks and before native runtime/package phase",
+  "bytes": {
+    "target/debug/deps": 32389923102,
+    "target/debug/incremental": 13062816429,
+    "target/x86_64-pc-windows-gnu/debug/deps": 31981255317,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 29653145521,
+    ".hermes/evidence/index-startup-availability-current": 773553,
+    ".hermes/evidence/linux-picker-package-current": 12984,
+    ".hermes/evidence/windows-picker-package-current": 22740
+  }
+}

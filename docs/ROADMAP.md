@@ -108,13 +108,24 @@ their named hashes. Test counts are scoped observations, not completion measures
   The initial five-minute platform harness was incomplete; the final bounded
   two-thread runs pass all536 advertised entries per token. Exact receipts retain
   the original incomplete control. Evidence: `picker-native-path-current/`.
-- **Main-window index readiness remains an independently executable repair.**
-  A controlled non-ready index reproduces startup exiting1 after30 seconds without
-  opening the file-manager window. Its source still performs readiness work before
-  graphics startup; UI diagnostics/configuration also make synchronous RPC calls.
-  Decouple browsing/window availability from that work,verify recovery without a
-  local fallback scanner,then refresh the usable package cohort. The source/control
-  is in `index-startup-availability-current/`; this is not a repaired-package claim.
+- **Main-window index availability is repaired in source,not yet packaged.**
+  Window creation and browsing no longer wait for daemon readiness or normal index
+  RPCs. A separate headless startup process owns the existing runtime-upgrade path
+  and can finish after the window closes. Cached UI diagnostics,ordered configuration,
+  cancellation and reconnect use a worker; long maintenance does not hold its queue.
+  No fallback scanner or new always-running service is introduced. Linux passes443
+  regular UI tests and30 application tests; native ordinary/elevated Windows passes415
+  regular UI and27 application tests per token,with existing ignores and zero filters.
+  Strict Linux/GNU Windows lint and formatting pass. Actual Linux GUI opens in225ms
+  with a non-ready index,remains usable beyond the timeout and closes normally.
+  Separate checks verify standalone Inspector does not launch the index and closing
+  the main window early allows startup to finish with the daemon still running.
+  Initial Alt+F4 and invalid-preview-argument harness failures are retained,not counted
+  as passes. The Windows GUI-subsystem inventory harness was corrected; only its
+  missing application scope was rerun. All private profiles/roots are removed and
+  the guest is off. Guarded cleanup retired34 obsolete incremental sessions (1.18GiB).
+  Refresh the usable Linux/Windows package cohort next,before external integration.
+  Evidence: `index-startup-availability-current/SOURCE_ACCEPTANCE.json`.
 - **MSI rollback remains a required failed gate.** Reviewed upstream evidence
   corroborates the failure family but establishes no safe authoring correction.
   Keep its exact receipts and external investigation boundary; do not repeat the

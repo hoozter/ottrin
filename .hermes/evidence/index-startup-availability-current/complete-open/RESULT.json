@@ -1,0 +1,81 @@
+{
+  "expectation": "open",
+  "binary_sha256": "9466042ad00ba13c5142a2d48c4dea876263de8fe8a9879186d5bfbdd2017402",
+  "source_binary_before": {
+    "device": 66306,
+    "inode": 5823320,
+    "size": 835926880,
+    "mtime_ns": 1793520706868387668,
+    "links": 2
+  },
+  "scope": "Actual debug-source GUI under a non-ready package-owned test index; not package or resource acceptance",
+  "visible_within_deadline": true,
+  "observed_ms": 226.93,
+  "exit": 0,
+  "status": "pass: normal GUI open and close with non-ready index",
+  "independent_bootstrap_outlived_window": true,
+  "index_status_after_window_close": {
+    "active_root": null,
+    "active_root_index": 0,
+    "configured_roots": 1,
+    "database_bytes": 28672,
+    "detail": "Ready \u00b7 1 indexed",
+    "error": null,
+    "estimated_total_items": null,
+    "freelist_bytes": 0,
+    "freelist_pages": 0,
+    "indexed_items": 1,
+    "last_completed_indexed_items": 1,
+    "last_progress_unix_secs": 1793521603,
+    "last_scan_completed_unix_secs": 1793521603,
+    "last_scan_duration_ms": null,
+    "last_scan_started_unix_secs": 1793521603,
+    "snapshot_revision": 1,
+    "status": "ready",
+    "total_roots": 1,
+    "wal_bytes": 0,
+    "watched_roots": 1,
+    "watcher_error": null,
+    "watcher_ready": true
+  },
+  "bootstrap_finished_and_index_remained_running": true,
+  "test_index_started": true,
+  "original_bytes_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-wtqt1glu",
+    "owned_processes_reaped": [
+      {
+        "pid": 3139152,
+        "exit": 0
+      },
+      {
+        "pid": 3139155,
+        "exit": 0
+      },
+      {
+        "pid": 3139156,
+        "exit": 15
+      },
+      {
+        "pid": 3139215,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        3139269
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "source_binary_after": {
+    "device": 66306,
+    "inode": 5823320,
+    "size": 835926880,
+    "mtime_ns": 1793520706868387668,
+    "links": 2
+  }
+}

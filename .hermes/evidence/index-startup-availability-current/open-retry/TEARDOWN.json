@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-bhtfbrot",
+  "owned_processes_reaped": [
+    {
+      "pid": 3136162,
+      "exit": 0
+    },
+    {
+      "pid": 3136165,
+      "exit": 0
+    },
+    {
+      "pid": 3136166,
+      "exit": 15
+    },
+    {
+      "pid": 3136218,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      3136271
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [
+    "96 34 0:64 / /var/tmp/.ottrin-picker-qa-bhtfbrot/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "Command '['/var/tmp/.ottrin-picker-qa-bhtfbrot/runtime-bin/ottrin-app', '/var/tmp/.ottrin-picker-qa-bhtfbrot/fixture']' timed out after 8 seconds",
+  "profile_removed": true
+}
