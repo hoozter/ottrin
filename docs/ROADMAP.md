@@ -1,5 +1,18 @@
 # Ottrin roadmap
 
+## Hosted portal lifecycle timing — 2026-11-01
+
+The active portal/folder `--uninstall` case passes on the production user manager.
+The next independent scenario attempted a sixth frontend start inside systemd’s
+rate-limit window and failed before pending-portal uninstall; immediate teardown
+was also rate-limited. The maintained hosted producer now waits the configured
+interval between scenarios and before teardown, preserving systemd policy and all
+assertions. It skips disable for an already-disabled receipt. Local syntax/parser
+checks pass; hosted rerun remains required. Evidence: `.hermes/evidence/portal-ci-pacing-current/`.
+The Properties rendered test now reads both measured scroll positions and checks
+the native Mode/read-only label; Linux Dark/Light at100/175percent passes, with
+hosted Windows execution still pending. Clean-source package refresh continues.
+
 ## Windows default folders and desktop cleanup — source, 2026-11-01
 
 Optional per-user default opening now shares the existing folder backend. It

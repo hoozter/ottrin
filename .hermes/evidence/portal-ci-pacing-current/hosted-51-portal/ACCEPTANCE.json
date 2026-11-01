@@ -1,0 +1,190 @@
+{
+  "scope": "Actual source CLI,protected installed definition,real user-manager/D-Bus activation and preference restoration on a disposable runner; no GUI or sandbox caller acceptance",
+  "commands": [
+    {
+      "integration": "portal",
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":false,\"ready\":false,\"pending\":false,\"detail\":\"Off \u2014 applications use your desktop's file picker\"}\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Ottrin file picker configured. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":true,\"ready\":false,\"pending\":true,\"detail\":\"Configured \u2014 apply the change when no portal dialogs or sessions are active\"}\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "apply"
+      ],
+      "stdout": "Desktop file picker preference applied\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":true,\"ready\":true,\"pending\":false,\"detail\":\"Enabled \u2014 Ottrin handles supported portal file dialogs\"}\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Ottrin file picker configured. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "apply"
+      ],
+      "stdout": "Desktop file picker preference applied\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":true,\"ready\":true,\"pending\":false,\"detail\":\"Enabled \u2014 Ottrin handles supported portal file dialogs\"}\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "disable"
+      ],
+      "stdout": "Previous file picker restored. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "apply"
+      ],
+      "stdout": "Desktop file picker preference applied\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":false,\"ready\":false,\"pending\":false,\"detail\":\"Off \u2014 applications use your desktop's file picker\"}\n",
+      "stderr": ""
+    },
+    {
+      "integration": "folders",
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Directory links now open in Ottrin. Standard show-in-folder and Properties requests use Ottrin on demand. An already-running desktop file manager keeps its current reveal service until it exits. Applications with their own file manager keep that behavior.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "folders",
+      "arguments": [
+        "status",
+        "--json"
+      ],
+      "stdout": "{\"enabled\":true,\"ready\":true,\"detail\":\"Enabled \u2014 directory links open in Ottrin\"}\n",
+      "stderr": ""
+    },
+    {
+      "integration": "folders",
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Directory links now open in Ottrin. Standard show-in-folder and Properties requests use Ottrin on demand. An already-running desktop file manager keeps its current reveal service until it exits. Applications with their own file manager keep that behavior.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "folders",
+      "arguments": [
+        "disable"
+      ],
+      "stdout": "Previous directory handler restored; Ottrin's integration files removed\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Ottrin file picker configured. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "apply"
+      ],
+      "stdout": "Desktop file picker preference applied\n",
+      "stderr": ""
+    },
+    {
+      "integration": "folders",
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Directory links now open in Ottrin. Standard show-in-folder and Properties requests use Ottrin on demand. An already-running desktop file manager keeps its current reveal service until it exits. Applications with their own file manager keep that behavior.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "enable"
+      ],
+      "stdout": "Ottrin file picker configured. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    },
+    {
+      "integration": "portal",
+      "arguments": [
+        "disable"
+      ],
+      "stdout": "Previous file picker restored. Apply the change to reload the desktop portal.\n",
+      "stderr": ""
+    }
+  ],
+  "folders": {
+    "ready": {
+      "enabled": true,
+      "ready": true,
+      "detail": "Enabled \u2014 directory links open in Ottrin"
+    },
+    "native_gio_default_verified": true,
+    "previous_default_restored": true,
+    "unrelated_edit_preserved": true,
+    "foreign_entry_preserved": true,
+    "owned_assets_removed": true
+  },
+  "application_cleanup": {
+    "stdout": "Removed thumbnail cache: 138 KB\nSession indexing stopped; no background Ottrin index schedule was installed.\nRemoved search storage: 0 B\nNo terminal launcher was installed.\nSaved preferences kept. Use --uninstall --purge-config to remove them too.\nPrevious file picker restored. Apply the change to reload the desktop portal.\nDesktop file picker preference applied\nPrevious directory handler restored; Ottrin's integration files removed\nCleanup freed 138 KB.\n",
+    "stderr": ""
+  },
+  "status": "failed cleanup",
+  "error": "RuntimeError({'command': ['/home/runner/work/ottrin/ottrin/target/debug/ottrin-app', 'portal', 'apply'], 'code': 1, 'stdout': '', 'stderr': 'ottrin: Job for xdg-desktop-portal.service failed because start of the service was attempted too often.\\nSee \"systemctl --user status xdg-desktop-portal.service\" and \"journalctl --user -xeu xdg-desktop-portal.service\" for details.\\nTo force a start use \"systemctl --user reset-failed xdg-desktop-portal.service\"\\nfollowed by \"systemctl --user start xdg-desktop-portal.service\" again.\\n'})",
+  "cleanup_error": "RuntimeError({'command': ['/home/runner/work/ottrin/ottrin/target/debug/ottrin-app', 'portal', 'apply'], 'code': 1, 'stdout': '', 'stderr': 'ottrin: Job for xdg-desktop-portal.service failed because start of the service was attempted too often.\\nSee \"systemctl --user status xdg-desktop-portal.service\" and \"journalctl --user -xeu xdg-desktop-portal.service\" for details.\\nTo force a start use \"systemctl --user reset-failed xdg-desktop-portal.service\"\\nfollowed by \"systemctl --user start xdg-desktop-portal.service\" again.\\n'})"
+}

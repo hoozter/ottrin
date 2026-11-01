@@ -1,0 +1,9 @@
+{
+  "source": "51a3b676",
+  "hosted_run": 41355599547,
+  "active_portal_and_folder_uninstall": "passed; prefs and assets restored",
+  "failure": "Second independent scenario attempts sixth frontend start within systemd rate-limit window; rejected before pending-portal uninstall runs. Teardown immediate restart also rate-limited.",
+  "correction": "CI producer waits the actual configured interval between scenarios and before teardown; no rate-limit reset/disable or product override. Teardown skips disable for an already-disabled registration.",
+  "patch": "portal-ci.patch",
+  "status": "prepared only; apply after current clean-source package build ends"
+}

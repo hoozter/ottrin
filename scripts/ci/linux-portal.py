@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Production per-user portal lifecycle on a disposable GitHub Linux runner only."""
 from pathlib import Path
-import hashlib,json,os,signal,subprocess
+import hashlib,json,os,re,signal,subprocess,time
 
 assert (os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('RUNNER_OS')=='Linux'
         and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted' and os.getuid()!=0), 'Disposable hosted Linux user required'
@@ -18,7 +18,7 @@ folder_entry=data_home/'applications/org.ottrin.Ottrin.Folders.desktop';folder_i
 folder_original='[Default Applications]\ninode/directory=org.ottrin.Previous.CI.desktop;\napplication/pdf=reader.desktop;\n'
 previous_contents='[Desktop Entry]\nType=Application\nName=Previous CI directory handler\nExec=/usr/bin/true %f\nNoDisplay=true\nMimeType=inode/directory;\n'
 original='[preferred]\ndefault=none\norg.freedesktop.impl.portal.FileChooser=none\n# preserve other provider preferences\n'
-edit='# unrelated edit made after enabling\n';env=os.environ.copy();env['XDG_CURRENT_DESKTOP']='OttrinCI'
+edit='# unrelated edit made after enabling\n';env=os.environ.copy();env['XDG_CURRENT_DESKTOP']='OttrinCI';env['LC_ALL']='C'
 report={'scope':'Actual source CLI,protected installed definition,real user-manager/D-Bus activation and preference restoration on a disposable runner; no GUI or sandbox caller acceptance'}
 def cancelled(*_):raise KeyboardInterrupt('Portal lifecycle cancelled')
 for sig in [signal.SIGINT,signal.SIGTERM]:signal.signal(sig,cancelled)
@@ -29,6 +29,17 @@ def run(args,check=True,**kw):
 def control(*args,check=True):return run(['systemctl','--user','--no-ask-password','--no-pager',*args],check)
 def manage(integration,*args):
  p=run([str(binary),integration,*args]);report.setdefault('commands',[]).append({'integration':integration,'arguments':args,'stdout':p.stdout,'stderr':p.stderr});return p.stdout
+def wait_start_window():
+ # The complete lifecycle deliberately restarts the real frontend more often
+ # than a normal setup. Respect its rate limiter between independent scenarios.
+ interval=control('show','xdg-desktop-portal.service','--property=StartLimitIntervalUSec','--value').stdout.strip()
+ parsed=run(['systemd-analyze','timespan',interval]).stdout
+ match=re.search(r'^\s*us:\s*(\d+)\s*$',parsed,re.MULTILINE)
+ assert match,parsed
+ seconds=int(match.group(1))/1_000_000+0.1
+ assert 0<seconds<=60, f'Unexpected hosted start-limit interval: {interval}'
+ report.setdefault('start_limit_waits_seconds',[]).append(seconds)
+ time.sleep(seconds)
 expected_definition=(r/'packaging/linux/ottrin.portal').read_bytes()
 assert Path('/usr/share/xdg-desktop-portal/portals/ottrin.portal').read_bytes()==expected_definition
 assert binary.is_file()
@@ -76,6 +87,7 @@ try:
  assert default_folder()=='org.ottrin.Previous.CI.desktop'
  assert 'application/pdf=new-reader.desktop;' in folder_config.read_text()
  assert previous_entry.read_text()==previous_contents
+ wait_start_window()
  # A previously disabled, pending portal must apply removal without stopping a missing unit again.
  manage('portal','enable');manage('portal','apply');manage('portal','disable')
  cleanup=run([str(binary),'--uninstall']);report['pending_portal_cleanup']={'stdout':cleanup.stdout,'stderr':cleanup.stderr}
@@ -93,7 +105,10 @@ finally:
    assert previous_entry.read_text()==previous_contents
    folder_config.unlink();previous_entry.unlink()
   if allocated:
-   if receipt.exists():manage('portal','disable');manage('portal','apply')
+   if receipt.exists():
+    wait_start_window()
+    if json.loads(manage('portal','status','--json'))['enabled']:manage('portal','disable')
+    manage('portal','apply')
    for path in [receipt,service,unit]:assert not path.exists(),f'Owned setup remains: {path}'
    assert config.read_text() in [original,original+edit], 'Changed fixture configuration retained'
    config.unlink()

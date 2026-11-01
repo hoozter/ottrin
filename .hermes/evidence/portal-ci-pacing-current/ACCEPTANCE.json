@@ -1,0 +1,6 @@
+{
+  "scope": "Hosted lifecycle producer correction only; product runtime unchanged.",
+  "status": "AST and configured systemd-timespan parser checked locally; hosted rerun pending",
+  "preserved": "Systemd restart rate limit and all lifecycle assertions unchanged; wait uses actual unit interval. Already-disabled teardown no longer stops a missing provider unit again.",
+  "cleanup": "Hosted runner was disposed after failed teardown; report retains exact failure. No local portal service/preferences changed. Existing package staging belongs to the separately recorded desktop-package-current owner."
+}
