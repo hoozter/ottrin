@@ -1,0 +1,22 @@
+{"time": 1793509479.3660116, "click": [1074, 54], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793509479.8970282, "capture": "main-menu"}
+{"time": 1793509490.3783119, "click": [955, 323], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793509490.812783, "owned_window": {"id": "8388629", "title": "Ottrin Settings"}}
+{"time": 1793509490.9484448, "capture": "settings"}
+{"time": 1793509504.206735, "owned_window": {"id": "8388629", "title": "Ottrin Settings"}}
+{"time": 1793509504.6499927, "click": [80, 284], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793509505.1217618, "capture": "search-settings"}
+{"time": 1793509516.0010982, "owned_window": {"id": "8388629", "title": "Ottrin Settings"}}
+{"time": 1793509516.442055, "click": [279, 474], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793509516.911358, "capture": "internal-folder-picker"}
+{"time": 1793509539.6585467, "owned_window": {"id": "8388629", "title": "Ottrin Settings"}}
+{"time": 1793509539.766277, "key": "ctrl+l"}
+{"time": 1793509540.1258078, "key": "Return"}
+{"time": 1793509540.7761555, "navigate": "/var/tmp/.ottrin-picker-qa-agm68q3s/fixture"}
+{"time": 1793509540.8623083, "capture": "internal-folder-fixture"}
+{"time": 1793509607.451771, "owned_window": {"id": "8388629", "title": "Ottrin Settings"}}
+{"time": 1793509607.8947093, "click": [857, 475], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793509608.3706324, "capture": "remove-control-folder"}
+{"time": 1793509608.7727184, "click": [897, 15], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793509609.1831968, "owned_window": {"id": "8388611", "title": "Ottrin"}}
+{"time": 1793509609.623257, "click": [1072, 18], "pointer_settled_before_press": true, "hold_seconds": 0.15}

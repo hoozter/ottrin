@@ -1,0 +1,19 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 7.84s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-00f4da14c3c90eed)
+
+running 1 test
+
+thread 'internal_picker::tests::secondary_window_picker_keeps_the_main_window_from_consuming_its_location_shortcut' (2883014) panicked at crates/ottrin-ui/src/internal_picker.rs:374:9:
+The parent shortcut must remain available to the secondary-window picker
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test internal_picker::tests::secondary_window_picker_keeps_the_main_window_from_consuming_its_location_shortcut ... FAILED
+
+failures:
+
+failures:
+    internal_picker::tests::secondary_window_picker_keeps_the_main_window_from_consuming_its_location_shortcut
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 429 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

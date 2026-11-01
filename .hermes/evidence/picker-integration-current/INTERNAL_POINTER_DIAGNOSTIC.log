@@ -1,0 +1,19 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 5.80s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-00f4da14c3c90eed)
+
+running 1 test
+
+thread 'internal_picker::tests::parent_owned_folder_picker_has_visible_actions_and_updates_only_the_requested_roots' (2869184) panicked at crates/ottrin-ui/src/internal_picker.rs:282:13:
+[("Parent window", [8.0 8.0]), ("Choose folder", [22.0 17.0]), ("\u{e5d8}", [42.0 79.0]), ("\u{e1db} /", [79.0 81.0]), ("\u{e2c7} tmp", [116.8 81.0]), ("\u{e2c7} ot-y4zisjfo", [181.8 81.0]), ("\u{e2c7} t", [299.8 81.0]), ("\u{e2c7} .tmpPCwHR0", [338.1 81.0]), ("\u{e3c9}", [490.8 87.0]), ("Search this folder", [493.3 78.4]), ("", [493.3 78.4]), ("1 items", [32.0 116.5]), ("\u{e8f4}", [699.1 122.0]), ("\u{e8f5}", [652.2 122.0]), ("\u{e5c3}", [605.3 122.0]), ("\u{e8ef}", [558.4 122.0]), ("Places", [34.0 176.0]), ("Home", [71.7 211.4]), ("\u{e88a}", [44.7 209.9]), ("Root", [71.7 252.2]), ("\u{e1db}", [44.7 250.7]), ("Desktop", [71.7 293.0]), ("\u{e30c}", [44.7 291.5]), ("Downloads", [71.7 333.8]), ("\u{e2c4}", [44.7 332.3]), ("Documents", [71.7 374.7]), ("\u{e873}", [44.7 373.2]), ("\u{e2c7}", [236.0 176.0]), ("chosen", [256.0 175.0]), ("›", [719.2 175.0]), ("Folder", [26.0 398.0]), ("/tmp/ot-y4zisjfo/t/.tmpPCwHR0/chosen", [91.6 398.0]), ("Choose folder", [605.9 448.0]), ("Cancel", [522.1 448.0])]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test internal_picker::tests::parent_owned_folder_picker_has_visible_actions_and_updates_only_the_requested_roots ... FAILED
+
+failures:
+
+failures:
+    internal_picker::tests::parent_owned_folder_picker_has_visible_actions_and_updates_only_the_requested_roots
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 426 filtered out; finished in 5.04s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

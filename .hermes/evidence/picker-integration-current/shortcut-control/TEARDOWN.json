@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-agm68q3s",
+  "owned_processes_reaped": [
+    {
+      "pid": 2876558,
+      "exit": 0
+    },
+    {
+      "pid": 2876572,
+      "exit": 0
+    },
+    {
+      "pid": 2876574,
+      "exit": 15
+    },
+    {
+      "pid": 2876695,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      2876697
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [
+    "98 34 0:64 / /var/tmp/.ottrin-picker-qa-agm68q3s/runtime/doc rw,nosuid,nodev,relatime shared:570 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "'PosixPath' object has no attribute 'with_file_name'",
+  "profile_removed": true
+}

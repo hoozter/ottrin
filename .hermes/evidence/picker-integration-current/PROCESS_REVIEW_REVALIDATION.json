@@ -1,0 +1,21 @@
+{
+  "prior_review": ".hermes/evidence/preview-footer-layout-current/PROCESS_REVIEWS.json",
+  "checks": [
+    {
+      "pid": 1224,
+      "identity_unchanged": true,
+      "declared_system_binary_and_parents_unchanged_nonwritable": true
+    },
+    {
+      "pid": 3022,
+      "identity_unchanged": true,
+      "declared_system_binary_and_parents_unchanged_nonwritable": true
+    },
+    {
+      "pid": 57349,
+      "identity_unchanged": true,
+      "declared_system_binary_and_parents_unchanged_nonwritable": true
+    }
+  ],
+  "scope": "Existing inaccessible desktop process exceptions revalidated; no mappings claimed read. Guarded locks,compiler-consumer checks and newest finalized state retention remain enforced."
+}

@@ -1,0 +1,19 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 6.52s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-00f4da14c3c90eed)
+
+running 1 test
+
+thread 'picker::tests::location_shortcut_uses_event_modifiers_when_the_final_snapshot_has_released_ctrl' (2889167) panicked at crates/ottrin-ui/src/picker.rs:1927:9:
+Ctrl+L must survive a released final modifier snapshot
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test picker::tests::location_shortcut_uses_event_modifiers_when_the_final_snapshot_has_released_ctrl ... FAILED
+
+failures:
+
+failures:
+    picker::tests::location_shortcut_uses_event_modifiers_when_the_final_snapshot_has_released_ctrl
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 430 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

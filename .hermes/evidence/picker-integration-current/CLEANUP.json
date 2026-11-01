@@ -1,0 +1,142 @@
+{
+  "status": "owned cleanup complete",
+  "incremental_sessions_retired": 31,
+  "incremental_tool_reported_recovered_GiB": 1.06,
+  "test_outputs": {
+    "retired_artifacts": 5,
+    "logical_bytes": 3043444627,
+    "filesystem_free_delta": 3043463168,
+    "current_binaries_dependencies_and_test_replacements_preserved": true
+  },
+  "removed_dependency_outputs": {
+    "status": "complete",
+    "paths_retired": 93,
+    "logical_bytes": 124678716,
+    "filesystem_free_delta": 117477376,
+    "shared_registry_toolchains_release_outputs_and_current_dependencies_preserved": true
+  },
+  "superseded_routine_outputs_retired": [
+    {
+      "path": ".hermes/evidence/picker-integration-current/BUILD.log",
+      "bytes": 325
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/BUILD_GRID_FINAL.log",
+      "bytes": 233
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/BUILD_MODIFIER_FIXED.log",
+      "bytes": 233
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/BUILD_SECONDARY_FIXED.log",
+      "bytes": 233
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/CLIPPY.log",
+      "bytes": 3899
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/CLIPPY_FIXED.log",
+      "bytes": 233
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/CLIPPY_GRID_FINAL.log",
+      "bytes": 232
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/CLIPPY_MODIFIER_FIXED.log",
+      "bytes": 232
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/CLIPPY_SECONDARY_FIXED.log",
+      "bytes": 232
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/COMPLETE_NATIVE_TESTS.log",
+      "bytes": 42075
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/INTERNAL_CHECK.log",
+      "bytes": 8110
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/INTERNAL_CHECK_FIXED.log",
+      "bytes": 150
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/INTERNAL_RENDERED_TESTS.log",
+      "bytes": 2191
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/MODIFIER_FIXED.log",
+      "bytes": 2068
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/PICKER_COMPONENTS_TESTS.log",
+      "bytes": 1841
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/PICKER_TESTS_GRID_FINAL.log",
+      "bytes": 2097
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/PREFERENCES_TESTS.log",
+      "bytes": 1402
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/SECONDARY_SHORTCUT_FIXED.log",
+      "bytes": 1960
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/SHARED_GRID_CHECK.log",
+      "bytes": 420
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/SHARED_GRID_RENDERED_TESTS.log",
+      "bytes": 454
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/WINDOWS_CLIPPY.log",
+      "bytes": 587
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/windows-build.jsonl",
+      "bytes": 346472
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/windows-build.stderr",
+      "bytes": 152
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/__pycache__",
+      "bytes": 52467
+    },
+    {
+      "path": "scripts/linux-desktop-qa/__pycache__",
+      "bytes": 13571
+    }
+  ],
+  "known_private_profiles_absent": [
+    "/var/tmp/.ottrin-picker-qa-6v1mj57g",
+    "/var/tmp/.ottrin-picker-qa-agm68q3s",
+    "/var/tmp/.ottrin-picker-qa-dimur3i7",
+    "/var/tmp/.ottrin-picker-qa-eka1s0ig",
+    "/var/tmp/.ottrin-picker-qa-kk3eldm_"
+  ],
+  "owned_native_root_removed": true,
+  "guest_off": true,
+  "newest_finalized_cache_sessions_preserved": true,
+  "current_sizes": {
+    "target/debug/deps": 32216994618,
+    "target/debug/incremental": 11821769363,
+    "target/x86_64-pc-windows-gnu/debug/deps": 27470152966,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 26809913913
+  },
+  "remaining_task_created_storage": {
+    "target/debug/ottrin-app": "Current verified source-debug application for continued integration QA; not packaged delivery",
+    "target/debug and target/x86_64-pc-windows-gnu/debug": "Current compiler dependencies,replacement tests and newest useful cache state for ongoing roadmap work",
+    ".hermes/evidence/picker-integration-current": "Compact acceptance/control receipts for this source checkpoint"
+  },
+  "preserved": "Current cf6 stable deliverables,personal index/runtime/data,owner AGENTS.md,shared Cargo/Rustup caches,retained VMs"
+}

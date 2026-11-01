@@ -1,0 +1,13 @@
+{"time": 1793512406.4300466, "context_click": [859, 140], "pointer_settled_before_press": true}
+{"time": 1793512406.942414, "capture": "openwith-context-menu"}
+{"time": 1793512438.6742375, "click": [932, 224], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793512439.1930792, "capture": "openwith-application-choices"}
+{"time": 1793512495.1593254, "click": [456, 444], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793512495.6283548, "key": "ctrl+l"}
+{"time": 1793512495.9921858, "key": "Return"}
+{"time": 1793512496.642535, "navigate": "/var/tmp/.ottrin-picker-qa-eka1s0ig/fixture"}
+{"time": 1793512496.721456, "capture": "manual-application-picker"}
+{"time": 1793512598.2919497, "click": [311, 297], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793512599.0982387, "click": [930, 669], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793512599.4990606, "manual_application_executed_with_exact_path": "/var/tmp/.ottrin-picker-qa-eka1s0ig/fixture/alpha.txt", "collector_sha256": "9720eb0b23480bf1f85ad6f1298e7bf3f98ab491d179791bdc41f34076ce9789", "source_file_unchanged": true}
+{"time": 1793512599.9040813, "click": [1072, 18], "pointer_settled_before_press": true, "hold_seconds": 0.15}

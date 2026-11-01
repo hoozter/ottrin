@@ -1,0 +1,387 @@
+{
+  "removed_packages": [
+    [
+      "ashpd",
+      "0.11.1"
+    ],
+    [
+      "async-fs",
+      "2.2.0"
+    ],
+    [
+      "async-net",
+      "2.0.0"
+    ],
+    [
+      "block2",
+      "0.6.2"
+    ],
+    [
+      "ppv-lite86",
+      "0.2.21"
+    ],
+    [
+      "rand",
+      "0.9.2"
+    ],
+    [
+      "rand_chacha",
+      "0.9.0"
+    ],
+    [
+      "rand_core",
+      "0.9.5"
+    ],
+    [
+      "rfd",
+      "0.15.4"
+    ]
+  ],
+  "version_evidence": [
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-7c9ad984900e0acb",
+      "removed_package": [
+        "ashpd",
+        "0.11.1"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-47eac00c00987e74",
+      "removed_package": [
+        "ashpd",
+        "0.11.1"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-b3c7cb4b70240b2b",
+      "removed_package": [
+        "ashpd",
+        "0.11.1"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-caa3267a3b79196e",
+      "removed_package": [
+        "ashpd",
+        "0.11.1"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-fs-adf90ab28c36baf6",
+      "removed_package": [
+        "async-fs",
+        "2.2.0"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-fs-8ae0ba512d4da36b",
+      "removed_package": [
+        "async-fs",
+        "2.2.0"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-net-51b642f314c354f6",
+      "removed_package": [
+        "async-net",
+        "2.0.0"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-net-ce635f2188cc61c0",
+      "removed_package": [
+        "async-net",
+        "2.0.0"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ppv-lite86-d481456b95f83cfe",
+      "removed_package": [
+        "ppv-lite86",
+        "0.2.21"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ppv-lite86-467638d98c228a53",
+      "removed_package": [
+        "ppv-lite86",
+        "0.2.21"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand-58c9c91807d92aa5",
+      "removed_package": [
+        "rand",
+        "0.9.2"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand-ff18c30d75cd1b38",
+      "removed_package": [
+        "rand",
+        "0.9.2"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_chacha-9344f9f68fbc629e",
+      "removed_package": [
+        "rand_chacha",
+        "0.9.0"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_chacha-0b049ceb42f45814",
+      "removed_package": [
+        "rand_chacha",
+        "0.9.0"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_core-3528f2960a5e3f82",
+      "removed_package": [
+        "rand_core",
+        "0.9.5"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_core-a09337ab413e03c2",
+      "removed_package": [
+        "rand_core",
+        "0.9.5"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-46a6016875be03a2",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-b3c902311c0cce9f",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-7c029608842e2502",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-b28f3bb21e3a6381",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-28fea6f6a3cdb03f",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-abab650e5bff01b2",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-1a180c94f9aef2e2",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-1ba6e00b3d8956d8",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-e5fc0cd14b244104",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-51183762218fc801",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-9676e4e0f636c101",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-700d49493d4c9581",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "exact dep-info version"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-ffbf8b472db8f015",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-15a0ae431f963f41",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-0eb07c63e7f87767",
+      "removed_package": [
+        "rfd",
+        "0.15.4"
+      ],
+      "basis": "package entirely absent from current all-target lockfile"
+    }
+  ],
+  "retired_paths": [
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-47eac00c00987e74",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-7c9ad984900e0acb",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-b3c7cb4b70240b2b",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ashpd-caa3267a3b79196e",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-fs-8ae0ba512d4da36b",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-fs-adf90ab28c36baf6",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-net-51b642f314c354f6",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/async-net-ce635f2188cc61c0",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ppv-lite86-467638d98c228a53",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ppv-lite86-d481456b95f83cfe",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand-58c9c91807d92aa5",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand-ff18c30d75cd1b38",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_chacha-0b049ceb42f45814",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_chacha-9344f9f68fbc629e",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_core-3528f2960a5e3f82",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rand_core-a09337ab413e03c2",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-1a180c94f9aef2e2",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-1ba6e00b3d8956d8",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-28fea6f6a3cdb03f",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-46a6016875be03a2",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-7c029608842e2502",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-abab650e5bff01b2",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-b28f3bb21e3a6381",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/rfd-b3c902311c0cce9f",
+    "/home/campbell/Projects/Ottrin/target/debug/build/rfd-1ba6e00b3d8956d8",
+    "/home/campbell/Projects/Ottrin/target/debug/build/rfd-28fea6f6a3cdb03f",
+    "/home/campbell/Projects/Ottrin/target/debug/build/rfd-46a6016875be03a2",
+    "/home/campbell/Projects/Ottrin/target/debug/build/rfd-abab650e5bff01b2",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ashpd-47eac00c00987e74.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ashpd-7c9ad984900e0acb.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ashpd-b3c7cb4b70240b2b.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ashpd-caa3267a3b79196e.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/async_fs-8ae0ba512d4da36b.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/async_fs-adf90ab28c36baf6.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/async_net-51b642f314c354f6.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/async_net-ce635f2188cc61c0.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libashpd-47eac00c00987e74.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libashpd-7c9ad984900e0acb.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libashpd-b3c7cb4b70240b2b.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libashpd-b3c7cb4b70240b2b.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libashpd-caa3267a3b79196e.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libashpd-caa3267a3b79196e.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libasync_fs-8ae0ba512d4da36b.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libasync_fs-8ae0ba512d4da36b.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libasync_fs-adf90ab28c36baf6.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libasync_net-51b642f314c354f6.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libasync_net-ce635f2188cc61c0.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libasync_net-ce635f2188cc61c0.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libppv_lite86-467638d98c228a53.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libppv_lite86-467638d98c228a53.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/libppv_lite86-d481456b95f83cfe.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand-58c9c91807d92aa5.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand-58c9c91807d92aa5.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand-ff18c30d75cd1b38.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand_chacha-0b049ceb42f45814.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand_chacha-9344f9f68fbc629e.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand_chacha-9344f9f68fbc629e.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand_core-3528f2960a5e3f82.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand_core-a09337ab413e03c2.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librand_core-a09337ab413e03c2.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librfd-1a180c94f9aef2e2.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librfd-7c029608842e2502.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librfd-7c029608842e2502.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librfd-b28f3bb21e3a6381.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librfd-b3c902311c0cce9f.rlib",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/librfd-b3c902311c0cce9f.rmeta",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ppv_lite86-467638d98c228a53.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ppv_lite86-d481456b95f83cfe.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rand-58c9c91807d92aa5.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rand-ff18c30d75cd1b38.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rand_chacha-0b049ceb42f45814.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rand_chacha-9344f9f68fbc629e.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rand_core-3528f2960a5e3f82.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rand_core-a09337ab413e03c2.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rfd-1a180c94f9aef2e2.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rfd-7c029608842e2502.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rfd-b28f3bb21e3a6381.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/rfd-b3c902311c0cce9f.d",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-0eb07c63e7f87767",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-15a0ae431f963f41",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-51183762218fc801",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-700d49493d4c9581",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-9676e4e0f636c101",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-e5fc0cd14b244104",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/rfd-ffbf8b472db8f015",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/build/rfd-15a0ae431f963f41",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/build/rfd-51183762218fc801",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/build/rfd-ffbf8b472db8f015",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librfd-700d49493d4c9581.rmeta",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librfd-9676e4e0f636c101.rlib",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librfd-9676e4e0f636c101.rmeta",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rfd-700d49493d4c9581.d",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rfd-9676e4e0f636c101.d"
+  ],
+  "logical_bytes": 124678716,
+  "consumer_boundary": "Only project native/GNU debug outputs; current manifest/lockfile and completed replacement suites establish obsolescence. Historical cached fingerprints may describe superseded dependency graphs; these are not current compilation consumers. No compiler/analyzer is running; batch file-consumer check and target Cargo locks apply. Existing system process inspection exceptions are documented separately."
+}

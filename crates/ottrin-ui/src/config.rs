@@ -4,7 +4,7 @@ use ottrin_core::default_home_dir;
 use std::path::{Path, PathBuf};
 
 #[cfg(test)]
-fn config_path() -> Option<PathBuf> {
+pub(crate) fn config_path() -> Option<PathBuf> {
     // Exercise real persistence without reading or overwriting the developer's
     // profile. Each test thread owns its directory and removes it on exit.
     thread_local! {
@@ -14,7 +14,7 @@ fn config_path() -> Option<PathBuf> {
 }
 
 #[cfg(not(test))]
-fn config_path() -> Option<PathBuf> {
+pub(crate) fn config_path() -> Option<PathBuf> {
     #[cfg(target_os = "windows")]
     let base = std::env::var_os("APPDATA").map(PathBuf::from)?;
     #[cfg(not(target_os = "windows"))]
@@ -90,7 +90,9 @@ pub fn remove_config_file() -> Result<u64, String> {
     let Some(path) = config_path() else {
         return Ok(0);
     };
-    remove_file_counting_bytes(&path)
+    let removed = remove_file_counting_bytes(&path)?;
+    let picker = path.with_file_name(crate::picker_preferences::FILE_NAME);
+    Ok(removed + remove_file_counting_bytes(&picker)?)
 }
 
 pub(crate) fn save_config(config: &AppConfig) {
@@ -185,5 +187,18 @@ mod tests {
             ),
             PathBuf::from("/root/.config/ottrin-administrator/config.json")
         );
+    }
+    #[test]
+    fn removing_preferences_clears_main_and_picker_files_and_preserves_other_data() {
+        let main = config_path().unwrap();
+        std::fs::create_dir_all(main.parent().unwrap()).unwrap();
+        let picker = main.with_file_name(crate::picker_preferences::FILE_NAME);
+        let keep = main.with_file_name("keep.txt");
+        std::fs::write(&main, b"main").unwrap();
+        std::fs::write(&picker, b"{}").unwrap();
+        std::fs::write(&keep, b"user data").unwrap();
+        assert_eq!(remove_config_file().unwrap(), 6);
+        assert!(!main.exists() && !picker.exists());
+        assert_eq!(std::fs::read(keep).unwrap(), b"user data");
     }
 }

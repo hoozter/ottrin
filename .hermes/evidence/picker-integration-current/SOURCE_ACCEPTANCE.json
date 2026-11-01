@@ -1,0 +1,87 @@
+{
+  "status": "Shared picker preferences/internal adoption verified in source; remaining milestone and packages open",
+  "base_revision": "cb068d74ef007ac30e0006dd38a24ecd9eabcecd",
+  "source_sha256": {
+    "Cargo.lock": "832549161cbc9d3f93f0d8cff03c6269d9c3441782a93214aa7ac9f7aaa7adc5",
+    "crates/ottrin-ui/Cargo.toml": "7fb9dfc4eff362adc73c122d49fcaf494c03505c328c98809b0e57b971efd801",
+    "crates/ottrin-ui/src/appearance_editor.rs": "e870f32917b07a57e94be34b43bc34d8dc97f6b98615af5f8922a95ce475f583",
+    "crates/ottrin-ui/src/config.rs": "9aa2ac7620bfc8ff5cf409cf9de1413f241fd1ff2ce5fa477249566ee40ef640",
+    "crates/ottrin-ui/src/file_grid.rs": "54af715c99b0f336a48d023e591134d9424605ebda70d70c0711fb9c94bf0219",
+    "crates/ottrin-ui/src/internal_picker.rs": "3248e880f534d40912830b8a9cd3e48c28f6e7d60dd32642e3b6c950d569c4c6",
+    "crates/ottrin-ui/src/lib.rs": "c21cc0e5bde3cff3ce57d20451a030753ac298d6fde377793b8e0f8e8b850371",
+    "crates/ottrin-ui/src/picker.rs": "f1eb52f29648eeb38c0f7c992eea05e361e0038768971309ad32ecdaeb70e4ae",
+    "crates/ottrin-ui/src/picker_preferences.rs": "b742a95ac9b202bea3aba4fa3ea0327074154c87cdb1e42437f7b411c12687b2"
+  },
+  "Linux": {
+    "regular_ui": 432,
+    "existing_ignored_ui": 1,
+    "filtered_ui": 0,
+    "app_unit_tests": 27,
+    "indexd_unit_tests": 2,
+    "daemon_cli_fixtures": 3,
+    "strict_all_target_lint": "pass"
+  },
+  "Windows": {
+    "ordinary_regular_ui": 404,
+    "elevated_regular_ui": 404,
+    "existing_ignored_ui": 4,
+    "filtered_ui": 0,
+    "strict_GNU_all_target_lint": "pass",
+    "native_picker_window_resource_acceptance": "not yet claimed"
+  },
+  "implementation": [
+    "All seven rfd callers replaced by the shared parent-owned modal",
+    "Atomic separate picker preferences with explicit caller folder precedence and exact native remembered path encoding",
+    "Main/chooser grid renderer shared; semantic icon/label colors and surface radius verified",
+    "Folder-only mode preserves file-preview preference without its control or workers",
+    "Removed rfd and eight exclusively required dependency packages"
+  ],
+  "actual_GUI": {
+    "dark": {
+      "binary_sha256": "4d9b9fe774a71fdc523e2cdb6dc8accca6e1d5d2ade994af86a0be87b80d93c0",
+      "normal_exit": 0,
+      "original_files_unchanged": 1,
+      "profile_removed": true,
+      "theme": "Dark",
+      "main_view": "Miller",
+      "scope": "Actual include-folder selection,prefs cancel/reopen,theme export/import,editor cancel/normal close"
+    },
+    "light150": {
+      "binary_sha256": "2a03d76c8bf02b9c275c1b167d1194b1c1460a84d1d27b60a6e4f9ab2c7563e3",
+      "normal_exit": 0,
+      "original_files_unchanged": 1,
+      "profile_removed": true,
+      "theme": "Light",
+      "main_view": "Miller",
+      "scope": "Final shared grids and all four folder routing targets; content indexing remains off; normal close"
+    },
+    "openwith": {
+      "binary_sha256": "2a03d76c8bf02b9c275c1b167d1194b1c1460a84d1d27b60a6e4f9ab2c7563e3",
+      "normal_exit": 0,
+      "original_files_unchanged": 2,
+      "profile_removed": true,
+      "theme": "Dark",
+      "main_view": "Miller",
+      "scope": "Actual context-menu discovery/manual picker; selected collector receives exact source path without changing it",
+      "exact_argument_verified": true
+    }
+  },
+  "regressions": {
+    "secondary-shortcut": "SECONDARY_SHORTCUT_NEGATIVE fails preceding main-key handling; fixed coverage in complete suites",
+    "event-modifiers": "MODIFIER_NEGATIVE reproduces released modifier snapshot; existing event-based shortcut helper fixes both location and select-all",
+    "shared-grid": "Rendered semantic icon/label colors and theme corner test; actual final Light150 main/picker grids match"
+  },
+  "limits": [
+    "Current cf6 Linux packages and Windows candidate unchanged",
+    "No new packaged,first-paint,resource or physical daily-driver acceptance claimed",
+    "Actual Dark GUI binary predates final shared-grid/panel-color changes; exact per-case binary hashes retained",
+    "Existing-index search,foreign parent-window ownership,portal/cooperating-app integration and reversible folder associations remain required",
+    "Current standalone JSON path transport still uses UTF-8 PathBuf serialization; native non-UTF8 request/result transport must be addressed during external integration"
+  ],
+  "controls": {
+    "shortcut-control": "Failed location shortcut; explicit extra owned-home source removed; original bytes preserved. Post-close producer typo corrected; teardown completed.",
+    "modifier-control": "Failed final modifier snapshot check; original bytes preserved,normal exit and complete teardown.",
+    "INTERNAL_POINTER_DIAGNOSTIC.log": "Fixture initially chose the title rather than same-labelled footer action; corrected selector and successful full/native suites retained.",
+    "screenshot_after_editor_cancel": "Editor window had closed; subsequent owned-window inventory verifies absence. No screenshot after closure accepted."
+  }
+}

@@ -52,26 +52,31 @@ their named hashes. Test counts are scoped observations, not completion measures
   GNU Windows lint passes. The compatibility notice now uses the real renderer
   reason instead of attributing a CLI override to detected hardware. These source
   repairs still require fresh package/UI acceptance. Evidence: `picker-foundation-current/`.
-- **Required picker/folder integration is active work.** The public caller contract
-  for Open/Save/folder requests,filters,choices,cancellation and response validation
-  is implemented in source; all34 Linux core tests pass. The shared on-demand
-  Open/Save/folder UI is now in development,using the actual theme,window frame,
-  file rows,bookmarks and production preview engine. Nine focused tests cover
-  clipped-visible actions at small sizes/large text,filters,overwrite confirmation,
-  multi-selection and read-only image previews; the complete Linux UI suite passes
-  422 cases with one existing ignore and no filters,and application tests pass27.
-  Native ordinary/elevated Windows suites pass395 regular UI cases each,four
-  existing ignores and no filters; strict Linux/GNU Windows all-target lint passes.
-  Actual private Linux windows verify multi-select,read-only text/Space input,
-  overwrite cancel/confirm,Light150 location replacement,view switching and selection,
-  with unchanged fixture bytes and no index socket. Initial layout/address controls
-  remain separate failed scopes. The daemon CLI fixtures now run sequentially to
-  prevent concurrent fork inheritance of a writable fixture executable (ETXTBSY).
-  This is source work,not a new packaged picker acceptance. Internal adoption,
-  preferences,index search,parent-window ownership,portal/cooperating-app integration,reversible folder
-  controls and platform resource/startup acceptance remain required. Park owner,
-  physical and release-identity waits while completing this milestone.
-  Current evidence: `picker-ui-current/`.
+- **Required picker/folder integration is active work.** The on-demand shared
+  chooser,preferences and all seven internal dialog callers are implemented in
+  source. Theme import/export,manual application selection and the four search
+  folder controls now use the same parent-owned modal. The old `rfd` path and
+  eight exclusive transitive packages are removed. File-manager and picker grids
+  share their actual renderer,semantic colors,density and themed corners.
+  Preferences are written atomically to `picker.json`; caller locations win,
+  native remembered folder bytes are preserved and the main configuration stays
+  separate. Folder-only dialogs preserve the file-preview preference without
+  creating its workers or showing an irrelevant control.
+  All432 regular Linux UI tests and404 native ordinary/elevated Windows UI tests
+  pass,with existing ignores and no filters; strict Linux/GNU Windows lint passes.
+  Actual Dark GUI verifies folder selection,picker-option persistence and theme
+  export/import. Final Light150 GUI verifies all four independent folder targets,
+  the shared picker/main grids,normal close,Miller/Light preference preservation
+  and unchanged fixture bytes. A final Dark manual-Open-With workflow selects a
+  disposable collector and verifies the exact source-path argument and preserved
+  file bytes,so all seven internal routes have actual Linux UI evidence. Earlier shortcut/modifier controls are failed
+  scopes; both defects have failing-before/passing-after regression tests. The
+  Dark binary predates the final grid/panel-color extraction; receipts retain
+  exact binary scopes. These changes still need final package acceptance and
+  actual Windows picker-window/resource checks. Existing-index search,external
+  parent-window ownership,portal/cooperating-app integration and reversible folder
+  associations remain required. Keep owner/physical/release-identity waits parked.
+  Evidence: `picker-integration-current/`; preceding foundation: `picker-ui-current/`.
 - **MSI rollback remains a required failed gate.** Reviewed upstream evidence
   corroborates the failure family but establishes no safe authoring correction.
   Keep its exact receipts and external investigation boundary; do not repeat the
@@ -616,7 +621,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | --- | --- | --- |
 | Linux | Four cf6e465a formats; complete hosted checks; actual before/after target options,Dark100/Light150 startup,read-only close,nine-file preservation and saved preferences. Enabled personal service uses current runtime. | Deliver the newer pointer-preview/notice source repair and required picker/integration; finish available software acceptance before parked owner/device checks. |
 | Windows | cf6e465a ZIP/NSIS/MSI candidate;58 matching files,complete hosted source checks and scoped native CLI/renderer/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) defines hashes and limits. | Deliver newer pointer-preview/notice repair and required picker/integration; continue remaining workflow/installed acceptance. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Required outcome4 is approved and defined below. | Implement after earlier unblocked engineering/software acceptance;park owner/physical/external waits so they do not block this required milestone. |
+| Ottrin picker and folder integration | Shared chooser,picker-only preferences and seven internal callers verified in source; native/Linux GUI scopes above. | Finish existing-index search,external ownership,portal/cooperating-app and reversible folder integration,then exact-package/resource acceptance. Park owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

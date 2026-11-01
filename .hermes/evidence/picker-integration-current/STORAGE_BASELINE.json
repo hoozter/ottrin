@@ -1,0 +1,12 @@
+{
+  "recorded": "2026-11-01T04:52:06.425726+00:00",
+  "base": "cb068d74",
+  "purpose": "Picker preferences and internal adoption; reuse same native/Windows compiler settings",
+  "sizes": {
+    "target/debug/deps": 27591537100,
+    "target/debug/incremental": 10050259245,
+    "target/x86_64-pc-windows-gnu/debug/deps": 27445907210,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 26389130842
+  },
+  "cleanup_owner": "Current roadmap goal; remove fixtures and superseded outputs before checkpoint; preserve current stable packages and shared caches"
+}

@@ -1,0 +1,7 @@
+{
+  "status": "complete",
+  "paths_retired": 93,
+  "logical_bytes": 124678716,
+  "filesystem_free_delta": 117477376,
+  "shared_registry_toolchains_release_outputs_and_current_dependencies_preserved": true
+}

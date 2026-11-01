@@ -1,0 +1,5 @@
+{
+  "status": "Failed secondary-window Ctrl+L after main shortcut guard; no successful adoption claim",
+  "defect": "Picker inspected final InputState.modifiers instead of key-event modifiers. Down/up batching can leave final Ctrl false while the key event carries Ctrl. Existing event-based shortcut helper required.",
+  "scope": "Original fixture unchanged; accidental owned-home root removed through UI; normal close and complete private desktop teardown."
+}

@@ -84,14 +84,17 @@ mod copy_activity_recovery;
 #[cfg(target_os = "windows")]
 mod copy_activity_work;
 mod file_details;
+mod file_grid;
 mod file_row;
 mod picker;
 pub use picker::PickerApp;
 mod icons;
 mod image_ops;
+mod internal_picker;
 mod launcher;
 mod listing;
 mod path_display;
+mod picker_preferences;
 mod picker_preview;
 mod preview_jobs;
 mod preview_render;
@@ -3641,6 +3644,7 @@ pub struct OttrinApp {
     pending_transfer_conflict: Option<PendingTransferConflict>,
     pending_empty_trash: bool,
     open_with_dialog: Option<OpenWithDialog>,
+    pending_picker: Option<internal_picker::PendingPicker>,
     pending_privileged_retry: Option<PendingPrivilegedRetry>,
     privileged_availability: PrivilegedAvailability,
     privileged_status: Option<PrivilegedUiStatus>,
@@ -3965,6 +3969,7 @@ impl OttrinApp {
             pending_transfer_conflict: None,
             pending_empty_trash: false,
             open_with_dialog: None,
+            pending_picker: None,
             pending_privileged_retry: None,
             privileged_availability: PrivilegedAvailability::Unsupported(
                 "Status not initialized".to_string(),
@@ -5359,7 +5364,7 @@ impl OttrinApp {
         ));
     }
 
-    fn export_theme_editor_json(&mut self) {
+    fn export_theme_editor_json(&mut self, ctx: &Context) {
         if !self.theme_editor.open {
             return;
         }
@@ -5376,12 +5381,6 @@ impl OttrinApp {
         };
         let export_theme = self.theme_editor_draft(theme_name.clone());
         let default_file_name = sanitize_theme_file_name(&format!("{}.json", theme_name));
-        let dialog = rfd::FileDialog::new()
-            .add_filter("Ottrin Theme JSON", &["json"])
-            .set_file_name(default_file_name.as_str());
-        let Some(path) = dialog.save_file() else {
-            return;
-        };
 
         let payload = serde_json::json!({
             "format": "ottrin-theme",
@@ -5400,33 +5399,34 @@ impl OttrinApp {
             }
         };
 
-        match std::fs::write(&path, json) {
-            Ok(()) => {
-                self.theme_status = Some((
-                    format!("Exported theme to {}", path_label(&path)),
-                    true,
-                    Instant::now() + Duration::from_secs(3),
-                ));
-            }
-            Err(err) => {
-                self.theme_status = Some((
-                    format!("Theme export failed: {}", err),
-                    false,
-                    Instant::now() + Duration::from_secs(4),
-                ));
-            }
-        }
+        self.start_internal_picker(
+            ctx,
+            Self::theme_picker_request(
+                ottrin_core::picker::PickerMode::Save,
+                "Export Ottrin theme",
+                default_file_name,
+            ),
+            internal_picker::Purpose::ThemeExport(json),
+        );
     }
 
     fn import_theme_editor_json(&mut self, ctx: &Context) {
         if !self.theme_editor.open {
             return;
         }
-        let dialog = rfd::FileDialog::new().add_filter("Ottrin Theme JSON", &["json"]);
-        let Some(path) = dialog.pick_file() else {
-            return;
-        };
-        let bytes = match std::fs::read(&path) {
+        self.start_internal_picker(
+            ctx,
+            Self::theme_picker_request(
+                ottrin_core::picker::PickerMode::Open,
+                "Import Ottrin theme",
+                String::new(),
+            ),
+            internal_picker::Purpose::ThemeImport,
+        );
+    }
+
+    fn import_theme_from_path(&mut self, ctx: &Context, path: &Path) {
+        let bytes = match std::fs::read(path) {
             Ok(bytes) => bytes,
             Err(err) => {
                 self.theme_status = Some((
@@ -5438,7 +5438,7 @@ impl OttrinApp {
             }
         };
 
-        let fallback_name = theme_name_from_path(&path);
+        let fallback_name = theme_name_from_path(path);
         let imported = match decode_theme_import_json(&bytes, fallback_name.as_str()) {
             Ok(saved) => saved,
             Err(err) => {
@@ -5504,6 +5504,7 @@ impl OttrinApp {
                 close_requested = true;
                 return;
             }
+            self.render_internal_picker(theme_ctx);
             self.handle_viewport_resize(theme_ctx);
             self.paint_viewport_frame(theme_ctx);
         });
@@ -5530,6 +5531,7 @@ impl OttrinApp {
     }
 
     fn close_theme_editor_window(&mut self, ctx: &Context) {
+        self.cancel_internal_picker(Self::theme_editor_viewport_id());
         if self.theme_editor_is_dirty() {
             self.theme_editor.visible = false;
             self.theme_status = Some((
@@ -8574,6 +8576,11 @@ impl OttrinApp {
     // ── Keyboard handling ─────────────────────────────────────────────────────
 
     fn handle_keyboard(&mut self, ctx: &Context) {
+        // Immediate secondary viewports share the application's update path.
+        // Leave picker shortcuts untouched until its owning viewport renders.
+        if self.pending_picker.is_some() {
+            return;
+        }
         // Don't intercept keys when typing in address bar
         if self.any_address_bar_editing() {
             return;
@@ -16548,17 +16555,25 @@ impl OttrinApp {
 
     /// Keeps the manual picker as an explicit user-selected executable-path fallback.
     fn open_with_manual_application(&mut self, path: &Path) {
-        let Some(application) = rfd::FileDialog::new().set_title("Open with").pick_file() else {
+        let Some(ctx) = self
+            .result_repaint
+            .0
+            .lock()
+            .expect("result repaint context")
+            .clone()
+        else {
+            self.set_status_message("The application window is unavailable", false, 5);
             return;
         };
-        match self.platform.open_with_application(path, &application) {
-            Ok(()) => self.set_status_message(
-                format!("Opened with {}", display_app_name(&application)),
-                true,
-                3,
-            ),
-            Err(err) => self.set_status_message(format!("Open with failed: {err}"), false, 5),
-        }
+        self.start_internal_picker(
+            &ctx,
+            ottrin_core::picker::PickerRequest {
+                title: "Choose an application".into(),
+                accept_label: "Open with application".into(),
+                ..Default::default()
+            },
+            internal_picker::Purpose::OpenWith(path.to_path_buf()),
+        );
     }
 
     fn render_open_with_dialog(&mut self, ctx: &Context) {
@@ -18947,14 +18962,11 @@ impl OttrinApp {
         }
 
         let scale = self.view_scale_for(ViewMode::Grid);
-        // Shared view scale drives grid density too.
-        let icon_px = (48.0 * scale).round();
-        let label_sz = (11.0 * scale.sqrt()).max(9.0) * c.font_scale;
-        let label_chars = ((item_chars_for_scale(scale) / c.font_scale) as usize).max(6);
-        // Cell width = icon + padding; ensure wide enough for truncated label
-        let cell_inner = (icon_px * 1.18).max(84.0);
-        let padding = (10.0 * scale).round().max(8.0);
-        let side_padding = (padding * 1.2).max(18.0);
+        let metrics = file_grid::GridMetrics::new(scale, c);
+        let icon_px = metrics.icon_size;
+        let cell_inner = metrics.size.x;
+        let padding = metrics.gap;
+        let side_padding = metrics.side_padding;
         let available_w = ui.available_width().min(ui.clip_rect().width());
         let usable_w = (available_w - side_padding * 2.0).max(cell_inner + padding);
         let cols = ((usable_w + padding) / (cell_inner + padding)).floor() as usize;
@@ -18980,102 +18992,25 @@ impl OttrinApp {
                             let idx = i + col;
                             let selected = selected_paths.contains(&entry.path)
                                 || (selected_paths.is_empty() && sel == Some(idx));
-                            let name = truncate_middle(&entry.name, label_chars);
-
-                            // Allocate the entire cell rect for hover/click sensing
-                            let icon_gap = (8.0 * scale.clamp(0.9, 1.35)).round();
-                            let cell_h = icon_px + icon_gap + label_sz * 2.2 + 18.0;
-                            let (cell_rect, cell_resp) = ui
-                                .allocate_exact_size(Vec2::new(cell_inner, cell_h), Sense::click());
-                            grid_cells.push((entry.path.clone(), cell_rect));
-                            cell_resp.widget_info(|| {
-                                WidgetInfo::selected(
-                                    WidgetType::Button,
-                                    true,
-                                    selected,
-                                    entry.name.as_str(),
-                                )
-                            });
-                            let is_hovered = cell_resp.hovered();
-                            if name != entry.name {
-                                cell_resp.clone().on_hover_text(entry.name.clone());
-                            }
-                            let style = style_for_entry(
-                                entry,
-                                EntryVisualState {
-                                    selected,
-                                    focused: true,
-                                    hovered: is_hovered,
-                                    opened: false,
-                                    symlink_dir: matches!(entry.kind, EntryKind::Symlink)
-                                        && entry.symlink_target_is_dir == Some(true),
-                                },
-                                &c,
-                                &self.state.config,
-                            );
-                            let icon = material_icon(style.icon);
-                            let icon_color = style.icon_color;
-                            let label_color = style.text_color;
-
-                            // Background
-                            let fill = if selected {
-                                c.selected_bg
-                            } else if is_hovered {
-                                c.hover
+                            let thumbnail = if thumbnails_enabled
+                                && image_thumbnail_candidate(entry)
+                            {
+                                self.cached_image_preview_widget(&entry.path, icon_px, icon_px, 6)
+                                    .map(file_grid::GridThumbnail::Ready)
+                                    .unwrap_or(file_grid::GridThumbnail::Loading)
                             } else {
-                                Color32::TRANSPARENT
+                                file_grid::GridThumbnail::Icon
                             };
-                            if fill != Color32::TRANSPARENT {
-                                ui.painter().rect_filled(cell_rect, 8.0, fill);
-                            }
-                            if selected {
-                                ui.painter().rect_stroke(
-                                    cell_rect,
-                                    8.0,
-                                    Stroke::new(1.0, c.accent),
-                                    egui::StrokeKind::Middle,
-                                );
-                            }
-
-                            // Icon centered horizontally in cell
-                            let icon_y = cell_rect.min.y + (8.0 * scale.clamp(0.9, 1.3));
-                            let icon_cx = cell_rect.center().x;
-                            let icon_rect = Rect::from_center_size(
-                                egui::pos2(icon_cx, icon_y + icon_px * 0.5),
-                                Vec2::splat(icon_px),
+                            let cell_resp = file_grid::render_file_grid_cell(
+                                ui,
+                                entry,
+                                selected,
+                                scale,
+                                c,
+                                &self.state.config,
+                                thumbnail,
                             );
-                            let painted_thumbnail =
-                                thumbnails_enabled && image_thumbnail_candidate(entry);
-                            if painted_thumbnail {
-                                paint_thumbnail_slot(ui, icon_rect, c);
-                                let thumb = self.cached_image_preview_widget(
-                                    &entry.path,
-                                    icon_px,
-                                    icon_px,
-                                    6,
-                                );
-                                if let Some(img) = thumb {
-                                    paint_centered_image(ui, icon_rect, img);
-                                }
-                            }
-                            if !painted_thumbnail {
-                                ui.painter().text(
-                                    egui::Pos2::new(icon_cx, icon_y + icon_px * 0.5),
-                                    Align2::CENTER_CENTER,
-                                    icon,
-                                    FontId::proportional(icon_px),
-                                    icon_color,
-                                );
-                            }
-
-                            // Label below icon
-                            ui.painter().text(
-                                egui::Pos2::new(icon_cx, icon_y + icon_px + icon_gap),
-                                Align2::CENTER_TOP,
-                                &name,
-                                FontId::proportional(label_sz),
-                                label_color,
-                            );
+                            grid_cells.push((entry.path.clone(), cell_resp.rect));
 
                             // Handle click/double-click
                             if Self::row_pointer_selects(
@@ -21108,11 +21043,13 @@ impl OttrinApp {
                 close_requested = true;
                 return;
             }
+            self.render_internal_picker(settings_ctx);
             self.handle_viewport_resize(settings_ctx);
             self.paint_viewport_frame(settings_ctx);
         });
 
         if close_requested {
+            self.cancel_internal_picker(Self::settings_viewport_id());
             self.show_settings = false;
             ctx.send_viewport_cmd_to(Self::settings_viewport_id(), egui::ViewportCommand::Close);
         }
@@ -21427,11 +21364,11 @@ impl OttrinApp {
                                         }
                                     }
                                     ui.add_space(4.0);
-                                    if ui.add(egui::Button::new("Remove preferences file").themed(&c)).on_hover_text(
-                                        "Deletes Ottrin's saved preferences/config file. This does not remove your files."
+                                    if ui.add(egui::Button::new("Remove preferences files").themed(&c)).on_hover_text(
+                                        "Deletes Ottrin and file-picker preferences. Your files remain unchanged."
                                     ).clicked() {
                                         let (text, ok) = match remove_config_file() {
-                                            Ok(bytes) => (format!("Removed preferences file, freed {}.", format_size(bytes)), true),
+                                            Ok(bytes) => (format!("Removed preferences files, freed {}.", format_size(bytes)), true),
                                             Err(err) => (err, false),
                                         };
                                         self.set_status_message(text, ok, 8);
@@ -21965,11 +21902,9 @@ impl OttrinApp {
                                         ui.add_space(4.0);
                                         ui.horizontal(|ui| {
                                             if ui.add(egui::Button::new(format!("  {}  Add folder…", MI_FOLDER_OPEN)).themed(&c)).clicked()
-                                                && let Some(dir) = rfd::FileDialog::new().pick_folder()
-                                            {
-                                                self.state.config.search.include_roots.push(dir);
-                                                self.search_service.update_config(self.state.config.search.clone());
-                                            }
+                                                {
+                                                    self.pick_search_folder(ctx, internal_picker::Purpose::SearchInclude, "Choose an indexed folder");
+                                                }
                                         });
 
                                         ui.add_space(12.0);
@@ -22045,11 +21980,9 @@ impl OttrinApp {
                                                 }
                                                 ui.add_space(4.0);
                                                 if ui.add(egui::Button::new(format!("  {}  Add folder…", MI_FOLDER_OPEN)).themed(&c)).clicked()
-                                                    && let Some(dir) = rfd::FileDialog::new().pick_folder()
-                                                {
-                                                    self.state.config.search.exclude_roots.push(dir);
-                                                    self.search_service.update_config(self.state.config.search.clone());
-                                                }
+                                                    {
+                                                        self.pick_search_folder(ctx, internal_picker::Purpose::SearchExclude, "Choose a folder to exclude");
+                                                    }
                                                 ui.add_space(4.0);
                                             });
                                         }
@@ -22337,11 +22270,9 @@ impl OttrinApp {
                                         ui.add_space(4.0);
                                         ui.horizontal(|ui| {
                                             if ui.add(egui::Button::new(format!("  {}  Add folder…", MI_FOLDER_OPEN)).themed(&c)).clicked()
-                                                && let Some(dir) = rfd::FileDialog::new().pick_folder()
-                                            {
-                                                self.state.config.search.content_include_roots.push(dir);
-                                                self.search_service.update_config(self.state.config.search.clone());
-                                            }
+                                                {
+                                                    self.pick_search_folder(ctx, internal_picker::Purpose::ContentInclude, "Choose a content-indexed folder");
+                                                }
                                             if ui.add(egui::Button::new("Use indexed locations").themed(&c)).clicked() {
                                                 self.state.config.search.content_include_roots = self.state.config.search.include_roots.clone();
                                                 self.search_service.update_config(self.state.config.search.clone());
@@ -22405,11 +22336,9 @@ impl OttrinApp {
                                         }
                                         ui.add_space(4.0);
                                         if ui.add(egui::Button::new(format!("  {}  Add exclusion…", MI_FOLDER_OPEN)).themed(&c)).clicked()
-                                            && let Some(dir) = rfd::FileDialog::new().pick_folder()
-                                        {
-                                            self.state.config.search.content_exclude_roots.push(dir);
-                                            self.search_service.update_config(self.state.config.search.clone());
-                                        }
+                                            {
+                                                self.pick_search_folder(ctx, internal_picker::Purpose::ContentExclude, "Choose a content exclusion");
+                                            }
                                     });
 
                                     ui.add_space(12.0);
@@ -23312,6 +23241,7 @@ impl eframe::App for OttrinApp {
         self.render_settings_modal(ctx);
         self.render_graphics_compatibility_notice(ctx);
         self.render_theme_editor_popup(ctx);
+        self.render_internal_picker(ctx);
         self.handle_viewport_resize(ctx);
 
         // Preview requests are created while rendering above. Schedule the next poll only after

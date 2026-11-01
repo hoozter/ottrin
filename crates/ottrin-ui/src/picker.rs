@@ -1,6 +1,7 @@
 //! The actual chooser surface, shared by internal dialogs and standalone requests.
 //! Directory browsing never starts or waits for an index daemon.
 use crate::icons::*;
+use crate::picker_preferences::PickerPreferences;
 use crate::widget_style::{ThemeButtonExt, ThemeTextEditExt};
 use crate::{Colors, EntryVisualState, file_row, listing, path_crumbs, path_label};
 use egui::{Align, Context, Layout, RichText, ScrollArea, Vec2};
@@ -272,6 +273,7 @@ pub(crate) struct PickerDialog {
     anchor: Option<usize>,
     focus: Option<PathBuf>,
     preview: Option<crate::picker_preview::PickerPreview>,
+    preview_enabled: bool,
     filename: String,
     query: String,
     hidden: bool,
@@ -288,17 +290,21 @@ pub(crate) struct PickerDialog {
     result: Option<PickerResponse>,
 }
 impl PickerDialog {
-    pub fn new(request: PickerRequest, ctx: &Context) -> Result<Self, String> {
+    pub fn new(
+        request: PickerRequest,
+        ctx: &Context,
+        preferences: PickerPreferences,
+    ) -> Result<Self, String> {
         request.validate()?;
         let filters = request
             .filters
             .iter()
             .map(Filter::compile)
             .collect::<Result<Vec<_>, _>>()?;
-        let directory = request
-            .initial_directory
-            .clone()
-            .unwrap_or_else(default_home_dir);
+        let directory = match request.initial_directory.clone() {
+            Some(directory) => directory,
+            None => preferences.directory()?.unwrap_or_else(default_home_dir),
+        };
         let filename = request.filename.clone();
         let choices = request
             .choices
@@ -319,10 +325,11 @@ impl PickerDialog {
             anchor: None,
             focus: None,
             preview: None,
+            preview_enabled: false,
             filename,
             query: String::new(),
-            hidden: false,
-            grid: false,
+            hidden: preferences.hidden,
+            grid: preferences.grid,
             options_expanded: false,
             generation: 0,
             loading: false,
@@ -337,11 +344,27 @@ impl PickerDialog {
         if dialog.request.current_filter.is_none() && !dialog.filters.is_empty() {
             dialog.request.current_filter = Some(0);
         }
+        dialog.set_preview_enabled(preferences.preview, ctx);
         dialog.scan();
         Ok(dialog)
     }
     pub fn request(&self) -> &PickerRequest {
         &self.request
+    }
+    fn set_preview_enabled(&mut self, enabled: bool, ctx: &Context) {
+        self.preview_enabled = enabled;
+        self.preview = (enabled && self.request.mode != PickerMode::Folder)
+            .then(|| crate::picker_preview::PickerPreview::new(ctx));
+    }
+    pub(crate) fn preferences(&self) -> PickerPreferences {
+        PickerPreferences {
+            grid: self.grid,
+            hidden: self.hidden,
+            preview: self.preview_enabled,
+            last_directory: Some(ottrin_platform::move_recovery::NativePath::encode(
+                &self.directory,
+            )),
+        }
     }
     pub fn take_result(&mut self) -> Option<PickerResponse> {
         self.result.take()
@@ -590,7 +613,7 @@ impl PickerDialog {
     /// Render only the chooser body; native/embedded hosts use the same titlebar and frame.
     fn handle_file_keys(&mut self, ctx: &Context, _config: &AppConfig) {
         let visible = self.visible_entries();
-        if ctx.input(|input| input.modifiers.command && input.key_pressed(egui::Key::A))
+        if ctx.input(|input| crate::command_key_pressed(input, egui::Key::A))
             && self.request.multiple
         {
             self.cancel_validation();
@@ -648,7 +671,7 @@ impl PickerDialog {
                 self.cancel();
             }
         }
-        if ctx.input(|input| input.modifiers.command && input.key_pressed(egui::Key::L)) {
+        if ctx.input(|input| crate::command_key_pressed(input, egui::Key::L)) {
             self.editing_location = true;
             self.focus_location = true;
         }
@@ -768,20 +791,17 @@ impl PickerDialog {
                             .small(),
                         );
                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                            if ui
-                                .add(
-                                    egui::Button::new(MI_VISIBILITY)
-                                        .selected(self.preview.is_some())
-                                        .themed(&colors),
-                                )
-                                .on_hover_text("Show read-only preview")
-                                .clicked()
+                            if self.request.mode != PickerMode::Folder
+                                && ui
+                                    .add(
+                                        egui::Button::new(MI_VISIBILITY)
+                                            .selected(self.preview_enabled)
+                                            .themed(&colors),
+                                    )
+                                    .on_hover_text("Show read-only preview")
+                                    .clicked()
                             {
-                                self.preview = if self.preview.is_some() {
-                                    None
-                                } else {
-                                    Some(crate::picker_preview::PickerPreview::new(&ctx))
-                                };
+                                self.set_preview_enabled(!self.preview_enabled, &ctx);
                             }
                             if ui
                                 .add(
@@ -887,12 +907,20 @@ impl PickerDialog {
                     Vec2::new(width, height),
                     Layout::top_down(Align::Min),
                     |ui| {
+                        ui.painter().rect_filled(
+                            egui::Rect::from_min_size(ui.cursor().min, Vec2::new(width, height)),
+                            0.0,
+                            colors.bg,
+                        );
                         if self.loading {
                             ui.spinner();
                             ui.label("Reading folder…");
                         }
                         let visible = self.visible_entries();
-                        let columns = (ui.available_width() / (130.0 * colors.font_scale))
+                        let grid_metrics =
+                            crate::file_grid::GridMetrics::new(config.grid_view_scale, colors);
+                        let columns = ((ui.available_width() + grid_metrics.gap)
+                            / (grid_metrics.size.x + grid_metrics.gap))
                             .floor()
                             .max(1.0) as usize;
                         let row_count = if self.grid {
@@ -901,7 +929,7 @@ impl PickerDialog {
                             visible.len()
                         };
                         let row_height = if self.grid {
-                            80.0 * colors.font_scale
+                            grid_metrics.size.y
                         } else {
                             (25.0 * colors.font_scale).round()
                         };
@@ -912,41 +940,27 @@ impl PickerDialog {
                                 if self.grid {
                                     egui::Grid::new("picker-grid")
                                         .num_columns(columns)
-                                        .min_col_width(110.0 * colors.font_scale)
+                                        .spacing(Vec2::new(
+                                            grid_metrics.gap,
+                                            ui.spacing().item_spacing.y,
+                                        ))
+                                        .min_col_width(grid_metrics.size.x)
                                         .show(ui, |ui| {
                                             for index in (range.start * columns)
                                                 ..(range.end * columns).min(visible.len())
                                             {
                                                 let entry = visible.get(index);
                                                 let selected = self.selected.contains(&entry.path);
-                                                let style = crate::style_for_entry(
-                                                    entry,
-                                                    EntryVisualState {
+                                                let response =
+                                                    crate::file_grid::render_file_grid_cell(
+                                                        ui,
+                                                        entry,
                                                         selected,
-                                                        focused: true,
-                                                        symlink_dir: entry.symlink_target_is_dir
-                                                            == Some(true),
-                                                        ..Default::default()
-                                                    },
-                                                    &colors,
-                                                    config,
-                                                );
-                                                let response = ui.add_sized(
-                                                    [
-                                                        120.0 * colors.font_scale,
-                                                        80.0 * colors.font_scale,
-                                                    ],
-                                                    egui::Button::new(
-                                                        RichText::new(format!(
-                                                            "{}\n{}",
-                                                            crate::material_icon(style.icon),
-                                                            entry.name
-                                                        ))
-                                                        .color(style.text_color),
-                                                    )
-                                                    .selected(selected)
-                                                    .themed(&colors),
-                                                );
+                                                        config.grid_view_scale,
+                                                        colors,
+                                                        config,
+                                                        crate::file_grid::GridThumbnail::Icon,
+                                                    );
                                                 if response.clicked() {
                                                     self.select(
                                                         entry,
@@ -1231,7 +1245,14 @@ impl PickerApp {
         let colors = Colors::for_config(&config, cc.egui_ctx.system_theme());
         crate::theme_colors::apply_to_context(&cc.egui_ctx, &colors);
         Ok(Self {
-            dialog: PickerDialog::new(request, &cc.egui_ctx)?,
+            dialog: PickerDialog::new(
+                request,
+                &cc.egui_ctx,
+                PickerPreferences::load().unwrap_or_else(|error| {
+                    eprintln!("ottrin: {error}; using default picker preferences");
+                    PickerPreferences::default()
+                }),
+            )?,
             config,
             colors,
             appearance: crate::system_appearance::SystemAppearance::start(cc.egui_ctx.clone()),
@@ -1252,7 +1273,7 @@ impl PickerApp {
             crate::theme_colors::apply_to_context(ctx, &colors);
         }
         egui::CentralPanel::default()
-            .frame(egui::Frame::new().fill(colors.bg).inner_margin(0))
+            .frame(egui::Frame::new().fill(colors.panel).inner_margin(0))
             .show(ctx, |ui| {
                 let mut close = false;
                 crate::window_chrome::render_custom_titlebar(
@@ -1277,6 +1298,9 @@ impl PickerApp {
             crate::window_chrome::handle_viewport_resize(ctx);
         }
         if let Some(result) = self.dialog.take_result() {
+            if let Err(error) = self.dialog.preferences().save() {
+                eprintln!("ottrin: Could not remember picker preferences: {error}");
+            }
             *self.outcome.lock().expect("picker outcome") = Some(result);
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
@@ -1325,7 +1349,7 @@ mod tests {
             ..Default::default()
         };
         crate::theme_colors::apply_to_context(ctx, &colors);
-        let mut dialog = PickerDialog::new(request, ctx).unwrap();
+        let mut dialog = PickerDialog::new(request, ctx, PickerPreferences::default()).unwrap();
         wait_listing(&mut dialog);
         PickerApp {
             dialog,
@@ -1484,7 +1508,7 @@ mod tests {
             }],
             ..Default::default()
         };
-        let mut dialog = PickerDialog::new(request, &ctx).unwrap();
+        let mut dialog = PickerDialog::new(request, &ctx, PickerPreferences::default()).unwrap();
         wait_listing(&mut dialog);
         dialog.filename = "existing.txt".into();
         dialog.accept(false);
@@ -1503,7 +1527,7 @@ mod tests {
             filename: "existing.txt".into(),
             ..Default::default()
         };
-        let mut dialog = PickerDialog::new(request, &ctx).unwrap();
+        let mut dialog = PickerDialog::new(request, &ctx, PickerPreferences::default()).unwrap();
         wait_listing(&mut dialog);
         dialog.accept(false);
         let until = Instant::now() + Duration::from_secs(3);
@@ -1540,7 +1564,7 @@ mod tests {
             }],
             ..Default::default()
         };
-        let mut dialog = PickerDialog::new(request, &ctx).unwrap();
+        let mut dialog = PickerDialog::new(request, &ctx, PickerPreferences::default()).unwrap();
         wait_listing(&mut dialog);
         assert!(dialog.entries.is_empty());
         dialog.filename = ".hidden".into();
@@ -1569,6 +1593,7 @@ mod tests {
                 ..Default::default()
             },
             &ctx,
+            PickerPreferences::default(),
         )
         .unwrap();
         wait_listing(&mut dialog);
@@ -1611,7 +1636,7 @@ mod tests {
                     dark,
                     scale,
                 );
-                app.dialog.preview = Some(crate::picker_preview::PickerPreview::new(&ctx));
+                app.dialog.set_preview_enabled(true, &ctx);
                 let visible = app.dialog.visible_entries();
                 app.dialog
                     .select(visible.get(0), 0, &visible, Default::default());
@@ -1720,7 +1745,7 @@ mod tests {
             true,
             1.0,
         );
-        app.dialog.preview = Some(crate::picker_preview::PickerPreview::new(&ctx));
+        app.dialog.set_preview_enabled(true, &ctx);
         let visible = app.dialog.visible_entries();
         app.dialog
             .select(visible.get(0), 0, &visible, Default::default());
@@ -1826,5 +1851,99 @@ mod tests {
                 }],
             );
         }
+    }
+    #[test]
+    fn caller_location_overrides_remembered_folder_without_resetting_picker_options() {
+        let remembered = tempfile::tempdir().unwrap();
+        let requested = tempfile::tempdir().unwrap();
+        let ctx = Context::default();
+        let preferences = PickerPreferences {
+            grid: true,
+            hidden: true,
+            preview: true,
+            last_directory: Some(ottrin_platform::move_recovery::NativePath::encode(
+                remembered.path(),
+            )),
+        };
+        let dialog = PickerDialog::new(
+            PickerRequest {
+                initial_directory: Some(requested.path().to_path_buf()),
+                ..Default::default()
+            },
+            &ctx,
+            preferences,
+        )
+        .unwrap();
+        assert_eq!(dialog.directory, requested.path());
+        assert!(dialog.grid && dialog.hidden && dialog.preview.is_some());
+    }
+    #[test]
+    fn location_shortcut_uses_event_modifiers_when_the_final_snapshot_has_released_ctrl() {
+        let root = tempfile::tempdir().unwrap();
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        let event_modifiers = egui::Modifiers {
+            ctrl: true,
+            ..Default::default()
+        };
+        let _ = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(940.0, 640.0),
+                )),
+                modifiers: Default::default(),
+                events: vec![
+                    egui::Event::Key {
+                        key: egui::Key::L,
+                        physical_key: Some(egui::Key::L),
+                        pressed: true,
+                        repeat: false,
+                        modifiers: event_modifiers,
+                    },
+                    egui::Event::Key {
+                        key: egui::Key::L,
+                        physical_key: Some(egui::Key::L),
+                        pressed: false,
+                        repeat: false,
+                        modifiers: Default::default(),
+                    },
+                ],
+                ..Default::default()
+            },
+            |ctx| app.render_window(ctx),
+        );
+        assert!(
+            app.dialog.editing_location,
+            "Ctrl+L must survive a released final modifier snapshot"
+        );
+    }
+    #[test]
+    fn folder_only_picker_preserves_file_preview_preference_without_starting_its_workers() {
+        let root = tempfile::tempdir().unwrap();
+        let ctx = Context::default();
+        let dialog = PickerDialog::new(
+            PickerRequest {
+                mode: PickerMode::Folder,
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            &ctx,
+            PickerPreferences {
+                preview: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(dialog.preview.is_none());
+        assert!(dialog.preferences().preview);
     }
 }

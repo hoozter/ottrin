@@ -1,0 +1,49 @@
+{
+  "reason": "Unnecessary root Miller screenshots included unrelated host ancestry filenames. Current fixture-only grid,settings,picker and control evidence retained.",
+  "removed": [
+    {
+      "path": ".hermes/evidence/picker-integration-current/modifier-control/initial.png",
+      "bytes": 109998
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/shortcut-control/initial.png",
+      "bytes": 110262
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/dark/initial.png",
+      "bytes": 109701
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/light150/initial.png",
+      "bytes": 168274
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/shortcut-control/main-menu.png",
+      "bytes": 128929
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/modifier-control/ctrl-l-main-diagnostic.png",
+      "bytes": 109505
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/light150/main-view-options-light.png",
+      "bytes": 194882
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/openwith/manual-application-picker.png",
+      "bytes": 58356
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/openwith/openwith-context-menu.png",
+      "bytes": 127381
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/openwith/openwith-application-choices.png",
+      "bytes": 113606
+    },
+    {
+      "path": ".hermes/evidence/picker-integration-current/openwith/initial.png",
+      "bytes": 111410
+    }
+  ]
+}

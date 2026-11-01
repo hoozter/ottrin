@@ -1,0 +1,6 @@
+{
+  "status": "Failed internal location shortcut; normal application exit and fixture preservation only",
+  "defect": "Main-window keyboard handling consumed Ctrl+L for a Settings-owned picker,so Enter accepted the old folder. Do not claim successful folder navigation or adoption.",
+  "cleanup": "Controlled extra owned-home search root removed through UI; private processes/mounts/profile gone.",
+  "producer_error": "Post-exit Python used Rust-style with_file_name instead of with_name; corrected before next allocation. Teardown still completed."
+}
