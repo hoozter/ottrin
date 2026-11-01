@@ -1,0 +1,9 @@
+{
+  "run": 41320771519,
+  "source": "29450ee2",
+  "linux": "failed platform lib-test Clippy: items_after_test_module",
+  "local_scope_gap": "app/UI/search all-target lint did not lint the platform lib-test target",
+  "correction": "Move restore_provider before test module; no behavior change",
+  "verification": "Widened Linux all-target lint includes ottrin-platform; remaining protocol work separately uncommitted",
+  "folder_lifecycle": "not reached in this run; previous portal87999cf8 acceptance remains valid"
+}

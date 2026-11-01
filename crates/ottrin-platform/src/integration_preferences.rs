@@ -83,6 +83,36 @@ pub(super) fn replace(
     Ok(result)
 }
 
+/// Remove only our provider from a changed list. A sole owned provider restores
+/// the previous choice; a foreign-only choice is left untouched.
+pub(super) fn restore_provider(
+    current: Option<&str>,
+    owner: &str,
+    previous: Option<&str>,
+) -> (bool, Option<String>) {
+    let values = current
+        .unwrap_or_default()
+        .split(';')
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .collect::<Vec<_>>();
+    if !values.contains(&owner) {
+        return (false, current.map(str::to_owned));
+    }
+    let remaining = values
+        .into_iter()
+        .filter(|value| *value != owner)
+        .collect::<Vec<_>>();
+    (
+        true,
+        if remaining.is_empty() {
+            previous.map(str::to_owned)
+        } else {
+            Some(format!("{};", remaining.join(";")))
+        },
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,34 +165,4 @@ mod tests {
             .is_err()
         );
     }
-}
-
-/// Remove only our provider from a changed list. A sole owned provider restores
-/// the previous choice; a foreign-only choice is left untouched.
-pub(super) fn restore_provider(
-    current: Option<&str>,
-    owner: &str,
-    previous: Option<&str>,
-) -> (bool, Option<String>) {
-    let values = current
-        .unwrap_or_default()
-        .split(';')
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .collect::<Vec<_>>();
-    if !values.contains(&owner) {
-        return (false, current.map(str::to_owned));
-    }
-    let remaining = values
-        .into_iter()
-        .filter(|value| *value != owner)
-        .collect::<Vec<_>>();
-    (
-        true,
-        if remaining.is_empty() {
-            previous.map(str::to_owned)
-        } else {
-            Some(format!("{};", remaining.join(";")))
-        },
-    )
 }
