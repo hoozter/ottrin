@@ -1,0 +1,10 @@
+{
+  "scope": "Direct production Documents API and actual private FUSE export; not a sandboxed application/chooser frontend identity check",
+  "status": "pass",
+  "native_source_hex": "2f7661722f746d702f6f747472696e2d646f632d71612d38637562377976362f666978747572652f6f726967696e616c802e747874",
+  "native_source_preserved": true,
+  "exported_native_filename_read": true,
+  "permissions_verified": true,
+  "export_removed": true,
+  "mount_is_private": true
+}

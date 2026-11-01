@@ -131,6 +131,11 @@ fn parse_cli_arguments(args: &[OsString]) -> Result<CliArguments, String> {
 enum HeadlessAction {
     #[cfg(target_os = "linux")]
     Portal,
+    #[cfg(target_os = "linux")]
+    PortalManagement {
+        action: PortalManagement,
+        json: bool,
+    },
     IndexEnsure,
     IndexUpdate {
         json: bool,
@@ -161,6 +166,15 @@ enum HeadlessAction {
     DropStatus,
     DropCopy(Vec<PathBuf>),
     Invalid(String),
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PortalManagement {
+    Status,
+    Enable,
+    Disable,
+    Apply,
 }
 
 fn renderer_for_selection(is_windows: bool, choice: GraphicsRendererChoice) -> eframe::Renderer {
@@ -880,7 +894,11 @@ fn print_cli_help() {
     println!();
     println!("Usage:");
     #[cfg(target_os = "linux")]
-    println!("  ottrin portal                   Run the desktop file-dialog backend");
+    {
+        println!("  ottrin portal                   Run the desktop file-dialog backend");
+        println!("  ottrin portal enable|disable|apply|status [--json]");
+        println!("                                 Manage optional desktop file dialogs");
+    }
     println!("  ottrin picker                   Open an Ottrin chooser using a JSON stdin request");
     println!(
         "    --cancel-on-disconnect        Read one JSON line and cancel when the caller closes stdin"
@@ -1005,10 +1023,33 @@ fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
                 .unwrap_or_else(HeadlessAction::Invalid),
         ),
         #[cfg(target_os = "linux")]
-        "portal" => Some(if args.len() == 1 {
-            HeadlessAction::Portal
-        } else {
-            HeadlessAction::Invalid("portal accepts no arguments".into())
+        "portal" => Some(match &args[1..] {
+            [] => HeadlessAction::Portal,
+            [action] if action == "enable" => HeadlessAction::PortalManagement {
+                action: PortalManagement::Enable,
+                json: false,
+            },
+            [action] if action == "disable" => HeadlessAction::PortalManagement {
+                action: PortalManagement::Disable,
+                json: false,
+            },
+            [action] if action == "apply" => HeadlessAction::PortalManagement {
+                action: PortalManagement::Apply,
+                json: false,
+            },
+            [action] if action == "status" => HeadlessAction::PortalManagement {
+                action: PortalManagement::Status,
+                json: false,
+            },
+            [action, flag] if action == "status" && flag == "--json" => {
+                HeadlessAction::PortalManagement {
+                    action: PortalManagement::Status,
+                    json: true,
+                }
+            }
+            _ => HeadlessAction::Invalid(
+                "portal accepts enable,disable,apply or status [--json]".into(),
+            ),
         }),
         "picker" => Some(
             if args.len() == 1 || (args.len() == 2 && args[1] == "--cancel-on-disconnect") {
@@ -1305,6 +1346,25 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     match action {
         #[cfg(target_os = "linux")]
         HeadlessAction::Portal => return portal::run(),
+        #[cfg(target_os = "linux")]
+        HeadlessAction::PortalManagement { action, json } => {
+            use ottrin_platform::portal_integration;
+            let message = match action {
+                PortalManagement::Enable => portal_integration::enable()?,
+                PortalManagement::Disable => portal_integration::disable()?,
+                PortalManagement::Apply => portal_integration::apply()?,
+                PortalManagement::Status => {
+                    let status = portal_integration::status();
+                    if json {
+                        serde_json::to_string(&status).map_err(|e| e.to_string())?
+                    } else {
+                        status.detail
+                    }
+                }
+            };
+            println!("{message}");
+            return Ok(());
+        }
         HeadlessAction::DropStatus => {
             print_drop_status(&load_config().target);
             return Ok(());
@@ -1315,7 +1375,9 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 
     match action {
         #[cfg(target_os = "linux")]
-        HeadlessAction::Portal => unreachable!("portal starts before index routing"),
+        HeadlessAction::Portal | HeadlessAction::PortalManagement { .. } => {
+            unreachable!("portal starts before index routing")
+        }
         HeadlessAction::IndexEnsure => {
             #[cfg(unix)]
             // SAFETY: geteuid has no preconditions and no side effects.
@@ -1824,6 +1886,31 @@ mod tests {
             cli_headless_action(&["portal".into()]),
             Some(HeadlessAction::Portal)
         );
+        for (name, action) in [
+            ("enable", PortalManagement::Enable),
+            ("disable", PortalManagement::Disable),
+            ("apply", PortalManagement::Apply),
+            ("status", PortalManagement::Status),
+        ] {
+            assert_eq!(
+                cli_headless_action(&["portal".into(), name.into()]),
+                Some(HeadlessAction::PortalManagement {
+                    action,
+                    json: false
+                })
+            );
+        }
+        assert_eq!(
+            cli_headless_action(&["portal".into(), "status".into(), "--json".into()]),
+            Some(HeadlessAction::PortalManagement {
+                action: PortalManagement::Status,
+                json: true
+            })
+        );
+        assert!(matches!(
+            cli_headless_action(&["portal".into(), "enable".into(), "--json".into()]),
+            Some(HeadlessAction::Invalid(_))
+        ));
         assert!(matches!(
             cli_headless_action(&["portal".into(), "extra".into()]),
             Some(HeadlessAction::Invalid(_))

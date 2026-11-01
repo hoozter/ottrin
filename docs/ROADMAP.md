@@ -1,5 +1,29 @@
 # Ottrin roadmap
 
+## Production portal lifecycle gate — source, 2026-11-01
+
+Portal management now has headless enable/disable/apply/status commands using the
+same implementation as Services. Status has a JSON form; local actual-process
+checks confirm Off without opening a GUI, starting an index or creating setup
+state. Full Linux app checks and strict Linux/GNU checks pass. The new hosted
+Linux gate will verify real production user-manager/D-Bus activation, readiness,
+update, preservation of unrelated edits and restoration/removal. It is guarded
+to disposable GitHub Linux runners; actual hosted execution is pending. CI HTML
+setup cleanup now owns the portal definition and any directories it creates.
+
+A private Documents service started explicitly mounts FUSE successfully under
+both temporary roots. Real FD export of a native-byte filename, FUSE reads,
+per-app read permissions, deletion and unchanged original bytes pass. This closes
+the private-mount investigation; it does not establish an actual sandboxed caller
+or browser workflow. All private services, mounts and profiles are removed.
+Evidence: `.hermes/evidence/portal-document-export-current/` and
+`.hermes/evidence/portal-management-current/`.
+
+Continue the hosted production lifecycle result, then sandbox caller, supported
+folder/cooperating-app integration and coherent package acceptance. Stable packages
+remain `25b38c8f`; source and exact-package delivery remain separate.
+
+
 ## Native preview labels and concurrent render identities — source, 2026-11-01
 
 Loading and completed previews now share one native filename display function.

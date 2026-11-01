@@ -1820,6 +1820,12 @@ starting a GUI or index. Use `--` for option-like native filenames.
 
 ## Linux desktop FileChooser integration
 
+The headless `ottrin portal enable`, `disable`, `apply` and `status [--json]`
+commands use the same platform implementation as Services. They do not initialize
+indexing or open a GUI. The hosted Linux lifecycle gate exercises actual user
+systemd/D-Bus activation, readiness, update, preference restoration and teardown;
+its guard refuses execution outside disposable GitHub Linux runners.
+
 `ottrin portal` runs the on-demand `org.freedesktop.impl.portal.desktop.ottrin`
 backend, implementing FileChooser version 4 (`OpenFile`, `SaveFile`, `SaveFiles`).
 Only the current desktop-portal frontend may call these methods. Its per-request

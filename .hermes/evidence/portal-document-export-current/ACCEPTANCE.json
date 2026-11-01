@@ -1,0 +1,10 @@
+{
+  "status": "pass direct Documents API and FUSE export",
+  "scope": "Explicitly started private Documents service on owned buses. Native FD export/read/permissions/delete preserve original bytes. No sandboxed caller/frontend export claim.",
+  "private_profiles_removed": true,
+  "owned_services_stopped_and_mounts_released": true,
+  "remaining_task_storage": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/portal-document-export-current",
+    "purpose": "Compact producer scripts,logs,introspection and acceptance receipts; no FUSE mount,export or profile remains."
+  }
+}

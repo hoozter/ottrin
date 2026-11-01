@@ -10,7 +10,7 @@ const BUS: &str = "org.freedesktop.impl.portal.desktop.ottrin";
 const UNIT: &str = "ottrin-portal.service";
 const DEFINITION: &[u8] = include_bytes!("../../../packaging/linux/ottrin.portal");
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct PortalStatus {
     pub enabled: bool,
     pub ready: bool,

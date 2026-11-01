@@ -64,10 +64,11 @@ try:
         '/usr/share/ottrin/ottrin-html-render.apparmor':sha('packaging/linux/ottrin-html-render.apparmor'),
         str(policy):sha('packaging/linux/ottrin-html-render.apparmor'),
         '/usr/share/polkit-1/actions/org.ottrin.filesystem.policy':sha('packaging/linux/org.ottrin.filesystem.policy'),
+        '/usr/share/xdg-desktop-portal/portals/ottrin.portal':sha('packaging/linux/ottrin.portal'),
     }
     for name in files:assert not Path(name).exists() and not Path(name).is_symlink(),name
     existing=run(['systemctl','--user','list-units','--all','--plain','--no-legend','--no-pager','ottrin-render-*.service'],capture_output=True,text=True).stdout;assert not existing.strip()
-    directories=['/usr/libexec','/usr/libexec/ottrin','/usr/share/ottrin','/usr/share/polkit-1','/usr/share/polkit-1/actions']
+    directories=['/usr/libexec','/usr/libexec/ottrin','/usr/share/ottrin','/usr/share/polkit-1','/usr/share/polkit-1/actions','/usr/share/xdg-desktop-portal','/usr/share/xdg-desktop-portal/portals']
     state={'owned_files':files,'new_directories':[p for p in directories if not Path(p).exists()],
            'restriction':restriction,'browser_sha256':before,'status':'preparing'}
     state_path.write_text(json.dumps(state,indent=2)+'\n')

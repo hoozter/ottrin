@@ -1,0 +1,36 @@
+{
+  "status": "pass local source/CLI checks; new hosted lifecycle gate pending",
+  "base_revision": "5dfe01ca3ea0312e2b4d081e0223d90c109a08b0",
+  "checks": {
+    "app_unit_tests": 44,
+    "daemon_unit_tests": 2,
+    "cli_integration_tests": 3,
+    "strict_linux_and_gnu_lint": true,
+    "workflow_yaml_parsed": true,
+    "actual_off_status_json_no_gui_index_or_setup": true,
+    "hosted_mutation_guard_rejects_local_execution": true
+  },
+  "source_files": {
+    ".github/workflows/ci.yml": "90a7717331fe4b36ceb4374ae4a6b814442e23af91896789900791d18e9e1a29",
+    "crates/ottrin-app/src/main.rs": "05b66ea6b6b72bbcaf2f2fc4e2ea22eaa9209851179335fc72d4854d5c8027d2",
+    "crates/ottrin-platform/src/portal_integration.rs": "d8834d7159a597bccfb83963a21b083b8829a969f02d4ad22fe3426c2e0906a4",
+    "docs/DEVELOPMENT.md": "7df0dbeddaafad473bdc4e2b50ee7acf332676d9dba77f84679eb3d9f70ef2a2",
+    "docs/ROADMAP.md": "901c261df36e846dc760ac7db50c4966bfeb48a553214d4e05429c57898b5fb8",
+    "scripts/ci/linux-html-sandbox.py": "d326347c203626403307315e5c5b38608618052f75da2bcee886d38bcb125242",
+    "scripts/ci/linux-portal.py": "5171124385ba35a12dff0ec24819163770bdaa08e8971124ef69881f601f49a3"
+  },
+  "scope_limits": [
+    "Hosted real production enable/apply/update/disable is not yet executed. The gate refuses personal-host mutation.",
+    "Stable packages remain25b38c8f. No new package or Windows native GUI acceptance."
+  ],
+  "cleanup": {
+    "initial_obsolete_incremental_candidates": 24,
+    "final_batch_removed": 16,
+    "final_batch_space_report": "0.60 GiB; not an aggregate recovery claim",
+    "guard_refused_transient_pid_exited_before_retry": true,
+    "remaining_task_storage": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/portal-management-current",
+      "purpose": "Compact acceptance receipts,producer/log evidence; no live profile,service or test process."
+    }
+  }
+}

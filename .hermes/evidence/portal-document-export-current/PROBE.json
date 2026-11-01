@@ -1,0 +1,36 @@
+[
+  {
+    "case": "var-tmp",
+    "parent": "/var/tmp",
+    "status": "observed",
+    "profile": "/var/tmp/ottrin-doc-qa-e_bxo839",
+    "document_exit": null,
+    "mounts": [
+      "151 34 0:65 / /var/tmp/ottrin-doc-qa-e_bxo839/runtime/doc rw,nosuid,nodev,relatime shared:582 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "mounted_document_portal": true,
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  {
+    "case": "user-runtime",
+    "parent": "/run/user/1000",
+    "status": "observed",
+    "profile": "/run/user/1000/ottrin-doc-qa-jk19hzfl",
+    "document_exit": null,
+    "mounts": [
+      "151 350 0:65 / /run/user/1000/ottrin-doc-qa-jk19hzfl/runtime/doc rw,nosuid,nodev,relatime shared:582 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "mounted_document_portal": true,
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+]

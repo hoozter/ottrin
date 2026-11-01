@@ -1,0 +1,11 @@
+{
+  "status": {
+    "enabled": false,
+    "ready": false,
+    "pending": false,
+    "detail": "Off \u2014 applications use your desktop's file picker"
+  },
+  "exit": 0,
+  "no_index_or_setup_started": true,
+  "hosted_mutation_guard_rejected_local_execution": true
+}

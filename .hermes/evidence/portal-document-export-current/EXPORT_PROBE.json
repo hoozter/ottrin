@@ -1,0 +1,29 @@
+[
+  {
+    "case": "export",
+    "parent": "/var/tmp",
+    "status": "observed",
+    "profile": "/var/tmp/ottrin-doc-qa-8cub7yv6",
+    "document_exit": null,
+    "mounts": [
+      "96 34 0:64 / /var/tmp/ottrin-doc-qa-8cub7yv6/runtime/doc rw,nosuid,nodev,relatime shared:159 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "mounted_document_portal": true,
+    "document_export": {
+      "scope": "Direct production Documents API and actual private FUSE export; not a sandboxed application/chooser frontend identity check",
+      "status": "pass",
+      "native_source_hex": "2f7661722f746d702f6f747472696e2d646f632d71612d38637562377976362f666978747572652f6f726967696e616c802e747874",
+      "native_source_preserved": true,
+      "exported_native_filename_read": true,
+      "permissions_verified": true,
+      "export_removed": true,
+      "mount_is_private": true
+    },
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+]
