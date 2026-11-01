@@ -1,5 +1,32 @@
 # Ottrin roadmap
 
+## Native preview labels and concurrent render identities — source, 2026-11-01
+
+Loading and completed previews now share one native filename display function.
+Non-text native names display their filename with replacement glyphs rather than
+an unrelated “Preview” title. Actual source Inspector title/footer, VCF content,
+Space close, unchanged file bytes and normal main/index lifecycle are verified
+in a private X11 desktop.
+
+Hosted Ubuntu run 41309919766 at 78af6a2a failed one HTML stylesheet test because a
+transient renderer unit name was already loaded. Names previously combined PID
+and wall-clock time; a process-local sequence now prevents equal clock readings
+from giving concurrent launches the same name. A 16-thread/2,048-name regression
+passes. All 206 local preview unit tests and strict Linux/GNU source checks pass;
+local HTML rendering is unavailable and is not promoted to real renderer
+acceptance. The later ae64ebd0 Ubuntu/search jobs passed even before this naming
+correction, confirming the original failure was intermittent; a new complete
+hosted run is still required for the correction.
+
+Evidence: `.hermes/evidence/preview-native-title-current/`. Its native GUI binary
+contains the title fix and predates only the independent renderer-name change.
+Owned processes/profiles are closed; 25 obsolete incremental sessions were removed
+(0.54 GiB reported). The exited system-monitor helper review was removed from the
+current cleanup scope; no new inspection exception was added. Continue portal
+production activation/document-export acceptance, supported folder/cooperating-app
+integration and coherent package delivery. Stable packages remain `25b38c8f`.
+
+
 ## Native command-line paths — source checkpoint, 2026-11-01
 
 A controlled launch with a valid non-UTF-8 Linux directory reproduced a panic in

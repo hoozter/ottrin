@@ -54,7 +54,7 @@ pub(crate) mod linux {
     use std::os::unix::process::CommandExt;
     use std::path::Path;
     use std::process::{Command, Stdio};
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
     use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
     use crate::linux_namespace::BWRAP;
@@ -67,6 +67,19 @@ pub(crate) mod linux {
         cancelled: &AtomicBool,
     ) -> Result<IsolatedProcessOutput, IsolatedProcessFailure> {
         run_command(request, cancelled, crate::linux_namespace::command(request))
+    }
+
+    fn render_unit_name() -> String {
+        static NEXT_UNIT: AtomicU64 = AtomicU64::new(0);
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let sequence = NEXT_UNIT.fetch_add(1, Ordering::Relaxed);
+        format!(
+            "ottrin-render-{}-{timestamp}-{sequence}",
+            std::process::id()
+        )
     }
 
     pub(crate) fn run_command(
@@ -93,11 +106,9 @@ pub(crate) mod linux {
             stdout: stdout_path.clone(),
             stderr: stderr_path.clone(),
         };
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos();
-        let unit = format!("ottrin-render-{}-{unique}", std::process::id());
+        // Wall-clock readings can repeat across concurrent jobs on a VM. The
+        // process-local sequence keeps their systemd identities independent.
+        let unit = render_unit_name();
         let cpu_seconds = request.timeout.as_secs().max(1).saturating_add(1);
         let file_size = request.max_output_bytes.max(MAX_DIAGNOSTIC_BYTES);
         let mut command = Command::new(SYSTEMD_RUN);
@@ -286,5 +297,28 @@ pub(crate) mod linux {
         }
         let _ = child.kill();
         let _ = child.wait();
+    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        #[test]
+        fn concurrent_render_jobs_have_independent_unit_names() {
+            let names = std::thread::scope(|scope| {
+                let jobs = (0..16)
+                    .map(|_| {
+                        scope.spawn(|| (0..128).map(|_| render_unit_name()).collect::<Vec<_>>())
+                    })
+                    .collect::<Vec<_>>();
+                jobs.into_iter()
+                    .flat_map(|job| job.join().unwrap())
+                    .collect::<Vec<_>>()
+            });
+            let count = names.len();
+            let unique = names.into_iter().collect::<std::collections::HashSet<_>>();
+            assert_eq!(unique.len(), count);
+            let prefix = format!("ottrin-render-{}-", std::process::id());
+            assert!(unique.iter().all(|name| name.starts_with(&prefix)
+                && name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')));
+        }
     }
 }

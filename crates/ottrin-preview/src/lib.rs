@@ -1245,13 +1245,21 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
     load_preview_cancellable(request, &cancelled)
 }
 
-pub fn load_preview_cancellable(request: &PreviewRequest, cancelled: &AtomicBool) -> PreviewData {
-    let title = request
-        .path
+/// Display the native filename consistently while retaining its exact path for I/O.
+pub fn preview_title(path: &Path) -> String {
+    let title = path
         .file_name()
-        .and_then(|s| s.to_str())
-        .unwrap_or("Preview")
-        .to_string();
+        .unwrap_or(path.as_os_str())
+        .to_string_lossy();
+    if title.is_empty() {
+        "Preview".into()
+    } else {
+        title.into_owned()
+    }
+}
+
+pub fn load_preview_cancellable(request: &PreviewRequest, cancelled: &AtomicBool) -> PreviewData {
+    let title = preview_title(&request.path);
 
     if request.kind_hint == EntryKind::Directory {
         return preview_folder(title, &request.path);

@@ -2704,11 +2704,7 @@ where
 
 fn loading_preview_data(path: &Path) -> PreviewData {
     PreviewData {
-        title: path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("Preview")
-            .to_string(),
+        title: ottrin_preview::preview_title(path),
         kind: PreviewKind::Unsupported,
         body: "Loading preview…".to_string(),
         document: None,

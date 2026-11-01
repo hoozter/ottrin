@@ -1,0 +1,35 @@
+{
+  "status": "pass in stated source scopes; hosted real renderer acceptance pending",
+  "base_revision": "ae64ebd0b305ea400f3c7acc2e0fcab7112988b3",
+  "source_files": {
+    "crates/ottrin-preview/src/isolated_process.rs": "7f6dbc27188ad7c686294954681f531f7c501cf6a9ded9e74e618aa2a14a9aae",
+    "crates/ottrin-preview/src/lib.rs": "a91fe732cf38b85a6b96f68b4f71de0dd5f66755c2a3f88cb9309aa744da3c76",
+    "crates/ottrin-ui/src/lib.rs": "b02de6c81e28c42cbe9e233db6e5f8b6f8398b7c254a2778f1e393ac54d8bbca",
+    "docs/ROADMAP.md": "9bc117c002420314c6cc9cf49d8e49c83aa05c1b02abdbeb030f5d84f532e415"
+  },
+  "checks": {
+    "preview_unit_tests": 206,
+    "concurrent_unit_names": 2048,
+    "linux_strict_lint": true,
+    "gnu_strict_lint": true,
+    "native_gui_title_and_footer_visually_inspected": true,
+    "original_fixture_bytes_preserved": true,
+    "normal_close_index_continuity": true
+  },
+  "scope_limits": [
+    "Actual source GUI includes title function; binary precedes separate Linux renderer-name sequence.",
+    "Local HTML runtime unavailable; 206 passing tests do not establish actual HTML rendering. Hosted failure and rerun scopes are documented in ROADMAP.",
+    "No new package acceptance. Stable Linux and Windows candidate remain25b38c8f."
+  ],
+  "cleanup": {
+    "obsolete_incremental_sessions_removed": 25,
+    "space_recovered_report": "0.54 GiB",
+    "review_change": "Existing PID57349 exited; its exception removed. Two existing identities/executable ancestors revalidated; no exception added.",
+    "owned_gui_profile_and_processes_removed": true,
+    "test_configuration": "Preview-only unit suite explicitly exercises renderer identity under its ordinary test profile,sharing existing target and Cargo caches.",
+    "remaining_task_storage": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/preview-native-title-current",
+      "purpose": "Compact acceptance receipts,producer scripts,logs and scoped screenshots; no private runtime or extracted package retained."
+    }
+  }
+}
