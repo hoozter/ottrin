@@ -1,0 +1,9 @@
+{
+  "binary_sha256": "d86e17da71e6a65896a011dcee80e8c6e64b76fb004136d7bb3f60a22d91fb5e",
+  "native_path_hex": "2f746d702f6f747472696e2d6e61746976652d6c61756e63682d346e636f616675702f6e617469766580",
+  "exit": 101,
+  "stdout": "",
+  "stderr": "\nthread 'main' (3571746) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/env.rs:871:51:\ncalled `Result::unwrap()` on an `Err` value: \"/tmp/ottrin-native-launch-4ncoafup/native\\x80\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+  "no_index_started": true,
+  "profile": "/tmp/ottrin-native-launch-4ncoafup"
+}

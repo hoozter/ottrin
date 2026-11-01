@@ -1,0 +1,12 @@
+{
+  "fixture-app.exe": {
+    "sha256": "deac2cb077846a12f37c861ce180614195290fda5b9ed3bcafcf3c17664ad1c9",
+    "raw_sha256": "2ab0cfab29219eae5ba424c083332edbb3a8bf6dd9c42483e0e762cb500eedf0",
+    "source_date_epoch": 1793539093
+  },
+  "fixture-launch.exe": {
+    "sha256": "dd74ee632f7cc38fa35117e4d73b9d12014ba2283e64d813c7526146e7cc109d",
+    "raw_sha256": "561982f67e8adf5e03be849db30af7a01fe96cd4eda5e8b238a2598c49661cc4",
+    "source_date_epoch": 1793539117
+  }
+}

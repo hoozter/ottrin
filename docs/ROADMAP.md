@@ -1,5 +1,31 @@
 # Ottrin roadmap
 
+## Native command-line paths — source checkpoint, 2026-11-01
+
+A controlled launch with a valid non-UTF-8 Linux directory reproduced a panic in
+`std::env::args` before even Help could run. The command line now retains native
+`OsString` arguments through direct open, reveal, preview, Drop Folder and helper
+path options. Only search/index text and renderer names require UTF-8; invalid
+text is reported without a panic. Existing global option/separator behavior is
+retained through the same parser.
+
+The full Linux app suite passes 44 app, two daemon and three CLI tests. Strict
+Linux/GNU all-target checks pass. Actual Linux source GUI opens a native-byte
+directory and VCF, closes Inspector with Space, preserves all source bytes and
+exits normally while its private index continues. Windows passes all 31 app tests
+per ordinary/elevated token, including native-unit filenames and real filesystem
+routing. The actual Windows application also receives an unpaired UTF-16 argv
+unit and reaches Help with exit 0 in both tokens. Guest profiles are preserved,
+owned fixtures removed and the retained QA VM shut down.
+
+Evidence: `.hermes/evidence/native-launch-current/`. These are source checks;
+stable packages remain `25b38c8f`. This removes a prerequisite for reversible folder
+handlers. Native preview labels still fall back to “Preview” for non-text names;
+fix that observed display issue, then continue production activation/package,
+sandbox-export, cooperating-app and folder integration acceptance. Owner waits
+remain parked independently.
+
+
 ## Linux FileChooser portal — source checkpoint, 2026-11-01
 
 The native broker now implements FileChooser version 4 OpenFile, SaveFile and
@@ -112,9 +138,9 @@ preferences and returns cancellation; accepted responses survive shutdown.
 
 Actual final-source X11 GUI verifies transient/dialog properties, parent-loss
 cancellation, WM_DELETE_WINDOW close, saved native folder, unchanged file bytes,
-exit0 and no index startup. Actual composited private Wayland GUI imports a GTK
+exit 0 and no index startup. Actual composited private Wayland GUI imports a GTK
 foreign-v2 exported parent and verifies parent-loss cancellation, preferences,
-unchanged bytes, exit0 and compositor survival. The preceding Wayland hang was a
+unchanged bytes, exit 0 and compositor survival. The preceding Wayland hang was a
 QA configuration error: the X11 desktop's inherited KWIN_COMPOSE=N disabled the
 virtual Wayland compositor; an owned backtrace located the blocked EGL swap.
 Final tests clear that X11-only setting. All private desktops, buses, helper
@@ -158,7 +184,7 @@ include rescanning and are explicitly not idle acceptance or an optimization cla
 
 Windows has58 identical application files across ZIP, NSIS and administrative MSI
 extraction. Actual ordinary Dark100 OpenGL checks cover the main pointer preview,
-read-only VCF/text navigation and Space, normal exit0 with the index still running,
+read-only VCF/text navigation and Space, normal exit 0 with the index still running,
 Native/Miller preference preservation, chooser Grid/Preview/Hidden persistence,
 caller-location precedence, exact Save response and overwrite confirmation.
 The chooser quiet sample records0CPU over10s and about26MiB working set.
@@ -166,7 +192,7 @@ The extra third-reopen QA request raced the preceding observer acknowledgement;
 the controller rejected its stale sequence and completely removed its owned
 account/profile/task/credential/fixtures and shut down the VM. Completed scopes
 remain individually recorded; the overall controller run is not called passed.
-The new command wrapper serializes callers. Save has pinned-process exit0 evidence;
+The new command wrapper serializes callers. Save has pinned-process exit 0 evidence;
 Cancel has response/preferences evidence, without an exit-code claim. Main final
 raw-file hashes precede chooser actions; teardown independently verifies originals.
 
@@ -223,7 +249,7 @@ their named hashes. Test counts are scoped observations, not completion measures
   has58 matching application files and passes native loader/CLI/administrative MSI
   extraction. Ordinary Dark100 GUI confirms folder-plus-OpenGL routing,the actual
   explicit-override reason over saved Native settings,read-only text/VCF navigation,
-  Space close,normal exit0,preserved Native/Miller preferences and five unchanged
+  Space close,normal exit 0,preserved Native/Miller preferences and five unchanged
   independently read files. One earlier fixture was ended by a rejected test key;
   its scoped positives are retained separately,not counted as a complete pass.
   All private accounts/profiles/tasks/credentials/roots are removed and the guest
@@ -299,7 +325,7 @@ their named hashes. Test counts are scoped observations, not completion measures
   RPCs. A separate headless startup process owns the existing runtime-upgrade path
   and can finish after the window closes. Cached UI diagnostics,ordered configuration,
   cancellation and reconnect use a worker; long maintenance does not hold its queue.
-  No fallback scanner or new always-running service is introduced. Linux passes443
+  No fallback scanner or new always-running service is introduced. Linux passes 443
   regular UI tests and30 application tests; native ordinary/elevated Windows passes415
   regular UI and27 application tests per token,with existing ignores and zero filters.
   Strict Linux/GNU Windows lint and formatting pass. Actual Linux GUI opens in225ms
@@ -319,7 +345,7 @@ their named hashes. Test counts are scoped observations, not completion measures
   scales. Actual corrected Linux source GUI preserves the preview column and returns
   the exact native-byte Save selection without changing the file. Index service
   actions also wait behind pending initial startup on their worker,including failed
-  startup,so Stop cannot finish before that startup step. Linux passes445 regular UI
+  startup,so Stop cannot finish before that startup step. Linux passes 445 regular UI
   tests; native ordinary/elevated Windows passes417 UI and27 application tests per
   token,with existing ignores and zero filters. Final strict Linux/GNU Windows lint
   includes a later caption-only correction from “1 items” to “1 item”; native logic
@@ -360,12 +386,12 @@ Earlier checkpoints below retain their recorded source/artifact scopes:
   Windows cases per ordinary/elevated token,with existing ignores retained.
   Actual AppImage Dark100/Light150 checks verify direct controls at deep paths,
   List/Grid-to-Column reveal,one full-path tooltip,read-only Inspector close,
-  unchanged five-file bytes and normal exit0 with saved theme/Miller preferences.
+  unchanged five-file bytes and normal exit 0 with saved theme/Miller preferences.
   Deliberate Miller scrolling survives reselecting Column mode without movement.
   Windows58-file payloads agree across all three formats;native loader/CLI and
   MSI administrative extraction pass. Fresh ordinary Dark100/default-launch GUI
   verifies the same view/metadata fixes,VCF/text arrow navigation and Space close,
-  normal exit0,saved Dark/Miller/Automatic preferences and five independent raw
+  normal exit 0,saved Dark/Miller/Automatic preferences and five independent raw
   file reads after close. The first Windows session expired before final checks;
   it is retained as failed,not acceptance. The fresh bounded core run passes.
   All owned accounts/profiles/tasks/credentials,desktops,buses,mounts,extractions
@@ -507,7 +533,7 @@ Earlier checkpoints below retain their recorded source/artifact scopes:
   source checks pass. Actual AppImage Light/Miller100 verifies wrapped text/DOCX
   footers, native/extracted bodies and read-only Inspector close; Dark/List150
   verifies short/long text Inspector footers/read-only close and every native
-  window ARGB icon pixel. Both product closes exit0, preserve theme/view and
+  window ARGB icon pixel. Both product closes exit 0, preserve theme/view and
   remove private profiles,processes,displays,buses and mounts. Staging/extraction
   is retired. The index daemon and HTML helper remain byte-identical; earlier
   resource/workflow evidence retains its original dates and artifact scopes.
@@ -5586,7 +5612,7 @@ The exact clean `fcf00aa` MSI, SHA-256 `f28a7f143edba14fd972781c1fbe4a6c368ec8cc
 
 A real failed uninstall of that exact MSI reproduces broken registration. Locking an owned preview-cache file makes the application reject cleanup before stopping its daemon. Task XML/security, daemon instance, all payload files and source/preferences remain intact. The Windows Installer rollback then logs access-denied/invalid-owner registration errors, changes product state from installed5 to advertised1, and a normal retry returns1603. An ordinary-user ADDLOCAL repair returns1602 and uninstall still returns1603. No registry/policy/ACL or elevation workaround is used.
 
-Two independently authored file-only per-user controls reproduce registration rollback failure after actual FileCopy/FileRemove operations. Each has one text file, an HKCU registry key path and a standard Type19 error action after InstallExecute; neither runs Ottrin or another custom executable. Failed installation leaves state5 with its file absent. Failed uninstallation restores its file but leaves state1. In the latter case forced repair and uninstall both return0 while the file remains; a fresh reinstall followed by uninstall removes it. This demonstrates why product state and exit0 alone do not prove removal. It does not establish the exact compiler/runtime/environment cause or a safe authoring repair.
+Two independently authored file-only per-user controls reproduce registration rollback failure after actual FileCopy/FileRemove operations. Each has one text file, an HKCU registry key path and a standard Type19 error action after InstallExecute; neither runs Ottrin or another custom executable. Failed installation leaves state5 with its file absent. Failed uninstallation restores its file but leaves state1. In the latter case forced repair and uninstall both return0 while the file remains; a fresh reinstall followed by uninstall removes it. This demonstrates why product state and exit 0 alone do not prove removal. It does not establish the exact compiler/runtime/environment cause or a safe authoring repair.
 
 [WiX issue 8574](https://github.com/wixtoolset/issues/issues/8574) describes related failures. Metadata-only inspection of its attachments shows the reported Advanced Installer comparison uses an immediate failure at6401 before InstallExecute6500, so that comparison does not prove equivalent rollback succeeds. No downloaded third-party MSI was executed. Local controls use pinned native WiX5.0.2 in Windows11 IoT Enterprise LTSC build26100, msi.dll5.0.26100.9168. Initial fixture compilation/export mistakes were corrected before their results were interpreted.
 
@@ -5826,7 +5852,7 @@ held installer lock. Setup and uninstall now instantiate one shared initializer
 that acquires that same mutex before any section or cleanup action. The corrected
 uninstaller refuses with exit1 before invoking cleanup; installed file hashes
 and registration remain unchanged. Setup also refuses the held lock. Releasing
-the holder allows an ordinary uninstall retry to finish with exit0.
+the holder allows an ordinary uninstall retry to finish with exit 0.
 
 A real corrected uninstaller paused in its fixture cleanup also excludes a second
 uninstaller and setup. Only one cleanup invocation occurs; the payload stays

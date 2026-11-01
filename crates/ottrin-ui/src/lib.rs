@@ -20911,7 +20911,9 @@ impl OttrinApp {
         if let Some(result) = result {
             self.service_action_rx = None;
             #[cfg(target_os = "linux")]
-            { self.portal_status = None; }
+            {
+                self.portal_status = None;
+            }
             self.search_ui.sqlite_schedule_status = None;
             self.search_service.refresh();
             self.privileged_availability = self.platform.privileged_availability();
@@ -20929,15 +20931,22 @@ impl OttrinApp {
 
     #[cfg(target_os = "linux")]
     fn render_portal_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
-        if let Some(status)=self.portal_status_rx.as_ref().and_then(|rx|rx.try_recv().ok()) {
-            self.portal_status=Some(status);
-            self.portal_status_rx=None;
+        if let Some(status) = self
+            .portal_status_rx
+            .as_ref()
+            .and_then(|rx| rx.try_recv().ok())
+        {
+            self.portal_status = Some(status);
+            self.portal_status_rx = None;
         }
         if self.portal_status.is_none() && self.portal_status_rx.is_none() {
-            let (tx,rx)=std::sync::mpsc::channel();
-            self.portal_status_rx=Some(rx);
-            let ctx=ui.ctx().clone();
-            std::thread::spawn(move || {let _=tx.send(ottrin_platform::portal_integration::status());ctx.request_repaint();});
+            let (tx, rx) = std::sync::mpsc::channel();
+            self.portal_status_rx = Some(rx);
+            let ctx = ui.ctx().clone();
+            std::thread::spawn(move || {
+                let _ = tx.send(ottrin_platform::portal_integration::status());
+                ctx.request_repaint();
+            });
         }
         appearance_editor::settings_surface(c).inner_margin(12).show(ui, |ui| {
             ui.set_min_width(ui.available_width());

@@ -16,6 +16,7 @@ use ottrin_ui::{
     remove_config_file,
 };
 use std::collections::HashSet;
+use std::ffi::{OsStr, OsString};
 #[cfg(any(target_os = "windows", test))]
 use std::fs::OpenOptions;
 #[cfg(any(target_os = "windows", test))]
@@ -45,15 +46,25 @@ enum GuiLaunchTarget {
 
 #[derive(Debug, Default, PartialEq, Eq)]
 struct CliArguments {
-    command: Vec<String>,
+    command: Vec<OsString>,
     renderer_override: Option<String>,
     helper_path: Option<PathBuf>,
     help: bool,
 }
 
+/// The prefix is ASCII, so stripping it ends at a valid native encoding boundary.
+fn native_option_value<'a>(argument: &'a OsStr, prefix: &str) -> Option<&'a OsStr> {
+    let suffix = argument
+        .as_encoded_bytes()
+        .strip_prefix(prefix.as_bytes())?;
+    // SAFETY: suffix is from this process's native string encoding, split just
+    // after an ASCII prefix, never inside an encoded native character.
+    Some(unsafe { OsStr::from_encoded_bytes_unchecked(suffix) })
+}
+
 /// Separate global GUI options from the command before interpreting a target.
 /// Values after `--` belong to the command, including option-like filenames.
-fn parse_cli_arguments(args: &[String]) -> Result<CliArguments, String> {
+fn parse_cli_arguments(args: &[OsString]) -> Result<CliArguments, String> {
     let mut parsed = CliArguments::default();
     let mut index = 0;
     while let Some(argument) = args.get(index) {
@@ -61,18 +72,19 @@ fn parse_cli_arguments(args: &[String]) -> Result<CliArguments, String> {
             parsed.command.extend_from_slice(&args[index..]);
             break;
         }
-        if matches!(argument.as_str(), "--help" | "-h") {
+        if matches!(argument.to_str(), Some("--help" | "-h")) {
             parsed.help = true;
             index += 1;
             continue;
         }
-        let option = if argument == "--renderer" || argument == "--helper-path" {
-            Some((argument.as_str(), None))
-        } else if let Some(value) = argument.strip_prefix("--renderer=") {
+        let option = if argument == "--renderer" {
+            Some(("--renderer", None))
+        } else if argument == "--helper-path" {
+            Some(("--helper-path", None))
+        } else if let Some(value) = native_option_value(argument, "--renderer=") {
             Some(("--renderer", Some(value)))
         } else {
-            argument
-                .strip_prefix("--helper-path=")
+            native_option_value(argument, "--helper-path=")
                 .map(|value| ("--helper-path", Some(value)))
         };
         if let Some((name, inline)) = option {
@@ -81,7 +93,9 @@ fn parse_cli_arguments(args: &[String]) -> Result<CliArguments, String> {
                 None => {
                     index += 1;
                     args.get(index)
-                        .filter(|value| !value.is_empty() && !value.starts_with('-'))
+                        .filter(|value| {
+                            !value.is_empty() && !value.as_encoded_bytes().starts_with(b"-")
+                        })
                         .cloned()
                         .ok_or_else(|| format!("{name} requires a value"))?
                 }
@@ -92,8 +106,12 @@ fn parse_cli_arguments(args: &[String]) -> Result<CliArguments, String> {
                     return Err("--renderer cannot be repeated".into());
                 }
                 parsed.renderer_override = Some(
-                    validate_renderer_override(Some(&value))?
-                        .ok_or_else(|| "--renderer requires a value".to_string())?,
+                    validate_renderer_override(Some(
+                        value
+                            .to_str()
+                            .ok_or("--renderer requires a UTF-8 renderer name")?,
+                    ))?
+                    .ok_or_else(|| "--renderer requires a value".to_string())?,
                 );
             } else {
                 if parsed.helper_path.is_some() {
@@ -342,7 +360,7 @@ fn windows_graphics_evidence() -> GraphicsEvidence {
 }
 
 fn main() {
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    let args: Vec<OsString> = std::env::args_os().skip(1).collect();
     #[cfg(unix)]
     if args.as_slice() == ["--index-daemon"] {
         use std::os::unix::process::CommandExt;
@@ -789,7 +807,7 @@ fn show_windows_startup_failure_dialog(message: &str) {
     }
 }
 
-fn handle_cli_action(args: &[String]) -> bool {
+fn handle_cli_action(args: &[OsString]) -> bool {
     if let Some(action) = cli_headless_action(args) {
         if let Err(error) = run_headless_action(action) {
             eprintln!("ottrin: {error}");
@@ -961,11 +979,31 @@ fn parse_search_action(args: &[String]) -> HeadlessAction {
     }
 }
 
-fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
-    let command = args.first().map(String::as_str)?;
+fn text_command_arguments(args: &[OsString]) -> Result<Vec<String>, String> {
+    args.iter()
+        .map(|value| {
+            value
+                .to_str()
+                .map(str::to_owned)
+                .ok_or_else(|| "Search/index arguments must be UTF-8 text".into())
+        })
+        .collect()
+}
+
+fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
+    let first = args.first()?;
+    let command = first.to_str().unwrap_or("");
     match command {
-        "search" | "-s" => Some(parse_search_action(&args[1..])),
-        "index" => Some(parse_index_action(&args[1..])),
+        "search" | "-s" => Some(
+            text_command_arguments(&args[1..])
+                .map(|args| parse_search_action(&args))
+                .unwrap_or_else(HeadlessAction::Invalid),
+        ),
+        "index" => Some(
+            text_command_arguments(&args[1..])
+                .map(|args| parse_index_action(&args))
+                .unwrap_or_else(HeadlessAction::Invalid),
+        ),
         #[cfg(target_os = "linux")]
         "portal" => Some(if args.len() == 1 {
             HeadlessAction::Portal
@@ -997,7 +1035,7 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
             [] => HeadlessAction::Invalid("--select requires a file path".to_string()),
             _ => HeadlessAction::Invalid("--select accepts exactly one file path".to_string()),
         }),
-        "drop" => Some(match args.get(1).map(String::as_str) {
+        "drop" => Some(match args.get(1).and_then(|value| value.to_str()) {
             Some("status") if args.len() == 2 => HeadlessAction::DropStatus,
             Some("copy") => HeadlessAction::DropCopy(args[2..].iter().map(PathBuf::from).collect()),
             Some(value) => HeadlessAction::Invalid(format!("unknown drop action: {value}")),
@@ -1011,16 +1049,18 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
         _ => Some(
             direct_open_path(args)
                 .map(HeadlessAction::OpenPath)
-                .unwrap_or_else(|| HeadlessAction::Invalid(format!("unknown command: {command}"))),
+                .unwrap_or_else(|| {
+                    HeadlessAction::Invalid(format!("unknown command: {}", first.to_string_lossy()))
+                }),
         ),
     }
 }
 
-fn direct_open_path(args: &[String]) -> Option<PathBuf> {
+fn direct_open_path(args: &[OsString]) -> Option<PathBuf> {
     let [value] = args else {
         return None;
     };
-    if value.starts_with('-') {
+    if value.as_encoded_bytes().starts_with(b"-") {
         return None;
     }
     let path = PathBuf::from(value);
@@ -1696,6 +1736,87 @@ fn cargo_helper_artifact_from_messages(
 mod tests {
     use super::*;
 
+    #[cfg(any(unix, target_os = "windows"))]
+    fn native_argument_fixture() -> OsString {
+        #[cfg(unix)]
+        {
+            use std::os::unix::ffi::OsStringExt;
+            OsString::from_vec(b"native\x80.txt".to_vec())
+        }
+        #[cfg(target_os = "windows")]
+        {
+            use std::os::windows::ffi::OsStringExt;
+            OsString::from_wide(&[110, 97, 116, 105, 118, 101, 0xd800, 46, 116, 120, 116])
+        }
+    }
+
+    #[cfg(any(unix, target_os = "windows"))]
+    #[test]
+    fn native_cli_paths_survive_open_reveal_preview_drop_and_helper_options() {
+        let directory = tempfile::tempdir().unwrap();
+        let file = directory.path().join(native_argument_fixture());
+        std::fs::write(&file, b"preserve native launch source").unwrap();
+        let path = file.clone().into_os_string();
+        for (command, expected) in [
+            (vec![path.clone()], HeadlessAction::OpenPath(file.clone())),
+            (
+                vec!["--".into(), path.clone()],
+                HeadlessAction::OpenPath(file.clone()),
+            ),
+            (
+                vec!["--select".into(), path.clone()],
+                HeadlessAction::SelectPath(file.clone()),
+            ),
+            (
+                vec!["preview".into(), path.clone()],
+                HeadlessAction::Preview(file.clone()),
+            ),
+            (
+                vec!["drop".into(), "copy".into(), path.clone()],
+                HeadlessAction::DropCopy(vec![file.clone()]),
+            ),
+        ] {
+            let parsed = parse_cli_arguments(&command).unwrap();
+            assert_eq!(cli_headless_action(&parsed.command), Some(expected));
+        }
+        assert_eq!(
+            resolve_direct_open_path(&file).unwrap(),
+            GuiLaunchTarget::QuickInspector(std::fs::canonicalize(&file).unwrap())
+        );
+        let mut inline = OsString::from("--helper-path=");
+        inline.push(&path);
+        for command in [vec![inline], vec!["--helper-path".into(), path]] {
+            assert_eq!(
+                parse_cli_arguments(&command).unwrap().helper_path,
+                Some(file.clone())
+            );
+        }
+        assert_eq!(
+            std::fs::read(file).unwrap(),
+            b"preserve native launch source"
+        );
+    }
+
+    #[cfg(any(unix, target_os = "windows"))]
+    #[test]
+    fn text_only_cli_options_reject_native_non_text_without_panicking() {
+        let native = native_argument_fixture();
+        let mut renderer = OsString::from("--renderer=");
+        renderer.push(&native);
+        assert!(parse_cli_arguments(&[renderer]).is_err());
+        for command in ["search", "index"] {
+            assert!(matches!(
+                cli_headless_action(&[command.into(), native.clone()]),
+                Some(HeadlessAction::Invalid(_))
+            ));
+        }
+        assert!(
+            parse_cli_arguments(&[native, "--help".into()])
+                .unwrap()
+                .help
+        );
+    }
+
     #[cfg(target_os = "linux")]
     #[test]
     fn portal_entry_is_headless_and_rejects_unowned_arguments() {
@@ -1946,25 +2067,25 @@ mod tests {
         std::fs::write(&file, "BEGIN:VCARD\nEND:VCARD\n").unwrap();
         for (command, expected) in [
             (
-                vec![directory.to_string_lossy().into_owned()],
+                vec![directory.clone().into_os_string()],
                 HeadlessAction::OpenPath(directory.clone()),
             ),
             (
-                vec![file.to_string_lossy().into_owned()],
+                vec![file.clone().into_os_string()],
                 HeadlessAction::OpenPath(file.clone()),
             ),
             (
-                vec!["preview".into(), file.to_string_lossy().into_owned()],
+                vec!["preview".into(), file.clone().into_os_string()],
                 HeadlessAction::Preview(file.clone()),
             ),
             (
-                vec!["--select".into(), file.to_string_lossy().into_owned()],
+                vec!["--select".into(), file.clone().into_os_string()],
                 HeadlessAction::SelectPath(file.clone()),
             ),
         ] {
             for flags in [
-                vec!["--renderer".to_string(), "opengl".into()],
-                vec!["--renderer=OpenGL".to_string()],
+                vec![OsString::from("--renderer"), "opengl".into()],
+                vec![OsString::from("--renderer=OpenGL")],
             ] {
                 for before in [true, false] {
                     let args = if before {
@@ -1991,7 +2112,7 @@ mod tests {
             GuiLaunchTarget::QuickInspector(std::fs::canonicalize(&file).unwrap())
         );
         for before in [true, false] {
-            let target = vec![directory.to_string_lossy().into_owned()];
+            let target = vec![directory.clone().into_os_string()];
             let flags = vec![
                 "--helper-path".into(),
                 "helper with spaces".into(),
@@ -2029,8 +2150,7 @@ mod tests {
             vec!["--helper-path=first", "--helper-path", "second"],
         ] {
             assert!(
-                parse_cli_arguments(&args.iter().map(|s| s.to_string()).collect::<Vec<_>>())
-                    .is_err(),
+                parse_cli_arguments(&args.iter().map(OsString::from).collect::<Vec<_>>()).is_err(),
                 "{args:?}"
             );
         }
@@ -2058,7 +2178,7 @@ mod tests {
         }
         for (prefix, expected) in [
             (
-                vec!["--".to_string()],
+                vec![OsString::from("--")],
                 HeadlessAction::OpenPath(PathBuf::from("--renderer")),
             ),
             (
@@ -2332,7 +2452,7 @@ mod tests {
             std::process::id()
         ));
         std::fs::create_dir_all(&root).expect("create direct directory");
-        let value = root.to_string_lossy().into_owned();
+        let value = root.clone().into_os_string();
 
         assert_eq!(
             cli_headless_action(std::slice::from_ref(&value)),
@@ -2352,11 +2472,11 @@ mod tests {
             .expect("write direct-preview fixture");
 
         assert_eq!(
-            cli_headless_action(&[file.display().to_string()]),
+            cli_headless_action(&[file.clone().into_os_string()]),
             Some(HeadlessAction::OpenPath(file.clone()))
         );
         assert_eq!(
-            cli_headless_action(&[root.join("missing.conf").display().to_string()]),
+            cli_headless_action(&[root.join("missing.conf").into_os_string()]),
             Some(HeadlessAction::OpenPath(root.join("missing.conf")))
         );
 

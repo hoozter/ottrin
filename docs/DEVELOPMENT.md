@@ -1813,6 +1813,11 @@ Directory browsing works with the index stopped. Explicit **Indexed folders**
 search uses the existing index asynchronously and never starts it. This protocol
 does not replace other applications' native dialogs by itself.
 
+Command-line file and directory arguments retain native OS units through the
+same dispatch parser, including inline or separate helper paths. Renderer and
+search/index options require textual arguments and reject non-text input before
+starting a GUI or index. Use `--` for option-like native filenames.
+
 ## Linux desktop FileChooser integration
 
 `ottrin portal` runs the on-demand `org.freedesktop.impl.portal.desktop.ottrin`

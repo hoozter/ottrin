@@ -1,0 +1,42 @@
+{
+  "binary_sha256": "c9c102438ea297e9d8269cb047e51a745c8b5b742451fbfec829f0a29758a7ec",
+  "cases": [
+    {
+      "argv_native_hex": [
+        "2f746d702f6f747472696e2d6e61746976652d6c61756e63682d33386f68626161742f6e617469766580",
+        "2d2d68656c70"
+      ],
+      "exit": 0,
+      "stdout": "Ottrin \u2014 find, inspect, and manage files\n\nUsage:\n  ottrin portal                   Run the desktop file-dialog backend\n  ottrin picker                   Open an Ottrin chooser using a JSON stdin request\n    --cancel-on-disconnect        Read one JSON line and cancel when the caller closes stdin\n  ottrin                         Open the file manager\n  ottrin <FILE>                  Open the file directly in Quick Inspector\n  ottrin <DIRECTORY>             Open the file manager in that directory\n  ottrin --select <FILE>         Open the parent folder with the file selected\n  ottrin search <QUERY> [--json] Search indexed files (-s)\n                       [--content] Also search the configured content folders\n                       [--limit N] [--offset N] Select a result page\n  ottrin index [update] [--json]\n                                 Update the configured search index\n  ottrin index ensure            Start this package's user index and wait for readiness\n  ottrin index status [--json]   Show persisted index status without starting it\n  ottrin index rebuild [--json]\n                                 Build and atomically publish a fresh index\n  ottrin preview <FILE>          Open the full Quick Inspector (-p)\n  ottrin drop status             Show Drop Folder state\n  ottrin drop copy <PATH>\u2026       Copy paths into the Drop Folder\n\nOptions (GUI options may appear before or after the file/directory target):\n  --renderer opengl  Recovery override for a compatible OpenGL driver\n  --helper-path PATH Developer override for privileged helper discovery\n  --uninstall        Remove Ottrin background jobs and generated data\n  --purge-config     With --uninstall, also remove saved preferences\nUse -- before a literal option-like target or search query.\n",
+      "stderr": ""
+    },
+    {
+      "argv_native_hex": [
+        "2d2d72656e64657265723d62616480"
+      ],
+      "exit": 2,
+      "stdout": "",
+      "stderr": "ottrin: --renderer requires a UTF-8 renderer name\n"
+    },
+    {
+      "argv_native_hex": [
+        "736561726368",
+        "717565727980"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "ottrin: Search/index arguments must be UTF-8 text\n"
+    },
+    {
+      "argv_native_hex": [
+        "696e646578",
+        "616374696f6e80"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "ottrin: Search/index arguments must be UTF-8 text\n"
+    }
+  ],
+  "no_index_started": true,
+  "profile_removed": true
+}

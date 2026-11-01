@@ -1,0 +1,49 @@
+{
+  "status": "pass within stated source scopes",
+  "base_revision": "78af6a2a107f1943c7eae6577ce02c50940e0066",
+  "checks": {
+    "app": "APP_TESTS.log",
+    "linux_lint": "LINUX_LINT.log",
+    "windows_lint": "WINDOWS_LINT.log",
+    "format": "FMT_FINAL_CHECK.log"
+  },
+  "linux_gui": {
+    "binary_sha256": "c9c102438ea297e9d8269cb047e51a745c8b5b742451fbfec829f0a29758a7ec",
+    "mapped_ms": 466.46,
+    "source_files_unchanged": true,
+    "normal_close_and_index_continuity": true,
+    "profile_removed": true
+  },
+  "windows": {
+    "ordinary_app_tests": 31,
+    "elevated_app_tests": 31,
+    "actual_unpaired_utf16_argv_help_exit": 0,
+    "owner_profiles_preserved": true,
+    "owned_root_removed": true,
+    "guest_off": true
+  },
+  "scope_limits": [
+    "Source-built debug executables; stable packages remain25b38c8f.",
+    "Post-QA formatting-only edits in shared platform/UI code pass cargo fmt; no behavior changed.",
+    "Native preview title displays fallback Preview for non-text names; separate observed UI follow-up remains.",
+    "No Windows native chooser GUI,production portal activation or folder-registration acceptance claimed."
+  ],
+  "cleanup": {
+    "incremental_candidates_initially_identified": 28,
+    "final_remaining_batch_sessions_retired": 6,
+    "final_batch_space_report": "0.33 GiB; not an aggregate recovery claim",
+    "inspection_log": "INCREMENTAL_FINAL_INSPECTION.log",
+    "transient_unreadable_process_exited_before_retry": true,
+    "remaining_task_storage": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/native-launch-current",
+      "purpose": "Compact source/runtime receipts,logs,producer scripts and scoped screenshots; no guest root,host transfer bundle,GUI profile or test process remains."
+    }
+  },
+  "source_files": {
+    "crates/ottrin-app/src/main.rs": "b99c9bfbfc8462011cc277b41e11af7b799050b7321f7d20a62d3e83d988b977",
+    "crates/ottrin-platform/src/lib.rs": "cab59c42c0bae32bda39ed00d9daaf769db398ee51ebc0d32f2d341e5b159fdb",
+    "crates/ottrin-ui/src/lib.rs": "be13fd9566b66c460b1553e4ed0677ea9f1dcc33812026e85db1d2e648d6c2b7",
+    "docs/DEVELOPMENT.md": "9efa46eed34699bae7ee66c3391f931f97f34f98c9b02ffae696767e9213dac9",
+    "docs/ROADMAP.md": "7223b47d12b52f4c7287c111bf2422c4e9ea84134a609258fb6b4fe155fca6f7"
+  }
+}
