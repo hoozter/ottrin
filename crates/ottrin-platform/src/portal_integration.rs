@@ -322,6 +322,20 @@ fn enable_at(
     Ok("Ottrin file picker configured. Apply the change to reload the desktop portal.".into())
 }
 
+/// Uninstall also applies the restored preference, removing the pending receipt.
+/// Absence is a no-op, including in package-maintenance contexts without a user bus.
+pub fn remove_for_uninstall() -> Result<Vec<String>, String> {
+    let Some(record) = registration(&Paths::current()?)? else {
+        return Ok(Vec::new());
+    };
+    let mut messages = Vec::new();
+    if record.enabled {
+        messages.push(disable()?);
+    }
+    messages.push(apply()?);
+    Ok(messages)
+}
+
 pub fn disable() -> Result<String, String> {
     normal_user()?;
     let paths = Paths::current()?;

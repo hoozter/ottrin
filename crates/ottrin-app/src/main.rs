@@ -182,6 +182,10 @@ enum IntegrationAction {
     Status,
     Enable,
     Disable,
+    #[cfg(target_os = "windows")]
+    DefaultEnable,
+    #[cfg(target_os = "windows")]
+    DefaultDisable,
     #[cfg(target_os = "linux")]
     Apply,
 }
@@ -997,6 +1001,18 @@ fn handle_cli_action(args: &[OsString]) -> bool {
         println!("Saved preferences kept. Use --uninstall --purge-config to remove them too.");
     }
 
+    // A refused data cleanup must retain usable folder/picker registrations and payload.
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    if errors.is_empty() {
+        match ottrin_platform::remove_desktop_integration() {
+            Ok(messages) => {
+                for message in messages {
+                    println!("{message}");
+                }
+            }
+            Err(error) => errors.push(error),
+        }
+    }
     println!("Cleanup freed {}.", format_size(freed));
     if errors.is_empty() {
         true
@@ -1033,6 +1049,8 @@ fn print_cli_help() {
     println!("  ottrin <DIRECTORY>             Open the file manager in that directory");
     #[cfg(target_os = "linux")]
     println!("  ottrin file-manager           Run the on-demand desktop file-manager interface");
+    #[cfg(target_os = "windows")]
+    println!("  ottrin folders default-enable|default-disable  Choose or restore folder defaults");
     println!("  ottrin --properties <PATH>... Show a read-only themed properties window");
     println!("  ottrin --select <PATH>         Reveal an entry in its parent folder");
     println!("  ottrin search <QUERY> [--json] Search indexed files (-s)");
@@ -1145,6 +1163,10 @@ fn parse_integration_management(
         match args {
             [action] if action == "enable" => (IntegrationAction::Enable, false),
             [action] if action == "disable" => (IntegrationAction::Disable, false),
+            #[cfg(target_os="windows")]
+            [action] if action=="default-enable" => (IntegrationAction::DefaultEnable,false),
+            #[cfg(target_os="windows")]
+            [action] if action=="default-disable" => (IntegrationAction::DefaultDisable,false),
             #[cfg(target_os = "linux")]
             [action] if action == "apply" && integration == DesktopIntegration::Portal => {
                 (IntegrationAction::Apply, false)
@@ -1154,8 +1176,7 @@ fn parse_integration_management(
                 (IntegrationAction::Status, true)
             }
             _ => return HeadlessAction::Invalid(
-                "Integration accepts enable,disable or status [--json]; portal also accepts apply"
-                    .into(),
+                if cfg!(target_os="windows") {"Folders accepts enable, disable, default-enable, default-disable or status [--json]"}else{"Integration accepts enable, disable or status [--json]; portal also accepts apply"}.into(),
             ),
         };
     HeadlessAction::IntegrationManagement {
@@ -1574,6 +1595,14 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                 }
                 (DesktopIntegration::Folders, IntegrationAction::Disable) => {
                     ottrin_platform::folder_integration::disable()?
+                }
+                #[cfg(target_os = "windows")]
+                (DesktopIntegration::Folders, IntegrationAction::DefaultEnable) => {
+                    ottrin_platform::folder_integration::enable_default()?
+                }
+                #[cfg(target_os = "windows")]
+                (DesktopIntegration::Folders, IntegrationAction::DefaultDisable) => {
+                    ottrin_platform::folder_integration::disable_default()?
                 }
                 (DesktopIntegration::Folders, IntegrationAction::Status) => {
                     let status = ottrin_platform::folder_integration::status();

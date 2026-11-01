@@ -17,6 +17,22 @@ pub mod portal_integration;
 #[path = "../../../tests/support/windows_oplock.rs"]
 mod test_oplock;
 
+/// Remove optional per-user desktop integrations before the application is removed.
+/// Modified/foreign state refuses removal; a caller must retain the executable on error.
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+pub fn remove_desktop_integration() -> Result<Vec<String>, String> {
+    #[cfg(target_os = "linux")]
+    {
+        let mut messages = portal_integration::remove_for_uninstall()?;
+        messages.push(folder_integration::disable()?);
+        Ok(messages)
+    }
+    #[cfg(target_os = "windows")]
+    {
+        Ok(vec![folder_integration::disable()?])
+    }
+}
+
 use ottrin_core::{
     ConflictAction, DeleteMode, EntryKind, FileCommand, PrivilegedRequest, PrivilegedResponse,
 };

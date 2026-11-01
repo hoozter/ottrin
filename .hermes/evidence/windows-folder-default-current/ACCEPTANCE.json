@@ -1,0 +1,146 @@
+{
+  "status": "pass",
+  "scope": "Source Windows optional default filesystem-folder/drive verb, ordinary/elevated registry and rendered controls, actual current-normal GUI/default launches/Properties/restore/uninstall. Latest uninstall hook has native CLI acceptance; earlier unit products cover unchanged default-registration/rendering logic before that hook. Linux registration cleanup/refusals have actual private CLI acceptance. Final packages remain separate.",
+  "windows": {
+    "headlessDefaultSetupNoIndex": true,
+    "scope": "Source Windows default folder/drive ShellExecute,real Services enable/restore,standalone Properties and exact baseline restoration",
+    "enableRow": 600,
+    "properties": {
+      "sourceUnchanged": true,
+      "standalone": true,
+      "exit": 0
+    },
+    "repairPreservedDefault": true,
+    "restored": {
+      "enabled": true,
+      "ready": true,
+      "detail": "Enabled \u2014 Open in Ottrin is available in folder menus",
+      "default_enabled": false,
+      "default_ready": false
+    },
+    "sourcePreserved": true,
+    "originalDefaultsPreserved": true,
+    "uninstallRestoredIntegration": true,
+    "restoreRow": 580,
+    "cliDefaultsRestored": true,
+    "restoredGreenDots": 1,
+    "status": "pass",
+    "windows": [
+      {
+        "actualLocation": "Captured address requires review",
+        "verb": null,
+        "commandLine": "\"C:\\OttrinJobFixtureQA\\fixture-launch.exe\" -- \"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal\\.\"",
+        "case": "directory",
+        "requestedDirectory": "C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal",
+        "exit": 0
+      },
+      {
+        "actualLocation": "Captured address requires review",
+        "verb": null,
+        "commandLine": "\"C:\\OttrinJobFixtureQA\\fixture-launch.exe\" -- \"C:\\\\.\"",
+        "case": "drive",
+        "requestedDirectory": "C:\\",
+        "exit": 0
+      }
+    ],
+    "enabled": {
+      "enabled": true,
+      "ready": true,
+      "detail": "Enabled \u2014 Open in Ottrin is available in folder menus",
+      "default_enabled": true,
+      "default_ready": true
+    },
+    "off": {
+      "enabled": false,
+      "ready": false,
+      "detail": "Off \u2014 Windows folder menus keep their current actions",
+      "default_enabled": false,
+      "default_ready": false
+    }
+  },
+  "linux_cleanup": {
+    "binary_sha256": "d2544b25d081cffb418a0127a0cbfabe2e4d45e32585a15c4cc8aaf64b3a8987",
+    "blocked_cache_retained_registration": true,
+    "modified_activation_retained": true,
+    "status": "pass",
+    "defaults_restored": true,
+    "backend_stopped": true,
+    "preferences_and_source_preserved": true,
+    "teardown": {
+      "status": "closed",
+      "profile": "/var/tmp/.ottrin-picker-qa-egzllzou",
+      "owned_processes_reaped": [
+        {
+          "pid": 4068962,
+          "exit": 0
+        },
+        {
+          "pid": 4068968,
+          "exit": 0
+        },
+        {
+          "pid": 4068969,
+          "exit": 15
+        },
+        {
+          "pid": 4069032,
+          "exit": 0
+        }
+      ],
+      "owned_children": {
+        "stopped": [],
+        "unreadable_foreign_processes_preserved": 3
+      },
+      "owned_mounts_unmounted": [],
+      "profile_removed": true
+    }
+  },
+  "location_review": {
+    "directory": "Reviewed address matches the requested literal-percent corpus; native extended-prefix canonical representation",
+    "drive": "Reviewed address is the C drive root; native extended-prefix canonical representation"
+  },
+  "unit_scopes": {
+    "windows_each_token": {
+      "registry_parser": 12,
+      "rendered_refresh": 1,
+      "rendered_default_controls": 1,
+      "application": 33
+    },
+    "linux_app_before_cleanup_hook": 49,
+    "linux_refresh": 1,
+    "linux_folder_portal_after_cleanup_hook": 12,
+    "strict_linux_windows_gnu_checks": true
+  },
+  "controls": {
+    "probe": "Private volatile class proves the selected default wins while explicit open bypasses it; no default association change; removed",
+    "native": "Desktop helper sampled outside the shorter default button and activated menu setup instead; unit scopes passed; root/defaults restored",
+    "native-desktop": "Default launch/Properties/restore passed, but initial main close was not accepted; root/defaults restored",
+    "native-final": "Activation/focus was not established before pointer input; run rejected; root/defaults restored",
+    "native-foreground": "Focus is established and checked before input; complete run passes with exact current normal products"
+  },
+  "cleanup": {
+    "windows_superseded_normal_binaries": {
+      "retired_executables": 6,
+      "logical_bytes": 4526606440,
+      "retained": [],
+      "current_source_binary_and_shared_dependencies_preserved": true
+    },
+    "guard": "Initial apply stopped after partial progress on transient PID4071412; inspected absent, unchanged guard retried in guard-retry;13 remaining sessions removed,0.60GiB reported. Partial progress is not assigned an invented byte count."
+  },
+  "packages_changed": false,
+  "remaining_software": "The production-manager hosted gate now exercises active and already-disabled/pending portal removal through --uninstall; collect its hosted result after this checkpoint. Final exact-package/resource acceptance remains independent.",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-folder-default-current",
+      "purpose": "Compact source/control acceptance and reproducer inputs; no owned VMs/profiles/processes/staging remain"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+      "purpose": "Current source app for Linux integration/package work; shared caches retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-app.exe",
+      "purpose": "Current verified Windows normal product; current unit products/dependencies retained in the shared target tree"
+    }
+  ]
+}

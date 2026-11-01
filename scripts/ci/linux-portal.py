@@ -13,6 +13,7 @@ state_home=Path(os.environ.get('XDG_STATE_HOME',str(home/'.local/state')))
 config=config_home/'xdg-desktop-portal/ottrinci-portals.conf';receipt=state_home/'ottrin/portal-registration.json'
 service=data_home/'dbus-1/services/org.freedesktop.impl.portal.desktop.ottrin.service';unit=config_home/'systemd/user/ottrin-portal.service'
 folder_config=config_home/'ottrinci-mimeapps.list';folder_receipt=state_home/'ottrin/folder-registration.json'
+folder_service=data_home/'dbus-1/services/org.freedesktop.FileManager1.service'
 folder_entry=data_home/'applications/org.ottrin.Ottrin.Folders.desktop';folder_icon=data_home/'ottrin/integration/icon.png';previous_entry=data_home/'applications/org.ottrin.Previous.CI.desktop'
 folder_original='[Default Applications]\ninode/directory=org.ottrin.Previous.CI.desktop;\napplication/pdf=reader.desktop;\n'
 previous_contents='[Desktop Entry]\nType=Application\nName=Previous CI directory handler\nExec=/usr/bin/true %f\nNoDisplay=true\nMimeType=inode/directory;\n'
@@ -31,14 +32,14 @@ def manage(integration,*args):
 expected_definition=(r/'packaging/linux/ottrin.portal').read_bytes()
 assert Path('/usr/share/xdg-desktop-portal/portals/ottrin.portal').read_bytes()==expected_definition
 assert binary.is_file()
-for path in [config,receipt,service,unit,folder_config,folder_receipt,folder_entry,folder_icon,previous_entry]:assert not path.exists() and not path.is_symlink(),f'Foreign state retained: {path}'
+for path in [config,receipt,service,unit,folder_config,folder_receipt,folder_entry,folder_icon,folder_service,previous_entry]:assert not path.exists() and not path.is_symlink(),f'Foreign state retained: {path}'
 units=['xdg-desktop-portal.service','xdg-document-portal.service','xdg-permission-store.service']
 active={name:control('is-active',name,check=False).returncode==0 for name in units}
 manager=control('show-environment').stdout.splitlines();prior_desktop=next((line.split('=',1)[1] for line in manager if line.startswith('XDG_CURRENT_DESKTOP=')),None)
 created=[];allocated=False;folder_allocated=False;environment_changed=False
 try:
  # Record ownership before allocating paths or changing the disposable manager.
- (out/'OWNER.json').write_text(json.dumps({'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'config':str(config),'managed_paths':[str(p) for p in [receipt,service,unit,folder_receipt,folder_entry,folder_icon]],'folder_fixture_paths':[str(p) for p in [folder_config,previous_entry]],'units_before':active,'manager_desktop_before':prior_desktop},indent=2)+'\n')
+ (out/'OWNER.json').write_text(json.dumps({'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'config':str(config),'managed_paths':[str(p) for p in [receipt,service,unit,folder_receipt,folder_entry,folder_icon,folder_service]],'folder_fixture_paths':[str(p) for p in [folder_config,previous_entry]],'units_before':active,'manager_desktop_before':prior_desktop},indent=2)+'\n')
  for parent in [config.parent,service.parent,unit.parent,receipt.parent,folder_entry.parent,folder_icon.parent]:
   for candidate in reversed([parent,*parent.parents]):
    if not candidate.exists():candidate.mkdir(mode=0o700);created.append(candidate)
@@ -65,8 +66,21 @@ try:
  folder_config.write_text(folder_config.read_text().replace('reader.desktop','new-reader.desktop'))
  manage('folders','enable');manage('folders','disable');assert default_folder()=='org.ottrin.Previous.CI.desktop'
  assert 'application/pdf=new-reader.desktop;' in folder_config.read_text();assert previous_entry.read_text()==previous_contents
- assert not any(path.exists() for path in [folder_receipt,folder_entry,folder_icon])
+ assert not any(path.exists() for path in [folder_receipt,folder_entry,folder_icon,folder_service])
  report['folders']={'ready':folder_ready,'native_gio_default_verified':True,'previous_default_restored':True,'unrelated_edit_preserved':True,'foreign_entry_preserved':True,'owned_assets_removed':True}
+ # Exercise application removal through the production manager, not only standalone controls.
+ manage('portal','enable');manage('portal','apply');manage('folders','enable')
+ cleanup=run([str(binary),'--uninstall']);report['application_cleanup']={'stdout':cleanup.stdout,'stderr':cleanup.stderr}
+ assert not any(path.exists() for path in [receipt,service,unit,folder_receipt,folder_entry,folder_icon,folder_service])
+ assert config.read_text()==original+edit
+ assert default_folder()=='org.ottrin.Previous.CI.desktop'
+ assert 'application/pdf=new-reader.desktop;' in folder_config.read_text()
+ assert previous_entry.read_text()==previous_contents
+ # A previously disabled, pending portal must apply removal without stopping a missing unit again.
+ manage('portal','enable');manage('portal','apply');manage('portal','disable')
+ cleanup=run([str(binary),'--uninstall']);report['pending_portal_cleanup']={'stdout':cleanup.stdout,'stderr':cleanup.stderr}
+ assert not any(path.exists() for path in [receipt,service,unit])
+ assert config.read_text()==original+edit
  report.update(status='pass',ready=ready,off=off,broker_pid=pid,prior_chooser_restored=True,unrelated_edit_preserved=True,managed_activation_removed=True)
 except BaseException as error:
  report.update(status='failed',error=repr(error));raise
@@ -74,7 +88,7 @@ finally:
  try:
   if folder_allocated:
    if folder_receipt.exists():manage('folders','disable')
-   for path in [folder_receipt,folder_entry,folder_icon]:assert not path.exists(),f'Owned folder setup remains: {path}'
+   for path in [folder_receipt,folder_entry,folder_icon,folder_service]:assert not path.exists(),f'Owned folder setup remains: {path}'
    assert folder_config.read_text() in [folder_original,folder_original.replace('reader.desktop','new-reader.desktop')], 'Changed folder fixture retained'
    assert previous_entry.read_text()==previous_contents
    folder_config.unlink();previous_entry.unlink()
@@ -91,7 +105,7 @@ finally:
    control('restart' if was_active else 'stop',name)
   for directory in reversed(created):
    if directory.exists() and not any(directory.iterdir()):directory.rmdir()
-  report['teardown']={'owned_files_removed':all(not p.exists() for p in [config,receipt,service,unit,folder_config,folder_receipt,folder_entry,folder_icon,previous_entry]),'original_unit_active_states_restored':True,'manager_desktop_restored':True}
+  report['teardown']={'owned_files_removed':all(not p.exists() for p in [config,receipt,service,unit,folder_config,folder_receipt,folder_entry,folder_icon,folder_service,previous_entry]),'original_unit_active_states_restored':True,'manager_desktop_restored':True}
  except BaseException as error:
   report['cleanup_error']=repr(error);report['status']='failed cleanup';raise
  finally:(out/'ACCEPTANCE.json').write_text(json.dumps(report,indent=2)+'\n')

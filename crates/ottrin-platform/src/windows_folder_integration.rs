@@ -24,6 +24,8 @@ pub struct FolderStatus {
     pub enabled: bool,
     pub ready: bool,
     pub detail: String,
+    pub default_enabled: bool,
+    pub default_ready: bool,
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -31,6 +33,7 @@ struct Registration {
     executable: NativePath,
     owner: [u8; 16],
     created_keys: Vec<String>,
+    defaults: Option<BTreeMap<String, Option<Value>>>,
 }
 #[derive(Clone)]
 struct Context {
@@ -65,11 +68,17 @@ impl Context {
             .filter(|path| path != "Software")
             .collect()
     }
+    fn default_targets(&self) -> [String; 2] {
+        [
+            format!(r"{}\Directory\shell", self.classes),
+            format!(r"{}\Drive\shell", self.classes),
+        ]
+    }
     fn read(&self, tx: &Transaction) -> Result<Option<Registration>, String> {
         let Some(key) = tx.open(&self.state)? else {
             return Ok(None);
         };
-        let Some(value) = key.values()?.remove(OsStr::new(RECEIPT)) else {
+        let Some(value) = key.value(OsStr::new(RECEIPT))? else {
             return Ok(None);
         };
         if value.kind != REG_BINARY {
@@ -94,6 +103,19 @@ impl Context {
                     .len()
         {
             return Err("Folder receipt contains an unrelated registry path; retained".into());
+        }
+        if let Some(defaults) = &registration.defaults
+            && (defaults.len() != 2
+                || self
+                    .default_targets()
+                    .iter()
+                    .any(|path| !defaults.contains_key(path))
+                || defaults
+                    .values()
+                    .flatten()
+                    .any(|value| value.bytes.len() > LIMIT))
+        {
+            return Err("Folder receipt contains unrelated or oversized defaults; retained".into());
         }
         Ok(Some(registration))
     }
@@ -142,15 +164,14 @@ impl Context {
         }
         Ok(complete)
     }
-    fn enable(&self, executable: &Path) -> Result<String, String> {
+    fn configure(&self, tx: &Transaction, executable: &Path) -> Result<Registration, String> {
         if !executable.is_file() {
             return Err("The Ottrin application executable is unavailable".into());
         }
         quoted_executable(executable)?;
-        let tx = Transaction::new()?;
-        let previous = self.read(&tx)?;
+        let previous = self.read(tx)?;
         if let Some(previous) = &previous {
-            self.matches(&tx, previous)?;
+            self.matches(tx, previous)?;
         } else {
             for (path, _) in self.targets() {
                 if tx.open(&path)?.is_some() {
@@ -166,7 +187,11 @@ impl Context {
         } else {
             getrandom::fill(&mut owner).map_err(|e| e.to_string())?;
         }
-        let mut created = previous.map(|r| r.created_keys).unwrap_or_default();
+        let mut created = previous
+            .as_ref()
+            .map(|r| r.created_keys.clone())
+            .unwrap_or_default();
+        let defaults = previous.and_then(|r| r.defaults);
         for (path, variable) in self.targets() {
             let key = tx.ensure(&path, self.volatile, &mut created)?;
             for (name, value) in verb_values(executable, owner)? {
@@ -180,18 +205,94 @@ impl Context {
             executable: NativePath::encode(executable),
             owner,
             created_keys: created,
+            defaults,
         };
-        key.set(
-            OsStr::new(RECEIPT),
-            &Value {
-                kind: REG_BINARY,
-                bytes: serde_json::to_vec(&registration).map_err(|e| e.to_string())?,
-            },
-        )?;
         drop(key);
+        self.store(tx, &registration)?;
+        Ok(registration)
+    }
+    fn store(&self, tx: &Transaction, registration: &Registration) -> Result<(), String> {
+        let bytes = serde_json::to_vec(registration).map_err(|e| e.to_string())?;
+        if bytes.len() > LIMIT {
+            return Err("Folder registration is too large; no settings changed".into());
+        }
+        tx.open(&self.state)?
+            .ok_or("Folder registration key disappeared")?
+            .set(
+                OsStr::new(RECEIPT),
+                &Value {
+                    kind: REG_BINARY,
+                    bytes,
+                },
+            )
+    }
+    fn enable(&self, executable: &Path) -> Result<String, String> {
+        let tx = Transaction::new()?;
+        self.configure(&tx, executable)?;
         tx.commit()?;
         notify_shell();
         Ok("Open in Ottrin enabled for folders, folder backgrounds and drives".into())
+    }
+    fn set_default(&self, executable: &Path, enabled: bool) -> Result<String, String> {
+        let tx = Transaction::new()?;
+        let mut registration = if enabled {
+            self.configure(&tx, executable)?
+        } else {
+            let Some(registration) = self.read(&tx)? else {
+                return Ok("Ottrin default folder opening is off".into());
+            };
+            self.matches(&tx, &registration)?;
+            registration
+        };
+        if enabled {
+            let mut defaults = BTreeMap::new();
+            let installed = string_value(VERB.encode_utf16());
+            for path in self.default_targets() {
+                let key = tx.ensure(&path, self.volatile, &mut registration.created_keys)?;
+                let current = key.value(OsStr::new(""))?;
+                let previous = if current.as_ref() == Some(&installed) {
+                    registration
+                        .defaults
+                        .as_ref()
+                        .and_then(|values| values.get(&path))
+                        .cloned()
+                        .unwrap_or(current)
+                } else {
+                    current
+                };
+                defaults.insert(path, previous);
+                key.set(OsStr::new(""), &installed)?;
+            }
+            registration.defaults = Some(defaults);
+        } else {
+            self.restore_defaults(&tx, &registration)?;
+            registration.defaults = None;
+        }
+        self.store(&tx, &registration)?;
+        tx.commit()?;
+        notify_shell();
+        Ok(if enabled {"Ottrin is selected for filesystem folder and drive links that use the Windows default verb. Programs explicitly requesting Explorer or another verb keep that behavior."} else {"Previous folder defaults restored where still owned by Ottrin; later choices preserved"}.into())
+    }
+    fn restore_defaults(
+        &self,
+        tx: &Transaction,
+        registration: &Registration,
+    ) -> Result<(), String> {
+        if let Some(defaults) = &registration.defaults {
+            let installed = string_value(VERB.encode_utf16());
+            for (path, previous) in defaults {
+                if let Some(key) = tx.open(path)?
+                    && key.value(OsStr::new(""))?.as_ref() == Some(&installed)
+                {
+                    if let Some(previous) = previous {
+                        key.set(OsStr::new(""), previous)?;
+                    } else {
+                        key.remove(OsStr::new(""))?;
+                    }
+                }
+            }
+        }
+        Ok(())
     }
     fn disable(&self) -> Result<String, String> {
         let tx = Transaction::new()?;
@@ -199,6 +300,7 @@ impl Context {
             return Ok("Ottrin folder commands are off".into());
         };
         self.matches(&tx, &registration)?;
+        self.restore_defaults(&tx, &registration)?;
         for (path, _) in self.targets() {
             tx.delete(&format!(r"{path}\command"))?;
             tx.delete(&path)?;
@@ -220,7 +322,7 @@ impl Context {
         }
         tx.commit()?;
         notify_shell();
-        Ok("Ottrin folder commands removed; existing Windows defaults kept".into())
+        Ok("Ottrin folder commands removed; owned defaults restored and later choices kept".into())
     }
 }
 pub fn enable() -> Result<String, String> {
@@ -228,6 +330,12 @@ pub fn enable() -> Result<String, String> {
 }
 pub fn disable() -> Result<String, String> {
     Context::current().disable()
+}
+pub fn enable_default() -> Result<String, String> {
+    Context::current().set_default(&super::application_launch_path()?, true)
+}
+pub fn disable_default() -> Result<String, String> {
+    Context::current().set_default(&super::application_launch_path()?, false)
 }
 pub fn status() -> FolderStatus {
     let context = Context::current();
@@ -238,6 +346,8 @@ pub fn status() -> FolderStatus {
                 false,
                 false,
                 "Off — Windows folder menus keep their current actions".into(),
+                false,
+                false,
             ));
         };
         let complete = context.matches(&tx, &registration)?;
@@ -247,6 +357,21 @@ pub fn status() -> FolderStatus {
             .map_err(|e| e.to_string())?;
         let ready =
             complete && registered.is_file() && registered == super::application_launch_path()?;
+        let default_enabled = registration.defaults.is_some();
+        let installed = string_value(VERB.encode_utf16());
+        let default_ready = ready
+            && default_enabled
+            && context
+                .default_targets()
+                .iter()
+                .map(|path| {
+                    tx.open(path)?
+                        .map(|key| key.value(OsStr::new("")))
+                        .transpose()
+                })
+                .collect::<Result<Vec<_>, String>>()?
+                .into_iter()
+                .all(|value| value.flatten().as_ref() == Some(&installed));
         Ok((
             true,
             ready,
@@ -255,22 +380,29 @@ pub fn status() -> FolderStatus {
             } else {
                 "Needs update — repair Ottrin's folder menu commands".into()
             },
+            default_enabled,
+            default_ready,
         ))
     })();
     match check {
-        Ok((enabled, ready, detail)) => FolderStatus {
+        Ok((enabled, ready, detail, default_enabled, default_ready)) => FolderStatus {
             enabled,
             ready,
             detail,
+            default_enabled,
+            default_ready,
         },
         Err(error) => FolderStatus {
             enabled: true,
             ready: false,
             detail: error,
+            default_enabled: false,
+            default_ready: false,
         },
     }
 }
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Value {
     kind: u32,
     bytes: Vec<u8>,
@@ -483,6 +615,30 @@ impl Drop for Key {
     }
 }
 impl Key {
+    fn value(&self, name: &OsStr) -> Result<Option<Value>, String> {
+        let name = wide(name);
+        let mut bytes = vec![0; LIMIT];
+        let mut size = bytes.len() as u32;
+        let mut kind = 0;
+        // SAFETY: owned key and terminated name/bounded writable buffer remain live.
+        let code = unsafe {
+            RegQueryValueExW(
+                self.0,
+                name.as_ptr(),
+                std::ptr::null(),
+                &mut kind,
+                bytes.as_mut_ptr(),
+                &mut size,
+            )
+        };
+        if code == ERROR_FILE_NOT_FOUND {
+            return Ok(None);
+        }
+        result(code)?;
+        bytes.truncate(size as usize);
+        Ok(Some(Value { kind, bytes }))
+    }
+
     fn is_empty(&self) -> Result<bool, String> {
         let mut children = 0;
         let mut values = 0;
@@ -679,6 +835,118 @@ mod tests {
                 }
             }
         }
+    }
+    #[test]
+    fn default_opening_is_atomic_repairs_keep_it_and_restore_preserves_raw_values() {
+        for original in [
+            None,
+            Some(string_value("Previous.Verb".encode_utf16())),
+            Some(Value {
+                kind: REG_EXPAND_SZ,
+                bytes: vec![0x25, 0, 0, 0],
+            }),
+            Some(Value {
+                kind: REG_BINARY,
+                bytes: vec![0, 255, 80],
+            }),
+        ] {
+            let fixture = Fixture::new();
+            let context = &fixture.context;
+            let exe = fixture.executable();
+            let tx = Transaction::new().unwrap();
+            let mut created = Vec::new();
+            for path in context.default_targets() {
+                let key = tx.ensure(&path, true, &mut created).unwrap();
+                if let Some(value) = &original {
+                    key.set(OsStr::new(""), value).unwrap();
+                }
+            }
+            tx.commit().unwrap();
+            context.set_default(&exe, true).unwrap();
+            let owned = string_value(VERB.encode_utf16());
+            for path in context.default_targets() {
+                assert_eq!(
+                    Transaction::new()
+                        .unwrap()
+                        .open(&path)
+                        .unwrap()
+                        .unwrap()
+                        .value(OsStr::new(""))
+                        .unwrap(),
+                    Some(owned.clone())
+                );
+            }
+            context.enable(&exe).unwrap();
+            assert!(fixture.registration().defaults.is_some());
+            context.set_default(&exe, false).unwrap();
+            assert!(fixture.registration().defaults.is_none());
+            for path in context.default_targets() {
+                assert_eq!(
+                    Transaction::new()
+                        .unwrap()
+                        .open(&path)
+                        .unwrap()
+                        .unwrap()
+                        .value(OsStr::new(""))
+                        .unwrap(),
+                    original
+                );
+            }
+            context.disable().unwrap();
+        }
+    }
+    #[test]
+    fn removing_defaults_restores_only_values_still_owned_and_keeps_other_choices() {
+        let fixture = Fixture::new();
+        let context = &fixture.context;
+        let exe = fixture.executable();
+        context.set_default(&exe, true).unwrap();
+        let paths = context.default_targets();
+        let third_party = string_value("Later.User.Choice".encode_utf16());
+        let tx = Transaction::new().unwrap();
+        tx.open(&paths[1])
+            .unwrap()
+            .unwrap()
+            .set(OsStr::new(""), &third_party)
+            .unwrap();
+        tx.commit().unwrap();
+        context.disable().unwrap();
+        let tx = Transaction::new().unwrap();
+        assert!(tx.open(&paths[0]).unwrap().is_none());
+        assert_eq!(
+            tx.open(&paths[1])
+                .unwrap()
+                .unwrap()
+                .value(OsStr::new(""))
+                .unwrap(),
+            Some(third_party)
+        );
+    }
+    #[test]
+    fn a_default_receipt_cannot_restore_an_unrelated_registry_path() {
+        let fixture = Fixture::new();
+        let context = &fixture.context;
+        let exe = fixture.executable();
+        context.set_default(&exe, true).unwrap();
+        let tx = Transaction::new().unwrap();
+        let mut registration = context.read(&tx).unwrap().unwrap();
+        registration
+            .defaults
+            .as_mut()
+            .unwrap()
+            .insert(r"Software\Unrelated".into(), None);
+        context.store(&tx, &registration).unwrap();
+        tx.commit().unwrap();
+        assert!(context.set_default(&exe, false).is_err());
+        let tx = Transaction::new().unwrap();
+        assert_eq!(
+            tx.open(&context.default_targets()[0])
+                .unwrap()
+                .unwrap()
+                .value(OsStr::new(""))
+                .unwrap(),
+            Some(string_value(VERB.encode_utf16()))
+        );
     }
     #[test]
     fn shell_directory_arguments_survive_native_parsing_including_drive_roots() {

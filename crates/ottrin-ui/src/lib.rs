@@ -21020,8 +21020,8 @@ impl OttrinApp {
         }
         appearance_editor::settings_surface(c).inner_margin(12).show(ui,|ui| {
             ui.set_min_width(ui.available_width());
-            ui.label(RichText::new(if cfg!(target_os="windows"){"Folder menu actions"}else{"Folder opening"}).strong().color(c.text));
-            ui.label(if cfg!(target_os="windows"){ "Add Open in Ottrin to folder, drive and folder-background menus. On Windows 11, use Show more options. Windows keeps its current default file manager." }else{ "Choose Ottrin for directory links, Show in folder and Properties requests. Windows open on demand. An already-running desktop file manager keeps its reveal service until it exits." });
+            ui.label(RichText::new(if cfg!(target_os="windows"){"Folder integration"}else{"Folder opening"}).strong().color(c.text));
+            ui.label(if cfg!(target_os="windows"){ "Add Open in Ottrin to folder, drive and folder-background menus. On Windows 11, use Show more options. Default folder opening is a separate choice below." }else{ "Choose Ottrin for directory links, Show in folder and Properties requests. Ottrin opens a window only when requested. An already-running desktop file manager keeps its reveal service until it exits." });
             if let Some(status)=self.folder_status.clone() {
                 Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
                 ui.horizontal_wrapped(|ui| {
@@ -21029,6 +21029,18 @@ impl OttrinApp {
                     if status.enabled && ui.add(egui::Button::new(if cfg!(target_os="windows"){"Remove folder menu actions"}else{"Restore previous handler"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
                     if ui.add_enabled(self.folder_status_rx.is_none(),egui::Button::new("Refresh status").themed(&c)).clicked() {Self::request_service_status(ui.ctx(),&mut self.folder_status_rx,ottrin_platform::folder_integration::status);}
                 });
+                #[cfg(target_os="windows")]
+                {
+                    ui.add_space(12.0);
+                    ui.label(RichText::new("Default folder opening").strong().color(c.heading));
+                    let label=if status.default_ready {"Ottrin is selected for normal filesystem-folder and drive links"}else if status.default_enabled && !status.ready {"Folder setup needs repair before default opening is ready"}else if status.default_enabled {"Another default was selected; that choice has been preserved"}else{"Windows keeps its current folder-opening default"};
+                    Self::render_service_status(ui,label,if status.default_ready {Color32::from_rgb(80,185,110)}else{c.text_muted});
+                    ui.label("Applies when an application asks Windows for the default folder action. Programs that explicitly launch Explorer or use another verb keep that behavior. Virtual folders stay with Windows.");
+                    ui.horizontal_wrapped(|ui|{
+                        if !status.default_ready && ui.add(egui::Button::new("Use Ottrin to open folders").themed(&c)).clicked(){self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable_default);}
+                        if status.default_enabled && ui.add(egui::Button::new("Restore previous folder defaults").themed(&c)).clicked(){self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable_default);}
+                    });
+                }
             }else{ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
         });
         ui.add_space(14.0);
@@ -21482,7 +21494,7 @@ impl OttrinApp {
                                             .size(12.0 * c.font_scale)
                                             .color(if self.app_cleanup_confirm { c.error } else { c.text }),
                                     ).stroke(Stroke::new(1.0, if self.app_cleanup_confirm { c.error } else { c.border })).themed(&c)).on_hover_text(
-                                        "Removes Ottrin's background index service, search database, private locate fallback database, thumbnail cache, and terminal launcher. It keeps your preferences unless you use the separate config button."
+                                        "Removes Ottrin's background index service, search database, private locate fallback database, thumbnail cache, and terminal launcher, and restores previous folder/picker integrations. It keeps your preferences unless you use the separate config button."
                                     ).clicked() {
                                         if self.app_cleanup_confirm {
                                             let mut freed = 0_u64;
@@ -21503,6 +21515,14 @@ impl OttrinApp {
                                                 && let Err(err) = remove_terminal_launcher()
                                             {
                                                 errors.push(err);
+                                            }
+                                            #[cfg(any(target_os="linux",target_os="windows"))]
+                                            if errors.is_empty() {
+                                                if let Err(error)=ottrin_platform::remove_desktop_integration(){errors.push(error);}
+                                                self.folder_status=None;
+                                                self.folder_status_rx=None;
+                                                #[cfg(target_os="linux")]
+                                                {self.portal_status=None;self.portal_status_rx=None;}
                                             }
                                             self.app_cleanup_confirm = false;
                                             if errors.is_empty() {
@@ -27147,6 +27167,10 @@ mod tests {
                     enabled: true,
                     ready: true,
                     detail: "Ready".into(),
+                    #[cfg(target_os = "windows")]
+                    default_enabled: false,
+                    #[cfg(target_os = "windows")]
+                    default_ready: false,
                 });
                 app.folder_status_rx = Some(pending);
             },
@@ -27156,8 +27180,61 @@ mod tests {
                 enabled: true,
                 ready: false,
                 detail: "Needs repair".into(),
+                #[cfg(target_os = "windows")]
+                default_enabled: false,
+                #[cfg(target_os = "windows")]
+                default_ready: false,
             },
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn default_folder_controls_show_the_current_choice_and_available_restore_action() {
+        use ottrin_platform::folder_integration::FolderStatus;
+        for (enabled, default_ready) in [(false, false), (true, true), (true, false)] {
+            let mut app = OttrinApp::default();
+            app.folder_status = Some(FolderStatus {
+                enabled: true,
+                ready: true,
+                detail: "Menus ready".into(),
+                default_enabled: enabled,
+                default_ready,
+            });
+            let ctx = Context::default();
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(900.0, 600.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let colors = app.colors;
+                        app.render_folder_integration_settings(ui, colors);
+                    });
+                },
+            );
+            let labels: Vec<_> = output
+                .shapes
+                .iter()
+                .filter_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                    _ => None,
+                })
+                .collect();
+            assert!(labels.contains(&"Default folder opening"));
+            assert_eq!(
+                labels.contains(&"Use Ottrin to open folders"),
+                !default_ready
+            );
+            assert_eq!(
+                labels.contains(&"Restore previous folder defaults"),
+                enabled
+            );
+        }
     }
 
     #[cfg(target_os = "linux")]

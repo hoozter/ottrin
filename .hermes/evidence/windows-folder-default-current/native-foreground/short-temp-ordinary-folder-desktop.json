@@ -1,0 +1,57 @@
+{
+  "headlessDefaultSetupNoIndex": true,
+  "scope": "Source Windows default folder/drive ShellExecute,real Services enable/restore,standalone Properties and exact baseline restoration",
+  "enableRow": 600,
+  "properties": {
+    "sourceUnchanged": true,
+    "standalone": true,
+    "exit": 0
+  },
+  "repairPreservedDefault": true,
+  "restored": {
+    "enabled": true,
+    "ready": true,
+    "detail": "Enabled \u2014 Open in Ottrin is available in folder menus",
+    "default_enabled": false,
+    "default_ready": false
+  },
+  "sourcePreserved": true,
+  "originalDefaultsPreserved": true,
+  "uninstallRestoredIntegration": true,
+  "restoreRow": 580,
+  "cliDefaultsRestored": true,
+  "restoredGreenDots": 1,
+  "status": "pass",
+  "windows": [
+    {
+      "actualLocation": "Captured address requires review",
+      "verb": null,
+      "commandLine": "\"C:\\OttrinJobFixtureQA\\fixture-launch.exe\" -- \"C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal\\.\"",
+      "case": "directory",
+      "requestedDirectory": "C:\\OttrinJobFixtureQA\\data\\short-temp-ordinary-folder-desktop\\source%1 100% literal",
+      "exit": 0
+    },
+    {
+      "actualLocation": "Captured address requires review",
+      "verb": null,
+      "commandLine": "\"C:\\OttrinJobFixtureQA\\fixture-launch.exe\" -- \"C:\\\\.\"",
+      "case": "drive",
+      "requestedDirectory": "C:\\",
+      "exit": 0
+    }
+  ],
+  "enabled": {
+    "enabled": true,
+    "ready": true,
+    "detail": "Enabled \u2014 Open in Ottrin is available in folder menus",
+    "default_enabled": true,
+    "default_ready": true
+  },
+  "off": {
+    "enabled": false,
+    "ready": false,
+    "detail": "Off \u2014 Windows folder menus keep their current actions",
+    "default_enabled": false,
+    "default_ready": false
+  }
+}

@@ -1,5 +1,37 @@
 # Ottrin roadmap
 
+## Windows default folders and desktop cleanup — source, 2026-11-01
+
+Optional per-user default opening now shares the existing folder backend. It
+selects the Ottrin verb for normal filesystem-folder/drive links in one registry
+transaction, preserves previous raw typed values, keeps the choice during repair
+and restores only still-owned values. Later choices, virtual folders, explicit
+Explorer/other-verb callers, protected association hashes and COM classes remain
+untouched. Services separates menu actions and default opening with current
+status and reversible actions.
+
+Native private-class probes confirm default selection and explicit-open bypass.
+Twelve registry/parser, two rendered-control and33 app tests pass under each
+ordinary/administrator token. The current normal product passes actual Settings
+enable/restore, real default directory/drive launches, reviewed addresses, native
+Properties, normal closes, CLI repair/preservation and uninstall restoration.
+Earlier pointer-column/focus/close assumptions are rejected controls, with all
+roots/defaults restored and VMs off. The final driver verifies foreground focus
+before input. Evidence: `.hermes/evidence/windows-folder-default-current/`.
+
+Both cleanup entry points now remove desktop integration after successful data
+cleanup. Actual Linux CLI checks retain registration for a blocked cache or a
+modified activation file; a successful retry restores defaults, stops the owned
+backend and preserves preferences/source. Twelve Linux folder/portal tests and
+strict Linux/GNU checks pass. Registered production-portal uninstall/apply and
+exact-package/resource acceptance remain software gates. Cleanup retires six
+superseded Windows normal products (4,526,606,440 bytes), preserving current
+products/shared dependencies. An unchanged cache guard retry removes13 remaining
+sessions (0.60 GiB reported) after an inspected transient-PID refusal/partial pass.
+No task-created VM/profile/process/staging remains. Stable packages remain25b38c8f.
+Continue one clean-source package cohort, production-portal lifecycle, remaining
+software/MSI rollback and release-tooling gates; owner/external waits stay parked.
+
 ## Desktop activation and independent window reaping — source, 2026-11-01
 
 Main, picker and Properties windows now share startup notification. X11 startup
@@ -584,8 +616,8 @@ roadmap completion. A source pass does not establish package or owner acceptance
    at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
    pushed and its Linux production lifecycle now passes. Actual sandboxed
    development-caller Open/Save and document export also pass. Still required:
-   FileManager1 final packaged/cooperating-caller acceptance, the reversible Windows default-folder preference
-   and final packaged cooperating-app acceptance. Windows menu actions pass native
+   FileManager1 final packaged/cooperating-caller acceptance, the final packaged Windows default-folder preference
+   and cooperating-app acceptance. Windows menu actions pass native
    parser/registry and actual Shell/Services checks at9242ef29.
    Direct Windows owner/Open/Save/lease checks and a constrained Flatpak caller
    pass in source; they do not establish final browser/package acceptance.

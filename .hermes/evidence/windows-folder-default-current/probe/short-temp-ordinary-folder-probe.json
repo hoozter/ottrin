@@ -1,0 +1,46 @@
+{
+  "scope": "Actual Windows ShellExecuteEx private volatile class with open and alternate verbs; default selection and explicit-open bypass; no personal default association changes",
+  "status": "observed",
+  "cases": [
+    {
+      "requestedVerb": null,
+      "pid": 5428,
+      "owned": true,
+      "exit": 61,
+      "started": true,
+      "error": 0,
+      "image": "C:\\Windows\\System32\\cmd.exe",
+      "default": null
+    },
+    {
+      "requestedVerb": null,
+      "pid": 4340,
+      "owned": true,
+      "exit": 61,
+      "started": true,
+      "error": 0,
+      "image": "C:\\Windows\\System32\\cmd.exe",
+      "default": "open"
+    },
+    {
+      "requestedVerb": null,
+      "pid": 1172,
+      "owned": true,
+      "exit": 62,
+      "started": true,
+      "error": 0,
+      "image": "C:\\Windows\\System32\\cmd.exe",
+      "default": "Ottrin.Probe"
+    },
+    {
+      "requestedVerb": "open",
+      "pid": 6880,
+      "owned": true,
+      "exit": 61,
+      "started": true,
+      "error": 0,
+      "image": "C:\\Windows\\System32\\cmd.exe",
+      "default": "Ottrin.Probe"
+    }
+  ]
+}

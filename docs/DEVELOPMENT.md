@@ -1962,11 +1962,12 @@ Windows runtime execution is separate from the direct native caller checks.
 
 ## Optional Windows folder menu actions
 
-Services → Desktop integration → Folder menu actions and the headless
+Services → Desktop integration → Folder integration and the headless
 `ottrin folders enable|disable|status [--json]` commands use the same per-user
 implementation. It adds **Open in Ottrin** to folder, folder-background and drive
 menus. Windows 11 may place static verbs under **Show more options**. Existing
-folder defaults remain unchanged; this is an explicit additional menu action.
+`folders enable` installs menu actions without changing folder defaults; default
+opening is the separate choice described below.
 
 The three registry verbs, native executable path, ownership marker and receipt
 commit together in one native registry transaction. An abandoned transaction
@@ -1974,7 +1975,7 @@ rolls back. Repair restores missing owned data; changed or unknown data refuses
 replacement/removal. Disable removes owned commands and only recorded empty
 parents, preserving unrelated handlers and settings. No administrator permission
 is required. Moving a portable copy requires Update / repair from its new location.
-Windows folder-link default preference remains separate roadmap work.
+The optional default preference shares this backend; see the section below.
 
 
 Desktop integration status refreshes retain the last result and action layout
@@ -1998,3 +1999,29 @@ compares dimensions and ARGB pixels with the canonical ICO asset. CI runs this
 same checker with Windows PowerShell after the release build and retains its
 JSON receipt. Source GNU debug products also pass native checks at16/32 pixels;
 that does not establish acceptance of a future packaged or MSVC release image.
+
+
+## Optional Windows default folder opening
+
+The Windows folder backend shares one registry transaction between its static
+verbs, optional default selection and ownership receipt. `folders default-enable`
+selects the Ottrin verb for `Directory` and `Drive`; `default-disable` restores
+previous raw typed values only where the current value is still Ottrin's.
+Menu repair preserves the default choice, and full removal restores owned
+choices while retaining later changes. No Explorer COM class, protected
+UserChoice hash, system policy or virtual-folder handler is replaced.
+
+Services groups menu actions and default opening separately. Normal shell
+requests without an explicit verb can open Ottrin. Applications that explicitly
+request Explorer or another verb retain that behavior. A native volatile-class
+control and actual directory/drive GUI launches verify this distinction; see the
+[Windows shell documentation](https://learn.microsoft.com/en-us/windows/win32/shell/context-menu-handlers).
+
+Application cleanup and `--uninstall` use the shared desktop-integration removal
+API after successful data cleanup. A refused thumbnail cleanup retains folder/picker
+registrations. Windows removes its owned verbs/defaults. Linux restores folder
+associations and stops its own FileManager1 backend; a registered portal also
+uses its existing idle-only disable/apply path. Absence is a no-op without a
+session bus. A modified/foreign registration refuses removal and the uninstaller
+must retain the application on an error. Registered production-portal uninstall
+and final packages remain separate acceptance scopes.

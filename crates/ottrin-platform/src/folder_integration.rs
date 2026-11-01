@@ -293,8 +293,12 @@ fn enable_at(d: &Directories, executable: &Path) -> Result<String, String> {
     Ok("Directory links now open in Ottrin. Standard show-in-folder and Properties requests use Ottrin on demand. An already-running desktop file manager keeps its current reveal service until it exits. Applications with their own file manager keep that behavior.".into())
 }
 pub fn disable() -> Result<String, String> {
+    let directories = Directories::current()?;
+    if registration(&directories)?.is_none() {
+        return Ok("Ottrin folder integration is already off".into());
+    }
     normal_user()?;
-    let message = disable_at(&Directories::current()?)?;
+    let message = disable_at(&directories)?;
     stop_owned_file_manager()?;
     Ok(message)
 }

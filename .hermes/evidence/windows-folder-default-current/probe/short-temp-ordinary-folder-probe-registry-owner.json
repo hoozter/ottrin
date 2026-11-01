@@ -1,0 +1,9 @@
+{
+  "nonce": "4d28d44f-191a-42f6-8112-c0bcce63d43c",
+  "commands": {
+    "Ottrin.Probe": "\"C:\\WINDOWS\\system32\\cmd.exe\" /d /c exit 62",
+    "open": "\"C:\\WINDOWS\\system32\\cmd.exe\" /d /c exit 61"
+  },
+  "removed": true,
+  "anchor": "Software\\Ottrin.CommandProbe.4d28d44f191a42f68112c0bcce63d43c"
+}
