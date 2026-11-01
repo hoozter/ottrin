@@ -1,0 +1,5 @@
+{
+  "refused_pid": 3973570,
+  "now_absent": true,
+  "action": "Retry unchanged guard after verified transient exit; no new exception"
+}

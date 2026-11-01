@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "initial_attempt": "../INCREMENTAL_APPLY.log.gz; stopped after partial deletion at unreadable transient PID3973570",
+  "refused_process_verified_absent": true,
+  "retry": "Same guard, unchanged two verified system process reviews; no new exception",
+  "remaining_candidates_removed": 8,
+  "reported_retry_gib": 0.21,
+  "current_binaries_dependencies_and_newest_cache_states_retained": true
+}
