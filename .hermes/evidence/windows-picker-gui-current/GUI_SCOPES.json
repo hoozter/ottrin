@@ -1,0 +1,125 @@
+{
+  "status": "pass within the completed scopes below; overall controller run failed on redundant follow-up request",
+  "source": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "normal_close": {
+    "status": "pass",
+    "daemons_after_gui_close": 1,
+    "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+    "normal_app_close": [
+      {
+        "exit": 0,
+        "pid": 1128
+      }
+    ]
+  },
+  "main_preferences": {
+    "config_sha256": "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+    "default_view_mode": "Miller",
+    "graphics_renderer": "Native",
+    "owned_payload_processes": 0,
+    "status": "pass",
+    "theme": "Dark"
+  },
+  "main_final_raw_files": {
+    "status": "pass",
+    "source": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+    "nonce": "415b95adf3d74bc083a11bc5fae0ab55",
+    "expected_manifest_sha256": "817eb543f1a770290f0f248f6d17817f6c7f042cd457c87ee6b2bf3cd75c261f",
+    "files": {
+      "source\\note.txt": {
+        "bytes": 16,
+        "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
+        "matches_independently_declared_utf8_bytes": true
+      },
+      "source\\other.txt": {
+        "bytes": 15,
+        "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
+        "matches_independently_declared_utf8_bytes": true
+      },
+      "source\\contact.vcf": {
+        "bytes": 51,
+        "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+        "matches_independently_declared_utf8_bytes": true
+      },
+      "destination\\note.txt": {
+        "bytes": 21,
+        "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
+        "matches_independently_declared_utf8_bytes": true
+      }
+    },
+    "scope": "Independent raw guest-file reads,not text decoding or hash strings supplied to the UI verifier. Run after explicit normal product Close and before owned teardown."
+  },
+  "picker_cancel": {
+    "payload_processes": 0,
+    "status": "pass",
+    "main_config_sha256": "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+    "picker": {
+      "grid": true,
+      "hidden": true,
+      "preview": true,
+      "last_directory": {
+        "encoding": "windows-utf16-le",
+        "units_hex": "0043003a005c004f0074007400720069006e00570069006e0064006f007700510041005c00630061007300650073005c006f007200640069006e006100720079005c0066006900780074007500720065005c00640065007300740069006e006100740069006f006e"
+      }
+    },
+    "response": {
+      "accepted": false,
+      "paths": [],
+      "current_filter": null,
+      "choices": {}
+    },
+    "main_config_bytes_unchanged": true
+  },
+  "picker_save": {
+    "payload_processes": 0,
+    "status": "pass",
+    "main_config_sha256": "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+    "picker": {
+      "grid": true,
+      "hidden": true,
+      "preview": true,
+      "last_directory": {
+        "encoding": "windows-utf16-le",
+        "units_hex": "0043003a005c004f0074007400720069006e00570069006e0064006f007700510041005c00630061007300650073005c006f007200640069006e006100720079005c0066006900780074007500720065005c0073006f0075007200630065"
+      }
+    },
+    "response": {
+      "accepted": true,
+      "paths": [
+        {
+          "encoding": "windows-utf16-le",
+          "units_hex": "0043003a005c004f0074007400720069006e00570069006e0064006f007700510041005c00630061007300650073005c006f007200640069006e006100720079005c0066006900780074007500720065005c0073006f0075007200630065005c006e006f00740065002e007400780074"
+        }
+      ],
+      "current_filter": null,
+      "choices": {}
+    },
+    "main_config_bytes_unchanged": true
+  },
+  "picker_normal_save_exit": {
+    "scope": "Observe actual UI-selected completion; no close or kill issued by this monitor",
+    "status": "pass",
+    "pid": 6516,
+    "owned_handle_pinned_before_exit": true,
+    "exit": 0
+  },
+  "cleanup": {
+    "status": "failed",
+    "guest_root": "C:\\OttrinWindowQA",
+    "domain": "ottrin-copy-cleanup-qa",
+    "phase": "teardown",
+    "nonce": "415b95adf3d74bc083a11bc5fae0ab55",
+    "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+    "reboot_transport_disconnected": true,
+    "next_sequence": 30,
+    "error": "AssertionError()",
+    "fixtures_removed": true,
+    "guest_off": true
+  },
+  "limits": [
+    "Ordinary Dark100 OpenGL VM only; no physical graphics or full installer acceptance",
+    "The extra third reopen was not executed: a second renderer-command caller read sequence29 before the preceding caller was acknowledged. Controller refused stale sequence and performed complete teardown. Wrapper now holds an exclusive command lease through acknowledgement. No product crash occurred.",
+    "First Cancel response and preferences verified; its exit-code monitor timed out before the action. Only Save has a pinned process exit0 observation.",
+    "Independent raw-file receipt precedes chooser interactions; teardown separately verifies original fixture files. No unsupported post-save independent hash claim."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "cursor_x": 990,
+  "id": "2382ba2e6a0d496798ff086110e2fd7f",
+  "case": "ordinary",
+  "foreground_pid": 1576,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": null,
+  "windows": [
+    {
+      "handle": 328396,
+      "left": 170,
+      "bottom": 696,
+      "top": 56,
+      "right": 1110,
+      "title": "Ottrin \u2014 Ottrin chooser QA"
+    },
+    {
+      "handle": 328384,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 166,
+  "op": "click"
+}

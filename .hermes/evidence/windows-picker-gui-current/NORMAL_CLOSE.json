@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "daemons_after_gui_close": 1,
+  "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+  "normal_app_close": [
+    {
+      "exit": 0,
+      "pid": 1128
+    }
+  ]
+}

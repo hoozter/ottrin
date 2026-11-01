@@ -1,0 +1,8 @@
+{
+  "scope": "Initial main-window icon capture had an insufficient default xprop length; prefix matches,not a complete-pixel claim. Explicit larger-bound chooser check passes the complete property.",
+  "captured_pixels": 62498,
+  "expected_pixels": 65536,
+  "all_captured_pixels_match_source": true,
+  "complete_property_evidence": "icon/RESULT.json",
+  "original_capture_sha256": "f18ee889e3bc17ff5aa277c8038bd72363dfd4ac02b0c050179d9dfe31182658"
+}

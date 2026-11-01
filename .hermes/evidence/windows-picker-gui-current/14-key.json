@@ -1,0 +1,38 @@
+{
+  "cursor_x": 300,
+  "id": "7f6463e16a184c91be12c5a7813196bf",
+  "case": "ordinary",
+  "foreground_pid": 1128,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": null,
+  "windows": [
+    {
+      "handle": 393850,
+      "left": 156,
+      "bottom": 716,
+      "top": 156,
+      "right": 876,
+      "title": "Ottrin Quick Inspector \u2014 note.txt"
+    },
+    {
+      "handle": 262364,
+      "left": 128,
+      "bottom": 716,
+      "top": 36,
+      "right": 1152,
+      "title": "Ottrin"
+    },
+    {
+      "handle": 262860,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 320,
+  "op": "key"
+}

@@ -1,0 +1,43 @@
+{
+  "status": "pass",
+  "source_revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "artifact_sha256": "11f473d7eb86099c5bec5f9788332acbf12f75687c5219bb7ba1a5171418b379",
+  "sessions": {
+    "dark100": {
+      "receipt": "dark100/RESULT.json",
+      "normal_exit": 0,
+      "profile_removed": true,
+      "fixture_files": 1
+    },
+    "light150": {
+      "receipt": "light150/RESULT.json",
+      "normal_exit": 0,
+      "profile_removed": true,
+      "fixture_files": 1
+    },
+    "main-dark100": {
+      "receipt": "main-dark100/RESULT.json",
+      "normal_exit": 0,
+      "profile_removed": true,
+      "fixture_files": 3
+    },
+    "main-light150": {
+      "receipt": "main-light150/RESULT.json",
+      "normal_exit": 0,
+      "profile_removed": true,
+      "fixture_files": 3
+    }
+  },
+  "checks": [
+    "Dark100/Light150 actual AppImage native-byte Save after Grid,Preview,hidden-file and unedited-Location controls; fresh overwrite confirmation and unchanged original",
+    "Fresh-process reopening shows remembered grid/preview/visibility and native folder; cancellation exits normally",
+    "Caller location overrides remembered folder; actual filename editing returns the intended new path without writing files",
+    "Main Dark100/Light150 read-only VCF body click,Right navigation and Space close preserve exact files",
+    "Main and Inspector use coherent full-width themed window chrome; Dark Settings/Services and shared internal folder chooser inspected and canceled",
+    "Main closes normally while the exact private daemon remains running; theme/view preferences survive",
+    "Repeated/concurrent chooser cancellation,quiet CPU/RSS and no automatic indexing",
+    "Complete actual chooser X11 icon pixels match source Ottrin icon; truncated main-prefix control is scoped separately",
+    "Exact packaged 10000-file content index: live changes,offline edits,restart,queries and bounded quiet intervals"
+  ],
+  "scope": "Isolated X11/software rendering; no physical desktop,external portal or final owner acceptance"
+}

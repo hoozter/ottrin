@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-extract",
+  "source": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "pending_consumers": [
+    "production package content/closure verification",
+    "Dark100 native AppImage startup, icon, read-only preview and close"
+  ],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks"
+}

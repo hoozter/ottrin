@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "artifact_sha256": "11f473d7eb86099c5bec5f9788332acbf12f75687c5219bb7ba1a5171418b379",
+  "indexd_binary_sha256": "bb2f419d5605c6703f3cb53e0ab233686db79982b2dfe5c36cd0082f5fd07679",
+  "resource_driver_sha256": "59a24318e0ffd4828c4b3a8332848577c0d09fe547bff3440fd8c1600f0899c6",
+  "resource_evidence": "POPULATED_INDEX.json",
+  "scope": "Canonical test extracts and runs the same checksum-verified AppImage. Held content-verified extraction supplies its exact daemon digest."
+}

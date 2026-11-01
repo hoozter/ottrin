@@ -1,0 +1,8 @@
+{
+  "source_revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-picker-stage",
+  "pending_consumers": [],
+  "cleanup_owner": "linux-picker-package-current",
+  "cleanup_complete": true,
+  "delivery_status": "Published accepted Linux cohort; staging/extraction retired"
+}

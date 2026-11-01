@@ -1,0 +1,102 @@
+{
+  "21-click.png": {
+    "sha256": "f76c1e084a03c78f160ecdde77981588abb79918217208ae4ef69a5e86cd3340",
+    "bytes": 981763,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "20-click.png": {
+    "sha256": "caf6f861dd0895165cba304d544086cefe3ba1d405e59e8497376603c4d04305",
+    "bytes": 972019,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "08-dismiss-shell.png": {
+    "sha256": "02abb1fbabc487bcc843d79964bebfc0acd6d3214da74e23d022b880548c7a30",
+    "bytes": 2585890,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "15-click.png": {
+    "sha256": "912b5ce4a827180baa190dd714cb2c2b255af1be16ebf0c89784513f6613ae99",
+    "bytes": 763407,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "29-click.png": {
+    "sha256": "da12a5733617c6d1b7a00eed6dbef68356a0e1022983526043e9810862cb0876",
+    "bytes": 2586471,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "01-observe.png": {
+    "sha256": "2a75fba9615b8b5de4264d4b605d15ae82d0f16ca7441d5307fbc1019d9a4c14",
+    "bytes": 219317,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "27-click.png": {
+    "sha256": "241f36b6799c016015fbba3b4798192f4b46c41e7376e558e359d0d4ecaf3698",
+    "bytes": 982241,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "04-onboard.png": {
+    "sha256": "eb3fbe7076ec1764a2cef45e94caa82eaf577ea6976b486fd9ea16be0254be9c",
+    "bytes": 214223,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "17-close.png": {
+    "sha256": "e6f454f6791c5b06d650a412e992c1862274f3cbba53072e7592b62b51453feb",
+    "bytes": 2586399,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "06-onboard.png": {
+    "sha256": "fe826778531a48b574d8215fdeda79cf45d99e592dbb39f2f4882e1527df1904",
+    "bytes": 218946,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "03-onboard.png": {
+    "sha256": "9d30297f7a192b27e126c3d8553a8c5eac74bb96d11902337569235d391eb657",
+    "bytes": 218203,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "25-click.png": {
+    "sha256": "9cf75bf6556cad6ef32310ece20740338d792516a8767b0a9f69a8d8bbb6232e",
+    "bytes": 2586294,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "09-prepare.png": {
+    "sha256": "da09b8a45b28112e9d435db8a5b5231a69685b2d0048edea0a80a47482c42730",
+    "bytes": 2585873,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "07-onboard.png": {
+    "sha256": "39fbbc72acb74209c817bfcb90c870ab074cb93d1e9d77966a44e0765e44be7b",
+    "bytes": 1397609,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "02-onboard.png": {
+    "sha256": "b29255373e7e88721be73133867bf6475e46efceb4f5560e7436748b1f5082e6",
+    "bytes": 215531,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "13-click.png": {
+    "sha256": "06f3df3ad3cc6193c8a849da724749e7a334360e3138b61d816fffd2f193298b",
+    "bytes": 774308,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "19-picker-idle.png": {
+    "sha256": "27a039a0c85e3f181538bee4fe410498c8429f8f5c86730cd528f406d6646d32",
+    "bytes": 970671,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "23-click.png": {
+    "sha256": "b41e00be8b04ac4f387c62930f2c2b82a8969bb4b159ad4a658e2a6f09da6105",
+    "bytes": 972589,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "05-onboard.png": {
+    "sha256": "d77e936538fba9f6473c088cd1621ef8847cc1c655b264b4740e755ce4746ecf",
+    "bytes": 221602,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  },
+  "16-key.png": {
+    "sha256": "c2260ea8186895b96be471be119829b8721c60ae5d3ec304fb90eb514325feb5",
+    "bytes": 768384,
+    "reason": "Intermediate onboarding, repeated action or closed desktop; action JSON and distinct relevant product captures retained"
+  }
+}

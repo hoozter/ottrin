@@ -1,0 +1,91 @@
+{
+  "status": "pass within exact payload,native loader/CLI,scoped ordinary portable GUI and complete hosted source verification",
+  "source_commit": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "c84097f4c3e9c2020cdbd3beed248bc7a7d70e5a6770ddaa198a0ec1cbaceab2",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "8566824c36e588cc8f1e4381d395b9663be093af40fd5c3f765169967e3cc71c",
+    "Ottrin-0.1.0-windows-x64.msi": "fb80b6a09c5f2b59ab6133e704d435934636d57148abaad7c05acd1f8bb09ad2"
+  },
+  "payload_files": 58,
+  "payload_identity": ".hermes/evidence/windows-cli-options-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cli-options-package-current",
+  "native_msi_administrative_extraction": {
+    "entries_checked": 58,
+    "status": "pass",
+    "msi_sha256": "fb80b6a09c5f2b59ab6133e704d435934636d57148abaad7c05acd1f8bb09ad2",
+    "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
+  },
+  "native_loader_cli": {
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status": "pass",
+    "runs": [
+      {
+        "exit": 0,
+        "stdout_sha256": "0169d9b845cd5c674d295363928ad357657b8aaef20c40760590f87c35688e80",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "executable": "ottrin.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+        "executable": "ottrin-indexd.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+        "executable": "ottrin-priv-helper.exe"
+      }
+    ],
+    "identity": "NT AUTHORITY\\SYSTEM"
+  },
+  "portable_gui_acceptance": {
+    "status": "pass",
+    "scope": "Actual ordinary-user folder-plus-renderer launch,explicit renderer priority,preserved preferences and read-only Inspector; no blanket UI acceptance",
+    "source": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+    "launch_option_routing": true,
+    "renderer_preference_round_trip": true,
+    "readonly_inspector": true,
+    "preferences_preserved": true,
+    "normal_close": {
+      "exit": 0,
+      "pid": 5072
+    },
+    "final_raw_files": 5,
+    "seeded_profile": "SEEDED_PREFERENCES.json initializes Native/Miller before launch. Earlier actual click/save and no-override Native restart are scoped in rejected-key-control/CONTROL_SCOPE.json; that whole run is failed, not full acceptance.",
+    "remaining_defects": [
+      "Selecting a file in Miller can leave preview mostly offscreen; source repair next",
+      "First-use compatibility notice incorrectly attributes explicit CLI override to detected graphics"
+    ],
+    "limits": [
+      "Dark100 ordinary Windows VM only; no physical GPU acceptance",
+      "No new full Office,appearance,installer lifecycle or final daily-driver acceptance"
+    ]
+  },
+  "source_checks": ".hermes/evidence/cli-global-options-current/SOURCE_CHECKS.json",
+  "hosted_source": {
+    "run": 41264828707,
+    "revision": "cf6e465ad6e6df4843d2ac77e8bba4b756533a32",
+    "conclusion": "success",
+    "evidence": ".hermes/evidence/windows-cli-options-package-current/HOSTED_SOURCE.json"
+  },
+  "cleanup": {
+    "native_package": "windows-cli-options-package-current/NATIVE_OWNER.json",
+    "portable_gui": "windows-cli-renderer-gui-current/SESSION.json",
+    "guest_off": true,
+    "original_guest_files_and_profiles_preserved": true,
+    "account_profile_credential_task_and_extractions_removed": true
+  },
+  "public_windows_files_unchanged": true,
+  "linux_source_cohort": "cf6e465a;accepted separately at dist/packages",
+  "limits": [
+    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes; MSI rollback remains required and unresolved",
+    "GUI scope ordinary Dark100 on1280x800 NTFS VM;actual folder/CLI renderer routing,Native/Miller preference preservation,read-only navigation/Space,normal Close and five final raw files",
+    "Earlier cross-volume,Office,appearance and physical evidence retain original hashes",
+    "Open UI defects: pointer file selection can leave Miller preview offscreen; first-use graphics notice can misattribute a CLI override. Required source repairs remain open",
+    "No production release,Store submission or final owner acceptance"
+  ]
+}

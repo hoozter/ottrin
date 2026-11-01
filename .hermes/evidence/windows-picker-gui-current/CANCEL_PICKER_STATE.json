@@ -1,0 +1,21 @@
+{
+  "payload_processes": 0,
+  "status": "pass",
+  "main_config_sha256": "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+  "picker": {
+    "grid": true,
+    "hidden": true,
+    "preview": true,
+    "last_directory": {
+      "encoding": "windows-utf16-le",
+      "units_hex": "0043003a005c004f0074007400720069006e00570069006e0064006f007700510041005c00630061007300650073005c006f007200640069006e006100720079005c0066006900780074007500720065005c00640065007300740069006e006100740069006f006e"
+    }
+  },
+  "response": {
+    "accepted": false,
+    "paths": [],
+    "current_filter": null,
+    "choices": {}
+  },
+  "main_config_bytes_unchanged": true
+}

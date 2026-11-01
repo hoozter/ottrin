@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "application_files": 58,
+  "all_application_bytes_match": true,
+  "additional_generated_file": "Uninstall.exe",
+  "uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+  "scope": "Generated NSIS uninstaller is installer-specific and intentionally absent from portable application payload"
+}

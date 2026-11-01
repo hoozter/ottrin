@@ -1,0 +1,36 @@
+{
+  "cursor_x": 300,
+  "id": "7f3b28073a2f46dea2b50d135fa841bd",
+  "case": "ordinary",
+  "foreground_pid": 6556,
+  "screen_width": 1280,
+  "screen_height": 800,
+  "verification": {
+    "scope": "Owned ordinary-account OpenGL picker; bounded quiet interval",
+    "status": "pass",
+    "seconds": 10.0166477,
+    "working_set_bytes": 27029504,
+    "cpu_percent_one_core": 0
+  },
+  "windows": [
+    {
+      "handle": 328396,
+      "left": 170,
+      "bottom": 696,
+      "top": 56,
+      "right": 1110,
+      "title": "Ottrin \u2014 Ottrin chooser QA"
+    },
+    {
+      "handle": 328384,
+      "left": 0,
+      "bottom": 6,
+      "top": 0,
+      "right": 6,
+      "title": ""
+    }
+  ],
+  "ordinary_user": true,
+  "cursor_y": 320,
+  "op": "picker-idle"
+}

@@ -1,0 +1,7 @@
+{
+  "scope": "Observe actual UI-selected completion; no close or kill issued by this monitor",
+  "status": "pass",
+  "pid": 6516,
+  "owned_handle_pinned_before_exit": true,
+  "exit": 0
+}

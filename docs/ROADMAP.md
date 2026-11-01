@@ -1,5 +1,57 @@
 # Ottrin roadmap
 
+
+## Delivery checkpoint — 2026-11-01, source25b38c8f
+
+The current Linux four-format deliverable and Windows internal ZIP/NSIS/MSI
+candidate now contain the shared themed chooser, native-path repairs, pointer
+preview repair and asynchronous index startup. Their authoritative hashes and
+acceptance limits are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Hosted Linux, Windows and search-performance
+checks all pass for the exact source. Earlier dated checkpoints below retain their
+original scope; their “not yet packaged” labels are historical.
+
+Linux actual AppImage checks cover Dark100/Light150 chooser persistence, native
+filename/Location preservation through view changes, fresh overwrite confirmation,
+caller-location precedence, unchanged original bytes and main preferences, internal
+folder selection, Inspector navigation/Space and normal exits. A complete 256px
+window icon matches the source. A bounded software-rendered chooser sample maps in
+about501ms with no CPU ticks over10s and approximately126MiB RSS; this is not a cold
+machine latency guarantee. Controlled10k indexing quiet intervals are about0.1% of
+one core. The enabled personal service now uses the accepted runtime, retaining
+configuration/unit/wrapper hashes and database inode. Its before/after intervals
+include rescanning and are explicitly not idle acceptance or an optimization claim.
+
+Windows has58 identical application files across ZIP, NSIS and administrative MSI
+extraction. Actual ordinary Dark100 OpenGL checks cover the main pointer preview,
+read-only VCF/text navigation and Space, normal exit0 with the index still running,
+Native/Miller preference preservation, chooser Grid/Preview/Hidden persistence,
+caller-location precedence, exact Save response and overwrite confirmation.
+The chooser quiet sample records0CPU over10s and about26MiB working set.
+The extra third-reopen QA request raced the preceding observer acknowledgement;
+the controller rejected its stale sequence and completely removed its owned
+account/profile/task/credential/fixtures and shut down the VM. Completed scopes
+remain individually recorded; the overall controller run is not called passed.
+The new command wrapper serializes callers. Save has pinned-process exit0 evidence;
+Cancel has response/preferences evidence, without an exit-code claim. Main final
+raw-file hashes precede chooser actions; teardown independently verifies originals.
+
+Rejected7a9a5319/31e77bdf stages, current Linux extraction and superseded cohorts are
+removed. Current Windows staging is consumed by the single stable internal
+candidate path. Public Windows releases are unchanged. MSI transaction rollback is
+still a required failed gate; this checkpoint does not grant installer lifecycle,
+physical GPU, Store or daily-driver acceptance.
+
+Next independent work: external chooser parent ownership and lifecycle; opt-in
+Linux FileChooser portal and reversible folder handlers; cooperating-app Windows
+integration and folder actions; remaining available software/theme/resource checks.
+Owner identities, signing/submission, physical hardware and final acceptance stay
+on the explicit waiting list and do not block those tasks.
+
+Evidence: `.hermes/evidence/linux-picker-package-current/`,
+`.hermes/evidence/windows-picker-package-current/`,
+`.hermes/evidence/windows-picker-gui-current/`.
+
 Last updated: 2026-11-01
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
@@ -667,19 +719,12 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux and Windows candidate cohorts currently use clean `cf6e465a`.
-Their receipts and the current checkpoint above define the exact hashes and tested
-scopes. The newer shared picker,native-path and asynchronous index-startup changes
-are source-verified. A staged `7a9a5319` Linux cohort passed package contents,
-native-path Save and bounded chooser/index resource checks,but actual Grid with
-Preview exposed a layout defect. That cohort is rejected and retired;the interrupted
-Windows stage is also removed. Both stable deliverables remain intact while the
-layout repair and fresh coherent delivery continue. The subsequent staged31e77bdf
-cohort exposed a native-name loss after toggling hidden files;it and its canceled
-Windows stage are also retired. Native filename and Location draft repairs are now source-verified;fresh exact
-package delivery remains next. Earlier resource/workflow
-observations retain their original dates and hashes. Physical,owner and release
-identity gates remain on the waiting list.
+The stable Linux and internal Windows candidate cohorts use clean `25b38c8f`.
+The delivery checkpoint at the top and authoritative receipts define exact package
+hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
+retired. Shared chooser, lossless editable paths and nonblocking index availability
+are delivered; external picker/folder integration remains independent active work.
+Physical, owner and release identity gates remain on the waiting list.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
@@ -702,8 +747,8 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four cf6e465a formats; complete hosted checks; actual before/after target options,Dark100/Light150 startup,read-only close,nine-file preservation and saved preferences. Enabled personal service uses current runtime. | Deliver the newer pointer-preview/notice source repair and required picker/integration; finish available software acceptance before parked owner/device checks. |
-| Windows | cf6e465a ZIP/NSIS/MSI candidate;58 matching files,complete hosted source checks and scoped native CLI/renderer/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) defines hashes and limits. | Deliver newer pointer-preview/notice repair and required picker/integration; continue remaining workflow/installed acceptance. MSI rollback remains required and failed. |
+| Linux | Four25b38c8f formats; complete hosted checks; actual Dark100/Light150 chooser/native-path/persistence/read-only checks and bounded resource samples. Enabled personal service uses the accepted runtime. | Finish external picker/folder integration and remaining software/theme acceptance before parked owner/device checks. |
+| Windows |25b38c8f ZIP/NSIS/MSI candidate;58 matching files, complete hosted source checks and scoped native CLI/renderer/chooser/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) includes the QA-controller failure and exact scope limits. | Finish external picker/folder integration and remaining software acceptance. MSI rollback remains required and failed. |
 | Ottrin picker and folder integration | Shared chooser,picker-only preferences and seven internal callers verified in source; native/Linux GUI scopes above. | Finish external ownership,portal/cooperating-app and reversible folder integration,then exact-package/resource acceptance. Existing-index search is source-verified. Park owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 

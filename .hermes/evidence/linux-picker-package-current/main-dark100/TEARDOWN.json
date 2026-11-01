@@ -1,0 +1,31 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-w205i04u",
+  "owned_processes_reaped": [
+    {
+      "pid": 3286043,
+      "exit": 0
+    },
+    {
+      "pid": 3286046,
+      "exit": 0
+    },
+    {
+      "pid": 3286047,
+      "exit": 15
+    },
+    {
+      "pid": 3286112,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      3286116,
+      3286180
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

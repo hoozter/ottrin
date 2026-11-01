@@ -1,0 +1,82 @@
+{
+  "case": "light150",
+  "source_revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "artifact_sha256": "11f473d7eb86099c5bec5f9788332acbf12f75687c5219bb7ba1a5171418b379",
+  "scope": "Actual checksum-verified AppImage chooser; isolated GUI and bounded resource observations",
+  "initial_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "cold_process_window_ready_ms": 504.4,
+  "quiet_idle": {
+    "seconds": 8.000307406997308,
+    "cpu_percent_one_core": 0.0,
+    "rss_kib": 133080,
+    "scope": "single isolated chooser after settling; software rendering; not whole-system cold-cache or sustained daemon acceptance"
+  },
+  "normal_exit": 0,
+  "response": {
+    "accepted": true,
+    "paths": [
+      {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d64656439736f76342f666978747572652f6e61746976652d812f6f726967696e616c2d802e747874"
+      }
+    ],
+    "current_filter": null,
+    "choices": {}
+  },
+  "exact_native_path_bytes_verified": true,
+  "main_config_bytes_unchanged": true,
+  "picker_preferences": {
+    "grid": true,
+    "hidden": true,
+    "preview": true,
+    "last_directory": {
+      "encoding": "unix-bytes",
+      "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d64656439736f76342f666978747572652f6e61746976652d81"
+    }
+  },
+  "actual_second_process_reopen_and_cancel": true,
+  "caller_location_and_explicit_name_edit_verified": true,
+  "final_files": {
+    "native-\udc81/original-\udc80.txt": "75c86822ec2ae56409ca17227a2ec57f7f55238c839c3d7b77f5535d29fee6c6"
+  },
+  "index_socket_created": false,
+  "status": "normal close; fixture files unchanged",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ded9sov4",
+    "owned_processes_reaped": [
+      {
+        "pid": 3283338,
+        "exit": 0
+      },
+      {
+        "pid": 3283341,
+        "exit": 0
+      },
+      {
+        "pid": 3283342,
+        "exit": 15
+      },
+      {
+        "pid": 3283390,
+        "exit": 0
+      },
+      {
+        "pid": 3285694,
+        "exit": 0
+      },
+      {
+        "pid": 3285770,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
