@@ -1,0 +1,13 @@
+{
+  "status": "Recovered exact native UTF8 result; console copy retained only as rejected title diagnostic",
+  "parent_snapshot_sha256": "04b44cd8a2912b71cd2b74af4ab0c46fdec00e069e77a5d223a9542e40cd2723",
+  "native_result_sha256": "d87ac47bc241f411427ac4d54a3ce2597147a7069a30547631e3e0b8b4abfdb7",
+  "exact_difference": {
+    "field": "last_picker_window.title",
+    "parent": "Ottrin - Selection proof",
+    "native": "Ottrin \u2014 Selection proof"
+  },
+  "all_other_fields_identical": true,
+  "authority": "Byte-for-byte results/RESULT.json from the native archive; no modified native fields and no repeated product workflow",
+  "producer_fix": "The Windows command adapter explicitly selects UTF8 before emitting any future command output"
+}

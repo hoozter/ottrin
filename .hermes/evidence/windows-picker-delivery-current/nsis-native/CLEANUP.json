@@ -1,0 +1,131 @@
+{
+  "status": "Rejected observer fixture cleaned; no product acceptance",
+  "reason": "Observer used exact short Selection proof, while actual run_picker_gui source prefixes application_window_title and em dash. Actor remained alive but no correct-title window was selected. Corrected future actor requires full source-declared title and captures any unmatched visible title. Native re-verification remains required.",
+  "native_result": {
+    "desktop_ready": true,
+    "picker_cases": [],
+    "owned_portable_extraction_removed": true,
+    "runtime_cases": [],
+    "package": {
+      "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+      "files": [
+        {
+          "name": "portable.zip",
+          "sha256": "e11cb37ad662d79c991d86c6a623e1e8aeaebf9db49283d600e3d529fc007863"
+        },
+        {
+          "name": "current-setup.exe",
+          "sha256": "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b"
+        },
+        {
+          "name": "previous-setup.exe",
+          "sha256": "b3a01eca9c4854a0af0e4456975b88e2740f69d15827225ef5bb4a34a05f3033"
+        }
+      ],
+      "previous_source": "8ede156248e54af88e972d53fe441b05af9caa3c"
+    },
+    "phase": "portable chooser without indexing",
+    "scope": "Exact ordinary-user portable chooser and NSIS fresh/upgrade/intent/refusal/retry workflows",
+    "identity": {
+      "profile": "C:\\Users\\OTMSId89ef032c4d6",
+      "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+      "administrator": false,
+      "session": 1
+    },
+    "status": "failed native NSIS fixture",
+    "error": "Chooser did not map",
+    "stack": "at Require, <No file>: line 4\r\nat Picker, <No file>: line 61\r\nat <ScriptBlock>, <No file>: line 103\r\nat <ScriptBlock>, <No file>: line 1"
+  },
+  "guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-cetsr6w2",
+    "owned_processes_reaped": [
+      {
+        "pid": 563137,
+        "exit": 0
+      },
+      {
+        "pid": 563140,
+        "exit": 0
+      },
+      {
+        "pid": 563142,
+        "exit": 15
+      },
+      {
+        "pid": 563194,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "members": [
+    {
+      "path": "DESKTOP_READY.json",
+      "sha256": "227f297bb60b88bbe0b877a0cedbcdd709a462b86fd58cd6a893d5eb2cdd0baa",
+      "bytes": 280
+    },
+    {
+      "path": "OWNER.json",
+      "sha256": "c61ce1069b08dcc7ab62c1e8fdff6e980f263ae41a7441e07239e792348d4004",
+      "bytes": 1076
+    },
+    {
+      "path": "RESULT.json",
+      "sha256": "8d30cfc69f2918aa5a8d31a8cffea169f8ab02f54404f69ae33bd7c4c5994d45",
+      "bytes": 1974
+    }
+  ],
+  "removed": [
+    {
+      "path": "RESULTS.zip",
+      "sha256": "d41435951366c64fda39a5e6d30ac265b70e9e80c619069051e9831da55b1751",
+      "bytes": 1717
+    },
+    {
+      "path": "desktop-ready.png",
+      "sha256": "794a16f6665ebfc2bc45cc2ab0884f9567008a1e7c5bc6e26e5678b8cbb5d237",
+      "bytes": 134274
+    },
+    {
+      "path": "desktop-observed.png",
+      "sha256": "ebf3a12cfcc414030fa06aefc1bc1f0abe3e027151b5c2f4aa345d3356eb58dd",
+      "bytes": 182029
+    },
+    {
+      "path": "viewer/dbus.log",
+      "sha256": "06ede11891a7c71d8d28e75afae68da849090499bf1f41fb460aa6fc35e94318",
+      "bytes": 2934
+    },
+    {
+      "path": "viewer/viewer.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "viewer/wm.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "viewer/xvfb.log",
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50",
+      "bytes": 1666
+    }
+  ]
+}

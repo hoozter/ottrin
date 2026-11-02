@@ -1,0 +1,79 @@
+{
+  "status": "pass within exact payload,native loader/icons,ordinary folder/default/Properties/picker GUI and hosted source scopes",
+  "source_commit": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "42dd24daa9ebbf589c59657a54061ef00fe7cd1a6b687d716298d0c05d6c2d77",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "b3a01eca9c4854a0af0e4456975b88e2740f69d15827225ef5bb4a34a05f3033",
+    "Ottrin-0.1.0-windows-x64.msi": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9"
+  },
+  "payload_files": 58,
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-package-current/windows",
+  "native_msi_administrative_extraction": {
+    "entries_checked": 58,
+    "status": "pass",
+    "msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+    "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
+  },
+  "native_loader_cli": {
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status": "pass",
+    "runs": [
+      {
+        "exit": 0,
+        "stdout_sha256": "5d6d56413d05d9f66f6cc6068b0ba8ba2462589c4edd5f6f07e46abc909216d3",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "executable": "ottrin.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+        "executable": "ottrin-indexd.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+        "executable": "ottrin-priv-helper.exe"
+      }
+    ],
+    "identity": "NT AUTHORITY\\SYSTEM"
+  },
+  "native_icons": "EXECUTABLE_ICONS.json",
+  "ordinary_gui": "gui/short-temp-ordinary-folder-desktop.json",
+  "gui_scope": "Exact packaged app/index/helper/Mesa bytes in an owned flat native fixture; real default directory/drive launches,Settings enable/restore,long Properties/native Close,Save/cancel/no-write/config preservation and unchanged index process set; original typed defaults restored through uninstall. Isolated100percent ordinary OpenGL VM,not physical GPU or installed-product lifecycle.",
+  "hosted_source": {
+    "run": 41360032284,
+    "revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+    "conclusion": "success"
+  },
+  "cleanup": {
+    "assembly": "NATIVE_OWNER.json",
+    "gui": "gui/RUNTIME_OWNER.json",
+    "guest_off": true,
+    "owned_roots_removed": true,
+    "original_profiles_and_files_preserved": true
+  },
+  "public_windows_files_unchanged": true,
+  "linux_source_cohort": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "limits": [
+    "Exact current MSI fresh install and data/task preservation pass, but failed-uninstall registration rollback and ordinary retry fail on independent Windows26300. MSI remains required and not release accepted.",
+    "GUI fixture uses exact binaries but does not establish full installed application runtime placement or physical/DPI acceptance",
+    "Prior Office,cross-volume,file-operation and sustained resource receipts retain their exact hashes",
+    "No public release or Store submission"
+  ],
+  "native_msi_rollback": {
+    "status": "failed ordinary-user registration rollback and uninstall retry",
+    "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+    "msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+    "evidence": ".hermes/evidence/windows-msi-package-control-current/verified-teardown/ASSESSMENT.json",
+    "fresh_install_and_all_58_files": "pass",
+    "task_daemon_preferences_source_native_database_identity": "preserved through real cache-cleanup refusal",
+    "failed_product_state": 1,
+    "ordinary_retry_exit": 1603,
+    "release_accepted": false,
+    "fixture_teardown": "Explicit service-remove exit0 before terminal snapshot; VM/media/private console removed"
+  }
+}

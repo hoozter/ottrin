@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "expected": {
+    "title": "Ottrin \u2014 Selection proof",
+    "text": "\u00c5\u00e4\u00f6 \u6587 \ud83d\ude80",
+    "path": "C:\\Native\u00c5\\\u6587\ud83d\ude80.txt"
+  },
+  "actual": {
+    "title": "Ottrin \u2014 Selection proof",
+    "text": "\u00c5\u00e4\u00f6 \u6587 \ud83d\ude80",
+    "path": "C:\\Native\u00c5\\\u6587\ud83d\ude80.txt"
+  },
+  "utf8_stdout_sha256": "51d8f39f92538912645d6c361f22640d705dc296c5aea1652c79d1fb04f0569a",
+  "legacy_codepage_rejected": true,
+  "legacy_observation": {
+    "title": "Ottrin - Selection proof",
+    "text": "\u00c5\u00e4\u00f6 ? ??",
+    "path": "C:\\Native\u00c5\\???.txt"
+  },
+  "scope": "Native Windows PowerShell UTF8 command transport with exact non-ASCII roundtrip and legacy-codepage negative control; no Ottrin runtime, user profile or installer operation."
+}

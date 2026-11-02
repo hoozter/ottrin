@@ -11,5 +11,5 @@
   "index_controller_matches_daemon": true,
   "transaction_script_matches_source": true,
   "owned_extraction_removed": true,
-  "pending": "Native Windows runtime/update/uninstall and actual MSIX assembly/lifecycle; no installer acceptance from archive checks"
+  "scope_limit": "Host archive/content verification; native lifecycle/rendered scopes have separate receipts"
 }

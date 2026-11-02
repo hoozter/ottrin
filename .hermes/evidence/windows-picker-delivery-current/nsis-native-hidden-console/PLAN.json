@@ -1,0 +1,11 @@
+{
+  "purpose": "Exact native workflows with the owned noninteractive actor console hidden at launch; original foreground verification retained",
+  "actor_sha256": "10da2ea75ea33e9b6d73e362d5ec03f2012cc91cd61d9d3047ac9f6062d97d22",
+  "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+  "cleanup_owner": "Existing clean-client ExitStack and actor cleanup; no Rust build or production source change",
+  "rejected_observer_evidence": [
+    "../nsis-native",
+    "../nsis-native-verified",
+    "../nsis-native-focus"
+  ]
+}

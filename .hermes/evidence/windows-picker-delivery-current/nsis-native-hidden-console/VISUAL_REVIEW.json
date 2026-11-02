@@ -1,0 +1,12 @@
+{
+  "status": "reviewed",
+  "scope": "Direct review of representative original native captures: Dark alpha/beta range, Light beta/gamma range, actual fresh and upgraded Miller columns, aligned controls/shared themed titlebars; behavior of all10 cases independently checked from exact returned paths",
+  "captures": {
+    "picker-dark-up-range-selected.png": "ca48fa2daa7786f0418936e50e4dd51532b17a664f9ec565593861615c711c64",
+    "picker-light-down-range-selected.png": "39e174e3ef0d4fc5f189f21f5cc149deeffd2df5f836fd26f9cd1819c47afaeb",
+    "fresh-main.png": "2bcdb25c61108434f89a9469eb3cee59addbbb4a94960a24fbdd67c872de7f74",
+    "upgraded-main.png": "2bcdb25c61108434f89a9469eb3cee59addbbb4a94960a24fbdd67c872de7f74"
+  },
+  "dpi": 96,
+  "physical_gpu_or150percent_claim": false
+}

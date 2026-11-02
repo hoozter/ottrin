@@ -1,0 +1,17 @@
+{
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "from": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "to": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "temporary_old": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+  "held_input": {
+    "status": "Retained exact failed ordinary-user MSI for the explicit native rollback boundary; not a current preview",
+    "artifact": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/input/Ottrin-0.1.0-windows-x64.msi",
+    "sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+    "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+    "payload_manifest": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/input/payload.json",
+    "payload_files": 58,
+    "pending_consumer": "A supported Windows Installer correction or explicitly approved installation-contract change must be evaluated against this known failing input",
+    "evidence": ".hermes/evidence/windows-msi-package-control-current/verified-teardown/ASSESSMENT.json"
+  },
+  "status": "Inputs verified; directory promotion intent recorded before moves"
+}

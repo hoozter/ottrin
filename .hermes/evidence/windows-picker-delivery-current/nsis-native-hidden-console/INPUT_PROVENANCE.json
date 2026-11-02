@@ -1,0 +1,7 @@
+{
+  "actor_sha256": "10da2ea75ea33e9b6d73e362d5ec03f2012cc91cd61d9d3047ac9f6062d97d22",
+  "driver_sha256": "15d936a8a73d7c91b566c0e2aa0372ff37b9fd1d4ca23f2a76ba02ca364fdcbf",
+  "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+  "native_controls_binding": "Unmodified checked-out helper copied by the recorded producer; archived here after completion. Actor did not separately emit this helper digest. Frozen actor/driver and native results retain their actual execution scope.",
+  "package_input": "APPLICATION_INPUT.json"
+}

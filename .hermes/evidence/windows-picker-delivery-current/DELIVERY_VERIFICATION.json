@@ -1,0 +1,18 @@
+{
+  "status": "pass within recorded delivered Windows preview and completed owned cleanup scopes",
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "published": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "e11cb37ad662d79c991d86c6a623e1e8aeaebf9db49283d600e3d529fc007863",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b",
+    "Ottrin-0.1.0-windows-x64-development.msix": "8efdaa87c2b32cfc8dcd85caf041b1f54eed118db86be1c42ab5139b0fc42461"
+  },
+  "payload_files": 58,
+  "native_nsis_authority_sha256": "d87ac47bc241f411427ac4d54a3ce2597147a7069a30547631e3e0b8b4abfdb7",
+  "native_transport": "transport/TRANSPORT_ACCEPTANCE.json",
+  "five_current_fixture_domains_and_ten_volumes_removed": true,
+  "private_desktops_removed": true,
+  "temporary_stage_and_retired_candidate_absent": true,
+  "msi_release_accepted": false,
+  "remaining": "Ordered software/platform/assistive evidence audit, unclosed prepared-MSI application/runtime comparison, native MSI boundary and explicit owner/physical/signing acceptance; goal remains active"
+}

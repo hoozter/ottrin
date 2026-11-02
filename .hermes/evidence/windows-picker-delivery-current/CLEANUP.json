@@ -1,5 +1,5 @@
 {
-  "status": "Completed build/assembly and both upgrade/login/removal fixtures cleaned; obsolete development cohort and previous MSIX3 input retired; current packages/base retained for remaining native package consumers",
+  "status": "Current verified Windows preview delivered to stable dist/windows-candidate; all completed VM/media/private desktop/extraction/export resources and superseded candidate/stage output retired; sole MSI diagnostic retained for explicit native boundary",
   "removed_source_archive": {
     "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-delivery-current/source.zip",
     "bytes": 128583419,
@@ -22,21 +22,29 @@
     "target/debug/incremental": 18248171520,
     "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
     "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
-    ".hermes/evidence/windows-picker-delivery-current": 1703936
+    ".hermes/evidence/windows-picker-delivery-current": 4067328
   },
   "compiler_cache_scope": "Same native/Windows debug cache roots as baseline; no added target tree/configuration. Existing release outputs rebuilt with matching settings and retained as current compiler products.",
   "remaining": [
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "Current65676885 ZIP/NSIS/payload/MSIX4. Actual MSIX update/login/removal passes; current portable/NSIS and native chooser workflows remain"
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current delivered ZIP/NSIS/developmentMSIX4 and exact58-file payload; remaining platform audit and owner acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/input/Ottrin-0.1.0-windows-x64.msi",
+      "purpose": "Sole exact failed8ede MSI diagnostic input for the explicit native rollback boundary; not included in current usable preview"
     },
     {
       "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
-      "purpose": "Clean offline Windows base for next runtime/lifecycle consumers"
+      "purpose": "Clean offline native base for remaining independently available Windows platform/software acceptance audit"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
-      "purpose": "Reusable12MB driver/agent bootstrap cache for clean native fixture"
+      "purpose": "Reusable12MB verified driver/agent bootstrap cache"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+      "purpose": "Earlier prepared26100.9711 base; application-level MSI consumer remains unclosed in UPDATED_BASE.json and must be reconciled by the remaining evidence audit. Its MSIX consumers are complete; no deletion until the existing consumer is closed and backing/snapshot checks pass."
     }
   ],
   "runtime_cleanup": {
@@ -44,5 +52,14 @@
     "upgrade-disabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-disabled/CLEANUP.json"
   },
   "superseded_cleanup": ".hermes/evidence/windows-picker-delivery-current/UPGRADE_INPUT_CLEANUP.json",
-  "compiler_changes_this_checkpoint": "No Rust builds/tests or new target configurations during native lifecycle acceptance; existing compiler products and useful shared caches preserved"
+  "compiler_changes_this_checkpoint": "No Rust builds/tests or new target configurations during native lifecycle acceptance; existing compiler products and useful shared caches preserved",
+  "native_nsis_cleanup": ".hermes/evidence/windows-picker-delivery-current/nsis-native-hidden-console/CLEANUP.json",
+  "native_transport_cleanup": ".hermes/evidence/windows-picker-delivery-current/transport/CLEANUP.json",
+  "rejected_observer_cleanup": [
+    ".hermes/evidence/windows-picker-delivery-current/nsis-native/CLEANUP.json",
+    ".hermes/evidence/windows-picker-delivery-current/nsis-native-verified/CLEANUP.json",
+    ".hermes/evidence/windows-picker-delivery-current/nsis-native-focus/CLEANUP.json"
+  ],
+  "delivery_receipt": ".hermes/evidence/windows-picker-delivery-current/DELIVERY.json",
+  "additional_superseded_candidate_bytes_removed": 235893453
 }

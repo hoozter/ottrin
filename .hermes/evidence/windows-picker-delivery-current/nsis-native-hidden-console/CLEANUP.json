@@ -1,0 +1,86 @@
+{
+  "status": "pass: native workflows complete, service/payload removed by real uninstall; owned VM/media/private console and portable extraction removed",
+  "guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-kigb8rmn",
+    "owned_processes_reaped": [
+      {
+        "pid": 569085,
+        "exit": 0
+      },
+      {
+        "pid": 569088,
+        "exit": 0
+      },
+      {
+        "pid": 569089,
+        "exit": 15
+      },
+      {
+        "pid": 569207,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "raw_member_manifest": "RESULT_MEMBERS.json",
+  "raw_result_authority": "results/RESULT.json",
+  "removed_completed_outputs": [
+    {
+      "path": "RESULTS.zip",
+      "bytes": 1083707,
+      "sha256": "f682f595c78f825a824ab1657165716c1345fe9501646003e2fbf0636fa67526"
+    },
+    {
+      "path": "desktop-ready.png",
+      "bytes": 1694249,
+      "sha256": "aeecf9affd086f6fd798868c65d575ca3ce15074fc83f899d28635c2b5ec4758"
+    },
+    {
+      "path": "desktop-observed.png",
+      "bytes": 954789,
+      "sha256": "18b84e32f68db1e314b467ce21a76ab73433b6418ebc93f4d02e37d6d74e5601"
+    },
+    {
+      "path": "viewer/dbus.log",
+      "bytes": 2934,
+      "sha256": "e24bcccdb7709ff8bd050c4f133efd96f38220e78eb598c9d3b2aaff52511f57"
+    },
+    {
+      "path": "viewer/viewer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/wm.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/xvfb.log",
+      "bytes": 1666,
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50"
+    }
+  ],
+  "retained": "Exact native result/process member bytes, application screenshots and frozen inputs; current packages pending local promotion",
+  "rejected_observer_cases": [
+    "../nsis-native/CLEANUP.json",
+    "../nsis-native-verified/CLEANUP.json",
+    "../nsis-native-focus/CLEANUP.json"
+  ]
+}

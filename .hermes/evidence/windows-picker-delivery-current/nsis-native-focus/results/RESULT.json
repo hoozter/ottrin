@@ -1,0 +1,47 @@
+{
+    "scope":  "Exact ordinary-user portable chooser and NSIS fresh/upgrade/intent/refusal/retry workflows",
+    "phase":  "portable chooser without indexing",
+    "desktop_ready":  true,
+    "owned_portable_extraction_removed":  true,
+    "picker_cases":  [
+
+                     ],
+    "last_picker_window":  {
+                               "foreground":  65826,
+                               "geometry":  "client=940x640 origin=0,0 dpi=96",
+                               "input_idle":  true,
+                               "window":  197220,
+                               "title":  "Ottrin — Selection proof",
+                               "enabled":  true
+                           },
+    "stack":  "at Picker, \u003cNo file\u003e: line 62\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 104\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "package":  {
+                    "source_revision":  "656768852a930e4e69dcf37e901d5bf00c6b6175",
+                    "files":  [
+                                  {
+                                      "name":  "portable.zip",
+                                      "sha256":  "e11cb37ad662d79c991d86c6a623e1e8aeaebf9db49283d600e3d529fc007863"
+                                  },
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b"
+                                  },
+                                  {
+                                      "name":  "previous-setup.exe",
+                                      "sha256":  "b3a01eca9c4854a0af0e4456975b88e2740f69d15827225ef5bb4a34a05f3033"
+                                  }
+                              ],
+                    "previous_source":  "8ede156248e54af88e972d53fe441b05af9caa3c"
+                },
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSIac14fa81a3b6",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "error":  "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+    "runtime_cases":  [
+
+                      ],
+    "status":  "failed native NSIS fixture"
+}

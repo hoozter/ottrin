@@ -1,0 +1,2 @@
+# Preserve exact native Windows result bytes, including CRLF and Unicode.
+*/results/*.json binary

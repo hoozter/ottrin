@@ -1,0 +1,18 @@
+﻿{
+    "nonce":  "d89ef032c4d6407f91842fe511b726c5",
+    "task":  "OttrinOwnedMsiControl",
+    "profiles_before":  [
+                            "S-1-5-18|C:\\WINDOWS\\system32\\config\\systemprofile",
+                            "S-1-5-19|C:\\WINDOWS\\ServiceProfiles\\LocalService",
+                            "S-1-5-20|C:\\WINDOWS\\ServiceProfiles\\NetworkService",
+                            "S-1-5-21-3790294415-2606194316-2422870471-1000|C:\\Users\\OttrinStockAdmin",
+                            "S-1-5-21-3790294415-2606194316-2422870471-1001|C:\\Users\\defaultuser0"
+                        ],
+    "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "status":  "prepared",
+    "actor_sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "scope":  "Fresh hosted Windows native file-only per-user controls; standalone QA identity,not an application publisher",
+    "phase":  "ready for owned interactive reboot",
+    "root":  "C:\\WINDOWS\\TEMP\\ottrin-msi-d89ef032c4d6407f91842fe511b726c5",
+    "account":  "OTMSId89ef032c4d6"
+}

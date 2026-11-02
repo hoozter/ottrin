@@ -1,0 +1,117 @@
+{
+  "status": "Rejected foreground observer; exact diagnostic capture retained, owned VM/media/profile/extraction removed",
+  "reason": "Mapped native940x640 chooser is enabled/input-idle but remains behind the owned scheduled PowerShell console; direct screenshot shows that console occluding its client/title area. Extra foreground wait did not fix it. Future controller uses WindowStyle Hidden for its noninteractive actor, matching the accepted MSIX fixture. Original native focus helper restored; focus remains mandatory. No chooser/NSIS acceptance from this run.",
+  "native_window": {
+    "foreground": 65826,
+    "geometry": "client=940x640 origin=0,0 dpi=96",
+    "input_idle": true,
+    "window": 197220,
+    "title": "Ottrin - Selection proof",
+    "enabled": true
+  },
+  "diagnostic_capture": "results/picker-dark-baseline-mapped.png",
+  "guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-y901fcfa",
+    "owned_processes_reaped": [
+      {
+        "pid": 567434,
+        "exit": 0
+      },
+      {
+        "pid": 567437,
+        "exit": 0
+      },
+      {
+        "pid": 567438,
+        "exit": 15
+      },
+      {
+        "pid": 567567,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "146 34 0:70 / /var/tmp/.ottrin-picker-qa-y901fcfa/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "members": [
+    {
+      "path": "DESKTOP_READY.json",
+      "sha256": "f5ad6cbc2c10fa0b7acb309cb28ff7bc833cff521c73693b9a08c6904cead170",
+      "bytes": 280
+    },
+    {
+      "path": "OWNER.json",
+      "sha256": "862cd1a0b41171d05f987e4c993295096d5169d7d6aea3431ba3b320968d622e",
+      "bytes": 1076
+    },
+    {
+      "path": "picker-dark-baseline-mapped.png",
+      "sha256": "55bdfb1d6a3454fa176bfced27fa1de52677c469b1f1300bfc2c48bc143ae70a",
+      "bytes": 13466
+    },
+    {
+      "path": "RESULT.json",
+      "sha256": "c6aa2834999d51fa58bbc54ead756b72e4237f13d05a9ed06b82ae246dca1ac7",
+      "bytes": 2434
+    }
+  ],
+  "removed": [
+    {
+      "path": "RESULTS.zip",
+      "sha256": "b7357aec39f9c44c237efe66dd60db094f9673204d255e37ecb1f97c4b1d7b5c",
+      "bytes": 12276
+    },
+    {
+      "path": "picker-dark-baseline-mapped.png",
+      "sha256": "55bdfb1d6a3454fa176bfced27fa1de52677c469b1f1300bfc2c48bc143ae70a",
+      "bytes": 13466
+    },
+    {
+      "path": "desktop-ready.png",
+      "sha256": "b63d4e1ac387f0f8dfcdc2e118163fed555f404bdf7ba5baabb26cff2efa7600",
+      "bytes": 167373
+    },
+    {
+      "path": "desktop-observed.png",
+      "sha256": "899ad226093e9d5dfe749fd5389d0147c21b0cde2b3726ac0b1a89d6e7e15a1c",
+      "bytes": 169377
+    },
+    {
+      "path": "viewer/dbus.log",
+      "sha256": "6a655e43b8d7f16681c08be854793ffcddb9940000018c9fe73c3d297c4dce55",
+      "bytes": 2934
+    },
+    {
+      "path": "viewer/viewer.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "viewer/wm.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "viewer/xvfb.log",
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50",
+      "bytes": 1666
+    }
+  ]
+}

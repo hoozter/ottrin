@@ -1,0 +1,30 @@
+{
+  "domain": "ottrin-transport-probe",
+  "uuid": "e346f48e-fa86-444d-8ffb-785b24f929d2",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-transport-probe-fixture.iso",
+    "ottrin-transport-probe.qcow2"
+  ],
+  "status": "native UTF8 roundtrip and legacy negative control pass",
+  "public_compiler_cache": null,
+  "scope": "Native Windows PowerShell UTF8 command transport with exact non-ASCII roundtrip and legacy-codepage negative control; no Ottrin runtime, user profile or installer operation.",
+  "producer_sha256": "5dff97007b6831385d26610286e563e063c2fcd61e87a0294caba0c51b3db13a",
+  "uploaded_host_iso_removed_bytes": 870400,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "guest_pid": 4424,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-transport-probe.qcow2",
+      "ottrin-transport-probe-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

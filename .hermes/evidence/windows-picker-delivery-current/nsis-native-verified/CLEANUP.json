@@ -1,0 +1,96 @@
+{
+  "status": "Rejected focus observer; owned VM/media/profile/extraction removed; no product acceptance",
+  "reason": "Exact source-declared chooser window found. Initial focus helper checked after150ms and failed before any test keystrokes. Next source restores the window, awaits foreground transition for up to5seconds after its single activation/click, and captures exact mapped window readiness before input. Focus failure remains fatal.",
+  "guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-rp94tvik",
+    "owned_processes_reaped": [
+      {
+        "pid": 564896,
+        "exit": 0
+      },
+      {
+        "pid": 564899,
+        "exit": 0
+      },
+      {
+        "pid": 564900,
+        "exit": 15
+      },
+      {
+        "pid": 564960,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "members": [
+    {
+      "path": "DESKTOP_READY.json",
+      "sha256": "f8bb52cf59275a1f801da9a66d5a0d5a4f470cd5561cc3d7df5efa6155743f56",
+      "bytes": 280
+    },
+    {
+      "path": "OWNER.json",
+      "sha256": "91e3c235085631bc1ac20683b47a7d4eb15d1f44bbca2fad2f7d9715efc68486",
+      "bytes": 1076
+    },
+    {
+      "path": "RESULT.json",
+      "sha256": "a53af5b4a68e8cc7debad3b7fa518987639b47b2308319b2388a6023a00cafb1",
+      "bytes": 2013
+    }
+  ],
+  "removed": [
+    {
+      "path": "RESULTS.zip",
+      "sha256": "9fe3522e96ff8ba987c0a8f9db37292981761b367eed9a46113e93198b056a3f",
+      "bytes": 1764
+    },
+    {
+      "path": "desktop-ready.png",
+      "sha256": "9d373a7b6ca4f2ce1af08ba67085a87f082a3fdf086e0cbc14de33587c710dc4",
+      "bytes": 157050
+    },
+    {
+      "path": "desktop-observed.png",
+      "sha256": "dd0f2c14979ca9501647c70b229b346b4f3b181e4baf5ce64815f2a079e8dd10",
+      "bytes": 203033
+    },
+    {
+      "path": "viewer/dbus.log",
+      "sha256": "6066f3e43d9d2d5c551cfdb728049eb48e2331947fbb02731d017f348a386998",
+      "bytes": 2934
+    },
+    {
+      "path": "viewer/viewer.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "viewer/wm.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "viewer/xvfb.log",
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50",
+      "bytes": 1666
+    }
+  ]
+}

@@ -31,5 +31,5 @@ with tempfile.TemporaryDirectory(prefix='.windows-picker-nsis-',dir=r/'.hermes/p
  uninstaller=actual['Uninstall.exe']
 assert not t.exists()
 (e/'PAYLOAD.json').write_text(json.dumps(manifest,indent=2)+'\n')
-report={'status':'pass within host archive/content scope','source_revision':build['source_revision'],'payload_files':len(manifest),'artifacts':build['artifacts'],'portable_nsis_payloads_identical':True,'uninstaller_sha256':uninstaller,'index_controller_matches_daemon':True,'transaction_script_matches_source':True,'owned_extraction_removed':True,'pending':'Native Windows runtime/update/uninstall and actual MSIX assembly/lifecycle; no installer acceptance from archive checks'}
+report={'status':'pass within host archive/content scope','source_revision':build['source_revision'],'payload_files':len(manifest),'artifacts':build['artifacts'],'portable_nsis_payloads_identical':True,'uninstaller_sha256':uninstaller,'index_controller_matches_daemon':True,'transaction_script_matches_source':True,'owned_extraction_removed':True,'scope_limit':'Host archive/content verification; native lifecycle/rendered scopes have separate receipts'}
 (e/'HOST_PAYLOAD.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

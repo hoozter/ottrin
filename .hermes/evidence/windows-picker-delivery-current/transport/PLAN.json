@@ -1,0 +1,4 @@
+{
+  "purpose": "Verify the confirmed Windows PowerShell Unicode transport repair on a fresh headless disposable clone; actual NSIS workflows already complete and are not repeated",
+  "cleanup_owner": "Existing clean-client ExitStack owns domain/two media volumes; no GUI/profile/compiler allocation"
+}

@@ -1,0 +1,37 @@
+{
+  "domain": "ottrin-nsis-client",
+  "uuid": "4e2b077e-4885-4857-8a69-24493e68ce92",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-nsis-client-fixture.iso",
+    "ottrin-nsis-client.qcow2"
+  ],
+  "status": "control finished; inspect exact result, not assumed pass",
+  "public_compiler_cache": null,
+  "scope": "Exact current portable chooser and ordinary-user NSIS fresh install, accepted-baseline running-index upgrade, intent preservation, real cache-lock refusal and supported uninstall retry; no production elevation.",
+  "producer_sha256": "15d936a8a73d7c91b566c0e2aa0372ff37b9fd1d4ca23f2a76ba02ca364fdcbf",
+  "uploaded_host_iso_removed_bytes": 135497728,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 569207,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-kigb8rmn/home"
+  },
+  "guest_pid": 1612,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "purpose": "Exact packages after native title and asynchronous foreground observer corrections; earlier rejected results retained",
+  "actor_sha256": "10da2ea75ea33e9b6d73e362d5ec03f2012cc91cd61d9d3047ac9f6062d97d22",
+  "native_controls_sha256": "69d5c361ac66e66168640cd5f2c8dff04e20fe04b4603fe4c7985e74dc30a819",
+  "cleanup_owner": "Clean-client ExitStack owns VM/media/private desktop; actor owns children/locks/extraction; no Rust build"
+}

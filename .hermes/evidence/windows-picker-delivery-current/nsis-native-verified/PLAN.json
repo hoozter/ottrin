@@ -1,0 +1,6 @@
+{
+  "purpose": "Reverify same exact package cohort after correcting the native title observer; rejected source/result retained at ../nsis-native",
+  "actor_sha256": "415875b6075760937357d696ad07c3819a7f588be265323b66d2b397c1515fc8",
+  "scope": "Native current portable chooser, NSIS fresh/current removal, accepted-baseline running-index upgrade, intent/refusal/retry; ordinary user",
+  "cleanup_owner": "Existing clean-client ExitStack and actor registered cleanup; no new Rust builds/configurations"
+}

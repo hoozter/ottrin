@@ -1,0 +1,15 @@
+{
+  "status": "pass: native UTF8 probe and legacy negative control complete; headless guest/two volumes/fixture removed",
+  "guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-transport-probe.qcow2",
+      "ottrin-transport-probe-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "no_owned_gui_profile": true,
+  "no_compiler_build": true
+}

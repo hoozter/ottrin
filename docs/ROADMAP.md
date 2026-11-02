@@ -2,7 +2,7 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-02. This is the active queue; dated checkpoints below retain
+Updated 2026-11-03. This is the active queue; dated checkpoints below retain
 only their original source/artifact scopes. Test totals are not roadmap completion.
 
 The stable Linux AppImage, portable archive, DEB and RPM now use clean source
@@ -56,8 +56,10 @@ helper after explicit process-identity checks, recovering0.50GiB; current compil
 caches and binaries remain. Earlier source/NTFS evidence keeps its original scope
 in `listing-metadata-current/ACCEPTANCE.json`.
 
-Windows public files remain unchanged; the accepted internal ZIP/NSIS/MSI
-candidate remains source8ede1562. The preceding source592d56e8 development checkpoint
+Public Windows release files remain unchanged. The stable local Windows preview
+is now source65676885 at `dist/windows-candidate`; the required MSI is held
+separately on its native rollback boundary, with its exact8ede diagnostic input
+retained under `windows-msi-package-control-current/input/`. The preceding source592d56e8 development checkpoint
 built ZIP/NSIS and native MakeAppx MSIX0.1.0.3 with58-file equality and invalid
 revision refusal. Actual0.1.0.2→0.1.0.3 startup-enabled upgrade passes ordinary
 GUI/menu keys/normal Close, retained configuration/native index identity, actual
@@ -89,50 +91,72 @@ replacement, reference, symlink, hard-link and process checks. It recovers
 current deliverables remain. Exact evidence: `listing-storage-current/CLEANUP.json`.
 This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 
-The current65676885 Windows replacement builds ZIP/NSIS and native MakeAppx
-MSIX0.1.0.4. All58 application files match between ZIP and NSIS; the installer
-controller and transaction script match their authoritative payload/source.
-Native MSIX assembly verifies all58 files and rejects invalid revisions. Actual
-0.1.0.3→0.1.0.4 enabled and disabled upgrades now pass ordinary main-window launch,
-normal Close, menu/Inspector Space/Escape controls, saved configuration and native
-index database identity, actual reboot/login and clean package removal. Windows
-starts the ordinary packaged0.1.0.4 daemon before any Ottrin CLI when enabled; disabled login
-observes no daemon for180.240seconds before any CLI. Both cases pass direct rendered
-Hidden/System visibility review, native attribute checks and restored-view pixels.
-Their disposable accounts require native password sign-in on the second boot;
-this fixture authentication is recorded separately and does not start Ottrin or
-alter its startup policy. No bootstrap-causation claim is established.
+The current65676885 Windows portable ZIP, per-user NSIS installer and native
+MakeAppx development MSIX0.1.0.4 are now delivered at the stable local preview path
+`dist/windows-candidate/`. `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` and
+`windows-picker-delivery-current/DELIVERY.json` bind their exact hashes and scopes.
+All58 application files agree across the formats; published bytes and payload
+hashes are rechecked after promotion. The superseded candidate is retired; its
+sole52.5MB failing MSI is retained as a diagnostic input, not a usable current
+preview. No MSI scope is waived or installation contract silently changed.
 
-Both runtime guests/four volumes/private desktops, the assembly guest/two volumes,
-fixtures, source archive/clone, redundant exports and consumed whole-console
-frames are removed. The obsolete292.8MB592d development stage and56.8MB MSIX3 input
-are retired after both named upgrade consumers complete. Current coherent packages
-remain in `.hermes/packaging-tmp/.windows-picker-stage` for current portable/NSIS
-and native chooser acceptance; public Windows files and internal8ede candidate
-are unchanged. Exact scopes and cleanup: `windows-picker-delivery-current/`
-`{HOST_PAYLOAD,ASSEMBLY_ACCEPTANCE,CLEANUP,UPGRADE_INPUT_CLEANUP}.json`, and each
-`upgrade-{enabled,disabled}/{ACCEPTANCE,NATIVE_VISIBILITY_ACCEPTANCE}.json`.
+Actual ordinary-user portable chooser testing passes10 cases across Dark/Light:
+baseline and Up/Down single/range selection, exact native paths, unchanged
+preferences/source and operation without indexing. Native NSIS passes fresh
+install/removal, accepted8ede→current running-index upgrade, saved Miller view,
+exact configuration/task security/native database identity and search continuity.
+All three independent startup/running-intent combinations survive reinstall. A
+real locked-cache uninstall refusal preserves the same daemon PID/task instance,
+full task/security, data and payload; supported retry succeeds after releasing
+only that owned lock. Actual fresh/upgraded Miller windows and representative
+Dark/Light range captures pass direct review at96DPI/software rendering.
+
+Actual MSIX3→4 enabled/disabled updates, ordinary main/Inspector/menu operation,
+normal Close, saved configuration/database identity, real reboot/login, native
+Hidden/System visibility and clean removal also pass. Enabled login observes the
+ordinary0.1.0.4 daemon before any Ottrin CLI; disabled login observes no daemon for
+180.240seconds before any CLI. Native password sign-in for the exact disposable
+accounts is recorded separately; it does not run Ottrin or change startup policy.
+
+Three rejected NSIS observer attempts remain explicit: a short-title lookup, then
+foreground checks with the owned PowerShell console occluding the chooser. The
+accepted controller hides its noninteractive console and retains foreground
+verification. A lossy PowerShell console copy changed one em dash to a hyphen;
+all acceptance uses the intact exact UTF8 native result. The command adapter now
+passes a separate native Swedish/Japanese/emoji roundtrip and rejects the legacy
+codepage negative control. No completed product workflow was repeated for that
+transport-only recovery.
+
+All completed NSIS/observer/transport and MSIX guests, owned media/private desktops,
+extractions, source archives and redundant exports are removed. The obsolete592d
+stage/previous MSIX3 input and superseded8ede candidate files are retired after
+consumers complete. The current delivered preview, sole held MSI, clean native
+base for remaining platform audit and useful bootstrap cache remain. Exact paths,
+consumers and cleanup are in `windows-picker-delivery-current/CLEANUP.json`.
+Public/official release assets and Store submission remain unchanged.
 
 Continue in this order:
 
-1. Finish current65676885 portable/NSIS native runtime, update and removal plus
-   native Windows chooser Shift-selection acceptance. Current MSIX4 assembly,
-   ordinary runtime, enabled/disabled3→4 updates, real login and removal gates
-   are fulfilled; do not repeat them or the retired MSIX3 inputs. Current public
-   Windows files and the internal8ede1562 cohort remain unchanged pending the
-   remaining native gates. The independent clean Windows base is retained for
-   these named consumers. MSI is still a required
-   outcome, held on the explicit Windows Installer boundary below; do not relabel
-   a failing MSI or silently change its ordinary-user contract. Its boundary must
-   not stall other ready software, package and platform work.
-2. Audit and finish remaining software/theme/accessibility/resource and supported
-   integration outcomes against the requirements below. The shared themed picker,
-   Linux FileChooser portal/FileManager1 and reversible Windows folder actions
-   have implementation and scoped native/package evidence; do not reopen their
-   completed gates or substitute those receipts for remaining caller/platform/
-   physical acceptance. Complete the bounded assistive-integration recheck and
-   any remaining independently available exact-package workflows before parking
-   only genuine owner/device/external acceptance.
+1. Audit the remaining software/platform/theme/resource and supported integration
+   requirements against their actual source, package and native evidence. Finish
+   dependency-ready outcomes whose evidence is missing, weak or contradictory;
+   do not repeat the fulfilled current Windows/Linux package workflows without
+   changed inputs or a reproduced defect. The bounded native assistive-integration
+   recheck remains unperformed and is independently available. Check remaining
+   Windows caller/folder/helper/Office/media/resource scopes against the explicit
+   requirements before parking only genuinely owner/device/external acceptance.
+   Reconcile the still-named application-level consumer of the prepared26100.9711
+   base: its native file-only control failed, while the actual held MSI has been
+   observed on the independent26300/.9444 client. Do not describe that missing
+   application/runtime combination as already tested or repeat fulfilled controls.
+2. Keep the native MSI rollback boundary on the explicit waiting list while
+   completing that audit. MSI remains required; no failed artifact is labelled
+   current/accepted and no ordinary-user contract is silently replaced. Retained
+   diagnostic authority is `windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json`.
+   The shared themed picker, Linux FileChooser portal/FileManager1 and reversible
+   Windows folder actions retain their implementation and recorded native scopes;
+   exact current chooser and package evidence above does not certify unsupported
+   caller integrations, physical graphics or final owner acceptance.
 
 The actual8ede1562 MSI is now tested on the independent Microsoft26300 client.
 Fresh ordinary-user installation and all58 installed-file hashes pass. A real

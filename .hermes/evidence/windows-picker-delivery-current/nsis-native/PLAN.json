@@ -1,0 +1,15 @@
+{
+  "purpose": "Existing exact656 Windows portable/NSIS native workflows; no new Rust build or compiler configuration",
+  "actor_sha256": "26fbad1d4c8bd09261217c4392a4a292c0d6110f586d5ee84d0ec18b6e114d70",
+  "cleanup_owner": "Existing clean-client controller ExitStack owns disposable domain/two volumes/private desktop; actor owns child processes, cache lock and portable extraction",
+  "allocated_bytes": {
+    "target/debug/deps": 33364594688,
+    "target/debug/incremental": 18248171520,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage": 293048320,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-delivery-current/nsis-native": 4096
+  },
+  "baseline_installer": "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe retained accepted8ede upgrade source",
+  "current_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage"
+}

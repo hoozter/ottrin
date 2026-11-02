@@ -1,0 +1,20 @@
+{
+  "status": "ready for named pending native consumers",
+  "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+  "volume": "ottrin-msi-updated-client.qcow2",
+  "backing_original": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "verified_version": {
+    "ubr": 9711,
+    "build": "26100",
+    "msi": "5.0.26100.9711"
+  },
+  "clean_agent_shutdown": true,
+  "pending_consumers": [
+    "Reconcile the named application-level held MSI comparison on build26100.9711; native file-only control is observed failed, actual retained8ede MSI only observed on independent26300/.9444. Not a fulfilled gate."
+  ],
+  "cleanup_owner": "windows-msi-updated-client-current; delete only after consumers close and domain/backing-chain checks pass",
+  "completed_consumers": [
+    "Native file-only26100.9711 ordinary-user rollback control (failed)",
+    "Source592d MSIX2 to3 enabled and disabled real update/reboot/login/removal; both owned overlays removed"
+  ]
+}
