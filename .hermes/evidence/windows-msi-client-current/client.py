@@ -107,7 +107,7 @@ with ExitStack() as stack:
   shutil.copy2(r/'assets/icon.png',fixture/'icon.png')
  if args.msix_stage:
   parent=e.parent;build=json.loads((parent/'windows/BUILD_RESULT.json').read_text());source_input=json.loads((parent/'SOURCE_INPUT.json').read_text());git_input=json.loads((r/'.hermes/evidence/windows-msix-current/GIT_INPUT.json').read_text());assert build['source_revision']==source_input['source_revision']
-  assert args.msix_stage.resolve()==Path(build['stage'])==r/'.hermes/packaging-tmp/.windows-desktop-stage'
+  assert not args.msix_stage.is_symlink() and args.msix_stage.resolve()==Path(build['stage']) and args.msix_stage.resolve().parent==r/'.hermes/packaging-tmp', 'Native assembly requires the exact declared owned Windows build stage'
   files=[('portable.zip',args.msix_stage/'Ottrin-0.1.0-windows-x64-portable.zip',build['artifacts']['Ottrin-0.1.0-windows-x64-portable.zip']),('source.zip',parent/'source.zip',source_input['sha256']),('mingit.zip',cache/'mingit.zip',git_input['sha256'])]
   assembly_inputs={'source_revision':build['source_revision'],'files':[]}
   for name_in_iso,path,digest in files:

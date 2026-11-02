@@ -1,0 +1,9 @@
+{
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-delivery-current/source.zip",
+  "status": "prepared",
+  "sha256": "3fce0d3bf97932da8d86657d52d92e0b078a28cee6e94d0cc19829c5c2b02844",
+  "archive_bytes": 128583419,
+  "temporary_clone_removed": true
+}

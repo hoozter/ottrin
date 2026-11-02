@@ -1,0 +1,51 @@
+{
+  "status": "Completed build and assembly resources removed; exact packages and upgrade inputs retained for next native acceptance",
+  "removed_source_archive": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-delivery-current/source.zip",
+    "bytes": 128583419,
+    "sha256": "3fce0d3bf97932da8d86657d52d92e0b078a28cee6e94d0cc19829c5c2b02844"
+  },
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "nsis_extraction_removed": true,
+  "temporary_source_clone_removed": true,
+  "allocated_bytes_after": {
+    "target/debug/deps": 33364594688,
+    "target/debug/incremental": 18248171520,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    ".hermes/packaging-tmp/.windows-desktop-stage": 293068800,
+    ".hermes/evidence/windows-picker-delivery-current": 57061376
+  },
+  "compiler_cache_scope": "Same native/Windows debug cache roots as baseline; no added target tree/configuration. Existing release outputs rebuilt with matching settings and retained as current compiler products.",
+  "remaining": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Current65676885 ZIP/NSIS/payload/MSIX4 awaiting ordinary native runtime and lifecycle acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-delivery-current/input/previous.msix",
+      "purpose": "Exact MSIX3 input awaiting enabled/disabled3 to4 upgrade consumers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Previous usable592d development cohort retained until current cohort runtime passes"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "Clean offline Windows base for next runtime/lifecycle consumers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
+      "purpose": "Reusable12MB driver/agent bootstrap cache for clean native fixture"
+    }
+  ]
+}

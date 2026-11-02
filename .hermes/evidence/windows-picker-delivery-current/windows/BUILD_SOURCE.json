@@ -1,0 +1,6 @@
+{
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "cleanup_owner": "windows-picker-delivery-current",
+  "purpose": "Current source Windows portable/NSIS cohort, native development MSIX4 assembly and runtime acceptance; old usable stage remains until verified replacement"
+}

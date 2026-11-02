@@ -1,0 +1,9 @@
+{
+  "status": "Current Windows cohort built; archive identity and native MSIX4 assembly pass; runtime and lifecycle pending",
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "host_payload": "HOST_PAYLOAD.json",
+  "native_assembly": "ASSEMBLY_ACCEPTANCE.json",
+  "cleanup": "CLEANUP.json",
+  "next": "Run ordinary3 to4 startup-enabled/disabled MSIX updates and native current portable/NSIS/chooser workflows. Do not rerun unchanged MSI controls or promote current public files before required scopes pass.",
+  "goal_state": "active; dependency-ready native acceptance remains"
+}

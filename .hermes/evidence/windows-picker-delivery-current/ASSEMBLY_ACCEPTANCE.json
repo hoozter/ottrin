@@ -1,0 +1,28 @@
+{
+  "status": "pass: native assembly and58-file equality; runtime separate",
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "8efdaa87c2b32cfc8dcd85caf041b1f54eed118db86be1c42ab5139b0fc42461",
+  "version": "0.1.0.4",
+  "native_payload_files": 58,
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "pending": [
+    "Ordinary Windows runtime",
+    "Actual0.1.0.3 to0.1.0.4 startup-enabled and disabled upgrades, login and removal",
+    "Portable/NSIS current-cohort runtime/lifecycle"
+  ],
+  "scope": "Native MakeAppx assembly and exact payload comparison. Public packages and Store submission unchanged; MSI rollback remains explicitly failed, not waived."
+}

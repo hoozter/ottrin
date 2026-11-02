@@ -89,13 +89,27 @@ replacement, reference, symlink, hard-link and process checks. It recovers
 current deliverables remain. Exact evidence: `listing-storage-current/CLEANUP.json`.
 This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 
+The current65676885 Windows replacement now builds ZIP/NSIS and native MakeAppx
+MSIX0.1.0.4. All58 application files match between ZIP and NSIS; the installer
+index controller and transaction script match their authoritative payload/source.
+Native MSIX assembly verifies all58 files and rejects invalid version revisions.
+These are content/assembly gates, not native runtime or lifecycle acceptance.
+The sole explicit MSIX3 upgrade input is now retained in
+`windows-picker-delivery-current/input/previous.msix`; current packages await
+ordinary3→4 enabled/disabled startup/update/login/removal and current portable/NSIS
+workflows. The previous development stage and stable public files remain available.
+Assembly VM, both volumes, fixture, temporary source clone/archive and NSIS
+extraction are removed. Exact remaining storage and cache comparison are recorded
+in `windows-picker-delivery-current/CLEANUP.json`; payload and native receipts are
+`HOST_PAYLOAD.json` and `ASSEMBLY_ACCEPTANCE.json`.
+
 Continue in this order:
 
 1. Refresh the coherent Windows payload cohort and finish independently available
    ZIP/NSIS/development-MSIX runtime, update and cleanup acceptance. Current public
    Windows files and the internal8ede1562 cohort remain unchanged until the new
-   native gates pass. Preserve the sole current MSIX3 input for its next upgrade
-   consumer before replacing the592d56e8 development stage. The independent clean
+   native gates pass. Use the verified retained MSIX3 input for its next upgrade
+   consumers before retiring the592d56e8 development stage. The independent clean
    Windows base is retained for this named consumer. MSI is still a required
    outcome, held on the explicit Windows Installer boundary below; do not relabel
    a failing MSI or silently change its ordinary-user contract. Its boundary must

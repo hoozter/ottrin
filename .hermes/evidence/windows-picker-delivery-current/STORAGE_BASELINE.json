@@ -1,0 +1,15 @@
+{
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "allocated_bytes": {
+    "target/debug/deps": 33364594688,
+    "target/debug/incremental": 18248171520,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    ".hermes/packaging-tmp/.windows-desktop-stage": 293068800,
+    ".hermes/evidence/windows-picker-delivery-current": 56856576
+  },
+  "temporary_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "cleanup_owner": "windows-picker-delivery-current",
+  "retained_old_stage": "Previous usable development cohort until replacement native gates pass",
+  "build_configuration": "Existing x86_64-pc-windows-gnu release; default application features, existing windows-office renderer feature; shared target/cargo/rustup caches; one build job"
+}
