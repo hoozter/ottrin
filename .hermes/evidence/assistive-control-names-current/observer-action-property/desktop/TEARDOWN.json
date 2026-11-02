@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-lapl4kh_",
+  "owned_processes_reaped": [
+    {
+      "pid": 596180,
+      "exit": 0
+    },
+    {
+      "pid": 596186,
+      "exit": 0
+    },
+    {
+      "pid": 596187,
+      "exit": 15
+    },
+    {
+      "pid": 596258,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "org.freedesktop.DBus.Error.UnknownMethod: Unknown method 'GetNActions'",
+  "profile_removed": true
+}

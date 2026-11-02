@@ -864,7 +864,7 @@ impl PickerDialog {
                         if ui
                             .add_enabled(
                                 self.directory.parent().is_some(),
-                                egui::Button::new(MI_ARROW_UP).themed(&colors),
+                                egui::Button::new(MI_ARROW_UP).themed(&colors).accessible_name("Parent folder"),
                             )
                             .on_hover_text("Parent folder")
                             .clicked()
@@ -928,7 +928,8 @@ impl PickerDialog {
                                                         crumb.label
                                                     ))
                                                     .frame(false)
-                                                    .themed(&colors),
+                                                    .themed(&colors)
+                                                    .accessible_name(format!("Open {}", path_label(&crumb.target))),
                                                 )
                                                 .on_hover_text(path_label(&crumb.target))
                                                 .clicked()
@@ -937,7 +938,7 @@ impl PickerDialog {
                                             }
                                         }
                                         if ui
-                                            .add(egui::Button::new(MI_EDIT).themed(&colors))
+                                            .add(egui::Button::new(MI_EDIT).themed(&colors).accessible_name("Edit location"))
                                             .on_hover_text("Edit location (Ctrl+L)")
                                             .clicked()
                                         {
@@ -991,7 +992,8 @@ impl PickerDialog {
                                     .add(
                                         egui::Button::new(MI_VISIBILITY)
                                             .selected(self.preview_enabled)
-                                            .themed(&colors),
+                                            .themed(&colors)
+                                            .accessible_name("Show read-only preview"),
                                     )
                                     .on_hover_text("Show read-only preview")
                                     .clicked()
@@ -1005,7 +1007,8 @@ impl PickerDialog {
                                     } else {
                                         MI_VISIBILITY_OFF
                                     })
-                                    .themed(&colors),
+                                    .themed(&colors)
+                                    .accessible_name("Show hidden files"),
                                 )
                                 .on_hover_text("Show hidden files")
                                 .clicked()
@@ -1014,14 +1017,14 @@ impl PickerDialog {
                                 if self.indexed { self.schedule_search(&ctx); } else { self.scan(); }
                             }
                             if ui
-                                .add(egui::Button::new(MI_APPS).themed(&colors))
+                                .add(egui::Button::new(MI_APPS).themed(&colors).accessible_name("Grid view"))
                                 .on_hover_text("Grid view")
                                 .clicked()
                             {
                                 self.grid = true;
                             }
                             if ui
-                                .add(egui::Button::new(MI_VIEW_LIST).themed(&colors))
+                                .add(egui::Button::new(MI_VIEW_LIST).themed(&colors).accessible_name("List view"))
                                 .on_hover_text("List view")
                                 .clicked()
                             {

@@ -68,6 +68,7 @@ pub(crate) trait ThemeButtonExt<'a> {
 pub(crate) struct ThemeButton<'a> {
     button: Button<'a>,
     colors: Colors,
+    accessible_name: Option<String>,
 }
 
 impl<'a> ThemeButtonExt<'a> for Button<'a> {
@@ -75,7 +76,16 @@ impl<'a> ThemeButtonExt<'a> for Button<'a> {
         ThemeButton {
             button: self,
             colors: *colors,
+            accessible_name: None,
         }
+    }
+}
+
+impl ThemeButton<'_> {
+    /// Replace icon-font text in the native tree without changing button state.
+    pub(crate) fn accessible_name(mut self, name: impl Into<String>) -> Self {
+        self.accessible_name = Some(name.into());
+        self
     }
 }
 
@@ -117,6 +127,10 @@ impl Widget for ThemeButton<'_> {
         apply_button_style(ui, self.colors);
         let response = self.button.ui(ui);
         ui.set_style(previous_style);
+        if let Some(name) = self.accessible_name {
+            ui.ctx()
+                .accesskit_node_builder(response.id, |node| node.set_label(name));
+        }
         response
     }
 }

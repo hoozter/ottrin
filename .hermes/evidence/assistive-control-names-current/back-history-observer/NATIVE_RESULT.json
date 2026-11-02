@@ -1,0 +1,96 @@
+{
+  "status": "failed native integration or observer gate",
+  "scope": "Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance",
+  "binary_sha256": "ac454a5a20cd271e5b4343b1d53dcf686bafe3b73942ddd95fcdbca32296e1d2",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 604026,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 604051,
+  "tree_nodes": 60,
+  "visible_names": [
+    "ottrin-app",
+    "\ue897",
+    "\ue8b6",
+    "\ue8f5",
+    "\ueb8e",
+    "1 item",
+    "fixture",
+    "+",
+    "Close window",
+    "Maximize or restore window",
+    "Minimize window",
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Menu",
+    "Switch to Grid view",
+    "View Options",
+    "\ue1db /",
+    "\u203a",
+    "\ue2c7 var",
+    "\u203a",
+    "\ue2c7 tmp",
+    "\u203a",
+    "\ue2c7 .ottrin-picker-qa-09dgdwts",
+    "\u203a",
+    "\ue2c7 fixture",
+    "Sort",
+    "A-Z",
+    "100%",
+    "\ue8ba",
+    "proof.txt",
+    "Expand locations rail",
+    "Home \u00b7 /var/tmp/.ottrin-picker-qa-09dgdwts/home",
+    "Root \u00b7 /",
+    "Show or hide info panel",
+    "Show or hide drop-folder panel",
+    "Toggle Search",
+    "Show or hide Activity",
+    "Show or hide Trash"
+  ],
+  "cancel_control_exposed": false,
+  "visible_file_exposed": true,
+  "expected_names": [
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Close window",
+    "Minimize window",
+    "Maximize or restore window"
+  ],
+  "control_states": {
+    "Back": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Forward": {
+      "enabled": false,
+      "sensitive": false
+    },
+    "Parent folder": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Close window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Minimize window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Maximize or restore window": {
+      "enabled": true,
+      "sensitive": true
+    }
+  },
+  "error": "AssertionError('Disabled navigation became actionable')"
+}

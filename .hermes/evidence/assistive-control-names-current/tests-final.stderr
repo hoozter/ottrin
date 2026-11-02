@@ -1,0 +1,4 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 13.54s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-3c5a4506ad299059)
+   Doc-tests ottrin_ui

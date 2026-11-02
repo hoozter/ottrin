@@ -1,0 +1,98 @@
+{
+  "status": "pass native names, disabled states and real accessibility actions",
+  "scope": "Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance",
+  "binary_sha256": "2a29c9221c7f2c5d46b68943e16d067f4244fe1c06075bfe3bd3382d0aae4736",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 609895,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 609902,
+  "tree_nodes": 60,
+  "visible_names": [
+    "ottrin-app",
+    "Manage administrator helper",
+    "Manage index service",
+    "Show hidden files",
+    "Show command bar",
+    "1 item",
+    "fixture",
+    "New tab",
+    "Close window",
+    "Maximize or restore window",
+    "Minimize window",
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Menu",
+    "Switch to Grid view",
+    "View Options",
+    "Open /",
+    "\u203a",
+    "Open /var",
+    "\u203a",
+    "Open /var/tmp",
+    "\u203a",
+    "Open /var/tmp/.ottrin-picker-qa-qd8ug5zi",
+    "\u203a",
+    "Open /var/tmp/.ottrin-picker-qa-qd8ug5zi/fixture",
+    "Sort",
+    "A-Z",
+    "100%",
+    "Reset current view size",
+    "proof.txt",
+    "Expand locations rail",
+    "Home \u00b7 /var/tmp/.ottrin-picker-qa-qd8ug5zi/home",
+    "Root \u00b7 /",
+    "Show or hide info panel",
+    "Show or hide drop-folder panel",
+    "Toggle Search",
+    "Show or hide Activity",
+    "Show or hide Trash"
+  ],
+  "cancel_control_exposed": false,
+  "visible_file_exposed": true,
+  "expected_names": [
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Close window",
+    "Minimize window",
+    "Maximize or restore window"
+  ],
+  "control_states": {
+    "Back": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Forward": {
+      "enabled": false,
+      "sensitive": false
+    },
+    "Parent folder": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Close window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Minimize window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Maximize or restore window": {
+      "enabled": true,
+      "sensitive": true
+    }
+  },
+  "glyph_only_buttons": [],
+  "native_close_exit": 0,
+  "source_bytes_preserved": true
+}

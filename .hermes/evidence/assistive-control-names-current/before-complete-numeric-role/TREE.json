@@ -1,0 +1,176 @@
+[
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/root",
+    "name": "ottrin-app",
+    "role": 75
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/13826925289788388",
+    "name": "",
+    "role": 23
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/9385257166924833462",
+    "name": "Close window",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/8058459705218012176",
+    "name": "Accessibility proof",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/2910576374321707463",
+    "name": "Parent folder",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/10099646427279972073",
+    "name": "Open /",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/18190835036672408636",
+    "name": "Open /var",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/11857403839476609369",
+    "name": "Open /var/tmp",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/4713684405524068739",
+    "name": "Open /var/tmp/.ottrin-picker-qa-9tc0zlbc",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/11843795892726987889",
+    "name": "Open /var/tmp/.ottrin-picker-qa-9tc0zlbc/fixture",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/8644645930254942847",
+    "name": "Edit location",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/8762142023760422815",
+    "name": "",
+    "role": 79
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/378955898392232569",
+    "name": "",
+    "role": 11
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/16683894381151069806",
+    "name": "1 item",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/17715240891601375937",
+    "name": "Show read-only preview",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/6055394303028723432",
+    "name": "Show hidden files",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/9219006417964695381",
+    "name": "Grid view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/11923964735066384558",
+    "name": "List view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/12599364060357573252",
+    "name": "Places",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/510446031811813750",
+    "name": "Home",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/7621851102149307400",
+    "name": "Root",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/1154092670982368627",
+    "name": "Desktop",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/4313999513417804898",
+    "name": "Downloads",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/5500960612022702619",
+    "name": "Documents",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/8756158869842641730",
+    "name": "proof.txt",
+    "role": 62
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/2442148654474659402",
+    "name": "File name",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/4116017956093422292",
+    "name": "",
+    "role": 79
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/4297824257679146876",
+    "name": "Open",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/3624441596000759882",
+    "name": "Cancel",
+    "role": 43
+  }
+]

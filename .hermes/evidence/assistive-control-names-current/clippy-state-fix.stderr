@@ -1,0 +1,12 @@
+    Checking accesskit_atspi_common v0.14.2 (/home/campbell/Projects/Ottrin/vendor/accesskit-atspi-common)
+    Checking ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Checking accesskit_unix v0.17.2
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Checking ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Checking accesskit_winit v0.29.2
+    Checking egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+    Checking eframe v0.33.3
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 15.33s

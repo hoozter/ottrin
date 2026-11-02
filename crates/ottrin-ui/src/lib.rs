@@ -11829,7 +11829,8 @@ impl OttrinApp {
                                 .size(16.0 * c.font_scale),
                         )
                         .frame(false)
-                        .themed(&c),
+                        .themed(&c)
+                        .accessible_name("New tab"),
                     );
                     blocked_drag_rects.push(new_tab_btn.rect);
                     if new_tab_btn.clicked() {
@@ -12155,7 +12156,8 @@ impl OttrinApp {
                             )
                             .frame(false)
                             .min_size(Vec2::splat(30.0))
-                            .themed(&c),
+                            .themed(&c)
+                            .accessible_name("Back"),
                         )
                         .on_hover_text(if can_back {
                             "Back to previous folder in this tab (Alt+Left)"
@@ -12176,7 +12178,8 @@ impl OttrinApp {
                             )
                             .frame(false)
                             .min_size(Vec2::splat(30.0))
-                            .themed(&c),
+                            .themed(&c)
+                            .accessible_name("Forward"),
                         )
                         .on_hover_text(if can_fwd {
                             "Forward to next folder in this tab (Alt+Right)"
@@ -12197,7 +12200,8 @@ impl OttrinApp {
                             )
                             .frame(false)
                             .min_size(Vec2::splat(30.0))
-                            .themed(&c),
+                            .themed(&c)
+                            .accessible_name("Parent folder"),
                         )
                         .on_hover_text("Go to parent folder (Alt+Up)")
                         .clicked()
@@ -13069,7 +13073,8 @@ impl OttrinApp {
                                             .size(13.0 * c.font_scale),
                                     )
                                     .frame(false)
-                                    .themed(&c),
+                                    .themed(&c)
+                                    .accessible_name(format!("Open {}", path_label(&dest))),
                                 );
                                 crumb_right = Some(resp.rect.right());
                                 if resp.clicked() {
@@ -13770,21 +13775,21 @@ impl OttrinApp {
                                                         }
                                                         resp.on_hover_text(path_label(path));
 
-                                                        let up = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_ARROW_UP).size(14.0 * c.font_scale)).themed(&c));
+                                                        let up = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_ARROW_UP).size(14.0 * c.font_scale)).themed(&c).accessible_name("Move bookmark up"));
                                                         if up.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
                                                         if up.clicked() {
                                                             move_pin_up = Some(idx);
                                                         }
-                                                        let down = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_ARROW_DOWN).size(14.0 * c.font_scale)).themed(&c));
+                                                        let down = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_ARROW_DOWN).size(14.0 * c.font_scale)).themed(&c).accessible_name("Move bookmark down"));
                                                         if down.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
                                                         if down.clicked() {
                                                             move_pin_down = Some(idx);
                                                         }
-                                                        let unpin = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_CLEAR).size(14.0 * c.font_scale)).themed(&c));
+                                                        let unpin = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_CLEAR).size(14.0 * c.font_scale)).themed(&c).accessible_name("Remove bookmark"));
                                                         if unpin.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
@@ -13929,7 +13934,8 @@ impl OttrinApp {
                                 )
                                 .frame(false)
                                 .min_size(Vec2::splat(22.0))
-                                .themed(&c),
+                                .themed(&c)
+                                .accessible_name("Manage administrator helper"),
                             );
                             if resp
                                 .on_hover_text(format!("{} — click to manage services", st.text))
@@ -13958,7 +13964,8 @@ impl OttrinApp {
                                 )
                                 .frame(false)
                                 .min_size(Vec2::splat(22.0))
-                                .themed(&c),
+                                .themed(&c)
+                                .accessible_name("Manage administrator helper"),
                             );
                             if resp
                                 .on_hover_text(format!("{tip} — click to manage services"))
@@ -13982,7 +13989,8 @@ impl OttrinApp {
                         )
                         .frame(false)
                         .min_size(Vec2::splat(22.0))
-                        .themed(&c),
+                        .themed(&c)
+                        .accessible_name("Manage index service"),
                     );
                     if s_resp
                         .on_hover_text(format!(
@@ -14012,7 +14020,14 @@ impl OttrinApp {
                         )
                         .frame(false)
                         .min_size(Vec2::splat(24.0))
-                        .themed(&c),
+                        .themed(&c)
+                        .accessible_name(
+                            if self.state.config.show_hidden_files {
+                                "Hide hidden files"
+                            } else {
+                                "Show hidden files"
+                            },
+                        ),
                     );
                     if hid_resp.clicked() {
                         self.state.config.show_hidden_files = !self.state.config.show_hidden_files;
@@ -14039,7 +14054,14 @@ impl OttrinApp {
                             )
                             .frame(false)
                             .min_size(Vec2::splat(24.0))
-                            .themed(&c),
+                            .themed(&c)
+                            .accessible_name(
+                                if self.command_frame.visible {
+                                    "Hide command bar"
+                                } else {
+                                    "Show command bar"
+                                },
+                            ),
                         );
                         if cf_resp.clicked() {
                             self.command_frame.visible = !self.command_frame.visible;
@@ -16936,7 +16958,8 @@ impl OttrinApp {
                     )
                     .frame(false)
                     .min_size(Vec2::splat(30.0))
-                    .themed(&c),
+                    .themed(&c)
+                    .accessible_name("Back"),
                 )
                 .on_hover_text(if can_back {
                     "Back to previous folder in this pane (Alt+Left when active)"
@@ -16957,7 +16980,8 @@ impl OttrinApp {
                     )
                     .frame(false)
                     .min_size(Vec2::splat(30.0))
-                    .themed(&c),
+                    .themed(&c)
+                    .accessible_name("Forward"),
                 )
                 .on_hover_text(if can_fwd {
                     "Forward to next folder in this pane (Alt+Right when active)"
@@ -16978,7 +17002,8 @@ impl OttrinApp {
                     )
                     .frame(false)
                     .min_size(Vec2::splat(30.0))
-                    .themed(&c),
+                    .themed(&c)
+                    .accessible_name("Parent folder"),
                 )
                 .on_hover_text("Go to parent folder (Alt+Up when active)")
                 .clicked()
@@ -17391,7 +17416,8 @@ impl OttrinApp {
                 )
                 .frame(false)
                 .min_size(Vec2::new(20.0, 20.0))
-                .themed(&c),
+                .themed(&c)
+                .accessible_name("Reset current view size"),
             )
             .on_hover_text("Reset current view size")
             .clicked()
@@ -24213,6 +24239,14 @@ fn smart_panel_icon_button(
             .themed(c),
         )
         .on_hover_text(spec.tooltip);
+    resp.widget_info(|| {
+        WidgetInfo::selected(
+            WidgetType::Button,
+            ui.is_enabled(),
+            spec.active,
+            spec.tooltip,
+        )
+    });
     if resp.hovered() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }

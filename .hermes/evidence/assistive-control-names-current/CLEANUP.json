@@ -1,0 +1,95 @@
+{
+  "status": "completed owned cleanup",
+  "owned_profiles_removed": [
+    "/var/tmp/.ottrin-picker-qa-12idmmyr",
+    "/var/tmp/.ottrin-picker-qa-lapl4kh_",
+    "/var/tmp/.ottrin-picker-qa-0_lzgrmh",
+    "/var/tmp/.ottrin-picker-qa-qd8ug5zi",
+    "/var/tmp/.ottrin-picker-qa-09dgdwts",
+    "/var/tmp/.ottrin-picker-qa-c0nksmvh",
+    "/var/tmp/.ottrin-picker-qa-9tc0zlbc",
+    "/var/tmp/.ottrin-picker-qa-txfgizne"
+  ],
+  "owned_processes_displays_buses_closed": true,
+  "superseded_standalone_outputs": "STANDALONE_CLEANUP.json",
+  "incremental_sessions_closed": 27,
+  "incremental_scope": "All27 initially identified session paths absent, all retained newest sessions present; two partial refusals encountered transient PIDs later confirmed absent. Final guarded invocation removes remaining22; no checks bypassed.",
+  "incremental_result": "INCREMENTAL_RESULT.json",
+  "retired_or_compacted": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/build.stdout",
+      "bytes": 0,
+      "exact_gzip_retained": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/clippy.stdout",
+      "bytes": 0,
+      "exact_gzip_retained": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/build-complete.stdout",
+      "bytes": 0,
+      "exact_gzip_retained": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/build-state-fix.stdout",
+      "bytes": 0,
+      "exact_gzip_retained": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/clippy-state-fix.stdout",
+      "bytes": 0,
+      "exact_gzip_retained": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/tests-final.stdout",
+      "bytes": 41645,
+      "exact_gzip_retained": true
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/clippy-final.stdout",
+      "bytes": 0,
+      "exact_gzip_retained": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/fmt.stdout",
+      "bytes": 0,
+      "exact_gzip_retained": false
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/tests-state-fix.stdout",
+      "bytes": 41645,
+      "exact_gzip_retained": true
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/tests.stdout",
+      "bytes": 41645,
+      "exact_gzip_retained": true
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/observer-action-property/desktop/response.json",
+      "bytes": 0,
+      "reason": "Empty rejected observer output"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current/BUILD_BASELINE.json",
+      "bytes": 8296346,
+      "reason": "Closed inventory; exact affected artifact receipt retained"
+    }
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-control-names-current",
+      "purpose": "Compact exact native trees/screenshots, rejected observers, provenance and cleanup receipts; no live GUI consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/vendor/accesskit-atspi-common",
+      "purpose": "Sole compatible AT-SPI mapping implementation with upstream disabled-state guard; required source, three upstream licenses and patch provenance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug",
+      "purpose": "Current source/test executables, dependency libraries and compiler caches for upcoming delivery; Windows build/native acceptance remains a separate consumer"
+    }
+  ],
+  "user_data_and_delivered_packages_preserved": true
+}

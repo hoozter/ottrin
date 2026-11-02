@@ -1,0 +1,13 @@
+{
+  "status": "verified original crates.io archive checksum and exact source diff",
+  "archive_sha256": "890d241cf51fc784f0ac5ac34dfc847421f8d39da6c7c91a0fcc987db62a8267",
+  "changed_files": [
+    "src/node.rs"
+  ],
+  "added_licenses_from_exact_origin_commit": [
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "LICENSE.chromium"
+  ],
+  "patch_origin": "UPSTREAM_STATE_FIX.json"
+}

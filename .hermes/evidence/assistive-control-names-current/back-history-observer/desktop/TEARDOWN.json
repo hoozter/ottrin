@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-09dgdwts",
+  "owned_processes_reaped": [
+    {
+      "pid": 603816,
+      "exit": 0
+    },
+    {
+      "pid": 603828,
+      "exit": 0
+    },
+    {
+      "pid": 603831,
+      "exit": 15
+    },
+    {
+      "pid": 604051,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      604151
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Disabled navigation became actionable",
+  "profile_removed": true
+}

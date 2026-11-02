@@ -1,0 +1,89 @@
+{
+  "status": "pass native names, disabled states and real accessibility actions",
+  "scope": "Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance",
+  "binary_sha256": "83870a8f28a76f71e84732777e637aec710f1c65570e901b32e8baa654a1e91c",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 596605,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 596608,
+  "tree_nodes": 29,
+  "visible_names": [
+    "ottrin-app",
+    "Close window",
+    "Accessibility proof",
+    "Parent folder",
+    "Open /",
+    "Open /var",
+    "Open /var/tmp",
+    "Open /var/tmp/.ottrin-picker-qa-c0nksmvh",
+    "Open /var/tmp/.ottrin-picker-qa-c0nksmvh/fixture",
+    "Edit location",
+    "1 item",
+    "Show read-only preview",
+    "Show hidden files",
+    "Grid view",
+    "List view",
+    "Places",
+    "Home",
+    "Root",
+    "Desktop",
+    "Downloads",
+    "Documents",
+    "proof.txt",
+    "File name",
+    "Open",
+    "Cancel"
+  ],
+  "cancel_control_exposed": true,
+  "visible_file_exposed": true,
+  "expected_names": [
+    "Parent folder",
+    "Edit location",
+    "Grid view",
+    "List view",
+    "Show hidden files",
+    "Show read-only preview",
+    "Close window"
+  ],
+  "control_states": {
+    "Parent folder": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Edit location": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Grid view": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "List view": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Show hidden files": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Show read-only preview": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Close window": {
+      "enabled": true,
+      "sensitive": true
+    }
+  },
+  "native_view_actions_accepted": true,
+  "native_close_exit": 0,
+  "source_bytes_preserved": true
+}

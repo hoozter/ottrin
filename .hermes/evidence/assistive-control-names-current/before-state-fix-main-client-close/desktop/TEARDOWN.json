@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-12idmmyr",
+  "owned_processes_reaped": [
+    {
+      "pid": 597115,
+      "exit": 0
+    },
+    {
+      "pid": 597130,
+      "exit": 0
+    },
+    {
+      "pid": 597131,
+      "exit": 15
+    },
+    {
+      "pid": 597237,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      597316
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "65 34 0:64 / /var/tmp/.ottrin-picker-qa-12idmmyr/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "Disabled navigation became actionable",
+  "profile_removed": true
+}

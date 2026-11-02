@@ -171,6 +171,31 @@ fingerprints are pruned after compiler/profile/consumer/link checks; current
 executables, dependency libraries and useful caches remain. Exact retained
 paths and pending consumers are in that checkpoint's `CLEANUP.json`.
 
+The visible main-window and picker control names are now repaired in source.
+The shared themed button renderer replaces icon-font names without changing
+layout or existing metadata; navigation, smart panel, service status, hidden
+files, command bar, breadcrumbs, tab creation, view reset, bookmark controls and
+shared window chrome receive meaningful labels. Exact native trees have no
+private-use glyphs in visible push-button names. Native accessibility actions
+switch the actual picker between Grid/List (rendered screenshots reviewed) and
+Close both windows with source bytes preserved. A genuine disabled-state defect
+was exposed: the pinned AT-SPI translation layer reports disabled Forward as
+Enabled/Sensitive. The sole compatible mapping implementation now backports the
+upstream disabled-node guard, with original crate checksum, exact one-file diff
+and three origin licenses verified. Native Forward changes from enabled/sensitive
+to disabled/insensitive while Parent remains enabled. The first action-count
+observer and later assumption that startup Back has no history are explicitly
+rejected; corrected observations retain actual native methods/state. Final461 UI
+tests plus3 scoped subprocess controls, strict app/UI all-target lint and format
+checks pass; one existing ignored UI fixture remains. All8 owned desktop profiles,
+processes, buses and displays are removed. Four superseded binaries with exact
+dep-info/fingerprints and all27 identified obsolete incremental sessions are
+removed after guarded checks; current source/test outputs and useful caches stay.
+Evidence and exact remaining storage/consumers are in
+`assistive-control-names-current/ACCEPTANCE.json` and `CLEANUP.json`.
+This is native Linux source acceptance; delivered packages, Windows UI Automation,
+Settings/Inspector flows and actual screen-reader usability remain separate.
+
 Continue in this order:
 
 1. Audit the remaining software/platform/theme/resource and supported integration
@@ -179,7 +204,7 @@ Continue in this order:
    do not repeat the fulfilled current Windows/Linux package workflows without
    changed inputs or a reproduced defect. Finish the restored AccessKit source
    gate: inspect hosted Linux/Windows CI, verify native Windows UI Automation,
-   repair glyph-only control names and check Settings/Inspector interaction, then
+   audit remaining modal control names and check Settings/Inspector interaction, then
    rebuild and deliver the exact accepted cohort. Check remaining Windows
    caller/folder/helper/Office/media/resource scopes against explicit requirements
    before parking only genuinely owner/device/external acceptance.

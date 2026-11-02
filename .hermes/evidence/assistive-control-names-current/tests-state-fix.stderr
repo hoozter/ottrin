@@ -1,0 +1,9 @@
+   Compiling accesskit_atspi_common v0.14.2 (/home/campbell/Projects/Ottrin/vendor/accesskit-atspi-common)
+   Compiling accesskit_unix v0.17.2
+   Compiling accesskit_winit v0.29.2
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling eframe v0.33.3
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 32.26s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-3c5a4506ad299059)
+   Doc-tests ottrin_ui

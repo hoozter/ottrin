@@ -1,0 +1,11 @@
+{
+  "source_parent": "7f4161585e69fb4dbee97f77ec228c2a02c7c454",
+  "purpose": "Native icon-label changes on current standard AccessKit-enabled debug configuration; retain current compiler caches, remove superseded standalone outputs after native/test consumers finish",
+  "baseline_files": 44659,
+  "before_shared_debug_deps": "34GiB",
+  "before_shared_debug_incremental": "19GiB",
+  "before_windows_debug_deps": "31GiB",
+  "before_windows_debug_incremental": "36GiB",
+  "exact_removed_artifacts": "STANDALONE_CLEANUP.json",
+  "current_cache_roots": "35G\ttarget/debug/deps\n20G\ttarget/debug/incremental"
+}

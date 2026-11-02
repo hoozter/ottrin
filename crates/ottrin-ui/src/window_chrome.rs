@@ -81,6 +81,14 @@ pub(crate) fn render_custom_titlebar(
 /// Uses muted grey at rest, text colour on hover — no colours.
 pub(crate) fn wm_btn(ui: &mut egui::Ui, kind: WmBtn, c: &Colors) -> egui::Response {
     let (rect, resp) = ui.allocate_exact_size(Vec2::splat(28.0), Sense::click());
+    let label = match kind {
+        WmBtn::Close => "Close window",
+        WmBtn::Maximize => "Maximize or restore window",
+        WmBtn::Minimize => "Minimize window",
+    };
+    resp.widget_info(|| {
+        egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label)
+    });
     let col = if resp.hovered() { c.text } else { c.text_muted };
     let p = ui.painter();
     let ctr = rect.center();

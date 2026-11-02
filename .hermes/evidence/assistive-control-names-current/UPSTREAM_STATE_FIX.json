@@ -1,0 +1,8 @@
+{
+  "base_crate": "accesskit_atspi_common0.14.2",
+  "base_commit": "5801c4a49ff9b2c9ec3f77b3c31272d0da4c5cd3",
+  "upstream_commit": "f3026222559c7f5f46d8f25cb7404de68eb149f0",
+  "upstream_path": "adapters/atspi-common/src/node.rs",
+  "upstream_source_sha256": "8fafcc4f13a061cc46ea070a7b4e240027487f8f5507d75c449253c95136e4cf",
+  "scope": "Backport only the existing upstream disabled-node state guard to the compatible pinned backend; native disabled-navigation negative control failed before this correction"
+}

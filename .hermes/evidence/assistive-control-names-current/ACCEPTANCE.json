@@ -1,0 +1,34 @@
+{
+  "status": "pass native Linux source control naming and upstream disabled-state backport; packages and Windows runtime pending",
+  "source_parent": "7f4161585e69fb4dbee97f77ec228c2a02c7c454",
+  "binary_sha256": "2a29c9221c7f2c5d46b68943e16d067f4244fe1c06075bfe3bd3382d0aae4736",
+  "shared_button_names_preserve_native_role_and_enabled_metadata": true,
+  "fixed_surfaces": [
+    "Window Close/Minimize/Maximize-or-restore",
+    "Picker parent/location/breadcrumb/view/visibility/preview",
+    "Main and pane navigation, New Tab, breadcrumbs, service/hidden/command controls, view reset",
+    "Smart panel tooltips become button names with selected metadata; bookmark reorder/remove names"
+  ],
+  "native_proof": [
+    "Both main and picker have no private-use icon glyphs in visible push-button names",
+    "Native grid/list accessibility actions produce visually reviewed actual grid tile/list row",
+    "Native Close action exits0 in both windows; source bytes unchanged",
+    "Forward enabled/sensitive true before backend fix, false after fix; Parent folder remains enabled"
+  ],
+  "vendor_proof": "VENDOR_INTEGRITY.json; only upstream disabled-node guard changes pinned backend source",
+  "checks": [
+    "461 UI tests pass with1 pre-existing ignored fixture and3 explicit subprocess controls",
+    "Strict Linux app/UI all-target clippy -D warnings passes",
+    "cargo fmt --all --check and git diff --check pass on final source"
+  ],
+  "rejected_observations": [
+    "observer-action-property: GetNActions method mismatch corrected to native GetActions",
+    "before-state-fix-main-client-close: genuine wrong Forward state exposed backend defect",
+    "back-history-observer: Back legitimately has startup history; final negative control checks disabled Forward and positive enabled Parent"
+  ],
+  "remaining": [
+    "Windows native UI Automation and latest-source hosted CI",
+    "Settings/Inspector assistive interaction and actual screen-reader usability scope",
+    "Exact rebuilt Linux/Windows package delivery and final release acceptance"
+  ]
+}
