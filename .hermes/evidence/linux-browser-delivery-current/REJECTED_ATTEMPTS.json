@@ -1,0 +1,577 @@
+{
+  "scope": "Rejected local harness attempts, not browser/product acceptance. Compact terminal results and teardown retained; input revisions were not frozen for each attempt. Final acceptance uses separately frozen inputs.",
+  "attempts": [
+    {
+      "attempt": "rejected-flatpak-default-html-filter",
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak'])",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-3voye3jf",
+        "owned_processes_reaped": [
+          {
+            "pid": 271090,
+            "exit": 0
+          },
+          {
+            "pid": 271093,
+            "exit": 0
+          },
+          {
+            "pid": 271094,
+            "exit": 15
+          },
+          {
+            "pid": 271152,
+            "exit": -15
+          },
+          {
+            "pid": 271164,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak']' returned non-zero exit status 1.",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-default-new-instance",
+      "status": "failed",
+      "error": "RuntimeError('No owned window: Falkon')",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-d0w73n0w",
+        "owned_processes_reaped": [
+          {
+            "pid": 267776,
+            "exit": 0
+          },
+          {
+            "pid": 267779,
+            "exit": 0
+          },
+          {
+            "pid": 267780,
+            "exit": 15
+          },
+          {
+            "pid": 267828,
+            "exit": -15
+          },
+          {
+            "pid": 267843,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "No owned window: Falkon",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-download-choice",
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak'])",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-5hehxmby",
+        "owned_processes_reaped": [
+          {
+            "pid": 279447,
+            "exit": 0
+          },
+          {
+            "pid": 279451,
+            "exit": 0
+          },
+          {
+            "pid": 279452,
+            "exit": 15
+          },
+          {
+            "pid": 279504,
+            "exit": -15
+          },
+          {
+            "pid": 279516,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak']' returned non-zero exit status 1.",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-filter-keyboard",
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak'])",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-uurbaemy",
+        "owned_processes_reaped": [
+          {
+            "pid": 274952,
+            "exit": 0
+          },
+          {
+            "pid": 274955,
+            "exit": 0
+          },
+          {
+            "pid": 274956,
+            "exit": 15
+          },
+          {
+            "pid": 275005,
+            "exit": -15
+          },
+          {
+            "pid": 275017,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak']' returned non-zero exit status 1.",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-focus-race",
+      "status": "failed",
+      "error": "AssertionError()",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-o51x5xuf",
+        "owned_processes_reaped": [
+          {
+            "pid": 276908,
+            "exit": 0
+          },
+          {
+            "pid": 276911,
+            "exit": 0
+          },
+          {
+            "pid": 276912,
+            "exit": 15
+          },
+          {
+            "pid": 276958,
+            "exit": -15
+          },
+          {
+            "pid": 276970,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-identity-log-contract",
+      "status": "failed",
+      "error": "AssertionError(\"XDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/kde-portals.conf'\\nXDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/portals.conf'\\nXDP: Preferred portals for interface 'default': none\\nXDP: Preferred portals for interface 'org.freedesktop.impl.portal.FileChooser': ottrin\\nXDP: Using portal configuration file '/var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/portals.conf' for non-specific desktop\\nXDP: load portals from /var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions\\nXDP: loading /var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/ottrin.portal\\nXDP: portal implementation supports org.freedesktop.impl.portal.FileChooser\\nXDP: Found 'none' in configuration for default\\nXDP: providing portal org.freedesktop.portal.MemoryMonitor\\nXDP: providing portal org.freedesktop.portal.PowerProfileMonitor\\nXDP: providing portal org.freedesktop.portal.NetworkMonitor\\nXDP: providing portal org.freedesktop.portal.ProxyResolver\\nXDP: providing portal org.freedesktop.portal.Trash\\nXDP: providing portal org.freedesktop.portal.GameMode\\nXDP: providing portal org.freedesktop.portal.Realtime\\nXDP: Found 'none' in configuration for default\\n\\n(/usr/libexec/xdg-desktop-portal:285943): xdg-desktop-portal-WARNING **: 13:47:54.639: No skeleton to export\\nXDP: Found 'ottrin' in configuration for org.freedesktop.impl.portal.FileChooser\\nXDP: Using ottrin.portal for org.freedesktop.impl.portal.FileChooser (config)\\nXDP: providing portal org.freedesktop.portal.FileChooser\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: Found 'none' in configuration for default\\nXDP: org.freedesktop.portal.Desktop acquired\\nXDP: Handling OpenFile\\nXDP: convert uri file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/fixture/original.txt -> file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/runtime/doc/837aec32/original.txt\\n\\nXDP: Handling SaveFile\\nXDP: convert uri file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/fixture/saved/original.txt -> file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/runtime/doc/de5f242c/original.txt\\n\\n\")",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-1vh6tsyr",
+        "owned_processes_reaped": [
+          {
+            "pid": 285884,
+            "exit": 0
+          },
+          {
+            "pid": 285887,
+            "exit": 0
+          },
+          {
+            "pid": 285888,
+            "exit": 15
+          },
+          {
+            "pid": 285943,
+            "exit": -15
+          },
+          {
+            "pid": 285955,
+            "exit": -15
+          },
+          {
+            "pid": 285956,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [
+          "142 34 0:64 / /var/tmp/.ottrin-picker-qa-1vh6tsyr/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+        ],
+        "error": "XDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/kde-portals.conf'\nXDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/portals.conf'\nXDP: Preferred portals for interface 'default': none\nXDP: Preferred portals for interface 'org.freedesktop.impl.portal.FileChooser': ottrin\nXDP: Using portal configuration file '/var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/portals.conf' for non-specific desktop\nXDP: load portals from /var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions\nXDP: loading /var/tmp/.ottrin-picker-qa-1vh6tsyr/data/portal-definitions/ottrin.portal\nXDP: portal implementation supports org.freedesktop.impl.portal.FileChooser\nXDP: Found 'none' in configuration for default\nXDP: providing portal org.freedesktop.portal.MemoryMonitor\nXDP: providing portal org.freedesktop.portal.PowerProfileMonitor\nXDP: providing portal org.freedesktop.portal.NetworkMonitor\nXDP: providing portal org.freedesktop.portal.ProxyResolver\nXDP: providing portal org.freedesktop.portal.Trash\nXDP: providing portal org.freedesktop.portal.GameMode\nXDP: providing portal org.freedesktop.portal.Realtime\nXDP: Found 'none' in configuration for default\n\n(/usr/libexec/xdg-desktop-portal:285943): xdg-desktop-portal-WARNING **: 13:47:54.639: No skeleton to export\nXDP: Found 'ottrin' in configuration for org.freedesktop.impl.portal.FileChooser\nXDP: Using ottrin.portal for org.freedesktop.impl.portal.FileChooser (config)\nXDP: providing portal org.freedesktop.portal.FileChooser\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: Found 'none' in configuration for default\nXDP: org.freedesktop.portal.Desktop acquired\nXDP: Handling OpenFile\nXDP: convert uri file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/fixture/original.txt -> file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/runtime/doc/837aec32/original.txt\n\nXDP: Handling SaveFile\nXDP: convert uri file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/fixture/saved/original.txt -> file:///var/tmp/.ottrin-picker-qa-1vh6tsyr/runtime/doc/de5f242c/original.txt\n\n",
+        "profile_removed": true
+      },
+      "controller": {
+        "status": "pass",
+        "actual_browser": "falkon-flatpak",
+        "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes from the owned loopback text URL",
+        "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+        "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+        "chooser_backend_pid": 286961,
+        "no_index_started": true,
+        "identity_scope": "Parent runner verifies actual installed browser attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership."
+      }
+    },
+    {
+      "attempt": "rejected-flatpak-inactive-input-focus",
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak'])",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-cqqh4en6",
+        "owned_processes_reaped": [
+          {
+            "pid": 284171,
+            "exit": 0
+          },
+          {
+            "pid": 284175,
+            "exit": 0
+          },
+          {
+            "pid": 284176,
+            "exit": 15
+          },
+          {
+            "pid": 284244,
+            "exit": -15
+          },
+          {
+            "pid": 284256,
+            "exit": -15
+          },
+          {
+            "pid": 284257,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak']' returned non-zero exit status 1.",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-local-save-shortcut",
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak'])",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-y8t0xp7m",
+        "owned_processes_reaped": [
+          {
+            "pid": 282510,
+            "exit": 0
+          },
+          {
+            "pid": 282513,
+            "exit": 0
+          },
+          {
+            "pid": 282514,
+            "exit": 15
+          },
+          {
+            "pid": 282560,
+            "exit": -15
+          },
+          {
+            "pid": 282572,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak']' returned non-zero exit status 1.",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-private-runtime-url",
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak'])",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-m8zvgwp8",
+        "owned_processes_reaped": [
+          {
+            "pid": 277805,
+            "exit": 0
+          },
+          {
+            "pid": 277809,
+            "exit": 0
+          },
+          {
+            "pid": 277810,
+            "exit": 15
+          },
+          {
+            "pid": 277859,
+            "exit": -15
+          },
+          {
+            "pid": 277871,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [
+          "142 34 0:64 / /var/tmp/.ottrin-picker-qa-m8zvgwp8/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+        ],
+        "error": "Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak']' returned non-zero exit status 1.",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-profile-session",
+      "status": "failed",
+      "error": "RuntimeError('No owned window: Falkon')",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-svr__2z0",
+        "owned_processes_reaped": [
+          {
+            "pid": 266355,
+            "exit": 0
+          },
+          {
+            "pid": 266358,
+            "exit": 0
+          },
+          {
+            "pid": 266359,
+            "exit": 15
+          },
+          {
+            "pid": 266410,
+            "exit": 0
+          },
+          {
+            "pid": 266412,
+            "exit": -15
+          },
+          {
+            "pid": 266442,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "No owned window: Falkon",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-save-focus",
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak'])",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-4qa3p0mr",
+        "owned_processes_reaped": [
+          {
+            "pid": 280881,
+            "exit": 0
+          },
+          {
+            "pid": 280884,
+            "exit": 0
+          },
+          {
+            "pid": 280885,
+            "exit": 15
+          },
+          {
+            "pid": 280931,
+            "exit": -15
+          },
+          {
+            "pid": 280943,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "Command '['python3', '/home/campbell/Projects/Ottrin/.hermes/evidence/firefox-identity-package-current/control.py', 'open', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current/flatpak']' returned non-zero exit status 1.",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-startup-focus",
+      "status": "failed",
+      "error": "RuntimeError('No owned window: Open')",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-8vw6dbki",
+        "owned_processes_reaped": [
+          {
+            "pid": 273002,
+            "exit": 0
+          },
+          {
+            "pid": 273005,
+            "exit": 0
+          },
+          {
+            "pid": 273006,
+            "exit": 15
+          },
+          {
+            "pid": 273055,
+            "exit": -15
+          },
+          {
+            "pid": 273070,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "No owned window: Open",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-wallet-escape",
+      "status": "failed",
+      "error": "RuntimeError('No owned window: Falkon')",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-5797j7xz",
+        "owned_processes_reaped": [
+          {
+            "pid": 269781,
+            "exit": 0
+          },
+          {
+            "pid": 269784,
+            "exit": 0
+          },
+          {
+            "pid": 269785,
+            "exit": 15
+          },
+          {
+            "pid": 269833,
+            "exit": -15
+          },
+          {
+            "pid": 269847,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "No owned window: Falkon",
+        "profile_removed": true
+      },
+      "controller": null
+    },
+    {
+      "attempt": "rejected-flatpak-wallet-first-run",
+      "status": "failed",
+      "error": "RuntimeError('No owned window: Falkon')",
+      "teardown": {
+        "status": "failed",
+        "profile": "/var/tmp/.ottrin-picker-qa-l8ctsel9",
+        "owned_processes_reaped": [
+          {
+            "pid": 268935,
+            "exit": 0
+          },
+          {
+            "pid": 268944,
+            "exit": 0
+          },
+          {
+            "pid": 268949,
+            "exit": 15
+          },
+          {
+            "pid": 268999,
+            "exit": -15
+          },
+          {
+            "pid": 269011,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "error": "No owned window: Falkon",
+        "profile_removed": true
+      },
+      "controller": null
+    }
+  ],
+  "removed_generated_bytes": 3221295
+}

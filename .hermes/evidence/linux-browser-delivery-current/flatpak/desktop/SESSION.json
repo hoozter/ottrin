@@ -1,0 +1,25 @@
+{
+  "profile": "/var/tmp/.ottrin-picker-qa-6q7e70fl",
+  "fixture": "/var/tmp/.ottrin-picker-qa-6q7e70fl/fixture",
+  "display": ":2",
+  "environment": {
+    "DISPLAY": ":2",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-Ej4KUGDRO7,guid=10fa18ee6ac56fb299c325396ae886d9",
+    "XDG_RUNTIME_DIR": "/var/tmp/.ottrin-picker-qa-6q7e70fl/runtime",
+    "XDG_CONFIG_HOME": "/var/tmp/.ottrin-picker-qa-6q7e70fl/config",
+    "XDG_DATA_HOME": "/var/tmp/.ottrin-picker-qa-6q7e70fl/data",
+    "XDG_CACHE_HOME": "/var/tmp/.ottrin-picker-qa-6q7e70fl/cache",
+    "XDG_STATE_HOME": "/var/tmp/.ottrin-picker-qa-6q7e70fl/state",
+    "HOME": "/var/tmp/.ottrin-picker-qa-6q7e70fl/home",
+    "XDG_DESKTOP_PORTAL_DIR": "/var/tmp/.ottrin-picker-qa-6q7e70fl/data/portal-definitions",
+    "WINIT_UNIX_BACKEND": "x11",
+    "LIBGL_ALWAYS_SOFTWARE": "1",
+    "NO_AT_BRIDGE": "1"
+  },
+  "browser_window": "4194337",
+  "chooser_window": "16777219",
+  "chooser_pid": 288706,
+  "browser": "falkon-flatpak",
+  "payload_hex": "4f747472696e2046697265666f782066696c65207069636b657220616363657074616e63652e0a4f726967696e616c206279746573207374617920756e6368616e6765642e0a",
+  "save_window": "16777219"
+}

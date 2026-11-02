@@ -64,10 +64,11 @@ def cleanup_profile_children(profile):
 
 class OwnedDesktop:
 
-    def __init__(self, evidence, scale='1'):
+    def __init__(self, evidence, scale='1', prepare=None):
         self.evidence = Path(evidence)
         self.evidence.mkdir(parents=True, exist_ok=True)
         self.scale = scale
+        self.prepare = prepare
         self.processes = []
         self.streams = []
         self.report = {'status': 'starting'}
@@ -109,6 +110,8 @@ class OwnedDesktop:
             self.env.update(XDG_RUNTIME_DIR=str(runtime), XDG_SESSION_TYPE='x11', GDK_BACKEND='x11', EGL_PLATFORM='x11', NO_AT_BRIDGE='1', LIBGL_ALWAYS_SOFTWARE='1', WINIT_UNIX_BACKEND='x11', WINIT_X11_SCALE_FACTOR=self.scale, KWIN_COMPOSE='N', QT_QPA_PLATFORM='xcb', OTTRIN_DEV_HELPER_AUTOBUILD='0')
             xvfb = self.spawn(['Xvfb', '-displayfd', '1', '-screen', '0', '1920x1440x24', '-nolisten', 'tcp', '-noreset'], 'xvfb.log', pipe=True)
             self.env['DISPLAY'] = ':' + self.ready_line(xvfb)
+            if self.prepare is not None:
+                self.prepare(self)
             bus = self.spawn(['dbus-daemon', '--session', '--nofork', '--print-address=1'], 'dbus.log', pipe=True)
             self.env['DBUS_SESSION_BUS_ADDRESS'] = self.ready_line(bus)
             self.spawn(['kwin_x11', '--replace'], 'wm.log')

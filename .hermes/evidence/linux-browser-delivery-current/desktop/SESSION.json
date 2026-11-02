@@ -1,0 +1,23 @@
+{
+  "profile": "/var/tmp/.ottrin-picker-qa-0xl0c34o",
+  "fixture": "/var/tmp/.ottrin-picker-qa-0xl0c34o/fixture",
+  "display": ":2",
+  "environment": {
+    "DISPLAY": ":2",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-00bmE1EhPm,guid=3d0b90b608b96221db4c3b406ae87d1f",
+    "XDG_RUNTIME_DIR": "/var/tmp/.ottrin-picker-qa-0xl0c34o/runtime",
+    "XDG_CONFIG_HOME": "/var/tmp/.ottrin-picker-qa-0xl0c34o/config",
+    "XDG_DATA_HOME": "/var/tmp/.ottrin-picker-qa-0xl0c34o/data",
+    "XDG_CACHE_HOME": "/var/tmp/.ottrin-picker-qa-0xl0c34o/cache",
+    "XDG_STATE_HOME": "/var/tmp/.ottrin-picker-qa-0xl0c34o/state",
+    "HOME": "/var/tmp/.ottrin-picker-qa-0xl0c34o/home",
+    "XDG_DESKTOP_PORTAL_DIR": "/var/tmp/.ottrin-picker-qa-0xl0c34o/data/portal-definitions",
+    "WINIT_UNIX_BACKEND": "x11",
+    "LIBGL_ALWAYS_SOFTWARE": "1",
+    "NO_AT_BRIDGE": "1"
+  },
+  "browser_window": "10485763",
+  "chooser_window": "12582915",
+  "chooser_pid": 265296,
+  "save_window": "12582915"
+}

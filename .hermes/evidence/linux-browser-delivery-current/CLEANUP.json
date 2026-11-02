@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "observed_at": "2026-11-02T12:51:10.098549+00:00",
+  "accepted_case_profiles_removed": true,
+  "rejected_attempt_profiles_removed": true,
+  "removed_rejected_generated_bytes": 3221295,
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-browser-delivery-current",
+      "purpose": "Compact accepted browser receipts, frozen QA inputs, reviewed screenshots and rejected-attempt cleanup summary",
+      "pending_consumer": "Roadmap/delivery audit and filter-popup regression"
+    }
+  ],
+  "packages_changed": false,
+  "compiler_caches_changed": false,
+  "personal_service_changed": false
+}

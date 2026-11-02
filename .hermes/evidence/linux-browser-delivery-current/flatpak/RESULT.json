@@ -1,0 +1,65 @@
+{
+  "status": "pass",
+  "browser": "falkon-flatpak",
+  "scope": "Actual installed browser Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
+  "source_revision": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "flatpak_scope": {
+    "application": "org.kde.falkon",
+    "private_browser_data": "/var/tmp/.ottrin-picker-qa-6q7e70fl/browser",
+    "fixture_direct_filesystem_grant": false,
+    "startup_guard": "Actual sandbox shell requires the outside original file to be invisible before invoking installed falkon; prints real /.flatpak-info",
+    "persistent_overrides_changed": false,
+    "private_runtime_alias": "Sandbox-local symlink from the temporary runtime/doc URL prefix to Flatpak standard /run/flatpak/doc per-app mount; no fixture filesystem access added"
+  },
+  "private_wallet_creation_declined": true,
+  "chooser_executable": "/var/tmp/.ottrin-picker-qa-6q7e70fl/t/.mount_OttrinZZZN1R/usr/bin/ottrin",
+  "open_pid": 288706,
+  "actual_browser": "falkon-flatpak",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes from the opened local text document",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "chooser_backend_pid": 288864,
+  "no_index_started": true,
+  "identity_scope": "Parent runner verifies actual installed browser attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership.",
+  "actual_portal_app_id": "org.kde.falkon",
+  "identity_evidence": "Actual FileChooser backend OpenFile and SaveFile calls both carry the installed browser app ID",
+  "identity_limit": "Exact installed browser identity on private session; physical desktop and other browser packages remain separate.",
+  "real_flatpak_metadata_observed": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-6q7e70fl",
+    "owned_processes_reaped": [
+      {
+        "pid": 287228,
+        "exit": 0
+      },
+      {
+        "pid": 287234,
+        "exit": 0
+      },
+      {
+        "pid": 287235,
+        "exit": 15
+      },
+      {
+        "pid": 287282,
+        "exit": -15
+      },
+      {
+        "pid": 287283,
+        "exit": -15
+      },
+      {
+        "pid": 287295,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

@@ -57,12 +57,25 @@ readiness checks. Updating an AppImage alone does not replace an older protected
 HTML helper installed on the host; that separate administrator setup remains
 on the owner waiting list.
 
-Earlier source0b6015db also passed real ordinary Firefox Open/Save and actual
-`firefox` portal app-ID attribution, with unchanged original bytes. Those browser
-receipts remain exact0b6015db evidence in
-`.hermes/evidence/firefox-identity-package-current/`; they do not automatically
-accept the new package or an installed sandboxed browser. Refreshing external
-browser acceptance is dependency-ready follow-up work.
+The current delivered AppImage now passes actual installed Firefox and installed
+Flatpak Falkon Open/Save. Both display the chosen local text document and save
+an exact byte copy, preserve the original, use Ottrin for both native dialogs,
+and forward the actual `firefox` / `org.kde.falkon` app-ID in both backend calls.
+The sandbox cannot see the outside source before selection; no source-folder
+filesystem grant or persistent Flatpak override is added. The private test runtime
+uses a sandbox-local alias to Flatpak's existing per-app document projection;
+this is isolated-session acceptance, not a physical-desktop claim. All profiles,
+processes, buses, mounts and the Firefox transient scope are removed. Failed harness
+attempts are explicitly rejected and compacted; frozen final inputs, exact hashes
+and reviewed screenshots are in `.hermes/evidence/linux-browser-delivery-current/`.
+Earlier0b6015db browser receipts retain their original package scope.
+
+The browser exercise also exposes a required chooser keyboard correction: with
+the File type popup open, Arrow/Enter can still navigate the file pane behind it.
+Escape needs popup-first routing as well. Accepted browser flows use pointer filter
+selection and do not close this keyboard gate. Next add a rendered regression,
+repair the authoritative picker keyboard handling and deliver/test the affected
+package. This fix is dependency-ready and needs no owner involvement.
 
 The original GitHub audit found13 failed push runs since October31:11 CI and2
 installer diagnostics, with no scheduled retry loop. Workflow/ref concurrency
@@ -1493,9 +1506,9 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four0b6015db formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks and fresh Fedora/Ubuntu optional desktop-integration setup/reinstall/removal. Identical daemon retains earlier scoped resource proof. Personal service refreshed with configuration/data preserved. | External production callers and remaining software/theme gates before parked owner/device acceptance. |
-| Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, full hosted source checks, native icons/CLI and ordinary default-folder/Properties/picker/uninstall restoration scopes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact limits. | MSI rollback/current-client comparison, MSIX tooling and remaining installed/runtime/software gates. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade and direct Windows parent/lease caller checks pass in source. | Sandboxed development-caller Open/Save/export passes; FileManager1 and reversible Windows folder defaults now pass scoped exact-package checks; finish production cooperating/sandbox callers and native lifecycle/resource acceptance. Park only genuine owner/physical/external waits. |
+| Linux | Four928b7937 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | File-type popup keyboard routing, remaining software/theme gates and then parked owner/device acceptance. |
+| Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, hosted source checks, native icons/CLI and scoped default-folder/Properties/picker/removal acceptance. Private c5a40fd2 development MSIX0.1.0.1 passes native assembly/runtime and enabled/disabled startup update/reboot with valid preferences and exact native database identity. | MSI rollback/current-client comparison and remaining installed/runtime/software gates. MSI rollback remains required and failed; public packages stay unchanged. |
+| Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Repair chooser popup keyboard ownership, then finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

@@ -1,0 +1,141 @@
+signal time=1793623770.330515 sender=org.freedesktop.DBus -> destination=:1.7 serial=2 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameAcquired
+   string ":1.7"
+signal time=1793623770.330570 sender=org.freedesktop.DBus -> destination=:1.7 serial=4 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameLost
+   string ":1.7"
+method call time=1793623799.223677 sender=:1.8 -> destination=:1.4 serial=61 path=/org/freedesktop/portal/desktop; interface=org.freedesktop.impl.portal.FileChooser; member=OpenFile
+   object path "/org/freedesktop/portal/desktop/request/1_12/qt4283954846"
+   string "org.kde.falkon"
+   string "x11:400021"
+   string "Open file..."
+   array [
+      dict entry(
+         string "modal"
+         variant             boolean true
+      )
+      dict entry(
+         string "multiple"
+         variant             boolean false
+      )
+      dict entry(
+         string "directory"
+         variant             boolean false
+      )
+      dict entry(
+         string "filters"
+         variant             array [
+               struct {
+                  string "HTML files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.html"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.htm"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.shtml"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.shtm"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.xhtml"
+                     }
+                  ]
+               }
+               struct {
+                  string "Image files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.png"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.jpg"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.jpeg"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.bmp"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.gif"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.svg"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.tiff"
+                     }
+                  ]
+               }
+               struct {
+                  string "Text files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.txt"
+                     }
+                  ]
+               }
+               struct {
+                  string "All files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.*"
+                     }
+                  ]
+               }
+            ]
+      )
+      dict entry(
+         string "current_folder"
+         variant             array of bytes "/var/tmp/.ottrin-picker-qa-6q7e70fl/browser/home" + \0
+      )
+   ]
+method call time=1793623804.682153 sender=:1.8 -> destination=:1.4 serial=71 path=/org/freedesktop/portal/desktop; interface=org.freedesktop.impl.portal.FileChooser; member=SaveFile
+   object path "/org/freedesktop/portal/desktop/request/1_12/qt1917260446"
+   string "org.kde.falkon"
+   string ""
+   string "Save file as..."
+   array [
+      dict entry(
+         string "modal"
+         variant             boolean true
+      )
+      dict entry(
+         string "filters"
+         variant             array [
+               struct {
+                  string "All Files "
+                  array [
+                     struct {
+                        uint32 0
+                        string "*"
+                     }
+                  ]
+               }
+            ]
+      )
+      dict entry(
+         string "current_name"
+         variant             string "original.txt"
+      )
+      dict entry(
+         string "current_folder"
+         variant             array of bytes "/var/tmp/.ottrin-picker-qa-6q7e70fl/browser/home" + \0
+      )
+   ]

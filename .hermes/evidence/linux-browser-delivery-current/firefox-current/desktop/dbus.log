@@ -1,0 +1,18 @@
+dbus-daemon[287723]: [session uid=1000 pid=287723] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.0' (uid=1000 pid=287724 comm="kwin_x11 --replace" label="unconfined")
+dbus-daemon[287723]: [session uid=1000 pid=287723] Activating service name='org.freedesktop.portal.Documents' requested by ':1.1' (uid=1000 pid=287727 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[287723]: [session uid=1000 pid=287723] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.2' (uid=1000 pid=287734 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+dbus-daemon[287723]: [session uid=1000 pid=287723] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[287723]: [session uid=1000 pid=287723] Successfully activated service 'org.freedesktop.portal.Documents'
+Ignoring invalid max threads value 4294967295 > max (100000).
+
+(/usr/libexec/xdg-desktop-portal:287727): xdg-desktop-portal-WARNING **: 13:49:43.869: No skeleton to export
+dbus-daemon[287723]: [session uid=1000 pid=287723] Activating service name='org.freedesktop.impl.portal.desktop.ottrin' requested by ':1.1' (uid=1000 pid=287727 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[287723]: [session uid=1000 pid=287723] Successfully activated service 'org.freedesktop.impl.portal.desktop.ottrin'
+dbus-daemon[287723]: [session uid=1000 pid=287723] Successfully activated service 'org.freedesktop.portal.Desktop'
+dbus-daemon[287723]: [session uid=1000 pid=287723] Activating service name='org.kde.KSplash' requested by ':1.0' (uid=1000 pid=287724 comm="kwin_x11 --replace" label="unconfined")
+dbus-daemon[287723]: [session uid=1000 pid=287723] Connection :1.7 (uid=1000 pid=287789 comm="dbus-monitor --session type='method_call',interfac" label="unconfined") became a monitor.
+dbus-daemon[287723]: [session uid=1000 pid=287723] Activating service name='org.a11y.Bus' requested by ':1.9' (uid=1000 pid=287798 comm="/usr/lib/firefox/firefox --no-remote --profile /va" label="unconfined")
+dbus-daemon[287723]: [session uid=1000 pid=287723] Successfully activated service 'org.a11y.Bus'
+Desktop appearance preference unavailable: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+Desktop appearance preference unavailable: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+dbus-daemon[287723]: [session uid=1000 pid=287723] Monitoring connection :1.7 closed.

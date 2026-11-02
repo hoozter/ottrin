@@ -1,0 +1,8 @@
+{
+  "status": "required",
+  "defect": "File type popup allows chooser-level Arrow/Enter handling to navigate the file pane while the popup is open; Escape also needs popup-first routing.",
+  "evidence": "KEYBOARD_POPUP_REPRO.png shows filter popup still open and chooser unexpectedly navigated into saved/.",
+  "source": "crates/ottrin-ui/src/picker.rs",
+  "next": "Add rendered regression, fix authoritative chooser keyboard routing, verify focused and ordinary navigation, then deliver/test a new package cohort. Current accepted browser runs use pointer selection and do not accept popup keyboard behavior.",
+  "owner_dependency": false
+}

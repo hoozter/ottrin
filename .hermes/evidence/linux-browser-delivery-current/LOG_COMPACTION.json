@@ -1,0 +1,127 @@
+{
+  "status": "pass",
+  "scope": "Post-terminal evidence compaction only; frozen executed inputs and result/identity receipts unchanged",
+  "files": [
+    {
+      "path": "desktop/DISPLAY_CHECK.txt",
+      "original_bytes": 52685,
+      "original_sha256": "f55b08b4895fbc840a486425b9d36c3c8b5dd3ec7071de91c6c1976562531197",
+      "summary": [
+        "name of display:    :2",
+        "version number:    11.0",
+        "vendor string:    The X.Org Foundation",
+        "vendor release number:    12101011",
+        "X.Org version: 21.1.11",
+        "maximum request size:  16777212 bytes",
+        "motion buffer size:  256",
+        "bitmap unit, bit order, padding:    32, LSBFirst, 32",
+        "image byte order:    LSBFirst",
+        "number of supported pixmap formats:    6",
+        "supported pixmap formats:",
+        "    depth 1, bits_per_pixel 1, scanline_pad 32",
+        "    depth 4, bits_per_pixel 8, scanline_pad 32",
+        "    depth 8, bits_per_pixel 8, scanline_pad 32",
+        "    depth 16, bits_per_pixel 16, scanline_pad 32",
+        "    depth 24, bits_per_pixel 32, scanline_pad 32",
+        "    depth 32, bits_per_pixel 32, scanline_pad 32",
+        "keycode range:    minimum 8, maximum 255"
+      ],
+      "action": "Removed fulfilled full X visual capability dump; display identity and dimensions retained here."
+    },
+    {
+      "path": "firefox-current/desktop/DISPLAY_CHECK.txt",
+      "original_bytes": 52605,
+      "original_sha256": "7fbb0c01ab888aa601599914b44bc9295da8f6265951712492482695bc68bde7",
+      "summary": [
+        "name of display:    :3",
+        "version number:    11.0",
+        "vendor string:    The X.Org Foundation",
+        "vendor release number:    12101011",
+        "X.Org version: 21.1.11",
+        "maximum request size:  16777212 bytes",
+        "motion buffer size:  256",
+        "bitmap unit, bit order, padding:    32, LSBFirst, 32",
+        "image byte order:    LSBFirst",
+        "number of supported pixmap formats:    6",
+        "supported pixmap formats:",
+        "    depth 1, bits_per_pixel 1, scanline_pad 32",
+        "    depth 4, bits_per_pixel 8, scanline_pad 32",
+        "    depth 8, bits_per_pixel 8, scanline_pad 32",
+        "    depth 16, bits_per_pixel 16, scanline_pad 32",
+        "    depth 24, bits_per_pixel 32, scanline_pad 32",
+        "    depth 32, bits_per_pixel 32, scanline_pad 32",
+        "keycode range:    minimum 8, maximum 255"
+      ],
+      "action": "Removed fulfilled full X visual capability dump; display identity and dimensions retained here."
+    },
+    {
+      "path": "flatpak/desktop/DISPLAY_CHECK.txt",
+      "original_bytes": 52605,
+      "original_sha256": "c914687482f1b014df371be3f261cd29d13f1fc6b85ea1d1f98a5bfc33f15e45",
+      "summary": [
+        "name of display:    :2",
+        "version number:    11.0",
+        "vendor string:    The X.Org Foundation",
+        "vendor release number:    12101011",
+        "X.Org version: 21.1.11",
+        "maximum request size:  16777212 bytes",
+        "motion buffer size:  256",
+        "bitmap unit, bit order, padding:    32, LSBFirst, 32",
+        "image byte order:    LSBFirst",
+        "number of supported pixmap formats:    6",
+        "supported pixmap formats:",
+        "    depth 1, bits_per_pixel 1, scanline_pad 32",
+        "    depth 4, bits_per_pixel 8, scanline_pad 32",
+        "    depth 8, bits_per_pixel 8, scanline_pad 32",
+        "    depth 16, bits_per_pixel 16, scanline_pad 32",
+        "    depth 24, bits_per_pixel 32, scanline_pad 32",
+        "    depth 32, bits_per_pixel 32, scanline_pad 32",
+        "keycode range:    minimum 8, maximum 255"
+      ],
+      "action": "Removed fulfilled full X visual capability dump; display identity and dimensions retained here."
+    },
+    {
+      "path": "FIREFOX_DRIVER.log",
+      "original_bytes": 0,
+      "action": "Removed empty completed-task log"
+    },
+    {
+      "path": "FLATPAK_DRIVER.log",
+      "original_bytes": 0,
+      "action": "Removed empty completed-task log"
+    },
+    {
+      "path": "desktop/frontend.log",
+      "original_bytes": 2748,
+      "original_sha256": "892168f7d525ee50c7ac189b385af489666a2c2eb2b0415e791a11b3cc9a7f0d",
+      "action": "Normalized trailing log whitespace only"
+    },
+    {
+      "path": "desktop/wm.log",
+      "original_bytes": 0,
+      "action": "Removed empty completed-task log"
+    },
+    {
+      "path": "firefox-current/desktop/frontend.log",
+      "original_bytes": 2748,
+      "original_sha256": "f72fd9b40acc621529d6fc2b7143c7616a63f87e817feb2691d73867d0c45f17",
+      "action": "Normalized trailing log whitespace only"
+    },
+    {
+      "path": "firefox-current/desktop/wm.log",
+      "original_bytes": 0,
+      "action": "Removed empty completed-task log"
+    },
+    {
+      "path": "flatpak/desktop/frontend.log",
+      "original_bytes": 2662,
+      "original_sha256": "974eb3755259a377585563cd7233d76612e6513bd5eb6fefe249e79ff3f3f4f6",
+      "action": "Normalized trailing log whitespace only"
+    },
+    {
+      "path": "flatpak/desktop/wm.log",
+      "original_bytes": 0,
+      "action": "Removed empty completed-task log"
+    }
+  ]
+}

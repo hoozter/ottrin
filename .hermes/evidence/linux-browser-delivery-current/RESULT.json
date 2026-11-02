@@ -1,0 +1,62 @@
+{
+  "status": "pass",
+  "scope": "Actual Firefox Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
+  "source_revision": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "firefox_scope": {
+    "unit": "app-firefox-ottrinqa4e6e0a65ac78eeab.scope",
+    "desktop_entry": "/usr/share/applications/firefox.desktop",
+    "purpose": "Correct real application attribution; inner Firefox retains only explicitly selected private session/environment values"
+  },
+  "chooser_executable": "/var/tmp/.ottrin-picker-qa-0xl0c34o/t/.mount_OttrinIg8Ycm/usr/bin/ottrin",
+  "open_pid": 265296,
+  "actual_browser": "Firefox",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; browser displays chosen document and writes exact saved bytes",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "chooser_backend_pid": 265533,
+  "no_index_started": true,
+  "identity_scope": "Parent runner verifies real Firefox attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership.",
+  "actual_portal_app_id": "firefox",
+  "identity_limit": "Ordinary installed Firefox identity accepted through its desktop-entry systemd scope; this is not installed Flatpak-browser acceptance.",
+  "owned_firefox_scope_cleanup": {
+    "unit": "app-firefox-ottrinqa4e6e0a65ac78eeab.scope",
+    "load_state": "not-found"
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-0xl0c34o",
+    "owned_processes_reaped": [
+      {
+        "pid": 264900,
+        "exit": 0
+      },
+      {
+        "pid": 264903,
+        "exit": 0
+      },
+      {
+        "pid": 264904,
+        "exit": 15
+      },
+      {
+        "pid": 264964,
+        "exit": 0
+      },
+      {
+        "pid": 264967,
+        "exit": -15
+      },
+      {
+        "pid": 264989,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

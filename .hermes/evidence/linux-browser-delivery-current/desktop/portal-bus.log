@@ -1,0 +1,12 @@
+dbus-daemon[264964]: [session uid=1000 pid=264964] Activating service name='org.freedesktop.portal.Documents' requested by ':1.1' (uid=1000 pid=264967 comm="/usr/libexec/xdg-desktop-portal --replace --verbos" label="unconfined")
+dbus-daemon[264964]: [session uid=1000 pid=264964] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.2' (uid=1000 pid=264975 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+dbus-daemon[264964]: [session uid=1000 pid=264964] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[264964]: [session uid=1000 pid=264964] Successfully activated service 'org.freedesktop.portal.Documents'
+fusermount3: failed to access mountpoint /var/tmp/.ottrin-picker-qa-0xl0c34o/runtime/doc: Permission denied
+error: fuse init failed: Can't mount path /var/tmp/.ottrin-picker-qa-0xl0c34o/runtime/doc
+dbus-daemon[264964]: [session uid=1000 pid=264964] Activating service name='org.freedesktop.impl.portal.desktop.ottrin' requested by ':1.1' (uid=1000 pid=264967 comm="/usr/libexec/xdg-desktop-portal --replace --verbos" label="unconfined")
+dbus-daemon[264964]: [session uid=1000 pid=264964] Successfully activated service 'org.freedesktop.impl.portal.desktop.ottrin'
+dbus-daemon[264964]: [session uid=1000 pid=264964] Activating service name='org.a11y.Bus' requested by ':1.4' (uid=1000 pid=264989 comm="/usr/lib/firefox/firefox --no-remote --profile /va" label="unconfined")
+dbus-daemon[264964]: [session uid=1000 pid=264964] Successfully activated service 'org.a11y.Bus'
+Desktop appearance preference unavailable: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+Desktop appearance preference unavailable: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop

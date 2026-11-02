@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "executed_inputs_sha256": {
+    ".hermes/evidence/firefox-identity-package-current/run.py": "cb15d727e35a5441f741e4a48877409da64cf7ad88d01f0ba425108ea17459c3",
+    ".hermes/evidence/firefox-identity-package-current/control.py": "6e2d54250d11ccb0b465864f3e6bac0d7d9c07fc06ee00714657fbcbda210d62",
+    "scripts/linux-desktop-qa/session.py": "c356142129294d25e8d6b9dfa404ff9a194a1e70613201011281a0249b3f65bd"
+  },
+  "cases": [
+    "flatpak/RESULT.json",
+    "firefox-current/RESULT.json"
+  ],
+  "scope": "Both final cases executed these shared runner/controller/desktop inputs; earlier root Firefox acceptance uses its separately frozen FIREFOX inputs."
+}
