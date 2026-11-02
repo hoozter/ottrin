@@ -1,0 +1,14 @@
+{
+  "since": "2026-10-31",
+  "retained_runs": 56,
+  "counts": {
+    "ci / success": 33,
+    "ci / cancelled": 9,
+    "ci / failure": 12,
+    "Native MSI rollback control / failure": 2
+  },
+  "mailbox_accessed": false,
+  "latest_hosted_receipt": "HOSTED_2540_FINAL.json",
+  "scope": "GitHub retained run records; no claim to count individual emails",
+  "cleanup": "No test resources allocated. Temporary run inventory removed after receipt."
+}

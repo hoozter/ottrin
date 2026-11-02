@@ -65,3 +65,11 @@ Run41429811338 for05c1325f now finishes all four jobs successfully, including
 full Windows tests, strict lint, release build and executable icon verification.
 HOSTED_05_FINAL.json records the terminal hosted result. Later receipt-only
 checkpoints preserve this tested source; no extra full CI run was triggered.
+
+Latest refresh: run41454368997, source2540e648, completes all four jobs
+successfully, including full Linux/Windows verification and both release
+performance gates. The retained October31-onward inventory now contains56runs:
+33 successful CI,9 cancelled CI,12 failed CI and2 failed installer diagnostic
+runs. This is an updated cumulative count, not14 currently failing workflows.
+The local uncommitted Space-handler follow-up is outside this hosted scope.
+LATEST_AUDIT.json and HOSTED_2540_FINAL.json retain the current result.
