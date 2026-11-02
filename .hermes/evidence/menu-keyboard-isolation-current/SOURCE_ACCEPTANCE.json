@@ -1,0 +1,15 @@
+{
+  "status": "source verified; new package/native regression pending",
+  "source_file": "crates/ottrin-ui/src/lib.rs",
+  "source_sha256": "0d7fbf1443c446523aadc975545b5f703aa7e8328bd8bbdccc47d64442e2acdd",
+  "native_baseline": "sourcef7f20542 AppImage7989c251: main menu ArrowDown changes alpha selection to beta; Inspector menu Escape closes the window. Both menus visibly open in baseline screenshots. Source bytes preserved, sessions cleaned.",
+  "baseline_tests": "Two regression tests fail on ArrowDown and Escape before correction; BASELINE_TESTS.log",
+  "source_fix": "Main-window and Inspector key handling defer to the framework popup state before applying file/preview shortcuts. Native Close and normal closed-menu shortcuts remain on their existing path.",
+  "checks": {
+    "targeted": "2 passed",
+    "ui_lib": "457 passed, 1 ignored",
+    "linux_all_target_clippy": "pass -D warnings",
+    "windows_gnu_all_target_clippy": "pass -D warnings"
+  },
+  "limits": "No new package correction claimed until build and enhanced native menu/normal-close checks pass."
+}

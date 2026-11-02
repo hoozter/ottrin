@@ -1,5 +1,5 @@
 {
-  "status": "local candidate verified; stable promotion awaits full hosted verification",
+  "status": "locally verified cohort superseded without publication after broader native popup defects were found",
   "source_revision": "f7f205420cea445caf77d0a9add851dc3aa4cfdd",
   "artifacts": {
     "ottrin-0.1.0-1.x86_64.rpm": "9af3077b127d1a84627cdaacf107286093659477cb91d373b878db3cad29bcbd",
@@ -15,6 +15,7 @@
   "popup_keys": "Actual delivered candidate filter popup ArrowDown/Escape preserves chooser and folder; following Open/Save retains exact source/save bytes. Rendered baseline failed before source correction.",
   "unchanged_runtime_identity": "UNCHANGED_RUNTIME_IDENTITY.json",
   "source_scope": "Only crates/ottrin-ui/src/picker.rs and Linux desktop QA preparation differ from prior delivered source, excluding receipts/docs. No index/helper/preview runtime changes.",
-  "limits": "Full hosted source gate is pending. Native fresh-distribution and physical acceptance retain their earlier exact-artifact scopes; Windows candidate/delivery unchanged.",
-  "stable_paths_replaced": false
+  "limits": "Completed scopes remain exact f7f20542 evidence. Broader main/Inspector popup defects are now source-fixed; a new cohort and native regression must pass before stable promotion.",
+  "stable_paths_replaced": false,
+  "superseded_cleanup": "SUPERSEDED_CLEANUP.json"
 }

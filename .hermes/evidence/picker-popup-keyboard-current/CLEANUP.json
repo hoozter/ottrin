@@ -1,5 +1,5 @@
 {
-  "status": "completed local QA cleanup; current stage retained for named hosted/promotion consumer",
+  "status": "all completed local QA and superseded staging cleaned; compact evidence retained",
   "observed_at": "2026-11-02T13:09:48.566409+00:00",
   "owned_sessions_removed": true,
   "removed_completed_extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
@@ -10,13 +10,6 @@
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-popup-keyboard-current",
       "purpose": "Compact source, package and browser acceptance receipts and frozen executed QA inputs"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-      "purpose": "Latest verified candidate four-format cohort",
-      "pending_consumer": [
-        "Full hosted source verification run41448829173 and stable promotion"
-      ]
     }
   ],
   "existing_retained_windows_storage": [
@@ -30,5 +23,6 @@
     }
   ],
   "test_processes_running": false,
-  "personal_index_service": "Intentionally preserved, byte-identical daemon needs no restart"
+  "personal_index_service": "Intentionally preserved, byte-identical daemon needs no restart",
+  "superseded_stage_cleanup": "SUPERSEDED_CLEANUP.json"
 }

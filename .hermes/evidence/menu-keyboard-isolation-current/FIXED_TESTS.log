@@ -1,0 +1,9 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 8.64s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-a4306a82b74e7d60)
+
+running 2 tests
+test tests::main_popup_owns_keyboard_before_file_actions ... ok
+test tests::inspector_popup_owns_keyboard_before_preview_shortcuts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 456 filtered out; finished in 0.01s

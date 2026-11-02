@@ -70,26 +70,26 @@ attempts are explicitly rejected and compacted; frozen final inputs, exact hashe
 and reviewed screenshots are in `.hermes/evidence/linux-browser-delivery-current/`.
 Earlier0b6015db browser receipts retain their original package scope.
 
-The browser exercise also exposes a required chooser keyboard correction: with
-the File type popup open, Arrow/Enter can still navigate the file pane behind it.
-Escape needs popup-first routing as well. Accepted browser flows use pointer filter
-selection and do not close this keyboard gate. The new rendered regression fails
-on ArrowDown before repair; the authoritative chooser now defers file/location/
-cancel shortcuts to an open egui popup. All25 picker-related tests,455 regular UI
-tests (one ignored), and strict Linux/Windows UI all-target lint pass. This is a
-source correction; the stable source928b7937 AppImage is unchanged and still has
-the defect. Clean sourcef7f20542 now has a verified four-format staging cohort:
-production content/closure/native namespace checks pass, both actual installed
-browsers pass Open/Save, and Flatpak's actual filter popup ArrowDown/Escape keeps
-the chooser and folder intact before exact-byte Open/Save. The indexer and all
-five other helper/renderer payloads are byte-identical to the stable delivery.
-Full source CI run41448829173 is still in progress; both release performance jobs
-pass. Stable promotion awaits that terminal hosted gate. Completed native GUI
-sessions and the fulfilled75MB extraction are removed; only the current stage
-remains for that named consumer. Five obsolete incremental sessions were removed,
-with supported process inspection exceptions revalidated and safeguards retained.
-Evidence: `.hermes/evidence/picker-popup-keyboard-current/CANDIDATE_ACCEPTANCE.json`.
-This work continues without owner involvement.
+The chooser popup correction passes its rendered regression, all25 picker checks,
+455 UI tests and strict Linux/Windows lint. The clean f7f20542 staging cohort also
+passes both actual installed browsers, native popup ArrowDown/Escape, all six
+main/Properties/icon/upgrade GUI checks and fresh Fedora/Ubuntu native lifecycle.
+Its daemon and five other helper/renderer payloads are byte-identical to the
+stable source928b7937 delivery. All guests, disks, credentials and GUI sessions
+are removed. These receipts retain their exact f7f20542 scope.
+
+Before promotion, a wider native menu audit finds the same defect in two other
+contexts: ArrowDown changes alpha to beta behind the main menu; Escape closes
+Quick Inspector while its menu is open. Both corresponding regressions fail before
+repair. The authoritative main-window and Inspector handlers now yield to open
+framework popups. All457 UI tests (one existing ignored) and strict Linux/Windows
+all-target lint pass. The superseded f7f20542 stage was removed without changing
+stable downloads. Next build one clean cohort containing all three popup contexts;
+verify menu arrows/Escape, normal Inspector close and the affected native workflows
+before promotion. This is independently executable work, not an owner wait.
+Evidence: `.hermes/evidence/menu-keyboard-isolation-current/SOURCE_ACCEPTANCE.json`;
+prior scoped package checks:
+`.hermes/evidence/picker-popup-keyboard-current/CANDIDATE_ACCEPTANCE.json`.
 
 The original GitHub audit found13 failed push runs since October31:11 CI and2
 installer diagnostics, with no scheduled retry loop. Workflow/ref concurrency

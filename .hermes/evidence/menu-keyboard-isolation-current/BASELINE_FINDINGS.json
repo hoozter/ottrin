@@ -1,0 +1,37 @@
+{
+  "status": "native defects confirmed and reproduced in source tests",
+  "source_revision": "f7f205420cea445caf77d0a9add851dc3aa4cfdd",
+  "appimage_sha256": "7989c251a9bdf296e7e8a178574a546fdae2f5af188a242f06dd4d3f4f8ffff4",
+  "main_selection_rgb_at_rows_114_146": {
+    "before": [
+      [
+        39,
+        53,
+        67
+      ],
+      [
+        34,
+        38,
+        43
+      ]
+    ],
+    "after_down_behind_menu": [
+      [
+        30,
+        34,
+        39
+      ],
+      [
+        39,
+        53,
+        67
+      ]
+    ]
+  },
+  "inspector_popup_escape": "Actual menu shown, Escape closes entire Inspector instead of just the popup",
+  "source_files_preserved": true,
+  "normal_close": 0,
+  "all_owned_profiles_processes_buses_mounts_removed": true,
+  "executed_native_baseline_input": "BASELINE_RUN.py",
+  "executed_native_baseline_input_sha256": "c0808b19357d34c17d2539f49f4c73e493ba23169ed7b578a2f1025eae464075"
+}

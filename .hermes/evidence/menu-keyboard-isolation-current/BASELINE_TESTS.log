@@ -1,0 +1,26 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 13.23s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-a4306a82b74e7d60)
+
+running 2 tests
+
+thread 'tests::main_popup_owns_keyboard_before_file_actions' (312035) panicked at crates/ottrin-ui/src/lib.rs:27774:13:
+assertion `left == right` failed: ArrowDown
+  left: Some(1)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::inspector_popup_owns_keyboard_before_preview_shortcuts' (312034) panicked at crates/ottrin-ui/src/lib.rs:27807:13:
+Escape
+test tests::inspector_popup_owns_keyboard_before_preview_shortcuts ... FAILED
+test tests::main_popup_owns_keyboard_before_file_actions ... FAILED
+
+failures:
+
+failures:
+    tests::inspector_popup_owns_keyboard_before_preview_shortcuts
+    tests::main_popup_owns_keyboard_before_file_actions
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 456 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

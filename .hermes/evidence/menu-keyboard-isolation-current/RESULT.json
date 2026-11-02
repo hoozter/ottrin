@@ -1,0 +1,40 @@
+{
+  "status": "observed; review screenshots before classifying menu/selection behavior",
+  "artifact_sha256": "7989c251a9bdf296e7e8a178574a546fdae2f5af188a242f06dd4d3f4f8ffff4",
+  "source_revision": "f7f205420cea445caf77d0a9add851dc3aa4cfdd",
+  "scope": "Private native X11 synthetic-file main/Inspector menu keyboard observation; no product mutation or personal profile",
+  "inspector_remained_open_after_popup_escape": false,
+  "normal_exit": 0,
+  "source_files_unchanged": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-9q2hma19",
+    "owned_processes_reaped": [
+      {
+        "pid": 310932,
+        "exit": 0
+      },
+      {
+        "pid": 310935,
+        "exit": 0
+      },
+      {
+        "pid": 310936,
+        "exit": 15
+      },
+      {
+        "pid": 311001,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        311005,
+        311063
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

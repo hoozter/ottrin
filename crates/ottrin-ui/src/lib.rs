@@ -8575,9 +8575,9 @@ impl OttrinApp {
     // ── Keyboard handling ─────────────────────────────────────────────────────
 
     fn handle_keyboard(&mut self, ctx: &Context) {
-        // Immediate secondary viewports share the application's update path.
-        // Leave picker shortcuts untouched until its owning viewport renders.
-        if self.pending_picker.is_some() {
+        // Secondary pickers and open menus own their shortcuts. Do not also
+        // apply their keys to the main window's selection or file actions.
+        if self.pending_picker.is_some() || egui::Popup::is_any_open(ctx) {
             return;
         }
         // Don't intercept keys when typing in address bar
@@ -19229,7 +19229,7 @@ impl OttrinApp {
             if self.pending_delete.is_some() {
                 self.handle_delete_confirmation_keyboard(inspector_ctx);
             }
-        } else {
+        } else if !egui::Popup::is_any_open(inspector_ctx) {
             let escape =
                 inspector_ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape));
             let space_pressed = inspector_ctx.input(|i| i.key_pressed(Key::Space));
@@ -27741,6 +27741,84 @@ mod tests {
         );
         assert_eq!(app.state.active_tab().current_dir, intended);
         assert_ne!(app.state.active_tab().current_dir, decoy);
+    }
+
+    #[test]
+    fn main_popup_owns_keyboard_before_file_actions() {
+        for key in [
+            Key::ArrowDown,
+            Key::Delete,
+            Key::F2,
+            Key::Enter,
+            Key::Escape,
+        ] {
+            let (root, mut app, source) = clipboard_keyboard_fixture();
+            app.state.active_tab_mut().view_mode = ViewMode::List;
+            let tab = app.state.active_tab().id;
+            let mut second = app.tab_ui[&tab].main.entries[0].clone();
+            second.name = "second.txt".into();
+            second.path = root.path().join("second.txt");
+            std::fs::write(&second.path, "second fixture").unwrap();
+            app.tab_ui.get_mut(&tab).unwrap().main.entries.push(second);
+            let ctx = Context::default();
+            let _ = ctx.run(
+                egui::RawInput {
+                    events: vec![egui::Event::Key {
+                        key,
+                        physical_key: Some(key),
+                        pressed: true,
+                        repeat: false,
+                        modifiers: egui::Modifiers::NONE,
+                    }],
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::Popup::open_id(ctx, egui::Id::new("main-popup-keyboard-test"));
+                    app.handle_keyboard(ctx);
+                },
+            );
+            assert_eq!(app.tab_ui[&tab].main_sel, Some(0), "{key:?}");
+            assert!(app.pending_delete.is_none(), "{key:?}");
+            assert!(app.pending_rename.is_none(), "{key:?}");
+            assert!(!app.command_frame.visible, "{key:?}");
+            assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        }
+    }
+
+    #[test]
+    fn inspector_popup_owns_keyboard_before_preview_shortcuts() {
+        for key in [Key::Escape, Key::Space, Key::Delete, Key::F2] {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            app.preview.visible = true;
+            app.preview.path = Some(source.clone());
+            app.preview.space_close_ready_at = Some(Instant::now() - Duration::from_secs(1));
+            let ctx = Context::default();
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(720.0, 560.0),
+                    )),
+                    events: vec![egui::Event::Key {
+                        key,
+                        physical_key: Some(key),
+                        pressed: true,
+                        repeat: false,
+                        modifiers: egui::Modifiers::NONE,
+                    }],
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::Popup::open_id(ctx, egui::Id::new("inspector-popup-keyboard-test"));
+                    app.render_preview_overlay(ctx);
+                },
+            );
+            assert!(app.preview.visible, "{key:?}");
+            assert_eq!(app.preview.path.as_ref(), Some(&source), "{key:?}");
+            assert!(app.pending_delete.is_none(), "{key:?}");
+            assert!(app.pending_rename.is_none(), "{key:?}");
+            assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        }
     }
 
     #[test]
