@@ -73,9 +73,15 @@ Earlier0b6015db browser receipts retain their original package scope.
 The browser exercise also exposes a required chooser keyboard correction: with
 the File type popup open, Arrow/Enter can still navigate the file pane behind it.
 Escape needs popup-first routing as well. Accepted browser flows use pointer filter
-selection and do not close this keyboard gate. Next add a rendered regression,
-repair the authoritative picker keyboard handling and deliver/test the affected
-package. This fix is dependency-ready and needs no owner involvement.
+selection and do not close this keyboard gate. The new rendered regression fails
+on ArrowDown before repair; the authoritative chooser now defers file/location/
+cancel shortcuts to an open egui popup. All25 picker-related tests,455 regular UI
+tests (one ignored), and strict Linux/Windows UI all-target lint pass. This is a
+source correction; the stable source928b7937 AppImage is unchanged and still has
+the defect. Next build and verify a clean package cohort, including the affected
+native chooser/browser keyboard path, before promotion. Evidence:
+`.hermes/evidence/picker-popup-keyboard-current/SOURCE_ACCEPTANCE.json`.
+This work is dependency-ready and needs no owner involvement.
 
 The original GitHub audit found13 failed push runs since October31:11 CI and2
 installer diagnostics, with no scheduled retry loop. Workflow/ref concurrency

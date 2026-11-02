@@ -1,0 +1,14 @@
+{
+  "status": "source verified; package delivery pending",
+  "source_file": "crates/ottrin-ui/src/picker.rs",
+  "source_sha256": "d282c357b9f7502dd5a5b6a1f1ea7642b878cd40732791f515035c48d9a2df26",
+  "baseline": "Rendered regression fails on ArrowDown with the filter popup open: underlying file focus/selection changes. BASELINE_TEST.log retains failure.",
+  "fix": "Chooser-wide file/location/cancel shortcuts defer to an open egui popup; egui retains its existing popup interaction path.",
+  "tests": {
+    "picker_related": "25 passed",
+    "ui_lib": "455 passed, 1 ignored",
+    "linux_all_target_clippy": "pass, -D warnings",
+    "windows_gnu_all_target_clippy": "pass, -D warnings"
+  },
+  "limits": "The stable source928b7937 AppImage still has the bug. This receipt does not claim installed/native package correction; build and affected picker browser acceptance remain required."
+}

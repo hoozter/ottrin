@@ -1,0 +1,33 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 6.87s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-a4306a82b74e7d60)
+
+running 25 tests
+test picker::tests::folder_only_picker_preserves_file_preview_preference_without_starting_its_workers ... ok
+test picker::tests::caller_location_overrides_remembered_folder_without_resetting_picker_options ... ok
+test picker::tests::empty_indexed_search_does_not_connect_and_closing_cancels_inflight_work ... ok
+test internal_picker::tests::secondary_window_picker_keeps_the_main_window_from_consuming_its_location_shortcut ... ok
+test picker::tests::indexed_search_cancels_abandoned_queries_and_discards_their_results ... ok
+test picker::tests::indexed_save_uses_the_selected_results_parent_and_rechecks_overwrite ... ok
+test picker::tests::multiselect_deselection_keeps_filename_and_preview_on_a_selected_file ... ok
+test internal_picker::tests::picker_escape_cancels_without_forwarding_keys_to_the_parent_or_writing_a_file ... ok
+test picker::tests::late_caller_disconnect_cannot_replace_an_accepted_response ... ok
+test picker::tests::location_shortcut_uses_event_modifiers_when_the_final_snapshot_has_released_ctrl ... ok
+test picker::tests::confirming_an_unedited_location_preserves_native_directory_units ... ok
+test picker::tests::filtered_out_typed_names_are_rejected_and_save_confirmation_never_changes_a_file ... ok
+test picker::tests::keyboard_navigation_after_a_pointer_click_opens_the_next_file ... ok
+test picker::tests::save_selection_and_response_preserve_native_filename_without_mutating_the_file ... ok
+test internal_picker::tests::parent_owned_folder_picker_has_visible_actions_and_updates_only_the_requested_roots ... ok
+test picker::tests::typed_hidden_folders_remain_navigable_with_an_active_file_filter ... ok
+test picker::tests::text_preview_uses_the_readable_shared_body_instead_of_a_thumbnail ... ok
+test picker::tests::location_shortcut_replaces_the_path_on_repeated_navigation ... ok
+test picker::tests::indexed_unavailability_keeps_actions_visible_and_direct_browsing_recovers ... ok
+test picker::tests::filter_popup_keeps_keys_from_navigating_or_closing_the_chooser ... ok
+test picker::tests::native_save_name_survives_refresh_and_navigation_without_a_selection ... ok
+test picker::tests::caller_options_remain_bounded_and_cannot_push_cancel_or_open_offscreen ... ok
+test picker::tests::preview_keeps_its_column_when_grid_contents_are_sparse_or_empty ... ok
+test picker::tests::rendered_picker_keeps_files_and_actions_visible_and_opens_the_clicked_file ... ok
+test picker::tests::rendered_read_only_preview_does_not_cover_actions_or_change_files ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.08s
+

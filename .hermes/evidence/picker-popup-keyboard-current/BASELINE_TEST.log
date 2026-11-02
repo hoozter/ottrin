@@ -1,0 +1,19 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 10.76s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-a4306a82b74e7d60)
+
+running 1 test
+
+thread 'picker::tests::filter_popup_keeps_keys_from_navigating_or_closing_the_chooser' (290086) panicked at crates/ottrin-ui/src/picker.rs:2034:13:
+ArrowDown
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test picker::tests::filter_popup_keeps_keys_from_navigating_or_closing_the_chooser ... FAILED
+
+failures:
+
+failures:
+    picker::tests::filter_popup_keeps_keys_from_navigating_or_closing_the_chooser
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 455 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

@@ -829,7 +829,9 @@ impl PickerDialog {
         if let Some(due) = self.search_due {
             ctx.request_repaint_after(due.saturating_duration_since(Instant::now()));
         }
-        if ctx.input(|input| input.key_pressed(egui::Key::Escape))
+        let popup_open = egui::Popup::is_any_open(&ctx);
+        if !popup_open
+            && ctx.input(|input| input.key_pressed(egui::Key::Escape))
             && self.overwrite.take().is_none()
         {
             if self.editing_location {
@@ -839,12 +841,12 @@ impl PickerDialog {
                 self.cancel();
             }
         }
-        if ctx.input(|input| crate::command_key_pressed(input, egui::Key::L)) {
+        if !popup_open && ctx.input(|input| crate::command_key_pressed(input, egui::Key::L)) {
             self.editing_location = true;
             self.focus_location = true;
         }
         let blocked = self.overwrite.is_some();
-        if !blocked && !self.editing_location && !ctx.wants_keyboard_input() {
+        if !blocked && !popup_open && !self.editing_location && !ctx.wants_keyboard_input() {
             self.handle_file_keys(&ctx, config);
         }
         ui.add_enabled_ui(!blocked, |ui| {
@@ -1983,6 +1985,64 @@ mod tests {
             }
         }
     }
+    #[test]
+    fn filter_popup_keeps_keys_from_navigating_or_closing_the_chooser() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::create_dir(root.path().join("saved")).unwrap();
+        std::fs::write(root.path().join("original.txt"), "original").unwrap();
+        for key in [egui::Key::ArrowDown, egui::Key::Enter, egui::Key::Escape] {
+            let ctx = Context::default();
+            let size = Vec2::new(940.0, 640.0);
+            let mut app = host(
+                &ctx,
+                PickerRequest {
+                    initial_directory: Some(root.path().to_path_buf()),
+                    filters: vec![ottrin_core::picker::PickerFilter {
+                        name: "HTML files".into(),
+                        patterns: vec![PickerPattern::Glob("*.html".into())],
+                    }],
+                    current_filter: Some(0),
+                    ..Default::default()
+                },
+                true,
+                1.0,
+            );
+            frame(&mut app, &ctx, size, 0.0, vec![]);
+            let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+            click(
+                &mut app,
+                &ctx,
+                size,
+                0.2,
+                text_center(&output, "HTML files").unwrap(),
+            );
+            assert!(egui::Popup::is_any_open(&ctx));
+            for (time, pressed) in [(0.4, true), (0.42, false)] {
+                frame(
+                    &mut app,
+                    &ctx,
+                    size,
+                    time,
+                    vec![egui::Event::Key {
+                        key,
+                        physical_key: Some(key),
+                        pressed,
+                        repeat: false,
+                        modifiers: Default::default(),
+                    }],
+                );
+            }
+            assert_eq!(app.dialog.directory, root.path(), "{key:?}");
+            assert!(app.dialog.selected.is_empty(), "{key:?}");
+            assert!(app.dialog.focus.is_none(), "{key:?}");
+            assert!(app.dialog.error.is_none(), "{key:?}");
+            assert!(app.outcome.lock().unwrap().is_none(), "{key:?}");
+            if key == egui::Key::Escape {
+                assert!(!egui::Popup::is_any_open(&ctx));
+            }
+        }
+    }
+
     #[test]
     fn keyboard_navigation_after_a_pointer_click_opens_the_next_file() {
         let root = tempfile::tempdir().unwrap();

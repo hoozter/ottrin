@@ -1,0 +1,13 @@
+{
+  "observed_at": "2026-11-02T12:53:38.683424+00:00",
+  "paths_bytes": {
+    "target/debug/deps": 37911474176,
+    "target/debug/incremental": 18248507392,
+    "target/x86_64-pc-windows-gnu/debug/deps": 42343116800,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 38478307328,
+    ".hermes/evidence/picker-popup-keyboard-current": 4096,
+    ".hermes/packaging-tmp/.windows-desktop-stage": 293056512
+  },
+  "build_configuration": "Existing default debug UI lib test; CARGO_BUILD_JOBS=1; shared target and compiler caches; disposable HOME/XDG via scripts/test-workspace.py",
+  "cleanup_owner": "Current roadmap task; preserve newest matching configuration test binaries and useful caches; retire superseded test outputs after verified replacement"
+}
