@@ -1,0 +1,22 @@
+{
+  "status": "source checks pass; new clean package and root rendering checks pending",
+  "parent": "c79dbcbc42de33c9fdf06b06160d9136a37bc470",
+  "source_sha256": {
+    "crates/ottrin-platform/src/integration_storage.rs": "045bc09ec16b4360ede4aac590d346fe2281206218376fd78bebb553578e60d9",
+    "crates/ottrin-platform/src/folder_integration.rs": "b5147a8586138f83a1d545ca9002d03ee7e453f3907d4641c04e2d308fbbbca0",
+    "crates/ottrin-platform/src/portal_integration.rs": "94a8d6459429b11646f7b50c99144cb1986ee1d1aa8952d8a996d67ca6696f69",
+    "crates/ottrin-preview/src/linux_html.rs": "e71662edf19759122ae8af1ae13d087d4f77555bb15c69583d259f463224b8b7",
+    "scripts/ci/verify-linux-html-sandbox.py": "aaa4e31846a3989d2a62d2c336ef5ced2331a7e7c3d28b05c41d76f68de9a27c"
+  },
+  "tests": {
+    "platform_integration": 17,
+    "html_protocol_workspace_kernel": {
+      "pass": 3,
+      "ignored_child_launched_by_parent": 1
+    },
+    "strict_platform_preview_app_all_targets": "pass"
+  },
+  "parent_full_hosted": "41369606817 all jobs success; artifacts and renderer history retained here",
+  "new_work": "Explicit existing-user-bus ReloadConfig after activation-file changes; strict inherited-seccomp readiness response rejects stale installed helpers. Source c79 runtime diagnostics require manual ReloadConfig but then pass real frontend, idle status, native lifecycle and surviving portable picker scopes.",
+  "cleanup": "Rejected c79 staged cohort112665459bytes removed after all owned consumers stopped. All owned VMs/volumes/seeds/keys/profiles removed. Unchanged incremental guard removed26sessions/0.45GiB. Useful caches, signed base caches, current binaries and accepted8ede deliverables preserved."
+}

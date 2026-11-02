@@ -1,0 +1,4 @@
+{
+  "/home/portableqa/.config/xdg-desktop-portal/portals.conf": "[preferred]\ndefault=gtk\norg.freedesktop.impl.portal.FileChooser=ottrin\n",
+  "/home/portableqa/.local/share/dbus-1/services/org.freedesktop.impl.portal.desktop.ottrin.service": "[D-BUS Service]\nName=org.freedesktop.impl.portal.desktop.ottrin\nExec=\"/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/bin/ottrin\" portal\nSystemdService=ottrin-portal.service\n"
+}

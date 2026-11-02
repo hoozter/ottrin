@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "fedora",
+  "domain": "ottrin-native-fedora-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "c79dbcbc42de33c9fdf06b06160d9136a37bc470",
+  "status": "fail",
+  "package_sha256": "5f282ef9290cd976fab03f39a3702fdfc65274fafaf0a46112900049b1d78754",
+  "uuid": "38255db5-cf02-4a23-8bb1-a3579187c420",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('k\\', \\'org.freedesktop.impl.portal.PermissionStore\\', \\'org.freedesktop.impl.portal.desktop.gtk\\', \\'org.freedesktop.impl.portal.desktop.ottrin\\', \\'org.freedesktop.portal.Desktop\\', \\'org.freedesktop.portal.Documents\\', \\'org.freedesktop.portal.Tracker\\', \\'org.freedesktop.systemd1\\', \\'org.gtk.GLib.PACRunner\\'],)\\\\n\"\\n    }\\n  },\\n  \"picker_frontend\": {\\n    \"ottrinqa\": {\\n      \"expected_executable\": \"/usr/bin/ottrin\",\\n      \"chooser_pid\": 2350,\\n      \"mapped_ms\": 286,\\n      \"window_title\": \"Ottrin \\\\u2014 Ottrin Native Picker QA\",\\n      \"status\": \"pass\"\\n    },\\n    \"offlineqa\": {\\n      \"expected_executable\": \"/usr/bin/ottrin\",\\n      \"chooser_pid\": 2397,\\n      \"mapped_ms\": 264,\\n      \"window_title\": \"Ottrin \\\\u2014 Ottrin Native Picker QA\",\\n      \"status\": \"pass\"\\n    },\\n    \"portableqa\": {\\n      \"expected_executable\": \"/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin\",\\n      \"chooser_pid\": 2448,\\n      \"mapped_ms\": 260,\\n      \"window_title\": \"Ottrin \\\\u2014 Ottrin Native Picker QA\",\\n      \"status\": \"pass\"\\n    }\\n  },\\n  \"configured\": {\\n    \"ottrinqa\": 2344,\\n    \"offlineqa\": 2391,\\n    \"portableqa\": 2440\\n  },\\n  \"reinstall\": \"pass; selected integrations retained; active picker PIDs unchanged\",\\n  \"modified_native_asset\": \"refused before native or portable picker stopped\",\\n  \"native_removal\": \"pass; online/offline preferences restored and native receipts removed; app preferences/source retained\",\\n  \"portable_registration_and_process\": \"preserved\",\\n  \"portable_system_definition_present\": true,\\n  \"portable_frontend_after_native_removal\": {\\n    \"expected_executable\": \"/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin\",\\n    \"chooser_pid\": 3526,\\n    \"mapped_ms\": 127,\\n    \"window_title\": \"Ottrin \\\\u2014 Ottrin Native Picker QA\",\\n    \"status\": \"pass\"\\n  },\\n  \"portable_picker_after_native_removal\": \"pass; real frontend restart and backend readiness\",\\n  \"error\": \"All later diagnostic scopes required explicit session bus reload; normal setup is not accepted\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

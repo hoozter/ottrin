@@ -1,0 +1,57 @@
+{
+  "source": "c79dbcbc42de33c9fdf06b06160d9136a37bc470",
+  "scope": "Exact fedora same-version reinstall/removal; native online/offline folder/picker and independent portable choice",
+  "status": "fail",
+  "activation_reload_control": {
+    "ottrinqa": {
+      "original_error": "['runuser', '-u', 'ottrinqa', '--', 'env', '-i', 'PATH=/usr/sbin:/usr/bin:/sbin:/bin', 'HOME=/home/ottrinqa', 'USER=ottrinqa', 'XDG_CURRENT_DESKTOP=OttrinQA', 'XDG_RUNTIME_DIR=/run/user/1000', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus', '/usr/bin/ottrin', 'portal', 'apply']: 1:  ottrin: The desktop portal restarted, but Ottrin's picker is not ready: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name is not activatable\n",
+      "before": "(['org.freedesktop.DBus', 'ca.desrt.dconf', 'org.a11y.Bus', 'org.freedesktop.LocalSearch3', 'org.freedesktop.LocalSearch3.Control', 'org.freedesktop.LocalSearch3.Writeback', 'org.freedesktop.Tracker3.Miner.Files', 'org.freedesktop.Tracker3.Miner.Files.Control', 'org.freedesktop.Tracker3.Writeback', 'org.freedesktop.impl.portal.PermissionStore', 'org.freedesktop.impl.portal.desktop.gtk', 'org.freedesktop.portal.Desktop', 'org.freedesktop.portal.Documents', 'org.freedesktop.portal.Tracker', 'org.freedesktop.systemd1', 'org.gtk.GLib.PACRunner'],)\n",
+      "reload_exit": 0,
+      "reload_stdout": "()\n",
+      "reload_stderr": "",
+      "after": "(['org.freedesktop.DBus', 'ca.desrt.dconf', 'org.a11y.Bus', 'org.freedesktop.FileManager1', 'org.freedesktop.LocalSearch3', 'org.freedesktop.LocalSearch3.Control', 'org.freedesktop.LocalSearch3.Writeback', 'org.freedesktop.Tracker3.Miner.Files', 'org.freedesktop.Tracker3.Miner.Files.Control', 'org.freedesktop.Tracker3.Writeback', 'org.freedesktop.impl.portal.PermissionStore', 'org.freedesktop.impl.portal.desktop.gtk', 'org.freedesktop.impl.portal.desktop.ottrin', 'org.freedesktop.portal.Desktop', 'org.freedesktop.portal.Documents', 'org.freedesktop.portal.Tracker', 'org.freedesktop.systemd1', 'org.gtk.GLib.PACRunner'],)\n"
+    }
+  },
+  "picker_frontend": {
+    "ottrinqa": {
+      "expected_executable": "/usr/bin/ottrin",
+      "chooser_pid": 2350,
+      "mapped_ms": 286,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    },
+    "offlineqa": {
+      "expected_executable": "/usr/bin/ottrin",
+      "chooser_pid": 2397,
+      "mapped_ms": 264,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    },
+    "portableqa": {
+      "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+      "chooser_pid": 2448,
+      "mapped_ms": 260,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    }
+  },
+  "configured": {
+    "ottrinqa": 2344,
+    "offlineqa": 2391,
+    "portableqa": 2440
+  },
+  "reinstall": "pass; selected integrations retained; active picker PIDs unchanged",
+  "modified_native_asset": "refused before native or portable picker stopped",
+  "native_removal": "pass; online/offline preferences restored and native receipts removed; app preferences/source retained",
+  "portable_registration_and_process": "preserved",
+  "portable_system_definition_present": true,
+  "portable_frontend_after_native_removal": {
+    "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+    "chooser_pid": 3526,
+    "mapped_ms": 127,
+    "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+    "status": "pass"
+  },
+  "portable_picker_after_native_removal": "pass; real frontend restart and backend readiness",
+  "error": "All later diagnostic scopes required explicit session bus reload; normal setup is not accepted"
+}

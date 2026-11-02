@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-fixed-current/native-vm.py", line 98, in <module>
+    assert result.returncode==0,result.stdout[-2000:]+result.stderr[-1000:]
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: {
+  "source": "c79dbcbc42de33c9fdf06b06160d9136a37bc470",
+  "scope": "Exact fedora same-version reinstall/removal; native online/offline folder/picker and independent portable choice",
+  "status": "fail",
+  "error": "RuntimeError(\"['runuser', '-u', 'ottrinqa', '--', 'env', '-i', 'PATH=/usr/sbin:/usr/bin:/sbin:/bin', 'HOME=/home/ottrinqa', 'USER=ottrinqa', 'XDG_CURRENT_DESKTOP=OttrinQA', 'XDG_RUNTIME_DIR=/run/user/1000', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus', '/usr/bin/ottrin', 'portal', 'apply']: 1:  ottrin: The desktop portal restarted, but Ottrin's picker is not ready: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name is not activatable\\n\")"
+}

@@ -11,7 +11,9 @@ def run(args,**kw):return subprocess.run(args,check=True,**kw)
 def cancelled(*_):raise KeyboardInterrupt('production HTML check cancelled')
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
 try:
- run([str(owned),'--check'])
+ readiness=run([str(owned),'--check'],capture_output=True,text=True)
+ assert readiness.stdout=='ottrin-html-render inherited-seccomp-v1\n',readiness.stdout
+ report['readiness_protocol']=readiness.stdout.strip()
  restriction=Path('/proc/sys/kernel/apparmor_restrict_unprivileged_userns').read_text().strip();assert restriction=='1';report['restriction_before']=restriction
  with tempfile.TemporaryDirectory(prefix='ottrin-html-probe-') as t:
   root=Path(t);os.chmod(root,0o700)

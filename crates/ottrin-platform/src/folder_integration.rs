@@ -179,7 +179,7 @@ fn desktop_argument(path: &Path) -> Result<String, String> {
 pub fn enable() -> Result<String, String> {
     normal_user()?;
     let message = enable_at(&Directories::current()?, &super::application_launch_path()?)?;
-    stop_owned_file_manager()?;
+    refresh_activation()?;
     Ok(message)
 }
 fn enable_at(d: &Directories, executable: &Path) -> Result<String, String> {
@@ -299,7 +299,7 @@ pub fn disable() -> Result<String, String> {
     }
     normal_user()?;
     let message = disable_at(&directories)?;
-    stop_owned_file_manager()?;
+    refresh_activation()?;
     Ok(message)
 }
 /// Package removal only owns registrations whose recorded activation command
@@ -341,6 +341,9 @@ fn native_package_at(
             super::native_desktop::stop_native_file_manager()?;
         }
         disable_at(d)?;
+        if online {
+            storage::reload_activation()?;
+        }
     }
     Ok(())
 }
@@ -377,11 +380,13 @@ fn disable_at(d: &Directories) -> Result<String, String> {
     Ok("Previous directory handler restored; Ottrin's integration files removed".into())
 }
 
-/// Never activate or stop another provider. Our private control interface is absent there.
-fn stop_owned_file_manager() -> Result<(), String> {
+/// Reload registration and retire only Ottrin's previous backend. Never
+/// activate or stop another provider: it lacks our private control interface.
+fn refresh_activation() -> Result<(), String> {
     if std::env::var_os("DBUS_SESSION_BUS_ADDRESS").is_none() {
         return Ok(());
     }
+    storage::reload_activation()?;
     let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE)
         .map_err(|e| e.to_string())?;
     match bus.call_sync(

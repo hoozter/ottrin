@@ -15,6 +15,7 @@ use std::time::Duration;
 
 pub(crate) const HELPER: &str = "/usr/libexec/ottrin/ottrin-html-render";
 const PROFILE: &str = "ottrin-html-render (enforce)";
+const READINESS: &str = "ottrin-html-render inherited-seccomp-v1";
 pub(crate) const MAX_DOCUMENT_BYTES: u64 = 8 * 1024 * 1024;
 pub(crate) const MAX_OUTPUT: u64 = 16 * 1024 * 1024;
 const BROWSERS: [&str; 4] = [
@@ -65,7 +66,7 @@ impl HtmlPreviewRuntimeStatus {
     pub fn message(self) -> &'static str {
         match self {
             Self::Ready => "Installed and ready",
-            Self::NeedsSetup => "HTML sandbox setup needed",
+            Self::NeedsSetup => "Set up or update the HTML preview helper",
             Self::MissingBrowser => "Install a supported system Chrome or Chromium browser",
             Self::BrowserNeedsRepair => {
                 "The browser needs a protected native executable and secure system permissions"
@@ -104,10 +105,11 @@ pub fn html_preview_runtime_status() -> HtmlPreviewRuntimeStatus {
     if Command::new(HELPER)
         .arg("--check")
         .stdin(Stdio::null())
-        .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .status()
-        .is_ok_and(|status| status.success())
+        .output()
+        .is_ok_and(|output| {
+            output.status.success() && output.stdout == format!("{READINESS}\n").as_bytes()
+        })
     {
         HtmlPreviewRuntimeStatus::Ready
     } else {
@@ -244,6 +246,7 @@ pub fn run_html_renderer_helper(arguments: Vec<OsString>) -> Result<(), String> 
     // Readiness includes the architecture and sealed kernel-program transport.
     let filter = crate::linux_html_filter::file()?;
     if arguments == [OsString::from("--check")] {
+        println!("{READINESS}");
         return Ok(());
     }
     if arguments.len() != 2 {

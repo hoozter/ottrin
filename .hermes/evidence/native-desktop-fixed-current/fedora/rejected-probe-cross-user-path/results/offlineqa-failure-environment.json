@@ -1,0 +1,7 @@
+[
+  "HOME=/home/offlineqa",
+  "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus",
+  "DISPLAY=:78",
+  "XDG_CURRENT_DESKTOP=OttrinQA",
+  "XDG_SESSION_TYPE=x11"
+]

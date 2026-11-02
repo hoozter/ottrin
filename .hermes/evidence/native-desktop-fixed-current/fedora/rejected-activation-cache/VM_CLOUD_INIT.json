@@ -1,0 +1,58 @@
+{
+  "boot_status_code": "enabled-by-generator",
+  "datasource": "nocloud",
+  "detail": "DataSourceNoCloud [seed=/dev/sr0]",
+  "errors": [],
+  "extended_status": "degraded done",
+  "init": {
+    "errors": [],
+    "finished": 12.82,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "start": 11.55
+  },
+  "init-local": {
+    "errors": [],
+    "finished": 9.67,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "start": 9.41
+  },
+  "last_update": "Thu, 01 Jan 1970 00:00:13 +0000",
+  "modules-config": {
+    "errors": [],
+    "finished": 12.92,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "start": 12.88
+  },
+  "modules-final": {
+    "errors": [],
+    "finished": 13.18,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "start": 12.96
+  },
+  "recoverable_errors": {
+    "WARNING": [
+      "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+      "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+      "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+      "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+    ]
+  },
+  "stage": null,
+  "status": "done"
+}

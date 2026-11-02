@@ -1,0 +1,8 @@
+{
+  "source_revision": "c79dbcbc42de33c9fdf06b06160d9136a37bc470",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "cleanup_owner": "native-desktop-fixed-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Diagnostic cohort retired; next source will run normal setup without control"
+}

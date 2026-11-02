@@ -1528,6 +1528,11 @@ Explicit picker setup may activate the configured backend to validate it, even
 when the desktop frontend defers activation until the first request. Passive
 status never activates it: a valid, applied, inactive backend is ready on demand;
 a failed unit or an unreachable running backend needs repair.
+Registration changes explicitly call the user bus's `ReloadConfig` method.
+Fresh brokers may not watch a service directory that did not exist at bus startup;
+systemd `daemon-reload` alone does not publish D-Bus activation files. Setup and
+online removal refresh the activation registry; offline removal does not open a
+bus. This follows the [D-Bus service-file requirements](https://dbus.freedesktop.org/doc/dbus-daemon.1.html).
 
 Offline removal restores the preference without starting a user manager or
 frontend. Online removal requires idle portal sessions; FileManager1 shutdown
@@ -1729,6 +1734,12 @@ denies process inspection/injection, BPF, perf events, userfaultfd, io_uring set
 keyring operations and handle-based filesystem opening. It does not replace
 Chromium's process-specific policy or disable its sandbox. Unsupported syscall
 architectures fail closed; x86-64 rejects the alternate x32 syscall ABI.
+The installed helper's `--check` response must explicitly identify
+`ottrin-html-render inherited-seccomp-v1`; a successful exit from an older helper
+is insufficient. Portable/AppImage replacement alone does not update protected
+system helpers, so the app requests setup/update until that integration is current.
+The hosted renderer probe checks the versioned response before claiming readiness.
+
 The program travels in an immutable memfd; only the trusted child receives its
 close-on-exec exception. The kernel regression first proves self-process memory
 reading works, then verifies denial in an owned child with the actual filter;

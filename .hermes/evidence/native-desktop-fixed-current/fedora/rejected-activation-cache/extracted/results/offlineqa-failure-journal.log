@@ -1,0 +1,32 @@
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Queued start job for default target default.target.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Created slice app.slice - User Application Slice.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Started grub-boot-success.timer - Mark boot as successful after the user session has run 2 minutes.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Started systemd-tmpfiles-clean.timer - Daily Cleanup of User's Temporary Directories.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reached target paths.target - Paths.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reached target timers.target - Timers.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Starting dbus.socket - D-Bus User Message Bus Socket...
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Starting systemd-tmpfiles-setup.service - Create User Files and Directories...
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reached target sockets.target - Sockets.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Finished systemd-tmpfiles-setup.service - Create User Files and Directories.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reached target basic.target - Basic System.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reached target default.target - Main User Target.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Startup finished in 145ms.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Starting ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :78 -screen 0 1024x768x24 -nolisten tcp -ac...
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Started ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :78 -screen 0 1024x768x24 -nolisten tcp -ac.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reload requested from client PID 1948 ('systemctl')...
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reloading...
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: > Warning:          Multiple symbols for level 1/group 1 on key <FK23>
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: >                   Using F23, ignoring XF86TouchpadOff
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: > Warning:          Symbol map for key <FK23> redefined
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: >                   Using last definition for conflicting fields
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: > Warning:          Symbol map for key <FK24> redefined
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: >                   Using last definition for conflicting fields
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa Xvfb[1949]: Errors from xkbcomp are not fatal to the X server
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reloading finished in 105 ms.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reached target graphical-session.target - Current graphical user session.
+Nov 02 01:09:36 ottrin-native-fedora-desktop-qa systemd[1924]: Reached target ottrin-qa-session.target - Owned private X11 QA session.

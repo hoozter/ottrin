@@ -1,5 +1,27 @@
 //! Atomic, bounded per-user integration files. Modified ownership is checked by callers.
 use std::{fs, io::Write, path::Path};
+
+/// Refresh registration changes on the existing user bus. A newly created
+/// service directory is not necessarily watched by the running broker.
+/// https://dbus.freedesktop.org/doc/dbus-daemon.1.html
+pub(super) fn reload_activation() -> Result<(), String> {
+    let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE)
+        .map_err(|e| format!("Cannot refresh desktop activation: {e}"))?;
+    bus.call_sync(
+        Some("org.freedesktop.DBus"),
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+        "ReloadConfig",
+        None,
+        None,
+        gio::DBusCallFlags::NO_AUTO_START,
+        3000,
+        gio::Cancellable::NONE,
+    )
+    .map_err(|e| format!("Cannot refresh desktop activation: {e}"))?;
+    Ok(())
+}
+
 pub(super) fn read_bytes(path: &Path) -> Result<Option<Vec<u8>>, String> {
     match fs::symlink_metadata(path) {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),

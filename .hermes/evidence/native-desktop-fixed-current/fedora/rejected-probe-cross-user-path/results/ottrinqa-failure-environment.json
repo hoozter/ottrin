@@ -1,0 +1,7 @@
+[
+  "HOME=/home/ottrinqa",
+  "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+  "DISPLAY=:77",
+  "XDG_CURRENT_DESKTOP=OttrinQA",
+  "XDG_SESSION_TYPE=x11"
+]

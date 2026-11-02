@@ -1,0 +1,25 @@
+{
+  "setup_control": false,
+  "distro": "fedora",
+  "domain": "ottrin-native-fedora-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "c79dbcbc42de33c9fdf06b06160d9136a37bc470",
+  "status": "fail",
+  "package_sha256": "5f282ef9290cd976fab03f39a3702fdfc65274fafaf0a46112900049b1d78754",
+  "uuid": "819e3e6b-6b78-4e73-a0fe-207ac87f67f3",
+  "cloud_init": {
+    "exit": 2,
+    "status": "done",
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('{\\n  \"source\": \"c79dbcbc42de33c9fdf06b06160d9136a37bc470\",\\n  \"scope\": \"Exact fedora same-version reinstall/removal; native online/offline folder/picker and independent portable choice\",\\n  \"status\": \"fail\",\\n  \"error\": \"RuntimeError(\\\\\"[\\'runuser\\', \\'-u\\', \\'ottrinqa\\', \\'--\\', \\'env\\', \\'-i\\', \\'PATH=/usr/sbin:/usr/bin:/sbin:/bin\\', \\'HOME=/home/ottrinqa\\', \\'USER=ottrinqa\\', \\'XDG_CURRENT_DESKTOP=OttrinQA\\', \\'XDG_RUNTIME_DIR=/run/user/1000\\', \\'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus\\', \\'/usr/bin/ottrin\\', \\'portal\\', \\'apply\\']: 1:  ottrin: The desktop portal restarted, but Ottrin\\'s picker is not ready: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name is not activatable\\\\\\\\n\\\\\")\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

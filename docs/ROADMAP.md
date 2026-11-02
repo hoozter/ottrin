@@ -52,12 +52,23 @@ the shared definition to helper-managed integration, retain it for a known
 portable picker, validate explicit on-demand activation, and distinguish idle
 readiness from failed service state. Exact new-package acceptance is still pending.
 
-Hosted source run41365916700 also fails the Linux HTML gate: one short-lived
-renderer sample has Seccomp0. The failure and process history are retained;
-this is not a green source run. A new inherited HTML syscall filter passes a real
-kernel denial control and strict source checks; the production rendered/profile
-probe is now stricter about every observed sample. It remains pending until that
-full probe passes. Stable packages above remain unchanged by this source work.
+Hosted source run41365916700 fails the Linux HTML gate: one short-lived
+renderer sample has Seccomp0; its Windows and performance jobs pass. The stricter
+inherited-filter rendering/profile/preload gate and the full Linux job now pass
+for `c79dbcbc` in run41369606817; that run's Windows job is still pending at this
+checkpoint. This does not accept a stale installed helper: the next source requires
+an explicit versioned helper response and shows setup/update for older helpers.
+
+The exact `c79dbcbc` Fedora run reproduces a fresh-broker activation failure.
+`ListActivatableNames` lacks the new backend; an explicit session-bus ReloadConfig
+adds it and allows real Ottrin chooser requests. With that diagnostic control,
+all three users' real frontend/idle checks, native reinstall/removal/refusal,
+shared-definition retention and a working portable picker after native uninstall
+pass, preserving main preferences/source. Normal setup remains unaccepted for
+that cohort. Source now reloads the user activation registry during setup and
+online removal. The next clean packages must pass without the control. Owned VMs,
+volumes, credentials and profiles are removed; stable deliverables remain the
+accepted8ede cohort above.
 
 The independent queue is:
 1. Native DEB/RPM removal/reinstall with optional folder/picker integration:

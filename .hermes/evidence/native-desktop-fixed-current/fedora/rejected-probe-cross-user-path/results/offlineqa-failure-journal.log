@@ -1,0 +1,64 @@
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Queued start job for default target default.target.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Created slice app.slice - User Application Slice.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Started grub-boot-success.timer - Mark boot as successful after the user session has run 2 minutes.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Started systemd-tmpfiles-clean.timer - Daily Cleanup of User's Temporary Directories.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reached target paths.target - Paths.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reached target timers.target - Timers.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Starting dbus.socket - D-Bus User Message Bus Socket...
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Starting systemd-tmpfiles-setup.service - Create User Files and Directories...
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reached target sockets.target - Sockets.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Finished systemd-tmpfiles-setup.service - Create User Files and Directories.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reached target basic.target - Basic System.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reached target default.target - Main User Target.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Startup finished in 134ms.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Starting ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :78 -screen 0 1024x768x24 -nolisten tcp -ac...
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Started ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :78 -screen 0 1024x768x24 -nolisten tcp -ac.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: > Warning:          Multiple symbols for level 1/group 1 on key <FK23>
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: >                   Using F23, ignoring XF86TouchpadOff
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: > Warning:          Symbol map for key <FK23> redefined
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: >                   Using last definition for conflicting fields
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: > Warning:          Symbol map for key <FK24> redefined
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: >                   Using last definition for conflicting fields
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa Xvfb[1934]: Errors from xkbcomp are not fatal to the X server
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reload requested from client PID 1935 ('systemctl')...
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reloading...
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reloading finished in 100 ms.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reached target graphical-session.target - Current graphical user session.
+Nov 02 01:22:50 ottrin-native-fedora-desktop-qa systemd[1910]: Reached target ottrin-qa-session.target - Owned private X11 QA session.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Created slice session.slice - User Core Session Slice.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Starting dbus-broker.service - D-Bus User Message Bus...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa dbus-broker-launch[2099]: Policy to allow eavesdropping in /usr/share/dbus-1/session.conf +31: Eavesdropping is deprecated and ignored
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa dbus-broker-launch[2099]: Policy to allow eavesdropping in /usr/share/dbus-1/session.conf +33: Eavesdropping is deprecated and ignored
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started dbus-broker.service - D-Bus User Message Bus.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa dbus-broker-launch[2099]: Ready
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa dbus-broker-launch[2099]: Noticed file-system modification, trigger reload.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa dbus-broker-launch[2099]: Policy to allow eavesdropping in /usr/share/dbus-1/session.conf +31: Eavesdropping is deprecated and ignored
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa dbus-broker-launch[2099]: Policy to allow eavesdropping in /usr/share/dbus-1/session.conf +33: Eavesdropping is deprecated and ignored
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Reload requested from client PID 2104 ('systemctl')...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Reloading...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Reloading finished in 115 ms.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Starting xdg-desktop-portal.service - Portal service...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Starting xdg-permission-store.service - sandboxed app permission store...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started xdg-permission-store.service - sandboxed app permission store.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Starting xdg-document-portal.service - flatpak document portal service...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started xdg-document-portal.service - flatpak document portal service.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Starting xdg-desktop-portal-gtk.service - Portal service (GTK/GNOME implementation)...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Starting at-spi-dbus-bus.service - Accessibility services bus...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started at-spi-dbus-bus.service - Accessibility services bus.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa dbus-broker-launch[2147]: Ready
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Created slice app-dbus\x2d:1.9\x2dorg.a11y.atspi.Registry.slice - Slice /app/dbus-:1.9-org.a11y.atspi.Registry.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started dbus-:1.9-org.a11y.atspi.Registry@0.service.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started xdg-desktop-portal-gtk.service - Portal service (GTK/GNOME implementation).
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa at-spi2-registryd[2154]: SpiRegistry daemon is running with well-known name - org.a11y.atspi.Registry
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Starting ottrin-portal.service - Ottrin on-demand file picker...
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started ottrin-portal.service - Ottrin on-demand file picker.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started pipewire.service - PipeWire Multimedia Service.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started wireplumber.service - Multimedia Service Session Manager.
+Nov 02 01:22:52 ottrin-native-fedora-desktop-qa systemd[1910]: Started xdg-desktop-portal.service - Portal service.
+Nov 02 01:22:54 ottrin-native-fedora-desktop-qa systemd[1910]: Stopping ottrin-portal.service - Ottrin on-demand file picker...
+Nov 02 01:22:54 ottrin-native-fedora-desktop-qa systemd[1910]: Stopped ottrin-portal.service - Ottrin on-demand file picker.

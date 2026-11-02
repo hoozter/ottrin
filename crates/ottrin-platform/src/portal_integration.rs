@@ -451,6 +451,7 @@ fn native_package_at(
             disable_at(paths, |args| if online { control(args) } else { Ok(()) })?;
         }
         if online {
+            super::integration_storage::reload_activation()?;
             control(&["try-restart", "xdg-desktop-portal.service"])?;
         }
         // With no user manager there is no frontend to reload. The restored
@@ -656,6 +657,7 @@ pub fn apply() -> Result<String, String> {
         return Ok("No pending file picker changes".into());
     };
     ensure_idle()?;
+    super::integration_storage::reload_activation()?;
     systemctl(&["restart", "xdg-desktop-portal.service"])?;
     if record.enabled {
         // Explicit setup validates the installed activation path, including on

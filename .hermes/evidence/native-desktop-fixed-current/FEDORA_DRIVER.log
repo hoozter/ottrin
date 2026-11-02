@@ -1,0 +1,50 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-fixed-current/native-vm.py", line 98, in <module>
+    assert result.returncode==0,result.stdout[-2000:]+result.stderr[-1000:]
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: k', 'org.freedesktop.impl.portal.PermissionStore', 'org.freedesktop.impl.portal.desktop.gtk', 'org.freedesktop.impl.portal.desktop.ottrin', 'org.freedesktop.portal.Desktop', 'org.freedesktop.portal.Documents', 'org.freedesktop.portal.Tracker', 'org.freedesktop.systemd1', 'org.gtk.GLib.PACRunner'],)\n"
+    }
+  },
+  "picker_frontend": {
+    "ottrinqa": {
+      "expected_executable": "/usr/bin/ottrin",
+      "chooser_pid": 2350,
+      "mapped_ms": 286,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    },
+    "offlineqa": {
+      "expected_executable": "/usr/bin/ottrin",
+      "chooser_pid": 2397,
+      "mapped_ms": 264,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    },
+    "portableqa": {
+      "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+      "chooser_pid": 2448,
+      "mapped_ms": 260,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    }
+  },
+  "configured": {
+    "ottrinqa": 2344,
+    "offlineqa": 2391,
+    "portableqa": 2440
+  },
+  "reinstall": "pass; selected integrations retained; active picker PIDs unchanged",
+  "modified_native_asset": "refused before native or portable picker stopped",
+  "native_removal": "pass; online/offline preferences restored and native receipts removed; app preferences/source retained",
+  "portable_registration_and_process": "preserved",
+  "portable_system_definition_present": true,
+  "portable_frontend_after_native_removal": {
+    "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+    "chooser_pid": 3526,
+    "mapped_ms": 127,
+    "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+    "status": "pass"
+  },
+  "portable_picker_after_native_removal": "pass; real frontend restart and backend readiness",
+  "error": "All later diagnostic scopes required explicit session bus reload; normal setup is not accepted"
+}
