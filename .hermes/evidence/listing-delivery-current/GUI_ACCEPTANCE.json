@@ -1,0 +1,24 @@
+{
+  "status": "pass within named actual AppImage private-native GUI/browser scopes",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "artifact_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+  "cases": {
+    "main-dark100": ".hermes/evidence/listing-delivery-current/main-dark100/RESULT.json",
+    "main-light150": ".hermes/evidence/listing-delivery-current/main-light150/RESULT.json",
+    "properties-dark100": ".hermes/evidence/listing-delivery-current/properties-dark100/RESULT.json",
+    "properties-light150": ".hermes/evidence/listing-delivery-current/properties-light150/RESULT.json",
+    "icon": ".hermes/evidence/listing-delivery-current/icon/RESULT.json",
+    "upgrade-view": ".hermes/evidence/listing-delivery-current/upgrade-view/RESULT.json",
+    "menu-keys": ".hermes/evidence/listing-delivery-current/menu-keys/RESULT.json",
+    "menu-space": ".hermes/evidence/listing-delivery-current/menu-space/RESULT.json",
+    "browser-firefox": ".hermes/evidence/listing-delivery-current/browser-firefox/RESULT.json",
+    "browser-flatpak": ".hermes/evidence/listing-delivery-current/browser-flatpak/RESULT.json",
+    "symlink-gui-final": ".hermes/evidence/listing-delivery-current/symlink-gui-final/RESULT.json"
+  },
+  "pending": [
+    "fresh Fedora and Ubuntu package lifecycle",
+    "hosted Windows verification completion",
+    "Linux promotion",
+    "Windows native GUI visibility toggle and Ctrl+L input; native NTFS test already passes"
+  ]
+}

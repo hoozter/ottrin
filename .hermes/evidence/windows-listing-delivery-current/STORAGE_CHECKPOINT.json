@@ -1,0 +1,28 @@
+{
+  "status": "Completed native assembly and rejected enabled guest fully removed; corrected enabled guest is a live registered consumer",
+  "completed_cleanup": [
+    "assembly VM/two volumes/fixture",
+    "fulfilled source.zip124MB",
+    "rejected first enabled VM/two volumes/profile",
+    "rejected first enabled duplicate archive/base64 and first-login PNGs"
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current/input/previous.msix",
+      "purpose": "Single MSIX0.1.0.2 baseline required by pending0.1.0.3 enabled and disabled actual upgrades; remove after both consumers finish"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Single current source592d56e8 ZIP/NSIS/MSIX3 payload stage; native Windows software acceptance pending"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified",
+      "purpose": "Live corrected enabled revision3 native upgrade; OWNER.json registers VM/volumes/private-console cleanup"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current",
+      "purpose": "Compact current package/GUI receipts and synthetic screenshots; native Linux package acceptance pending"
+    }
+  ],
+  "compiler_debug_roots": "Native and Windows deps/incremental unchanged from exact before-packaging baseline; prior locked-helper cleanup retained current consumers"
+}

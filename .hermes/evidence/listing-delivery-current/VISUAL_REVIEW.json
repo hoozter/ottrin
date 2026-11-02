@@ -1,0 +1,11 @@
+{
+  "status": "reviewed within named captures",
+  "captures": {
+    "symlink-gui-final/main-directory-link-open.png": "9ed8975eb4c54debd45ee2df6255216d8453c7a8d4118b2575e4b83d0ebb2d9a",
+    "symlink-gui-final/chooser-directory-link-open.png": "b4c52ef2cc92b664a8a69bb58483e1fea34ac298ab8f92091de437b411174b4a",
+    "main-light150/initial.png": "94fee86c5dde3964539d957388efde8c0832a16eef3a678a9692c84ea8e041e3",
+    "properties-dark100/bottom.png": "8ad5db2cd8eb3d68cba0cb99da283db6acbce4bf79b029d3972814897f8fbb9d",
+    "properties-light150/initial.png": "9a9e16762287e1b2e130476f61f885447fb0aa368551a21495bb99cd7296020f"
+  },
+  "findings": "Directory link breadcrumb and child file match in main and chooser; Light150 main labels/icons align; long Properties headers elide before Close and metadata wraps within framed groups. Other workflow outcomes rely on named native receipts, not inferred visual coverage."
+}

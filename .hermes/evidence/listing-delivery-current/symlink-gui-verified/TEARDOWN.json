@@ -1,0 +1,36 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-h5ac205u",
+  "owned_processes_reaped": [
+    {
+      "pid": 429939,
+      "exit": 0
+    },
+    {
+      "pid": 429954,
+      "exit": 0
+    },
+    {
+      "pid": 429956,
+      "exit": 15
+    },
+    {
+      "pid": 430096,
+      "exit": 0
+    },
+    {
+      "pid": 430725,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      430101,
+      430250
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "('InsideProof.txt', ['Link', 'navigation', 'proof', 'x', '4%', 'B/', 'mvar', 'matmp', 'WM', 'ottrin-picker-qa-hSac20Su', 'mfixture', 'MM', 'source', 'M', 'DirShortcut', 'Filter', 'this', 'Folder', 'This', 'folder', '\u00a5', '1', 'item', 'abolo', 'Places', 'B', 'insideProof.txt', 'fi', 'Home', '=', 'Root', '\u00ae', 'Desktop', '4', 'Downloads', 'B', 'Documents:', 'File', 'name', 'Cancel', 'Open'])",
+  "profile_removed": true
+}

@@ -1,0 +1,25 @@
+{
+  "status": "pass: native assembly and58-file equality; runtime separate",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "a172aacc3e00bbbe33a4cc4c82507f42db7e7c1c5690cf0661539d79c327e720",
+  "version": "0.1.0.3",
+  "native_payload_files": 58,
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "pending": [
+    "actual0.1.0.2 to0.1.0.3 enabled/disabled startup upgrade, GUI and real login/removal"
+  ]
+}

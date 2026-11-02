@@ -1,0 +1,30 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-rol_xdea",
+  "owned_processes_reaped": [
+    {
+      "pid": 428263,
+      "exit": 0
+    },
+    {
+      "pid": 428266,
+      "exit": 0
+    },
+    {
+      "pid": 428267,
+      "exit": 15
+    },
+    {
+      "pid": 428320,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "901 34 0:71 / /var/tmp/.ottrin-picker-qa-rol_xdea/runtime/doc rw,nosuid,nodev,relatime shared:765 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

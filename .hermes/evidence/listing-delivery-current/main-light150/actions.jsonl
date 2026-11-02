@@ -1,0 +1,14 @@
+{"time": 1793639979.6891499, "click": [180, 171], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793639980.1512113, "key": "space"}
+{"time": 1793639980.4433274, "owned_window": {"id": "10485769", "title": "Ottrin Quick Inspector \u2014 contact.vcf"}}
+{"time": 1793639980.6748302, "capture": "vcf-inspector"}
+{"time": 1793639981.0884933, "click": [180, 255], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793639981.5539966, "key": "Right"}
+{"time": 1793639981.8413699, "owned_window": {"id": "10485769", "title": "Ottrin Quick Inspector \u2014 note.txt"}}
+{"time": 1793639982.1304488, "capture": "note-after-right"}
+{"time": 1793639982.5405152, "click": [180, 255], "pointer_settled_before_press": true, "hold_seconds": 0.15}
+{"time": 1793639983.0015538, "key": "space"}
+{"time": 1793639983.278038, "owned_window": {"id": "10485763", "title": "Ottrin"}}
+{"time": 1793639983.3189538, "file_checkpoint": "readonly-files-preserved", "files": {"source/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92", "source/note.txt": "59f2d0aa3eab8d1905ac52028df72b95b9912e5434521a62de6bb30f6a4e686c"}, "absent": []}
+{"time": 1793639983.5790899, "capture": "readonly-files-preserved"}
+{"time": 1793639983.9967437, "click": [1617, 27], "pointer_settled_before_press": true, "hold_seconds": 0.15}

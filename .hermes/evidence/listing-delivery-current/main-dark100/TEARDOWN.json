@@ -1,0 +1,33 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-goonqfap",
+  "owned_processes_reaped": [
+    {
+      "pid": 427172,
+      "exit": 0
+    },
+    {
+      "pid": 427175,
+      "exit": 0
+    },
+    {
+      "pid": 427176,
+      "exit": 15
+    },
+    {
+      "pid": 427236,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      427240,
+      427351
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "144 34 0:65 / /var/tmp/.ottrin-picker-qa-goonqfap/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

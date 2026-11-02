@@ -1,0 +1,46 @@
+{
+  "status": "rejected, not acceptance",
+  "attempts": [
+    {
+      "case": "symlink-gui",
+      "reason": "Main navigation succeeded; Alt+F4 did not close in private window-manager setup. Final test uses visible close button."
+    },
+    {
+      "case": "symlink-gui-verified",
+      "reason": "Chooser reached correct linked directory; OCR capitalization mismatch rejected child filename assertion. Final case-insensitive OCR still verifies exact returned native path and bytes."
+    }
+  ],
+  "removed_superseded_screenshots": [
+    {
+      "path": ".hermes/evidence/listing-delivery-current/symlink-gui/main-directory-link-open.png",
+      "bytes": 33929,
+      "sha256": "89ee4274d60bfde02a3f439ab646d1101247a83f17db6ecd804714e5b95fd944"
+    },
+    {
+      "path": ".hermes/evidence/listing-delivery-current/symlink-gui/main-links.png",
+      "bytes": 39266,
+      "sha256": "dcb3f2047fcc253fe9cd792eb84e08f045ab0af5a644bc82d6379fa400d7cab6"
+    },
+    {
+      "path": ".hermes/evidence/listing-delivery-current/symlink-gui-verified/chooser-directory-link-open.png",
+      "bytes": 33292,
+      "sha256": "e0102bd422c23bbb120efea6de98fbb1183a0cac9ddce1ac5152c56bbebd490f"
+    },
+    {
+      "path": ".hermes/evidence/listing-delivery-current/symlink-gui-verified/main-directory-link-open.png",
+      "bytes": 33928,
+      "sha256": "bd3c56b17e7b64133103e1d2885a8ab2dcdbb96fcd6a3362411276c4a2990a33"
+    },
+    {
+      "path": ".hermes/evidence/listing-delivery-current/symlink-gui-verified/chooser-links.png",
+      "bytes": 36455,
+      "sha256": "3da77e8340e2068c00b84f3547d388802056e117a5f826d65cb267b6226c87d1"
+    },
+    {
+      "path": ".hermes/evidence/listing-delivery-current/symlink-gui-verified/main-links.png",
+      "bytes": 39251,
+      "sha256": "0f805c808fc4a47ce2902dd3798928d59d584de76914c4fb5190cfa5f00b35bd"
+    }
+  ],
+  "retained": "Exact assertion logs, raw RESULT/TEARDOWN receipts and successful final screenshots/response"
+}

@@ -1,0 +1,38 @@
+{
+  "status": "completed GUI profiles/processes/displays/buses/mounts removed; current stage/extraction have pending native package acceptance consumers",
+  "baseline": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905241858,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18178444902,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 43391040479,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38912273720,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current": 826,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current": 56882171
+  },
+  "current": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905241858,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18178444902,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 43391040479,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38912273720,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current": 2457795,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current": 117207031
+  },
+  "deltas": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 0,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 0,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 0,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current": 2456969,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current": 60324860
+  },
+  "removed_rejected_screenshot_bytes": 216121,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Four candidate packages awaiting fresh distribution lifecycle and hosted completion before promotion"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+      "purpose": "Single owned AppImage extraction for pending candidate acceptance/promotion; remove after delivery"
+    }
+  ]
+}

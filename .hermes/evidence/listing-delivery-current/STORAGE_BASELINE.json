@@ -1,0 +1,12 @@
+{
+  "scope": "Shared debug roots after source verification/cache cleanup and before packaging changes these roots; release build uses existing release cache",
+  "paths": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905241858,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18178444902,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 43391040479,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38912273720,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current": 826,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current": 56882171
+  },
+  "configuration": "Existing production build flags/SDK, shared target and Cargo caches; one job per producer; owned stage paths fixed"
+}

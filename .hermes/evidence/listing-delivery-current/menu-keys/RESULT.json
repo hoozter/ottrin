@@ -1,0 +1,92 @@
+{
+  "status": "pass: native menus own arrows/Escape; closed-menu Inspector Escape still closes normally",
+  "artifact_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "scope": "Private native X11 synthetic-file main/Inspector menu keyboard observation; no product mutation or personal profile",
+  "main_selection_palette_samples": {
+    "main-selected-before": [
+      [
+        39,
+        53,
+        67
+      ],
+      [
+        34,
+        38,
+        43
+      ]
+    ],
+    "main-menu-open": [
+      [
+        39,
+        53,
+        67
+      ],
+      [
+        34,
+        38,
+        43
+      ]
+    ],
+    "main-menu-after-down": [
+      [
+        39,
+        53,
+        67
+      ],
+      [
+        34,
+        38,
+        43
+      ]
+    ],
+    "main-after-popup-escape": [
+      [
+        39,
+        53,
+        67
+      ],
+      [
+        34,
+        38,
+        43
+      ]
+    ]
+  },
+  "main_selection_retained_behind_menu": true,
+  "inspector_remained_open_after_popup_escape": true,
+  "second_escape_closes_inspector": true,
+  "normal_exit": 0,
+  "source_files_unchanged": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-r38ao1mu",
+    "owned_processes_reaped": [
+      {
+        "pid": 433518,
+        "exit": 0
+      },
+      {
+        "pid": 433521,
+        "exit": 0
+      },
+      {
+        "pid": 433522,
+        "exit": 15
+      },
+      {
+        "pid": 433629,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        433633,
+        433700
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

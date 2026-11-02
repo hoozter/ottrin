@@ -247,9 +247,31 @@ attributes. Dot-file filtering, ordinary/archive entries and show-hidden on are
 covered. Two focused Linux cases, all460 Linux UI tests (one existing ignored),
 strict Linux/Windows lint and the actual before/after Windows NTFS test pass.
 Both native test guests/disks/fixtures are removed. This source correction is not
-in the delivered d09569e2 artifacts. Next build a clean source cohort, test the
-affected real GUI/chooser flows, verify package identity and promote only after
-hosted gates pass. Source/native evidence: `listing-metadata-current/ACCEPTANCE.json`.
+in the delivered d09569e2 artifacts. Clean source592d56e8 now builds all four
+Linux formats and Windows ZIP/NSIS; native MakeAppx MSIX0.1.0.3 assembly passes
+58-file equality and invalid-revision refusal. All six current Linux main/
+Properties/icon/saved-view workflows, both native popup keyboard probes and
+actual installed Firefox/Flatpak Falkon Open/Save pass. Actual main List and
+chooser directory-link navigation pass, including exact selected child path,
+source bytes and retained link identity. Two earlier GUI harness attempts are
+explicitly rejected: private Alt+F4 close and OCR capitalization; their owned
+profiles/processes are removed. The accepted case uses visible Close and verifies
+the exact returned native path. The assembly guest/volumes/fixture and fulfilled
+124MB source archive are removed. Source/native evidence:
+`listing-metadata-current/ACCEPTANCE.json`; current package/GUI checkpoint:
+`listing-delivery-current/CHECKPOINT.json`. Fresh Fedora/Ubuntu lifecycle and
+hosted Windows completion remain before Linux promotion. Windows0.1.0.2 to
+0.1.0.3 startup-enabled attempt fails its Inspector close input: it sends the
+second Space immediately after child mapping, inside the existing180ms opening
+Space guard. That attempt is rejected and its guest/volumes/profile are removed.
+The corrected driver observes a settled child for250ms, captures it and sends
+one close Space with bounded closure observation, without input retries.
+A fresh enabled upgrade is now running; it is not accepted yet. Disabled startup
+and rendered native visibility/Ctrl+L controls follow. The latter now has explicit
+native-attribute fixtures and before/show-all/restored captures for host rendered
+verification; this preparation alone is not acceptance.
+Current stages/extraction and the sole previous MSIX input have these named
+consumers; stable Linux, internal Windows8ede and public Windows remain unchanged.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not

@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current/symlink-gui.py", line 31, in <module>
+    run(['xdotool','key','--clearmodifiers','alt+F4']);assert app.wait(timeout=15)==0
+                                                              ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2045, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-x86_64.AppImage', '/var/tmp/.ottrin-picker-qa-5mchauz3/fixture/source', '--renderer', 'opengl']' timed out after 15 seconds

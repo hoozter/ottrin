@@ -1,0 +1,164 @@
+{
+  "status": "pass; failed runtime scope retained without duplicate archive/base64 or superseded first-login screenshots",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "retained_native_results": [
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/ACTOR.json",
+      "sha256": "8f074bcad8945f090fc38e9d20ce86cdde42e0d28b84974f2cd17c8490787328"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/BEFORE_UPDATE.json",
+      "sha256": "9bda41a079f7a5c56155f768ce6d4f402de2ad599ceec9fdadb38a25380649d6"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/CRASH_EVENTS.json",
+      "sha256": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/DEPLOYMENT.json",
+      "sha256": "5de2073a5563e13ba5a4ab2ba17f646706dbde0de4f1b39526288949713657cc"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/DESKTOP_READY.json",
+      "sha256": "a43e0bca897554522d1ed42e2b9805f3fffd879740d546db3f879b6f58272731"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/DESKTOP_WAITING.json",
+      "sha256": "7ce436d1209cfa24c84f6b8d858482234b4080eafb5e04861a7d07884a5c7020"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/disabled-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/disabled-status.stdout",
+      "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/index-status.json",
+      "sha256": "89daf091b47fd34cad8a48f382a527819f49b870a6d34bd2b7a02f571455eb21"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/index-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/main.png",
+      "sha256": "a03353e1dede1cb06a6a99d018f891e8e03d5f0604de95d1a6340ebad2eecf70"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/reenable.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/reenable.stdout",
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/reenabled-index-status.json",
+      "sha256": "15b36222350c13f772151768166079fbbb59ed3267cba0827cc19f0239942fb0"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/reenabled-index-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/RESULT.json",
+      "sha256": "585cf8b367bfc3b34c979aadc3f3a5af17509cfe2d90af20a932a491ca573a47"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/service-install.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/service-install.stdout",
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/service-remove.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/service-remove.stdout",
+      "sha256": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/service-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/service-status.stdout",
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/UPDATE.json",
+      "sha256": "4c244a85df2d4ddcc4cd5301cbe14e630180808e23676bb1f8e241679f7b2db6"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/updated-fixture-selected.png",
+      "sha256": "ed7366a883734aa622d7c8e503910822c918fa97b7cba9083f98bc63d4033784"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/updated-main.png",
+      "sha256": "9063eb4f8a25a2a73ba0359722f60d8620b54d8aaae183014d548c42143b9b5a"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/updated-service-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/updated-service-status.stdout",
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/results/UPDATED.json",
+      "sha256": "a299bee6b94b17a1d8dbf8d45a51066a10791e1eb4790555c529c85228d729d9"
+    }
+  ],
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/RESULTS.zip",
+      "bytes": 124619,
+      "sha256": "91e14a8763279552900cca418a1f04feaed341c8a443d50751d34bfacd9655de"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/RESULT_EXPORT_PROCESS.json",
+      "bytes": 221608,
+      "sha256": "30ff13cd2403fdfce40b6b920d71b323f0ced6fb7cd8edcd2094473665079f14"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/privacy-observed-3.png",
+      "bytes": 206461,
+      "sha256": "a5ecc8def5314e42bfccf347ba81cdce29839e09748bf813b6739380c63be058"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/privacy-observed-1.png",
+      "bytes": 194006,
+      "sha256": "8e09644699c01cb2b4c6c6e7160c7ae3fd2fa7657774f3c6529d3e7e8edb0361"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/privacy-observed-2.png",
+      "bytes": 198774,
+      "sha256": "1602e607141b84016e47415c5072be0c6e629434ec1437ca485f286fa2d2893c"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/privacy-observed-0.png",
+      "bytes": 201452,
+      "sha256": "148cbf9fef106a7a991cd2294f9e91cda1d74e94e4ad28d4fd5281fd4f13a813"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled/desktop-ready.png",
+      "bytes": 2513036,
+      "sha256": "35d4213dba251e24e972b18615cd9b0d6d9a77e7a41060df8bc4895a8990c6e6"
+    }
+  ]
+}

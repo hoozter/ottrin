@@ -1,0 +1,35 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-zk10cuzl",
+  "owned_processes_reaped": [
+    {
+      "pid": 432526,
+      "exit": 0
+    },
+    {
+      "pid": 432529,
+      "exit": 0
+    },
+    {
+      "pid": 432530,
+      "exit": 15
+    },
+    {
+      "pid": 432584,
+      "exit": 0
+    },
+    {
+      "pid": 432822,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      432588,
+      432694
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

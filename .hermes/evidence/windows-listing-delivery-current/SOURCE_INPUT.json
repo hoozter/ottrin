@@ -1,0 +1,9 @@
+{
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current/source.zip",
+  "status": "prepared",
+  "sha256": "730e799c06942ff5b9449907c29c5232090ad68944a9cb2a58706c733d0a18b6",
+  "archive_bytes": 124835339,
+  "temporary_clone_removed": true
+}

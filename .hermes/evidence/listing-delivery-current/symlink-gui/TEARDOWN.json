@@ -1,0 +1,32 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-5mchauz3",
+  "owned_processes_reaped": [
+    {
+      "pid": 428021,
+      "exit": 0
+    },
+    {
+      "pid": 428024,
+      "exit": 0
+    },
+    {
+      "pid": 428025,
+      "exit": 15
+    },
+    {
+      "pid": 428082,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      428086,
+      428143
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Command '['/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-x86_64.AppImage', '/var/tmp/.ottrin-picker-qa-5mchauz3/fixture/source', '--renderer', 'opengl']' timed out after 15 seconds",
+  "profile_removed": true
+}

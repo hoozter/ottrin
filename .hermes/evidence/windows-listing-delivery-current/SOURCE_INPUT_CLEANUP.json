@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "removed_path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current/source.zip",
+  "removed_bytes": 124835339,
+  "fulfilled_consumer": "native revision3 assembly; guest/volumes/fixture removed",
+  "current_package_retained": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage"
+}

@@ -1,0 +1,30 @@
+{
+  "status": "observed live; not final acceptance",
+  "run": 41486034184,
+  "headSha": "992b2687260b5d901b3242d8c7ce27c321dcc66e",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/41486034184",
+  "run_status": "in_progress",
+  "conclusion": "",
+  "jobs": [
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "in_progress",
+      "conclusion": ""
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}

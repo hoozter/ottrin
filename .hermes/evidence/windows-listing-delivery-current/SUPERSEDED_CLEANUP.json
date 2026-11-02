@@ -1,0 +1,8 @@
+{
+  "removed": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "bytes": 235965629,
+  "scope": "Superseded d095 portable/NSIS/payload staging after all assembly/update consumers close; accepted8ede candidate and public files preserved",
+  "retained_previous": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current/input/previous.msix",
+  "previous_bytes": 56836638,
+  "previous_transfer": "MSIX moved once, not copied; old staging retired"
+}

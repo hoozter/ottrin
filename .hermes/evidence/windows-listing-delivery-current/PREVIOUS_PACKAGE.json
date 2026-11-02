@@ -1,0 +1,7 @@
+{
+  "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current/input/previous.msix",
+  "sha256": "536f5c72371b17b2faab15ad35d1aebfbb8f26e4917bc8958ec21fc50bc7f1bb",
+  "version": "0.1.0.2",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "purpose": "Single actual0.1.0.2 baseline for new development0.1.0.3 enabled/disabled update consumers"
+}

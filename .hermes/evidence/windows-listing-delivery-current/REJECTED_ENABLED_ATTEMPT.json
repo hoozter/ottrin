@@ -1,0 +1,19 @@
+{
+  "status": "rejected; actual runtime gate failed, not accepted",
+  "case": "upgrade-enabled",
+  "error": "Normal Inspector Space did not close",
+  "source_invariant": "crates/ottrin-ui/src/lib.rs opening Space guard180ms; native helper sent distinct close press immediately after mapping",
+  "correction": "Observe owned child for250ms and capture before a single close Space, then bounded closure observation with no input retry. New actual visibility/Ctrl+L screenshot controls also added, pending host rendered check.",
+  "new_runtime_input_sha256": "4b6a2215ffb6c3a0778857f0feb7a12e4622e169fb0d1a86a2e308a219f04cd4",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "pending": "Fresh same source/revision3 upgrade-enabled-verified and disabled native runs"
+}

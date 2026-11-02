@@ -1,0 +1,44 @@
+{
+  "status": "pass",
+  "artifact_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "scope": "Private native X11 synthetic-file main/Inspector popup Space ownership observation; no product mutation or personal profile",
+  "main_menu_space_opened_inspector": false,
+  "inspector_menu_space_closed_inspector": false,
+  "normal_space_opens_and_closes_inspector": true,
+  "normal_exit": 0,
+  "source_files_unchanged": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-w7y7tb8b",
+    "owned_processes_reaped": [
+      {
+        "pid": 434244,
+        "exit": 0
+      },
+      {
+        "pid": 434247,
+        "exit": 0
+      },
+      {
+        "pid": 434248,
+        "exit": 15
+      },
+      {
+        "pid": 434331,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        434335,
+        434456
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [
+      "144 34 0:65 / /var/tmp/.ottrin-picker-qa-w7y7tb8b/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

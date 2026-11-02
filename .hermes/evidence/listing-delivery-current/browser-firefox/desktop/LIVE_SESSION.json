@@ -1,0 +1,10 @@
+{
+  "profile": "/var/tmp/.ottrin-picker-qa-ofoeav8x",
+  "environment": {
+    "DISPLAY": ":4",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-5tC5q6MCAW,guid=68037c1aed20e3a6b253f3766ae8c6bd",
+    "HOME": "/var/tmp/.ottrin-picker-qa-ofoeav8x/home",
+    "XDG_RUNTIME_DIR": "/var/tmp/.ottrin-picker-qa-ofoeav8x/runtime"
+  },
+  "launcher_pid": 434495
+}
