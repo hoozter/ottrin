@@ -1,0 +1,31 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-rtvbftri",
+  "owned_processes_reaped": [
+    {
+      "pid": 4124755,
+      "exit": 0
+    },
+    {
+      "pid": 4124758,
+      "exit": 0
+    },
+    {
+      "pid": 4124759,
+      "exit": 15
+    },
+    {
+      "pid": 4124806,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      4124810,
+      4124870
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

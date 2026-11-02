@@ -1,0 +1,25 @@
+**********************
+Windows PowerShell transcript start
+Start time: 20261102003404
+Username: DESKTOP-81GHP8U\campbell
+RunAs User: DESKTOP-81GHP8U\campbell
+Configuration Name:
+Machine: DESKTOP-81GHP8U (Microsoft Windows NT 10.0.26100.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\OttrinJobFixtureQA\actor.ps1
+Process ID: 7688
+PSVersion: 5.1.26100.9168
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9168
+BuildVersion: 10.0.26100.9168
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+client=920x640 origin=0,0 dpi=96 enableRow=580
+PS>$global:?
+True
+**********************
+Windows PowerShell transcript end
+End time: 20261102003459
+**********************

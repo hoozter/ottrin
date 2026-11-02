@@ -1,0 +1,17 @@
+{
+  "source_revision": "e171dcef584b6645dafb217276fef8d7c9180482",
+  "scope": "Coherent Linux four-format and internal Windows candidate refresh. Stable deliverables retained until exact content/native/runtime acceptance.",
+  "cleanup_owner": "current roadmap goal",
+  "owned_staging": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage"
+  ],
+  "pending_consumers": [
+    "Linux package content and closure checks",
+    "actual AppImage folder/Properties/chooser, idle and uninstall/refusal lifecycle",
+    "Windows native MSI assembly and exact payload/native runtime checks",
+    "promotion after required scoped checks; preserve MSI rollback failure as explicit gate"
+  ],
+  "teardown": "Build drivers stop owned process groups and remove failed staging. Successful staging/extraction retained solely for listed acceptance and promotion; retire superseded stable packages only after reviewed promotion. No source changes during compilation."
+}

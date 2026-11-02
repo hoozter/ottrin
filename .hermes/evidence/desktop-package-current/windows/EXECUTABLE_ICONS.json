@@ -1,0 +1,51 @@
+{
+    "executables":  [
+                        {
+                            "path":  "C:\\OttrinCIPackageQA\\payload\\Ottrin-0.1.0-windows-x64\\bin\\ottrin.exe",
+                            "groups":  1,
+                            "extracted":  2,
+                            "small":  {
+                                          "sha256":  "9413a7da9d15bfe8d6a655969147184fc5c29703d200089390b1f3a38406bd1d",
+                                          "width":  16,
+                                          "height":  16
+                                      },
+                            "large":  {
+                                          "sha256":  "a43177ee3d436246a6246d05b5af3f086f6c0f122a37db6c312d11baf64b0ef0",
+                                          "width":  32,
+                                          "height":  32
+                                      }
+                        },
+                        {
+                            "path":  "C:\\OttrinCIPackageQA\\payload\\Ottrin-0.1.0-windows-x64\\bin\\ottrin-indexd.exe",
+                            "groups":  1,
+                            "extracted":  2,
+                            "small":  {
+                                          "sha256":  "9413a7da9d15bfe8d6a655969147184fc5c29703d200089390b1f3a38406bd1d",
+                                          "width":  16,
+                                          "height":  16
+                                      },
+                            "large":  {
+                                          "sha256":  "a43177ee3d436246a6246d05b5af3f086f6c0f122a37db6c312d11baf64b0ef0",
+                                          "width":  32,
+                                          "height":  32
+                                      }
+                        }
+                    ],
+    "status":  "pass",
+    "canonical":  {
+                      "path":  "C:\\OttrinCIPackageQA\\payload\\Ottrin-0.1.0-windows-x64\\assets\\icon.ico",
+                      "groups":  1,
+                      "extracted":  1,
+                      "small":  {
+                                    "sha256":  "9413a7da9d15bfe8d6a655969147184fc5c29703d200089390b1f3a38406bd1d",
+                                    "width":  16,
+                                    "height":  16
+                                },
+                      "large":  {
+                                    "sha256":  "a43177ee3d436246a6246d05b5af3f086f6c0f122a37db6c312d11baf64b0ef0",
+                                    "width":  32,
+                                    "height":  32
+                                }
+                  },
+    "method":  "Native Windows Shell extraction, dimensions and ARGB pixels"
+}

@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "f33de33a00a00e91f2a65a432be4f35d66aa43a4",
+  "pending_consumers": [
+    "production package content/closure verification",
+    "Dark100 native AppImage startup, icon, read-only preview and close"
+  ],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks"
+}

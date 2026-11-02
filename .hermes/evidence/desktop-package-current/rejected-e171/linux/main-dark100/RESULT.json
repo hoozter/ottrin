@@ -1,0 +1,158 @@
+{
+  "artifact_sha256": "c345f17f23886b60f63c4cd68cf64e8076eb3bb6a283a290f2f6c28a5b00536b",
+  "source_revision": "e171dcef584b6645dafb217276fef8d7c9180482",
+  "scope": "Actual AppImage native X11/software renderer; GUI workflow, not physical desktop acceptance",
+  "initial_files": {
+    "source/note.txt": "59f2d0aa3eab8d1905ac52028df72b95b9912e5434521a62de6bb30f6a4e686c",
+    "source/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+    "destination/original.txt": "bd5fd236ba1e36d9584b207ca1073e19095ddb9cbc4cb2658991a54d9944915d"
+  },
+  "window_mapped_ms": 765.82,
+  "daemon_pid": 4099474,
+  "normal_exit": 0,
+  "index_survived_window_close": true,
+  "persisted_config": {
+    "theme": "Dark",
+    "theme_preset": "Ottrin",
+    "custom_themes": [],
+    "active_custom_theme": null,
+    "default_view_mode": "List",
+    "colorize_file_types": true,
+    "colorize_folder_labels": false,
+    "list_columns": [
+      "Name",
+      "Kind",
+      "Size",
+      "Modified"
+    ],
+    "miller_view_scale": 1.0,
+    "list_view_scale": 1.0,
+    "grid_view_scale": 1.0,
+    "command_frame_always_visible": false,
+    "show_hidden_files": false,
+    "list_show_thumbnails": false,
+    "grid_show_thumbnails": false,
+    "folder_list_thumbnails": {},
+    "folder_grid_thumbnails": {},
+    "target": {
+      "current": null,
+      "pinned": [],
+      "has_ever_set": false,
+      "recent": []
+    },
+    "bookmarks": [
+      [
+        "\ue88a",
+        "Home",
+        "/var/tmp/.ottrin-picker-qa-i0yx7owz/home"
+      ],
+      [
+        "\ue1db",
+        "Root",
+        "/"
+      ]
+    ],
+    "search": {
+      "default_scope": "Global",
+      "include_hidden_system": false,
+      "include_roots": [
+        "/var/tmp/.ottrin-picker-qa-i0yx7owz/fixture"
+      ],
+      "indexed_volumes": [],
+      "exclude_roots": [
+        "/proc",
+        "/sys",
+        "/dev",
+        "/run"
+      ],
+      "content_indexing_enabled": false,
+      "content_include_roots": [],
+      "content_exclude_roots": [],
+      "content_file_groups": [
+        "TextDocuments",
+        "SourceCode"
+      ],
+      "content_max_file_size_bytes": 524288,
+      "include_globs": [],
+      "exclude_globs": [
+        "*.swp",
+        "*.swo",
+        "*.tmp",
+        "*~",
+        ".git/**",
+        "**/.git/**",
+        ".svn/**",
+        "**/.svn/**",
+        ".hg/**",
+        "**/.hg/**",
+        "node_modules/**",
+        "**/node_modules/**",
+        "target/**",
+        "**/target/**",
+        "__pycache__/**",
+        "**/__pycache__/**",
+        "*.pyc",
+        "*.pyo",
+        ".Trash/**",
+        ".Trash-*/**"
+      ],
+      "default_sort": "Relevance",
+      "result_limit": 500,
+      "refresh_interval_hours": 0,
+      "use_system_locate": false,
+      "manage_locate_db": false,
+      "locate_update_hours": 6
+    },
+    "search_setup_completed": true,
+    "folder_column_widths": {},
+    "miller_column_width_mode": "Fixed",
+    "smart_panel_width": 420.0,
+    "window_size": [
+      1100.0,
+      800.0
+    ],
+    "thumbnail_cache_max_mb": 512,
+    "installed_office_previews_enabled": false,
+    "graphics_renderer": "Native",
+    "graphics_compatibility_notice_seen": true
+  },
+  "final_files": {
+    "source/note.txt": "59f2d0aa3eab8d1905ac52028df72b95b9912e5434521a62de6bb30f6a4e686c",
+    "source/contact.vcf": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+    "destination/original.txt": "bd5fd236ba1e36d9584b207ca1073e19095ddb9cbc4cb2658991a54d9944915d"
+  },
+  "status": "pass: normal close, index continuity, saved theme and unchanged declared files",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-i0yx7owz",
+    "owned_processes_reaped": [
+      {
+        "pid": 4099346,
+        "exit": 0
+      },
+      {
+        "pid": 4099349,
+        "exit": 0
+      },
+      {
+        "pid": 4099350,
+        "exit": 15
+      },
+      {
+        "pid": 4099406,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        4099410,
+        4099474
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "96 34 0:64 / /var/tmp/.ottrin-picker-qa-i0yx7owz/runtime/doc rw,nosuid,nodev,relatime shared:159 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-mclt5ezm",
+  "owned_processes_reaped": [
+    {
+      "pid": 4124116,
+      "exit": 0
+    },
+    {
+      "pid": 4124119,
+      "exit": 0
+    },
+    {
+      "pid": 4124120,
+      "exit": 15
+    },
+    {
+      "pid": 4124177,
+      "exit": 0
+    },
+    {
+      "pid": 4124445,
+      "exit": 0
+    },
+    {
+      "pid": 4124510,
+      "exit": 0
+    },
+    {
+      "pid": 4124565,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

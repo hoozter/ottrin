@@ -1,0 +1,8 @@
+{
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "cleanup_owner": "desktop-package-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "final_candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate"
+}

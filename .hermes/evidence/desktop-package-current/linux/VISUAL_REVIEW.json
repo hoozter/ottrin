@@ -1,0 +1,13 @@
+{
+  "status": "reviewed",
+  "artifact_sha256": "0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0",
+  "images": [
+    "main-light150/note-after-right.png",
+    "properties-light150/bottom.png"
+  ],
+  "observations": [
+    "Actual packaged short Inspector title retains leading alignment; coherent light titlebar/footer and read-only contents",
+    "Actual packaged long Properties title truncates with visible Close; name/path wrap within bounded cards; normal pointer Close is independently asserted"
+  ],
+  "limits": "Private X11/software rendering; physical-seat acceptance remains separate. Native byte path operation checks retain their own scope."
+}

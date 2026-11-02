@@ -1,44 +1,64 @@
 {
-  "status": "pass within Linux source,four-format contents and scoped actual-AppImage GUI/resource acceptance",
-  "source_revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "status": "pass within exact Linux content and private native GUI/integration/resource scopes",
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "044b84a6c6130c82658f9dbca9f6eb7b6deb3093c37d03df9c9e2b78481f3c94",
-    "Ottrin-0.1.0-x86_64.AppImage": "11f473d7eb86099c5bec5f9788332acbf12f75687c5219bb7ba1a5171418b379",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "4e0289e7f7875e50c50139fa2d22c22969af41f9c804a4bb82c9823b00570343",
-    "ottrin_0.1.0_amd64.deb": "3240e7e1c8e0a83618fbd4d0af8ccb703a69c80545571d1dfe4228ca72248b0d"
+    "ottrin-0.1.0-1.x86_64.rpm": "b116a755ad737abac2a50d34aa71f157828cc19321874c4b441c4c37ebfa8152",
+    "Ottrin-0.1.0-x86_64.AppImage": "0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f4f18c3729eb688e3e51229e29ee295f3173847420c9755c404cbd1baa789ffc",
+    "ottrin_0.1.0_amd64.deb": "07d389cd92c7130632056fd2a49e72a1295a676880654b2f1b406073858a2e32"
   },
-  "evidence": ".hermes/evidence/linux-picker-package-current",
+  "evidence": ".hermes/evidence/desktop-package-current/linux",
+  "indexd_binary_sha256": "5e5d0ae99c7cad3d12629aaeb007411947abe3ccb5aa6225b93a7deacc7d35d1",
+  "html_binary_sha256": "9003487565ec3aefa13821f2cc23faa4f1b7ca9c403280eb39f7bec084880843",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
     "exact bundled-font notice in all four formats",
     "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
     "exact current documentation and clean source notes",
-    "actual AppImage and RPM index daemon namespace/ownership refusal checks",
-    "Dark100/Light150 actual AppImage native-byte Save after Grid,Preview,hidden-file and unedited-Location controls; fresh overwrite confirmation and unchanged original",
-    "Fresh-process reopening shows remembered grid/preview/visibility and native folder; cancellation exits normally",
-    "Caller location overrides remembered folder; actual filename editing returns the intended new path without writing files",
-    "Main Dark100/Light150 read-only VCF body click,Right navigation and Space close preserve exact files",
-    "Main and Inspector use coherent full-width themed window chrome; Dark Settings/Services and shared internal folder chooser inspected and canceled",
-    "Main closes normally while the exact private daemon remains running; theme/view preferences survive",
-    "Repeated/concurrent chooser cancellation,quiet CPU/RSS and no automatic indexing",
-    "Complete actual chooser X11 icon pixels match source Ottrin icon; truncated main-prefix control is scoped separately",
-    "Exact packaged 10000-file content index: live changes,offline edits,restart,queries and bounded quiet intervals"
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
-  "gui_acceptance": "GUI_ACCEPTANCE.json",
-  "indexd_binary_sha256": "bb2f419d5605c6703f3cb53e0ab233686db79982b2dfe5c36cd0082f5fd07679",
-  "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
-  "indexd_resource_evidence": ".hermes/evidence/linux-picker-package-current/POPULATED_INDEX.json",
-  "indexd_resource_scope": "Private 10,000-file plain-text content-enabled corpus; no GUI, login unit or personal files; measured quiet samples are scoped observations,not a personal-home or sustained workload guarantee.",
-  "chooser_resource_evidence": "resources/RESULT.json",
-  "native_source_evidence": "picker-name-current/SOURCE_ACCEPTANCE.json",
-  "hosted_source_evidence": {
-    "run": 41294424152,
-    "source_revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
-    "linux_job": "success",
-    "performance_job": "success",
-    "windows_job_at_linux_promotion": "in_progress"
+  "gui_and_resource_sessions": {
+    "main-dark100": {
+      "receipt": "main-dark100/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "main-light150": {
+      "receipt": "main-light150/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "properties-dark100": {
+      "receipt": "properties-dark100/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "properties-light150": {
+      "receipt": "properties-light150/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "resources": {
+      "receipt": "resources/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "icon": {
+      "receipt": "icon/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "picker": {
+      "receipt": "picker/RESULT.json",
+      "owned_profile_removed": true
+    }
   },
-  "scope": "Usable local Linux packages; external chooser ownership/portal/folder integration,Windows GUI/installer rollback,physical devices,release identities and final owner acceptance remain separate.",
-  "cleanup": "All private GUI and populated-index profiles/processes/displays/buses are removed. Completed staging/extraction retired after publication; current compiler outputs and compact receipts retained."
+  "integration": [
+    "D-Bus activation/signatures,native paths,reveal,Properties,startup token,independent child reaping and active-window continuity",
+    "Blocked-cache/modified-registration uninstall refusal and successful ownership-aware removal;original defaults/config/source preserved"
+  ],
+  "resource": "Exact10000-file content index:live/offline changes,restart,queries and three30-second quiet observations;see POPULATED_INDEX.json. Chooser repeated/concurrent cancel and quiet sample in resources/RESULT.json. These are scoped samples,not a sustained personal-workload guarantee.",
+  "hosted_source": {
+    "run": 41360032284,
+    "linux": "success",
+    "performance": "success",
+    "windows_state_at_linux_promotion": "in_progress"
+  },
+  "scope": "Local Linux four-format contents and actual AppImage X11/software-rendered acceptance. Fresh-distribution lifecycle,physical seats/devices,external production app picker use,final owner/release acceptance and Windows installer rollback remain separate. Earlier receipts retain their original artifact hashes.",
+  "cleanup": "All private profiles/processes/mounts removed. Completed staging/extraction retired at promotion; current compiler outputs and compact receipts retained."
 }

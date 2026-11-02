@@ -1,0 +1,6 @@
+{
+  "status": "rejected QA request; no full GUI acceptance",
+  "scope": "Folder/default native launches and long Properties reached, then picker window wait failed. Fixture encoded initial directory but used an obsolete plain-string filename. Current native-path schema requires encoded OsString. Original stderr was lost with owned profile, so decoder cause is source-inferred,not a captured diagnostic.",
+  "correction": "Encode filename through the native UTF16 contract; preserve bounded request/response/stderr and exit status before deleting fixture. No backward-compatible product decoder added.",
+  "cleanup": "Owned processes/root removed;original defaults/profiles restored;VMoff"
+}

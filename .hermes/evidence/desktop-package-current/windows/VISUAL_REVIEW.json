@@ -1,0 +1,13 @@
+{
+  "status": "reviewed",
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "images": [
+    "gui/short-temp-ordinary-folder-desktop-properties.png",
+    "gui/short-temp-ordinary-folder-desktop-picker-save.png"
+  ],
+  "observations": [
+    "Exact native Windows long-name Properties has leading title alignment,bounded wrapped path/details,correct Read-only attribute row and visible Close",
+    "Exact native Windows Save chooser shows caller folder,requested chosen.txt,coherent theme/icons/alignment and visible Save/Cancel; native UTF16 response and no-write contract separately asserted"
+  ],
+  "scope": "Ordinary100percent OpenGL VM; physical GPU,DPI and installed lifecycle acceptance remain separate"
+}

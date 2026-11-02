@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "artifact_sha256": "c345f17f23886b60f63c4cd68cf64e8076eb3bb6a283a290f2f6c28a5b00536b",
+  "indexd_binary_sha256": "5e5d0ae99c7cad3d12629aaeb007411947abe3ccb5aa6225b93a7deacc7d35d1",
+  "resource_evidence": "POPULATED_INDEX.json",
+  "scope": "Maintained populated-index driver independently extracts and runs the exact provenance/checksum-verified AppImage; held content-verified extraction supplies the daemon hash"
+}

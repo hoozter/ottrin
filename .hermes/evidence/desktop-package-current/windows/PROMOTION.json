@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "source": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "stable_candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "superseded_bytes_removed": 287553832,
+  "stage_removed": true,
+  "superseded_directory_removed": true
+}

@@ -1,0 +1,37 @@
+{
+  "binary_sha256": "c345f17f23886b60f63c4cd68cf64e8076eb3bb6a283a290f2f6c28a5b00536b",
+  "blocked_cache_retained_registration": true,
+  "modified_activation_retained": true,
+  "status": "pass",
+  "defaults_restored": true,
+  "backend_stopped": true,
+  "preferences_and_source_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_dc855g4",
+    "owned_processes_reaped": [
+      {
+        "pid": 4098028,
+        "exit": 0
+      },
+      {
+        "pid": 4098031,
+        "exit": 0
+      },
+      {
+        "pid": 4098032,
+        "exit": 15
+      },
+      {
+        "pid": 4098100,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

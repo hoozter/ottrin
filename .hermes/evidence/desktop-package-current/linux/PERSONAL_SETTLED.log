@@ -1,0 +1,11 @@
+{
+  "status": "measured mixed interval;not idle acceptance",
+  "pid": 4173443,
+  "elapsed_seconds": 60.00427713498357,
+  "cpu_seconds": 0.26,
+  "one_core_cpu_percent": 0.43330244511589217,
+  "rss_kib_range": [
+    43440,
+    43440
+  ]
+}

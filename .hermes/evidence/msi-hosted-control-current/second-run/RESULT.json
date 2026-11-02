@@ -1,0 +1,25 @@
+{
+    "windows":  {
+                    "caption":  "Microsoft Windows Server 2025 Datacenter",
+                    "build":  "26100",
+                    "msi_version":  "5.0.26100.33648"
+                },
+    "stack":  "at Require, D:\\a\\_temp\\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\\actor.ps1: line 4\r\nat \u003cScriptBlock\u003e, D:\\a\\_temp\\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\\actor.ps1: line 22",
+    "error":  "Deliberate failure did not execute",
+    "scope":  "Fresh native ordinary-user file-only MSI rollback after executed copy/removal; no Ottrin executable or application custom action",
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSId94bcc6723a5",
+                     "sid":  "S-1-5-21-3776380004-1005456608-3524014338-1003",
+                     "administrator":  false
+                 },
+    "status":  "failed control execution",
+    "cases":  [
+                  {
+                      "failure_exit":  1625,
+                      "msi_sha256":  "BCA6D9094368C78209BC94E703930D619138C75453FEFDBF3D4A6994D3B0C5C6",
+                      "product":  "{4FF71A36-A271-40DC-933F-C0DA4B622C20}",
+                      "state_before":  -1,
+                      "kind":  "install"
+                  }
+              ]
+}

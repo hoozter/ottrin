@@ -1,0 +1,11 @@
+{
+  "purpose": "Compare the existing file-only MSI after-execution rollback control on a fresh hosted Windows runtime; material OS/environment comparison,not another sequence workaround",
+  "branch": "branch/msi-rollback-native-control",
+  "base": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "worktree": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.msi-hosted-control",
+  "cleanup_owner": "current roadmap goal",
+  "storage": "Sparse scripts/workflow checkout only; no extra compiler target/configuration or local VM; remove clean worktree after verified publication/merge or recorded rejected-control disposal",
+  "pending": "Retained compact hosted policy-refusal evidence and source; newer client Windows runtime comparison remains independently queued",
+  "source_revision": "2a43766875383fadb32f821b52ed7e0bcfe7da98",
+  "worktree_removed": true
+}

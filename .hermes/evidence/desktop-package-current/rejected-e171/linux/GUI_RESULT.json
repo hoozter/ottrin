@@ -1,0 +1,89 @@
+{
+  "binary_sha256": "c345f17f23886b60f63c4cd68cf64e8076eb3bb6a283a290f2f6c28a5b00536b",
+  "cases": [
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4096812,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowFolders",
+      "native_argv_preserved": true,
+      "window_pid": 4097021,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItems",
+      "native_argv_preserved": true,
+      "window_pid": 4097141,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4097419,
+      "normal_close": false,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 4097517,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    }
+  ],
+  "backend_smaps_rollup": {
+    "Rss": "10384 kB",
+    "Pss": "8182 kB",
+    "Private_Clean": "6712 kB",
+    "Private_Dirty": "1452 kB"
+  },
+  "backend_memory_kib": {
+    "VmSize": "312500 kB",
+    "VmRSS": "10384 kB"
+  },
+  "idle": {
+    "duration_seconds": 5,
+    "cpu_ticks": 0,
+    "clock_ticks_per_second": 100
+  },
+  "later_batch_child_reaped_while_first_open": true,
+  "active_window_survived_backend_restart": true,
+  "status": "pass",
+  "source_preserved": true,
+  "registration_removed": true,
+  "existing_ottrin_owner_not_replaced": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ubp8ooqt",
+    "owned_processes_reaped": [
+      {
+        "pid": 4096717,
+        "exit": 0
+      },
+      {
+        "pid": 4096720,
+        "exit": 0
+      },
+      {
+        "pid": 4096721,
+        "exit": 15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        4096804,
+        4097026,
+        4097087
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "scope": "Actual native-byte Rust cooperating example/packaged chooser; Save/folder/cancel and abrupt caller loss",
+  "caller_sha256": "4be6d800036da106cb10e6f7f0d9658b5a32f493b9138c6fe694c3b8ccd7535e",
+  "app_sha256": "0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0",
+  "cases": [
+    {
+      "case": "save",
+      "exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6d6a6e306f6963362f63616c6c6572802f63686f73656e2e747874"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "folder",
+      "exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6d6a6e306f6963362f63616c6c657280"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "cancel",
+      "exit": 0,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "caller-loss",
+      "caller_exit": -9,
+      "owned_chooser_exited": true
+    }
+  ],
+  "startup_property_matches_request": true,
+  "status": "pass",
+  "original_preserved": true,
+  "chooser_created_no_file": true,
+  "no_main_config_written": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-mjn0oic6",
+    "owned_processes_reaped": [
+      {
+        "pid": 4143790,
+        "exit": 0
+      },
+      {
+        "pid": 4143794,
+        "exit": 0
+      },
+      {
+        "pid": 4143795,
+        "exit": 15
+      },
+      {
+        "pid": 4143854,
+        "exit": 0
+      },
+      {
+        "pid": 4143940,
+        "exit": 0
+      },
+      {
+        "pid": 4144022,
+        "exit": 0
+      },
+      {
+        "pid": 4144104,
+        "exit": -9
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:64 / /var/tmp/.ottrin-picker-qa-mjn0oic6/runtime/doc rw,nosuid,nodev,relatime shared:159 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

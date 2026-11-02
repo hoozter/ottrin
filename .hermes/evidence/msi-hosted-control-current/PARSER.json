@@ -1,0 +1,20 @@
+[
+  {
+    "file": "msi-rollback-control-actor.ps1",
+    "sha256": "49a718b70c30f54e0ea18cc718f39b20d36b5c06c37627ea28fcde7621f50021",
+    "native_pid": 7076,
+    "result": {
+      "errors": [],
+      "count": 0
+    }
+  },
+  {
+    "file": "msi-rollback-control.ps1",
+    "sha256": "57b8aedba26d0ba4977c6df8718f697118d70b07b3f5439a0a95815c6a2c694d",
+    "native_pid": 7276,
+    "result": {
+      "errors": [],
+      "count": 0
+    }
+  }
+]

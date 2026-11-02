@@ -1,0 +1,91 @@
+=== Verbose logging started: 11/1/2026  23:38:51  Build type: SHIP UNICODE 5.00.10011.00  Calling process: C:\Windows\system32\msiexec.exe ===
+MSI (c) (90:BC) [23:38:51:956]: Resetting cached policy values
+MSI (c) (90:BC) [23:38:51:956]: Machine policy value 'Debug' is 0
+MSI (c) (90:BC) [23:38:51:956]: ******* RunEngine:
+           ******* Product: D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi
+           ******* Action:
+           ******* CommandLine: **********
+MSI (c) (90:BC) [23:38:51:958]: Client-side and UI is none or basic: Running entire install on the server.
+MSI (c) (90:BC) [23:38:51:958]: Grabbed execution mutex.
+MSI (c) (90:BC) [23:38:51:996]: Cloaking enabled.
+MSI (c) (90:BC) [23:38:51:996]: Attempting to enable all disabled privileges before calling Install on Server
+MSI (c) (90:BC) [23:38:51:998]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (F4:74) [23:38:52:011]: Running installation inside multi-package transaction D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi
+MSI (s) (F4:74) [23:38:52:011]: Grabbed execution mutex.
+MSI (s) (F4:58) [23:38:52:014]: Resetting cached policy values
+MSI (s) (F4:58) [23:38:52:014]: Machine policy value 'Debug' is 0
+MSI (s) (F4:58) [23:38:52:014]: ******* RunEngine:
+           ******* Product: D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi
+           ******* Action:
+           ******* CommandLine: **********
+MSI (s) (F4:58) [23:38:52:018]: Machine policy value 'DisableUserInstalls' is 0
+MSI (s) (F4:58) [23:38:52:061]: Note: 1: 2203 2: C:\Windows\Installer\inprogressinstallinfo.ipi 3: -2147287038
+MSI (s) (F4:58) [23:38:52:061]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (F4:58) [23:38:52:061]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2
+MSI (s) (F4:58) [23:38:52:061]: Access database with Impersonation
+MSI (s) (F4:58) [23:38:52:067]: File will have security applied from OpCode.
+MSI (s) (F4:58) [23:38:52:077]: SOFTWARE RESTRICTION POLICY: Verifying package --> 'D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi' against software restriction policy
+MSI (s) (F4:58) [23:38:52:079]: Note: 1: 2262 2: DigitalSignature 3: -2147287038
+MSI (s) (F4:58) [23:38:52:079]: SOFTWARE RESTRICTION POLICY: D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi is not digitally signed
+MSI (s) (F4:58) [23:38:52:079]: SOFTWARE RESTRICTION POLICY: D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi is permitted to run at the 'unrestricted' authorization level.
+MSI (s) (F4:58) [23:38:52:079]: MSCOREE not loaded loading copy from system32
+MSI (s) (F4:58) [23:38:52:109]: End dialog not enabled
+MSI (s) (F4:58) [23:38:52:109]: Original package ==> D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi
+MSI (s) (F4:58) [23:38:52:109]: Package we're running from ==> C:\Windows\Installer\26334.msi
+MSI (s) (F4:58) [23:38:52:111]: APPCOMPAT: Compatibility mode property overrides found.
+MSI (s) (F4:58) [23:38:52:133]: APPCOMPAT: looking for appcompat database entry with ProductCode '{4FF71A36-A271-40DC-933F-C0DA4B622C20}'.
+MSI (s) (F4:58) [23:38:52:150]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (F4:58) [23:38:52:458]: Machine policy value 'TransformsSecure' is 1
+MSI (s) (F4:58) [23:38:52:459]: Machine policy value 'DisablePatch' is 0
+MSI (s) (F4:58) [23:38:52:459]: Machine policy value 'AllowLockdownPatch' is 0
+MSI (s) (F4:58) [23:38:52:459]: Machine policy value 'DisableMsi' is 1
+MSI (s) (F4:58) [23:38:52:459]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (F4:58) [23:38:52:459]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (F4:58) [23:38:52:459]: Rejecting product '{4FF71A36-A271-40DC-933F-C0DA4B622C20}': Non-assigned apps are disabled for non-admin users.
+MSI (s) (F4:58) [23:38:52:459]: Machine policy value 'DisableLUAPatching' is 0
+MSI (s) (F4:58) [23:38:52:459]: Machine policy value 'DisableFlyWeightPatching' is 0
+MSI (s) (F4:58) [23:38:52:461]: APPCOMPAT: looking for appcompat database entry with ProductCode '{4FF71A36-A271-40DC-933F-C0DA4B622C20}'.
+MSI (s) (F4:58) [23:38:52:462]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (F4:58) [23:38:52:492]: Transforms are not secure.
+MSI (s) (F4:58) [23:38:52:492]: Note: 1: 2205 2:  3: Control
+MSI (s) (F4:58) [23:38:52:492]: PROPERTY CHANGE: Adding MsiLogFileLocation property. Its value is 'D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\results\failure-install.log'.
+MSI (s) (F4:58) [23:38:52:494]: Command Line: OTTRIN_QA_FAIL=1 REBOOT=ReallySuppress CURRENTDIRECTORY=D:\a\ottrin\ottrin CLIENTUILEVEL=3 CLIENTPROCESSID=3728
+MSI (s) (F4:58) [23:38:52:494]: PROPERTY CHANGE: Adding PackageCode property. Its value is '{E02886D0-761F-4BB1-AECD-958FE310A1E0}'.
+MSI (s) (F4:58) [23:38:52:494]: Product Code passed to Engine.Initialize:           ''
+MSI (s) (F4:58) [23:38:52:494]: Product Code from property table before transforms: '{4FF71A36-A271-40DC-933F-C0DA4B622C20}'
+MSI (s) (F4:58) [23:38:52:494]: Product Code from property table after transforms:  '{4FF71A36-A271-40DC-933F-C0DA4B622C20}'
+MSI (s) (F4:58) [23:38:52:494]: Product not registered: beginning first-time install
+MSI (s) (F4:58) [23:38:52:494]: Product {4FF71A36-A271-40DC-933F-C0DA4B622C20} is not managed.
+MSI (s) (F4:58) [23:38:52:494]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (F4:58) [23:38:52:494]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (F4:58) [23:38:52:494]: MSI_LUA: Package is marked as LUA installation capable with no elevation required
+MSI (s) (F4:58) [23:38:52:494]: PROPERTY CHANGE: Adding ProductState property. Its value is '-1'.
+MSI (s) (F4:58) [23:38:52:494]: Entering CMsiConfigurationManager::SetLastUsedSource.
+MSI (s) (F4:58) [23:38:52:494]: User policy value 'SearchOrder' is 'nmu'
+MSI (s) (F4:58) [23:38:52:494]: Adding new sources is allowed.
+MSI (s) (F4:58) [23:38:52:494]: PROPERTY CHANGE: Adding PackagecodeChanging property. Its value is '1'.
+MSI (s) (F4:58) [23:38:52:494]: Package name extracted from package path: 'control-install.msi'
+MSI (s) (F4:58) [23:38:52:494]: Package to be registered: 'control-install.msi'
+MSI (s) (F4:58) [23:38:52:494]: Note: 1: 2205 2:  3: Error
+MSI (s) (F4:58) [23:38:52:496]: Note: 1: 2262 2: AdminProperties 3: -2147287038
+MSI (s) (F4:58) [23:38:52:496]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (F4:58) [23:38:52:496]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (F4:58) [23:38:52:496]: Rejecting product '{4FF71A36-A271-40DC-933F-C0DA4B622C20}': Non-assigned apps are disabled for non-admin users.
+MSI (s) (F4:58) [23:38:52:498]: Note: 1: 1708
+MSI (s) (F4:58) [23:38:52:498]: Product: Ottrin Hosted Rollback Control install -- Installation failed.
+
+MSI (s) (F4:58) [23:38:52:498]: Windows Installer installed the product. Product Name: Ottrin Hosted Rollback Control install. Product Version: 1.0.0. Product Language: 1033. Manufacturer: Ottrin QA. Installation success or error status: 1625.
+
+MSI (s) (F4:58) [23:38:52:498]: MainEngineThread is returning 1625
+MSI (s) (F4:74) [23:38:52:498]: No System Restore sequence number for this installation.
+Info 1625.This installation is forbidden by system policy. Contact your system administrator.
+D:\a\_temp\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994\control-install.msi
+MSI (s) (F4:74) [23:38:52:500]: User policy value 'DisableRollback' is 0
+MSI (s) (F4:74) [23:38:52:500]: Machine policy value 'DisableRollback' is 0
+MSI (s) (F4:74) [23:38:52:500]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (F4:74) [23:38:52:500]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (F4:74) [23:38:52:500]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2
+MSI (s) (F4:74) [23:38:52:500]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (c) (90:BC) [23:38:52:502]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (c) (90:BC) [23:38:52:502]: MainEngineThread is returning 1625
+=== Verbose logging stopped: 11/1/2026  23:38:52 ===

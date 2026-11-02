@@ -1,0 +1,19 @@
+{
+  "status": "hosted environment prevents the ordinary-user control; required MSI rollback gate unresolved",
+  "source_revision": "2a43766875383fadb32f821b52ed7e0bcfe7da98",
+  "runs": [
+    41362787724,
+    41363062321
+  ],
+  "controls": [
+    "First run refused59-character account description before account creation;48-character limit corrected;fixture removed",
+    "Second run built controls with pinned WiX5.0.2/.NET8.0.32,used actual standard-user token/profile on WindowsServer2025/MSI5.0.26100.33648;MSI returned1625 before file execution",
+    "Verbose log reports DisableMsi=1 and non-assigned applications disabled for non-admin users; no policy override/elevation workaround used"
+  ],
+  "conclusions": [
+    "No rollback result from this runtime;does not resolve or waive the retained Windows11 rollback failure",
+    "Original/current package8ede source and product artifacts are unchanged by this diagnostic branch"
+  ],
+  "cleanup": "Both hosted fixture roots/accounts/profiles removed;hosted VMs disposed;redundant full ci runs canceled only on this diagnostics branch. Compact source/control evidence retained. Clean sparse local worktree is now disposable.",
+  "next": "Use an appropriately configured current client Windows fixture for the material OS/runtime comparison; continue other software gates independently"
+}

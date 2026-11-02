@@ -1,0 +1,64 @@
+{
+  "status": "pass within exact Linux content and private native GUI/integration/resource scopes",
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "b116a755ad737abac2a50d34aa71f157828cc19321874c4b441c4c37ebfa8152",
+    "Ottrin-0.1.0-x86_64.AppImage": "0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f4f18c3729eb688e3e51229e29ee295f3173847420c9755c404cbd1baa789ffc",
+    "ottrin_0.1.0_amd64.deb": "07d389cd92c7130632056fd2a49e72a1295a676880654b2f1b406073858a2e32"
+  },
+  "evidence": ".hermes/evidence/desktop-package-current/linux",
+  "indexd_binary_sha256": "5e5d0ae99c7cad3d12629aaeb007411947abe3ccb5aa6225b93a7deacc7d35d1",
+  "html_binary_sha256": "9003487565ec3aefa13821f2cc23faa4f1b7ca9c403280eb39f7bec084880843",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "gui_and_resource_sessions": {
+    "main-dark100": {
+      "receipt": "main-dark100/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "main-light150": {
+      "receipt": "main-light150/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "properties-dark100": {
+      "receipt": "properties-dark100/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "properties-light150": {
+      "receipt": "properties-light150/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "resources": {
+      "receipt": "resources/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "icon": {
+      "receipt": "icon/RESULT.json",
+      "owned_profile_removed": true
+    },
+    "picker": {
+      "receipt": "picker/RESULT.json",
+      "owned_profile_removed": true
+    }
+  },
+  "integration": [
+    "D-Bus activation/signatures,native paths,reveal,Properties,startup token,independent child reaping and active-window continuity",
+    "Blocked-cache/modified-registration uninstall refusal and successful ownership-aware removal;original defaults/config/source preserved"
+  ],
+  "resource": "Exact10000-file content index:live/offline changes,restart,queries and three30-second quiet observations;see POPULATED_INDEX.json. Chooser repeated/concurrent cancel and quiet sample in resources/RESULT.json. These are scoped samples,not a sustained personal-workload guarantee.",
+  "hosted_source": {
+    "run": 41360032284,
+    "linux": "success",
+    "performance": "success",
+    "windows_state_at_linux_promotion": "in_progress"
+  },
+  "scope": "Local Linux four-format contents and actual AppImage X11/software-rendered acceptance. Fresh-distribution lifecycle,physical seats/devices,external production app picker use,final owner/release acceptance and Windows installer rollback remain separate. Earlier receipts retain their original artifact hashes.",
+  "cleanup": "All private profiles/processes/mounts removed. Completed staging/extraction retired at promotion; current compiler outputs and compact receipts retained."
+}

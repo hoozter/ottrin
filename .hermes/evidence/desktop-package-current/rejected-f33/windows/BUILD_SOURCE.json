@@ -1,0 +1,11 @@
+{
+  "source_revision": "f33de33a00a00e91f2a65a432be4f35d66aa43a4",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "cleanup_owner": "desktop-package-current",
+  "pending_consumers": [
+    "Exact package payload/closure checks",
+    "Native window/integration and resource acceptance",
+    "Promotion and complete staging teardown"
+  ],
+  "cleanup_complete": false
+}

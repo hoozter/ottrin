@@ -1,0 +1,20 @@
+{
+  "status": "rejected long-title visual case; earlier scoped behaviors pass",
+  "images": [
+    "gui/properties.png",
+    "gui/folder-location.png",
+    "gui/reveal-link-location.png",
+    "picker/save.png",
+    "main-dark100/vcf-inspector.png",
+    "main-light150/note-after-right.png",
+    "properties-light150/bottom.png"
+  ],
+  "observations": [
+    "Properties has coherent full-width chrome, grouped metadata and permissions, selected broken-link metadata",
+    "Folder address resolves requested literal-percent native-byte directory; reveal selects broken-link in its parent",
+    "Actual Save chooser shows native caller folder and chosen.txt with aligned sidebar and actions",
+    "Dark100 VCF and Light150 text Inspector keep coherent full-width chrome and stationary footer; real body click,Right navigation,Space close preserve bytes; index survives main window close"
+  ],
+  "limit": "Invalid native byte uses a visibly missing glyph in labels; byte-preserving argv/path results are independently asserted. No physical-seat or all-theme-settings claim.",
+  "defect": "properties-light150/bottom.png: long title expands shared chrome and content beyond visible width; Close is off-screen. Mechanical read-only/no-index/normal-Escape checks pass separately."
+}

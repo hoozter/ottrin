@@ -1,0 +1,22 @@
+name: Native MSI rollback control
+on:
+  push:
+    branches: [branch/msi-rollback-native-control]
+permissions:
+  contents: read
+jobs:
+  native-control:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise file-only per-user rollback after actual execution
+        shell: powershell
+        run: ./scripts/ci/msi-rollback-control.ps1 -Output msi-control-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-msi-rollback-control
+          path: msi-control-evidence/
+          if-no-files-found: error
+          retention-days: 7

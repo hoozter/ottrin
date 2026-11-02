@@ -1,0 +1,22 @@
+{
+    "nonce":  "d94bcc6723a543f7b31bd3c5ad032994",
+    "profiles_before":  [
+                            "S-1-5-18|C:\\Windows\\system32\\config\\systemprofile",
+                            "S-1-5-19|C:\\Windows\\ServiceProfiles\\LocalService",
+                            "S-1-5-20|C:\\Windows\\ServiceProfiles\\NetworkService",
+                            "S-1-5-21-3776380004-1005456608-3524014338-500|C:\\Users\\runneradmin"
+                        ],
+    "sid":  "S-1-5-21-3776380004-1005456608-3524014338-1003",
+    "actor_exit":  1,
+    "status":  "native control failed; see RESULT.json",
+    "scope":  "Fresh hosted Windows native file-only per-user controls; standalone QA identity,not an application publisher",
+    "phase":  "native actor",
+    "root":  "D:\\a\\_temp\\ottrin-msi-d94bcc6723a543f7b31bd3c5ad032994",
+    "cleanup":  {
+                    "owned_account_profile_removed":  true,
+                    "owned_root_removed":  true,
+                    "hosted_runner_disposal_handles_any_residual_engine_registration":  true,
+                    "original_profiles_preserved":  true
+                },
+    "account":  "OTMSId94bcc6723a5"
+}

@@ -1,0 +1,192 @@
+{
+  "status": "pass within exact payload,native loader/CLI,completed ordinary portable GUI scopes and hosted source verification",
+  "source_commit": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "c6181520a660ded9f476d71eea1151b5440fd00939f84e1fbb31861963dac023",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "3eb74b50407ec3ed8e4927b7a3eb0d618a63ac84a87339ca0c5dc04f410e8ffd",
+    "Ottrin-0.1.0-windows-x64.msi": "2235c9618b3f6feaebf9923574c9dcc731c65f0ed7f8089357b56e2bb39f244f"
+  },
+  "payload_files": 58,
+  "payload_identity": ".hermes/evidence/windows-picker-package-current/PAYLOAD_GUI_MANIFEST.json",
+  "evidence_directory": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-package-current",
+  "native_msi_administrative_extraction": {
+    "entries_checked": 58,
+    "status": "pass",
+    "msi_sha256": "2235c9618b3f6feaebf9923574c9dcc731c65f0ed7f8089357b56e2bb39f244f",
+    "scope": "Native administrative extraction; no install/upgrade/rollback acceptance"
+  },
+  "native_loader_cli": {
+    "scope": "Native loader and CLI argument paths only; no GUI or service lifecycle",
+    "status": "pass",
+    "runs": [
+      {
+        "exit": 0,
+        "stdout_sha256": "c6b0e7c6bd24aa6c84366640147d978880ee5e54f11a8595778feee7a8ff1b74",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "executable": "ottrin.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e2fe8e5d8777a379373cea119432745d394e1692f6d714f6fa072e2ccaaeb92f",
+        "executable": "ottrin-indexd.exe"
+      },
+      {
+        "exit": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3aef4ca0d356b5c3d97a0ed3ee4ae7ce6391d14651ef16848f2196fdcf07e814",
+        "executable": "ottrin-priv-helper.exe"
+      }
+    ],
+    "identity": "NT AUTHORITY\\SYSTEM"
+  },
+  "portable_gui_acceptance": {
+    "status": "pass within the completed scopes below; overall controller run failed on redundant follow-up request",
+    "source": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+    "normal_close": {
+      "status": "pass",
+      "daemons_after_gui_close": 1,
+      "daemon_teardown": "Owned disposable-profile daemon only; not a product auto-shutdown assertion",
+      "normal_app_close": [
+        {
+          "exit": 0,
+          "pid": 1128
+        }
+      ]
+    },
+    "main_preferences": {
+      "config_sha256": "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+      "default_view_mode": "Miller",
+      "graphics_renderer": "Native",
+      "owned_payload_processes": 0,
+      "status": "pass",
+      "theme": "Dark"
+    },
+    "main_final_raw_files": {
+      "status": "pass",
+      "source": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+      "nonce": "415b95adf3d74bc083a11bc5fae0ab55",
+      "expected_manifest_sha256": "817eb543f1a770290f0f248f6d17817f6c7f042cd457c87ee6b2bf3cd75c261f",
+      "files": {
+        "source\\note.txt": {
+          "bytes": 16,
+          "sha256": "337683ff91b84d7718331e3b78d7a1afd947d030a621f6d56dd0671c33bafff8",
+          "matches_independently_declared_utf8_bytes": true
+        },
+        "source\\other.txt": {
+          "bytes": 15,
+          "sha256": "665602339d47e17b2bfaa9879bc71cbf1a41860ea99f4df3add9707c1a41c188",
+          "matches_independently_declared_utf8_bytes": true
+        },
+        "source\\contact.vcf": {
+          "bytes": 51,
+          "sha256": "bd974e14a0691d1295b014adfc060796150bf167f61db2e0f85c0b2e66f89d92",
+          "matches_independently_declared_utf8_bytes": true
+        },
+        "destination\\note.txt": {
+          "bytes": 21,
+          "sha256": "b9f9eccb9bba3c5a67d19293f4c4e3e5e508a1b39aae18deac635915fa920d47",
+          "matches_independently_declared_utf8_bytes": true
+        }
+      },
+      "scope": "Independent raw guest-file reads,not text decoding or hash strings supplied to the UI verifier. Run after explicit normal product Close and before owned teardown."
+    },
+    "picker_cancel": {
+      "payload_processes": 0,
+      "status": "pass",
+      "main_config_sha256": "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+      "picker": {
+        "grid": true,
+        "hidden": true,
+        "preview": true,
+        "last_directory": {
+          "encoding": "windows-utf16-le",
+          "units_hex": "0043003a005c004f0074007400720069006e00570069006e0064006f007700510041005c00630061007300650073005c006f007200640069006e006100720079005c0066006900780074007500720065005c00640065007300740069006e006100740069006f006e"
+        }
+      },
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "main_config_bytes_unchanged": true
+    },
+    "picker_save": {
+      "payload_processes": 0,
+      "status": "pass",
+      "main_config_sha256": "b3506f20028c52bacdc342ecdd3d856218ef1e566ccd56485d4256cf4f71fcb9",
+      "picker": {
+        "grid": true,
+        "hidden": true,
+        "preview": true,
+        "last_directory": {
+          "encoding": "windows-utf16-le",
+          "units_hex": "0043003a005c004f0074007400720069006e00570069006e0064006f007700510041005c00630061007300650073005c006f007200640069006e006100720079005c0066006900780074007500720065005c0073006f0075007200630065"
+        }
+      },
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c004f0074007400720069006e00570069006e0064006f007700510041005c00630061007300650073005c006f007200640069006e006100720079005c0066006900780074007500720065005c0073006f0075007200630065005c006e006f00740065002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "main_config_bytes_unchanged": true
+    },
+    "picker_normal_save_exit": {
+      "scope": "Observe actual UI-selected completion; no close or kill issued by this monitor",
+      "status": "pass",
+      "pid": 6516,
+      "owned_handle_pinned_before_exit": true,
+      "exit": 0
+    },
+    "cleanup": {
+      "status": "failed",
+      "guest_root": "C:\\OttrinWindowQA",
+      "domain": "ottrin-copy-cleanup-qa",
+      "phase": "teardown",
+      "nonce": "415b95adf3d74bc083a11bc5fae0ab55",
+      "definition_sha256": "f7e51a780fd00ea567c6b17d49374ada34e98884ce66858ca6c05b1a98f35626",
+      "reboot_transport_disconnected": true,
+      "next_sequence": 30,
+      "error": "AssertionError()",
+      "fixtures_removed": true,
+      "guest_off": true
+    },
+    "limits": [
+      "Ordinary Dark100 OpenGL VM only; no physical graphics or full installer acceptance",
+      "The extra third reopen was not executed: a second renderer-command caller read sequence29 before the preceding caller was acknowledged. Controller refused stale sequence and performed complete teardown. Wrapper now holds an exclusive command lease through acknowledgement. No product crash occurred.",
+      "First Cancel response and preferences verified; its exit-code monitor timed out before the action. Only Save has a pinned process exit0 observation.",
+      "Independent raw-file receipt precedes chooser interactions; teardown separately verifies original fixture files. No unsupported post-save independent hash claim."
+    ]
+  },
+  "hosted_source": {
+    "run": 41294424152,
+    "revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+    "conclusion": "success",
+    "evidence": ".hermes/evidence/windows-picker-package-current/HOSTED_SOURCE_LATEST.json"
+  },
+  "cleanup": {
+    "native_package": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-package-current/NATIVE_OWNER.json",
+    "portable_gui": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-gui-current/SESSION.json",
+    "guest_off": true,
+    "original_guest_files_and_profiles_preserved": true,
+    "account_profile_credential_task_and_extractions_removed": true
+  },
+  "public_windows_files_unchanged": true,
+  "linux_source_cohort": "25b38c8f;accepted separately at dist/packages",
+  "limits": [
+    "No install/upgrade/repair/rollback/uninstall acceptance for these hashes; MSI rollback remains required and failed",
+    "Ordinary Dark100 OpenGL VM only; no physical GPU or final daily-driver acceptance",
+    "Scoped GUI successes and the subsequent QA-controller stale-sequence failure are recorded together without declaring the entire run passed",
+    "Earlier cross-volume,Office,appearance and physical evidence retain original hashes",
+    "No production release or Store submission"
+  ]
+}

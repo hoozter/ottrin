@@ -1,0 +1,8 @@
+{
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-stage",
+  "cleanup_owner": "desktop-package-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Promoted accepted local Linux cohort;staging/extraction removed"
+}

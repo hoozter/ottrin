@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-u2vy_tfb",
+  "owned_processes_reaped": [
+    {
+      "pid": 4123953,
+      "exit": 0
+    },
+    {
+      "pid": 4123975,
+      "exit": 0
+    },
+    {
+      "pid": 4123976,
+      "exit": 15
+    },
+    {
+      "pid": 4124046,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

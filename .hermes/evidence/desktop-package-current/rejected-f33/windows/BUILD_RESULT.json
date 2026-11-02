@@ -1,0 +1,8 @@
+{
+  "source_revision": "f33de33a00a00e91f2a65a432be4f35d66aa43a4",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "status": "failed; owned staging retired",
+  "error": "SystemExit(143)",
+  "child_exit": -15,
+  "staging_retained_for_pending_acceptance": false
+}

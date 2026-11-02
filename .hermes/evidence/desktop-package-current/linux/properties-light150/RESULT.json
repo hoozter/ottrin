@@ -1,0 +1,37 @@
+{
+  "artifact_sha256": "0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0",
+  "scope": "Actual packaged Light150 Properties, long metadata, normal native-pointer Close, no index/config/source mutation",
+  "native_close_button_clicked": true,
+  "status": "pass",
+  "normal_exit": 0,
+  "source_and_config_preserved": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-pxn8_ors",
+    "owned_processes_reaped": [
+      {
+        "pid": 4142667,
+        "exit": 0
+      },
+      {
+        "pid": 4142673,
+        "exit": 0
+      },
+      {
+        "pid": 4142674,
+        "exit": 15
+      },
+      {
+        "pid": 4142726,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

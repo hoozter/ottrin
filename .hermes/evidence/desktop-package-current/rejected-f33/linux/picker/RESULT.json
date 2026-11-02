@@ -1,0 +1,98 @@
+{
+  "scope": "Actual native-byte Rust cooperating example/packaged chooser; Save/folder/cancel and abrupt caller loss",
+  "caller_sha256": "4be6d800036da106cb10e6f7f0d9658b5a32f493b9138c6fe694c3b8ccd7535e",
+  "app_sha256": "eaaafb462dbf5ebb4010803e3f353c31842771e765f76a10c932cfe634d5f843",
+  "cases": [
+    {
+      "case": "save",
+      "exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d7168356a356361722f63616c6c6572802f63686f73656e2e747874"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "folder",
+      "exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d7168356a356361722f63616c6c657280"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "cancel",
+      "exit": 0,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "caller-loss",
+      "caller_exit": -9,
+      "owned_chooser_exited": true
+    }
+  ],
+  "startup_property_matches_request": true,
+  "status": "pass",
+  "original_preserved": true,
+  "chooser_created_no_file": true,
+  "no_main_config_written": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-qh5j5car",
+    "owned_processes_reaped": [
+      {
+        "pid": 4123547,
+        "exit": 0
+      },
+      {
+        "pid": 4123550,
+        "exit": 0
+      },
+      {
+        "pid": 4123551,
+        "exit": 15
+      },
+      {
+        "pid": 4123598,
+        "exit": 0
+      },
+      {
+        "pid": 4123673,
+        "exit": 0
+      },
+      {
+        "pid": 4123789,
+        "exit": 0
+      },
+      {
+        "pid": 4123861,
+        "exit": -9
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

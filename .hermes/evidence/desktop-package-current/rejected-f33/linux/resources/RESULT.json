@@ -1,0 +1,96 @@
+{
+  "artifact_sha256": "eaaafb462dbf5ebb4010803e3f353c31842771e765f76a10c932cfe634d5f843",
+  "source_revision": "f33de33a00a00e91f2a65a432be4f35d66aa43a4",
+  "scope": "Actual AppImage; private X11/software rendering; window mapping timings with warm shared OS caches, not whole-machine cold-cache claims",
+  "status": "pass",
+  "observations": [
+    {
+      "name": "first",
+      "window_mapped_ms": 565.66,
+      "quiet_idle": {
+        "seconds": 10.00039454200305,
+        "cpu_percent_one_core": 0.0,
+        "rss_kib": 129124
+      },
+      "window_icon_present": true,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "name": "repeat",
+      "window_mapped_ms": 452.48,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "name": "concurrent-a",
+      "window_mapped_ms": 451.05,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "name": "concurrent-b",
+      "window_mapped_ms": 410.84,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    }
+  ],
+  "fixture_bytes_unchanged": true,
+  "index_not_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-mclt5ezm",
+    "owned_processes_reaped": [
+      {
+        "pid": 4124116,
+        "exit": 0
+      },
+      {
+        "pid": 4124119,
+        "exit": 0
+      },
+      {
+        "pid": 4124120,
+        "exit": 15
+      },
+      {
+        "pid": 4124177,
+        "exit": 0
+      },
+      {
+        "pid": 4124445,
+        "exit": 0
+      },
+      {
+        "pid": 4124510,
+        "exit": 0
+      },
+      {
+        "pid": 4124565,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

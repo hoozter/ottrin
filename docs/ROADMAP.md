@@ -1,5 +1,63 @@
 # Ottrin roadmap
 
+## Current delivery and next work — 2026-11-02
+
+The four Linux formats and the internal Windows ZIP/NSIS/MSI cohort now share
+clean source `8ede156248e54af88e972d53fe441b05af9caa3c`. The full hosted Linux,
+Windows and search-performance run41360032284 passes. Current artifact hashes and
+exact scopes are authoritative in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`
+and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. The stable Linux AppImage is
+`dist/packages/Ottrin-0.1.0-x86_64.AppImage` (SHA-256
+`0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0`).
+Public Windows release files remain unchanged; this is the internal candidate.
+
+All four Linux formats pass payload/runtime/helper/documentation and ownership
+checks. Actual AppImage Dark100/Light150 checks pass long/short chrome, pointer
+Close, read-only Inspector navigation, preserved files/preferences and index
+continuity. Native-byte cooperating picker Save/folder/cancel/caller-loss,
+FileManager1 activation/reveal/Properties/startup/window lifecycle, uninstall
+refusals/restoration, complete chooser icon pixels and bounded resource checks
+pass. The10000-file content index passes live/offline changes,restart/queries;
+three30-second quiet samples use0.033–0.067percent of one core and13–17MiB RSS.
+
+Native Windows portable/NSIS/MSI58-file payload equality, loader/CLI and embedded
+app/index icons pass. Actual ordinary100percent OpenGL checks pass directory/drive
+default opening, Settings enable/restore, long Properties with native Close,
+picker native-UTF16 Save/cancel/no-write/config preservation and unchanged index
+process set, then uninstall/default restoration. The rejected plain-filename QA
+request and restricted script-loading control are retained alongside successful
+reruns. This does not establish MSI rollback, installed lifecycle,physical GPU or
+all-DPI acceptance.
+
+The personal enabled index service now runs the exact accepted daemon, with
+configuration/unit/wrapper bytes and saved database identity preserved. Its first
+minute overlaps catch-up work (26.20percent of one core); the following minute
+remains watched Ready while processing incremental changes (0.433percent). The
+latter is an active-change observation,not idle acceptance. All private fixtures,
+processes/displays/buses/mounts and superseded package staging/extractions are
+removed; compact receipts and useful current build caches remain. The personal
+configured daemon is intentionally running. Evidence:
+`.hermes/evidence/desktop-package-current/`.
+
+The independent queue is:
+1. Native DEB/RPM removal/reinstall with optional folder/picker integration:
+   verify native-owned active/offline registrations and retain independent
+   portable/AppImage choices; reuse the authoritative ownership/restoration code.
+2. Windows MSI after-execution rollback on a suitable current client fixture.
+   The retained client failure remains required. A fresh hosted Server2025
+   standard-user control is refused1625 under DisableMsi=1 before file execution,
+   so it provides no rollback result. Its temporary account/profile/root and
+   sparse local checkout are removed; compact source/controls are retained in
+   `.hermes/evidence/msi-hosted-control-current/`. No policy/elevation workaround
+   or rollback waiver is used.
+3. MSIX build/deployment tooling independent of parked Store identity/submission.
+4. Remaining software/theme/accessibility/resource and supported-platform gates;
+   keep physical-only and final owner acceptance on the explicit waiting list.
+
+Do not stop this goal on owner waits while another independent item is ready.
+Older checkpoints below retain their original source/artifact scopes; they do not
+replace this delivery receipt or automatically accept the newest cohort.
+
 ## Shared title alignment — source follow-up, 2026-11-01
 
 Exact f33de33a AppImage QA confirms the long-title overflow/Close correction, but
@@ -1339,11 +1397,12 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux and internal Windows candidate cohorts use clean `25b38c8f`.
+The stable Linux and internal Windows candidate cohorts use clean `8ede1562`.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
-retired. Shared chooser, lossless editable paths and nonblocking index availability
-are delivered; external picker/folder integration remains independent active work.
+retired. Shared chooser, lossless native paths, nonblocking index availability, FileManager1
+and reversible Windows default folder integration are delivered within their
+recorded scopes; external production caller and native lifecycle gates remain.
 Physical, owner and release identity gates remain on the waiting list.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
@@ -1367,9 +1426,9 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four25b38c8f formats; complete hosted checks; actual Dark100/Light150 chooser/native-path/persistence/read-only checks and bounded resource samples. Enabled personal service uses the accepted runtime. | Finish external picker/folder integration and remaining software/theme acceptance before parked owner/device checks. |
-| Windows |25b38c8f ZIP/NSIS/MSI candidate;58 matching files, complete hosted source checks and scoped native CLI/renderer/chooser/read-only/persistence acceptance. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) includes the QA-controller failure and exact scope limits. | Finish external picker/folder integration and remaining software acceptance. MSI rollback remains required and failed. |
-| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade and direct Windows parent/lease caller checks pass in source. | Sandboxed development-caller Open/Save/export passes; finish FileManager1, Windows folder/cooperating-app integration and exact-package/resource acceptance. Park only genuine owner/physical/external waits. |
+| Linux | Four8ede1562 formats; complete hosted source checks, actual AppImage dark/light chooser/chrome/read-only/FileManager1/uninstall scopes and bounded index/chooser samples. Personal service uses the exact accepted runtime. | Native optional desktop-integration removal/reinstall, external production callers and remaining software/theme gates before parked owner/device acceptance. |
+| Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, full hosted source checks, native icons/CLI and ordinary default-folder/Properties/picker/uninstall restoration scopes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact limits. | MSI rollback/current-client comparison, MSIX tooling and remaining installed/runtime/software gates. MSI rollback remains required and failed. |
+| Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade and direct Windows parent/lease caller checks pass in source. | Sandboxed development-caller Open/Save/export passes; FileManager1 and reversible Windows folder defaults now pass scoped exact-package checks; finish production cooperating/sandbox callers and native lifecycle/resource acceptance. Park only genuine owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each

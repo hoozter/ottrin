@@ -1,0 +1,5 @@
+{
+  "scope": "MSI build/administrative payload comparison completed before icon-check script loading failed under retained default Restricted policy; CLI/icon acceptance not reached",
+  "correction": "Read checksum-verified owned checker into ScriptBlock; execute under current process without any machine/user execution-policy change",
+  "cleanup": "Owned compiler root removed, original profiles/files preserved,VMoff; MSI remains staged solely for replacement/native acceptance"
+}

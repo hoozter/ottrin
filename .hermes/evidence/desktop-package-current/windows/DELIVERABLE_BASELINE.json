@@ -1,0 +1,9 @@
+{
+  "dist/windows-candidate/Ottrin-0.1.0-windows-x64.msi.sha256": "1fa794751ce543bc9a22ddbac6a7bc23f42c30df71a4b8a55fbe88ef176b528b",
+  "dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip": "c6181520a660ded9f476d71eea1151b5440fd00939f84e1fbb31861963dac023",
+  "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe.sha256": "deb0925a97cabb0323cbb4a45304063f822ee1050ea6c6669ce6bb84e51cf28c",
+  "dist/windows-candidate/Ottrin-0.1.0-windows-x64.msi": "2235c9618b3f6feaebf9923574c9dcc731c65f0ed7f8089357b56e2bb39f244f",
+  "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe": "3eb74b50407ec3ed8e4927b7a3eb0d618a63ac84a87339ca0c5dc04f410e8ffd",
+  "dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip.sha256": "e8762b8ee4f1417d073894f7ad3033a1e138f3e4a61bc9fb1019777c3e8ac910",
+  "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json": "d6c2c10d827ffb2617553f5aefd801b2ab2ce4a97ac25808248c89e3370f333a"
+}

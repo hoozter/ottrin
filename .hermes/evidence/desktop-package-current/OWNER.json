@@ -1,0 +1,11 @@
+{
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "cleanup_owner": "current roadmap goal",
+  "owned_staging": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage"
+  ],
+  "purpose": "Clean-source Linux four-format and internal Windows candidate refresh after verified long/short title corrections",
+  "cleanup": "Each producer stops owned processes and failed staging. Successful staging is retained solely for exact acceptance/promotion,then removed. Stable25b38c8f deliverables remain until accepted replacements. Rejected e171/f33 runtimes removed; compact scope receipts only."
+}

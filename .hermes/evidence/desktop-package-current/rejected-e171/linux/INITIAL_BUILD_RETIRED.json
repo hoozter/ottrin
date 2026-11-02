@@ -1,0 +1,16 @@
+{
+  "source_revision": "1eb5ea5c4b5dd9e421a5b06edae4771964081756",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-stage",
+  "status": "superseded before QA; removed",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "350647ace8f7f36ccd85bcf8976c34dd0145b0fda6712e6b08d4442a81b2019f",
+    "Ottrin-0.1.0-x86_64.AppImage": "8fa0bd916c04a1250398c510e06e893ef9ba77213b32aed98d55a806da6fb6bb",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "84dbcde184c22de7720c6f7b2fe20c3f0001567eb04f432751a55a448e97fb44",
+    "ottrin_0.1.0_amd64.deb": "cf6b11443f9c3eed403073f6f9585b5bc8a5fe4992c340a9d02b663eb810a7f2"
+  },
+  "child_exit": 0,
+  "temporary_tool_wrappers_removed": true,
+  "staging_retained_for_pending_acceptance": true,
+  "removed_bytes": 112628134,
+  "reason": "Refresh source metadata and roadmap after CI-only pacing correction; cached runtime outputs reused"
+}

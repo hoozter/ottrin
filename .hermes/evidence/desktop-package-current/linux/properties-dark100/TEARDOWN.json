@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-lpr858uy",
+  "owned_processes_reaped": [
+    {
+      "pid": 4142819,
+      "exit": 0
+    },
+    {
+      "pid": 4142822,
+      "exit": 0
+    },
+    {
+      "pid": 4142823,
+      "exit": 15
+    },
+    {
+      "pid": 4142870,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

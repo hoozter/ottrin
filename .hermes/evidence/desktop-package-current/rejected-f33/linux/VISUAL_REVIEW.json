@@ -1,0 +1,14 @@
+{
+  "status": "rejected: unintended short-title centering; long-title overflow correction and mechanical checks pass",
+  "artifact_sha256": "eaaafb462dbf5ebb4010803e3f353c31842771e765f76a10c932cfe634d5f843",
+  "images": [
+    "properties-light150/bottom.png",
+    "properties-dark100/bottom.png",
+    "main-light150/note-after-right.png"
+  ],
+  "observations": [
+    "Actual packaged long-name Properties has truncated title and reachable native Close, full name and path wrapping inside bounded detail/permission cards in Dark100 and Light150",
+    "Actual Light150 Inspector has coherent chrome, read-only content and stationary footer; pointer body click,Right navigation and Space close preserve exact original bytes"
+  ],
+  "limits": "Private X11/software rendering; physical desktop acceptance remains separate. Native invalid-byte path argv/selection checks pass; source-label missing-glyph control retains its narrow scope."
+}

@@ -1,0 +1,44 @@
+{
+  "status": "pass within Linux source,four-format contents and scoped actual-AppImage GUI/resource acceptance",
+  "source_revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "044b84a6c6130c82658f9dbca9f6eb7b6deb3093c37d03df9c9e2b78481f3c94",
+    "Ottrin-0.1.0-x86_64.AppImage": "11f473d7eb86099c5bec5f9788332acbf12f75687c5219bb7ba1a5171418b379",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "4e0289e7f7875e50c50139fa2d22c22969af41f9c804a4bb82c9823b00570343",
+    "ottrin_0.1.0_amd64.deb": "3240e7e1c8e0a83618fbd4d0af8ccb703a69c80545571d1dfe4228ca72248b0d"
+  },
+  "evidence": ".hermes/evidence/linux-picker-package-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks",
+    "Dark100/Light150 actual AppImage native-byte Save after Grid,Preview,hidden-file and unedited-Location controls; fresh overwrite confirmation and unchanged original",
+    "Fresh-process reopening shows remembered grid/preview/visibility and native folder; cancellation exits normally",
+    "Caller location overrides remembered folder; actual filename editing returns the intended new path without writing files",
+    "Main Dark100/Light150 read-only VCF body click,Right navigation and Space close preserve exact files",
+    "Main and Inspector use coherent full-width themed window chrome; Dark Settings/Services and shared internal folder chooser inspected and canceled",
+    "Main closes normally while the exact private daemon remains running; theme/view preferences survive",
+    "Repeated/concurrent chooser cancellation,quiet CPU/RSS and no automatic indexing",
+    "Complete actual chooser X11 icon pixels match source Ottrin icon; truncated main-prefix control is scoped separately",
+    "Exact packaged 10000-file content index: live changes,offline edits,restart,queries and bounded quiet intervals"
+  ],
+  "gui_acceptance": "GUI_ACCEPTANCE.json",
+  "indexd_binary_sha256": "bb2f419d5605c6703f3cb53e0ab233686db79982b2dfe5c36cd0082f5fd07679",
+  "html_binary_sha256": "5b146903595ae88beaee266db5ccdf8478435a5b1f568c7bc490deab00c49efc",
+  "indexd_resource_evidence": ".hermes/evidence/linux-picker-package-current/POPULATED_INDEX.json",
+  "indexd_resource_scope": "Private 10,000-file plain-text content-enabled corpus; no GUI, login unit or personal files; measured quiet samples are scoped observations,not a personal-home or sustained workload guarantee.",
+  "chooser_resource_evidence": "resources/RESULT.json",
+  "native_source_evidence": "picker-name-current/SOURCE_ACCEPTANCE.json",
+  "hosted_source_evidence": {
+    "run": 41294424152,
+    "source_revision": "25b38c8fbe1317e1600fad8ca3ad15df94f855e7",
+    "linux_job": "success",
+    "performance_job": "success",
+    "windows_job_at_linux_promotion": "in_progress"
+  },
+  "scope": "Usable local Linux packages; external chooser ownership/portal/folder integration,Windows GUI/installer rollback,physical devices,release identities and final owner acceptance remain separate.",
+  "cleanup": "All private GUI and populated-index profiles/processes/displays/buses are removed. Completed staging/extraction retired after publication; current compiler outputs and compact receipts retained."
+}

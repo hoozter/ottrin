@@ -1,0 +1,11 @@
+{
+  "source_revision": "f33de33a00a00e91f2a65a432be4f35d66aa43a4",
+  "cleanup_owner": "current roadmap goal",
+  "owned_staging": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage"
+  ],
+  "pending": "Build,exact contents/native GUI/chooser/integration/resource checks,then promotion and owned staging removal",
+  "preserved": "Stable25b38c8f Linux and Windows deliverables until accepted replacements; no personal settings/source changes; rejected e171 generated runtime files removed"
+}

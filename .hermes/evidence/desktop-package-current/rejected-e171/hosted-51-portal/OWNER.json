@@ -1,0 +1,23 @@
+{
+  "binary_sha256": "f0ae0d27c63bb1ce18bd02de822f84ae62bf598edd321f01b7ad68bb52e2e27c",
+  "config": "/home/runner/.config/xdg-desktop-portal/ottrinci-portals.conf",
+  "managed_paths": [
+    "/home/runner/.local/state/ottrin/portal-registration.json",
+    "/home/runner/.local/share/dbus-1/services/org.freedesktop.impl.portal.desktop.ottrin.service",
+    "/home/runner/.config/systemd/user/ottrin-portal.service",
+    "/home/runner/.local/state/ottrin/folder-registration.json",
+    "/home/runner/.local/share/applications/org.ottrin.Ottrin.Folders.desktop",
+    "/home/runner/.local/share/ottrin/integration/icon.png",
+    "/home/runner/.local/share/dbus-1/services/org.freedesktop.FileManager1.service"
+  ],
+  "folder_fixture_paths": [
+    "/home/runner/.config/ottrinci-mimeapps.list",
+    "/home/runner/.local/share/applications/org.ottrin.Previous.CI.desktop"
+  ],
+  "units_before": {
+    "xdg-desktop-portal.service": false,
+    "xdg-document-portal.service": false,
+    "xdg-permission-store.service": false
+  },
+  "manager_desktop_before": null
+}

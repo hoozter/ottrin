@@ -1,0 +1,10 @@
+{
+  "source_revision": "e171dcef584b6645dafb217276fef8d7c9180482",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-stage",
+  "cleanup_owner": "desktop-package-current",
+  "pending_consumers": [
+    "exact payload checks",
+    "native chooser/folder/Properties/resource and cleanup acceptance"
+  ],
+  "cleanup_complete": false
+}
