@@ -786,16 +786,26 @@ impl PickerDialog {
             self.focus = self.selected.last().cloned();
             self.filename.clear();
         }
-        let step = ctx.input(|input| {
-            if input.key_pressed(egui::Key::ArrowDown) {
-                1
-            } else if input.key_pressed(egui::Key::ArrowUp) {
-                -1
-            } else {
-                0
-            }
+        let steps = ctx.input(|input| {
+            input
+                .events
+                .iter()
+                .filter_map(|event| match event {
+                    egui::Event::Key {
+                        key,
+                        pressed: true,
+                        modifiers,
+                        ..
+                    } => match key {
+                        egui::Key::ArrowDown => Some((1, *modifiers)),
+                        egui::Key::ArrowUp => Some((-1, *modifiers)),
+                        _ => None,
+                    },
+                    _ => None,
+                })
+                .collect::<Vec<_>>()
         });
-        if step != 0 && !visible.is_empty() {
+        for (step, modifiers) in steps.into_iter().filter(|_| !visible.is_empty()) {
             let current = self
                 .focus
                 .as_ref()
@@ -803,12 +813,7 @@ impl PickerDialog {
             let index = current.map_or(if step > 0 { 0 } else { visible.len() - 1 }, |index| {
                 (index as isize + step).clamp(0, visible.len() as isize - 1) as usize
             });
-            self.select(
-                visible.get(index),
-                index,
-                &visible,
-                ctx.input(|input| input.modifiers),
-            );
+            self.select(visible.get(index), index, &visible, modifiers);
         }
         if ctx.input(|input| input.key_pressed(egui::Key::Enter)) {
             if let Some(entry) = self
@@ -2039,6 +2044,82 @@ mod tests {
             assert!(app.outcome.lock().unwrap().is_none(), "{key:?}");
             if key == egui::Key::Escape {
                 assert!(!egui::Popup::is_any_open(&ctx));
+            }
+        }
+    }
+
+    #[test]
+    fn arrow_selection_uses_press_modifiers_after_shift_changes_in_the_same_frame() {
+        let root = tempfile::tempdir().unwrap();
+        for name in ["alpha.txt", "beta.txt", "gamma.txt"] {
+            std::fs::write(root.path().join(name), name).unwrap();
+        }
+        for key in [egui::Key::ArrowUp, egui::Key::ArrowDown] {
+            for pressed_shift in [true, false] {
+                let ctx = Context::default();
+                let size = Vec2::new(940.0, 640.0);
+                let mut app = host(
+                    &ctx,
+                    PickerRequest {
+                        multiple: true,
+                        initial_directory: Some(root.path().to_path_buf()),
+                        ..Default::default()
+                    },
+                    true,
+                    1.0,
+                );
+                frame(&mut app, &ctx, size, 0.0, vec![]);
+                let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+                click(
+                    &mut app,
+                    &ctx,
+                    size,
+                    0.2,
+                    text_center(&output, "beta.txt").unwrap(),
+                );
+                frame(
+                    &mut app,
+                    &ctx,
+                    size,
+                    0.4,
+                    [true, false]
+                        .into_iter()
+                        .map(|pressed| egui::Event::Key {
+                            key,
+                            physical_key: Some(key),
+                            pressed,
+                            repeat: false,
+                            modifiers: egui::Modifiers {
+                                shift: if pressed {
+                                    pressed_shift
+                                } else {
+                                    !pressed_shift
+                                },
+                                ..Default::default()
+                            },
+                        })
+                        .collect(),
+                );
+                let next = if key == egui::Key::ArrowUp {
+                    "alpha.txt"
+                } else {
+                    "gamma.txt"
+                };
+                let expected = if pressed_shift {
+                    if key == egui::Key::ArrowUp {
+                        vec![root.path().join(next), root.path().join("beta.txt")]
+                    } else {
+                        vec![root.path().join("beta.txt"), root.path().join(next)]
+                    }
+                } else {
+                    vec![root.path().join(next)]
+                };
+                assert_eq!(
+                    app.dialog.selected, expected,
+                    "{key:?}, Shift={pressed_shift}"
+                );
+                assert_eq!(app.dialog.focus, Some(root.path().join(next)));
+                assert!(app.outcome.lock().unwrap().is_none());
             }
         }
     }

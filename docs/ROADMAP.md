@@ -117,6 +117,18 @@ Owner identities/signing/submission, unavailable physical hardware, personal
 administrator setup and final owner acceptance remain on the explicit
 [waiting list](#ownerexternal-waiting-list). They do not block independent work.
 
+## Picker Shift selection — source correction, 2026-11-02
+
+A rendered chooser regression reproduces lost range selection when Shift is
+released in the same frame as an arrow press: Shift+Up selects only the preceding
+file instead of extending the selection. Arrow navigation now processes ordered
+key press events with their own modifiers. Up/Down and both released/later-pressed
+Shift controls pass. All26 picker tests and461 full UI tests pass, with one
+existing ignored namespace fixture; strict Linux/Windows all-target UI lint passes.
+Evidence: `picker-keyboard-selection-current/SOURCE_ACCEPTANCE.json`. This is a
+source checkpoint; stable packages retain their prior source and scopes until the
+exact clean-source build and native packaged picker acceptance complete.
+
 ## Shared title alignment — source follow-up, 2026-11-01
 
 Exact f33de33a AppImage QA confirms the long-title overflow/Close correction, but

@@ -1,0 +1,40 @@
+   Compiling x11-dl v2.21.0
+   Compiling glib-sys v0.20.10
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling gobject-sys v0.20.10
+   Compiling gio-sys v0.20.10
+   Compiling fontique v0.11.1
+   Compiling parley v0.11.1
+   Compiling glib v0.20.12
+   Compiling winit v0.30.12
+   Compiling glutin_glx_sys v0.6.1
+   Compiling rwml v0.1.4
+   Compiling glutin v0.32.3
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling egui-wgpu v0.33.3
+   Compiling glutin-winit v0.5.0
+   Compiling eframe v0.33.3
+   Compiling gio v0.20.12
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 43.68s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-a4306a82b74e7d60)
+
+running 1 test
+
+thread 'picker::tests::arrow_selection_uses_press_modifiers_after_shift_changes_in_the_same_frame' (487371) panicked at crates/ottrin-ui/src/picker.rs:2108:17:
+assertion `left == right` failed: ArrowUp, Shift=true
+  left: ["/tmp/ot-civag6qy/t/.tmpwfP14o/alpha.txt"]
+ right: ["/tmp/ot-civag6qy/t/.tmpwfP14o/alpha.txt", "/tmp/ot-civag6qy/t/.tmpwfP14o/beta.txt"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test picker::tests::arrow_selection_uses_press_modifiers_after_shift_changes_in_the_same_frame ... FAILED
+
+failures:
+
+failures:
+    picker::tests::arrow_selection_uses_press_modifiers_after_shift_changes_in_the_same_frame
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 461 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

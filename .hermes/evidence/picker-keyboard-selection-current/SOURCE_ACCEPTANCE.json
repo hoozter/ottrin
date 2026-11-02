@@ -1,0 +1,13 @@
+{
+  "status": "source regression repaired and verified; package refresh pending",
+  "source_file": "crates/ottrin-ui/src/picker.rs",
+  "source_sha256": "738f5cca3e1424e6613236d6353c7e44e713de5200b422e706ba66efda08ec88",
+  "before": "ArrowUp with Shift pressed and released in the same frame selects only alpha instead of alpha+beta; BEFORE.log",
+  "after": "All26 picker tests and461 full UI tests pass; one existing ignored namespace fixture",
+  "strict_clippy": [
+    "native Linux all targets",
+    "Windows GNU all targets"
+  ],
+  "scope": "Actual shared chooser egui frame with pointer selection and Up/Down key press/release events; both released and later-pressed Shift final snapshots. Ordered press events govern selection, not end-of-frame modifiers. No native OS screen-reader or packaged GUI claim.",
+  "delivery": "Current stable Linux592d56e8 and Windows8ede1562 packages do not yet contain this fix; next step build exact clean-source Linux cohort and native picker keys"
+}

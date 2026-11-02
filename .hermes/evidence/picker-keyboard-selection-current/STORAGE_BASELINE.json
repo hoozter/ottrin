@@ -1,0 +1,13 @@
+{
+  "source": "7e6e61caa4c795544c5392e09f74a300c7cf6c2e",
+  "roots": {
+    "target/debug/deps": "33358272335\ttarget/debug/deps",
+    "target/debug/incremental": "18178444902\ttarget/debug/incremental",
+    "target/x86_64-pc-windows-gnu/debug/deps": "33224192075\ttarget/x86_64-pc-windows-gnu/debug/deps",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "38912273720\ttarget/x86_64-pc-windows-gnu/debug/incremental",
+    ".hermes/packaging-tmp/.windows-desktop-stage": "292813277\t.hermes/packaging-tmp/.windows-desktop-stage",
+    ".hermes/evidence/picker-keyboard-selection-current": "0\t.hermes/evidence/picker-keyboard-selection-current"
+  },
+  "purpose": "Existing native/Windows cache roots only; focused UI regression, shared test-workspace HOME/XDG; no new target configuration",
+  "cleanup_owner": ".hermes/evidence/picker-keyboard-selection-current"
+}
