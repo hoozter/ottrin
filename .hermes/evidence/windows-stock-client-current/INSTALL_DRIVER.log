@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/install.py", line 94, in <module>
+    xml=fixture/'domain.xml';ET.ElementTree(domain).write(xml,encoding='unicode');virsh('define',xml);defined=True;save();virsh('start',name);state['status']='installing clean Microsoft evaluation; no comparison acceptance yet';save()
+                                                                                  ^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/install.py", line 8, in virsh
+    def virsh(*args):return run(['virsh','-c','qemu:///system',*map(str,args)]).stdout.strip()
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/install.py", line 7, in run
+    def run(args,check=True,timeout=120):return subprocess.run(args,check=check,text=True,capture_output=True,timeout=timeout)
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['virsh', '-c', 'qemu:///system', 'define', '/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-stock-client-fixture/domain.xml']' returned non-zero exit status 1.

@@ -6,6 +6,10 @@ meta=owner['private_console'];p=Path('/proc')/str(meta['pid']);args=(p/'cmdline'
 q=subprocess.run(['xdotool','search','--onlyvisible','--pid',str(meta['pid'])],env=env,text=True,capture_output=True);assert q.returncode==0,q.stderr;window=q.stdout.split()[-1];action=sys.argv[2]
 if action=='click':
  x,y=map(int,sys.argv[3:5]);subprocess.run(['xdotool','windowactivate','--sync',window,'mousemove','--window',window,str(x),str(y),'click','1'],env=env,check=True,timeout=10);time.sleep(.4)
+elif action=='scroll':
+ x,y,count=map(int,sys.argv[3:6]);assert 1<=abs(count)<=10
+ geometry=subprocess.check_output(['xdotool','getwindowgeometry','--shell',window],env=env,text=True,timeout=10);bounds=dict(line.split('=',1) for line in geometry.splitlines() if '=' in line);assert 0<=x<int(bounds['WIDTH']) and 0<=y<int(bounds['HEIGHT'])
+ subprocess.run(['xdotool','windowactivate','--sync',window,'mousemove','--window',window,str(x),str(y),'click','--repeat',str(abs(count)),'--delay','100','5' if count>0 else '4'],env=env,check=True,timeout=10);time.sleep(.4)
 elif action=='key':
  key=sys.argv[3];assert key in ['Escape','Return'];subprocess.run(['xdotool','windowactivate','--sync',window,'key','--clearmodifiers',key],env=env,check=True,timeout=10);time.sleep(.4)
 elif action=='shot':
@@ -37,7 +41,7 @@ elif action=='finish-msix':
 elif action in ['ready','ready-msi']:
  assert (r/'desktop-ready.png').is_file(),'Observe the actual ready desktop before signalling'
  spec=importlib.util.spec_from_file_location('guest',Path.cwd()/'.hermes/evidence/windows-20261011/guest_exec.py');g=importlib.util.module_from_spec(spec);spec.loader.exec_module(g);g.DOMAIN=owner['domain']
- code=r'''$ErrorActionPreference='Stop';$root='C:\OttrinOwnedMsixRuntime';$o=Get-Content ($root+'\OWNER.json') -Raw|ConvertFrom-Json;$user=(Get-CimInstance Win32_ComputerSystem).UserName;if($user-ne($env:COMPUTERNAME+'\'+$o.account)){throw 'Console is not the owned temporary user'};$value=@{sid=$o.sid;nonce=$o.nonce;method='Observed first-login privacy selections through the owned private software console; optional collection declined; no security or OOBE policy changes'};$value|ConvertTo-Json -Compress|Set-Content -Encoding UTF8 ($root+'\results\DESKTOP_READY.json');$value|ConvertTo-Json -Compress'''
+ code=r'''$ErrorActionPreference='Stop';$root='C:\OttrinOwnedMsixRuntime';$o=Get-Content ($root+'\OWNER.json') -Raw|ConvertFrom-Json;$user=(Get-CimInstance Win32_ComputerSystem).UserName;if($user-ne($env:COMPUTERNAME+'\'+$o.account)){throw 'Console is not the owned temporary user'};$value=@{sid=$o.sid;nonce=$o.nonce;method='Observed the owned ordinary-user desktop through the private software console; privacy choices, when required, are recorded separately; no security or OOBE policy changes'};$value|ConvertTo-Json -Compress|Set-Content -Encoding UTF8 ($root+'\results\DESKTOP_READY.json');$value|ConvertTo-Json -Compress'''
  if action=='ready-msi':
   code=code.replace("$root='C:\\OttrinOwnedMsixRuntime';$o=Get-Content ($root+'\\OWNER.json')","$root='C:\\OttrinMsiCleanClientResults';$o=Get-Content ($root+'\\OWNER.json')").replace("($root+'\\results\\DESKTOP_READY.json')","($o.root+'\\results\\DESKTOP_READY.json')")
  status=g.execute(code,30);assert status==0;(r/'DESKTOP_SIGNAL.json').write_text(json.dumps({'status':'sent to owned user fixture','domain_uuid':owner['uuid'],'observed_frame':'desktop-ready.png','scope':'Actual ordinary first-login setup, no security policy override'},indent=2)+'\n')

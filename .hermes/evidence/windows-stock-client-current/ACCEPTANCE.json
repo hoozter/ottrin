@@ -1,0 +1,31 @@
+{
+  "status": "pass within clean Microsoft install/bootstrap scope; native MSI control pending",
+  "disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "backing_image": null,
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "build": "26300",
+    "version": "10.0.26300",
+    "msi": "5.0.26100.9444"
+  },
+  "source": {
+    "status": "pass: exact Microsoft published ISO SHA256",
+    "source": "https://support.microsoft.com/en-us/servicing/os/windows/docs/2026/09/verify-the-authenticity-of-a-windows-11-enterprise-evaluation-iso-file",
+    "sha256": "bc3f24086ebadc94489066b5ad78089e2cf5c3491e90e790bb81a2b199c10e38",
+    "bytes": 8225329152,
+    "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/Windows11EnterpriseEvaluation.iso",
+    "scope": "Input authenticity/identity, not installed Windows, MSI or package acceptance"
+  },
+  "bootstrap_result": "BOOTSTRAP_RESULT.json",
+  "domain_template": "DOMAIN_TEMPLATE.xml",
+  "clean_agent_shutdown": true,
+  "encryption_observation": {
+    "protection_status": "Off",
+    "volume_status": "FullyDecrypted"
+  },
+  "pending_consumers": [
+    "Independent native MSI executed-operation rollback comparison",
+    "Actual Ottrin MSI lifecycle only after minimal control is understood"
+  ],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/install.py"
+}

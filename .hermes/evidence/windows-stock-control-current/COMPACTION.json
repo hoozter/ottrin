@@ -1,0 +1,16 @@
+{
+  "removed_after_consumer_complete": [
+    {
+      "path": "ordinary-setup.png",
+      "sha256": "9d2eeec89f816c7bfe4f42068994ba8455c768f312648399a19905f5a2074545",
+      "bytes": 169968
+    },
+    {
+      "path": "desktop-ready.png",
+      "sha256": "5d1df9fdef56d66811502cbaca55ca9501fe6a56e1ad53daf792d3b81f997d75",
+      "bytes": 122555
+    }
+  ],
+  "results_archive_removed_after_exact_member_extraction": true,
+  "actual_guest_bytes_unchanged": true
+}

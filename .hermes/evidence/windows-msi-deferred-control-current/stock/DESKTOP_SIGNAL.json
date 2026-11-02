@@ -1,0 +1,6 @@
+{
+  "status": "sent to owned user fixture",
+  "domain_uuid": "255ced50-a169-4f7e-b159-9df80f3ed922",
+  "observed_frame": "desktop-ready.png",
+  "scope": "Actual ordinary first-login setup, no security policy override"
+}

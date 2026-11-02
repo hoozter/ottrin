@@ -1,0 +1,17 @@
+{
+  "windows": {
+    "filename": "Windows11EnterpriseEvaluation.iso",
+    "url": "https://go.microsoft.com/fwlink/?LinkId=2382600&clcid=0x409&country=us&culture=en-us",
+    "host": "software-static.download.prss.microsoft.com",
+    "bytes": 8225329152,
+    "sha256": "bc3f24086ebadc94489066b5ad78089e2cf5c3491e90e790bb81a2b199c10e38",
+    "provenance": "https://support.microsoft.com/en-us/servicing/os/windows/docs/2026/09/verify-the-authenticity-of-a-windows-11-enterprise-evaluation-iso-file"
+  },
+  "virtio": {
+    "filename": "virtio-win.iso",
+    "url": "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.302-1/virtio-win-0.1.302.iso",
+    "host": "fedorapeople.org",
+    "bytes": 877373440,
+    "provenance": "https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md; stable-virtio resolves to0.1.302. Official CHECKSUM covers RPM MD5 only, not ISO; computed ISO SHA256 identifies input, Windows must validate selected payloads Authenticode before installation."
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "status": "rejected pre-boot provisioning",
+  "owner": {
+    "domain": "ottrin-stock-client",
+    "uuid": "30c384d1-0269-4a4b-9588-a4f3ba789670",
+    "nonce": "930af62786ea4b3fa81a05ab7990f7ab",
+    "status": "preparing independent installation",
+    "volumes": [
+      "ottrin-stock-client-windows.iso",
+      "ottrin-stock-client-seed.iso",
+      "ottrin-stock-client.qcow2"
+    ],
+    "source": {
+      "status": "pass: exact Microsoft published ISO SHA256",
+      "source": "https://support.microsoft.com/en-us/servicing/os/windows/docs/2026/09/verify-the-authenticity-of-a-windows-11-enterprise-evaluation-iso-file",
+      "sha256": "bc3f24086ebadc94489066b5ad78089e2cf5c3491e90e790bb81a2b199c10e38",
+      "bytes": 8225329152,
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/Windows11EnterpriseEvaluation.iso",
+      "scope": "Input authenticity/identity, not installed Windows, MSI or package acceptance"
+    },
+    "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/install.py",
+    "scope": "Clean Microsoft Windows installation and bootstrap only. No MSI rollback or Ottrin acceptance inferred.",
+    "host_filesystems": 0,
+    "host_devices": 0,
+    "usb_redirection": 0,
+    "network_interfaces": 0,
+    "uploaded_media_host_copy_removed_bytes": 8225329152,
+    "cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-stock-client.qcow2",
+        "ottrin-stock-client-seed.iso",
+        "ottrin-stock-client-windows.iso"
+      ],
+      "fixture_removed": true,
+      "retained_pending_volume": null
+    }
+  },
+  "domain_check": "DOMAIN_CHECK.json",
+  "scope": "ISO downloaded and official hash verified; native VM definition failed before any OS installation. Completed upload input was discarded by too-broad failure teardown; producer will preserve accepted input for its unfulfilled consumer. No existing VM/user data touched."
+}

@@ -1,0 +1,48 @@
+Downloaded 268435456/8225329152 bytes
+Downloaded 536870912/8225329152 bytes
+Downloaded 805306368/8225329152 bytes
+Downloaded 1073741824/8225329152 bytes
+Downloaded 1342177280/8225329152 bytes
+Downloaded 1610612736/8225329152 bytes
+Downloaded 1879048192/8225329152 bytes
+Downloaded 2147483648/8225329152 bytes
+Downloaded 2415919104/8225329152 bytes
+Downloaded 2684354560/8225329152 bytes
+Downloaded 2952790016/8225329152 bytes
+Downloaded 3221225472/8225329152 bytes
+Downloaded 3489660928/8225329152 bytes
+Downloaded 3758096384/8225329152 bytes
+Downloaded 4026531840/8225329152 bytes
+Downloaded 4294967296/8225329152 bytes
+Downloaded 4563402752/8225329152 bytes
+Downloaded 4831838208/8225329152 bytes
+Downloaded 5100273664/8225329152 bytes
+Downloaded 5368709120/8225329152 bytes
+Downloaded 5637144576/8225329152 bytes
+Downloaded 5905580032/8225329152 bytes
+Downloaded 6174015488/8225329152 bytes
+Downloaded 6442450944/8225329152 bytes
+Downloaded 6710886400/8225329152 bytes
+Downloaded 6979321856/8225329152 bytes
+Downloaded 7247757312/8225329152 bytes
+Downloaded 7516192768/8225329152 bytes
+Downloaded 7784628224/8225329152 bytes
+Downloaded 8053063680/8225329152 bytes
+{
+  "status": "downloaded; image/signer verification and clean install still pending",
+  "source_page": "https://www.microsoft.com/en-us/evalcenter/download-windows-11-enterprise",
+  "download": "https://go.microsoft.com/fwlink/?LinkId=2382600&clcid=0x409&country=us&culture=en-us",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/Windows11EnterpriseEvaluation.iso",
+  "partial_path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/Windows11EnterpriseEvaluation.iso.part",
+  "expected_bytes": 8225329152,
+  "purpose": "Independent Microsoft Windows client comparison for the failed native MSI rollback gate",
+  "pending_consumers": [
+    "Verify Microsoft image/version and signed bootstrap inputs",
+    "Install one independent disposable Windows client; transfer ISO once and remove media after install consumer completes"
+  ],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/download-input.py",
+  "created_utc": "2026-11-02T18:03:20.453804+00:00",
+  "resolved_url": "https://software-static.download.prss.microsoft.com/dbazure/26300.9457.260913-1737.26h2_ge_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso",
+  "received_bytes": 8225329152,
+  "sha256": "bc3f24086ebadc94489066b5ad78089e2cf5c3491e90e790bb81a2b199c10e38"
+}

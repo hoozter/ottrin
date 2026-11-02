@@ -1,0 +1,24 @@
+usage: client.py [-h] [--update-manifest UPDATE_MANIFEST] [--output OUTPUT]
+                 [--msix-parse-only] [--msix-stage MSIX_STAGE]
+                 [--msix-runtime MSIX_RUNTIME]
+                 [--msix-upgrade-from MSIX_UPGRADE_FROM]
+                 [--msix-startup-disabled] [--prepare-updated-base]
+                 [--use-updated-base] [--use-stock-base]
+                 [--native-test NATIVE_TEST] [--test-filter TEST_FILTER]
+                 [--native-msi-builder NATIVE_MSI_BUILDER]
+
+options:
+  -h, --help            show this help message and exit
+  --update-manifest UPDATE_MANIFEST
+  --output OUTPUT
+  --msix-parse-only
+  --msix-stage MSIX_STAGE
+  --msix-runtime MSIX_RUNTIME
+  --msix-upgrade-from MSIX_UPGRADE_FROM
+  --msix-startup-disabled
+  --prepare-updated-base
+  --use-updated-base
+  --use-stock-base
+  --native-test NATIVE_TEST
+  --test-filter TEST_FILTER
+  --native-msi-builder NATIVE_MSI_BUILDER

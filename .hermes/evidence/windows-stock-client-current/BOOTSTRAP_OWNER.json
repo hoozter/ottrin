@@ -1,0 +1,37 @@
+{
+  "status": "extracted; native trust/bootstrap acceptance pending",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
+  "source_iso": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/virtio-win.iso",
+  "files": [
+    "guest-agent/qemu-ga-x86_64.msi",
+    "vioserial/w11/amd64/vioser.cat",
+    "vioserial/w11/amd64/vioser.inf",
+    "vioserial/w11/amd64/vioser.sys"
+  ],
+  "pending_consumer": "New independent Windows installer bootstrap; driver catalog and agent Authenticode inspected by normal Windows before install",
+  "payloads": [
+    {
+      "path": "guest-agent/qemu-ga-x86_64.msi",
+      "bytes": 11909632,
+      "sha256": "19dcf8abc30f70c2eb6e87282601fd0476e4e0b19936f63d9c80be30db0796ed"
+    },
+    {
+      "path": "vioserial/w11/amd64/vioser.cat",
+      "bytes": 12069,
+      "sha256": "5ef0e1163ec107405daca1c1703c84c886b114905d086c93cd4eddecd73a4e19"
+    },
+    {
+      "path": "vioserial/w11/amd64/vioser.inf",
+      "bytes": 2623,
+      "sha256": "a7bb3cc2482e0e4df281b506efb85ad4c76dd8d5a1522e480e9da354568006c0"
+    },
+    {
+      "path": "vioserial/w11/amd64/vioser.sys",
+      "bytes": 93848,
+      "sha256": "a58268785ae06015e70299d75ee1da1a8032c3cf6acbd1fb7bf8a3ff93edc221"
+    }
+  ],
+  "source_iso_sha256": "303f7ae40dad495d6ae474fdc571df58958a4dbc5c37a522d80f9a203867949d",
+  "source_iso_removed_bytes": 877373440,
+  "source_iso_cleanup": "Sole selected-payload extraction consumer fulfilled; no driver ISO VM attachment required"
+}

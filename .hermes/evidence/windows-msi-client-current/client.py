@@ -4,17 +4,18 @@ from contextlib import ExitStack
 import argparse, base64, re, hashlib, importlib.util, json, os, shutil, signal, subprocess, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);args=parser.parse_args()
 assert not args.test_filter or args.native_test
 assert not args.native_test or (args.test_filter and re.fullmatch(r'[A-Za-z0-9_:]+',args.test_filter))
-assert not args.native_msi_builder or (args.use_updated_base and args.output and not any([args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test]))
+assert not args.native_msi_builder or ((args.use_updated_base or args.use_stock_base) and args.output and not any([args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test]))
 assert not args.msix_startup_disabled or args.msix_upgrade_from
 assert not args.msix_upgrade_from or args.msix_runtime
 assert not args.prepare_updated_base or args.update_manifest
-assert not(args.use_updated_base and args.update_manifest)
+assert not(args.use_updated_base and args.use_stock_base)
+assert not((args.use_updated_base or args.use_stock_base) and args.update_manifest)
 assert sum(map(bool,[args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test]))<=1
 interactive_case=bool(args.msix_runtime or not(args.update_manifest or args.msix_parse_only or args.msix_stage or args.native_test))
-assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base or args.native_test),'New comparison needs an explicit new evidence root'
+assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base or args.use_stock_base or args.native_test),'New comparison needs an explicit new evidence root'
 r=Path.cwd();e=args.output.resolve() if args.output else Path(__file__).resolve().parent
 assert not args.output or not (e/'OWNER.json').exists(),'Do not replace an existing owned run'
 (e/'DRIVER_SOURCE.py').write_bytes(Path(__file__).read_bytes())
@@ -22,9 +23,10 @@ name='ottrin-native-test' if args.native_test else 'ottrin-msix-runtime' if args
 def virsh(*args):return subprocess.check_output(['virsh','-c','qemu:///system',*args],text=True).strip()
 def save(n,data):(e/n).write_text(json.dumps(data,indent=2)+'\n')
 assert name not in virsh('list','--all','--name').splitlines()
-assert virsh('domstate','win11ltsc')=='shut off'
-assert virsh('domuuid','win11ltsc')=='4e160378-2610-4072-b528-048e4c9f509e'
-assert not virsh('snapshot-list','win11ltsc','--name')
+if not args.use_stock_base:
+ assert virsh('domstate','win11ltsc')=='shut off'
+ assert virsh('domuuid','win11ltsc')=='4e160378-2610-4072-b528-048e4c9f509e'
+ assert not virsh('snapshot-list','win11ltsc','--name')
 for v in [volume,iso_volume]:assert subprocess.run(['virsh','-c','qemu:///system','vol-info','--pool','default',v],capture_output=True).returncode!=0
 pins=json.loads((r/'.hermes/evidence/windows-20261011/windows-msi-compiler-downloads.json').read_text())
 cache=r/'.hermes/tools/msi-compiler';cache.mkdir(exist_ok=True)
@@ -42,7 +44,15 @@ if args.use_updated_base:
  prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
  base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default',prepared_base['volume']));assert base_xml.findtext('./backingStore/path')==prepared_base['backing_original'];assert virsh('vol-path','--pool','default',prepared_base['volume'])==backing
  for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
-state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.native_test or args.msix_runtime or args.native_msi_builder else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+if args.use_stock_base:
+ stock=r/'.hermes/evidence/windows-stock-client-current';prepared_base=json.loads((stock/'ACCEPTANCE.json').read_text());stock_owner=json.loads((stock/'OWNER.json').read_text())
+ assert prepared_base['status'].startswith('pass within clean Microsoft install/bootstrap scope') and prepared_base['clean_agent_shutdown']
+ assert prepared_base['encryption_observation']['protection_status']=='Off','Never clone a TPM-protected stock fixture'
+ assert stock_owner['cleanup']['domain_removed'] and stock_owner['cleanup']['retained_pending_volume']=='ottrin-stock-client.qcow2'
+ backing=prepared_base['disk'];assert backing=='/var/lib/libvirt/images/ottrin-stock-client.qcow2' and prepared_base['backing_image'] is None
+ base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default','ottrin-stock-client.qcow2'));assert not base_xml.findtext('./backingStore/path')
+ for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
+state={'domain':name,'uuid':uid,'base_domain':None if args.use_stock_base else 'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.native_test or args.msix_runtime or args.native_msi_builder else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 save('OWNER.json',state)
 def cleanup():
  try:
@@ -62,7 +72,7 @@ def cleanup():
    virsh('vol-delete','--pool','default',v)
    removed.append(v)
   if fixture.exists():shutil.rmtree(fixture)
-  state['cleanup']={'domain_removed':True,'owned_volumes_removed':removed,'fixture_removed':True,'base_still_off':virsh('domstate','win11ltsc')=='shut off','retained_pending_volume':state.get('retained_pending_volume')}
+  state['cleanup']={'domain_removed':True,'owned_volumes_removed':removed,'fixture_removed':True,'base_still_off':all(backing not in virsh('dumpxml',d) for d in virsh('list','--all','--name').splitlines()) if args.use_stock_base else virsh('domstate','win11ltsc')=='shut off','retained_pending_volume':state.get('retained_pending_volume')}
  except BaseException as error:state['cleanup_error']=repr(error);raise
  finally:save('OWNER.json',state)
 def finish(kind,error,trace):
@@ -104,7 +114,8 @@ with ExitStack() as stack:
   parent=e.parent;accepted=json.loads((parent/'ASSEMBLY_ACCEPTANCE.json').read_text());assert args.msix_runtime.resolve()==Path(accepted['artifact'])
   with args.msix_runtime.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==accepted['artifact_sha256']
   os.link(args.msix_runtime,fixture/'Ottrin.msix');shutil.copy2(parent/'runtime.ps1',fixture/'runtime.ps1');shutil.copy2(r/'.hermes/evidence/desktop-package-current/windows/gui/NATIVE_CONTROLS_INPUT.ps1',fixture/'native-controls.ps1')
-  runtime_input={'sha256':accepted['artifact_sha256'],'source_revision':accepted['source_revision'],'version':accepted['version'],'startup_enabled':not args.msix_startup_disabled}
+  shutil.copy2(fixture/'runtime.ps1',e/'RUNTIME_SOURCE.ps1');shutil.copy2(fixture/'native-controls.ps1',e/'NATIVE_CONTROLS_SOURCE.ps1')
+  runtime_input={'runtime_script_sha256':hashlib.sha256((fixture/'runtime.ps1').read_bytes()).hexdigest(),'native_controls_sha256':hashlib.sha256((fixture/'native-controls.ps1').read_bytes()).hexdigest(),'sha256':accepted['artifact_sha256'],'source_revision':accepted['source_revision'],'version':accepted['version'],'startup_enabled':not args.msix_startup_disabled}
   if args.msix_upgrade_from:
    previous=json.loads((parent/'PREVIOUS_PACKAGE.json').read_text());assert args.msix_upgrade_from.resolve()==Path(previous['retained_input'])
    with args.msix_upgrade_from.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==previous['sha256']
@@ -123,7 +134,7 @@ with ExitStack() as stack:
   if args.msix_upgrade_from:iso_inputs.append(fixture/'Previous.msix')
  else:
   source=r/'.hermes/evidence/msi-hosted-control-current/source'
-  actor=(source/'msi-rollback-control-actor.ps1').read_text()
+  actor=(args.native_msi_builder.parent/'actor-input.ps1').read_text() if args.native_msi_builder and args.native_msi_builder.parent.name=='windows-msi-deferred-control-current' else (source/'msi-rollback-control-actor.ps1').read_text()
   actor=actor.replace(" foreach($kind in @('install','uninstall')) {", " $result.phase='waiting for owned ordinary desktop';Save;$deadline=[DateTime]::UtcNow.AddMinutes(8);$readyPath=Join-Path $out 'DESKTOP_READY.json';while(-not(Test-Path $readyPath)){if([DateTime]::UtcNow-ge$deadline){throw 'Owned first-login desktop was not made ready'};Start-Sleep -Milliseconds 250};$ready=Get-Content $readyPath -Raw|ConvertFrom-Json;Require ($ready.sid-eq$ExpectedSid) 'Desktop readiness belongs to another fixture';$result.desktop_ready=$true;$result.phase='executing native MSI rollback control';Save\n foreach($kind in @('install','uninstall')) {")
   actor=actor.replace(" $profilePath=[Environment]", " $session=(Get-Process -Id $PID).SessionId;Require ($session-gt0) 'Real ordinary interactive session required';$result.session_id=$session\n $profilePath=[Environment]")
   (fixture/'actor.ps1').write_text(actor)
@@ -157,13 +168,16 @@ with ExitStack() as stack:
  exit $exit
  '''
   if args.native_msi_builder:
-   assert args.native_msi_builder.resolve()==r/'.hermes/evidence/windows-msi-native-control-current/build.ps1'
+   assert args.native_msi_builder.resolve() in [r/'.hermes/evidence/windows-msi-native-control-current/build.ps1',r/'.hermes/evidence/windows-msi-deferred-control-current/build.ps1']
+   if args.native_msi_builder.parent.name=='windows-msi-deferred-control-current':
+    library=args.native_msi_builder.parent/'failure.dll';identity=json.loads((args.native_msi_builder.parent/'INPUT.json').read_text());assert hashlib.sha256(library.read_bytes()).hexdigest()==identity['failure_dll_sha256'];shutil.copy2(library,fixture/'failure.dll');save('FAILURE_LIBRARY.json',{'sha256':identity['failure_dll_sha256'],'source_sha256':identity['failure_source_sha256'],'scope':'Only returns1603; no state mutation or Ottrin executable'})
    start=script.index(" $pins=Get-Content")
    end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" & ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'native-build.ps1')))) -Root $root -Nonce $nonce\n"+script[end:]
    shutil.copy2(args.native_msi_builder,fixture/'native-build.ps1')
   (fixture/'controller.ps1').write_text(script);shutil.copy2(fixture/'controller.ps1',e/'controller.ps1');shutil.copy2(fixture/'actor.ps1',e/'actor.ps1')
   iso_inputs=[fixture/n for n in (['native-build.ps1','actor.ps1','controller.ps1'] if args.native_msi_builder else ['runtime.zip','wix.zip','pins.json','actor.ps1','controller.ps1'])]
+  if (fixture/'failure.dll').exists():iso_inputs.append(fixture/'failure.dll')
   if args.update_manifest:
    iso_inputs.extend(fixture/item['filename'] for item in inputs['files'])
    iso_inputs.append(fixture/'update-inputs.json')
@@ -180,11 +194,14 @@ with ExitStack() as stack:
  assert subprocess.run(['fuser',str(host_iso)],capture_output=True).returncode==1
  state['uploaded_host_iso_removed_bytes']=host_iso.stat().st_size;host_iso.unlink();save('OWNER.json',state)
  virsh('vol-create-as','default',volume,'64G','--format','qcow2','--backing-vol',state['base_disk'],'--backing-vol-format','qcow2');state['volumes'].append(volume);save('OWNER.json',state)
- root=E.fromstring(virsh('dumpxml','win11ltsc'));root.find('name').text=name;root.find('uuid').text=uid
+ root=E.parse(stock/'DOMAIN_TEMPLATE.xml').getroot() if args.use_stock_base else E.fromstring(virsh('dumpxml','win11ltsc'));root.find('name').text=name;root.find('uuid').text=uid
  for tag in ['memory','currentMemory']:
   node=root.find(tag)
   if node is not None:node.text='4194304';node.set('unit','KiB')
  if root.find('genid') is not None:root.find('genid').text=str(uuid.uuid4())
+ for backend in root.findall('./devices/tpm/backend'):
+  assert backend.get('type')=='emulator'
+  for source in list(backend.findall('source')):backend.remove(source)  # libvirt provisions independent state for the new UUID.
  nv=root.find('./os/nvram');nv.text='/var/lib/libvirt/qemu/nvram/'+name+'_VARS.fd'
  disks=root.findall('./devices/disk');assert len(disks)==1;disks[0].find('source').set('file','/var/lib/libvirt/images/'+volume)
  for interface in root.findall('./devices/interface'):root.find('devices').remove(interface)
@@ -198,7 +215,7 @@ with ExitStack() as stack:
   if acceleration is not None:acceleration.set('accel3d','no')
   state['graphics_scope']='Owned software-only SPICE desktop; MSIX uses explicit bundled OpenGL; no physical adapter acceptance'
   save('OWNER.json',state)
- cd=E.SubElement(root.find('devices'),'disk',{'type':'file','device':'cdrom'});E.SubElement(cd,'driver',{'name':'qemu','type':'raw'});E.SubElement(cd,'source',{'file':'/var/lib/libvirt/images/'+iso_volume});E.SubElement(cd,'target',{'dev':'sda','bus':'sata'});E.SubElement(cd,'readonly')
+ cd=E.SubElement(root.find('devices'),'disk',{'type':'file','device':'cdrom'});E.SubElement(cd,'driver',{'name':'qemu','type':'raw'});E.SubElement(cd,'source',{'file':'/var/lib/libvirt/images/'+iso_volume});used={x.get('dev') for x in root.findall('./devices/disk/target')};cd_dev=next(value for value in ['sda','sdb','sdc','sdd'] if value not in used);E.SubElement(cd,'target',{'dev':cd_dev,'bus':'sata'});E.SubElement(cd,'readonly')
  xml=fixture/'domain.xml';E.ElementTree(root).write(xml,encoding='unicode');virsh('define',str(xml));virsh('start',name);state['status']='booting';save('OWNER.json',state)
  spec=importlib.util.spec_from_file_location('guest',r/'.hermes/evidence/windows-20261011/guest_exec.py');g=importlib.util.module_from_spec(spec);spec.loader.exec_module(g);g.DOMAIN=name
  if interactive_case:

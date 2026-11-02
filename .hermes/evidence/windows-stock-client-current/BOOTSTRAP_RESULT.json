@@ -1,0 +1,26 @@
+{
+  "driver_signature": {
+    "subject": "CN=Microsoft Windows Hardware Compatibility Publisher, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+    "status": "Valid",
+    "thumbprint": "32BDB9711EB0F7BED79D69111F0067470BBE69F8"
+  },
+  "steps": [],
+  "security": "Normal Windows driver/installer enforcement; no UAC, antivirus, test-signing or account requirement bypass",
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "build": "26300",
+    "version": "10.0.26300",
+    "msi": "5.0.26100.9444"
+  },
+  "agent_signature": {
+    "subject": "",
+    "status": "NotSigned",
+    "thumbprint": ""
+  },
+  "agent_service": "Running",
+  "nonce": "b7afee406843452bb64be8f824d28e15",
+  "agent_install_exit": 0,
+  "autologon_removed": true,
+  "status": "ready for independent MSI comparison",
+  "driver_exit": 0
+}

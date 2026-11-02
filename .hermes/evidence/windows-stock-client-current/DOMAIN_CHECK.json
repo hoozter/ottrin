@@ -1,0 +1,7 @@
+{
+  "status": "failed XML definition; no boot or installation",
+  "exit": 1,
+  "stdout": "\n",
+  "stderr": "error: Failed to define domain from /home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/DOMAIN_CHECK.xml\nerror: operation failed: Unable to find 'efi' firmware that is compatible with the current configuration\n",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/DOMAIN_CHECK.xml"
+}

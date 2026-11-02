@@ -1,0 +1,215 @@
+{
+  "status": "failed rollback gate; not accepted",
+  "result": "GUEST_RESULT.json",
+  "actual_result_preserved": "results/RESULT.json",
+  "archive_sha256": "97cdb898eec51e8063b3a5fd79850ece8f2779eda06fe28a902e53e61615e782",
+  "archive_members": [
+    {
+      "path": "tables-install/Component.idt",
+      "bytes": 199,
+      "sha256": "e29e485c93121c4780dd441142f36d86d72e1f3962ba4cae02c16bf1c0b44648"
+    },
+    {
+      "path": "tables-install/CustomAction.idt",
+      "bytes": 135,
+      "sha256": "213075d55e78510af2b174da0a7e7b838851dcc513c7d03fd08a68deb74c36a4"
+    },
+    {
+      "path": "tables-install/Directory.idt",
+      "bytes": 193,
+      "sha256": "b210b7d83fe53c1b88c025ab0c89745f6400de15f371e11df3ca80fb0cd467cf"
+    },
+    {
+      "path": "tables-install/Feature.idt",
+      "bytes": 149,
+      "sha256": "af605e9a198a930c9acdc119292c1c5ca1c2afebf3975d04c7f4d50523bcdf74"
+    },
+    {
+      "path": "tables-install/FeatureComponents.idt",
+      "bytes": 92,
+      "sha256": "09ad4b439e29cf0391412ce495455087e1ce65f026210acacf070fd6386d2997"
+    },
+    {
+      "path": "tables-install/File.idt",
+      "bytes": 168,
+      "sha256": "5c54ae8fdcf05953a00b82ec149dd1f8ac7582f0ab4ab5e50fa9f2306204feed"
+    },
+    {
+      "path": "tables-install/InstallExecuteSequence.idt",
+      "bytes": 535,
+      "sha256": "f9e220d039d2869c18985ddbdee5c0479ac51873c4eae64e36635e32c0cc4c7f"
+    },
+    {
+      "path": "tables-install/Media.idt",
+      "bytes": 106,
+      "sha256": "ba423de06528686c0571c59e9da934a00bc4641abea470a080edbd4b57f49c9c"
+    },
+    {
+      "path": "tables-install/Property.idt",
+      "bytes": 270,
+      "sha256": "d24c0d71f7bf8520efd31f897b8b7da1bf13c0bbeb0478e9449d6e4274c26dd3"
+    },
+    {
+      "path": "tables-install/Registry.idt",
+      "bytes": 202,
+      "sha256": "6790eed564642f50165cc50f006dc95d3bf495c9460f8e20e64cd0017d24d429"
+    },
+    {
+      "path": "tables-install/RemoveFile.idt",
+      "bytes": 150,
+      "sha256": "21ad6f6cefe64b72d5f5aa0fd63f0e9b0975a009da6a192a8b2936a1bc8c7636"
+    },
+    {
+      "path": "tables-uninstall/Component.idt",
+      "bytes": 199,
+      "sha256": "67d7198b4266cbed8dff80f8647c5fa7186d8e66c1041a4592ca3c6e30b4c59a"
+    },
+    {
+      "path": "tables-uninstall/CustomAction.idt",
+      "bytes": 135,
+      "sha256": "213075d55e78510af2b174da0a7e7b838851dcc513c7d03fd08a68deb74c36a4"
+    },
+    {
+      "path": "tables-uninstall/Directory.idt",
+      "bytes": 195,
+      "sha256": "64d1e6fa9d8c0f9528aa6133e4c9081a62d0fd37d6a7ae0715c0a65d5add33ca"
+    },
+    {
+      "path": "tables-uninstall/Feature.idt",
+      "bytes": 149,
+      "sha256": "af605e9a198a930c9acdc119292c1c5ca1c2afebf3975d04c7f4d50523bcdf74"
+    },
+    {
+      "path": "tables-uninstall/FeatureComponents.idt",
+      "bytes": 92,
+      "sha256": "09ad4b439e29cf0391412ce495455087e1ce65f026210acacf070fd6386d2997"
+    },
+    {
+      "path": "tables-uninstall/File.idt",
+      "bytes": 168,
+      "sha256": "5c54ae8fdcf05953a00b82ec149dd1f8ac7582f0ab4ab5e50fa9f2306204feed"
+    },
+    {
+      "path": "tables-uninstall/InstallExecuteSequence.idt",
+      "bytes": 535,
+      "sha256": "f9e220d039d2869c18985ddbdee5c0479ac51873c4eae64e36635e32c0cc4c7f"
+    },
+    {
+      "path": "tables-uninstall/Media.idt",
+      "bytes": 106,
+      "sha256": "ba423de06528686c0571c59e9da934a00bc4641abea470a080edbd4b57f49c9c"
+    },
+    {
+      "path": "tables-uninstall/Property.idt",
+      "bytes": 272,
+      "sha256": "bf79423866430cb7deeec138d202c068d458764f14ad709188896d9202dbb874"
+    },
+    {
+      "path": "tables-uninstall/Registry.idt",
+      "bytes": 204,
+      "sha256": "ba93f05d3ce3c0b415abed450106a24e42aa9c52ca2fbe4d6f322034ff91737f"
+    },
+    {
+      "path": "tables-uninstall/RemoveFile.idt",
+      "bytes": 150,
+      "sha256": "21ad6f6cefe64b72d5f5aa0fd63f0e9b0975a009da6a192a8b2936a1bc8c7636"
+    },
+    {
+      "path": "baseline-uninstall.log",
+      "bytes": 87670,
+      "sha256": "b428b7e6e340694a3bcec3e35af5fcf9a9dbffbb0ee2b06889e9f408e1ff98b1"
+    },
+    {
+      "path": "cleanup-install.log",
+      "bytes": 71482,
+      "sha256": "b249cb7a761ebb63d7c82e749b45398d8acf6e3f8f10adbc7abbcb3931f1f93e"
+    },
+    {
+      "path": "cleanup-uninstall.log",
+      "bytes": 71530,
+      "sha256": "86dc4bc1078b536ba4aafffb245338f48dd7922980cba621f86372cf3de5e140"
+    },
+    {
+      "path": "DESKTOP_READY.json",
+      "bytes": 264,
+      "sha256": "fef2f2515c9675458f2130a6c1bae94128dc5e3d43fdeb82ac9a47ca3f2e0196"
+    },
+    {
+      "path": "failure-install.log",
+      "bytes": 329724,
+      "sha256": "b67f05d4391e9ca415380eb4e8006335dcc12bf9534d686dc79fcce6495a82b0"
+    },
+    {
+      "path": "failure-uninstall.log",
+      "bytes": 230176,
+      "sha256": "14fee110863832a6a9149fd904d69067d071677777d0dac32a88f9a5f673f6a0"
+    },
+    {
+      "path": "install-after-failure-registry.json",
+      "bytes": 7998,
+      "sha256": "c42765fb87d16015f492126326d1323c2afd62be0fc12d8bc640e9fbeec85d8b"
+    },
+    {
+      "path": "install-before-registry.json",
+      "bytes": 5581,
+      "sha256": "2f1cbf107ea6c53b0de46be3e4d4a16210066cf639d57acbb1989e5af9deeeca"
+    },
+    {
+      "path": "NATIVE_BUILD.json",
+      "bytes": 2524,
+      "sha256": "d1582fd745728c3cc0d243c4e97eb9c8960eb07144768df560d7bc6aae65e1cd"
+    },
+    {
+      "path": "ordinary-token.txt",
+      "bytes": 2380,
+      "sha256": "7ce714d5116f7de1ddd65396a7d75711c77c347edf90682d19ee56bebb662af3"
+    },
+    {
+      "path": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "f9d0c674f114e2d66582e8ac428582c0c429304d92fa3a38252e0969c03cd8a2"
+    },
+    {
+      "path": "recovery-install.log",
+      "bytes": 83382,
+      "sha256": "473deb415a30a866ba16ec640fcaea7ef3641de5aa2e44ada07f472ebd82986e"
+    },
+    {
+      "path": "recovery-uninstall.log",
+      "bytes": 82612,
+      "sha256": "11b6b864db6332cdda3a41b81be5005e15360fa2417ec9336cb55506fc82edb7"
+    },
+    {
+      "path": "RESULT.json",
+      "bytes": 2634,
+      "sha256": "9289472a6c0ad1f540ba5a465f0b7b0ee7c540baf0e421b472ac96e4b0091045"
+    },
+    {
+      "path": "uninstall-after-failure-registry.json",
+      "bytes": 6846,
+      "sha256": "72c2eafb0a15d6efc809d1a57b585459e731bdd0edcae57b739a1eef91edb59d"
+    },
+    {
+      "path": "uninstall-baseline-registry.json",
+      "bytes": 7995,
+      "sha256": "9b56b83c63f37cc16dbb7d87cdf3aedcf0b6ad1c28949b7b576a12d52468cdaf"
+    },
+    {
+      "path": "uninstall-before-registry.json",
+      "bytes": 5583,
+      "sha256": "d001a28b0d4eddc5b3d659bb10b29d7c25cffb298ad3e9863e33fdde8a8961e0"
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-clean-client.qcow2",
+      "ottrin-msi-clean-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "observation_correction": "Ordinary desktop was observed. DESKTOP_READY method text overstates privacy selection on this second user; no privacy page was shown or selected in this run. Producer wording corrected without altering historical guest bytes.",
+  "scope": "Independent Microsoft client, ordinary interactive token, native MSI database authoring. Deferred case requires actual file and registration operations before fault. No Ottrin payload or lifecycle action."
+}

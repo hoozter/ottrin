@@ -1,0 +1,20 @@
+{
+  "status": "downloaded; image/signer verification and clean install still pending",
+  "source_page": "https://www.microsoft.com/en-us/evalcenter/download-windows-11-enterprise",
+  "download": "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.302-1/virtio-win-0.1.302.iso",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/virtio-win.iso",
+  "partial_path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/virtio-win.iso.part",
+  "expected_bytes": 877373440,
+  "input_kind": "virtio",
+  "pin_provenance": "https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md; stable-virtio resolves to0.1.302. Official CHECKSUM covers RPM MD5 only, not ISO; computed ISO SHA256 identifies input, Windows must validate selected payloads Authenticode before installation.",
+  "purpose": "Independent Microsoft Windows client comparison for the failed native MSI rollback gate",
+  "pending_consumers": [
+    "Verify Microsoft image/version and signed bootstrap inputs",
+    "Install one independent disposable Windows client; transfer ISO once and remove media after install consumer completes"
+  ],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/download-input.py",
+  "created_utc": "2026-11-02T18:07:03.341978+00:00",
+  "resolved_url": "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.302-1/virtio-win-0.1.302.iso",
+  "received_bytes": 877373440,
+  "sha256": "303f7ae40dad495d6ae474fdc571df58958a4dbc5c37a522d80f9a203867949d"
+}

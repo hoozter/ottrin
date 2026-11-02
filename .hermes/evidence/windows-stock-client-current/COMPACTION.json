@@ -1,0 +1,22 @@
+{
+  "removed_superseded_frames": [
+    {
+      "path": "boot.png",
+      "sha256": "61a0e0445b77309c83b538a1ca47752d81c76ad455873740dcff1fe3f11d54ad",
+      "bytes": 10156
+    },
+    {
+      "path": "setup-progress.png",
+      "sha256": "dd2fc893378f0d5a0d74e43f310c33897dd25eec94e3525080433901b374b295",
+      "bytes": 197574
+    }
+  ],
+  "preserved": [
+    "privacy-upper.png",
+    "privacy-lower.png",
+    "OOBE_OBSERVATION.json",
+    "BOOTSTRAP_RESULT.json",
+    "ACCEPTANCE.json"
+  ],
+  "scope": "Only completed task progress frames; no VM or user data touched"
+}

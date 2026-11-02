@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "scope": "Python syntax/help and mutual-exclusive base refusal before VM allocation; real stock-client execution still pending installation",
+  "stderr": "Traceback (most recent call last):\n  File \"/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-client-current/client.py\", line 14, in <module>\n    assert not(args.use_updated_base and args.use_stock_base)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+  "exit": 1
+}

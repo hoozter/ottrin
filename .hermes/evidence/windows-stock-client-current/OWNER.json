@@ -1,0 +1,45 @@
+{
+  "domain": "ottrin-stock-client",
+  "uuid": "21cf0cb1-d590-457d-b4c5-910cd1c81b58",
+  "nonce": "b7afee406843452bb64be8f824d28e15",
+  "status": "clean independent client installed; native MSI comparison pending",
+  "volumes": [
+    "ottrin-stock-client-windows.iso",
+    "ottrin-stock-client-seed.iso",
+    "ottrin-stock-client.qcow2"
+  ],
+  "source": {
+    "status": "pass: exact Microsoft published ISO SHA256",
+    "source": "https://support.microsoft.com/en-us/servicing/os/windows/docs/2026/09/verify-the-authenticity-of-a-windows-11-enterprise-evaluation-iso-file",
+    "sha256": "bc3f24086ebadc94489066b5ad78089e2cf5c3491e90e790bb81a2b199c10e38",
+    "bytes": 8225329152,
+    "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/Windows11EnterpriseEvaluation.iso",
+    "scope": "Input authenticity/identity, not installed Windows, MSI or package acceptance"
+  },
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/install.py",
+  "scope": "Clean Microsoft Windows installation and bootstrap only. No MSI rollback or Ottrin acceptance inferred.",
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "network_interfaces": 0,
+  "media_upload_complete": true,
+  "uploaded_media_host_copy_removed_bytes": 8225329152,
+  "private_console": {
+    "pid": 467362,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-cesviqf5/home"
+  },
+  "boot_prompt_key": "One Return delivered after actual owned boot prompt OCR",
+  "installation_observed": true,
+  "retained_pending_volume": "ottrin-stock-client.qcow2",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-stock-client-seed.iso",
+      "ottrin-stock-client-windows.iso"
+    ],
+    "fixture_removed": true,
+    "retained_pending_volume": "ottrin-stock-client.qcow2",
+    "retained_pending_input": null
+  }
+}

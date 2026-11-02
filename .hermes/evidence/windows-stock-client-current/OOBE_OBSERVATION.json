@@ -1,0 +1,20 @@
+{
+  "status": "Normal initial setup UI completed through observed privacy Accept",
+  "domain_uuid": "21cf0cb1-d590-457d-b4c5-910cd1c81b58",
+  "choices": [
+    "United States test region",
+    "US keyboard",
+    "No second keyboard",
+    "Visible I do not have internet option, no network adapter attached",
+    "Location off",
+    "Find device off",
+    "Required diagnostics only",
+    "Inking off",
+    "Personalized offers off"
+  ],
+  "proofs": {
+    "privacy-upper.png": "af54deafda613307a74b6e89d9fa34c075b9cdaa222d000cb06800b837f5ba6a",
+    "privacy-lower.png": "07bb104379012384581ec56a8dd9c03baf265bb92b939ee5e016f049d6edf2fe"
+  },
+  "scope": "Actual native private console input; no account, security, OOBE bypass or owner Microsoft account used. Guest agent/bootstrap and MSI acceptance are separate."
+}

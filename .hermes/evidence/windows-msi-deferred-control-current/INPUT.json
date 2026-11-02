@@ -1,0 +1,10 @@
+{
+  "status": "Native deferred control executed; failed rollback, see stock/GUEST_RESULT.json",
+  "basis": "Same native table authoring and ordinary actor; only fault placement changes from Type19 after InstallExecute to Type1025 deferred DLL after PublishProduct. Strictly require both file operation and registration/unpublication before the fault.",
+  "original_builder_sha256": "653bf94b7791564d1b1c81520f21fb934126da13e2d82f31a1ed144d13d83795",
+  "failure_source_sha256": "de053214d4c48fc49a40c35c64aecdd53857835b20304678981f0f8bbe3bc5c9",
+  "failure_dll_sha256": "b2633410adf72c2c4733c4cf9c4526fc901f9b307c1ea3fffd8b01f69b930c75",
+  "compiler": "Existing x86_64-w64-mingw32-gcc; no CRT/runtime, no application code, no new Cargo configuration",
+  "scope": "Temporary causality experiment. No MSI gate waiver or acceptance yet.",
+  "rebuild_command": "x86_64-w64-mingw32-gcc -Wall -Wextra -Werror -O2 -shared -nostdlib -Wl,--entry,DllMain -Wl,--no-insert-timestamp -o failure.dll failure.c"
+}

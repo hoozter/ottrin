@@ -1,0 +1,36 @@
+{
+  "status": "Independent Microsoft install/bootstrap passed; immediate and deferred native MSI controls both fail rollback with82/78 skipped errors",
+  "source_verification": "WINDOWS_SOURCE_VERIFICATION.json",
+  "published_sha256": "bc3f24086ebadc94489066b5ad78089e2cf5c3491e90e790bb81a2b199c10e38",
+  "last_rendered_observation": "Fresh ordinary desktop observed, SID-bound readiness supplied before native control; current installed base is cleanly shut down and retained for named comparisons",
+  "screenshot_sha256": "288f915ce4e3dfe272287efcb0109aeaf157ea5cb11ef6e90b13084e76558309",
+  "live_domain": null,
+  "cleanup_completed": [
+    "Rejected extraction output removed",
+    "First rejected pre-boot definition volumes/disk/seed/fixture removed",
+    "Full877MB virtio ISO removed after exact selected-payload extraction",
+    "Duplicate8.2GB host Windows ISO removed after completed native volume upload",
+    "Successful install domain, secret seed, native ISO/seed volumes and private console removed",
+    "Both comparison guests, four overlay/media volumes and private console profiles removed",
+    "Both comparison archives compacted to exact member bytes and manifests; completed desktop frames removed"
+  ],
+  "remaining_task_created_storage": [
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "15.34GiB independently installed Microsoft base retained for deferred-vs-immediate MSI and actual Ottrin comparisons; no backing image"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
+      "purpose": "12MB exact serial/guest-agent bootstrap inputs pending final new-client consumer closure"
+    }
+  ],
+  "available_bytes": 6194761728,
+  "next": [
+    "Inspect common native product-registration rollback access denial; gate remains failed, no engine waiver",
+    "Use retained independent base for actual Ottrin comparison when causal test is ready",
+    "Continue other dependency-ready software and delivery work"
+  ],
+  "bootstrap_receipt": "BOOTSTRAP_RESULT.json",
+  "source_control_receipt": ".hermes/evidence/windows-stock-control-current/GUEST_RESULT.json",
+  "deferred_control_receipt": ".hermes/evidence/windows-msi-deferred-control-current/stock/GUEST_RESULT.json"
+}

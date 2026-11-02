@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "stdout": "Domain 'ottrin-stock-client' defined from /home/campbell/Projects/Ottrin/.hermes/evidence/windows-stock-client-current/DOMAIN_CHECK.xml\n\n",
+  "stderr": "",
+  "scope": "Actual corrected libvirt definition with Microsoft-enrolled firmware template before any media/disk allocation; no Windows acceptance",
+  "domain_removed": true
+}

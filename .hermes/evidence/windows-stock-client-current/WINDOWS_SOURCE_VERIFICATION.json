@@ -1,0 +1,8 @@
+{
+  "status": "pass: exact Microsoft published ISO SHA256",
+  "source": "https://support.microsoft.com/en-us/servicing/os/windows/docs/2026/09/verify-the-authenticity-of-a-windows-11-enterprise-evaluation-iso-file",
+  "sha256": "bc3f24086ebadc94489066b5ad78089e2cf5c3491e90e790bb81a2b199c10e38",
+  "bytes": 8225329152,
+  "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/Windows11EnterpriseEvaluation.iso",
+  "scope": "Input authenticity/identity, not installed Windows, MSI or package acceptance"
+}

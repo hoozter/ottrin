@@ -82,9 +82,27 @@ This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 Continue in this order:
 
 1. Resolve the still-failed MSI after-execution transaction rollback gate.
-   Simple native controls also fail on the updated existing Windows client;
-   no vendor defect or waiver is inferred. Reassess a clean Microsoft client
-   comparison using the recovered space; no new ISO has been downloaded yet.
+   The independent Microsoft Windows11 Enterprise Evaluation26300 installation
+   and signed kernel-driver/bootstrap verification now pass. Its MSI runtime is
+   5.0.26100.9444. The unchanged immediate control and a second deferred DLL
+   control both reproduce82 install/78 uninstall skipped rollback errors under
+   a real ordinary interactive user. The deferred case proves actual file and
+   product registration/unpublication operations before failure. Moving the
+   fault into the execution script does not resolve the problem; old VM state
+   and Ottrin lifecycle actions are not required to reproduce it. Both failed
+   cases leave registration inconsistent, and failed uninstall recovery can
+   leave the payload behind after a reported successful cleanup. The first
+   rollback failure is access denied while undoing protected installer product
+   keys. This matches the symptom in upstream issue8574, but does not establish
+   a safe product fix or justify a gate waiver. Do not repeat completed controls
+   or source-install provisioning without a new causal hypothesis. Compare
+   remaining authoring/security-context differences, then test the actual Ottrin
+   MSI on the retained independent base. Continue other dependency-ready work
+   while this gate remains failed. Evidence: `windows-stock-client-current/`,
+   `windows-stock-control-current/OBSERVATION.json` and
+   `windows-msi-deferred-control-current/stock/OBSERVATION.json`.
+   All three completed guests, their overlay/media volumes and private consoles
+   are removed; the independent15.34GiB base remains for the actual-MSI consumer.
 2. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
    software/installer gates pass. Keep development MSIX acceptance separate from
    signed Store certification; do not promote a failed installer gate.
@@ -1436,8 +1454,8 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Fourd09569e2 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | Popup routing is delivered with native positive controls; remaining broader software/theme gates and then parked owner/device acceptance. |
-| Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, hosted source checks, native icons/CLI and scoped default-folder/Properties/picker/removal acceptance. Private c5a40fd2 development MSIX0.1.0.1 passes native assembly/runtime and enabled/disabled startup update/reboot with valid preferences and exact native database identity. | MSI rollback/current-client comparison and remaining installed/runtime/software gates. MSI rollback remains required and failed; public packages stay unchanged. |
+| Linux | Four592d56e8 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | Popup routing is delivered with native positive controls; remaining broader software/theme gates and then parked owner/device acceptance. |
+| Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, hosted source checks, native icons/CLI and scoped default-folder/Properties/picker/removal acceptance. Private592d56e8 development MSIX0.1.0.3 passes native assembly/runtime and enabled/disabled startup update/reboot with valid preferences and exact native database identity. | MSI rollback/current-client comparison and remaining installed/runtime/software gates. MSI rollback remains required and failed; public packages stay unchanged. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 

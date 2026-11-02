@@ -1,0 +1,18 @@
+{
+  "completed": "Deferred control overlay, ISO, private console/profile and failure.dll removed; results archive extracted byte-for-byte and removed",
+  "retained_input": "failure.c, build.ps1, actor-input.ps1 and exact rebuild command; no binary needed for completed run",
+  "pending_shared_resources": [
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "Independent base for actual Ottrin MSI comparison; previous minimal controls completed"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
+      "purpose": "Exact current signed serial driver and upstream guest agent inputs; source install recovery if needed"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Current592d56e8 Windows payloads and packages pending delivery gates"
+    }
+  ]
+}

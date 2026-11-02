@@ -1,0 +1,56 @@
+{
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "build": "26300",
+    "msi_version": "5.0.26100.9444"
+  },
+  "desktop_ready": true,
+  "session_id": 1,
+  "phase": "executing native MSI rollback control",
+  "scope": "Fresh native ordinary-user file-only MSI rollback after executed copy/removal; no Ottrin executable/lifecycle action; one QA DLL only returns1603 inside the execution script",
+  "identity": {
+    "profile": "C:\\Users\\OTMSI9a5bc5d7a030",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false
+  },
+  "status": "failed native rollback or supported cleanup",
+  "cases": [
+    {
+      "skipped_rollback_errors": 82,
+      "payload_after_cleanup": false,
+      "actual_registration_operation_before_failure": true,
+      "payload_after_failure": false,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "install",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{A541F862-95CF-4827-BE4F-9E80CBF8425D}",
+      "rollback_correct": false,
+      "msi_sha256": "75B6380026800E726A7A796A49910D2F2484C73680E64A79D98CD804FAC2B86E",
+      "recovery_install_exit": 0,
+      "state_after_failure": 5,
+      "state_before": -1
+    },
+    {
+      "skipped_rollback_errors": 78,
+      "payload_after_cleanup": true,
+      "actual_registration_operation_before_failure": true,
+      "payload_after_failure": true,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "uninstall",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{AFE0BA1C-B37F-4F75-BD72-CD507242132F}",
+      "rollback_correct": false,
+      "msi_sha256": "5CD16FFB7EF53B39EB9B8E46FBBF2C936A51D183153702C43F12897B4F0CE939",
+      "recovery_install_exit": 0,
+      "install_exit": 0,
+      "state_after_failure": 1,
+      "state_before": -1
+    }
+  ]
+}

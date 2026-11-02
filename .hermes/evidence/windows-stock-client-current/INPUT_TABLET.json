@@ -1,0 +1,6 @@
+{
+  "exit": 0,
+  "stdout": "Device attached successfully\n\n",
+  "stderr": "",
+  "scope": "Emulated USB absolute-pointer input on owned VM only, no host USB redirection; current fresh image has no SPICE agent"
+}
