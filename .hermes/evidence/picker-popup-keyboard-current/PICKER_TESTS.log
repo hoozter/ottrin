@@ -30,4 +30,3 @@ test picker::tests::rendered_picker_keeps_files_and_actions_visible_and_opens_th
 test picker::tests::rendered_read_only_preview_does_not_cover_actions_or_change_files ... ok
 
 test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.08s
-

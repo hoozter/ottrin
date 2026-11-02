@@ -78,10 +78,18 @@ on ArrowDown before repair; the authoritative chooser now defers file/location/
 cancel shortcuts to an open egui popup. All25 picker-related tests,455 regular UI
 tests (one ignored), and strict Linux/Windows UI all-target lint pass. This is a
 source correction; the stable source928b7937 AppImage is unchanged and still has
-the defect. Next build and verify a clean package cohort, including the affected
-native chooser/browser keyboard path, before promotion. Evidence:
-`.hermes/evidence/picker-popup-keyboard-current/SOURCE_ACCEPTANCE.json`.
-This work is dependency-ready and needs no owner involvement.
+the defect. Clean sourcef7f20542 now has a verified four-format staging cohort:
+production content/closure/native namespace checks pass, both actual installed
+browsers pass Open/Save, and Flatpak's actual filter popup ArrowDown/Escape keeps
+the chooser and folder intact before exact-byte Open/Save. The indexer and all
+five other helper/renderer payloads are byte-identical to the stable delivery.
+Full source CI run41448829173 is still in progress; both release performance jobs
+pass. Stable promotion awaits that terminal hosted gate. Completed native GUI
+sessions and the fulfilled75MB extraction are removed; only the current stage
+remains for that named consumer. Five obsolete incremental sessions were removed,
+with supported process inspection exceptions revalidated and safeguards retained.
+Evidence: `.hermes/evidence/picker-popup-keyboard-current/CANDIDATE_ACCEPTANCE.json`.
+This work continues without owner involvement.
 
 The original GitHub audit found13 failed push runs since October31:11 CI and2
 installer diagnostics, with no scheduled retry loop. Workflow/ref concurrency

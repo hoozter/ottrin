@@ -1,0 +1,34 @@
+{
+  "status": "completed local QA cleanup; current stage retained for named hosted/promotion consumer",
+  "observed_at": "2026-11-02T13:09:48.566409+00:00",
+  "owned_sessions_removed": true,
+  "removed_completed_extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "removed_extraction_payload_bytes": 75164698,
+  "obsolete_incremental_sessions_removed": 5,
+  "incremental_cleanup": "INCREMENTAL_APPLY_REVIEWED.log; supported inspection exceptions were revalidated, exclusive locks and current-cache retention enforced",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-popup-keyboard-current",
+      "purpose": "Compact source, package and browser acceptance receipts and frozen executed QA inputs"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Latest verified candidate four-format cohort",
+      "pending_consumer": [
+        "Full hosted source verification run41448829173 and stable promotion"
+      ]
+    }
+  ],
+  "existing_retained_windows_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Latest Windows development candidate awaiting named remaining software acceptance"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+      "purpose": "Independent Windows MSI/client software comparison baseline"
+    }
+  ],
+  "test_processes_running": false,
+  "personal_index_service": "Intentionally preserved, byte-identical daemon needs no restart"
+}

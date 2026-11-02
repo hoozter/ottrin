@@ -1,0 +1,24 @@
+{
+  "paths_bytes": {
+    "target/debug/deps": 37911470080,
+    "target/debug/incremental": 18248269824,
+    "target/x86_64-pc-windows-gnu/debug/deps": 42343116800,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 38478696448,
+    ".hermes/evidence/picker-popup-keyboard-current": 1011712,
+    ".hermes/packaging-tmp/.windows-desktop-stage": 293056512
+  },
+  "delta_bytes": {
+    "target/debug/deps": -4096,
+    "target/debug/incremental": -237568,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 389120,
+    ".hermes/evidence/picker-popup-keyboard-current": 1007616,
+    ".hermes/packaging-tmp/.windows-desktop-stage": 0
+  },
+  "retained_current_binaries": [
+    "target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+    "target/release/deps/ottrin_app-0b6719a16a211aa1",
+    "target/release/ottrin-app"
+  ],
+  "scope": "Existing compiler configurations reused; current test/release paths updated in place. Five superseded incremental sessions removed; no new target tree. Stage awaits hosted/promotion consumer. Existing unrelated configurations and useful dependencies retained."
+}

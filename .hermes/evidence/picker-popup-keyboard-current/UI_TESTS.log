@@ -478,4 +478,3 @@ test tests::entering_miller_reveals_the_current_directory_and_selection_once ...
 test preview_render::tests::shared_preview_bodies_have_one_scrollbar_and_stationary_footers ... ok
 
 test result: ok. 455 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.43s
-

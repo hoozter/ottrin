@@ -1,0 +1,7 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "f7f205420cea445caf77d0a9add851dc3aa4cfdd",
+  "pending_consumers": [],
+  "cleanup": "Completed content/payload-identity consumer; actual browser GUI tested the immutable staged AppImage directly; fulfilled extraction removed.",
+  "cleanup_complete": true
+}

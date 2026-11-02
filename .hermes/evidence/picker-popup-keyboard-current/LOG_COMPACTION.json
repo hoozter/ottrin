@@ -1,0 +1,80 @@
+{
+  "status": "pass",
+  "files": [
+    {
+      "path": "browser-firefox/desktop/DISPLAY_CHECK.txt",
+      "original_sha256": "7fbb0c01ab888aa601599914b44bc9295da8f6265951712492482695bc68bde7",
+      "action": "Removed fulfilled full visual capability listing; native display dimensions remain in reviewed frames",
+      "summary": [
+        "name of display:    :3",
+        "version number:    11.0",
+        "vendor string:    The X.Org Foundation",
+        "vendor release number:    12101011",
+        "X.Org version: 21.1.11",
+        "maximum request size:  16777212 bytes",
+        "motion buffer size:  256",
+        "bitmap unit, bit order, padding:    32, LSBFirst, 32",
+        "image byte order:    LSBFirst",
+        "number of supported pixmap formats:    6",
+        "supported pixmap formats:",
+        "    depth 1, bits_per_pixel 1, scanline_pad 32",
+        "    depth 4, bits_per_pixel 8, scanline_pad 32",
+        "    depth 8, bits_per_pixel 8, scanline_pad 32",
+        "    depth 16, bits_per_pixel 16, scanline_pad 32",
+        "    depth 24, bits_per_pixel 32, scanline_pad 32",
+        "    depth 32, bits_per_pixel 32, scanline_pad 32",
+        "keycode range:    minimum 8, maximum 255"
+      ]
+    },
+    {
+      "path": "browser-flatpak/desktop/DISPLAY_CHECK.txt",
+      "original_sha256": "c914687482f1b014df371be3f261cd29d13f1fc6b85ea1d1f98a5bfc33f15e45",
+      "action": "Removed fulfilled full visual capability listing; native display dimensions remain in reviewed frames",
+      "summary": [
+        "name of display:    :2",
+        "version number:    11.0",
+        "vendor string:    The X.Org Foundation",
+        "vendor release number:    12101011",
+        "X.Org version: 21.1.11",
+        "maximum request size:  16777212 bytes",
+        "motion buffer size:  256",
+        "bitmap unit, bit order, padding:    32, LSBFirst, 32",
+        "image byte order:    LSBFirst",
+        "number of supported pixmap formats:    6",
+        "supported pixmap formats:",
+        "    depth 1, bits_per_pixel 1, scanline_pad 32",
+        "    depth 4, bits_per_pixel 8, scanline_pad 32",
+        "    depth 8, bits_per_pixel 8, scanline_pad 32",
+        "    depth 16, bits_per_pixel 16, scanline_pad 32",
+        "    depth 24, bits_per_pixel 32, scanline_pad 32",
+        "    depth 32, bits_per_pixel 32, scanline_pad 32",
+        "keycode range:    minimum 8, maximum 255"
+      ]
+    },
+    {
+      "path": "build.log",
+      "original_sha256": "f4da87b4e89f985c9f826e7bde9177ea459b6e579f7658093cf3f87ade3f49a6",
+      "action": "Normalized trailing whitespace only"
+    },
+    {
+      "path": "UI_TESTS.log",
+      "original_sha256": "2fe75583071824bd8fced967083072ecb1e53dcf8decc7dd354cf1ee802f9610",
+      "action": "Normalized trailing whitespace only"
+    },
+    {
+      "path": "PICKER_TESTS.log",
+      "original_sha256": "7a057d998b855259bb9a5b9343cbe4baee3c7cfcde53e365e29cbbbcb4a6081b",
+      "action": "Normalized trailing whitespace only"
+    },
+    {
+      "path": "browser-firefox/desktop/frontend.log",
+      "original_sha256": "f9dae473d6178590596f36f6e977d136ee4087e357dc8aa48e21e3d50f42d70d",
+      "action": "Normalized trailing whitespace only"
+    },
+    {
+      "path": "browser-flatpak/desktop/frontend.log",
+      "original_sha256": "42e0f43b6db85c9a32c145f85782850e29a178c79a2ec8e6b1bb170b1fa860dd",
+      "action": "Normalized trailing whitespace only"
+    }
+  ]
+}

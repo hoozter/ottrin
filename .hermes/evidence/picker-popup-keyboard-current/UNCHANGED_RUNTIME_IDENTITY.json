@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "previous_source": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "previous_appimage_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
+  "candidate_source": "f7f205420cea445caf77d0a9add851dc3aa4cfdd",
+  "candidate_appimage_sha256": "7989c251a9bdf296e7e8a178574a546fdae2f5af188a242f06dd4d3f4f8ffff4",
+  "identical_complete_payloads": {
+    "usr/bin/ottrin-indexd": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+    "usr/bin/ottrin-media-playback": "d8b602a62cebb37d212629fd61cfeb700dd10dddfc87c8e9f22544ba3d205ca3",
+    "usr/bin/ottrin-legacy-doc-render": "0c85f0615777cc686ad4d4e0bb55a8bf881b92c6b3922e8222ce109bd8ff2a57",
+    "usr/libexec/ottrin/ottrin-priv-helper": "041770a6db79578a7271eab56f8bd5127a0a155f5b9ed1bb185420da7cf6c41d",
+    "usr/libexec/ottrin/ottrin-html-render": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
+    "usr/bin/pdfium/lib/libpdfium.so": "3019ad1cd6980e51d900bb9266f8980cb846cb8e0c1f6553c52a7a1626469020"
+  },
+  "scope": "Previously accepted index resources and native helper/runtime component scopes retain exact binary identity; this does not claim fresh full native-distribution/physical acceptance for the new app. Prior exact-artifact receipts are not relabeled."
+}

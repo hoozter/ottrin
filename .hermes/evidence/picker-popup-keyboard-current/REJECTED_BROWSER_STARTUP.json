@@ -1,0 +1,58 @@
+{
+  "status": "rejected",
+  "result": {
+    "status": "failed",
+    "browser": "falkon-flatpak",
+    "scope": "Actual installed browser Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+    "appimage_sha256": "7989c251a9bdf296e7e8a178574a546fdae2f5af188a242f06dd4d3f4f8ffff4",
+    "source_revision": "f7f205420cea445caf77d0a9add851dc3aa4cfdd",
+    "flatpak_scope": {
+      "application": "org.kde.falkon",
+      "private_browser_data": "/var/tmp/.ottrin-picker-qa-qcx64g9a/browser",
+      "fixture_direct_filesystem_grant": false,
+      "startup_guard": "Actual sandbox shell requires the outside original file to be invisible before invoking installed falkon; prints real /.flatpak-info",
+      "persistent_overrides_changed": false,
+      "private_runtime_alias": "Sandbox-local symlink from the temporary runtime/doc URL prefix to Flatpak standard /run/flatpak/doc per-app mount; no fixture filesystem access added"
+    },
+    "private_wallet_creation_declined": true,
+    "error": "CalledProcessError(1, ['xdotool', 'windowactivate', '--sync', '4194333'])",
+    "teardown": {
+      "status": "failed",
+      "profile": "/var/tmp/.ottrin-picker-qa-qcx64g9a",
+      "owned_processes_reaped": [
+        {
+          "pid": 299411,
+          "exit": 0
+        },
+        {
+          "pid": 299420,
+          "exit": 0
+        },
+        {
+          "pid": 299422,
+          "exit": 15
+        },
+        {
+          "pid": 299533,
+          "exit": -15
+        },
+        {
+          "pid": 299535,
+          "exit": -15
+        },
+        {
+          "pid": 299609,
+          "exit": -15
+        }
+      ],
+      "owned_children": {
+        "stopped": [],
+        "unreadable_foreign_processes_preserved": 3
+      },
+      "owned_mounts_unmounted": [],
+      "error": "Command '['xdotool', 'windowactivate', '--sync', '4194333']' returned non-zero exit status 1.",
+      "profile_removed": true
+    }
+  },
+  "reason": "Browser startup XID vanished before activation; no Ottrin chooser request or product acceptance occurred. Final producer classifies vanished windows and reselects the actual visible browser."
+}

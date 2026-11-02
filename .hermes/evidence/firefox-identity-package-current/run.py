@@ -2,9 +2,16 @@
 from pathlib import Path
 import argparse,importlib.util,hashlib,json,os,time,subprocess,secrets
 from contextlib import ExitStack
-r=Path.cwd();drivers=Path(__file__).resolve().parent;parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);parser.add_argument('--browser',choices=['firefox','falkon-flatpak'],required=True);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');e.mkdir(exist_ok=True);out=e/'desktop';assert not out.exists()
+r=Path.cwd();drivers=Path(__file__).resolve().parent;parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);parser.add_argument('--browser',choices=['firefox','falkon-flatpak'],required=True);parser.add_argument('--candidate-output',type=Path);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');e.mkdir(exist_ok=True);out=e/'desktop';assert not out.exists()
 spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');dsk=importlib.util.module_from_spec(spec);spec.loader.exec_module(dsk)
-image=r/'dist/packages/Ottrin-0.1.0-x86_64.AppImage';digest=hashlib.file_digest(image.open('rb'),'sha256').hexdigest();delivery=json.loads((r/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json').read_text());assert digest==delivery['artifacts'][image.name]
+if args.candidate_output:
+ candidate=args.candidate_output.resolve();assert candidate.is_relative_to(r/'.hermes/evidence')
+ build=json.loads((candidate/'BUILD_SOURCE.json').read_text());delivery=json.loads((candidate/'BUILD_RESULT.json').read_text())
+ assert delivery['source_revision']==build['source_revision'] and delivery['status']=='four-format build pass; staged for content and GUI acceptance'
+ image=Path(build['stage'])/'Ottrin-0.1.0-x86_64.AppImage';assert image.parent==r/'.hermes/packaging-tmp/.linux-native-desktop-stage'
+else:
+ image=r/'dist/packages/Ottrin-0.1.0-x86_64.AppImage';delivery=json.loads((r/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json').read_text())
+digest=hashlib.file_digest(image.open('rb'),'sha256').hexdigest();assert digest==delivery['artifacts'][image.name]
 report={'status':'running','browser':args.browser,'scope':'Actual installed browser Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately','appimage_sha256':digest,'source_revision':delivery['source_revision']}
 def prepare_portal(d):
  definitions=d.profile/'data/portal-definitions';definitions.mkdir();(definitions/'ottrin.portal').write_bytes((r/'packaging/linux/ottrin.portal').read_bytes())
@@ -53,6 +60,7 @@ try:
    while time.monotonic()<deadline:
     assert browser.poll() is None,(out/('firefox.log' if args.browser=='firefox' else 'falkon.log')).read_text()[-2000:]
     ids=dsk.run(['xdotool','search','--onlyvisible','--name',pattern],d.env,False).stdout.split()
+    ids=[w for w in ids if all(int(dict(line.split('=',1) for line in dsk.run(['xdotool','getwindowgeometry','--shell',w],d.env,False).stdout.splitlines() if '=' in line).get(k,'0'))>=v for k,v in [('WIDTH',400),('HEIGHT',300)])]
     if ids:return ids
     if args.browser=='falkon-flatpak':
      wallets=dsk.run(['xdotool','search','--onlyvisible','--class','ksecretd'],d.env,False).stdout.split()
@@ -69,7 +77,13 @@ try:
   window=wait_windows('Mozilla Firefox' if args.browser=='firefox' else 'Falkon')[-1]
   focus_deadline=time.monotonic()+10
   while True:
-   dsk.run(['xdotool','windowactivate','--sync',window],d.env);time.sleep(.5)
+   activation=dsk.run(['xdotool','windowactivate','--sync',window],d.env,False)
+   if activation.returncode:
+    live=dsk.run(['xdotool','search','--onlyvisible','--name','Mozilla Firefox' if args.browser=='firefox' else 'Falkon'],d.env,False).stdout.split()
+    assert window not in live,activation.stderr
+    report.setdefault('startup_window_replacements',[]).append({'vanished_window':window,'activation_error':activation.stderr})
+    window=wait_windows('Mozilla Firefox' if args.browser=='firefox' else 'Falkon')[-1];continue
+   time.sleep(.5)
    if dsk.run(['xdotool','getactivewindow'],d.env).stdout.strip()==window:break
    if time.monotonic()>=focus_deadline:
     (out/'WINDOWS_AT_FOCUS_TIMEOUT.txt').write_text(dsk.run(['xwininfo','-root','-tree'],d.env).stdout);dsk.run(['import','-window','root',str(out/'focus-timeout.png')],d.env);raise RuntimeError('Browser did not retain active focus')
@@ -78,7 +92,7 @@ try:
   chooser_pid=int(dsk.run(['xdotool','getwindowpid',chooser],d.env).stdout.strip());actual=Path(os.readlink('/proc/'+str(chooser_pid)+'/exe'));assert actual.name=='ottrin',actual
   report['chooser_executable']=str(actual);report['open_pid']=chooser_pid
   dsk.run(['xdotool','windowactivate','--sync',chooser,'key','ctrl+l','type','--clearmodifiers',str(fixture)],d.env);dsk.run(['xdotool','key','Return'],d.env);time.sleep(.4);dsk.run(['import','-window',chooser,str(out/'open-folder.png')],d.env)
-  (out/'SESSION.json').write_text(json.dumps({'profile':str(d.profile),'fixture':str(fixture),'display':d.env['DISPLAY'],'environment':{k:d.env[k] for k in keys if k in d.env},'browser_window':window,'chooser_window':chooser,'chooser_pid':chooser_pid,'browser':args.browser,'payload_hex':payload.hex()},indent=2)+'\n')
+  (out/'SESSION.json').write_text(json.dumps({'profile':str(d.profile),'fixture':str(fixture),'display':d.env['DISPLAY'],'environment':{k:d.env[k] for k in keys if k in d.env},'browser_window':window,'chooser_window':chooser,'chooser_pid':chooser_pid,'browser':args.browser,'payload_hex':payload.hex(),'check_popup_keys':bool(args.candidate_output)},indent=2)+'\n')
   for stage in ['open','save']:
    subprocess.run(['python3',str(drivers/'control.py'),stage,'--output',str(e)],check=True)
   result=json.loads((e/'CONTROLLER_RESULT.json').read_text());assert result['status']=='pass';assert source.read_bytes()==payload;assert (dest/'original.txt').read_bytes()==payload;report.update(result)

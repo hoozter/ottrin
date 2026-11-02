@@ -1,0 +1,43 @@
+XDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-olt0t1gk/data/portal-definitions/kde-portals.conf'
+XDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-olt0t1gk/data/portal-definitions/portals.conf'
+XDP: Preferred portals for interface 'default': none
+XDP: Preferred portals for interface 'org.freedesktop.impl.portal.FileChooser': ottrin
+XDP: Using portal configuration file '/var/tmp/.ottrin-picker-qa-olt0t1gk/data/portal-definitions/portals.conf' for non-specific desktop
+XDP: load portals from /var/tmp/.ottrin-picker-qa-olt0t1gk/data/portal-definitions
+XDP: loading /var/tmp/.ottrin-picker-qa-olt0t1gk/data/portal-definitions/ottrin.portal
+XDP: portal implementation supports org.freedesktop.impl.portal.FileChooser
+XDP: Found 'none' in configuration for default
+XDP: providing portal org.freedesktop.portal.MemoryMonitor
+XDP: providing portal org.freedesktop.portal.PowerProfileMonitor
+XDP: providing portal org.freedesktop.portal.NetworkMonitor
+XDP: providing portal org.freedesktop.portal.ProxyResolver
+XDP: providing portal org.freedesktop.portal.Trash
+XDP: providing portal org.freedesktop.portal.GameMode
+XDP: providing portal org.freedesktop.portal.Realtime
+XDP: Found 'none' in configuration for default
+
+(/usr/libexec/xdg-desktop-portal:299536): xdg-desktop-portal-WARNING **: 14:04:35.348: No skeleton to export
+XDP: Found 'ottrin' in configuration for org.freedesktop.impl.portal.FileChooser
+XDP: Using ottrin.portal for org.freedesktop.impl.portal.FileChooser (config)
+XDP: providing portal org.freedesktop.portal.FileChooser
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: org.freedesktop.portal.Desktop acquired
+XDP: Assigning app ID "firefox" to pid 299553 which has unit "app-firefox-ottrinqa9c6ec7887b162642.scope"
+XDP: Handling OpenFile
+XDP: convert uri file:///var/tmp/.ottrin-picker-qa-olt0t1gk/fixture/original.txt -> file:///var/tmp/.ottrin-picker-qa-olt0t1gk/fixture/original.txt
+
+XDP: Handling SaveFile
+XDP: convert uri file:///var/tmp/.ottrin-picker-qa-olt0t1gk/fixture/saved/original.txt -> file:///var/tmp/.ottrin-picker-qa-olt0t1gk/fixture/saved/original.txt

@@ -7,6 +7,11 @@ if args.stage=='open':
  if s['browser']=='falkon-flatpak':
   run('xdotool','windowactivate','--sync',s['chooser_window'],'mousemove','--window',s['chooser_window'],'110','560');time.sleep(.15);run('xdotool','mousedown','1');time.sleep(.1);run('xdotool','mouseup','1');time.sleep(.2)
   run('import','-window',s['chooser_window'],str(r/'desktop/open-filter-menu.png'))
+  if s.get('check_popup_keys'):
+   run('xdotool','key','--clearmodifiers','Down','Escape');time.sleep(.3)
+   assert s['chooser_window'] in run('xdotool','search','--onlyvisible','--name','Open').split(),'Popup Escape cancelled the chooser'
+   run('import','-window',s['chooser_window'],str(r/'desktop/popup-after-arrow-escape.png'))
+   run('xdotool','mousemove','--window',s['chooser_window'],'110','560');time.sleep(.15);run('xdotool','click','1');time.sleep(.2)
   run('xdotool','mousemove','--window',s['chooser_window'],'120','500');time.sleep(.15);run('xdotool','mousedown','1');time.sleep(.1);run('xdotool','mouseup','1');time.sleep(.4)
   run('import','-window',s['chooser_window'],str(r/'desktop/open-selected-filter.png'))
  run('xdotool','windowactivate','--sync',s['chooser_window'],'mousemove','--window',s['chooser_window'],'300','183','click','1','mousemove','--window',s['chooser_window'],'900','606','click','1');time.sleep(.6)
@@ -33,5 +38,5 @@ elif args.stage=='save':
  assert dest.read_bytes()==source.read_bytes()==bytes.fromhex(s['payload_hex'])
  time.sleep(.3);run('import','-window',s['browser_window'],str(r/'desktop/saved-browser.png'))
  import hashlib
- (r/'CONTROLLER_RESULT.json').write_text(json.dumps({'status':'pass','actual_browser':s['browser'],'open_save':'Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes'+' from the opened local text document','source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'saved_sha256':hashlib.sha256(dest.read_bytes()).hexdigest(),'chooser_backend_pid':pid,'no_index_started':not (Path(s['profile'])/'runtime/ottrin/index-v1.sock').exists(),'identity_scope':'Parent runner verifies actual installed browser attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership.'},indent=2)+'\n')
+ (r/'CONTROLLER_RESULT.json').write_text(json.dumps({'status':'pass','actual_browser':s['browser'],'open_save':'Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes'+' from the opened local text document','source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'saved_sha256':hashlib.sha256(dest.read_bytes()).hexdigest(),'chooser_backend_pid':pid,'popup_arrow_escape_scope':'Actual Flatpak file-type popup ArrowDown/Escape retains chooser; following Open/Save verifies original folder/file' if s.get('check_popup_keys') and s['browser']=='falkon-flatpak' else 'not exercised by this case','no_index_started':not (Path(s['profile'])/'runtime/ottrin/index-v1.sock').exists(),'identity_scope':'Parent runner verifies actual installed browser attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership.'},indent=2)+'\n')
 else:raise ValueError('Unknown native stage')

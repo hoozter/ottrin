@@ -1,0 +1,16 @@
+{
+  "source_revision": "f7f205420cea445caf77d0a9add851dc3aa4cfdd",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "current_delivery": "dist/packages source928b7937 preserved pending popup correction package acceptance",
+  "purpose": "Deliver corrected chooser popup keyboard ownership in one clean four-format Linux cohort",
+  "producer": ".hermes/evidence/desktop-integration-current/build.py",
+  "pending_consumers": [
+    "Full hosted source verification run41448829173 and stable promotion"
+  ],
+  "cleanup_owner": "Current roadmap task; producer removes failed build staging; successful stage/extraction retired after owned acceptance and promotion",
+  "completed_consumers": [
+    "four-format production content/closure/native namespace checks",
+    "actual installed Firefox and Flatpak browser Open/Save with real app IDs",
+    "native Flatpak popup ArrowDown/Escape and exact source/save bytes"
+  ]
+}

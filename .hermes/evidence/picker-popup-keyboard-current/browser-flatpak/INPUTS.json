@@ -1,0 +1,6 @@
+{
+  "executed_run_sha256": "657c16ba85113254dc213d42cc279bb6d2ab61b56f5a1ba28fb1af22e2aa8ed9",
+  "executed_control_sha256": "eef6f911bfe675ce04245d7a40e5c25d5d7fa1c05e7d1c3bc0838e19c7022fa7",
+  "desktop_session_sha256": "c356142129294d25e8d6b9dfa404ff9a194a1e70613201011281a0249b3f65bd",
+  "note": "Firefox used the producer before the classified startup-window replacement correction; frozen per-case inputs preserve that distinction."
+}

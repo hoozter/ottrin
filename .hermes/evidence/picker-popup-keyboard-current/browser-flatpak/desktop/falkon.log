@@ -1,0 +1,95 @@
+[Application]
+name=org.kde.falkon
+runtime=runtime/org.kde.Platform/x86_64/6.10
+
+[Instance]
+instance-id=1373511357
+instance-path=/var/tmp/.ottrin-picker-qa-zpa7g3kd/home/.var/app/org.kde.falkon
+app-path=/var/lib/flatpak/app/org.kde.falkon/x86_64/stable/940dbda11045c7122802ef86895f94a944efc22fe8ac6ba38a773a9797388704/files
+app-commit=940dbda11045c7122802ef86895f94a944efc22fe8ac6ba38a773a9797388704
+app-extensions=org.kde.falkon.Locale=608adc001c3daa3cce32a5741eacb611379e7e2249c719b77d7bedf9e75f6e9e
+runtime-path=/var/lib/flatpak/runtime/org.kde.Platform/x86_64/6.10/31742ff0f905913c512ea732960bbdeffa8306dcbebca45eeee62bfed0ca03a3/files
+runtime-commit=31742ff0f905913c512ea732960bbdeffa8306dcbebca45eeee62bfed0ca03a3
+runtime-extensions=org.freedesktop.Platform.GL.default=c8dc1156588776045866acd53f9090c90fa84fdff0e74ee4e859ebfc80fb671d;org.freedesktop.Platform.codecs-extra=4ac6fc6727e278ddff768b8996a9240ef3f40becead3b70289faa43314934c5b;org.gtk.Gtk3theme.Breeze=77495563abf1b523c653bf0b211c39fda1596cde833768baee4894f91b285c8c;org.kde.KStyle.Adwaita=af4526bfc98d587b73109eb66d005ff6251fe4062a4ad5d48831aa5fb5ccca47;org.kde.Platform.Locale=3bd0cc910140f425909654ddca52412208e926d14b8b5249d50e4e00fdc0cca0;org.freedesktop.Platform.GL.default=4a2f702604835090c94ae8806aa9d91ab03cd294aedb3e0e24fc49d492d781eb
+branch=stable
+arch=x86_64
+flatpak-version=1.14.6
+session-bus-proxy=true
+system-bus-proxy=true
+extra-args=--socket=x11;--nosocket=wayland;--env=XDG_CACHE_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/cache;--env=XDG_CONFIG_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/config;--env=HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/home;--env=XDG_DATA_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/data;--env=QT_QPA_PLATFORM=xcb;--env=XDG_STATE_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/state;--filesystem=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser;
+
+[Context]
+shared=network;ipc;
+sockets=x11;pulseaudio;fallback-x11;
+devices=dri;
+filesystems=xdg-config/kdeglobals:ro;/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser;
+
+[Session Bus Policy]
+com.canonical.AppMenu.Registrar=talk
+org.kde.kconfig.notify=talk
+org.kde.KGlobalSettings=talk
+org.freedesktop.Notifications=talk
+org.kde.kwalletd6=talk
+org.mpris.MediaPlayer2.falkon.*=own
+org.kde.kwalletd5=talk
+
+[System Bus Policy]
+org.freedesktop.GeoClue2=talk
+org.freedesktop.UPower.*=talk
+
+[Environment]
+XDG_DATA_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/data
+ALSA_CONFIG_PATH=/usr/share/alsa/alsa-flatpak.conf
+__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS=/etc/egl/egl_external_platform.d:/usr/lib/x86_64-linux-gnu/GL/egl/egl_external_platform.d:/usr/share/egl/egl_external_platform.d
+KDE_FORK_SLAVES=1
+GST_PLUGIN_PATH=/app/lib/gstreamer-1.0:/usr/lib/extensions/gstreamer-1.0:/usr/lib/x86_64-linux-gnu/codecs-extra/lib/gstreamer-1.0:/usr/lib/x86_64-linux-gnu/gstreamer-1.0
+QML2_IMPORT_PATH=/app/lib/qml
+PYTHONUSERBASE=/var/data/python
+XDG_STATE_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/state
+GI_TYPELIB_PATH=/app/lib/girepository-1.0
+ALSA_CONFIG_DIR=/usr/share/alsa
+XDG_DATA_DIRS=/app/share:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share
+QT_PLUGIN_PATH=/app/lib/plugins:/usr/share/runtime/lib/plugins
+HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/home
+XDG_CACHE_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/cache
+XDG_CONFIG_HOME=/var/tmp/.ottrin-picker-qa-zpa7g3kd/browser/config
+QT_QPA_PLATFORM=xcb
+Call to org.freedesktop.portal.Settings.ReadAll failed QDBusError("org.freedesktop.DBus.Error.UnknownMethod", "No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop")
+Falkon: Creating new profile directory
+KWalletPasswordBackend::initialize Cannot open wallet!
+"KDEFrameworksIntegration: Custom scheme 'help' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'zip' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'thumbnail' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'filenamesearch' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'lzma' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'xz' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'webdavs' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'fish' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'activities' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'ar' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'sevenz' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'recentlyused' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'man' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'davs' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'trash' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'dav' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'webdav' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'bzip2' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'zstd' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'ghelp' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'gzip' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'remote' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'tar' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'bzip' will be available after browser restart."
+"KDEFrameworksIntegration: Custom scheme 'info' will be available after browser restart."
+Falkon: 2 extensions loaded
+qt.dbus.integration: QDBusConnection: name 'org.kde.kwalletd6' had owner '' but we thought it was ':1.17'
+kf.solid.backends.kdeconnect: Failed to get list of devices: "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
+kf.solid.backends.udisks2: Failed to fetch all devices "org.freedesktop.DBus.Error.ServiceUnknown" "org.freedesktop.DBus.Error.ServiceUnknown"
