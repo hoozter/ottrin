@@ -1,0 +1,25 @@
+{
+  "status": "required native MSIX runtime/lifecycle gate failed",
+  "source_revision": "40effd6fb128fc42220be9670377340a5e37031b",
+  "positive_scopes": [
+    "Administrative development-only deployment without signing-policy change",
+    "Normal-token real Ottrin main window, verified executable, title and process package identity",
+    "Normal WM_CLOSE exit0 and preserved synthetic document",
+    "Windows package registration removed"
+  ],
+  "failed_scopes": [
+    "GUI foreground focus/capture remains unaccepted",
+    "Index service setup exits1 after30-second daemon readiness timeout",
+    "Enabled native scheduled task remains after package removal, pointing to version-specific WindowsApps executable"
+  ],
+  "next": "Implement package-managed startup, then repeat actual startup, upgrade and removal; retain the GUI focus gate. No release promotion.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime-fixture.iso",
+      "ottrin-msix-runtime.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "status": "incomplete current-client comparison",
+  "cause": "25-minute WUSA test timeout while Windows CBS remained active",
+  "not_a_product_rollback_result": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-updated-client-fixture.iso",
+      "ottrin-msi-updated-client.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  },
+  "next": "Allow a longer monitored servicing interval on a fresh owned clone after the actual MSIX assembly check; preserve normal Windows security and verify the exact target version before rollback controls."
+}

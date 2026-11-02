@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-client-current/client.py", line 177, in <module>
+    chunk=g.qga('guest-file-read',{'handle':handle,'count':1024*1024});data=base64.b64decode(chunk.get('buf-b64',''));assert len(data)==chunk['count'];assert data or chunk.get('eof');output.write(data);assert output.tell()<=assembly['artifact_bytes']
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-20261011/guest_exec.py", line 9, in qga
+    raise RuntimeError(f'{command} failed for {DOMAIN}: {result.stderr.strip()}')
+RuntimeError: guest-file-read failed for ottrin-msix-assembly: error: Guest agent is not responding: Guest agent not available for now

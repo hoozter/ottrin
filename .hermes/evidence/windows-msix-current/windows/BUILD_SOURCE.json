@@ -1,0 +1,10 @@
+{
+  "source_revision": "40effd6fb128fc42220be9670377340a5e37031b",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "cleanup_owner": "windows-msix-current",
+  "pending_consumers": [
+    "Actual current portable/NSIS payload provenance",
+    "Native MSIX assembly/deployment/upgrade/removal acceptance"
+  ],
+  "cleanup_complete": false
+}

@@ -1,6 +1,8 @@
 """Verified public servicing inputs; no guest or host OS mutation."""
 from pathlib import Path
-import hashlib,json,urllib.request
+import hashlib,json,signal,urllib.request
+def cancelled(signum,frame):raise SystemExit(128+signum)
+for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
 e=Path(__file__).resolve().parent;cache=Path.cwd()/'.hermes/tools/windows-client-update';cache.mkdir(exist_ok=True)
 manifest=json.loads((e/'UPDATE_INPUTS.json').read_text());report={'status':'downloading','cache':str(cache),'purpose':'Pending disposable Windows MSI current-client comparison','files':[]}
 def save():(e/'DOWNLOAD.json').write_text(json.dumps(report,indent=2)+'\n')

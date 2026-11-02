@@ -1,0 +1,26 @@
+{
+  "domain": "ottrin-msi-updated-client",
+  "uuid": "fa6cfcc7-4895-477e-adf5-c3a7abcea40e",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msi-updated-client-fixture.iso",
+    "ottrin-msi-updated-client.qcow2"
+  ],
+  "status": "failed servicing fixture timeout; no updated-client rollback result",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.",
+  "producer_sha256": "e6f40ec196576b4b88874a953addb54a1bf7421679029558ed5399fc293de6cd",
+  "guest_pid": 7212,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-updated-client-fixture.iso",
+      "ottrin-msi-updated-client.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  },
+  "error": "WUSA did not finish within25minutes; CBS remained active; owned clone and volumes removed"
+}

@@ -1,0 +1,26 @@
+{
+  "domain": "ottrin-msix-assembly",
+  "uuid": "6e082bd6-d7c6-4978-9391-82035192fdc2",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-assembly-fixture.iso",
+    "ottrin-msix-assembly.qcow2"
+  ],
+  "status": "failed or interrupted; see retained scope and error",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Actual MSIX assembly and payload comparison; deployment remains separate",
+  "producer_sha256": "c4e6e7cbfe0d42ba8922eb4cf0a8cf42174e07f3e7a113a2e1fc5f4846a3edff",
+  "guest_pid": 5080,
+  "error": "RuntimeError('guest-file-read failed for ottrin-msix-assembly: error: Guest agent is not responding: Guest agent not available for now')",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly-fixture.iso",
+      "ottrin-msix-assembly.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  }
+}

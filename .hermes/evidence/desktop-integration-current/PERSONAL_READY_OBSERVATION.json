@@ -1,0 +1,26 @@
+{
+  "scope": "One60-second personal watched-service observation during development; not a controlled idle or sustained workload guarantee",
+  "daemon_pid": 64741,
+  "binary_sha256": "5e5d0ae99c7cad3d12629aaeb007411947abe3ccb5aa6225b93a7deacc7d35d1",
+  "seconds": 60.52822618398932,
+  "percent_of_one_core": 0.44607287710575494,
+  "rss_kib_min": 26144,
+  "rss_kib_max": 26864,
+  "before": {
+    "indexed_items": 161285,
+    "status": "ready",
+    "watcher_ready": true,
+    "has_error": false,
+    "has_watcher_error": false
+  },
+  "after": {
+    "indexed_items": 161295,
+    "status": "ready",
+    "watcher_ready": true,
+    "has_error": false,
+    "has_watcher_error": false
+  },
+  "owned_fixtures_or_processes_allocated": false,
+  "personal_service_left_running": true,
+  "status_projection": "Resource/status counters only; personal indexed paths are excluded."
+}

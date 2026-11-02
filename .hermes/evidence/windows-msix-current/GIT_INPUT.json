@@ -1,0 +1,7 @@
+{
+  "url": "https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.4/MinGit-2.56.0.4-64-bit.zip",
+  "sha256": "e3bf78351fe777fba47ddee5950082f8a98bb0f02604fdc7ba3ee2cb68ffa877",
+  "bytes": 39846926,
+  "provenance": "Official git-for-windows/git release API asset digest",
+  "purpose": "Actual Git verification of the immutable source/stage in the upcoming owned native MSIX assembly fixture; no fake Git or invented source revision"
+}

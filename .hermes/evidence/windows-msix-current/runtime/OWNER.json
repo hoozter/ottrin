@@ -1,0 +1,26 @@
+{
+  "domain": "ottrin-msix-runtime",
+  "uuid": "7a0ae002-a572-45b7-a3d9-f30aed53f509",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-runtime-fixture.iso",
+    "ottrin-msix-runtime.qcow2"
+  ],
+  "status": "native MSIX runtime test finished; inspect result, not assumed accepted",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Actual development MSIX deployment, ordinary launch and index/removal ownership; no upgrade acceptance",
+  "producer_sha256": "e8be9674876079339b07cf3bd99225fe1b1adde33a17924a12a9947f28568887",
+  "uploaded_host_iso_removed_bytes": 95688704,
+  "guest_pid": 3424,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime-fixture.iso",
+      "ottrin-msix-runtime.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  }
+}

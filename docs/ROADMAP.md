@@ -32,6 +32,11 @@ activation. Both rejected cohorts and failure evidence remain documented; their
 staging and guests are removed. The current accepted cohort fixes registration
 reload in the authoritative setup/removal paths and passes without those controls.
 
+The delivered source0b6015db now passes all three hosted jobs in run41374248948.
+The personal watched service stays Ready in a further60-second development
+observation at0.446percent of one core and about26MiB RSS; this is not controlled
+idle or sustained workload acceptance.
+
 The stronger HTML gate caught an unfiltered short-lived renderer in run41365916700.
 Inherited syscall confinement and an exact versioned helper-readiness response now
 pass the full hosted Linux job and search-performance job in run41374248948.
@@ -63,15 +68,24 @@ The independent queue is:
    Server2025's1625 policy refusal provides no rollback result. No security-policy,
    Installer-ACL, elevation or rollback waiver is used.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.
-   The new clean-stage assembly entry point and distinct development/explicit Store
-   identities pass native PowerShell5.1 parsing. The actual manifest passes native
-   MakeAppx pack/unpack with an unchanged Windows command fixture, and this template
-   gate is added to Windows CI. This is not actual Ottrin MSIX assembly/deployment
-   acceptance: exact payload, ordinary launch, configuration/data, index startup,
-   package upgrade and uninstall remain required. No Store identity is invented.
-   Evidence: `.hermes/evidence/windows-msix-current/`. A separate owned offline
-   current-client servicing comparison is pending; the official catalog inputs are
-   hash-verified and tracked under `windows-msi-updated-client-current/`.
+   Source40effd6f portable/NSIS and a development-only MSIX are staged; the accepted
+   Windows8ede candidate/public files are preserved. Actual clean-source MakeAppx
+   assembly passes58-file equality with the portable stage; native/hosted template
+   checks pass. Development deployment and a normal-token real Ottrin main window
+   with verified process package identity and normal close also pass. GUI focus
+   remains unaccepted. The actual index setup creates a normal scheduled task but
+   the daemon times out; removing the package leaves that enabled task pointing to
+   its versioned WindowsApps executable. This is a required failed product gate:
+   implement package-managed startup, then verify startup, update and uninstall.
+   Owned MSIX guests/volumes/profiles are removed; staged packages remain for these
+   named native consumers. The fulfilled source archive118,751,194bytes is removed.
+   Evidence: `.hermes/evidence/windows-msix-current/`.
+   The first supported current-client servicing fixture times out after25minutes
+   while CBS remains active and yields no updated-client rollback result. Its clone,
+   volumes and profiles are removed; compact control evidence and verified public
+   update inputs remain under `windows-msi-updated-client-current/`. Repeat with a
+   longer monitored servicing interval after the MSIX runtime check. No Store
+   identity, signing policy, Installer ACL or security-policy workaround is used.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
 

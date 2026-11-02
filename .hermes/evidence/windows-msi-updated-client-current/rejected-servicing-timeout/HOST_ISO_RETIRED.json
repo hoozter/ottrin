@@ -1,0 +1,7 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-updated-client-current/fixture/inputs.iso",
+  "bytes": 5370429440,
+  "reason": "Host ISO upload complete and guest has reverified all update hashes from the separate libvirt-owned UDF volume; no remaining host ISO consumer",
+  "guest_inputs_verified": true,
+  "removed": true
+}

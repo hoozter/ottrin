@@ -1,0 +1,25 @@
+{
+  "status": "actual development MSIX assembly and58-file payload equality pass; deployment pending",
+  "source_revision": "40effd6fb128fc42220be9670377340a5e37031b",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "3c25abe0b813f75d1eaa0404f3e2bdd9f0bfcd38a8e1dfd55a7f7f7f65fba26e",
+  "artifact_bytes": 56839671,
+  "native_payload_files": 58,
+  "producer_scope": "Actual clean-source production MSIX assembly and exact portable payload comparison; no deployment, launch, index upgrade or uninstall acceptance yet.",
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly-fixture.iso",
+      "ottrin-msix-assembly.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  },
+  "temporary_source_archive_removed_bytes": 118751194,
+  "pending": [
+    "Development package deployment and ordinary application/chooser launch",
+    "Configuration persistence, package upgrade and removal",
+    "Background index startup/task ownership and cleanup",
+    "Store identity/certification remains an owner wait"
+  ]
+}
